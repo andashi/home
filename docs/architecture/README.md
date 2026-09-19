@@ -52,10 +52,11 @@ reload, and integrated into a GrapheneOS multi-profile setup.
 
 ## Relationship to the provisioning repo
 
-The declarative side lives in `~/Development/GrapheneOS/config/` (`launcher.json` per
+The declarative side lives in `~/Development/andashi/provisioning/config/` (`launcher.json` per
 profile/zone, next to `theming.json`). The provisioning flow pushes the file,
 triggers a reload, and verifies the result through the read-back provider. The
 uiautomator-driven `45-launcher-prefs.sh` is deleted once this lands.
 
-Prior analysis that led here: `~/Development/GrapheneOS/docs/kvaesitso-interfaces.md`
+Prior analysis that led here: `~/Development/andashi/provisioning/docs/architecture/launcher.md`
+(formerly `docs/kvaesitso-interfaces.md`)
 and `~/Development/kvaesitso-patch/EXPORTED-SURFACE-PROPOSAL.md`.

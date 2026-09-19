@@ -58,7 +58,20 @@
 #   ./gradlew :app:app:assembleDefaultDebug
 set -euo pipefail
 
-GOS_REPO="${GOS_REPO:-$HOME/Development/GrapheneOS}"
+# The provisioning repo is a sibling checkout (<parent>/provisioning). Walking
+# up from this script finds it from a git worktree too, where the script sits
+# deeper than the checkout root. GOS_REPO overrides it for another layout, and
+# $HOME/Development/GrapheneOS is the location before the 2026-09-20 move, kept
+# as a fallback while it exists so runs work before and after that move.
+gos_repo_default() {
+  local d; d="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  while [ "$d" != "/" ]; do
+    [ -d "$d/provisioning/emulator" ] && { printf '%s\n' "$d/provisioning"; return; }
+    d="$(dirname "$d")"
+  done
+  printf '%s\n' "$HOME/Development/GrapheneOS"
+}
+GOS_REPO="${GOS_REPO:-$(gos_repo_default)}"
 # One instance per session (README of the provisioning repo, "Emulator
 # instances"): SERIAL and OVERLAY_DIR name the instance and always go together.
 # Which of the two the caller set: both or neither, never one (checked below).

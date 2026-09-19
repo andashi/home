@@ -112,10 +112,10 @@ guarantees. Treat security as a design constraint, not a checklist item:
 
 The test target is a self-built GrapheneOS emulator (`~/android/grapheneos`,
 target `sdk_phone64_x86_64-cur-userdebug`, test-keys), operated via
-`~/Development/GrapheneOS/emulator/run.sh`.
+`~/Development/andashi/provisioning/emulator/run.sh`.
 
 - **One instance per session.** Each instance is a serial plus an overlay dir
-  under `~/Development/GrapheneOS/emulator/instances/`, and the two always go
+  under `~/Development/andashi/provisioning/emulator/instances/`, and the two always go
   together (the provisioning repo's README, "Emulator instances", is the
   authoritative table):
 
@@ -127,7 +127,7 @@ target `sdk_phone64_x86_64-cur-userdebug`, test-keys), operated via
 
   The L4 scripts take `SERIAL` and `OVERLAY_DIR` from the environment
   (defaults: `emulator-5556`, `instances/test`), so a second session runs
-  `SERIAL=emulator-5558 OVERLAY_DIR=~/Development/GrapheneOS/emulator/instances/test-2 e2e/l4-smoke.sh`
+  `SERIAL=emulator-5558 OVERLAY_DIR=~/Development/andashi/provisioning/emulator/instances/test-2 e2e/l4-smoke.sh`
   instead of queueing on the default one.
 - Respect `device-lock.sh`: the lock is **per instance** (serial as argument, or
   `SERIAL`/`ADB_SERIAL`). Never start, stop or adb into an instance another

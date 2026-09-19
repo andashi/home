@@ -45,7 +45,7 @@ The acceptance harness for AI-driven development. The **scenarios live in this
 repo** (`e2e/`) because they change with launcher features (config schema,
 read-back provider) and are part of a PR's definition of done. The **instance
 harness** (emulator start/stop, snapshots, qcow2 overlays, device lock) stays
-in the provisioning repo (`~/Development/GrapheneOS/emulator/`) and is invoked
+in the provisioning repo (`~/Development/andashi/provisioning/emulator/`) and is invoked
 as a script interface — on a **dedicated second emulator instance** so test
 runs never interfere with the interactively used one:
 
@@ -61,7 +61,7 @@ runs never interfere with the interactively used one:
   `00-profiles.sh` and nothing else. It is the everyday base of
   `l4-provisioning-config.sh`, which still re-runs `00-profiles.sh`, so drift
   shows up. `clean` stays the release gate.
-- `~/Development/GrapheneOS/emulator/device-lock.sh` is an advisory lock shared by
+- `~/Development/andashi/provisioning/emulator/device-lock.sh` is an advisory lock shared by
   all sessions working on these machines — test tooling must acquire it before
   touching any instance and must never start/stop an instance it does not own.
   Since #27 the lock is per instance (per serial), and every session can run

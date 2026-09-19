@@ -7,7 +7,8 @@ Status: accepted (2026-09-17)
 Provisioning today drives the launcher UI with uiautomator (`45-launcher-prefs.sh`,
 ~650 lines of coordinate arithmetic) because the stock app exports no usable
 interface: no provider, a five-route deep-link whitelist, a crashing theme importer
-(see `~/Development/GrapheneOS/docs/kvaesitso-interfaces.md`). Its failure mode was
+(see `~/Development/andashi/provisioning/docs/architecture/launcher.md`, then
+`docs/kvaesitso-interfaces.md`). Its failure mode was
 never writing — it was **not being able to check**. This fork owns the app, so the
 interface problem is solved at the root.
 
