@@ -114,12 +114,38 @@ The test target is a self-built GrapheneOS emulator (`~/android/grapheneos`,
 target `sdk_phone64_x86_64-cur-userdebug`, test-keys), operated via
 `~/Development/GrapheneOS/emulator/run.sh`.
 
-- Respect `device-lock.sh` — sessions share devices; never touch a device another
-  session holds.
-- L4 test runs use a **dedicated instance on port 5556** with its own qcow2
-  overlays — never the working instance's `userdata-qemu.img.qcow2`.
-- The only honest base state is the `clean` snapshot (near-first-boot);
-  `vor-workprofile` is already provisioned and not a base.
+- **One instance per session.** Each instance is a serial plus an overlay dir
+  under `~/Development/GrapheneOS/emulator/instances/`, and the two always go
+  together (the provisioning repo's README, "Emulator instances", is the
+  authoritative table):
+
+  | Serial | `OVERLAY_DIR` | Used by |
+  |---|---|---|
+  | `emulator-5554` | none (build tree) | the working instance, interactive |
+  | `emulator-5556` | `instances/test` | this repo's L4 scripts (default) |
+  | `emulator-5558` | `instances/test-2` | the provisioning repo's own verification runs |
+
+  The L4 scripts take `SERIAL` and `OVERLAY_DIR` from the environment
+  (defaults: `emulator-5556`, `instances/test`), so a second session runs
+  `SERIAL=emulator-5558 OVERLAY_DIR=~/Development/GrapheneOS/emulator/instances/test-2 e2e/l4-smoke.sh`
+  instead of queueing on the default one.
+- Respect `device-lock.sh`: the lock is **per instance** (serial as argument, or
+  `SERIAL`/`ADB_SERIAL`). Never start, stop or adb into an instance another
+  session holds. `device-lock.sh status` lists every held instance.
+- L4 runs never use the working instance's `userdata-qemu.img.qcow2`. Test
+  instances run writable, because `-read-only` disables snapshots entirely,
+  load included. Every run starts by loading its snapshot, which resets RAM and
+  disks, so nothing carries over between runs. Never `run.sh snapshot` over
+  `clean` or `profiles-ready` by accident.
+- Snapshots per test instance: `clean` (near-first-boot, the only honest base,
+  the **release gate**) and `profiles-ready` (`clean` + `00-profiles.sh`, no
+  launcher; the **everyday** base of `e2e/l4-provisioning-config.sh`).
+  `vor-workprofile` on the working instance is already provisioned and not a
+  base.
+- **Who refreshes `profiles-ready`:** whoever changes `config/profiles.json` in
+  the provisioning repo, on every test instance, in the same session
+  (procedure in that README). A stale one does not fail runs, because
+  `00-profiles.sh` still reconciles, but it makes them slow again.
 - Known emulator limits: nothing Google-server-side can be validated there
   (sandboxed Play, Play Integrity, push); wallpapers apply only after reboot;
   test-keys mean results do not equal "tested on release GrapheneOS".

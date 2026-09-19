@@ -7,12 +7,19 @@
 #   e2e/l4-provisioning-config.sh [path/to/kvaesitso.apk]
 #
 # What it does:
-#   1. acquires the device lock (as "l4-provisioning-config"), boots the
-#      dedicated test instance (emulator-5556, own qcow2 overlays under
-#      <gos-repo>/emulator/instances/test) from the `clean` snapshot
+#   1. acquires the instance's device lock (as
+#      "l4-provisioning-config@<serial>#<pid>"), boots the test instance (default
+#      emulator-5556 with its own qcow2 overlays under
+#      <gos-repo>/emulator/instances/test; SERIAL and OVERLAY_DIR pick another
+#      one) from SNAPSHOT:
+#        profiles-ready (default, the everyday run): `clean` plus
+#          00-profiles.sh, saved once per instance, nothing launcher-related
+#        clean (the release gate): near-first-boot, the only honest base
 #   2. runs provision/00-profiles.sh against the test instance so all
 #      configured zones/profiles exist (stopped profiles are temporarily
-#      started by that step - expected, see 00-profiles.sh)
+#      started by that step - expected, see 00-profiles.sh). From
+#      profiles-ready this takes seconds and still catches drift between
+#      config/profiles.json and the snapshot; from clean it creates them all
 #   3. drops root (`adb unroot`): release GrapheneOS has no adb root, so the
 #      provisioning transport must work as the plain shell user; then
 #      installs the Kvaesitso fork debug APK into user 0
@@ -47,13 +54,21 @@
 set -euo pipefail
 
 GOS_REPO="${GOS_REPO:-$HOME/Development/GrapheneOS}"
-SERIAL="emulator-5556"
+# One instance per session (README of the provisioning repo, "Emulator
+# instances"): SERIAL and OVERLAY_DIR name the instance and always go together.
+SERIAL="${SERIAL:-emulator-5556}"
 export SERIAL
-export OVERLAY_DIR="$GOS_REPO/emulator/instances/test"
-# Second instance alongside the working one requires -read-only (see run.sh).
-# All writes are discarded on exit; the run starts from the `clean` snapshot.
-export READ_ONLY=1
-SNAPSHOT="${SNAPSHOT:-clean}"
+export OVERLAY_DIR="${OVERLAY_DIR:-$GOS_REPO/emulator/instances/test}"
+# The instance runs writable: -read-only disables snapshots entirely, load
+# included (provisioning repo, run.sh, READ_ONLY). Nothing carries over
+# anyway, because run.sh start loads SNAPSHOT first, which resets RAM and
+# disks, and nothing is ever saved back.
+
+# Unique per run: acquire is re-entrant for the same owner, so two runs of
+# this script on one instance must not share a name, or the second gets in
+# and its cleanup stops the first one's emulator (#27).
+LOCK_OWNER="l4-provisioning-config@$SERIAL#$$"
+SNAPSHOT="${SNAPSHOT:-profiles-ready}"
 APK="${1:-$(dirname "$0")/../app/app/build/outputs/apk/default/debug/app-default-debug.apk}"
 # Overridable: PKG=org.andashi.home APK=... runs the scenario against the release build.
 PKG="${PKG:-org.andashi.home.debug}"
@@ -82,17 +97,23 @@ die(){ c '1;31' " x $*" >&2; exit 1; }
 [ -f "$GOS_REPO/provision/45-launcher-config.sh" ] || die "provision/45-launcher-config.sh missing in $GOS_REPO"
 command -v jq >/dev/null || die "jq not found (required for config assertions)"
 
+# Only a run that holds the lock may stop the instance: a run whose acquire
+# failed must not take down the one that holds it (#27).
+HAVE_LOCK=0
 cleanup() {
   local rc=$?
-  # A failed run leaves its evidence in logcat and nowhere else: dump the
-  # launcher's config tags before the read-only instance is discarded.
-  if [ "$rc" -ne 0 ]; then
-    printf '\n--- launcher logcat (config tags, last 80 lines) ---\n' >&2
-    adb -s "$SERIAL" logcat -d -s ReloadConfigReceiver:* ConfigWatcher:* ConfigIngestProvider:* ConfigReloader:* AndroidRuntime:E ActivityManager:W 2>/dev/null \
-      | tr -d '\r' | tail -n 80 >&2 || true
+  if [ "$HAVE_LOCK" = 1 ]; then
+    # A failed run leaves its evidence in logcat and nowhere else: dump the
+    # launcher's config tags before the instance is stopped (the next run
+    # starts from the snapshot again).
+    if [ "$rc" -ne 0 ]; then
+      printf '\n--- launcher logcat (config tags, last 80 lines) ---\n' >&2
+      adb -s "$SERIAL" logcat -d -s ReloadConfigReceiver:* ConfigWatcher:* ConfigIngestProvider:* ConfigReloader:* AndroidRuntime:E ActivityManager:W 2>/dev/null \
+        | tr -d '\r' | tail -n 80 >&2 || true
+    fi
+    (cd "$GOS_REPO" && SERIAL="$SERIAL" emulator/run.sh stop) >/dev/null 2>&1 || true
+    (cd "$GOS_REPO" && emulator/device-lock.sh release "$LOCK_OWNER" "$SERIAL") >/dev/null 2>&1 || true
   fi
-  (cd "$GOS_REPO" && SERIAL="$SERIAL" emulator/run.sh stop) >/dev/null 2>&1 || true
-  (cd "$GOS_REPO" && emulator/device-lock.sh release l4-provisioning-config) >/dev/null 2>&1 || true
   rm -rf "$WORK"
 }
 trap cleanup EXIT
@@ -254,7 +275,8 @@ wait_diagnostics_sha() { # $1 = uid, $2 = sha256, $3 = timeout seconds
 
 # --- 1. lock + boot ------------------------------------------------------
 
-(cd "$GOS_REPO" && emulator/device-lock.sh acquire l4-provisioning-config)
+(cd "$GOS_REPO" && emulator/device-lock.sh acquire "$LOCK_OWNER" "$SERIAL")
+HAVE_LOCK=1
 
 log "booting $SERIAL from snapshot '$SNAPSHOT' (overlays: $OVERLAY_DIR)"
 (cd "$GOS_REPO" && SNAPSHOT="$SNAPSHOT" emulator/run.sh start)
