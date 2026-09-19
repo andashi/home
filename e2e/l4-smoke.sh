@@ -22,6 +22,8 @@ set -euo pipefail
 GOS_REPO="${GOS_REPO:-$HOME/Development/GrapheneOS}"
 # One instance per session (README of the provisioning repo, "Emulator
 # instances"): SERIAL and OVERLAY_DIR name the instance and always go together.
+# Which of the two the caller set: both or neither, never one (checked below).
+INSTANCE_OVERRIDE="${SERIAL:+s}${OVERLAY_DIR:+o}"
 SERIAL="${SERIAL:-emulator-5556}"
 export SERIAL
 export OVERLAY_DIR="${OVERLAY_DIR:-$GOS_REPO/emulator/instances/test}"
@@ -43,6 +45,8 @@ c(){ [ -t 1 ] && printf '\033[%sm%s\033[0m\n' "$1" "$2" || printf '%s\n' "$2"; }
 log(){ c '1;34' ":: $*"; }; ok(){ c '1;32' " + $*"; }
 die(){ c '1;31' " x $*" >&2; exit 1; }
 
+[ "$INSTANCE_OVERRIDE" = "" ] || [ "$INSTANCE_OVERRIDE" = "so" ] \
+  || die "SERIAL and OVERLAY_DIR name ONE instance - set both or neither (provisioning README, \"Emulator instances\"). Overriding only one runs one instance's disk under another instance's lock, because the lock is keyed by serial"
 [ -d "$GOS_REPO/emulator" ] || die "provisioning repo not found at $GOS_REPO (set GOS_REPO)"
 [ -f "$APK" ] || die "APK not found: $APK (build it or pass a path)"
 
