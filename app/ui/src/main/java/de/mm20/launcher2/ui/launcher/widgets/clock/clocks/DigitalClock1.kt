@@ -4,6 +4,7 @@ import android.text.format.DateFormat
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -73,8 +74,13 @@ fun DigitalClock1(
 
     val formattedString = format.format(time)
 
+    // Upper bound, not a fixed size: the clock shares its height with the dock and
+    // the widget column, so the space it gets varies. Without autosizing the text is
+    // simply clipped when it does not fit, which silently cuts the minutes off.
+    val maxFontSize = if (verticalLayout) 100.sp else 48.sp
+
     val textStyle = MaterialTheme.typography.displayLarge.copy(
-        fontSize = if (verticalLayout) 100.sp else 48.sp,
+        fontSize = maxFontSize,
         fontWeight = FontWeight.Black,
         fontFeatureSettings = if (monospaced) "tnum" else null,
         textAlign = TextAlign.Center,
@@ -92,8 +98,20 @@ fun DigitalClock1(
             modifier = modifier,
             text = formattedString,
             style = textStyle,
+            autoSize = TextAutoSize.StepBased(
+                minFontSize = maxFontSize * 0.4f,
+                maxFontSize = maxFontSize,
+                stepSize = 1.sp,
+            ),
         )
 
+        // Known limit (andashi/home#34): the two texts size themselves
+        // independently, each against its own bounds. A Column measures children
+        // with the height that is left, so the time above can take the whole
+        // budget and leave this too little - the clipping then moves to the
+        // seconds instead of the minutes. Fixing it means deriving both sizes
+        // from one shared budget. Unreached today: showSeconds defaults to false
+        // and the launcher config does not expose it.
         if (verticalLayout && showSeconds) {
             Text(
                 modifier = Modifier.offset(0.dp, (-20).dp).align(Alignment.CenterHorizontally),
@@ -102,7 +120,12 @@ fun DigitalClock1(
                     fontSize = textStyle.fontSize * 0.6,
                     color = color,
                     drawStyle = if (style.outlined) Stroke(width = 2.dp.toPixels()) else Fill,
-                )
+                ),
+                autoSize = TextAutoSize.StepBased(
+                    minFontSize = maxFontSize * 0.24f,
+                    maxFontSize = maxFontSize * 0.6f,
+                    stepSize = 1.sp,
+                ),
             )
         }
     }
