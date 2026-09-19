@@ -189,14 +189,23 @@ pkg_installed_for_user() { # $1 = pkg, $2 = uid
 # Prints the `json` column of the single row returned by the state provider
 # for the given user. The payload is pretty-printed (multi-line) JSON, so
 # everything after the "Row: 0 json=" prefix is the value.
+# Right after `am start-user -w` a user's package resolution and external
+# storage lag behind its RUNNING_UNLOCKED state for a moment (measured on
+# 2026-09-19 from the provisioning chain and here). Exactly these two
+# transient messages are retried, bounded; anything else fails at once.
 query_json() { # $1 = provider path (config|diagnostics), $2 = uid
-  local out
-  out="$(adb -s "$SERIAL" shell content query --uri "$STATE_URI/$1" --user "$2" 2>&1 | tr -d '\r')" \
-    || { printf 'content query failed (user %s): %s\n' "$2" "$out" >&2; return 1; }
-  case "$out" in
-    "Row: 0 json="*) printf '%s' "${out#Row: 0 json=}" ;;
-    *) printf 'unexpected provider output (user %s): %s\n' "$2" "$out" >&2; return 1 ;;
-  esac
+  local out attempt=0
+  while :; do
+    out="$(adb -s "$SERIAL" shell content query --uri "$STATE_URI/$1" --user "$2" 2>&1 | tr -d '\r')" || true
+    case "$out" in
+      "Row: 0 json="*) printf '%s' "${out#Row: 0 json=}"; return 0 ;;
+      *"Could not find provider"*|*"External files directory unavailable"*)
+        attempt=$((attempt + 1))
+        [ "$attempt" -lt 15 ] || { printf 'provider for user %s did not come up within 30s: %s\n' "$2" "$out" >&2; return 1; }
+        sleep 2 ;;
+      *) printf 'unexpected provider output (user %s): %s\n' "$2" "$out" >&2; return 1 ;;
+    esac
+  done
 }
 
 assert_jq() { # $1 = json, $2 = jq filter, $3 = description
