@@ -10,7 +10,9 @@ import org.koin.dsl.module
  * [ConfigStateProvider] are manifest-declared and resolve [ConfigReloader] /
  * [ConfigStore] / [ReloadReportStore] from here ([ConfigIngestProvider] is
  * pure transport and needs nothing); [ConfigWatcher] is created
- * eagerly so it observes the config file for the whole process lifetime.
+ * eagerly so it observes the config file for the whole process lifetime;
+ * [WallpaperForegroundFixer] likewise, to re-apply a wallpaper set from the
+ * background once the profile is in the foreground.
  */
 val configModule = module {
     // Reuse upstream's construction instead of binding a second instance.
@@ -22,4 +24,5 @@ val configModule = module {
     // One reloader, one mutex: watcher and receiver must serialize on it.
     single { ConfigReloader(get(), get()) }
     single(createdAtStart = true) { ConfigWatcher(androidContext(), get(), get()).also { it.start() } }
+    single(createdAtStart = true) { WallpaperForegroundFixer(androidContext(), get()).also { it.start() } }
 }

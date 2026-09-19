@@ -19,10 +19,15 @@ class WallpaperStoreTest {
 
     private class FakeApplier : WallpaperApplier {
         var ids = WallpaperIds(system = 1, lock = 1)
+        /** Simulates WallpaperManagerService: crops only while the profile is foreground. */
+        var foreground = true
+        var rendered = false
         val applied = mutableListOf<Pair<File, WallpaperTarget>>()
         override fun currentIds() = ids
+        override fun isRendered(target: WallpaperTarget) = rendered
         override fun apply(file: File, target: WallpaperTarget): WallpaperIds {
             applied += file to target
+            rendered = foreground
             ids = WallpaperIds(
                 system = if (target != WallpaperTarget.Lock) ids.system + 1 else ids.system,
                 lock = if (target != WallpaperTarget.Home) ids.lock + 1 else ids.lock,
@@ -59,6 +64,37 @@ class WallpaperStoreTest {
     }
 
     @Test
+    fun `a set from the background is stored, warned about, and re-applied on foreground`() = runTest {
+        applier.foreground = false
+
+        val diagnostics = store.apply("home.jpg", WallpaperTarget.Both)
+
+        assertEquals(listOf("wallpaper-pending-foreground"), diagnostics.map { it.code })
+        assertEquals(WallpaperState("home.jpg", WallpaperTarget.Both), store.current())
+        assertEquals(1, applier.applied.size)
+
+        applier.foreground = true
+        assertEquals(true, store.ensureRendered())
+        assertEquals(2, applier.applied.size)
+        assertEquals(WallpaperState("home.jpg", WallpaperTarget.Both), store.current())
+
+        assertEquals(false, store.ensureRendered())
+        assertEquals(2, applier.applied.size)
+    }
+
+    @Test
+    fun `ensureRendered does nothing without a recorded wallpaper or with a changed file`() = runTest {
+        assertEquals(false, store.ensureRendered())
+        applier.foreground = false
+        store.apply("home.jpg", WallpaperTarget.Both)
+        File(dir, "home.jpg").writeBytes(byteArrayOf(9))
+        applier.foreground = true
+
+        assertEquals(false, store.ensureRendered())
+        assertEquals(1, applier.applied.size)
+    }
+
+    @Test
     fun `a wallpaper changed by hand reads as drift`() = runTest {
         store.apply("home.jpg", WallpaperTarget.Both)
         applier.ids = applier.ids.copy(system = applier.ids.system + 1)
@@ -86,6 +122,7 @@ class WallpaperStoreTest {
     fun `a file replaced during apply is not recorded and reported`() = runTest {
         val racing = object : WallpaperApplier {
             override fun currentIds() = applier.currentIds()
+            override fun isRendered(target: WallpaperTarget) = applier.isRendered(target)
             override fun apply(file: File, target: WallpaperTarget): WallpaperIds {
                 file.writeBytes(byteArrayOf(7, 7, 7)) // a same-name upload lands mid-apply
                 return applier.apply(file, target)

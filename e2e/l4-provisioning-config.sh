@@ -412,4 +412,40 @@ assert_jq "$base_eff" \
   "profile '$BASE_KEY' keeps the generated value ($BASE_BACKGROUND) while '$OVERRIDE_KEY' is overridden"
 ok "per-user isolation: '$OVERRIDE_KEY' changed, '$BASE_KEY' unchanged"
 
+# --- 8. background-set wallpapers render once the profile is foreground ---
+# WallpaperManagerService crops a static wallpaper only for the current user
+# (measured 2026-09-19: background profiles kept mCropHint=Rect(0,0-0,0) and a
+# black screen although ids were assigned). The launcher re-applies on its
+# first foreground resume; switch to one secondary profile and expect a crop.
+FG_KEY="$OVERRIDE_KEY"; FG_UID="$OVERRIDE_UID"
+log "switching to profile '$FG_KEY' (user $FG_UID) so its wallpaper gets rendered"
+adb -s "$SERIAL" shell am switch-user "$FG_UID" </dev/null >/dev/null || die "am switch-user $FG_UID failed"
+for _i in $(seq 1 30); do
+  [ "$(adb -s "$SERIAL" shell am get-current-user </dev/null 2>/dev/null | tr -d '\r')" = "$FG_UID" ] && break
+  sleep 1
+done
+[ "$(adb -s "$SERIAL" shell am get-current-user </dev/null 2>/dev/null | tr -d '\r')" = "$FG_UID" ] \
+  || die "user $FG_UID did not become the current user within 30 s"
+# The launcher under test is not the HOME role holder here (40-theming.sh is
+# not part of this scenario) and a fresh profile may still show the setup
+# wizard, so its activity would never resume on its own: start it explicitly.
+# That is what fires the foreground hook.
+adb -s "$SERIAL" shell am start --user "$FG_UID" -n "$PKG/de.mm20.launcher2.ui.launcher.LauncherActivity" </dev/null >/dev/null 2>&1 \
+  || die "could not start the launcher activity for user $FG_UID"
+cropped=""
+for _i in $(seq 1 30); do
+  crop="$(adb -s "$SERIAL" shell dumpsys wallpaper 2>/dev/null | tr -d '\r' \
+    | awk -v u="User $FG_UID:" '/wallpaper state:/ { in_sys = (index($0, "System wallpaper state:") > 0); next }
+        in_sys && index($0, u) { f = 1; next } f && /mCropHint=/ { print; exit }')"
+  # dumpsys prints "Rect(0, 0 - 0, 0)" with spaces; compare without them.
+  case "${crop//[[:space:]]/}" in *"Rect(0,0-0,0)"*|"") sleep 1 ;; *) cropped="${crop//[[:space:]]/}"; break ;; esac
+done
+[ -n "$cropped" ] || die "profile '$FG_KEY' (user $FG_UID): wallpaper still has no crop 30 s after foregrounding (dumpsys: '${crop:-none}')"
+ok "profile '$FG_KEY' (user $FG_UID): wallpaper rendered after foregrounding ($cropped)"
+hook="$(adb -s "$SERIAL" logcat -d -s WallpaperForegroundFix:* 2>/dev/null | tr -d '\r' | grep -c "Re-applied the config wallpaper" || true)"
+[ "${hook:-0}" -ge 1 ] && ok "foreground hook re-applied the wallpaper ($hook time(s) in logcat)" \
+  || warn_line="no WallpaperForegroundFix line in logcat (crop may have come from elsewhere)"
+[ -z "${warn_line:-}" ] || printf ' ! %s\n' "$warn_line" >&2
+adb -s "$SERIAL" shell am switch-user 0 </dev/null >/dev/null || true
+
 ok "L4 provisioning-config passed"

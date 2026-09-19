@@ -27,6 +27,17 @@ import java.io.IOException
 interface WallpaperStore {
     suspend fun current(): WallpaperState?
     suspend fun apply(image: String, target: WallpaperTarget): List<Diagnostic>
+
+    /**
+     * Re-applies the recorded wallpaper if the system holds it but never
+     * rendered it. WallpaperManagerService crops and draws a static wallpaper
+     * only for the *current* user: a set from a background profile stores the
+     * original and assigns ids, and the screen stays black until the profile
+     * is in the foreground and the wallpaper is set again (measured on the
+     * GrapheneOS emulator, 2026-09-19). Called from the launcher's foreground
+     * hook. Returns true when a re-apply happened.
+     */
+    suspend fun ensureRendered(): Boolean
 }
 
 data class WallpaperState(val image: String, val target: WallpaperTarget)
@@ -38,6 +49,9 @@ data class WallpaperIds(val system: Int, val lock: Int)
 interface WallpaperApplier {
     fun currentIds(): WallpaperIds
     fun apply(file: File, target: WallpaperTarget): WallpaperIds
+
+    /** Whether the system has a drawable (cropped) wallpaper file for [target]. */
+    fun isRendered(target: WallpaperTarget): Boolean
 }
 
 class AndroidWallpaperApplier(context: Context) : WallpaperApplier {
@@ -58,6 +72,17 @@ class AndroidWallpaperApplier(context: Context) : WallpaperApplier {
             manager.setStream(stream, null, true, flags)
         }
         return currentIds()
+    }
+
+    override fun isRendered(target: WallpaperTarget): Boolean {
+        // For "both" the lock wallpaper legitimately shares the system one and
+        // has no file of its own, so the system file decides.
+        val flag = if (target == WallpaperTarget.Lock) WallpaperManager.FLAG_LOCK else WallpaperManager.FLAG_SYSTEM
+        return try {
+            manager.getWallpaperFile(flag)?.use { true } ?: false
+        } catch (e: Exception) {
+            false
+        }
     }
 }
 
@@ -131,8 +156,31 @@ class DefaultWallpaperStore(
                     lockId = ids.lock,
                 )
             )
-            emptyList()
+            if (applier.isRendered(target)) {
+                emptyList()
+            } else {
+                listOf(
+                    Diagnostic(
+                        Severity.Warning,
+                        "wallpaper-pending-foreground",
+                        "appearance.wallpaper.image",
+                        "'$image' is stored but not yet rendered: the system crops a static " +
+                                "wallpaper only for the current user. The launcher re-applies it " +
+                                "the next time this profile is in the foreground.",
+                    )
+                )
+            }
         }
+
+    override suspend fun ensureRendered(): Boolean = withContext(Dispatchers.IO) {
+        val applied = readApplied() ?: return@withContext false
+        if (applier.isRendered(applied.target)) return@withContext false
+        val file = ConfigLocation.wallpaperFile(appContext, applied.image) ?: return@withContext false
+        if (!file.isFile || file.readBytes().sha256Hex() != applied.sha256) return@withContext false
+        val ids = applier.apply(file, applied.target)
+        writeApplied(applied.copy(systemId = ids.system, lockId = ids.lock))
+        true
+    }
 
     private fun readApplied(): AppliedWallpaper? {
         if (!stateFile.exists()) return null

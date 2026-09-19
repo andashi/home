@@ -562,6 +562,7 @@ class DefaultConfigStoreTest {
             state = WallpaperState(image, target)
             return emptyList()
         }
+        override suspend fun ensureRendered(): Boolean = false
     }
 
     private class FakeAppRepository : AppRepository {
