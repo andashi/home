@@ -57,6 +57,9 @@ class ConfigIngestProvider : ContentProvider() {
     /** Overridable for tests; production reads the binder identity. */
     internal var callingUid: () -> Int = { Binder.getCallingUid() }
 
+    /** How long [openFile] waits for the user's external storage to appear. */
+    internal var awaitStorageMs: Long = ConfigLocation.DefaultAwaitMs
+
     private val closeHandler: Handler by lazy {
         Handler(HandlerThread("config-ingest").apply { start() }.looper)
     }
@@ -73,17 +76,21 @@ class ConfigIngestProvider : ContentProvider() {
         }
         val context = context ?: throw IllegalStateException("Provider has no context")
         val segments = uri.pathSegments
-        val (target, limit) = when {
-            segments == listOf(ConfigLocation.ConfigFileName) ->
-                ConfigLocation.configFile(context) to Long.MAX_VALUE
+        val relative = when {
+            segments == listOf(ConfigLocation.ConfigFileName) -> ConfigLocation.ConfigFileName
 
             segments.size == 2 && segments[0] == ConfigLocation.WallpapersDirName &&
                     ConfigValidator.imageNameRegex.matches(segments[1]) ->
-                ConfigLocation.wallpaperFile(context, segments[1]) to MaxWallpaperBytes
+                "${ConfigLocation.WallpapersDirName}/${segments[1]}"
 
             else -> throw FileNotFoundException("Unknown ingest path: $uri")
         }
-        target ?: throw FileNotFoundException("External files directory unavailable")
+        val limit = if (relative == ConfigLocation.ConfigFileName) Long.MAX_VALUE else MaxWallpaperBytes
+        // A freshly started user's external storage can lag behind its
+        // package resolution; wait for it instead of failing the first write.
+        val configDir = ConfigLocation.awaitConfigDir(context, awaitStorageMs)
+            ?: throw FileNotFoundException("External files directory unavailable")
+        val target = File(configDir, relative)
         val dir = target.parentFile ?: throw FileNotFoundException("No config directory")
         if (!dir.isDirectory && !dir.mkdirs()) {
             throw FileNotFoundException("Could not create ${dir.absolutePath}")
