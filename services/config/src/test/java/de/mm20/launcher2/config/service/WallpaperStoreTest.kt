@@ -83,6 +83,17 @@ class WallpaperStoreTest {
     }
 
     @Test
+    fun `ensureRendered leaves a wallpaper the user changed by hand alone`() = runTest {
+        applier.foreground = false
+        store.apply("home.jpg", WallpaperTarget.Both)
+        applier.ids = applier.ids.copy(system = applier.ids.system + 1) // user picked another wallpaper
+        applier.foreground = true
+
+        assertEquals(false, store.ensureRendered())
+        assertEquals(1, applier.applied.size)
+    }
+
+    @Test
     fun `ensureRendered does nothing without a recorded wallpaper or with a changed file`() = runTest {
         assertEquals(false, store.ensureRendered())
         applier.foreground = false

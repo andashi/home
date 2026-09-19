@@ -7,6 +7,8 @@ import de.mm20.launcher2.config.Diagnostic
 import de.mm20.launcher2.config.Severity
 import de.mm20.launcher2.config.WallpaperTarget
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.Serializable
@@ -102,6 +104,9 @@ class DefaultWallpaperStore(
     private val appContext = context.applicationContext
     private val stateFile = File(appContext.filesDir, "config/wallpaper-state.json")
 
+    /** One writer at a time: reloads and the foreground fixer share this store. */
+    private val mutex = Mutex()
+
     override suspend fun current(): WallpaperState? = withContext(Dispatchers.IO) {
         val applied = readApplied() ?: return@withContext null
         val file = ConfigLocation.wallpaperFile(appContext, applied.image) ?: return@withContext null
@@ -112,16 +117,24 @@ class DefaultWallpaperStore(
         } catch (e: Exception) {
             return@withContext null
         }
-        val systemHolds = applied.target == WallpaperTarget.Lock || ids.system == applied.systemId
-        val lockHolds = applied.target == WallpaperTarget.Home || ids.lock == applied.lockId
-        if (systemHolds && lockHolds) WallpaperState(applied.image, applied.target) else null
+        if (applied.holds(ids)) WallpaperState(applied.image, applied.target) else null
+    }
+
+    /** The system still shows what we set: the ids of the targeted slots are unchanged. */
+    private fun AppliedWallpaper.holds(ids: WallpaperIds): Boolean {
+        val systemHolds = target == WallpaperTarget.Lock || ids.system == systemId
+        val lockHolds = target == WallpaperTarget.Home || ids.lock == lockId
+        return systemHolds && lockHolds
     }
 
     override suspend fun apply(image: String, target: WallpaperTarget): List<Diagnostic> =
-        withContext(Dispatchers.IO) {
+        withContext(Dispatchers.IO) { mutex.withLock { applyLocked(image, target) } }
+
+    private fun applyLocked(image: String, target: WallpaperTarget): List<Diagnostic> {
+        run {
             val file = ConfigLocation.wallpaperFile(appContext, image)
             if (file == null || !file.isFile) {
-                return@withContext listOf(
+                return listOf(
                     Diagnostic(
                         Severity.Error,
                         "wallpaper-missing",
@@ -138,7 +151,7 @@ class DefaultWallpaperStore(
             val ids = applier.apply(file, target)
             val after = file.readBytes().sha256Hex()
             if (before != after) {
-                return@withContext listOf(
+                return listOf(
                     Diagnostic(
                         Severity.Error,
                         "wallpaper-replaced-during-apply",
@@ -156,7 +169,7 @@ class DefaultWallpaperStore(
                     lockId = ids.lock,
                 )
             )
-            if (applier.isRendered(target)) {
+            return if (applier.isRendered(target)) {
                 emptyList()
             } else {
                 listOf(
@@ -171,15 +184,24 @@ class DefaultWallpaperStore(
                 )
             }
         }
+    }
 
     override suspend fun ensureRendered(): Boolean = withContext(Dispatchers.IO) {
-        val applied = readApplied() ?: return@withContext false
-        if (applier.isRendered(applied.target)) return@withContext false
-        val file = ConfigLocation.wallpaperFile(appContext, applied.image) ?: return@withContext false
-        if (!file.isFile || file.readBytes().sha256Hex() != applied.sha256) return@withContext false
-        val ids = applier.apply(file, applied.target)
-        writeApplied(applied.copy(systemId = ids.system, lockId = ids.lock))
-        true
+        mutex.withLock {
+            val applied = readApplied() ?: return@withLock false
+            if (applier.isRendered(applied.target)) return@withLock false
+            // A wallpaper the user set by hand in the meantime is drift, not a
+            // pending render; the next explicit reload decides, not this hook.
+            if (!applied.holds(applier.currentIds())) return@withLock false
+            val file = ConfigLocation.wallpaperFile(appContext, applied.image) ?: return@withLock false
+            if (!file.isFile || file.readBytes().sha256Hex() != applied.sha256) return@withLock false
+            val ids = applier.apply(file, applied.target)
+            // Same guard as apply(): a same-name upload landing mid-set must not
+            // be recorded under the old hash.
+            if (file.readBytes().sha256Hex() != applied.sha256) return@withLock false
+            writeApplied(applied.copy(systemId = ids.system, lockId = ids.lock))
+            true
+        }
     }
 
     private fun readApplied(): AppliedWallpaper? {
