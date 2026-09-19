@@ -41,8 +41,9 @@ object ConfigLocation {
         val deadline = System.nanoTime() + timeoutMs * 1_000_000
         while (true) {
             configDir(context)?.let { return it }
-            if (System.nanoTime() >= deadline) return null
-            Thread.sleep(AwaitPollMs)
+            val remainingMs = (deadline - System.nanoTime()) / 1_000_000
+            if (remainingMs <= 0) return null
+            Thread.sleep(minOf(AwaitPollMs, remainingMs))
         }
     }
 

@@ -92,7 +92,9 @@ class ConfigIngestProvider : ContentProvider() {
             ?: throw FileNotFoundException("External files directory unavailable")
         val target = File(configDir, relative)
         val dir = target.parentFile ?: throw FileNotFoundException("No config directory")
-        if (!dir.isDirectory && !dir.mkdirs()) {
+        // Two uploads may race to create the directory; mkdirs() returns
+        // false for the loser although the directory now exists.
+        if (!dir.isDirectory && !dir.mkdirs() && !dir.isDirectory) {
             throw FileNotFoundException("Could not create ${dir.absolutePath}")
         }
         sweepStaleUploads(dir)
