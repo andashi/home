@@ -96,6 +96,11 @@ die(){ c '1;31' " x $*" >&2; exit 1; }
 [ -f "$GOS_REPO/provision/00-profiles.sh" ] || die "provision/00-profiles.sh missing in $GOS_REPO"
 [ -f "$GOS_REPO/provision/45-launcher-config.sh" ] || die "provision/45-launcher-config.sh missing in $GOS_REPO"
 command -v jq >/dev/null || die "jq not found (required for config assertions)"
+# Fail before the lock and the boot when the snapshot is missing on THIS
+# instance - every instance keeps its own. ram.bin is the check, not the
+# directory: a failed load leaves an empty snapshots/<name>/ stub behind.
+[ -f "$OVERLAY_DIR/snapshots/$SNAPSHOT/ram.bin" ] \
+  || die "snapshot '$SNAPSHOT' missing on $OVERLAY_DIR - create it (provisioning README, \"Refreshing profiles-ready\") or run with SNAPSHOT=clean"
 
 # Only a run that holds the lock may stop the instance: a run whose acquire
 # failed must not take down the one that holds it (#27).
