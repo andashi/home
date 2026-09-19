@@ -62,8 +62,13 @@ LAUNCHER_CONFIG_KEY="${LAUNCHER_CONFIG_KEY:-andashi-home-debug}"
 STATE_URI="content://$PKG.state"
 INGEST_URI="content://$PKG.config-ingest/launcher.json"
 PROFILES_JSON="$GOS_REPO/config/profiles.json"
-LAUNCHER_CFG_DIR="$GOS_REPO/config/launcher"
 WORK="$(mktemp -d)"
+# The configs the provisioning step pushes are generated here for the launcher
+# entry under test, so the tracked config/launcher/*.json (generated for the
+# shipped release entry) stay untouched and a debug-only capability such as
+# wallpaper support can be exercised.
+LAUNCHER_CFG_DIR="$WORK/launcher"
+export LAUNCHER_CFG_DIR
 
 c(){ [ -t 1 ] && printf '\033[%sm%s\033[0m\n' "$1" "$2" || printf '%s\n' "$2"; }
 log(){ c '1;34' ":: $*"; }; ok(){ c '1;32' " + $*"; }
@@ -292,6 +297,10 @@ done
 
 # --- 5. run the real provisioning step ------------------------------------
 
+log "generating launcher configs for entry '$LAUNCHER_CONFIG_KEY' into $LAUNCHER_CFG_DIR"
+(cd "$GOS_REPO/config" && OUT_DIR="$LAUNCHER_CFG_DIR" GEN_LAUNCHER_KEY="$LAUNCHER_CONFIG_KEY" ./gen-launcher.sh) \
+  || die "gen-launcher.sh failed for entry '$LAUNCHER_CONFIG_KEY'"
+
 log "running provision/45-launcher-config.sh (LAUNCHER_CONFIG_KEY=$LAUNCHER_CONFIG_KEY)"
 (cd "$GOS_REPO" && LAUNCHER_CONFIG_KEY="$LAUNCHER_CONFIG_KEY" ADB_SERIAL="$SERIAL" bash provision/45-launcher-config.sh) \
   || die "45-launcher-config.sh exited non-zero - provisioning step FAILED"
@@ -324,6 +333,17 @@ for key in "${PROFILE_KEYS[@]}"; do
     | join(", ")')"
   [ -z "$mism" ] || { printf 'effective config for user %s:\n%s\n' "$uid" "$eff" >&2; \
     die "profile '$key' (user $uid): /config differs from generated file in: $mism"; }
+
+  # The generated config names a wallpaper; the system must show a non-default
+  # wallpaper id for that user (dumpsys is independent evidence of the read-back).
+  want_wp="$(jq -r '.appearance.wallpaper.image // empty' "$cfgfile")"
+  if [ -n "$want_wp" ]; then
+    wp_id="$(adb -s "$SERIAL" shell dumpsys wallpaper 2>/dev/null | tr -d '\r' \
+      | sed -n "s/^ *User $uid: id=\([0-9]*\).*/\1/p" | head -1)"
+    [ -n "$wp_id" ] && [ "$wp_id" != "0" ] \
+      || die "profile '$key' (user $uid): config names wallpaper '$want_wp' but dumpsys shows id '${wp_id:-}'"
+    ok "profile '$key' (user $uid): wallpaper '$want_wp' set (system id $wp_id)"
+  fi
 
   ok "profile '$key' (user $uid): /config matches generated file, diagnostics sha256 ${want_sha:0:12}..."
 done

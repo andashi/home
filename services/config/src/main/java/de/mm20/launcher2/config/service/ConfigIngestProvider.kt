@@ -10,6 +10,7 @@ import android.os.HandlerThread
 import android.os.ParcelFileDescriptor
 import android.os.Process
 import android.util.Log
+import de.mm20.launcher2.config.ConfigValidator
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.IOException
@@ -35,10 +36,21 @@ import java.io.IOException
  * triggers, the [ConfigWatcher] (sees the rename) and the explicit
  * [ReloadConfigReceiver] broadcast. One loader, no third code path.
  *
+ * Wallpaper images (issue #22) take the same road:
+ *
+ * ```
+ * adb shell content write --user N \
+ *     --uri content://<applicationId>.config-ingest/wallpapers/<name> < image.jpg
+ * ```
+ *
+ * and land in `<config-dir>/wallpapers/<name>`, where `launcher.json`'s
+ * `appearance.wallpaper.image` refers to them. Uploads over
+ * [MaxWallpaperBytes] are discarded on close.
+ *
  * Gate: the manifest requires `WRITE_SECURE_SETTINGS` (held by shell and
  * system only) and, belt and braces, [openFile] rejects every calling uid
  * except shell and root. The provider never reads, lists or deletes; it
- * accepts exactly one path and only write modes.
+ * accepts exactly two path shapes and only write modes.
  */
 class ConfigIngestProvider : ContentProvider() {
 
@@ -56,15 +68,22 @@ class ConfigIngestProvider : ContentProvider() {
         if (uid != Process.SHELL_UID && uid != Process.ROOT_UID) {
             throw SecurityException("Config ingest is restricted to the shell user (caller uid $uid)")
         }
-        if (uri.pathSegments != listOf(ConfigLocation.ConfigFileName)) {
-            throw FileNotFoundException("Unknown ingest path: $uri")
-        }
         if (!mode.startsWith("w")) {
             throw SecurityException("Config ingest is write-only (mode '$mode')")
         }
         val context = context ?: throw IllegalStateException("Provider has no context")
-        val target = ConfigLocation.configFile(context)
-            ?: throw FileNotFoundException("External files directory unavailable")
+        val segments = uri.pathSegments
+        val (target, limit) = when {
+            segments == listOf(ConfigLocation.ConfigFileName) ->
+                ConfigLocation.configFile(context) to Long.MAX_VALUE
+
+            segments.size == 2 && segments[0] == ConfigLocation.WallpapersDirName &&
+                    ConfigValidator.imageNameRegex.matches(segments[1]) ->
+                ConfigLocation.wallpaperFile(context, segments[1]) to MaxWallpaperBytes
+
+            else -> throw FileNotFoundException("Unknown ingest path: $uri")
+        }
+        target ?: throw FileNotFoundException("External files directory unavailable")
         val dir = target.parentFile ?: throw FileNotFoundException("No config directory")
         if (!dir.isDirectory && !dir.mkdirs()) {
             throw FileNotFoundException("Could not create ${dir.absolutePath}")
@@ -77,7 +96,7 @@ class ConfigIngestProvider : ContentProvider() {
                     ParcelFileDescriptor.MODE_CREATE or
                     ParcelFileDescriptor.MODE_TRUNCATE,
             closeHandler,
-        ) { error -> commit(tmp, target, error) }
+        ) { error -> commit(tmp, target, error, limit) }
     }
 
     /**
@@ -86,9 +105,19 @@ class ConfigIngestProvider : ContentProvider() {
      * transfer discards it and leaves the previous config untouched.
      * Returns true when the config was replaced.
      */
-    internal fun commit(tmp: File, target: File, error: IOException?): Boolean {
+    internal fun commit(
+        tmp: File,
+        target: File,
+        error: IOException?,
+        maxBytes: Long = Long.MAX_VALUE,
+    ): Boolean {
         if (error != null) {
             Log.w(TAG, "Config ingest aborted, discarding partial upload", error)
+            tmp.delete()
+            return false
+        }
+        if (tmp.length() > maxBytes) {
+            Log.w(TAG, "Upload of ${tmp.length()} bytes exceeds the limit of $maxBytes, discarded")
             tmp.delete()
             return false
         }
@@ -105,7 +134,7 @@ class ConfigIngestProvider : ContentProvider() {
      * other and the close of one never renames the other's bytes.
      */
     internal fun newTempFile(dir: File): File =
-        File.createTempFile("${ConfigLocation.ConfigFileName}.", ".$IngestTmpSuffix", dir)
+        File.createTempFile("upload.", ".$IngestTmpSuffix", dir)
 
     /**
      * Removes uploads whose writer died without closing (no commit ever
@@ -151,6 +180,7 @@ class ConfigIngestProvider : ContentProvider() {
         const val AuthoritySuffix = ".config-ingest"
         internal const val IngestTmpSuffix = "ingest"
         internal const val StaleUploadMs = 10 * 60 * 1000L
+        internal const val MaxWallpaperBytes = 32L * 1024 * 1024
         private const val TAG = "ConfigIngestProvider"
     }
 }

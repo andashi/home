@@ -21,8 +21,9 @@ object ConfigParser {
     private val knownKeys: Map<String, Set<String>> = mapOf(
         "" to setOf("schemaVersion", "icons", "appearance", "home"),
         "icons" to setOf("themed", "enforceThemed", "pack"),
-        "appearance" to setOf("transparency"),
+        "appearance" to setOf("transparency", "wallpaper"),
         "appearance.transparency" to setOf("name", "background", "surface", "elevatedSurface"),
+        "appearance.wallpaper" to setOf("image", "target"),
         "home" to setOf("searchBar", "dock", "widgets", "clock"),
         "home.searchBar" to setOf("position"),
         "home.dock" to setOf("enabled", "favorites"),

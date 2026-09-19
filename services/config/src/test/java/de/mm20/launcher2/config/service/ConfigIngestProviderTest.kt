@@ -98,6 +98,41 @@ class ConfigIngestProviderTest {
         provider.openFile(uri("config/launcher.json"), "w")
     }
 
+    @Test
+    fun `wallpaper uploads land under wallpapers by name`() {
+        val pfd = provider.openFile(uri("wallpapers/home.jpg"), "w")
+        ParcelFileDescriptor.AutoCloseOutputStream(pfd).use { it.write(byteArrayOf(1, 2, 3)) }
+
+        val file = ConfigLocation.wallpaperFile(context, "home.jpg")!!
+        val deadline = System.currentTimeMillis() + 5_000
+        while (!file.exists() && System.currentTimeMillis() < deadline) Thread.sleep(20)
+        assertEquals(3, file.length())
+    }
+
+    @Test
+    fun `wallpaper upload names are validated`() {
+        for (bad in listOf("wallpapers/../x", "wallpapers/.hidden", "wallpapers/a/b", "wallpapers/")) {
+            try {
+                provider.openFile(uri(bad), "w")
+                org.junit.Assert.fail("'$bad' should be rejected")
+            } catch (e: FileNotFoundException) {
+                // expected
+            }
+        }
+    }
+
+    @Test
+    fun `oversized wallpaper uploads are discarded on commit`() {
+        val dir = ConfigLocation.wallpapersDir(context)!!.apply { mkdirs() }
+        val target = File(dir, "big.jpg")
+        val tmp = provider.newTempFile(dir).apply { writeBytes(ByteArray(10)) }
+
+        assertFalse(provider.commit(tmp, target, null, maxBytes = 5))
+
+        assertFalse(target.exists())
+        assertFalse(tmp.exists())
+    }
+
     @Test(expected = SecurityException::class)
     fun `read mode is rejected`() {
         provider.openFile(uri("launcher.json"), "r")
@@ -129,7 +164,7 @@ class ConfigIngestProviderTest {
     fun `temp file lives next to the config so the rename is atomic`() {
         val tmp = provider.newTempFile(target.parentFile!!)
         assertEquals(target.parentFile, tmp.parentFile)
-        assertTrue(tmp.name.startsWith("launcher.json."))
+        assertTrue(tmp.name.startsWith("upload."))
         assertTrue(tmp.name.endsWith(".ingest"))
     }
 

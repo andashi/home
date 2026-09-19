@@ -51,6 +51,7 @@ class DefaultConfigStore(
     private val searchableRepository: SavableSearchableRepository,
     private val appRepository: AppRepository,
     private val profileResolver: ProfileResolver,
+    private val wallpapers: WallpaperStore,
 ) : ConfigStore {
 
     override suspend fun readState(): ConfigState {
@@ -62,6 +63,7 @@ class DefaultConfigStore(
             minPinnedLevel = PinnedLevel.ManuallySorted,
             maxPinnedLevel = PinnedLevel.ManuallySorted,
         ).first().mapNotNull { it.toFavorite() }
+        val wallpaper = wallpapers.current()
 
         return settingsState.state.copy(
             transparencyName = transparencies?.name,
@@ -70,6 +72,8 @@ class DefaultConfigStore(
             transparencyElevatedSurface = transparencies?.elevatedSurface ?: 1f,
             dockFavorites = dockFavorites,
             widgets = widgets.mapNotNull { it.toBuiltinWidget() },
+            wallpaperImage = wallpaper?.image,
+            wallpaperTarget = wallpaper?.target,
         )
     }
 
@@ -103,6 +107,12 @@ class DefaultConfigStore(
 
                 is ConfigMutation.SetDockFavorites -> try {
                     diagnostics += applyDockFavorites(mutation)
+                } catch (e: Exception) {
+                    diagnostics += mutation.applyFailed(e)
+                }
+
+                is ConfigMutation.SetWallpaper -> try {
+                    diagnostics += wallpapers.apply(mutation.image, mutation.target)
                 } catch (e: Exception) {
                     diagnostics += mutation.applyFailed(e)
                 }
@@ -326,5 +336,6 @@ private val ConfigMutation.isSettingsBacked: Boolean
         is ConfigMutation.SetTransparency,
         is ConfigMutation.SetWidgets,
         is ConfigMutation.SetDockFavorites,
+        is ConfigMutation.SetWallpaper,
         -> false
     }

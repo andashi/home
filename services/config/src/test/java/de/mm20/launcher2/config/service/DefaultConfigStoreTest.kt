@@ -10,6 +10,7 @@ import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import de.mm20.launcher2.applications.AppRepository
 import de.mm20.launcher2.config.BuiltinWidget
+import de.mm20.launcher2.config.WallpaperTarget
 import de.mm20.launcher2.config.ClockStyle
 import de.mm20.launcher2.config.ConfigMutation
 import de.mm20.launcher2.config.ConfigState
@@ -68,6 +69,7 @@ class DefaultConfigStoreTest {
     private lateinit var searchableRepository: FakeSavableSearchableRepository
     private lateinit var appRepository: FakeAppRepository
     private lateinit var profileResolver: FakeProfileResolver
+    private lateinit var wallpaperStore: FakeWallpaperStore
     private lateinit var store: DefaultConfigStore
 
     private val personalHandle: UserHandle = Process.myUserHandle()
@@ -86,6 +88,7 @@ class DefaultConfigStoreTest {
             personal = Profile(Profile.Type.Personal, personalHandle, 0),
             work = Profile(Profile.Type.Work, workHandle, 10),
         )
+        wallpaperStore = FakeWallpaperStore()
         store = DefaultConfigStore(
             settings,
             transparenciesRepository,
@@ -93,7 +96,21 @@ class DefaultConfigStoreTest {
             searchableRepository,
             appRepository,
             profileResolver,
+            wallpaperStore,
         )
+    }
+
+    @Test
+    fun `readState reports the managed wallpaper and SetWallpaper applies through the store`() = runTest {
+        wallpaperStore.state = WallpaperState("home.jpg", WallpaperTarget.Both)
+        val state = store.readState()
+        assertEquals("home.jpg", state.wallpaperImage)
+        assertEquals(WallpaperTarget.Both, state.wallpaperTarget)
+
+        val diagnostics = store.apply(listOf(ConfigMutation.SetWallpaper("lock.jpg", WallpaperTarget.Lock)))
+
+        assertEquals(emptyList<Diagnostic>(), diagnostics)
+        assertEquals(listOf("lock.jpg" to WallpaperTarget.Lock), wallpaperStore.applied)
     }
 
     @After
@@ -534,6 +551,17 @@ class DefaultConfigStoreTest {
         override suspend fun cleanupDatabase(): Int = throw NotImplementedError()
         override suspend fun backup(toDir: File) = throw NotImplementedError()
         override suspend fun restore(fromDir: File) = throw NotImplementedError()
+    }
+
+    private class FakeWallpaperStore : WallpaperStore {
+        var state: WallpaperState? = null
+        val applied = mutableListOf<Pair<String, WallpaperTarget>>()
+        override suspend fun current(): WallpaperState? = state
+        override suspend fun apply(image: String, target: WallpaperTarget): List<Diagnostic> {
+            applied += image to target
+            state = WallpaperState(image, target)
+            return emptyList()
+        }
     }
 
     private class FakeAppRepository : AppRepository {

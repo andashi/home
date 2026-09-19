@@ -21,6 +21,8 @@ class ConfigDifferTest {
         widgets = listOf(BuiltinWidget.Weather, BuiltinWidget.Calendar),
         clockStyle = ClockStyle.Orbit,
         clockFillHeight = true,
+        wallpaperImage = "home.jpg",
+        wallpaperTarget = WallpaperTarget.Both,
     )
 
     private val matchingConfig = LauncherConfig(
@@ -36,7 +38,8 @@ class ConfigDifferTest {
                 background = 0.31f,
                 surface = 0.31f,
                 elevatedSurface = 0.31f,
-            )
+            ),
+            wallpaper = WallpaperConfig(image = "home.jpg", target = WallpaperTarget.Both),
         ),
         home = HomeConfig(
             searchBar = SearchBarConfig(SearchBarPosition.Bottom),
@@ -51,6 +54,34 @@ class ConfigDifferTest {
             clock = ClockConfig(style = ClockStyle.Orbit, fillHeight = true),
         ),
     )
+
+    @Test
+    fun `wallpaper differs by image or target, target defaults to both`() {
+        val other = matchingConfig.copy(
+            appearance = AppearanceConfig(wallpaper = WallpaperConfig(image = "other.jpg"))
+        )
+        assertEquals(
+            listOf(ConfigMutation.SetWallpaper("other.jpg", WallpaperTarget.Both)),
+            ConfigDiffer.diff(other, baseState),
+        )
+
+        val lockOnly = matchingConfig.copy(
+            appearance = AppearanceConfig(wallpaper = WallpaperConfig("home.jpg", WallpaperTarget.Lock))
+        )
+        assertEquals(
+            listOf(ConfigMutation.SetWallpaper("home.jpg", WallpaperTarget.Lock)),
+            ConfigDiffer.diff(lockOnly, baseState),
+        )
+    }
+
+    @Test
+    fun `drifted wallpaper state reapplies the configured image`() {
+        val drifted = baseState.copy(wallpaperImage = null, wallpaperTarget = null)
+        assertEquals(
+            listOf(ConfigMutation.SetWallpaper("home.jpg", WallpaperTarget.Both)),
+            ConfigDiffer.diff(matchingConfig, drifted),
+        )
+    }
 
     @Test
     fun `emits no mutations for equal state`() {

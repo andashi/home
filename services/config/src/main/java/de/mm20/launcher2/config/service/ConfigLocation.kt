@@ -15,6 +15,7 @@ import java.io.File
 object ConfigLocation {
     const val ConfigDirName = "config"
     const val ConfigFileName = "launcher.json"
+    const val WallpapersDirName = "wallpapers"
 
     /**
      * The config directory, or null when external storage is unavailable
@@ -33,5 +34,14 @@ object ConfigLocation {
      */
     fun configFile(context: Context): File? {
         return configDir(context)?.let { File(it, ConfigFileName) }
+    }
+
+    /** Uploaded wallpaper images live next to the config, one file per name. */
+    fun wallpapersDir(context: Context): File? {
+        return configDir(context)?.let { File(it, WallpapersDirName) }
+    }
+
+    fun wallpaperFile(context: Context, image: String): File? {
+        return wallpapersDir(context)?.let { File(it, image) }
     }
 }

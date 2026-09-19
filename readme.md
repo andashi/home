@@ -36,7 +36,8 @@ Each zone gets its own `launcher.json`. That is the whole configuration story.
   "schemaVersion": 1,
   "icons": { "themed": true, "enforceThemed": true, "pack": "app.lawnchair.lawnicons" },
   "appearance": {
-    "transparency": { "name": "fold-glass", "background": 0.31, "surface": 0.31, "elevatedSurface": 0.31 }
+    "transparency": { "name": "fold-glass", "background": 0.31, "surface": 0.31, "elevatedSurface": 0.31 },
+    "wallpaper": { "image": "home.jpg", "target": "both" },
   },
   "home": {
     "searchBar": { "position": "bottom" },
@@ -55,7 +56,8 @@ so the file may run ahead of the app and vice versa.
 Three shell commands, all per Android user, all without root:
 
 ```sh
-# 1. write the file into the launcher of user N
+# 1. write the file into the launcher of user N (images the config refers to go the same way)
+adb shell content write --user N --uri content://org.andashi.home.config-ingest/wallpapers/home.jpg < home.jpg
 adb shell content write --user N --uri content://org.andashi.home.config-ingest/launcher.json < launcher.json
 
 # 2. ask for an explicit reload (the file watcher does it anyway; this makes scripts deterministic)
@@ -97,6 +99,7 @@ Built for GrapheneOS and held to its standards:
 |---|---|
 | `icons` | themed icons, enforce themed, icon pack |
 | `appearance.transparency` | scheme name, background, surface, elevated surface |
+| `appearance.wallpaper` | image (uploaded via `wallpapers/<name>`), target home, lock or both |
 | `home.searchBar` | position |
 | `home.dock` | enabled, ordered favorites (package plus profile) |
 | `home.widgets` | enabled, ordered built-in widgets (weather, music, calendar, apps, notes) |

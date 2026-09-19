@@ -26,7 +26,8 @@ fun ConfigState.toLauncherConfig(): LauncherConfig {
                 background = transparencyBackground,
                 surface = transparencySurface,
                 elevatedSurface = transparencyElevatedSurface,
-            )
+            ),
+            wallpaper = WallpaperConfig(image = wallpaperImage, target = wallpaperTarget),
         ),
         home = HomeConfig(
             searchBar = SearchBarConfig(position = searchBarPosition),

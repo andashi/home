@@ -128,6 +128,7 @@ internal class LauncherConfigSettingsImpl(
             is ConfigMutation.SetTransparency,
             is ConfigMutation.SetDockFavorites,
             is ConfigMutation.SetWidgets,
+            is ConfigMutation.SetWallpaper,
             -> this
         }
     }

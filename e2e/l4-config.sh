@@ -28,6 +28,10 @@
 #      lists every section as applied; then writes the first config again
 #      and asserts the read-back is back to the first values - the
 #      everyday case: an existing state is changed, not created
+#   6b. uploads a generated image through the ingest (wallpapers/<name>),
+#      writes a config with appearance.wallpaper, asserts the read-back names
+#      the image and that the system wallpaper id changed; writes the same
+#      config again and asserts no mutation and an unchanged id (idempotent)
 #   7. writes malformed JSON and asserts a failed report with a
 #      "malformed-json" error diagnostic, and that the previous effective
 #      config remains intact
@@ -69,6 +73,7 @@ RECEIVER="$PKG/de.mm20.launcher2.config.service.ReloadConfigReceiver"
 ACTION="$PKG.action.RELOAD_CONFIG"
 STATE_URI="content://$PKG.state"
 INGEST_URI="content://$PKG.config-ingest/launcher.json"
+WALLPAPER_URI="content://$PKG.config-ingest/wallpapers"
 REMOTE_DIR="/storage/emulated/0/Android/data/$PKG/files/config"
 REMOTE_CONFIG="$REMOTE_DIR/launcher.json"
 
@@ -79,6 +84,7 @@ die(){ c '1;31' " x $*" >&2; exit 1; }
 [ -d "$GOS_REPO/emulator" ] || die "provisioning repo not found at $GOS_REPO (set GOS_REPO)"
 [ -f "$APK" ] || die "APK not found: $APK (build it or pass a path)"
 command -v jq >/dev/null || die "jq not found (required for config assertions)"
+command -v magick >/dev/null || die "ImageMagick (magick) not found (required to generate the wallpaper fixture)"
 
 WORK="$(mktemp -d)"
 
@@ -149,6 +155,19 @@ write_config() { # $1 = local file
   out="$(adb -s "$SERIAL" shell content write --uri "$INGEST_URI" < "$1" 2>&1 | tr -d '\r')" \
     || { printf '%s\n' "$out" >&2; die "content write failed"; }
   [ -z "$out" ] || { printf '%s\n' "$out" >&2; die "content write reported an error"; }
+}
+
+write_wallpaper() { # $1 = local image, $2 = upload name
+  local out
+  out="$(adb -s "$SERIAL" shell content write --uri "$WALLPAPER_URI/$2" < "$1" 2>&1 | tr -d '\r')" \
+    || { printf '%s\n' "$out" >&2; die "wallpaper content write failed"; }
+  [ -z "$out" ] || { printf '%s\n' "$out" >&2; die "wallpaper content write reported an error"; }
+}
+
+# The system's wallpaper id for user 0 (0 = default/none). Changes on every set.
+wallpaper_id() {
+  adb -s "$SERIAL" shell dumpsys wallpaper 2>/dev/null | tr -d '\r' \
+    | sed -n 's/^ *User 0: id=\([0-9]*\).*/\1/p' | head -1
 }
 
 # The interactive dotfile path (owner only - a secondary user's storage is
@@ -272,6 +291,29 @@ cat > "$CHANGED_CONFIG" <<'EOF'
 }
 EOF
 
+# Wallpaper stage: VALID_CONFIG plus appearance.wallpaper, against a generated image.
+WALLPAPER_IMAGE="$WORK/l4-wallpaper.png"
+magick -size 320x640 gradient:navy-teal "$WALLPAPER_IMAGE"
+# VALID_CONFIG is JSONC (comments, trailing commas), which jq cannot read, so
+# the wallpaper variant is spelled out instead of derived.
+WALLPAPER_CONFIG="$WORK/wallpaper.jsonc"
+cat > "$WALLPAPER_CONFIG" <<'EOF'
+{
+  "schemaVersion": 1,
+  "icons": { "themed": true, "enforceThemed": true },
+  "appearance": {
+    "transparency": { "background": 0.5, "surface": 0.7, "elevatedSurface": 0.9 },
+    "wallpaper": { "image": "l4.png", "target": "both" },
+  },
+  "home": {
+    "searchBar": { "position": "bottom" },
+    "dock": { "enabled": true, "favorites": [] },
+    "widgets": { "enabled": true, "widgets": ["weather", "music"] },
+    "clock": { "style": "analog", "fillHeight": true },
+  },
+}
+EOF
+
 MALFORMED_CONFIG="$WORK/malformed.jsonc"
 printf '{ "schemaVersion": 1, "icons": { not json at all\n' > "$MALFORMED_CONFIG"
 
@@ -279,6 +321,7 @@ H_VALID="$(sha256sum "$VALID_CONFIG" | cut -d' ' -f1)"
 H_UNKNOWN="$(sha256sum "$UNKNOWN_KEYS_CONFIG" | cut -d' ' -f1)"
 H_MALFORMED="$(sha256sum "$MALFORMED_CONFIG" | cut -d' ' -f1)"
 H_CHANGED="$(sha256sum "$CHANGED_CONFIG" | cut -d' ' -f1)"
+H_WALLPAPER="$(sha256sum "$WALLPAPER_CONFIG" | cut -d' ' -f1)"
 
 # The /config read-back is fully populated (ConfigStateMapper), so these are
 # the exact effective values after applying VALID_CONFIG.
@@ -406,6 +449,26 @@ wait_report ".success == true and .configSha256 == \"$H_CHANGED\" and ((.applied
 assert_jq "$LAST_REPORT" "$ALL_SECTIONS_FILTER" "the applying reload lists every changed section"
 ok "applied sections reported: $(jq -c '.appliedMutations' <<<"$LAST_REPORT")"
 settle_then_broadcast "$VALID_CONFIG" "$H_VALID" "change-back-2"
+
+# --- 6b. wallpaper: upload, apply, verify, idempotent -------------------
+
+id_before="$(wallpaper_id)"
+write_wallpaper "$WALLPAPER_IMAGE" "l4.png"
+settle_then_broadcast "$WALLPAPER_CONFIG" "$H_WALLPAPER" "wallpaper"
+assert_jq "$LAST_REPORT" '.success == true' "wallpaper config applied"
+effective="$(query_json config)" || die "could not query /config"
+assert_jq "$effective" '.appearance.wallpaper.image == "l4.png" and .appearance.wallpaper.target == "both"' \
+  "read-back names the applied wallpaper"
+id_after="$(wallpaper_id)"
+[ -n "$id_after" ] && [ "$id_after" != "0" ] && [ "$id_after" != "${id_before:-0}" ] \
+  || die "system wallpaper id did not change (before='${id_before:-}', after='${id_after:-}')"
+ok "wallpaper applied from config (system id ${id_before:-0} -> $id_after)"
+
+settle_then_broadcast "$WALLPAPER_CONFIG" "$H_WALLPAPER" "wallpaper-rewrite"
+assert_jq "$LAST_REPORT" '.success == true and ((.appliedMutations // []) == [])' \
+  "re-write of the wallpaper config is a no-op"
+[ "$(wallpaper_id)" = "$id_after" ] || die "wallpaper was set again although nothing changed"
+ok "wallpaper re-write: no mutation, id unchanged ($id_after)"
 
 # --- 7. malformed JSON: failed report, state intact --------------------
 
