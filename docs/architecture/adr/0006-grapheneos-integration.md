@@ -5,7 +5,7 @@ Status: accepted (2026-09-17)
 ## Context
 
 The launcher runs exclusively on GrapheneOS (Pixel 10 Pro Fold) inside a
-multi-profile "network zones" model, provisioned by `~/Development/GrapheneOS`.
+multi-profile "network zones" model, provisioned by `~/Development/andashi/provisioning`.
 That removes generic-Android constraints and adds a few specific ones.
 
 ## Decision
