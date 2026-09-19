@@ -105,6 +105,13 @@ fun DigitalClock1(
             ),
         )
 
+        // Known limit (andashi/home#34): the two texts size themselves
+        // independently, each against its own bounds. A Column measures children
+        // with the height that is left, so the time above can take the whole
+        // budget and leave this too little - the clipping then moves to the
+        // seconds instead of the minutes. Fixing it means deriving both sizes
+        // from one shared budget. Unreached today: showSeconds defaults to false
+        // and the launcher config does not expose it.
         if (verticalLayout && showSeconds) {
             Text(
                 modifier = Modifier.offset(0.dp, (-20).dp).align(Alignment.CenterHorizontally),
