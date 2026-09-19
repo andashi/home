@@ -63,7 +63,8 @@ export OVERLAY_DIR="$GOS_REPO/emulator/instances/test"
 export READ_ONLY=1
 SNAPSHOT="${SNAPSHOT:-clean}"
 APK="${1:-$(dirname "$0")/../app/app/build/outputs/apk/default/debug/app-default-debug.apk}"
-PKG="org.andashi.home.debug"
+# Overridable: PKG=org.andashi.home APK=... runs the scenario against the release build.
+PKG="${PKG:-org.andashi.home.debug}"
 RECEIVER="$PKG/de.mm20.launcher2.config.service.ReloadConfigReceiver"
 ACTION="$PKG.action.RELOAD_CONFIG"
 STATE_URI="content://$PKG.state"

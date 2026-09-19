@@ -55,7 +55,10 @@ export OVERLAY_DIR="$GOS_REPO/emulator/instances/test"
 export READ_ONLY=1
 SNAPSHOT="${SNAPSHOT:-clean}"
 APK="${1:-$(dirname "$0")/../app/app/build/outputs/apk/default/debug/app-default-debug.apk}"
-PKG="org.andashi.home.debug"
+# Overridable: PKG=org.andashi.home APK=... runs the scenario against the release build.
+PKG="${PKG:-org.andashi.home.debug}"
+# The theming.json launcher entry whose pkg matches PKG.
+LAUNCHER_CONFIG_KEY="${LAUNCHER_CONFIG_KEY:-andashi-home-debug}"
 STATE_URI="content://$PKG.state"
 INGEST_URI="content://$PKG.config-ingest/launcher.json"
 PROFILES_JSON="$GOS_REPO/config/profiles.json"
@@ -289,8 +292,8 @@ done
 
 # --- 5. run the real provisioning step ------------------------------------
 
-log "running provision/45-launcher-config.sh (LAUNCHER_CONFIG_KEY=andashi-home-debug)"
-(cd "$GOS_REPO" && LAUNCHER_CONFIG_KEY=andashi-home-debug ADB_SERIAL="$SERIAL" bash provision/45-launcher-config.sh) \
+log "running provision/45-launcher-config.sh (LAUNCHER_CONFIG_KEY=$LAUNCHER_CONFIG_KEY)"
+(cd "$GOS_REPO" && LAUNCHER_CONFIG_KEY="$LAUNCHER_CONFIG_KEY" ADB_SERIAL="$SERIAL" bash provision/45-launcher-config.sh) \
   || die "45-launcher-config.sh exited non-zero - provisioning step FAILED"
 ok "45-launcher-config.sh converged all profiles (exit 0)"
 
