@@ -164,10 +164,13 @@ write_wallpaper() { # $1 = local image, $2 = upload name
   [ -z "$out" ] || { printf '%s\n' "$out" >&2; die "wallpaper content write reported an error"; }
 }
 
-# The system's wallpaper id for user 0 (0 = default/none). Changes on every set.
+# The system wallpaper id of user 0 from the "System wallpaper state:" section
+# of `dumpsys wallpaper` (0 = default/none). Changes on every set; the fixture
+# targets both, so the system id is the one that must move.
 wallpaper_id() {
   adb -s "$SERIAL" shell dumpsys wallpaper 2>/dev/null | tr -d '\r' \
-    | sed -n 's/^ *User 0: id=\([0-9]*\).*/\1/p' | head -1
+    | awk '/wallpaper state:/ { in_sec = (index($0, "System wallpaper state:") > 0); next }
+           in_sec && index($0, "User 0:") { if (match($0, /id=[0-9]+/)) { print substr($0, RSTART+3, RLENGTH-3); exit } }'
 }
 
 # The interactive dotfile path (owner only - a secondary user's storage is

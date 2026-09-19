@@ -106,12 +106,27 @@ class DefaultWallpaperStore(
                     )
                 )
             }
+            // The file may be replaced atomically by a same-name upload while
+            // Android reads it. Record the state only when the bytes before
+            // and after the set agree; otherwise the next reload reapplies.
+            val before = file.readBytes().sha256Hex()
             val ids = applier.apply(file, target)
+            val after = file.readBytes().sha256Hex()
+            if (before != after) {
+                return@withContext listOf(
+                    Diagnostic(
+                        Severity.Error,
+                        "wallpaper-replaced-during-apply",
+                        "appearance.wallpaper.image",
+                        "'$image' was replaced while it was being applied; reload again",
+                    )
+                )
+            }
             writeApplied(
                 AppliedWallpaper(
                     image = image,
                     target = target,
-                    sha256 = file.readBytes().sha256Hex(),
+                    sha256 = after,
                     systemId = ids.system,
                     lockId = ids.lock,
                 )

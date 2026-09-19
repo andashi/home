@@ -10,7 +10,9 @@ package de.mm20.launcher2.config
  *
  * Unlike a hand-written config document, the mapped config is fully populated
  * (every section present, no null fields except genuinely unset values like
- * the icon pack or transparency scheme name).
+ * the icon pack or transparency scheme name). The one optional section is
+ * `appearance.wallpaper`: present only while a config-managed wallpaper is in
+ * effect, absent otherwise.
  */
 fun ConfigState.toLauncherConfig(): LauncherConfig {
     return LauncherConfig(
@@ -27,7 +29,9 @@ fun ConfigState.toLauncherConfig(): LauncherConfig {
                 surface = transparencySurface,
                 elevatedSurface = transparencyElevatedSurface,
             ),
-            wallpaper = WallpaperConfig(image = wallpaperImage, target = wallpaperTarget),
+            // Only while a managed wallpaper is in effect; a generated config
+            // without the key must compare equal to the read-back.
+            wallpaper = wallpaperImage?.let { WallpaperConfig(image = it, target = wallpaperTarget) },
         ),
         home = HomeConfig(
             searchBar = SearchBarConfig(position = searchBarPosition),

@@ -170,6 +170,16 @@ ensure_user_running() { # $1 = uid
   esac
 }
 
+# The wallpaper id of one user in one section of `dumpsys wallpaper`
+# ("System wallpaper state:" or "Lock wallpaper state:"). Empty when the
+# section has no record for that user; 0 means default/none.
+wallpaper_id() { # $1 = uid, $2 = System|Lock
+  adb -s "$SERIAL" shell dumpsys wallpaper 2>/dev/null | tr -d '\r' \
+    | awk -v sec="$2 wallpaper state:" -v u="User $1:" '
+        /wallpaper state:/ { in_sec = (index($0, sec) > 0); next }
+        in_sec && index($0, u) { if (match($0, /id=[0-9]+/)) { print substr($0, RSTART+3, RLENGTH-3); exit } }'
+}
+
 pkg_installed_for_user() { # $1 = pkg, $2 = uid
   local out
   out="$(adb -s "$SERIAL" shell pm list packages --user "$2" 2>/dev/null | tr -d '\r')" || return 1
@@ -338,11 +348,17 @@ for key in "${PROFILE_KEYS[@]}"; do
   # wallpaper id for that user (dumpsys is independent evidence of the read-back).
   want_wp="$(jq -r '.appearance.wallpaper.image // empty' "$cfgfile")"
   if [ -n "$want_wp" ]; then
-    wp_id="$(adb -s "$SERIAL" shell dumpsys wallpaper 2>/dev/null | tr -d '\r' \
-      | sed -n "s/^ *User $uid: id=\([0-9]*\).*/\1/p" | head -1)"
-    [ -n "$wp_id" ] && [ "$wp_id" != "0" ] \
-      || die "profile '$key' (user $uid): config names wallpaper '$want_wp' but dumpsys shows id '${wp_id:-}'"
-    ok "profile '$key' (user $uid): wallpaper '$want_wp' set (system id $wp_id)"
+    want_target="$(jq -r '.appearance.wallpaper.target // "both"' "$cfgfile")"
+    sys_id="$(wallpaper_id "$uid" System)"; lock_id="$(wallpaper_id "$uid" Lock)"
+    case "$want_target" in
+      home) [ -n "$sys_id" ] && [ "$sys_id" != "0" ] || die "profile '$key' (user $uid): home wallpaper '$want_wp' configured but system id is '${sys_id:-}'" ;;
+      lock) [ -n "$lock_id" ] && [ "$lock_id" != "0" ] || die "profile '$key' (user $uid): lock wallpaper '$want_wp' configured but lock id is '${lock_id:-}'" ;;
+      both) [ -n "$sys_id" ] && [ "$sys_id" != "0" ] || die "profile '$key' (user $uid): wallpaper '$want_wp' configured but system id is '${sys_id:-}'"
+            # With both flags Android may keep no separate lock record; only a
+            # present-but-zero lock id is a failure.
+            [ -z "$lock_id" ] || [ "$lock_id" != "0" ] || die "profile '$key' (user $uid): lock wallpaper id is 0 although target is both" ;;
+    esac
+    ok "profile '$key' (user $uid): wallpaper '$want_wp' set for $want_target (system id ${sys_id:-none}, lock id ${lock_id:-none})"
   fi
 
   ok "profile '$key' (user $uid): /config matches generated file, diagnostics sha256 ${want_sha:0:12}..."

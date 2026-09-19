@@ -83,6 +83,23 @@ class WallpaperStoreTest {
     }
 
     @Test
+    fun `a file replaced during apply is not recorded and reported`() = runTest {
+        val racing = object : WallpaperApplier {
+            override fun currentIds() = applier.currentIds()
+            override fun apply(file: File, target: WallpaperTarget): WallpaperIds {
+                file.writeBytes(byteArrayOf(7, 7, 7)) // a same-name upload lands mid-apply
+                return applier.apply(file, target)
+            }
+        }
+        val racingStore = DefaultWallpaperStore(context, racing)
+
+        val diagnostics = racingStore.apply("home.jpg", WallpaperTarget.Both)
+
+        assertEquals(listOf("wallpaper-replaced-during-apply"), diagnostics.map { it.code })
+        assertNull(racingStore.current())
+    }
+
+    @Test
     fun `a missing upload is a diagnostic, nothing is applied`() = runTest {
         val diagnostics = store.apply("nope.jpg", WallpaperTarget.Both)
 
