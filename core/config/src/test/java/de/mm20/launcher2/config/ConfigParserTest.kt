@@ -23,7 +23,8 @@ class ConfigParserTest {
               "background": 0.31,
               "surface": 0.31,
               "elevatedSurface": 0.31
-            }
+            },
+            "wallpaper": { "image": "home.jpg", "target": "lock" }
           },
           "home": {
             "searchBar": { "position": "bottom" },
@@ -57,6 +58,7 @@ class ConfigParserTest {
         assertEquals("app.lawnchair.lawnicons", config.icons?.pack)
         assertEquals("liquid-glass", config.appearance?.transparency?.name)
         assertEquals(0.31f, config.appearance?.transparency?.background)
+        assertEquals(WallpaperConfig("home.jpg", WallpaperTarget.Lock), config.appearance?.wallpaper)
         assertEquals(SearchBarPosition.Bottom, config.home?.searchBar?.position)
         assertEquals(true, config.home?.dock?.enabled)
         assertEquals(
@@ -247,6 +249,18 @@ class ConfigParserTest {
         )
         assertEquals(true, result.config?.icons?.themed)
         assertEquals(true, result.config?.home?.dock?.enabled)
+    }
+
+    @Test
+    fun `invalid wallpaper upload names are reported`() {
+        for (bad in listOf("../etc", ".hidden", "a/b", "", "x".repeat(65))) {
+            val result = ConfigParser.parse(
+                """{ "schemaVersion": 1, "appearance": { "wallpaper": { "image": "$bad" } } }"""
+            )
+            assertTrue("'$bad' should be rejected", result.diagnostics.any { it.code == "invalid-wallpaper-image" })
+        }
+        val ok = ConfigParser.parse("""{ "schemaVersion": 1, "appearance": { "wallpaper": { "image": "home-1.jpg" } } }""")
+        assertTrue(ok.diagnostics.none { it.code == "invalid-wallpaper-image" })
     }
 
     @Test

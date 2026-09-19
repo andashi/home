@@ -47,6 +47,16 @@ class ConfigStateMapperTest {
     }
 
     @Test
+    fun `wallpaper section is present only while a managed wallpaper is in effect`() {
+        assertEquals(null, ConfigState().toLauncherConfig().appearance?.wallpaper)
+        assertEquals(
+            WallpaperConfig("home.jpg", WallpaperTarget.Lock),
+            ConfigState(wallpaperImage = "home.jpg", wallpaperTarget = WallpaperTarget.Lock)
+                .toLauncherConfig().appearance?.wallpaper,
+        )
+    }
+
+    @Test
     fun `default state maps to defaults of the schema`() {
         val config = ConfigState().toLauncherConfig()
 

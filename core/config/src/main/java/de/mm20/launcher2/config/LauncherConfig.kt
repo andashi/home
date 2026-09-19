@@ -21,7 +21,31 @@ data class IconsConfig(
 @Serializable
 data class AppearanceConfig(
     val transparency: TransparencyConfig? = null,
+    val wallpaper: WallpaperConfig? = null,
 )
+
+/**
+ * The wallpaper of this profile. [image] names a file previously uploaded
+ * through the ingest provider (`content://<applicationId>.config-ingest/wallpapers/<image>`);
+ * [target] defaults to [WallpaperTarget.Both].
+ */
+@Serializable
+data class WallpaperConfig(
+    val image: String? = null,
+    val target: WallpaperTarget? = null,
+)
+
+@Serializable
+enum class WallpaperTarget {
+    @SerialName("home")
+    Home,
+
+    @SerialName("lock")
+    Lock,
+
+    @SerialName("both")
+    Both,
+}
 
 @Serializable
 data class TransparencyConfig(

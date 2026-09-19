@@ -1,5 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <!-- Config-managed wallpaper (issue #22); normal-level permission. -->
+    <uses-permission android:name="android.permission.SET_WALLPAPER" />
+
     <application>
         <!-- Explicit adb trigger. Exported: the unrooted shell cannot reach a
              non-exported receiver. Sender must hold WRITE_SECURE_SETTINGS

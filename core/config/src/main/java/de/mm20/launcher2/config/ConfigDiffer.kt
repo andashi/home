@@ -20,6 +20,15 @@ data class ConfigState(
      */
     val clockStyle: ClockStyle? = ClockStyle.Digital1,
     val clockFillHeight: Boolean = false,
+    /**
+     * The wallpaper image (by upload name) and target currently in effect:
+     * applied by a config reload, still the system's current wallpaper and
+     * the file unchanged since. Null when no config-managed wallpaper is in
+     * effect or the state drifted (user changed it, file replaced), so any
+     * configured wallpaper counts as a difference.
+     */
+    val wallpaperImage: String? = null,
+    val wallpaperTarget: WallpaperTarget? = null,
 )
 
 sealed class ConfigMutation {
@@ -40,6 +49,13 @@ sealed class ConfigMutation {
         val elevatedSurface: Float? = null,
     ) : ConfigMutation() {
         override val section = "appearance.transparency"
+    }
+
+    data class SetWallpaper(
+        val image: String,
+        val target: WallpaperTarget,
+    ) : ConfigMutation() {
+        override val section = "appearance.wallpaper"
     }
 
     data class SetSearchBarPosition(
@@ -109,6 +125,13 @@ object ConfigDiffer {
                     surface = surface,
                     elevatedSurface = elevated,
                 )
+            }
+        }
+
+        desired.appearance?.wallpaper?.image?.let { image ->
+            val target = desired.appearance.wallpaper.target ?: WallpaperTarget.Both
+            if (image != current.wallpaperImage || target != current.wallpaperTarget) {
+                mutations += ConfigMutation.SetWallpaper(image = image, target = target)
             }
         }
 

@@ -9,6 +9,9 @@ object ConfigValidator {
     private val packageNameRegex =
         Regex("^[A-Za-z][A-Za-z0-9_]*(\\.[A-Za-z][A-Za-z0-9_]*)+$")
 
+    /** Upload names: one path segment, no leading dot, no separators. */
+    val imageNameRegex = Regex("^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$")
+
     fun validate(config: LauncherConfig): List<Diagnostic> {
         val diagnostics = mutableListOf<Diagnostic>()
 
@@ -23,6 +26,17 @@ object ConfigValidator {
             validateTransparency(transparency.background, "appearance.transparency.background", diagnostics)
             validateTransparency(transparency.surface, "appearance.transparency.surface", diagnostics)
             validateTransparency(transparency.elevatedSurface, "appearance.transparency.elevatedSurface", diagnostics)
+        }
+
+        config.appearance?.wallpaper?.image?.let { image ->
+            if (!imageNameRegex.matches(image)) {
+                diagnostics += Diagnostic(
+                    Severity.Error,
+                    "invalid-wallpaper-image",
+                    "appearance.wallpaper.image",
+                    "'$image' is not a valid upload name (letters, digits, '.', '_', '-'; no leading dot; max 64)",
+                )
+            }
         }
 
         config.home?.dock?.favorites?.let { favorites ->

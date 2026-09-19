@@ -62,8 +62,13 @@ LAUNCHER_CONFIG_KEY="${LAUNCHER_CONFIG_KEY:-andashi-home-debug}"
 STATE_URI="content://$PKG.state"
 INGEST_URI="content://$PKG.config-ingest/launcher.json"
 PROFILES_JSON="$GOS_REPO/config/profiles.json"
-LAUNCHER_CFG_DIR="$GOS_REPO/config/launcher"
 WORK="$(mktemp -d)"
+# The configs the provisioning step pushes are generated here for the launcher
+# entry under test, so the tracked config/launcher/*.json (generated for the
+# shipped release entry) stay untouched and a debug-only capability such as
+# wallpaper support can be exercised.
+LAUNCHER_CFG_DIR="$WORK/launcher"
+export LAUNCHER_CFG_DIR
 
 c(){ [ -t 1 ] && printf '\033[%sm%s\033[0m\n' "$1" "$2" || printf '%s\n' "$2"; }
 log(){ c '1;34' ":: $*"; }; ok(){ c '1;32' " + $*"; }
@@ -165,6 +170,16 @@ ensure_user_running() { # $1 = uid
   esac
 }
 
+# The wallpaper id of one user in one section of `dumpsys wallpaper`
+# ("System wallpaper state:" or "Lock wallpaper state:"). Empty when the
+# section has no record for that user; 0 means default/none.
+wallpaper_id() { # $1 = uid, $2 = System|Lock
+  adb -s "$SERIAL" shell dumpsys wallpaper 2>/dev/null | tr -d '\r' \
+    | awk -v sec="$2 wallpaper state:" -v u="User $1:" '
+        /wallpaper state:/ { in_sec = (index($0, sec) > 0); next }
+        in_sec && index($0, u) { if (match($0, /id=[0-9]+/)) { print substr($0, RSTART+3, RLENGTH-3); exit } }'
+}
+
 pkg_installed_for_user() { # $1 = pkg, $2 = uid
   local out
   out="$(adb -s "$SERIAL" shell pm list packages --user "$2" 2>/dev/null | tr -d '\r')" || return 1
@@ -174,14 +189,23 @@ pkg_installed_for_user() { # $1 = pkg, $2 = uid
 # Prints the `json` column of the single row returned by the state provider
 # for the given user. The payload is pretty-printed (multi-line) JSON, so
 # everything after the "Row: 0 json=" prefix is the value.
+# Right after `am start-user -w` a user's package resolution and external
+# storage lag behind its RUNNING_UNLOCKED state for a moment (measured on
+# 2026-09-19 from the provisioning chain and here). Exactly these two
+# transient messages are retried, bounded; anything else fails at once.
 query_json() { # $1 = provider path (config|diagnostics), $2 = uid
-  local out
-  out="$(adb -s "$SERIAL" shell content query --uri "$STATE_URI/$1" --user "$2" 2>&1 | tr -d '\r')" \
-    || { printf 'content query failed (user %s): %s\n' "$2" "$out" >&2; return 1; }
-  case "$out" in
-    "Row: 0 json="*) printf '%s' "${out#Row: 0 json=}" ;;
-    *) printf 'unexpected provider output (user %s): %s\n' "$2" "$out" >&2; return 1 ;;
-  esac
+  local out attempt=0
+  while :; do
+    out="$(adb -s "$SERIAL" shell content query --uri "$STATE_URI/$1" --user "$2" 2>&1 | tr -d '\r')" || true
+    case "$out" in
+      "Row: 0 json="*) printf '%s' "${out#Row: 0 json=}"; return 0 ;;
+      *"Could not find provider"*|*"External files directory unavailable"*)
+        attempt=$((attempt + 1))
+        [ "$attempt" -lt 15 ] || { printf 'provider for user %s did not come up within 30s: %s\n' "$2" "$out" >&2; return 1; }
+        sleep 2 ;;
+      *) printf 'unexpected provider output (user %s): %s\n' "$2" "$out" >&2; return 1 ;;
+    esac
+  done
 }
 
 assert_jq() { # $1 = json, $2 = jq filter, $3 = description
@@ -292,6 +316,10 @@ done
 
 # --- 5. run the real provisioning step ------------------------------------
 
+log "generating launcher configs for entry '$LAUNCHER_CONFIG_KEY' into $LAUNCHER_CFG_DIR"
+(cd "$GOS_REPO/config" && OUT_DIR="$LAUNCHER_CFG_DIR" GEN_LAUNCHER_KEY="$LAUNCHER_CONFIG_KEY" ./gen-launcher.sh) \
+  || die "gen-launcher.sh failed for entry '$LAUNCHER_CONFIG_KEY'"
+
 log "running provision/45-launcher-config.sh (LAUNCHER_CONFIG_KEY=$LAUNCHER_CONFIG_KEY)"
 (cd "$GOS_REPO" && LAUNCHER_CONFIG_KEY="$LAUNCHER_CONFIG_KEY" ADB_SERIAL="$SERIAL" bash provision/45-launcher-config.sh) \
   || die "45-launcher-config.sh exited non-zero - provisioning step FAILED"
@@ -324,6 +352,23 @@ for key in "${PROFILE_KEYS[@]}"; do
     | join(", ")')"
   [ -z "$mism" ] || { printf 'effective config for user %s:\n%s\n' "$uid" "$eff" >&2; \
     die "profile '$key' (user $uid): /config differs from generated file in: $mism"; }
+
+  # The generated config names a wallpaper; the system must show a non-default
+  # wallpaper id for that user (dumpsys is independent evidence of the read-back).
+  want_wp="$(jq -r '.appearance.wallpaper.image // empty' "$cfgfile")"
+  if [ -n "$want_wp" ]; then
+    want_target="$(jq -r '.appearance.wallpaper.target // "both"' "$cfgfile")"
+    sys_id="$(wallpaper_id "$uid" System)"; lock_id="$(wallpaper_id "$uid" Lock)"
+    case "$want_target" in
+      home) [ -n "$sys_id" ] && [ "$sys_id" != "0" ] || die "profile '$key' (user $uid): home wallpaper '$want_wp' configured but system id is '${sys_id:-}'" ;;
+      lock) [ -n "$lock_id" ] && [ "$lock_id" != "0" ] || die "profile '$key' (user $uid): lock wallpaper '$want_wp' configured but lock id is '${lock_id:-}'" ;;
+      both) [ -n "$sys_id" ] && [ "$sys_id" != "0" ] || die "profile '$key' (user $uid): wallpaper '$want_wp' configured but system id is '${sys_id:-}'"
+            # With both flags Android may keep no separate lock record; only a
+            # present-but-zero lock id is a failure.
+            [ -z "$lock_id" ] || [ "$lock_id" != "0" ] || die "profile '$key' (user $uid): lock wallpaper id is 0 although target is both" ;;
+    esac
+    ok "profile '$key' (user $uid): wallpaper '$want_wp' set for $want_target (system id ${sys_id:-none}, lock id ${lock_id:-none})"
+  fi
 
   ok "profile '$key' (user $uid): /config matches generated file, diagnostics sha256 ${want_sha:0:12}..."
 done
