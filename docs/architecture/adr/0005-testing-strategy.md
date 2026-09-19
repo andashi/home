@@ -57,9 +57,16 @@ runs never interfere with the interactively used one:
 - snapshots make runs reproducible and disposable. The **only honest base state is
   the `clean` snapshot** (near-first-boot, taken before any zone/profile work);
   later snapshots are already provisioned and must not be used as a base.
+  Exception, added 2026-09-19 (#27): `profiles-ready` is `clean` plus
+  `00-profiles.sh` and nothing else. It is the everyday base of
+  `l4-provisioning-config.sh`, which still re-runs `00-profiles.sh`, so drift
+  shows up. `clean` stays the release gate.
 - `~/Development/GrapheneOS/emulator/device-lock.sh` is an advisory lock shared by
   all sessions working on these machines — test tooling must acquire it before
   touching any instance and must never start/stop an instance it does not own.
+  Since #27 the lock is per instance (per serial), and every session can run
+  its own instance (`SERIAL` + `OVERLAY_DIR`, e.g. `emulator-5558` +
+  `instances/test-2`) instead of queueing on `emulator-5556`.
 - Known emulator limits (documented so results are not over-claimed):
   - nothing Google-server-side can be validated there (sandboxed Play, Play
     Integrity, push, account brokers),
