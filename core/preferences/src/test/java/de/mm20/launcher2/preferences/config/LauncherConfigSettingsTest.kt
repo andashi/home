@@ -269,7 +269,7 @@ class LauncherConfigSettingsTest {
             listOf(
                 ConfigMutation.SetTransparency(name = "scheme", background = 0.5f),
                 ConfigMutation.SetDockFavorites(listOf(Favorite("com.example.app"))),
-                ConfigMutation.SetWidgets(listOf(de.mm20.launcher2.config.BuiltinWidget.Weather)),
+                ConfigMutation.SetWidgets(listOf(de.mm20.launcher2.config.BuiltinWidget.Apps)),
             )
         )
 

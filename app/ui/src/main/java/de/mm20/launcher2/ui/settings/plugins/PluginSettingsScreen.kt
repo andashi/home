@@ -53,7 +53,6 @@ import de.mm20.launcher2.ui.component.preferences.PreferenceWithSwitch
 import de.mm20.launcher2.ui.component.preferences.SwitchPreference
 import de.mm20.launcher2.ui.locals.LocalBackStack
 import de.mm20.launcher2.ui.settings.calendarsearch.CalendarProviderSettingsRoute
-import de.mm20.launcher2.ui.settings.weather.WeatherIntegrationSettingsRoute
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -89,11 +88,6 @@ fun PluginSettingsScreen(pluginId: String) {
         minActiveState = Lifecycle.State.RESUMED
     )
 
-    val weatherPlugins by viewModel.weatherPlugins.collectAsStateWithLifecycle(
-        emptyList(),
-        minActiveState = Lifecycle.State.RESUMED
-    )
-
     val requestPermissionStarter =
         rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
             if (it.resultCode == Activity.RESULT_OK) {
@@ -109,9 +103,6 @@ fun PluginSettingsScreen(pluginId: String) {
         null
     )
 
-    val weatherProviderId by viewModel.weatherProvider.collectAsStateWithLifecycle(
-        null
-    )
 
     Scaffold(
         topBar = {
@@ -407,65 +398,6 @@ fun PluginSettingsScreen(pluginId: String) {
                                         )
                                     }
                                 }
-                            }
-                        }
-                        if (weatherPlugins.isNotEmpty()) {
-                            PreferenceCategory(
-                                stringResource(R.string.plugin_type_weather),
-                                iconPadding = false,
-                            ) {
-                                for (plugin in weatherPlugins) {
-                                    val state = plugin.state
-                                    GuardedPreference(
-                                        locked = state is PluginState.Error || state is PluginState.SetupRequired,
-                                        icon = if (state is PluginState.Error) R.drawable.error_24px else R.drawable.info_24px,
-                                        description = when (state) {
-                                            is PluginState.Error -> {
-                                                stringResource(R.string.plugin_state_error)
-                                            }
-
-                                            is PluginState.SetupRequired -> {
-                                                state.message
-                                                    ?: stringResource(R.string.plugin_state_setup_required)
-                                            }
-
-                                            else -> ""
-                                        },
-                                        onUnlock = if (state is PluginState.SetupRequired) {
-                                            {
-
-                                                try {
-                                                    state.setupActivity.sendWithBackgroundPermission(
-                                                        context
-                                                    )
-                                                } catch (e: PendingIntent.CanceledException) {
-                                                    CrashReporter.logException(e)
-                                                }
-                                            }
-                                        } else null
-                                    ) {
-                                        Preference(
-                                            title = plugin.plugin.label,
-                                            enabled = state is PluginState.Ready && weatherProviderId != plugin.plugin.authority,
-                                            iconPadding = false,
-                                            summary = if (weatherProviderId != plugin.plugin.authority) {
-                                                stringResource(R.string.plugin_weather_provider_enable)
-                                            } else {
-                                                stringResource(R.string.plugin_weather_provider_enabled)
-                                            },
-                                            onClick = {
-                                                viewModel.setWeatherProvider(plugin.plugin.authority)
-                                            }
-                                        )
-                                    }
-                                }
-                                Preference(
-                                    title = stringResource(R.string.widget_config_weather_integration_settings),
-                                    icon = R.drawable.open_in_new_24px,
-                                    onClick = {
-                                        backStack.add(WeatherIntegrationSettingsRoute)
-                                    }
-                                )
                             }
                         }
                     }

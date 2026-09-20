@@ -6,7 +6,6 @@
     <string name="missing_permission_contact_search">Для пошуку праз твае кантакты патрэбны доступ да кантактнай кнігі</string>
     <string name="create_search_action_type">Якое дзеянне ты жадаеш стварыць?</string>
     <string name="create_search_action_website_invalid_url">Дадзены вэб-сайт не можа быць аўтаматычна імпартаваны як сродак пошуку. Ты можаш паспрабаваць іншы сайт або ўвесці ўсе патрэбныя дадзеныя ў наступным кроку</string>
-    <string name="preference_breezyweather_integration_instructions">Каб выкарыстоўваць Breezy Weather як пастаўшчыка дадзеных аб надвор\'і:\n\n1. Перайдзі ў Breezy Weather &gt; Налады &gt; Віджэты і жывыя шпалеры &gt; Адпраўляць даныя пра надвор’е ў Gadgetbridge &gt; Уключы %1$s\n\n2. Выберы Breezy Weather як пастаўшчыка надвор\'я ў %1$s</string>
     <string name="tag_exists_message">Тэг з такой назвай ужо існуе. Калі ты працягнеш, гэтыя два цэтліка будуць аб\'яднаныя</string>
     <string name="tag_no_items_message">Няма ярлыкоў з гэтым цэтлікам. Калі ты працягнеш, цэтлік будзе выдалены</string>
     <string name="gesture_failed_message">Ты зрабіў жэст «%1$s». Гэты жэст наладжаны на дзеянне «%2$s». Але гэта дзеянне не было выканана па наступнай прычыне:</string>

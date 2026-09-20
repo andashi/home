@@ -22,7 +22,6 @@ import de.mm20.launcher2.preferences.ui.LocaleSettings
 import de.mm20.launcher2.preferences.ui.SearchUiSettings
 import de.mm20.launcher2.preferences.ui.UiSettings
 import de.mm20.launcher2.preferences.ui.UiState
-import de.mm20.launcher2.preferences.weather.WeatherSettings
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
@@ -43,7 +42,6 @@ val preferencesModule = module {
     factory { WebsiteSearchSettings(get()) }
     factory { UiState(get()) }
     factory { SearchUiSettings(get()) }
-    factory { WeatherSettings(get()) }
     factory { GestureSettings(get()) }
     factory { CalculatorSearchSettings(get()) }
     factory { ClockWidgetSettings(get()) }

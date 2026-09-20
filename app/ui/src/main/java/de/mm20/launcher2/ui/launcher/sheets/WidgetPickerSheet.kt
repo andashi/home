@@ -71,7 +71,6 @@ import de.mm20.launcher2.widgets.AppsWidget
 import de.mm20.launcher2.widgets.CalendarWidget
 import de.mm20.launcher2.widgets.MusicWidget
 import de.mm20.launcher2.widgets.NotesWidget
-import de.mm20.launcher2.widgets.WeatherWidget
 import de.mm20.launcher2.widgets.Widget
 import java.util.UUID
 import kotlin.math.roundToInt
@@ -381,7 +380,6 @@ fun WidgetPickerSheet(
                             .clickable {
                                 val id = UUID.randomUUID()
                                 val widget = when (it.type) {
-                                    WeatherWidget.Type -> WeatherWidget(id)
                                     CalendarWidget.Type -> CalendarWidget(id)
                                     MusicWidget.Type -> MusicWidget(id)
                                     AppsWidget.Type -> AppsWidget(id)
@@ -399,7 +397,6 @@ fun WidgetPickerSheet(
                             painter =
                                 painterResource(
                                     when (it.type) {
-                                        WeatherWidget.Type -> R.drawable.light_mode_24px
                                         CalendarWidget.Type -> R.drawable.today_24px
                                         MusicWidget.Type -> R.drawable.music_note_24px
                                         AppsWidget.Type -> R.drawable.apps_24px

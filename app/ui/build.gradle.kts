@@ -128,7 +128,6 @@ dependencies {
     implementation(project(":services:icons"))
     implementation(project(":services:music"))
     implementation(project(":services:tags"))
-    implementation(project(":data:weather"))
     implementation(project(":data:calendar"))
     implementation(project(":services:search"))
     implementation(project(":core:preferences"))
@@ -152,7 +151,6 @@ dependencies {
     implementation(project(":services:widgets"))
     implementation(project(":services:favorites"))
     implementation(project(":services:feed"))
-    implementation(project(":core:devicepose"))
 
     testImplementation(libs.bundles.tests)
     testImplementation(libs.robolectric)

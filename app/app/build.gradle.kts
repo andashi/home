@@ -162,7 +162,6 @@ dependencies {
     implementation(project(":services:tags"))
     implementation(project(":data:unitconverter"))
     implementation(project(":app:ui"))
-    implementation(project(":data:weather"))
     implementation(project(":data:websites"))
     implementation(project(":data:widgets"))
     implementation(project(":data:wikipedia"))
@@ -172,7 +171,6 @@ dependencies {
     implementation(project(":services:widgets"))
     implementation(project(":services:favorites"))
     implementation(project(":services:plugins"))
-    implementation(project(":core:devicepose"))
     implementation(project(":services:feed"))
 
     // Uncomment this if you want annoying notifications in your debug builds

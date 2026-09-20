@@ -47,37 +47,21 @@
     <!-- Set the device's wallpaper -->
     <string name="wallpaper">Duvar Kağıdı</string>
     <!-- Wind direction, used in weather widget -->
-    <string name="wind_north">Kuzey</string>
     <!-- Wind direction, used in weather widget -->
-    <string name="wind_north_east">Kuzeydoğu</string>
     <!-- Wind direction, used in weather widget -->
-    <string name="wind_north_north_east">Kuzey kuzeydoğu</string>
     <!-- Wind direction, used in weather widget -->
-    <string name="wind_east_north_east">Doğu kuzeydoğu</string>
     <!-- Wind direction, used in weather widget -->
-    <string name="wind_east">Doğu</string>
     <!-- Wind direction, used in weather widget -->
-    <string name="wind_east_south_east">Doğu güneydoğu</string>
     <!-- Wind direction, used in weather widget -->
-    <string name="wind_south_east">Güneydoğu</string>
     <!-- Wind direction, used in weather widget -->
-    <string name="wind_south_south_east">Güney güneydoğu</string>
     <!-- Wind direction, used in weather widget -->
-    <string name="wind_south">Güney</string>
     <!-- Wind direction, used in weather widget -->
-    <string name="wind_south_south_west">Güney güneybatı</string>
     <!-- Wind direction, used in weather widget -->
-    <string name="wind_south_west">Güneybatı</string>
     <!-- Wind direction, used in weather widget -->
-    <string name="wind_west_south_west">Batı güneybatı</string>
     <!-- Wind direction, used in weather widget -->
-    <string name="wind_west">Batı</string>
     <!-- Wind direction, used in weather widget -->
-    <string name="wind_west_north_west">Batı kuzeybatı</string>
     <!-- Wind direction, used in weather widget -->
-    <string name="wind_north_west">Kuzeybatı</string>
     <!-- Wind direction, used in weather widget -->
-    <string name="wind_north_north_west">Kuzey kuzeybatı</string>
     <!-- No rain or snow, used in weather widget -->
     <!-- The URL of the Wikipedia instance that is used per default. Can be overridden by user.
      This should point to the Wikipedia in the given language. If no such Wikipedia exists,
@@ -193,7 +177,6 @@
     <string name="websearch_dialog_query_encoding_form">application/x-www-form-urlencoded</string>
     <string name="websearch_dialog_query_encoding_none">Hiçbiri</string>
     <string name="menu_edit_widgets">Araçları düzenle</string>
-    <string name="widget_name_weather">Hava Durumu</string>
     <string name="widget_name_calendar">Takvim</string>
     <string name="widget_name_music">Medya</string>
     <string name="widget_name_notes">Not</string>
@@ -295,63 +278,12 @@
     <!-- Default title that is shown in the music widget if the app that is playing media did not publish a title -->
     <string name="music_widget_default_title">%1$s medya oynatıyor</string>
     <string name="music_widget_no_data">Henüz medya oynatılmadı</string>
-    <string name="weather_condition_sleetshowers">Sulu kar sağanağı</string>
-    <string name="weather_condition_heavysleet">Yoğun sulu kar</string>
-    <string name="weather_condition_lightrainshowersandthunder">Hafif sağanak yağmur ve gök gürültüsü</string>
-    <string name="weather_condition_heavyrain">Yoğun yağmur</string>
-    <string name="weather_condition_lightsnowandthunder">Hafif kar ve gök gürültüsü</string>
-    <string name="weather_condition_lightrain">Hafif yağmur</string>
-    <string name="weather_condition_lightrainshowers">Hafif sağanak yağmur</string>
-    <string name="weather_condition_lightsnow">Hafif kar</string>
-    <string name="weather_condition_heavysleetshowersandthunder">Yoğun sulu kar sağanağı ve gök gürültüsü</string>
-    <string name="weather_condition_lightsnowshowers">Hafif kar sağanağı</string>
-    <string name="weather_condition_lightssleetshowersandthunder">Hafif sulu kar sağanağı ve gök gürültüsü</string>
-    <string name="weather_condition_snowandthunder">Kar ve gök gürültüsü</string>
-    <string name="weather_condition_heavysleetshowers">Yoğun sulu kar sağanağı</string>
-    <string name="weather_condition_heavysnow">Yoğun kar</string>
-    <string name="weather_condition_cloudy">Bulutlu</string>
-    <string name="weather_condition_lightrainandthunder">Hafif yağmur ve gök gürültüsü</string>
-    <string name="weather_condition_snow">Kar</string>
-    <string name="weather_condition_hail">Dolu</string>
-    <string name="weather_condition_thunderstorm">Fırtına</string>
-    <string name="weather_condition_thunder">Gök gürültüsü</string>
-    <string name="weather_condition_heavysnowshowers">Yoğun kar sağanağı</string>
-    <string name="weather_condition_heavyrainshowers">Yoğun sağanak yağmur</string>
-    <string name="weather_condition_rainshowersandthunder">Sağanak yağmur ve gök gürültüsü</string>
-    <string name="weather_condition_clearsky">Açık gökyüzü</string>
-    <string name="weather_condition_sleet">Karla karışık yağmur</string>
-    <string name="weather_condition_rain">Yağmurlu</string>
-    <string name="weather_condition_sleetandthunder">Karla karışık yağmur ve yıldırım</string>
-    <string name="weather_condition_lightssnowshowersandthunder">Hafif kar sağanağı ve gök gürültüsü</string>
-    <string name="weather_condition_heavyrainshowersandthunder">Yoğun sağanak yağmur ve gök gürültüsü</string>
-    <string name="weather_condition_fair">Normal</string>
-    <string name="weather_condition_fog">Sis</string>
-    <string name="weather_condition_haze">Puslu</string>
-    <string name="weather_condition_sleetshowersandthunder">Sulu kar sağanağı ve gök gürültüsü</string>
-    <string name="weather_condition_rainandthunder">Yağmur ve gök gürültüsü</string>
-    <string name="weather_condition_lightsleet">Hafif sulu kar</string>
-    <string name="weather_condition_heavysleetandthunder">Yoğun sulu kar ve gök gürültüsü</string>
-    <string name="weather_condition_partlycloudy">Parçalı bulutlu</string>
-    <string name="weather_condition_heavysnowandthunder">Yoğun kar ve gök gürültüsü</string>
-    <string name="weather_condition_rainshowers">Sağanak yağmur</string>
-    <string name="weather_condition_lightsleetandthunder">Hafif sulu kar ve gök gürültüsü</string>
-    <string name="weather_condition_heavysnowshowersandthunder">Yoğun kar sağanağı ve gök gürültüsü</string>
-    <string name="weather_condition_lightsleetshowers">Hafif sulu kar sağanağı</string>
-    <string name="weather_condition_snowshowersandthunder">Kar sağanağı ve gök gürültüsü</string>
-    <string name="weather_condition_snowshowers">Kar sağanağı</string>
-    <string name="weather_condition_heavyrainandthunder">Yoğun yağmur ve gök gürültüsü</string>
-    <string name="weather_condition_wind">Rüzgarlı</string>
-    <string name="weather_condition_unknown">Bilinmiyor</string>
     <!-- Humidity details, %1$s: formatted humidity value -->
     <!-- Wind details, %1$s: formatted wind values -->
     <!-- Precipitation details, %1$s: formatted precipitation values -->
-    <string name="weather_no_data">Hava durumu verisi mevcut değil</string>
     <!-- Manually set a location, used in weather widget location permission banner as an
         alternative to granting the permission -->
-    <string name="weather_widget_set_location">Konumu ayarla</string>
-    <string name="weather_location_search_no_result">Konum bulunamadı</string>
     <!-- Missing location permission in weather widget and weather widget settings settings -->
-    <string name="missing_permission_auto_location">Konumu otomatik olarak belirlemek için konum erişimi gereklidir</string>
     <!-- Missing notification permission in music widget settings -->
     <string name="missing_permission_music_widget">Medya oynatmayı kontrol etmek için bildirim erişimi gereklidir</string>
     <!-- Missing contact permission in search settings screen -->
@@ -419,19 +351,7 @@
     <string name="open_webpage">Web sitesini aç</string>
     <string name="preference_screen_about_summary">Uygulama ve lisans bilgileri</string>
     <string name="preference_screen_appearance_summary">Görünümü ve hissi özelleştirin</string>
-    <string name="preference_weather_provider">Sağlayıcı</string>
-    <string name="provider_metno">MET Norveç</string>
-    <string name="provider_openweathermap">OpenWeatherMap</string>
-    <string name="provider_brightsky">Deutscher Wetterdienst (sadece Almanya)</string>
     <string name="provider_here">HERE</string>
-    <string name="provider_breezy">Breezy Weather</string>
-    <string name="preference_category_location">Konum</string>
-    <string name="preference_automatic_location">Otomatik konum</string>
-    <string name="preference_automatic_location_summary">Konumu otomatik olarak belirlemek için konum servislerini kullan</string>
-    <string name="preference_location_managed">Eklenti tarafından yönetiliyor</string>
-    <string name="preference_location_managed_summary">Bu sağlayıcının konumu eklenti uygulaması tarafından yönetilmektedir</string>
-    <string name="preference_location">Konum</string>
-    <string name="preference_location_breezy">Breezy Weather\'da konumu yönet</string>
     <string name="preference_imperial_units_summary">Fahrenheit ve mil/saat kullan</string>
     <string name="preference_imperial_units">İmparatorluk birimleri</string>
     <string name="widget_config_weather_compact">Kompakt mod</string>
@@ -527,7 +447,6 @@
     <string name="preference_screen_debug">Hata Ayıklama</string>
     <string name="preference_screen_debug_summary">Sorun giderme araçları</string>
     <string name="preference_category_widgets">Widgetlar</string>
-    <string name="preference_screen_weatherwidget">Hava Durumu</string>
     <string name="preference_category_media_apps">Medya uygulamaları</string>
     <string name="preference_screen_clockwidget">Saat</string>
     <string name="preference_screen_clockwidget_summary">Saat stilini ve bileşenleri yapılandır</string>
@@ -618,10 +537,6 @@
     <string name="preference_tasks_integration_description">Tasks, ücretsiz ve açık kaynaklı bir yapılacaklar listesi ve hatırlatıcı uygulamasıdır. Yüklüyse, %1$s görevlerinizi Tasks uygulamasından görüntüleyebilir ve arayabilir.</string>
     <string name="preference_tasks_integration_ready">Görevler entegrasyonu tamamen kuruldu ve kullanıma hazır.</string>
     <string name="preference_launch_tasks_app">Tasks uygulamasını aç</string>
-    <string name="preference_breezyweather_integration">Breezy Weather</string>
-    <string name="preference_breezyweather_integration_description">Breezy Weather, ücretsiz ve açık kaynaklı bir hava durumu uygulamasıdır. Yüklüyse, %1$s Breezy Weather\'ı hava durumu verileri için bir veri kaynağı olarak kullanabilir.</string>
-    <string name="preference_breezyweather_integration_instructions">Breezy Weather\'ı hava durumu sağlayıcısı olarak kullanmak için:\n\n1. Breezy Weather &gt; Ayarlar &gt; Araçlar &amp; Canlı duvar kağıdı &gt; Gadgetbridge verisi gönder &gt; %1$s\'i Etkinleştir\'e gidin\n\n2. %1$s\'te, hava durumu sağlayıcısı olarak Breezy Weather\'ı seçin</string>
-    <string name="preference_launch_breezyweather_app">Breezy Weather\'ı aç</string>
     <string name="preference_contacts_call_on_tap">Aramak için dokun</string>
     <string name="preference_contacts_call_on_tap_summary">Bir telefon numarasına dokunduğunuzda onay vermeden bir arama başlatın</string>
     <!-- Used in an info banner if a specific feature requires a Nextcloud account -->
@@ -772,8 +687,6 @@
     <string name="plugin_action_setup">Kur</string>
     <string name="plugin_type_contacts">Kişiler</string>
     <string name="plugin_type_weather">Hava durumu sağlayıcısı</string>
-    <string name="plugin_weather_provider_enable">Hava durumu sağlayıcısı olarak ayarla</string>
-    <string name="plugin_weather_provider_enabled">Şu anda hava durumu sağlayıcısı olarak ayarlı</string>
     <string name="unavailable_searchable">Bu öğe artık mevcut değil</string>
     <string name="clock_style_digital1">Kalın</string>
     <string name="clock_style_digital2">Basit</string>
@@ -914,7 +827,6 @@
         <item quantity="one">%1$s bildirim</item>
         <item quantity="other">%1$s bildirim</item>
     </plurals>
-    <string name="weather_widget_no_provider">Hava durumu sağlayıcısı seçilmemiş veya seçilen sağlayıcı mevcut değil</string>
     <string name="music_widget_previous_track">Önceki parça</string>
     <string name="music_widget_next_track">Sonraki parça</string>
     <string name="music_widget_play">Oynat</string>

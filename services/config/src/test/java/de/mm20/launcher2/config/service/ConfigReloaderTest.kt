@@ -148,7 +148,7 @@ class ConfigReloaderTest {
         val (reloader, _) = newReloader(store)
 
         val report = reloader.reload(
-            """{"schemaVersion": 1, "home": {"widgets": {"widgets": ["weather"]}}}"""
+            """{"schemaVersion": 1, "home": {"widgets": {"widgets": ["apps"]}}}"""
         )
 
         assertTrue(report.success)
