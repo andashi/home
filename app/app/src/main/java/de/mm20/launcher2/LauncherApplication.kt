@@ -14,7 +14,6 @@ import de.mm20.launcher2.data.customattrs.customAttrsModule
 import de.mm20.launcher2.data.i18nDataModule
 import de.mm20.launcher2.searchable.searchableModule
 import de.mm20.launcher2.icons.iconsModule
-import de.mm20.launcher2.music.musicModule
 import de.mm20.launcher2.search.searchModule
 import de.mm20.launcher2.widgets.widgetsModule
 import de.mm20.launcher2.database.databaseModule
@@ -64,7 +63,6 @@ class LauncherApplication : Application(), CoroutineScope, ImageLoaderFactory {
                     searchableModule,
                     globalActionsModule,
                     iconsModule,
-                    musicModule,
                     notificationsModule,
                     permissionsModule,
                     preferencesModule,

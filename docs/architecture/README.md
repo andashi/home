@@ -11,10 +11,10 @@ reload, and integrated into a GrapheneOS multi-profile setup.
    grid; a dock holds a handful of favorites. Everything else is reached through
    search / the app drawer.
 2. **Launch apps, host widgets, little else.** Search covers apps, app shortcuts
-   and contacts. Weather, calendar, music and notes are standard Android widgets,
-   not built-in ones; files belong to a file manager, places to a maps app. A
-   feature earns its place in the launcher when its cost is a scoped, revocable
-   permission — not when it costs a blanket grant (ADR 0008).
+   and contacts. The clock, weather, calendar, music and notes are standard
+   Android widgets, not built-in ones; files belong to a file manager, places to
+   a maps app. A feature earns its place in the launcher when its cost is a
+   scoped, revocable permission — not when it costs a blanket grant (ADR 0008).
 3. **Dotfiles are the source of truth.** The complete home configuration lives in one
    JSON document under version control. The launcher converges its state towards it —
    check-before-set, never blind writes. UI editing remains possible, but the config

@@ -30,9 +30,8 @@ The following feed providers have been tested and are known to be working:
 
 ## Enable the feed
 
-After you have installed at least one feed provider, you can enable it under Settings >
-Integrations > Feed. Then you can assign the feed action to the swipe right gesture under Settings >
-Gestures
+After you have installed at least one feed provider, you can enable it under Settings > Feed.
+Then you can assign the feed action to the swipe right gesture under Settings > Gestures
 
 > [!NOTE]
 > The feed can only be assigned to the swipe right gesture

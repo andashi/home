@@ -10,8 +10,6 @@ import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -23,7 +21,6 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -37,17 +34,31 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import androidx.compose.runtime.collectAsState
 import de.mm20.launcher2.preferences.WidgetScreenTarget
-import de.mm20.launcher2.preferences.ui.ClockWidgetSettings
+import de.mm20.launcher2.preferences.ui.UiSettings
 import de.mm20.launcher2.ui.R
-import de.mm20.launcher2.ui.ktx.toDp
 import de.mm20.launcher2.ui.launcher.scaffold.LauncherScaffoldState
 import de.mm20.launcher2.ui.launcher.widgets.WidgetColumn
-import de.mm20.launcher2.ui.launcher.widgets.clock.ClockWidget
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 
-internal object ClockAndWidgetsHomeComponent : ScaffoldComponent() {
+/**
+ * The home surface: a scrollable column of widgets, and nothing else.
+ *
+ * The built-in clock used to sit above this column and, with the widget column
+ * switched off, was the entire home screen. It was dropped with the other
+ * built-in widgets (ADR 0008), so a home screen with no widgets configured is
+ * deliberately empty: wallpaper, dock and search bar. ADR 0001's HomeGrid
+ * replaces this component.
+ *
+ * `home.widgets.enabled` still decides whether widgets appear here at all. It
+ * used to do that by choosing between this component and the clock-only one;
+ * with the clock gone there is nothing to choose between, so the flag is read
+ * here instead. Dropping it would silently ignore a key of the public config
+ * contract (ADR 0002).
+ */
+internal object WidgetsHomeComponent : ScaffoldComponent() {
     private var editMode by mutableStateOf(false)
     private val scrollState = ScrollState(0)
 
@@ -61,11 +72,6 @@ internal object ClockAndWidgetsHomeComponent : ScaffoldComponent() {
 
     override val drawBackground: Boolean = false
 
-    // In note widget
-    override val hasIme: Boolean = true
-
-    override val showSearchBar: Boolean = false
-
     @Composable
     override fun Component(
         modifier: Modifier,
@@ -74,10 +80,9 @@ internal object ClockAndWidgetsHomeComponent : ScaffoldComponent() {
     ) {
         val scope = rememberCoroutineScope()
 
-        val clockWidgetSettings: ClockWidgetSettings = koinInject()
-        val fillHeight by clockWidgetSettings.fillHeight.collectAsState(null)
-
-        if (fillHeight == null) return
+        val uiSettings: UiSettings = koinInject()
+        val widgetsOnHomeScreen by uiSettings.homeScreenWidgets.collectAsState(null)
+        if (widgetsOnHomeScreen != true) return
 
         val topPadding by animateDpAsState(if (editMode) 80.dp else 0.dp)
         val previousScroll = remember { mutableIntStateOf(scrollState.value) }
@@ -101,25 +106,7 @@ internal object ClockAndWidgetsHomeComponent : ScaffoldComponent() {
                 .padding(top = topPadding)
                 .padding(insets),
         ) {
-            val bottomPadding by animateDpAsState(
-                if (fillHeight == true && scrollState.value == 0) insets.calculateBottomPadding()
-                else 0.dp
-            )
-
-            ClockWidget(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    then if (fillHeight == true) {
-                        Modifier
-                            .padding(bottom = bottomPadding)
-                            .height(state.size.height.toDp() - insets.calculateTopPadding() - insets.calculateBottomPadding())
-                } else Modifier,
-                editMode = editMode,
-                fillScreenHeight = fillHeight == true,
-            )
             WidgetColumn(
-                modifier = Modifier
-                    .padding(top = 16.dp),
                 editMode = editMode,
                 onEditModeChange = {
                     scope.launch { state.lock(hideSearchBar = true) }

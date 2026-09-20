@@ -14,7 +14,6 @@
     <string name="default_websearch_2_name">YouTube</string>
     <string name="default_websearch_2_url">https://www.youtube.com/results\?search_query=${1}</string>
     <string name="default_websearch_3_url">https://play.google.com/store/search\?q=${1}</string>
-    <string name="widget_name_music">Muzică</string>
     <string name="widget_action_remove">Eliminați</string>
     <string name="menu_share">Distribuie</string>
     <string name="menu_share_apk_file">Fișier de aplicație</string>
@@ -35,8 +34,6 @@
     <string name="edit_favorites_dialog_pinned_unsorted">Fixate – sortate automat</string>
     <string name="edit_favorites_dialog_pinned_sorted">Fixate - sortate manual</string>
     <string name="show_all">Afișați toate</string>
-    <string name="music_widget_default_title">%1$s redă media</string>
-    <string name="music_widget_no_data">Nu a fost redată media încă</string>
     <string name="missing_permission_contact_search_settings">Permisiunea contactelor este necesară pentru a căuta persoane de contact</string>
     <string name="missing_permission_appshortcuts_search_settings">%1$s trebuie setată ca aplicație de pornire implicită pentru a căuta comenzi rapide în aplicație</string>
     <string name="missing_permission_notification_badges">Accesul la notificare este necesar pentru a afișa ecusoane de notificare</string>
@@ -55,7 +52,6 @@
     <string name="open_webpage">Deschide website</string>
     <string name="preference_screen_about_summary">Informații despre aplicație și licențe</string>
     <string name="preference_screen_appearance_summary">Personalizați aspectul</string>
-    <string name="preference_category_debug">Depanare</string>
     <string name="preference_category_icons">Pictograme</string>
     <string name="preference_icon_shape">Formă</string>
     <string name="preference_icon_shape_square">Pătrat</string>
@@ -91,16 +87,8 @@
     <string name="preference_screen_debug">Depanare</string>
     <string name="preference_screen_debug_summary">Instrumente de depanare</string>
     <string name="preference_category_widgets">Widget-uri</string>
-    <string name="preference_screen_clockwidget">Ceas</string>
-    <string name="preference_clockwidget_layout_vertical">Vertical</string>
-    <string name="preference_clockwidget_layout_horizontal">Orizontal</string>
-    <string name="preference_clockwidget_date_part_summary">Afișează data curentă</string>
     <string name="preference_clockwidget_favorites_part">Favorite</string>
     <string name="preference_clockwidget_favorites_part_summary">Afișează primul rând de elemente fixate</string>
-    <string name="preference_clockwidget_music_part">Media</string>
-    <string name="preference_clockwidget_battery_part">Baterie</string>
-    <string name="preference_clockwidget_alarm_part">Alarme</string>
-    <string name="preference_clockwidget_alarm_part_summary">Afișează alarme care vor suna în următoarele 15 minute</string>
     <string name="preference_screen_search">Caută</string>
     <string name="preference_search_favorites">Favorite</string>
     <string name="preference_search_contacts">Contacte</string>
@@ -114,25 +102,15 @@
     <string name="preference_search_bar_auto_focus_summary">Afișarea automată a tastaturii la deschiderea căutării</string>
     <string name="preference_hidden_items">Rezultate de căutare ascunse</string>
     <string name="preference_hidden_items_summary">Gestionarea aplicațiilor ascunse și a rezultatelor căutării</string>
-    <string name="battery_part_charging">Încărcare</string>
-    <plurals name="battery_part_remaining_charge_time">
-        <item quantity="one">Încărcat în %1$s minute</item>
-        <item quantity="few">Încărcat în %1$s minute</item>
-        <item quantity="other"/>
-    </plurals>
     <string name="websearch_dialog_url_error">Substituentul \'${1}\' lipsește din această adresă URL</string>
     <string name="preference_icon_shape_squircle">Pătrat rotunjit</string>
     <string name="preference_icon_shape_triangle">Triunghi Reuleaux</string>
-    <string name="missing_permission_music_widget">Accesul la notificări este necesar pentru a controla redarea media</string>
     <string name="preference_category_licenses">Licențe open source</string>
     <string name="preference_themed_icons_summary">Colorați pictogramele cu schema de culori a aplicației</string>
-    <string name="preference_screen_integrations_summary">Gestionează conturile și serviciile conectate</string>
     <string name="missing_permission_appshortcuts_search">Seteaza %1$s ca aplicație de pornire implicită pentru a căuta comenzi rapide pentru aplicații.</string>
     <string name="preference_notification_badges_summary">Afișează insigne pentru aplicații cu notificări necitite</string>
     <string name="preference_about_license_summary">Licențiat sub Licența Publică Generală GNU 3.0</string>
     <string name="preference_search_contacts_summary">Caută contactele de pe acest dispozitiv</string>
-    <string name="preference_clockwidget_date_part">Dată</string>
-    <string name="preference_clockwidget_music_part_summary">Afișează controale media atunci când există o sesiune media activă</string>
     <string name="preference_screen_search_summary">Configurarea căutării</string>
     <string name="preference_mdy_color_source_wallpaper">Imagine fundal</string>
     <string name="menu_remove">Înlătură</string>
@@ -161,14 +139,12 @@
     <string name="preference_force_themed_icons_summary">Aplicați schema de culori a aplicației la toate pictogramele, inclusiv celor nesuportate (nerecomandat)</string>
     <string name="preference_nav_bar_icons">Pictograme din bara de navigare</string>
     <string name="preference_system_bar_icons_light">Luminoase</string>
-    <string name="preference_screen_integrations">Integrări</string>
     <string name="preference_debug_cleanup_database">Curățați baza de date</string>
     <string name="preference_system_bar_icons_dark">Întunecate</string>
     <string name="alert_delete_shortcut">Scurtătura %1$s va fi eliminată definitiv. Continuați?</string>
     <string name="websearch_dialog_advanced">Avansat</string>
     <string name="preference_icon_shape_pebble">Piatră</string>
     <string name="action_next">Următorul</string>
-    <string name="widget_name_notes">Notiță</string>
     <string name="preference_system_bar_icons_auto">Automat</string>
     <plurals name="debug_cleanup_database_result">
         <item quantity="one">A fost eliminată o intrare.</item>
@@ -177,24 +153,17 @@
     </plurals>
     <string name="preference_icon_shape_teardrop">Lacrimă</string>
     <string name="preference_status_bar_icons">Pictograme din bara de stare</string>
-    <string name="notes_widget_placeholder">Scrieți o notiță…</string>
-    <string name="notes_widget_action_new">Notiță nouă</string>
-    <string name="notes_widget_action_save">Salvați</string>
     <string name="preference_debug_dump_heap">Snapshot de memorie</string>
     <string name="edit">Editați</string>
-    <string name="notes_widget_dismissed">Notă înlăturată.</string>
-    <string name="notes_widget_export_filename">Notiță_%1$s</string>
     <string name="websearch_dialog_query_encoding">Interogați codificarea</string>
     <string name="websearch_dialog_query_encoding_none">Niciuna</string>
     <string name="preference_debug_dump_heap_in_progress">Se capturează snapshot-ul…</string>
     <string name="preference_debug_cleanup_database_summary">Eliminați intrările defecte şi neutilizate din baza de date a lansatorului</string>
     <string name="preference_debug_reinstall_iconpacks">Reinstalați pachetele de pictograme</string>
-    <string name="notes_widget_action_dismiss">Înlăturați</string>
     <string name="edit_favorites_dialog_empty_section">Trageți elemente aici</string>
     <string name="widget_action_replace">Înlocuiți</string>
     <string name="edit_favorites_dialog_tags">Etichete</string>
     <string name="edit_favorites_dialog_tag_section_empty">Etichetele fixate vor apărea aici</string>
-    <string name="preference_screen_clockwidget_summary">Configurează stilul ceasului și componentele</string>
     <string name="search_bar_position_top">Sus</string>
     <string name="search_bar_position_bottom">Jos</string>
     <string name="preference_screen_gestures_summary">Gesturi și acțiuni prin gesturi</string>
@@ -213,13 +182,10 @@
     <string name="preference_blur_wallpaper_unsupported">Nesuportat de acest dispozitiv</string>
     <string name="preference_screen_homescreen_summary">Ceas, bară de căutare, fundal, bare de sistem</string>
     <string name="preference_layout_search_bar_position">Poziția barei de căutare</string>
-    <string name="preference_clock_widget_fill_height">Umpleți înălțimea ecranului</string>
-    <string name="preference_clock_widget_alignment">Aliniere</string>
     <string name="widget_use_theme_colors">Folosește temă colorată</string>
     <string name="preference_blur_wallpaper_radius">Raza de vedere burată</string>
     <string name="preference_enforce_icon_shape_summary">Aplică forme la toate iconițele incluziv cele care in mod normal nu le suportă</string>
     <string name="preference_enforce_icon_shape">Formă forțată</string>
-    <string name="preference_clock_widget_show_seconds">Arată secundele</string>
     <string name="preference_search_bar_style_hidden">Ascuns</string>
     <string name="preference_search_bar_style_transparent">Transparent</string>
     <string name="preference_search_bar_style_solid">Solid</string>
@@ -249,7 +215,6 @@
     <string name="preference_gesture_double_tap">Atingeți de două ori</string>
     <string name="preference_gesture_long_press">Apăsare lungă</string>
     <string name="preference_search_result_ordering_weight_factor_high">Variabilă</string>
-    <string name="widget_config_appwidget_resize">Redimensionare</string>
     <string name="preference_screen_transparencies">Transparenţă</string>
     <string name="preference_transparencies_default">Default</string>
     <string name="preference_transparencies_semi_transparent">Semitransparent</string>
@@ -259,13 +224,11 @@
     <string name="widget_pick_widget">Alege widgetul</string>
     <string name="widget_removed">Widget eliminat</string>
     <string name="no_selection">Nicio selecție</string>
-    <string name="music_widget_interactive_progress_bar">Bară de progres interactivă</string>
     <string name="search_action_timer">Start cronometru</string>
     <string name="search_results_order_top_down">De sus în jos</string>
     <string name="app_widget_loading_failed">Widgetul nu s-a putut încărca.</string>
     <string name="search_action_email">Email</string>
     <string name="preference_favorites_edit_button_summary">Afișează buton pentru rearanjarea favoritelor</string>
-    <string name="action_install">Instalează</string>
     <string name="preference_screen_tags_summary">Gestionați etichetele și elementele etichetate</string>
     <string name="preference_category_favorites_frequently_used">Utilizat frecvent</string>
     <string name="search_action_contact">Contact nou</string>

@@ -28,7 +28,6 @@
     <string name="action_done">Done</string>
     <string name="action_more_actions">More actions</string>
     <string name="action_clear">Clear</string>
-    <string name="action_install">Install</string>
     <string name="action_quit">Quit</string>
     <!-- Delete something (a file or a web search shortcut) -->
     <string name="menu_delete">Delete</string>
@@ -157,19 +156,11 @@
     <string name="websearch_dialog_query_encoding_form">application/x-www-form-urlencoded</string>
     <string name="websearch_dialog_query_encoding_none">None</string>
     <string name="menu_edit_widgets">Edit widgets</string>
-    <string name="widget_name_music">Media</string>
     <string name="widget_name_apps">Apps</string>
-    <string name="widget_name_notes">Note</string>
     <string name="widget_add_widget">Add widget</string>
     <string name="widget_removed">Widget removed</string>
-    <string name="notes_widget_placeholder">Write a note</string>
-    <string name="notes_widget_action_new">New note</string>
     <!-- Save / export the current note content as markdown file -->
-    <string name="notes_widget_action_save">Save</string>
     <!-- Default filename for exported files. %1$s: the current date and time. File extension is appended automatically. -->
-    <string name="notes_widget_export_filename">Note_%1$s</string>
-    <string name="notes_widget_action_dismiss">Dismiss</string>
-    <string name="notes_widget_dismissed">Note dismissed</string>
     <!-- Indicates to which app a shortcuts belongs. %1$s: the name of the app -->
     <string name="shortcut_summary">By %1$s</string>
     <!-- Close a dialog -->
@@ -222,9 +213,6 @@
         -->
     <!-- Calendar events that last the entire day -->
     <!-- Default title that is shown in the music widget if the app that is playing media did not publish a title -->
-    <string name="music_widget_default_title">%1$s is playing media</string>
-    <string name="music_widget_no_data">No media has been played yet</string>
-    <string name="music_widget_interactive_progress_bar">Interactive progress bar</string>
     <!-- Humidity details, %1$s: formatted humidity value -->
     <!-- Wind details, %1$s: formatted wind values -->
     <!-- Precipitation details, %1$s: formatted precipitation values -->
@@ -232,7 +220,6 @@
         alternative to granting the permission -->
     <!-- Missing location permission in weather widget and weather widget settings settings -->
     <!-- Missing notification permission in music widget settings -->
-    <string name="missing_permission_music_widget">Notification access is required to control media playback</string>
     <!-- Missing contact permission in search settings screen -->
     <string name="missing_permission_contact_search_settings">Contacts permission is required to search contacts</string>
     <!-- Missing call permission in contacts settings screen -->
@@ -294,7 +281,6 @@
     <string name="open_webpage">Open website</string>
     <string name="preference_screen_about_summary">App and license information</string>
     <string name="preference_screen_appearance_summary">Customize the look and feel</string>
-    <string name="preference_category_debug">Debug</string>
     <string name="preference_category_debug_tools">Tools</string>
     <string name="preference_debug_dump_heap">Memory snapshot</string>
     <string name="preference_debug_dump_heap_summary">Capture a snapshot to analyze memory usage. The app will freeze until this process is completed.</string>
@@ -320,7 +306,6 @@
     <string name="preference_icon_shape_pebble">Pebble</string>
     <string name="preference_icon_shape_hexagon">Hexagon</string>
     <string name="preference_category_searchbar">Search bar</string>
-    <string name="preference_screen_integrations">Integrations</string>
     <string name="preference_theme_system">Follow system</string>
     <string name="preference_themed_icons">Themed icons</string>
     <string name="preference_themed_icons_summary">Color icons with the application\'s color scheme</string>
@@ -337,7 +322,6 @@
     <string name="preference_system_bar_icons_dark">Dark</string>
     <string name="preference_hide_status_bar">Hide status bar</string>
     <string name="preference_hide_nav_bar">Hide navigation bar</string>
-    <string name="preference_screen_integrations_summary">Manage connected accounts and services</string>
     <string name="preference_icon_shape_pentagon">Pentagon</string>
     <string name="preference_category_wallpaper">Wallpaper</string>
     <string name="preference_dim_wallpaper">Dim wallpaper</string>
@@ -373,36 +357,13 @@
     <string name="preference_screen_debug">Debug</string>
     <string name="preference_screen_debug_summary">Troubleshooting tools</string>
     <string name="preference_category_widgets">Widgets</string>
-    <string name="preference_screen_clockwidget">Clock</string>
-    <string name="preference_screen_clockwidget_summary">Configure clock style and components</string>
-    <string name="preference_clockwidget_layout_vertical">Default</string>
-    <string name="preference_clockwidget_layout_horizontal">Compact</string>
-    <string name="preference_clock_widget_show_seconds">Show seconds</string>
-    <string name="preference_clock_widget_monospaced">Monospaced digits</string>
     <string name="preference_clock_widget_time_format">Time format</string>
     <string name="preference_clock_widget_time_format_24h">24-hour</string>
     <string name="preference_clock_widget_time_format_12h">12-hour</string>
     <string name="widget_use_theme_colors">Use theme color</string>
-    <string name="preference_clock_widget_fill_height">Fill screen height</string>
-    <string name="preference_clock_widget_alignment">Alignment</string>
-    <string name="preference_clock_widget_alignment_top">Top</string>
-    <string name="preference_clock_widget_alignment_center">Center</string>
-    <string name="preference_clock_widget_alignment_bottom">Bottom</string>
-    <string name="preference_clockwidget_dynamic_zone">Dynamic zone</string>
-    <string name="preference_clockwidget_smartspacer">Managed by Smartspacer</string>
-    <string name="preference_clockwidget_date_part">Date</string>
-    <string name="preference_clockwidget_date_part_summary">Show the current date</string>
     <string name="preference_clockwidget_favorites_part">Dock</string>
     <string name="preference_clockwidget_favorites_part_summary">Show pinned items in dock</string>
     <string name="preference_clockwidget_dock_rows">Dock rows</string>
-    <string name="preference_clockwidget_music_part">Media</string>
-    <string name="preference_clockwidget_music_part_summary">Show media controls when there is an active media session</string>
-    <string name="preference_clockwidget_battery_part">Battery</string>
-    <string name="preference_clockwidget_battery_part_always_show">Always show</string>
-    <string name="preference_clockwidget_battery_part_show">Show when low or charging</string>
-    <string name="preference_clockwidget_battery_part_hide">Off</string>
-    <string name="preference_clockwidget_alarm_part">Alarms</string>
-    <string name="preference_clockwidget_alarm_part_summary">Show alarms that will ring within the next 8 hours</string>
     <string name="preference_screen_search">Search</string>
     <string name="preference_screen_search_summary">Search, tags, excluded results</string>
     <string name="preference_search_favorites">Favorites</string>
@@ -445,12 +406,7 @@
     <string name="preference_screen_homescreen_summary">Clock, search bar, wallpaper, system bars</string>
     <string name="preference_screen_icons">Grid and icons</string>
     <string name="preference_screen_icons_summary">Grid size, icons, badges</string>
-    <string name="preference_media_integration">Media control</string>
     <!-- %1$s: app name (Kvaesitso) -->
-    <string name="preference_smartspacer_integration">Smartspacer</string>
-    <string name="preference_smartspacer_integration_description">Smartspacer is a free and open source At a Glance widget. If installed, it can be integrated into the dynamic zone of the clock widget</string>
-    <string name="preference_smartspacer_enable">Enable Smartspacer integration</string>
-    <string name="preference_launch_smartspacer_app">Open Smartspacer</string>
     <string name="preference_feed_integration">Feed</string>
     <string name="preference_category_feed_provider">Feed provider</string>
     <string name="preference_feed_enable_summary">Swipe right on the home screen to open the feed</string>
@@ -461,11 +417,6 @@
     <!-- Used in an info banner if a specific feature requires an Owncloud account -->
     <!-- Used in an info banner if a specific feature requires a Google account -->
     <!-- Used in info banners that indicate that an account is required to enable a certain feature -->
-    <string name="battery_part_charging">Charging</string>
-    <plurals name="battery_part_remaining_charge_time">
-        <item quantity="one">Full in %1$s minute</item>
-        <item quantity="other">Full in %1$s minutes</item>
-    </plurals>
     <!-- %1$s: app name -->
     <!-- %1$s: app name -->
     <!-- %1$s: date and time of backup creation, %s$s: name of the device this backup has been created on, %s$s app name and version of creating app-->
@@ -566,25 +517,8 @@
     <string name="widget_config_appwidget_borderless">Borderless</string>
     <string name="widget_config_appwidget_background">Background card</string>
     <string name="widget_config_appwidget_configure">Configure widget</string>
-    <string name="widget_config_appwidget_resize">Resize</string>
     <string name="widget_pick_widget">Pick widget</string>
     <string name="app_widget_loading_failed">App widget failed to load</string>
-    <string name="widget_config_music_integration_settings">Media control integration settings</string>
-    <string name="note_widget_link_file">Link to file</string>
-    <string name="note_widget_link_file_summary">Sync the contents of this widget with an external file</string>
-    <string name="note_widget_linked_file_summary">Linked to %1$s</string>
-    <string name="note_widget_action_unlink_file">Unlink</string>
-    <string name="note_widget_action_relink_file">Relink</string>
-    <string name="note_widget_conflict">Conflict</string>
-    <string name="note_widget_conflict_action_resolve">Resolve</string>
-    <string name="note_widget_conflict_keep_selected">Keep selected</string>
-    <string name="note_widget_conflict_description">The linked file is not empty and its content does not match the last saved version of this note. Which version do you want to keep\?</string>
-    <string name="note_widget_conflict_local_version">Last saved version:</string>
-    <string name="note_widget_conflict_file_version">Current file content:</string>
-    <string name="note_widget_file_read_error">Error reading note</string>
-    <string name="note_widget_file_read_error_description">The linked file could not be read. A copy has been restored from the launcher\'s internal storage. If you edit the note, the linked file will possibly be overwritten</string>
-    <string name="note_widget_file_write_error">Error saving note</string>
-    <string name="note_widget_file_write_error_description">The note could not be written to the linked file. A copy has been saved to the launcher\'s internal storage</string>
     <string name="confirmation_delete_color_scheme">Do you really want to delete the color scheme %1$s\?</string>
     <string name="confirmation_delete_shapes_scheme">Do you really want to delete the shape scheme %1$s?</string>
     <string name="confirmation_delete_transparencies_scheme">Do you really want to delete the transparency scheme %1$s?</string>
@@ -603,16 +537,6 @@
     <!-- %1$s: app name -->
     <string name="shortcut_unavailable_description">This shortcut is unavailable because %1$s isn\'t the default launcher</string>
     <string name="unavailable_searchable">This item does not exist anymore</string>
-    <string name="clock_style_digital1">Bold</string>
-    <string name="clock_style_digital2">Simple</string>
-    <string name="clock_style_orbit">Orbit</string>
-    <string name="clock_style_binary">Binary</string>
-    <string name="clock_style_analog">Hands</string>
-    <string name="clock_style_segment">7-segment</string>
-    <string name="clock_style_empty">No clock</string>
-    <string name="clock_style_custom">Custom widget</string>
-    <string name="clock_variant_outlined">Outlined</string>
-    <string name="clock_variant_analog_ticks">Ticks</string>
     <string name="menu_show_filters">Show filters</string>
     <string name="menu_hide_filters">Hide filters</string>
     <string name="search_filter_online">Online results</string>
@@ -650,11 +574,6 @@
         <item quantity="one">%1$s notification</item>
         <item quantity="other">%1$s notifications</item>
     </plurals>
-    <string name="music_widget_previous_track">Previous title</string>
-    <string name="music_widget_next_track">Next title</string>
-    <string name="music_widget_play">Play</string>
-    <string name="music_widget_pause">Pause</string>
-    <string name="music_widget_open_player">Open player</string>
     <string name="profile_work_profile_state_locked">Work apps are paused</string>
     <string name="profile_work_profile_action_unlock">Unpause</string>
     <string name="profile_work_profile_action_lock">Pause work apps</string>

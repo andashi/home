@@ -149,7 +149,6 @@ dependencies {
     implementation(project(":core:i18n"))
     implementation(project(":services:icons"))
     implementation(project(":core:ktx"))
-    implementation(project(":services:music"))
     implementation(project(":data:notifications"))
     implementation(project(":core:permissions"))
     implementation(project(":core:profiles"))

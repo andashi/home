@@ -11,7 +11,7 @@
 #      under <gos-repo>/emulator/instances/test; SERIAL and OVERLAY_DIR pick
 #      another one) from the `clean` snapshot, installs the debug APK
 #   2. writes a known JSONC config (icons, transparency, search bar, dock,
-#      widgets, clock; empty favorites so no installed-package assumptions)
+#      widgets; empty favorites so no installed-package assumptions)
 #      through the shell-gated ingest provider (`content write`), the
 #      provisioning transport (ADR 0003 §1a)
 #   3. proves the explicit, shell-gated ReloadConfigReceiver is reachable
@@ -24,7 +24,7 @@
 #      report is successful with no applied mutations (watcher settled first)
 #   6. writes a second config that changes EVERY section (icons off, other
 #      transparency values, search bar top, dock off, other widgets, other
-#      clock) and asserts the read-back shows the new values and the report
+#      widgets) and asserts the read-back shows the new values and the report
 #      lists every section as applied; then writes the first config again
 #      and asserts the read-back is back to the first values - the
 #      everyday case: an existing state is changed, not created
@@ -263,8 +263,7 @@ cat > "$VALID_CONFIG" <<'EOF'
       // Empty on purpose: favorites reference installed packages.
       "favorites": [],
     },
-    "widgets": { "enabled": true, "widgets": ["weather", "music"] },
-    "clock": { "style": "analog", "fillHeight": true },
+    "widgets": { "enabled": true, "widgets": ["apps"] },
   },
 }
 EOF
@@ -293,8 +292,7 @@ cat > "$UNKNOWN_KEYS_CONFIG" <<'EOF'
       "favorites": [],
       "futureDockKey": true,
     },
-    "widgets": { "enabled": true, "widgets": ["weather", "music"] },
-    "clock": { "style": "analog", "fillHeight": true },
+    "widgets": { "enabled": true, "widgets": ["apps"] },
   },
 }
 EOF
@@ -319,8 +317,7 @@ cat > "$CHANGED_CONFIG" <<'EOF'
   "home": {
     "searchBar": { "position": "top" },
     "dock": { "enabled": false, "favorites": [] },
-    "widgets": { "enabled": true, "widgets": ["calendar", "notes", "apps"] },
-    "clock": { "style": "digital2", "fillHeight": false },
+    "widgets": { "enabled": false, "widgets": [] },
   },
 }
 EOF
@@ -342,8 +339,7 @@ cat > "$WALLPAPER_CONFIG" <<'EOF'
   "home": {
     "searchBar": { "position": "bottom" },
     "dock": { "enabled": true, "favorites": [] },
-    "widgets": { "enabled": true, "widgets": ["weather", "music"] },
-    "clock": { "style": "analog", "fillHeight": true },
+    "widgets": { "enabled": true, "widgets": ["apps"] },
   },
 }
 EOF
@@ -370,9 +366,7 @@ EFFECTIVE_FILTER='
   and .home.dock.enabled == true
   and .home.dock.favorites == []
   and .home.widgets.enabled == true
-  and (.home.widgets.widgets | sort) == ["music", "weather"]
-  and .home.clock.style == "analog"
-  and .home.clock.fillHeight == true
+  and (.home.widgets.widgets | sort) == ["apps"]
 '
 
 CHANGED_FILTER='
@@ -385,17 +379,15 @@ CHANGED_FILTER='
   and .home.searchBar.position == "top"
   and .home.dock.enabled == false
   and .home.dock.favorites == []
-  and .home.widgets.enabled == true
-  and (.home.widgets.widgets | sort) == ["apps", "calendar", "notes"]
-  and .home.clock.style == "digital2"
-  and .home.clock.fillHeight == false
+  and .home.widgets.enabled == false
+  and (.home.widgets.widgets | sort) == []
 '
 
 # The sections a full VALID <-> CHANGED convergence must report as applied.
 ALL_SECTIONS_FILTER='
   ((.appliedMutations // []) | sort) ==
-  ["appearance.transparency", "home.clock", "home.dock.enabled", "home.searchBar",
-   "home.widgets.widgets", "icons"]
+  ["appearance.transparency", "home.dock.enabled", "home.searchBar",
+   "home.widgets.enabled", "home.widgets.widgets", "icons"]
 '
 
 # --- 1. boot + install -------------------------------------------------
@@ -450,7 +442,7 @@ ok "explicit broadcast reached the receiver as unrooted shell (trigger=broadcast
 log "asserting effective config via $STATE_URI/config"
 effective="$(query_json config)" || die "could not query /config"
 assert_jq "$effective" "$EFFECTIVE_FILTER" "effective config matches pushed fixture"
-ok "effective config matches (icons, transparency, search bar, dock, widgets, clock)"
+ok "effective config matches (icons, transparency, search bar, dock, widgets)"
 
 # --- 5. re-write unchanged config: no mutations -------------------------
 
@@ -466,7 +458,7 @@ settle_then_broadcast "$CHANGED_CONFIG" "$H_CHANGED" "change"
 assert_jq "$LAST_REPORT" '.success == true' "changed config applied"
 effective="$(query_json config)" || die "could not query /config"
 assert_jq "$effective" "$CHANGED_FILTER" "effective config shows the changed values in every section"
-ok "changed config: every section flipped (icons, transparency, search bar, dock, widgets, clock)"
+ok "changed config: every section flipped (icons, transparency, search bar, dock, widgets)"
 
 settle_then_broadcast "$VALID_CONFIG" "$H_VALID" "change-back"
 assert_jq "$LAST_REPORT" '.success == true' "original config re-applied"

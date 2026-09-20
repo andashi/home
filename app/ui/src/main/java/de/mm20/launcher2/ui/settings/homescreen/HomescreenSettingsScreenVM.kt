@@ -18,7 +18,6 @@ import de.mm20.launcher2.preferences.ScreenOrientation
 import de.mm20.launcher2.preferences.SearchBarColors
 import de.mm20.launcher2.preferences.SearchBarStyle
 import de.mm20.launcher2.preferences.SystemBarColors
-import de.mm20.launcher2.preferences.ui.ClockWidgetSettings
 import de.mm20.launcher2.preferences.ui.GestureSettings
 import de.mm20.launcher2.preferences.ui.UiSettings
 import kotlinx.coroutines.flow.SharingStarted
@@ -31,11 +30,9 @@ import org.koin.core.component.get
 
 class HomescreenSettingsScreenVM(
     private val uiSettings: UiSettings,
-    private val clockWidgetSettings: ClockWidgetSettings,
     private val gestureSettings: GestureSettings,
 ) : ViewModel() {
 
-    var showClockWidgetSheet by mutableStateOf(false)
 
     val dimWallpaper = uiSettings.dimWallpaper
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), false)
@@ -163,7 +160,6 @@ class HomescreenSettingsScreenVM(
             initializer {
                 HomescreenSettingsScreenVM(
                     uiSettings = get(),
-                    clockWidgetSettings = get(),
                     gestureSettings = get(),
                 )
             }

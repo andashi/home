@@ -110,8 +110,6 @@ import de.mm20.launcher2.ui.locals.LocalPreferDarkContentOverWallpaper
 import de.mm20.launcher2.ui.settings.SettingsActivity
 import de.mm20.launcher2.widgets.AppWidget
 import de.mm20.launcher2.widgets.AppsWidget
-import de.mm20.launcher2.widgets.MusicWidget
-import de.mm20.launcher2.widgets.NotesWidget
 import de.mm20.launcher2.widgets.Widget
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.flow.map
@@ -142,8 +140,6 @@ fun ConfigureWidgetSheet(
             when (widget) {
                 is AppWidget -> ConfigureAppWidget(widget, onWidgetUpdated)
                 is AppsWidget -> ConfigureFavoritesWidget(widget, onWidgetUpdated)
-                is MusicWidget -> ConfigureMusicWidget(widget, onWidgetUpdated)
-                is NotesWidget -> ConfigureNotesWidget(widget, onWidgetUpdated)
             }
         }
 
@@ -518,59 +514,6 @@ fun ColumnScope.ConfigureFavoritesWidget(
 }
 
 @Composable
-fun ColumnScope.ConfigureMusicWidget(
-    widget: MusicWidget,
-    onWidgetUpdated: (MusicWidget) -> Unit,
-) {
-    val context = LocalContext.current
-
-    OutlinedCard {
-        Column(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            SwitchPreference(
-                title = stringResource(R.string.music_widget_interactive_progress_bar),
-                iconPadding = false,
-                value = widget.config.interactiveProgressBar,
-                onValueChanged = {
-                    onWidgetUpdated(widget.copy(config = widget.config.copy(interactiveProgressBar = it)))
-                }
-            )
-        }
-    }
-
-    TextButton(
-        modifier = Modifier
-            .align(Alignment.CenterHorizontally),
-        contentPadding = PaddingValues(
-            end = 16.dp,
-            top = 8.dp,
-            start = 24.dp,
-            bottom = 8.dp,
-        ),
-        onClick = {
-            context.startActivity(
-                Intent(
-                    context,
-                    SettingsActivity::class.java
-                ).apply {
-                    putExtra(
-                        SettingsActivity.EXTRA_ROUTE,
-                        SettingsActivity.ROUTE_MEDIA_INTEGRATION,
-                    )
-                })
-        }) {
-        Text(stringResource(R.string.widget_config_music_integration_settings))
-        Icon(
-            modifier = Modifier
-                .padding(start = ButtonDefaults.IconSpacing)
-                .requiredSize(ButtonDefaults.IconSize),
-            painter = painterResource(R.drawable.open_in_new_20px), contentDescription = null
-        )
-    }
-}
-
-@Composable
 fun ColumnScope.ConfigureAppWidget(
     widget: AppWidget,
     onWidgetUpdated: (Widget) -> Unit,
@@ -622,9 +565,7 @@ fun ColumnScope.ConfigureAppWidget(
                         )
                     )
 
-                    is MusicWidget -> it.copy(id = widget.id)
                     is AppsWidget -> it.copy(id = widget.id)
-                    is NotesWidget -> it.copy(id = widget.id)
                 }
                 onWidgetUpdated(updatedWidget)
                 replaceWidget = false
@@ -799,93 +740,3 @@ fun ColumnScope.ConfigureAppWidget(
     }
 }
 
-@Composable
-fun ConfigureNotesWidget(
-    widget: NotesWidget,
-    onWidgetUpdated: (NotesWidget) -> Unit
-) {
-    val context = LocalContext.current
-    val resources = LocalResources.current
-    val linkFileLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.CreateDocument("text/markdown")
-    ) {
-        it ?: return@rememberLauncherForActivityResult
-        try {
-            context.contentResolver.takePersistableUriPermission(
-                it,
-                Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
-            )
-            if (widget.config.linkedFile != null) {
-                try {
-                    context.contentResolver.releasePersistableUriPermission(
-                        Uri.parse(widget.config.linkedFile),
-                        Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
-                    )
-                } catch (e: SecurityException) {
-                    CrashReporter.logException(e)
-                }
-            }
-            onWidgetUpdated(
-                widget.copy(
-                    config = widget.config.copy(
-                        linkedFile = it.toString(),
-                        lastSyncSuccessful = false
-                    )
-                )
-            )
-        } catch (e: SecurityException) {
-            CrashReporter.logException(e)
-        }
-    }
-    OutlinedCard {
-        if (widget.config.linkedFile != null) {
-            Preference(
-                icon = { Icon(painterResource(R.drawable.link_off_24px), null) },
-                title = { Text(stringResource(R.string.note_widget_action_unlink_file)) },
-                summary = {
-                    Text(
-                        stringResource(
-                            R.string.note_widget_linked_file_summary,
-                            formatLinkedFileUri(widget.config.linkedFile?.toUri())
-                        )
-                    )
-                },
-                onClick = {
-                    try {
-                        context.contentResolver.releasePersistableUriPermission(
-                            Uri.parse(widget.config.linkedFile),
-                            Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
-                        )
-                    } catch (e: SecurityException) {
-                        CrashReporter.logException(e)
-                    }
-                    onWidgetUpdated(widget.copy(config = widget.config.copy(linkedFile = null)))
-                }
-            )
-        } else {
-            Preference(
-                title = stringResource(R.string.note_widget_link_file),
-                summary = stringResource(R.string.note_widget_link_file_summary),
-                icon = R.drawable.link_24px,
-                onClick = {
-                    linkFileLauncher.launch(
-                        resources.getString(
-                            R.string.notes_widget_export_filename,
-                            ZonedDateTime.now().format(
-                                DateTimeFormatter.ISO_INSTANT
-                            )
-                        )
-                    )
-                }
-            )
-        }
-    }
-}
-
-fun formatLinkedFileUri(uri: Uri?): String {
-    if (uri == null) return ""
-    if (uri.scheme == "content" && uri.authority == "com.android.externalstorage.documents") {
-        return uri.lastPathSegment ?: ""
-    }
-    return uri.toString()
-}

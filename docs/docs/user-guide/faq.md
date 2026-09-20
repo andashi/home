@@ -32,11 +32,12 @@ profile.
 **Private** is the private space profile, available on Android 15 and higher. Learn more about
 private spaces [here](https://support.google.com/android/answer/15341885?hl=en).
 
-## Can I remove / customize the clock?
+## Why is my home screen empty?
 
-Yes, you can customize the clock style by going to Settings > Home screen > Clock and selecting a
-different
-style. There is also an "empty style" that will remove the clock entirely.
+The built-in clock, weather, calendar, music and notes widgets were removed (see ADR 0008): the
+launcher hosts standard Android widgets instead. A home screen with no widgets configured shows
+the wallpaper, the dock and the search bar, and nothing else. Add widgets from any installed app
+through the widget picker.
 
 ## The toggle to grant notification access or to enable the accessibility service is disabled
 

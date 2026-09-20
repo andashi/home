@@ -26,7 +26,6 @@
     <string name="preference_icon_shape_triangle">ルーローの三角形</string>
     <string name="preference_grid_labels">ラベルの表示</string>
     <string name="preference_grid_icon_size">アイコンのサイズ</string>
-    <string name="battery_part_charging">充電中</string>
     <string name="search_action_email">メール</string>
     <string name="search_bar_placeholder">検索</string>
     <string name="default_websearch_3_url">https://play.google.com/store/search\?q=${1}</string>
@@ -35,17 +34,13 @@
     <string name="preference_icon_shape_squircle">スクワークル</string>
     <string name="preference_category_wallpaper">壁紙</string>
     <string name="preference_icon_shape_pentagon">五角形</string>
-    <string name="preference_clockwidget_battery_part">電池</string>
     <string name="help">ヘルプ</string>
     <string name="default_websearch_2_url">https://www.youtube.com/results\?search_query=${1}</string>
     <string name="preference_icon_shape_rounded_square">角丸</string>
     <string name="preference_icon_shape_square">スクエア</string>
-    <string name="preference_clockwidget_alarm_part">アラーム</string>
     <string name="alert_delete_shortcut">ショートカット %1$s は永久に削除されます。続行しますか？</string>
     <string name="widget_add_widget">ウィジェットを追加</string>
     <string name="show_all">すべて表示</string>
-    <string name="music_widget_default_title">%1$s がメディアを再生しています</string>
-    <string name="music_widget_no_data">メディアは再生されていません</string>
     <string name="duplicate">複製</string>
     <string name="action_next">次へ</string>
     <string name="menu_item_edit_favs">お気に入りを編集</string>
@@ -65,30 +60,18 @@
     <string name="websearch_dialog_query_encoding_form">application/x-www-form-urlencoded</string>
     <string name="websearch_dialog_query_encoding_none">なし</string>
     <string name="menu_edit_widgets">ウィジェットを編集</string>
-    <string name="widget_name_music">音楽</string>
     <string name="websearch_dialog_advanced">高度な設定</string>
     <string name="shortcut_summary">%1$s から</string>
     <string name="close">閉じる</string>
     <string name="save">保存</string>
     <string name="turn_off">オフ</string>
     <string name="widget_action_remove">削除</string>
-    <string name="widget_name_notes">メモ</string>
-    <string name="notes_widget_placeholder">メモを書く…</string>
-    <string name="notes_widget_action_new">新しいメモ</string>
-    <string name="notes_widget_action_save">保存</string>
-    <string name="notes_widget_export_filename">メモ_%1$s</string>
     <string name="edit">編集</string>
     <string name="action_import">インポート</string>
-    <string name="notes_widget_action_dismiss">閉じる</string>
-    <string name="notes_widget_dismissed">メモは閉じられました。</string>
     <string name="widget_action_replace">置き換え</string>
-    <string name="preference_screen_clockwidget">時計</string>
     <string name="preference_screen_appearance_summary">外観のカスタマイズ</string>
     <string name="preference_screen_tags">タグ</string>
     <string name="preference_theme_system">システムに従う</string>
-    <string name="preference_screen_integrations_summary">接続されたアカウントとサービスを管理</string>
-    <string name="preference_clockwidget_layout_vertical">デフォルト</string>
-    <string name="preference_screen_clockwidget_summary">時計のスタイルとコンポーネントを設定</string>
     <string name="preference_use_system_default">システムのデフォルトを使用</string>
     <string name="preference_screen_search_summary">検索、タグ、非表示のアイテム</string>
     <string name="preference_screen_homescreen">ホーム画面</string>
@@ -112,7 +95,6 @@
     <string name="preference_screen_buildinfo">ビルド情報</string>
     <string name="preference_screen_buildinfo_summary">アプリのビルドに関する詳細情報</string>
     <string name="preference_themed_icons">テーマアイコン</string>
-    <string name="preference_screen_integrations">統合</string>
     <string name="preference_category_license">ライセンス</string>
     <string name="preference_about_license">このアプリはフリーソフトウェアです。</string>
     <string name="preference_about_license_summary">GNU 一般公衆ライセンス 3.0 のもとでライセンスされています</string>
@@ -121,9 +103,6 @@
     <string name="preference_screen_about">このアプリについて</string>
     <string name="preference_version">バージョン</string>
     <string name="action_clear">削除</string>
-    <string name="music_widget_next_track">次のタイトル</string>
-    <string name="music_widget_play">プレイ</string>
-    <string name="music_widget_pause">ポーズ</string>
     <string name="profile_work_profile_state_locked">仕事用アプリは一時停止されています。</string>
     <string name="profile_private_profile_state_locked">プライベートスペースはロックされています。</string>
     <string name="profile_private_profile_action_unlock">ロック解除</string>
@@ -132,6 +111,5 @@
     <string name="profile_private_profile_action_lock">プライベートスペースをロック</string>
     <string name="hint_drag_and_drop_reorder">アイテムを押しながらドラッグして並べ替えてください</string>
     <string name="action_done">完了</string>
-    <string name="action_install">インストール</string>
     <string name="action_quit">閉じる</string>
 </resources>

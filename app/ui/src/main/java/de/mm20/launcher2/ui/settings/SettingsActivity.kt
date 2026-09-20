@@ -79,8 +79,6 @@ import de.mm20.launcher2.ui.settings.homescreen.HomescreenSettingsRoute
 import de.mm20.launcher2.ui.settings.homescreen.HomescreenSettingsScreen
 import de.mm20.launcher2.ui.settings.icons.IconsSettingsRoute
 import de.mm20.launcher2.ui.settings.icons.IconsSettingsScreen
-import de.mm20.launcher2.ui.settings.integrations.IntegrationsSettingsRoute
-import de.mm20.launcher2.ui.settings.integrations.IntegrationsSettingsScreen
 import de.mm20.launcher2.ui.settings.license.LicenseRoute
 import de.mm20.launcher2.ui.settings.license.LicenseScreen
 import de.mm20.launcher2.ui.settings.locale.CalendarSettingsRoute
@@ -91,8 +89,6 @@ import de.mm20.launcher2.ui.settings.locale.LocaleSettingsRoute
 import de.mm20.launcher2.ui.settings.locale.LocaleSettingsScreen
 import de.mm20.launcher2.ui.settings.main.MainRoute
 import de.mm20.launcher2.ui.settings.main.MainSettingsScreen
-import de.mm20.launcher2.ui.settings.media.MediaIntegrationSettingsRoute
-import de.mm20.launcher2.ui.settings.media.MediaIntegrationSettingsScreen
 import de.mm20.launcher2.ui.settings.search.SearchSettingsRoute
 import de.mm20.launcher2.ui.settings.search.SearchSettingsScreen
 import de.mm20.launcher2.ui.settings.searchactions.SearchActionsSettingsRoute
@@ -101,8 +97,6 @@ import de.mm20.launcher2.ui.settings.shapes.ShapeSchemeSettingsRoute
 import de.mm20.launcher2.ui.settings.shapes.ShapeSchemeSettingsScreen
 import de.mm20.launcher2.ui.settings.shapes.ShapeSchemesSettingsRoute
 import de.mm20.launcher2.ui.settings.shapes.ShapeSchemesSettingsScreen
-import de.mm20.launcher2.ui.settings.smartspacer.SmartspacerSettingsRoute
-import de.mm20.launcher2.ui.settings.smartspacer.SmartspacerSettingsScreen
 import de.mm20.launcher2.ui.settings.tags.TagsSettingsRoute
 import de.mm20.launcher2.ui.settings.tags.TagsSettingsScreen
 import de.mm20.launcher2.ui.settings.transparencies.TransparencySchemeSettingsRoute
@@ -189,9 +183,6 @@ class SettingsActivity : BaseActivity() {
             entry<FilterBarSettingsRoute> {
                 FilterBarSettingsScreen()
             }
-            entry<MediaIntegrationSettingsRoute> {
-                MediaIntegrationSettingsScreen()
-            }
             entry<FavoritesSettingsRoute> {
                 FavoritesSettingsScreen()
             }
@@ -200,9 +191,6 @@ class SettingsActivity : BaseActivity() {
             }
             entry<ContactsSettingsRoute> {
                 ContactsSettingsScreen()
-            }
-            entry<IntegrationsSettingsRoute> {
-                IntegrationsSettingsScreen()
             }
             entry<AboutSettingsRoute> {
                 AboutSettingsScreen()
@@ -233,9 +221,6 @@ class SettingsActivity : BaseActivity() {
             }
             entry<AppSearchSettingsRoute> {
                 AppSearchSettingsScreen()
-            }
-            entry<SmartspacerSettingsRoute> {
-                SmartspacerSettingsScreen()
             }
             entry<FeedIntegrationSettingsRoute> {
                 FeedIntegrationSettingsScreen()
@@ -320,7 +305,6 @@ class SettingsActivity : BaseActivity() {
             intent.getStringExtra(EXTRA_ROUTE) ?: return null
         }
         return when(routeName) {
-            ROUTE_MEDIA_INTEGRATION -> MediaIntegrationSettingsRoute
             ROUTE_SEARCH_ACTIONS -> SearchActionsSettingsRoute
             ROUTE_HIDDEN_ITEMS -> HiddenItemsSettingsRoute
             else -> null
@@ -329,7 +313,6 @@ class SettingsActivity : BaseActivity() {
 
     companion object {
         const val EXTRA_ROUTE = "de.mm20.launcher2.settings.ROUTE"
-        const val ROUTE_MEDIA_INTEGRATION = "settings/integrations/media"
         const val ROUTE_SEARCH_ACTIONS = "settings/search/searchactions"
         const val ROUTE_HIDDEN_ITEMS = "settings/search/hiddenitems"
     }

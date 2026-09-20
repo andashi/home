@@ -27,12 +27,11 @@ object ConfigParser {
         "appearance" to setOf("transparency", "wallpaper"),
         "appearance.transparency" to setOf("name", "background", "surface", "elevatedSurface"),
         "appearance.wallpaper" to setOf("image", "target"),
-        "home" to setOf("searchBar", "dock", "widgets", "clock"),
+        "home" to setOf("searchBar", "dock", "widgets"),
         "home.searchBar" to setOf("position"),
         "home.dock" to setOf("enabled", "favorites"),
         "home.dock.favorites[]" to setOf("packageName", "profile"),
         "home.widgets" to setOf("enabled", "widgets"),
-        "home.clock" to setOf("style", "fillHeight"),
     )
 
     fun parse(input: String): ConfigParseResult {

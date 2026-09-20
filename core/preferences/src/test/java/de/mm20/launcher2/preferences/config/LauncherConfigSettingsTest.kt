@@ -2,11 +2,9 @@ package de.mm20.launcher2.preferences.config
 
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
-import de.mm20.launcher2.config.ClockStyle
 import de.mm20.launcher2.config.ConfigMutation
 import de.mm20.launcher2.config.Favorite
 import de.mm20.launcher2.config.SearchBarPosition
-import de.mm20.launcher2.preferences.ClockWidgetStyleEnum
 import de.mm20.launcher2.preferences.LauncherDataStore
 import de.mm20.launcher2.preferences.LauncherSettingsData
 import de.mm20.launcher2.preferences.seedSettingsFile
@@ -45,8 +43,6 @@ class LauncherConfigSettingsTest {
                 searchBarBottom = true,
                 homeScreenDock = true,
                 homeScreenWidgets = true,
-                clockWidgetStyle = ClockWidgetStyleEnum.Segment,
-                clockWidgetFillHeight = true,
                 uiTransparenciesId = transparenciesId,
             )
         )
@@ -59,8 +55,6 @@ class LauncherConfigSettingsTest {
         assertEquals(SearchBarPosition.Bottom, result.state.searchBarPosition)
         assertEquals(true, result.state.dockEnabled)
         assertEquals(true, result.state.widgetsEnabled)
-        assertEquals(ClockStyle.Segment, result.state.clockStyle)
-        assertEquals(true, result.state.clockFillHeight)
         assertEquals(transparenciesId, result.transparenciesId)
     }
 
@@ -69,50 +63,6 @@ class LauncherConfigSettingsTest {
         val gateway = createGateway(LauncherSettingsData(searchBarBottom = false))
 
         assertEquals(SearchBarPosition.Top, gateway.readState().state.searchBarPosition)
-    }
-
-    @Test
-    fun `readState maps every built-in clock widget style`() = runTest {
-        val expected = mapOf(
-            ClockWidgetStyleEnum.Digital1 to ClockStyle.Digital1,
-            ClockWidgetStyleEnum.Digital2 to ClockStyle.Digital2,
-            ClockWidgetStyleEnum.Orbit to ClockStyle.Orbit,
-            ClockWidgetStyleEnum.Analog to ClockStyle.Analog,
-            ClockWidgetStyleEnum.Binary to ClockStyle.Binary,
-            ClockWidgetStyleEnum.Segment to ClockStyle.Segment,
-            ClockWidgetStyleEnum.Empty to ClockStyle.Empty,
-        )
-        // One DataStore instance per test run: update the same store instead
-        // of reseeding and recreating.
-        seedSettingsFile(context, LauncherSettingsData())
-        val store = LauncherDataStore(context)
-        val gateway = LauncherConfigSettingsImpl(store)
-
-        for ((enumValue, clockStyle) in expected) {
-            store.updateAndAwait { it.copy(clockWidgetStyle = enumValue) }
-            assertEquals(clockStyle, gateway.readState().state.clockStyle)
-        }
-    }
-
-    @Test
-    fun `readState reports a Custom clock widget style as not representable`() = runTest {
-        val gateway = createGateway(
-            LauncherSettingsData(clockWidgetStyle = ClockWidgetStyleEnum.Custom)
-        )
-
-        assertNull(gateway.readState().state.clockStyle)
-    }
-
-    @Test
-    fun `apply SetClock replaces a Custom clock widget`() = runTest {
-        val gateway = createGateway(
-            LauncherSettingsData(clockWidgetStyle = ClockWidgetStyleEnum.Custom)
-        )
-
-        val updated = gateway.applyAndReturn(listOf(ConfigMutation.SetClock(style = ClockStyle.Digital1)))
-
-        assertEquals(ClockWidgetStyleEnum.Digital1, updated.clockWidgetStyle)
-        assertEquals(ClockStyle.Digital1, gateway.readState().state.clockStyle)
     }
 
     @Test
@@ -192,52 +142,6 @@ class LauncherConfigSettingsTest {
     }
 
     @Test
-    fun `apply SetClock updates style and fillHeight`() = runTest {
-        val gateway = createGateway()
-
-        val updated = gateway.applyAndReturn(
-            listOf(ConfigMutation.SetClock(style = ClockStyle.Orbit, fillHeight = true))
-        )
-
-        assertEquals(ClockWidgetStyleEnum.Orbit, updated.clockWidgetStyle)
-        assertEquals(true, updated.clockWidgetFillHeight)
-    }
-
-    @Test
-    fun `apply SetClock with null fields leaves existing values untouched`() = runTest {
-        val gateway = createGateway(
-            LauncherSettingsData(
-                clockWidgetStyle = ClockWidgetStyleEnum.Binary,
-                clockWidgetFillHeight = true,
-            )
-        )
-
-        val updated = gateway.applyAndReturn(listOf(ConfigMutation.SetClock(style = ClockStyle.Digital1)))
-
-        assertEquals(ClockWidgetStyleEnum.Digital1, updated.clockWidgetStyle)
-        assertEquals(true, updated.clockWidgetFillHeight)
-    }
-
-    @Test
-    fun `apply maps every ClockStyle to its ClockWidgetStyleEnum`() = runTest {
-        val expected = mapOf(
-            ClockStyle.Digital1 to ClockWidgetStyleEnum.Digital1,
-            ClockStyle.Digital2 to ClockWidgetStyleEnum.Digital2,
-            ClockStyle.Orbit to ClockWidgetStyleEnum.Orbit,
-            ClockStyle.Analog to ClockWidgetStyleEnum.Analog,
-            ClockStyle.Binary to ClockWidgetStyleEnum.Binary,
-            ClockStyle.Segment to ClockWidgetStyleEnum.Segment,
-            ClockStyle.Empty to ClockWidgetStyleEnum.Empty,
-        )
-        val gateway = createGateway()
-
-        for ((clockStyle, enumValue) in expected) {
-            val updated = gateway.applyAndReturn(listOf(ConfigMutation.SetClock(style = clockStyle)))
-            assertEquals(enumValue, updated.clockWidgetStyle)
-        }
-    }
-
-    @Test
     fun `apply combined mutations in a single call updates all fields`() = runTest {
         val gateway = createGateway()
 
@@ -247,7 +151,6 @@ class LauncherConfigSettingsTest {
                 ConfigMutation.SetSearchBarPosition(SearchBarPosition.Top),
                 ConfigMutation.SetDockEnabled(true),
                 ConfigMutation.SetWidgetsEnabled(true),
-                ConfigMutation.SetClock(style = ClockStyle.Analog, fillHeight = true),
             )
         )
 
@@ -257,8 +160,6 @@ class LauncherConfigSettingsTest {
         assertEquals(SearchBarPosition.Top, result.state.searchBarPosition)
         assertEquals(true, result.state.dockEnabled)
         assertEquals(true, result.state.widgetsEnabled)
-        assertEquals(ClockStyle.Analog, result.state.clockStyle)
-        assertEquals(true, result.state.clockFillHeight)
     }
 
     @Test

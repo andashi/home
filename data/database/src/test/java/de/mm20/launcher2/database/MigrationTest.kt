@@ -137,4 +137,32 @@ class MigrationTest {
         }
         db.close()
     }
+
+    @Test
+    fun `migration 34 to 35 deletes widget rows of removed features`() {
+        helper.createDatabase(testDb, 34).apply {
+            execSQL("DELETE FROM `Widget`")
+            execSQL(
+                "INSERT INTO `Widget` (`type`, `position`, `id`, `parentId`) VALUES " +
+                        "('weather', 0, X'00000000000000000000000000000001', NULL)," +
+                        "('music', 1, X'00000000000000000000000000000002', NULL)," +
+                        "('calendar', 2, X'00000000000000000000000000000003', NULL)," +
+                        "('apps', 3, X'00000000000000000000000000000004', NULL)," +
+                        "('favorites', 4, X'00000000000000000000000000000005', NULL)"
+            )
+            close()
+        }
+
+        val db = helper.runMigrationsAndValidate(testDb, 35, true, Migration_34_35())
+
+        db.query("SELECT `type` FROM `Widget` ORDER BY `position`").use { cursor ->
+            val types = buildList {
+                while (cursor.moveToNext()) add(cursor.getString(0))
+            }
+            // 'apps' is rewritten, not kept: Widget.fromDatabaseEntity only
+            // knows AppsWidget.Type, which is "favorites"
+            assertEquals(listOf("favorites", "favorites"), types)
+        }
+        db.close()
+    }
 }

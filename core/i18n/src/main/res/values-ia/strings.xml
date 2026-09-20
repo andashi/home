@@ -35,8 +35,6 @@
     <string name="preference_about_telegram">Gruppo de Telegram</string>
     <string name="preference_about_license">Iste application es software libere.</string>
     <string name="preference_screen_buildinfo_summary">Plus de information re le compilation de iste application</string>
-    <string name="widget_name_music">Musica</string>
-    <string name="notes_widget_action_dismiss">Dimitter</string>
     <string name="save">Salveguardar</string>
     <string name="action_next">Sequente</string>
     <string name="widget_action_remove">Remover</string>
@@ -61,10 +59,8 @@
     <string name="preference_search_result_ordering_weight_factor_low">Stabile</string>
     <string name="widget_add_widget">Adder un widget</string>
     <string name="edit">Modificar</string>
-    <string name="preference_category_debug">Depuration</string>
     <string name="preference_use_system_default">Usar le predefinite del systema</string>
     <string name="websearch_dialog_advanced">Avantiate</string>
-    <string name="notes_widget_action_save">Salveguardar</string>
     <string name="turn_off">Disactivar</string>
     <string name="gesture_action_launch_app">Lancear application</string>
     <string name="shortcut_summary">Per %1$s</string>
@@ -75,7 +71,6 @@
     <string name="show_all">Monstrar toto</string>
     <string name="preference_colors_default">Predefinite</string>
     <string name="preference_mdy_color_source_system">Systema</string>
-    <string name="music_widget_default_title">%1$s es in reproduction de medio</string>
     <string name="grant_permission">Conceder</string>
     <string name="preference_debug_reinstall_iconpacks">Reinstallar pacchettos de icones</string>
     <string name="more_information">Plus de information</string>

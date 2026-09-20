@@ -16,14 +16,10 @@ Some apps allow the creation of home screen shortcuts. These shortcuts will also
 
 ## Access favorites
 
-Favorites can appear in three different places:
+Favorites can appear in two different places:
 
 - Above (or below) the app grid (enabled by default, can be disabled at Settings > Search > Favorites)
 - In the [favorites widget](/docs/user-guide/widgets/favorites-widget) (not enabled by default)
-- In the [clock widget](/docs/user-guide/widgets/clock#dynamic-components) (not enabled by default)
-
-> [!INFO]
-> If you have the calendar widget enabled, pinned calendar events will not appear in any of the above places. Instead, they will appear in the calendar widget.
 
 ## Customization
 

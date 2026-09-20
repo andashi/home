@@ -18,9 +18,7 @@ class ConfigDifferTest {
         dockEnabled = true,
         dockFavorites = listOf(Favorite("com.example.dialer", Profile.Personal)),
         widgetsEnabled = true,
-        widgets = listOf(BuiltinWidget.Apps, BuiltinWidget.Notes),
-        clockStyle = ClockStyle.Orbit,
-        clockFillHeight = true,
+        widgets = listOf(BuiltinWidget.Apps),
         wallpaperImage = "home.jpg",
         wallpaperTarget = WallpaperTarget.Both,
     )
@@ -49,9 +47,8 @@ class ConfigDifferTest {
             ),
             widgets = WidgetsConfig(
                 enabled = true,
-                widgets = listOf(BuiltinWidget.Apps, BuiltinWidget.Notes),
+                widgets = listOf(BuiltinWidget.Apps),
             ),
-            clock = ClockConfig(style = ClockStyle.Orbit, fillHeight = true),
         ),
     )
 
@@ -143,9 +140,8 @@ class ConfigDifferTest {
                 ),
                 widgets = WidgetsConfig(
                     enabled = false,
-                    widgets = listOf(BuiltinWidget.Notes),
+                    widgets = emptyList(),
                 ),
-                clock = ClockConfig(style = ClockStyle.Analog, fillHeight = false),
             ),
         )
 
@@ -160,7 +156,6 @@ class ConfigDifferTest {
                 "home.dock.favorites",
                 "home.widgets.enabled",
                 "home.widgets.widgets",
-                "home.clock",
             ),
             mutations.map { it.section },
         )
@@ -174,8 +169,7 @@ class ConfigDifferTest {
                     listOf(Favorite("com.example.mail", Profile.Work))
                 ),
                 ConfigMutation.SetWidgetsEnabled(false),
-                ConfigMutation.SetWidgets(listOf(BuiltinWidget.Notes)),
-                ConfigMutation.SetClock(style = ClockStyle.Analog, fillHeight = false),
+                ConfigMutation.SetWidgets(emptyList()),
             ),
             mutations,
         )

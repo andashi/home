@@ -1,10 +1,8 @@
 package de.mm20.launcher2.preferences.config
 
-import de.mm20.launcher2.config.ClockStyle
 import de.mm20.launcher2.config.ConfigMutation
 import de.mm20.launcher2.config.ConfigState
 import de.mm20.launcher2.config.SearchBarPosition
-import de.mm20.launcher2.preferences.ClockWidgetStyleEnum
 import de.mm20.launcher2.preferences.LauncherDataStore
 import de.mm20.launcher2.preferences.LauncherSettingsData
 import kotlinx.coroutines.flow.first
@@ -14,7 +12,7 @@ import java.util.UUID
  * Fork addition (Phase 2): settings-backed projection of [ConfigState] and
  * applier for the settings-backed [ConfigMutation]s produced by
  * `ConfigDiffer`. Lives in `:core:preferences` because [LauncherSettingsData]
- * and [ClockWidgetStyleEnum] have internal visibility.
+ * has internal visibility.
  *
  * All writes go through [LauncherDataStore.updateAndAwait] (one awaited
  * DataStore update per [apply] call); the old fire-and-forget settings
@@ -71,8 +69,6 @@ internal class LauncherConfigSettingsImpl(
                 },
                 dockEnabled = data.homeScreenDock,
                 widgetsEnabled = data.homeScreenWidgets,
-                clockStyle = data.clockWidgetStyle.toClockStyle(),
-                clockFillHeight = data.clockWidgetFillHeight,
             ),
             transparenciesId = data.uiTransparenciesId,
         )
@@ -120,11 +116,6 @@ internal class LauncherConfigSettingsImpl(
 
             is ConfigMutation.SetWidgetsEnabled -> copy(homeScreenWidgets = mutation.enabled)
 
-            is ConfigMutation.SetClock -> copy(
-                clockWidgetStyle = mutation.style?.toClockWidgetStyleEnum() ?: clockWidgetStyle,
-                clockWidgetFillHeight = mutation.fillHeight ?: clockWidgetFillHeight,
-            )
-
             is ConfigMutation.SetTransparency,
             is ConfigMutation.SetDockFavorites,
             is ConfigMutation.SetWidgets,
@@ -133,33 +124,6 @@ internal class LauncherConfigSettingsImpl(
         }
     }
 
-    private fun ClockWidgetStyleEnum.toClockStyle(): ClockStyle? {
-        return when (this) {
-            ClockWidgetStyleEnum.Digital1 -> ClockStyle.Digital1
-            ClockWidgetStyleEnum.Digital2 -> ClockStyle.Digital2
-            ClockWidgetStyleEnum.Orbit -> ClockStyle.Orbit
-            ClockWidgetStyleEnum.Analog -> ClockStyle.Analog
-            ClockWidgetStyleEnum.Binary -> ClockStyle.Binary
-            ClockWidgetStyleEnum.Segment -> ClockStyle.Segment
-            ClockWidgetStyleEnum.Empty -> ClockStyle.Empty
-            // A custom (third-party app) clock widget is not representable in
-            // the config format: reported as null so read-back stays honest and
-            // any configured style counts as a difference.
-            ClockWidgetStyleEnum.Custom -> null
-        }
-    }
-
-    private fun ClockStyle.toClockWidgetStyleEnum(): ClockWidgetStyleEnum {
-        return when (this) {
-            ClockStyle.Digital1 -> ClockWidgetStyleEnum.Digital1
-            ClockStyle.Digital2 -> ClockWidgetStyleEnum.Digital2
-            ClockStyle.Orbit -> ClockWidgetStyleEnum.Orbit
-            ClockStyle.Analog -> ClockWidgetStyleEnum.Analog
-            ClockStyle.Binary -> ClockWidgetStyleEnum.Binary
-            ClockStyle.Segment -> ClockWidgetStyleEnum.Segment
-            ClockStyle.Empty -> ClockWidgetStyleEnum.Empty
-        }
-    }
 }
 
 /**

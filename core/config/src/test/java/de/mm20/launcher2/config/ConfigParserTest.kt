@@ -38,9 +38,8 @@ class ConfigParserTest {
             },
             "widgets": {
               "enabled": true,
-              "widgets": ["music", "apps", "notes"]
-            },
-            "clock": { "style": "orbit", "fillHeight": true }
+              "widgets": ["apps"]
+            }
           }
         }
     """.trimIndent()
@@ -70,15 +69,9 @@ class ConfigParserTest {
             config.home?.dock?.favorites,
         )
         assertEquals(
-            listOf(
-                BuiltinWidget.Music,
-                BuiltinWidget.Apps,
-                BuiltinWidget.Notes,
-            ),
+            listOf(BuiltinWidget.Apps),
             config.home?.widgets?.widgets,
         )
-        assertEquals(ClockStyle.Orbit, config.home?.clock?.style)
-        assertEquals(true, config.home?.clock?.fillHeight)
     }
 
     @Test
@@ -353,7 +346,7 @@ class ConfigParserTest {
             {
               "schemaVersion": 1,
               "home": {
-                "widgets": { "widgets": ["apps", "music", "apps"] }
+                "widgets": { "widgets": ["apps", "apps"] }
               }
             }
         """.trimIndent()
@@ -362,7 +355,7 @@ class ConfigParserTest {
 
         val duplicates = result.diagnostics.filter { it.code == "duplicate-widget" }
         assertEquals(1, duplicates.size)
-        assertEquals("home.widgets.widgets[2]", duplicates.single().path)
+        assertEquals("home.widgets.widgets[1]", duplicates.single().path)
     }
 
     @Test
@@ -385,18 +378,18 @@ class ConfigParserTest {
     }
 
     @Test
-    fun `clock style serial names are stable and lowercase`() {
+    fun `enum serial names are stable and lowercase`() {
         val input = """
             {
               "schemaVersion": 1,
-              "home": { "clock": { "style": "binary" } }
+              "home": { "searchBar": { "position": "bottom" } }
             }
         """.trimIndent()
 
         val result = ConfigParser.parse(input)
 
         assertTrue(result.isSuccess)
-        assertEquals(ClockStyle.Binary, result.config?.home?.clock?.style)
+        assertEquals(SearchBarPosition.Bottom, result.config?.home?.searchBar?.position)
     }
 
     @Test
@@ -404,7 +397,7 @@ class ConfigParserTest {
         val input = """
             {
               "schemaVersion": 1,
-              "home": { "clock": { "style": "holographic" } }
+              "home": { "searchBar": { "position": "sideways" } }
             }
         """.trimIndent()
 
@@ -480,5 +473,28 @@ class ConfigParserTest {
 
         assertNull(result.config)
         assertTrue(result.diagnostics.any { it.code == "decode-failed" })
+    }
+
+    @Test
+    fun `a leftover clock block is reported, not silently accepted`() {
+        // home.clock left the contract with the clock widget (ADR 0008). A
+        // config written before that still carries it, and the promise made
+        // there is that an unknown *key* is ignored *with a diagnostic* - which
+        // only holds if knownKeys stops listing it.
+        val input = """
+            {
+              "schemaVersion": 1,
+              "home": { "clock": { "style": "orbit", "fillHeight": true } }
+            }
+        """.trimIndent()
+
+        val result = ConfigParser.parse(input)
+
+        assertTrue(result.isSuccess)
+        val unknown = result.diagnostics.filter { it.code == "unknown-key" }
+        assertTrue(
+            "expected a diagnostic for home.clock, got ${result.diagnostics.map { it.path }}",
+            unknown.any { it.path == "home.clock" },
+        )
     }
 }

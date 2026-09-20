@@ -14,7 +14,8 @@ import de.mm20.launcher2.ui.settings.debug.DebugSettingsRoute
 import de.mm20.launcher2.ui.settings.gestures.GesturesSettingsRoute
 import de.mm20.launcher2.ui.settings.homescreen.HomescreenSettingsRoute
 import de.mm20.launcher2.ui.settings.icons.IconsSettingsRoute
-import de.mm20.launcher2.ui.settings.integrations.IntegrationsSettingsRoute
+import de.mm20.launcher2.FeatureFlags
+import de.mm20.launcher2.ui.settings.feed.FeedIntegrationSettingsRoute
 import de.mm20.launcher2.ui.settings.locale.LocaleSettingsRoute
 import de.mm20.launcher2.ui.settings.search.SearchSettingsRoute
 import kotlinx.serialization.Serializable
@@ -70,14 +71,15 @@ fun MainSettingsScreen() {
                         backStack.add(GesturesSettingsRoute)
                     }
                 )
-                Preference(
-                    icon = R.drawable.power_24px,
-                    title = stringResource(id = R.string.preference_screen_integrations),
-                    summary = stringResource(id = R.string.preference_screen_integrations_summary),
-                    onClick = {
-                        backStack.add(IntegrationsSettingsRoute)
-                    }
-                )
+                if (FeatureFlags.feed) {
+                    Preference(
+                        icon = R.drawable.news_24px,
+                        title = stringResource(id = R.string.preference_feed_integration),
+                        onClick = {
+                            backStack.add(FeedIntegrationSettingsRoute)
+                        }
+                    )
+                }
                 Preference(
                     icon = R.drawable.translate_24px,
                     title = stringResource(id = R.string.preference_screen_locale),
