@@ -577,7 +577,6 @@
     <string name="widget_name_notes">Widżet przechowujący pojedynczą notatkę</string>
     <string name="edit">Edytuj</string>
     <string name="preference_debug_dump_heap_summary">Przechwytywanie migawki w celu analizy wykorzystania pamięci. Aplikacja zawiesi się do czasu zakończenia tego procesu.</string>
-    <string name="preference_category_animations">Animacje</string>
     <string name="preference_search_locations">Miejsca</string>
     <string name="preference_screen_homescreen">Ekran domowy</string>
     <string name="preference_screen_homescreen_summary">Zegar, pasek wyszukiwania, tapeta, paski systemowe</string>
@@ -639,8 +638,6 @@
     <string name="preference_location_managed_summary">Lokalizacja tego dostawcy jest zarządzana przez wtyczkę</string>
     <string name="preference_debug_reinstall_iconpacks_summary">Wyczyść i odbuduj pamięć podręczną pakietów ikon</string>
     <string name="preference_screen_integrations">Integracja</string>
-    <string name="preference_charging_animation">Animacja ładowania</string>
-    <string name="preference_charging_animation_summary">Odtwarzanie animacji bąbelków podczas ładowania urządzenia</string>
     <string name="preference_clock_widget_show_seconds">Pokaż sekundy</string>
     <string name="preference_clock_widget_alignment">Wyrównanie</string>
     <string name="preference_clockwidget_dynamic_zone">Dynamiczna strefa</string>

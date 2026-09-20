@@ -266,7 +266,6 @@
     <string name="preference_force_themed_icons">Tving temaikoner</string>
     <string name="preference_icon_pack">Ikonpakke</string>
     <string name="preference_icon_pack_summary_empty">Ingen ikonpakker installeret</string>
-    <string name="preference_charging_animation_summary">Afspil en bobleanimation, mens enheden oplader</string>
     <string name="preference_system_bar_icons_auto">Auto</string>
     <string name="preference_force_themed_icons_summary">Anvend applikationens farveskema på alle ikoner, inklusive dem, der ikke understøttes (anbefales ikke)</string>
     <string name="preference_system_bar_icons_light">Lys</string>
@@ -381,7 +380,6 @@
     <string name="preference_enforce_icon_shape">Tving form</string>
     <string name="preference_category_license">Licens</string>
     <string name="preference_category_media_apps">Medie-apps</string>
-    <string name="preference_charging_animation">Opladningsanimation</string>
     <string name="preference_weather_provider">Udbyder</string>
     <string name="preference_signin_user">Logget ind som %1$s</string>
     <string name="preference_blur_wallpaper_radius">Sløringsradius</string>
@@ -406,7 +404,6 @@
     <string name="preference_about_fdroid">F-Droid repository</string>
     <string name="preference_restore_summary">Importér en tidligere oprettet sikkerhedskopi</string>
     <string name="preference_icon_shape_triangle">Reuleaux-trekant</string>
-    <string name="preference_category_animations">Animationer</string>
     <string name="preference_status_bar_icons">Statuslinje-ikoner</string>
     <string name="preference_notification_badges_summary">Vis et badge for applikationer med ulæste notifikationer</string>
     <string name="preference_owncloud">Owncloud</string>

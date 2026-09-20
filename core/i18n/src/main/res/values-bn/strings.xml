@@ -278,8 +278,6 @@
     <string name="preference_icon_shape_squircle">বর্গাকৃত গোলাকার</string>
     <string name="preference_icon_shape_triangle">রুলো ত্রিভুজ</string>
     <string name="preference_icon_shape_circle">বৃত্ত</string>
-    <string name="preference_charging_animation">চার্জ করার চলচিত্র</string>
-    <string name="preference_charging_animation_summary">যখন ডিভাইস চার্জ হচ্ছে, তখন একটি বুদবুদ চলচিত্র প্লে করুন</string>
     <string name="preference_category_system_bars">সিস্টেম বার</string>
     <string name="preference_status_bar_icons">স্ট্যাটাস বার এর চিহ্ন</string>
     <string name="preference_nav_bar_icons">নির্দেশনা বারের চিহ্ন</string>
@@ -296,7 +294,6 @@
     <string name="preference_imperial_units_summary">ফারেনহাইট ডিগ্রী এবং মাইল প্রতি ঘণ্টা ব্যবহার করুন</string>
     <string name="preference_debug_reinstall_iconpacks_summary">আইকন প্যাকের সঞ্চয় পরিষ্কার করুন এবং পুনর্নির্মাণ করুন</string>
     <string name="preference_cards">কার্ড</string>
-    <string name="preference_category_animations">এনিমেশন</string>
     <string name="preference_icon_pack_summary_empty">কোনো আইকন প্যাক ইনস্টল করা নেই</string>
     <string name="preference_cards_shape">আকৃতি</string>
     <string name="preference_location">অবস্থান</string>

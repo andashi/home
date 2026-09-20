@@ -228,7 +228,6 @@
     <string name="preference_screen_appearance_summary">سفارشی‌سازی ظاهر</string>
     <string name="preference_weather_provider">ارائه‌دهنده</string>
     <string name="preference_automatic_location">مکان خودکار</string>
-    <string name="preference_charging_animation_summary">هنگام شارژ دستگاه، پویانمایی حباب نمایش داده میشود</string>
     <string name="preference_notification_badges_summary">نمایش نشان برای برنامه‌هایی که آگاه‌ساز خوانده‌نشده دارند</string>
     <string name="preference_enforce_icon_shape_summary">به‌کارگیری شکل برای تمام نمادها شامل آن‌هایی که معمولاً از آن پشتیبانی نمی‌کنند</string>
     <string name="preference_about_license_summary">تحت مجوز عمومی GNU نگارش 3.0 منتشر شده است</string>
@@ -248,8 +247,6 @@
     <string name="theme_color_scheme_custom_color">سفارشی</string>
     <string name="shortcut_unavailable_description">این میانبر به دلیل اینکه %1$s در جانگاه راه‌انداز پیش‌گزیده انتخاب نشده غیرفعال است</string>
     <string name="customize_item_label">برچسب</string>
-    <string name="preference_category_animations">پویانمایی‌ها</string>
-    <string name="preference_charging_animation">پویانمایی شارژ</string>
     <string name="customize_item_visibility">نمایش در</string>
     <string name="preference_nav_bar_icons">نمادهای نوار ناوبری</string>
     <string name="preference_system_bar_icons_auto">خودکار</string>

@@ -169,8 +169,6 @@
     <string name="preference_theme_system">Jälgi süsteemi</string>
     <string name="preference_icon_pack">Ikoonipakk</string>
     <string name="preference_icon_pack_summary_empty">Ühtegi ikoonipakki pole paigaldatud</string>
-    <string name="preference_category_animations">Animatsioonid</string>
-    <string name="preference_charging_animation">Laadimise animatsioon</string>
     <string name="preference_system_bar_icons_light">Hele</string>
     <string name="preference_system_bar_icons_dark">Tume</string>
     <string name="preference_category_system_bars">Süsteemiribad</string>

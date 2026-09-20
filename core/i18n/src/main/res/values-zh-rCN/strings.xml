@@ -501,7 +501,6 @@
     <string name="weather_condition_thunderstorm">雷暴</string>
     <string name="preference_custom_colors_corepalette">调色板</string>
     <string name="preference_screen_plugins">插件</string>
-    <string name="preference_charging_animation">充电动画</string>
     <string name="preference_clockwidget_dynamic_zone">动态区域</string>
     <string name="imperial">英制</string>
     <string name="preference_debug_dump_heap_summary">捕获一个快照来分析内存使用。处理完成前应用将会冻结。</string>
@@ -522,7 +521,6 @@
     <string name="clock_style_digital2">简单</string>
     <string name="preference_debug_dump_heap">内存快照</string>
     <string name="preference_debug_dump_heap_in_progress">捕获快照中…</string>
-    <string name="preference_category_animations">动画</string>
     <string name="action_done">完成</string>
     <string name="action_more_actions">更多行动</string>
     <string name="action_clear">清除</string>
@@ -574,7 +572,6 @@
     <string name="plugin_state_error">此插件未正常运行</string>
     <string name="menu_bugreport">Bug 报告</string>
     <string name="length_unit">长度单位</string>
-    <string name="preference_charging_animation_summary">设备充电时播放气泡动画</string>
     <string name="preference_clock_widget_alignment_bottom">底部</string>
     <string name="preference_search_result_ordering_weight_factor_high">多变</string>
     <string name="note_widget_conflict_keep_selected">保留所选</string>

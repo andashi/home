@@ -143,7 +143,6 @@
     <string name="preference_cards_summary">Mukauta korttien ulkoasua</string>
     <string name="preference_cards_corner_radius">Kulman säde</string>
     <string name="preference_force_themed_icons">Pakota teeman kuvakkeet</string>
-    <string name="preference_category_animations">Animaatiot</string>
     <string name="preference_category_system_bars">Järjestelmän palkit</string>
     <string name="missing_permission_file_search_settings_android10">Kaikkien tiedostojen käyttöoikeus tarvitaan paikallisten tiedostojen hakuun</string>
     <string name="preference_cards_stroke_width">Lyönnin leveys</string>
@@ -154,8 +153,6 @@
     <string name="preference_automatic_location_summary">Käytä GPS:ää ja sijaintipalveluja sijainnin automaattiseen määritykseen</string>
     <string name="preference_icon_pack_summary_empty">Ei kuvakepaketteja asennettu</string>
     <string name="preference_search_appshortcuts_summary">Hae sovellusoikoteitä</string>
-    <string name="preference_charging_animation">Latausanimaatio</string>
-    <string name="preference_charging_animation_summary">Näytä kupliva animaatio, kun laite on latauksessa</string>
     <string name="preference_widgets_edit_button_summary">Näytä painike pienoisohjelmien lisäämistä, poistamista tai järjestelyä varten</string>
     <plurals name="debug_cleanup_database_result">
         <item quantity="one">%1$d tapahtuma on poistettu.</item>

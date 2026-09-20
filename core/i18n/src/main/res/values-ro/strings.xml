@@ -389,14 +389,11 @@
     <string name="notes_widget_action_new">Notiță nouă</string>
     <string name="notes_widget_action_save">Salvați</string>
     <string name="widget_name_unknown">Widget necunoscut</string>
-    <string name="preference_category_animations">Animații</string>
     <string name="preference_debug_dump_heap">Snapshot de memorie</string>
     <string name="edit">Editați</string>
     <string name="notes_widget_dismissed">Notă înlăturată.</string>
     <string name="skip">Săriți</string>
     <string name="notes_widget_export_filename">Notiță_%1$s</string>
-    <string name="preference_charging_animation">Aninație de încărcare</string>
-    <string name="preference_charging_animation_summary">Redați o animație cu bule în timp ce dispozitivul se încarcă</string>
     <string name="missing_permission_location_search">Acordați permisiunea la locație pentru a căuta locații în apropiere.</string>
     <string name="preference_signout">Deconectați-vă</string>
     <string name="websearch_dialog_query_encoding">Interogați codificarea</string>

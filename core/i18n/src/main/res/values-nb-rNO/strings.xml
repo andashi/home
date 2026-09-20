@@ -259,9 +259,6 @@
     <string name="preference_theme_system">Følg systemet</string>
     <string name="preference_icon_pack">Ikonpakke</string>
     <string name="preference_icon_pack_summary_empty">Ingen ikonpakker installert</string>
-    <string name="preference_category_animations">Animasjoner</string>
-    <string name="preference_charging_animation">Ladeanimasjoner</string>
-    <string name="preference_charging_animation_summary">Spill av en bobleanimasjon når enheten lades</string>
     <string name="preference_icon_shape_squircle">Kvirkel</string>
     <string name="preference_icon_shape_triangle">Reuleaux-triangel</string>
     <string name="preference_icon_shape_circle">Sirkel</string>

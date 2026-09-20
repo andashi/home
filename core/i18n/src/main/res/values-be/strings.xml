@@ -311,9 +311,6 @@
     <string name="preference_icon_pack_summary_empty">Пакетаў значкоў не ўсталявана</string>
     <string name="preference_force_themed_icons_summary">Прызначыць тэму праграмы ўсім значкам, нават тым, якія не прдтрымліваюцца (не рэкамендуецца)</string>
     <string name="preference_icon_pack">Пакеты значкоў</string>
-    <string name="preference_category_animations">Анімацыі</string>
-    <string name="preference_charging_animation_summary">Прайграваць анімацыю бурбалак, калі прылада зараджаецца</string>
-    <string name="preference_charging_animation">Анімацыя зарадкі</string>
     <string name="preference_owncloud_signin_summary">Увайдзіце, каб выконваць пошук праз ваш сервер Owncloud</string>
     <string name="preference_enforce_icon_shape">Прымусовая форма</string>
     <string name="preference_status_bar_icons">Значкі сістэмнай панэлі</string>

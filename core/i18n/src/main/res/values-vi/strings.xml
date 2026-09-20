@@ -335,9 +335,6 @@
     <string name="preference_force_themed_icons_summary">Áp dụng bảng màu của ứng dụng cho tất cả các biểu tượng, kể cả những biểu tượng không được hỗ trợ (không khuyến nghị)</string>
     <string name="preference_icon_pack">Gói biểu tượng</string>
     <string name="preference_icon_pack_summary_empty">Không có gói biểu tượng nào được cài đặt</string>
-    <string name="preference_category_animations">Hoạt ảnh</string>
-    <string name="preference_charging_animation">Hoạt ảnh sạc</string>
-    <string name="preference_charging_animation_summary">Phát hoạt ảnh bong bóng khi thiết bị đang sạc</string>
     <string name="preference_category_system_bars">Thanh hệ thống</string>
     <string name="preference_status_bar_icons">Biểu tượng thanh trạng thái</string>
     <string name="preference_nav_bar_icons">Biểu tượng thanh điều hướng</string>

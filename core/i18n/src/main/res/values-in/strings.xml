@@ -405,9 +405,6 @@
     <string name="missing_permission_location_search">Berikan izin lokasi untuk mencari lokasi terdekat.</string>
     <string name="preference_mdy_color_source_system">Sistem</string>
     <string name="provider_here">DISINI</string>
-    <string name="preference_category_animations">Animasi</string>
-    <string name="preference_charging_animation">Animasi pengisian daya</string>
-    <string name="preference_charging_animation_summary">Putar animasi gelembung saat perangkat sedang diisi daya</string>
     <string name="preference_signout">Keluar</string>
     <string name="preference_suspended_badges_summary">Tampilkan lencana untuk aplikasi yang ditangguhkan</string>
     <string name="preference_suspended_badges">Aplikasi yang ditangguhkan</string>

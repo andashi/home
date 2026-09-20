@@ -510,9 +510,6 @@
     <string name="preference_icon_pack">Simge paketi</string>
     <string name="preference_icon_pack_summary_empty">Yüklü simge paketi yok</string>
     <!-- Indicates that an icon pack supports dynamic colors (icon colors adapt to the launchers color scheme) -->
-    <string name="preference_category_animations">Animasyonlar</string>
-    <string name="preference_charging_animation">Şarj animasyonu</string>
-    <string name="preference_charging_animation_summary">Cihaz şarj olurken bir baloncuk animasyonu oynat</string>
     <string name="preference_category_system_bars">Sistem çubukları</string>
     <string name="preference_status_bar_icons">Durum çubuğu simgeleri</string>
     <string name="preference_nav_bar_icons">Gezinme çubuğu simgeleri</string>

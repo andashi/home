@@ -159,8 +159,6 @@ data class LauncherSettingsData internal constructor(
     val gesturesLongPress: GestureAction = GestureAction.NoAction,
     val gesturesHomeButton: GestureAction = GestureAction.NoAction,
 
-    val animationsCharging: Boolean = true,
-
     val stateTagsMultiline: Boolean = false,
 
     val weatherProvider: String = "metno",

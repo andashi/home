@@ -540,9 +540,6 @@
     <string name="preference_screen_plugins">Plugins</string>
     <string name="preference_screen_plugins_summary">Administrar extensiones instaladas</string>
     <string name="no_plugins_installed">Sin plugins instalados</string>
-    <string name="preference_category_animations">Animaciones</string>
-    <string name="preference_charging_animation">Animación de carga</string>
-    <string name="preference_charging_animation_summary">Reproduce una animación de burbujas mientras el dispositivo está cargando</string>
     <string name="preference_debug_dump_heap">Instantánea de memoria</string>
     <string name="preference_debug_dump_heap_in_progress">Capturando instantánea…</string>
     <string name="preference_clockwidget_dynamic_zone">Zona dinámica</string>

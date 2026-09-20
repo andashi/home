@@ -258,8 +258,6 @@
     <string name="preference_force_themed_icons_summary">Aplicar esquema de cores da aplicação a todos os ícones, mesmo que não suportado (não recomendado)</string>
     <string name="preference_icon_pack">Pacote de ícones</string>
     <string name="preference_icon_pack_summary_empty">Não existem pacotes instalados</string>
-    <string name="preference_category_animations">Animações</string>
-    <string name="preference_charging_animation">Animação de carregamento</string>
     <string name="preference_category_system_bars">Barras do sistema</string>
     <string name="preference_status_bar_icons">Ícones da barra de estado</string>
     <string name="preference_nav_bar_icons">Ícones da barra de navegação</string>
@@ -284,7 +282,6 @@
     <string name="missing_permission_notification_badges">Requer acesso às notificações para mostrar os alertas</string>
     <string name="no_plugins_installed">Nenhum plugin instalado</string>
     <string name="preference_force_themed_icons">Impor ícones coloridos</string>
-    <string name="preference_charging_animation_summary">Mostrar bolha quando o dispositivo está a ser carregado</string>
     <string name="missing_permission_calendar_widget">Requer acesso ao calendário para mostrar os eventos e os lembretes</string>
     <string name="weather_condition_lightsnowshowers"/>
     <string name="location_open">Aberto</string>

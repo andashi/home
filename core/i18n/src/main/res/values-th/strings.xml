@@ -161,8 +161,6 @@
     <string name="preference_theme_system">ทำตามระบบ</string>
     <string name="preference_icon_pack_summary_empty">ไม่ได้ติดตั้งชุดไอคอนใด</string>
     <string name="preference_status_bar_icons">ไอคอนบนแถบสถานะ</string>
-    <string name="preference_charging_animation">ภาพเคลื่อนไหวขณะชาร์จ</string>
-    <string name="preference_charging_animation_summary">เล่นภาพฟองน้ำเคลื่อนไหวขณะชาร์จอุปกรณ์</string>
     <string name="preference_category_system_bars">แถบระบบ</string>
     <string name="preference_system_bar_icons_light">สว่าง</string>
     <string name="preference_system_bar_icons_dark">มืด</string>
@@ -420,7 +418,6 @@
     <string name="weather_condition_heavysleetshowers">ฝนน้ำแข็งตกหนักบางแห่ง</string>
     <string name="preference_category_searchbar">แถบค้นหา</string>
     <string name="weather_condition_cloudy">ท้องฟ้ามีเมฆปกคลุม</string>
-    <string name="preference_category_animations">ภาพเคลื่อนไหว</string>
     <string name="weather_condition_lightrainandthunder">ฝนตกเล็กน้อยและมีท้องฟ้าคำราม</string>
     <string name="preference_screen_integrations_summary">จัดการบัญชีและบริการที่เชื่อมต่อ</string>
     <string name="weather_condition_heavysnowshowers">หิมะตกหนักบางแห่ง</string>

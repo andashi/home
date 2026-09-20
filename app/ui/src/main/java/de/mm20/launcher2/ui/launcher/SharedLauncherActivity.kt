@@ -45,7 +45,6 @@ import de.mm20.launcher2.preferences.WidgetScreenTarget
 import de.mm20.launcher2.search.SavableSearchable
 import de.mm20.launcher2.ui.base.BaseActivity
 import de.mm20.launcher2.ui.base.ProvideCompositionLocals
-import de.mm20.launcher2.ui.component.NavBarEffects
 import de.mm20.launcher2.ui.ktx.animateTo
 import de.mm20.launcher2.ui.launcher.scaffold.Gesture
 import de.mm20.launcher2.ui.launcher.scaffold.LauncherScaffold
@@ -81,7 +80,6 @@ import de.mm20.launcher2.ui.locals.LocalWindowSize
 import de.mm20.launcher2.ui.overlays.OverlayHost
 import de.mm20.launcher2.ui.theme.LauncherTheme
 import de.mm20.launcher2.ui.theme.wallpaperColorsAsState
-
 
 abstract class SharedLauncherActivity(
     private val mode: LauncherActivityMode
@@ -133,8 +131,6 @@ abstract class SharedLauncherActivity(
                     ProvideCompositionLocals {
                         val statusBarColor by viewModel.statusBarColor.collectAsState()
                         val navBarColor by viewModel.navBarColor.collectAsState()
-
-                        val chargingAnimation by viewModel.chargingAnimation.collectAsState()
 
                         val lightStatus =
                             !dimBackground && (statusBarColor == SystemBarColors.Dark || statusBarColor == SystemBarColors.Auto && wallpaperColors.supportsDarkText)
@@ -222,10 +218,6 @@ abstract class SharedLauncherActivity(
                                 .fillMaxSize(),
                             contentAlignment = Alignment.BottomCenter
                         ) {
-                            if (chargingAnimation == true) {
-                                NavBarEffects(modifier = Modifier.fillMaxSize())
-                            }
-
                             val config = remember(
                                 mode,
                                 reverseSearchResults,

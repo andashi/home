@@ -179,9 +179,6 @@
     <string name="preference_category_searchbar">Paieškos laukas</string>
     <string name="preference_force_themed_icons_summary">Nustatyti programos spalvų schema visom ikonom ,įskaičiuojant nepalaikomas (ne rekomenduotina)</string>
     <string name="preference_icon_pack_summary_empty">Nėra ikonų paketų</string>
-    <string name="preference_category_animations">Animacijos</string>
-    <string name="preference_charging_animation">Įkrovimo animacija</string>
-    <string name="preference_charging_animation_summary">Naudoti burbulo animacija kol prietaisas kraunamas</string>
     <string name="preference_category_system_bars">Sisteminis laukas</string>
     <string name="preference_system_bar_icons_auto">Automatiškai</string>
     <string name="preference_system_bar_icons_light">Šviesi</string>

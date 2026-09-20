@@ -314,7 +314,6 @@
     <string name="preference_force_themed_icons_summary">تطبيق نظام ألوان التطبيق على جميع الرموز، بما في ذلك الرموز غير المدعومة (غير مستحسن)</string>
     <string name="preference_icon_pack">حزمة الرموز</string>
     <string name="preference_icon_pack_summary_empty">لم يتم تثبيت حزم رموز</string>
-    <string name="preference_charging_animation_summary">تشغيل رسوم متحركة فقاعية أثناء شحن الجهاز</string>
     <string name="preference_category_system_bars">أشرطة النظام</string>
     <string name="preference_status_bar_icons">رموز شريط الحالة</string>
     <string name="preference_nav_bar_icons">رموز شريط التنقل</string>
@@ -398,8 +397,6 @@
     <string name="preference_themed_icons">رموز ذات سمات</string>
     <string name="preference_themed_icons_summary">تلوين الرموز باستخدام نظام ألوان التطبيق</string>
     <string name="preference_force_themed_icons">فرض الرموز ذات السمات</string>
-    <string name="preference_category_animations">الرسوم المتحركة</string>
-    <string name="preference_charging_animation">رسوم متحركة الشحن</string>
     <string name="preference_hide_status_bar">إخفاء شريط الحالة</string>
     <string name="preference_hide_nav_bar">إخفاء شريط التنقل</string>
     <string name="preference_screen_integrations_summary">إدارة الحسابات والخدمات المتصلة</string>

@@ -459,9 +459,6 @@
     <string name="preference_force_themed_icons_summary">החלת ערכת הצבעים של היישום על כל הסמלים, כולל אלה שאינם נתמכים (לא מומלץ)</string>
     <string name="preference_icon_pack">חבילת סמלים</string>
     <string name="preference_icon_pack_summary_empty">לא מותקנות חבילות סמלים</string>
-    <string name="preference_charging_animation">הנפשת טעינה</string>
-    <string name="preference_category_animations">הנפשות</string>
-    <string name="preference_charging_animation_summary">הצגת הנפשת בועות כשהמכשיר נטען</string>
     <string name="preference_category_system_bars">סרגלי המערכת</string>
     <string name="preference_status_bar_icons">סמלי שורת המצב</string>
     <string name="preference_signout">יציאה</string>
