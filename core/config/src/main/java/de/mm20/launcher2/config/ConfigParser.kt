@@ -6,7 +6,10 @@ import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.intOrNull
+import kotlinx.serialization.json.put
 
 object ConfigParser {
     const val MaxInputBytes = 256 * 1024
@@ -139,9 +142,10 @@ object ConfigParser {
 
         val unknownKeyDiagnostics = mutableListOf<Diagnostic>()
         collectUnknownKeys(document, "", "", unknownKeyDiagnostics)
+        val sanitized = dropUnknownWidgets(document, unknownKeyDiagnostics)
 
         val config = try {
-            json.decodeFromJsonElement(LauncherConfig.serializer(), document)
+            json.decodeFromJsonElement(LauncherConfig.serializer(), sanitized)
         } catch (e: SerializationException) {
             return ConfigParseResult(
                 config = null,
@@ -169,6 +173,57 @@ object ConfigParser {
             config = config,
             diagnostics = unknownKeyDiagnostics + validationDiagnostics,
         )
+    }
+
+    /**
+     * Removes entries of `home.widgets.widgets` that name a widget this build
+     * does not have, reporting each one.
+     *
+     * An unknown *key* is already tolerated, but an unknown *value* is not:
+     * this parser deliberately does not set `coerceInputValues`, so a single
+     * `"widgets": ["weather"]` left over from before that widget was removed
+     * would fail the decode and take the zone's entire configuration with it —
+     * wallpaper, dock, icons and all. Dropping the entry keeps the rest of the
+     * document, which is the behaviour a removal should have.
+     *
+     * Scalar enums stay strict on purpose. A bad `searchBar.position` is a typo
+     * with no sensible fallback, and the objects that held removed scalars
+     * (`home.clock`) leave the contract whole, which makes them unknown keys.
+     */
+    private fun dropUnknownWidgets(
+        document: JsonObject,
+        out: MutableList<Diagnostic>,
+    ): JsonObject {
+        val home = document["home"] as? JsonObject ?: return document
+        val widgets = home["widgets"] as? JsonObject ?: return document
+        val list = widgets["widgets"] as? JsonArray ?: return document
+
+        val known = BuiltinWidget.serializer().descriptor.let { d ->
+            (0 until d.elementsCount).map { d.getElementName(it) }.toSet()
+        }
+        val kept = list.filterIndexed { index, entry ->
+            val name = (entry as? JsonPrimitive)?.takeIf { it.isString }?.contentOrNull
+            if (name != null && name in known) return@filterIndexed true
+            out += Diagnostic(
+                Severity.Warning,
+                "unknown-widget",
+                "home.widgets.widgets[$index]",
+                "Unknown widget '${name ?: entry}' is ignored",
+            )
+            false
+        }
+        if (kept.size == list.size) return document
+
+        return buildJsonObject {
+            for ((k, v) in document) if (k != "home") put(k, v)
+            put("home", buildJsonObject {
+                for ((k, v) in home) if (k != "widgets") put(k, v)
+                put("widgets", buildJsonObject {
+                    for ((k, v) in widgets) if (k != "widgets") put(k, v)
+                    put("widgets", JsonArray(kept))
+                })
+            })
+        }
     }
 
     private fun collectUnknownKeys(

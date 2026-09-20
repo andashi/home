@@ -24,7 +24,7 @@ class ConfigStateMapperTest {
                 Favorite("com.example.work", Profile.Work),
             ),
             widgetsEnabled = true,
-            widgets = listOf(BuiltinWidget.Weather, BuiltinWidget.Notes),
+            widgets = listOf(BuiltinWidget.Apps, BuiltinWidget.Notes),
             clockStyle = ClockStyle.Binary,
             clockFillHeight = true,
         )
@@ -78,7 +78,7 @@ class ConfigStateMapperTest {
             dockEnabled = true,
             dockFavorites = listOf(Favorite("com.example.app")),
             widgetsEnabled = true,
-            widgets = listOf(BuiltinWidget.Calendar),
+            widgets = listOf(BuiltinWidget.Music),
             clockStyle = ClockStyle.Orbit,
             clockFillHeight = true,
         )

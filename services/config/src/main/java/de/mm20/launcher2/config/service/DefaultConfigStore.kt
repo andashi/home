@@ -18,10 +18,8 @@ import de.mm20.launcher2.themes.transparencies.Transparencies
 import de.mm20.launcher2.themes.transparencies.TransparenciesRepository
 import de.mm20.launcher2.widgets.AppWidget
 import de.mm20.launcher2.widgets.AppsWidget
-import de.mm20.launcher2.widgets.CalendarWidget
 import de.mm20.launcher2.widgets.MusicWidget
 import de.mm20.launcher2.widgets.NotesWidget
-import de.mm20.launcher2.widgets.WeatherWidget
 import de.mm20.launcher2.widgets.Widget
 import de.mm20.launcher2.widgets.WidgetRepository
 import kotlinx.coroutines.flow.first
@@ -290,18 +288,14 @@ class DefaultConfigStore(
     }
 
     private fun Widget.toBuiltinWidget(): BuiltinWidget? = when (this) {
-        is WeatherWidget -> BuiltinWidget.Weather
         is MusicWidget -> BuiltinWidget.Music
-        is CalendarWidget -> BuiltinWidget.Calendar
         is AppsWidget -> BuiltinWidget.Apps
         is NotesWidget -> BuiltinWidget.Notes
         else -> null
     }
 
     private fun BuiltinWidget.newWidget(): Widget = when (this) {
-        BuiltinWidget.Weather -> WeatherWidget(UUID.randomUUID())
         BuiltinWidget.Music -> MusicWidget(UUID.randomUUID())
-        BuiltinWidget.Calendar -> CalendarWidget(UUID.randomUUID())
         BuiltinWidget.Apps -> AppsWidget(UUID.randomUUID())
         BuiltinWidget.Notes -> NotesWidget(UUID.randomUUID())
     }

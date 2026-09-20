@@ -59,7 +59,7 @@ class WidgetRepositoryTest {
 
     @Test
     fun `setAwaited after a pending set wins and its result is visible on return`() = runBlocking {
-        val a = WeatherWidget(UUID.randomUUID())
+        val a = AppsWidget(UUID.randomUUID())
         val b = MusicWidget(UUID.randomUUID())
         repeat(20) {
             repository.set(listOf(a))
@@ -73,7 +73,7 @@ class WidgetRepositoryTest {
     @Test
     fun create_assignsPositionAndParent() = runBlocking {
         val parent = UUID.randomUUID()
-        val widget = WeatherWidget(UUID.randomUUID())
+        val widget = AppsWidget(UUID.randomUUID())
         repository.create(widget, position = 3, parentId = parent)
         val entity = awaitValue {
             childIds(parent).firstOrNull()?.firstOrNull { it.id == widget.id }
@@ -84,7 +84,7 @@ class WidgetRepositoryTest {
 
     @Test
     fun set_replacesRootWidgetsButKeepsChildrenOfOtherParents() = runBlocking {
-        val oldRoot = WeatherWidget(UUID.randomUUID())
+        val oldRoot = AppsWidget(UUID.randomUUID())
         val parent = UUID.randomUUID()
         val child = MusicWidget(UUID.randomUUID())
         repository.create(oldRoot, position = 0)
@@ -108,16 +108,16 @@ class WidgetRepositoryTest {
     @Test
     fun update_patchesConfigButKeepsPosition() = runBlocking {
         val id = UUID.randomUUID()
-        repository.create(WeatherWidget(id, WeatherWidgetConfig(showForecast = true)), position = 2)
+        repository.create(AppsWidget(id, FavoritesWidgetConfig(customTags = true)), position = 2)
         awaitValue { rootIds().firstOrNull()?.firstOrNull { it.id == id } }
 
-        repository.update(WeatherWidget(id, WeatherWidgetConfig(showForecast = false)))
+        repository.update(AppsWidget(id, FavoritesWidgetConfig(customTags = false)))
         val updated = awaitValue {
             repository.get().firstOrNull()
-                ?.filterIsInstance<WeatherWidget>()
-                ?.firstOrNull { it.id == id && !it.config.showForecast }
+                ?.filterIsInstance<AppsWidget>()
+                ?.firstOrNull { it.id == id && !it.config.customTags }
         }
-        assertEquals(false, updated.config.showForecast)
+        assertEquals(false, updated.config.customTags)
         assertEquals(2, rootIds().first().first { it.id == id }.position)
     }
 
@@ -125,7 +125,7 @@ class WidgetRepositoryTest {
 
     @Test
     fun setAwaited_writesAreVisibleImmediatelyAfterReturn() = runBlocking {
-        val a = WeatherWidget(UUID.randomUUID())
+        val a = AppsWidget(UUID.randomUUID())
         val b = MusicWidget(UUID.randomUUID())
         val c = NotesWidget(UUID.randomUUID())
         repository.setAwaited(listOf(a, b, c))
@@ -137,7 +137,7 @@ class WidgetRepositoryTest {
 
     @Test
     fun setAwaited_replacesPreviousSet() = runBlocking {
-        val old = WeatherWidget(UUID.randomUUID())
+        val old = AppsWidget(UUID.randomUUID())
         repository.setAwaited(listOf(old))
         val new = MusicWidget(UUID.randomUUID())
         repository.setAwaited(listOf(new))
@@ -146,7 +146,7 @@ class WidgetRepositoryTest {
 
     @Test
     fun setAwaited_withParentOnlyReplacesThatParentsChildren() = runBlocking {
-        val root = WeatherWidget(UUID.randomUUID())
+        val root = AppsWidget(UUID.randomUUID())
         val parent = UUID.randomUUID()
         val oldChild = MusicWidget(UUID.randomUUID())
         repository.setAwaited(listOf(root))
@@ -161,20 +161,20 @@ class WidgetRepositoryTest {
 
     @Test
     fun setAwaited_withEmptyListClearsTarget() = runBlocking {
-        repository.setAwaited(listOf(WeatherWidget(UUID.randomUUID())))
+        repository.setAwaited(listOf(AppsWidget(UUID.randomUUID())))
         repository.setAwaited(emptyList())
         assertTrue(rootIds().first().isEmpty())
     }
 
     @Test
     fun setAwaited_widgetsRoundTripThroughRepositoryGet() = runBlocking {
-        val weather = WeatherWidget(UUID.randomUUID(), WeatherWidgetConfig(showForecast = false))
-        repository.setAwaited(listOf(weather))
+        val apps = AppsWidget(UUID.randomUUID(), FavoritesWidgetConfig(customTags = false))
+        repository.setAwaited(listOf(apps))
         val widgets = repository.get().first()
         assertEquals(1, widgets.size)
         val restored = widgets[0]
-        assertTrue(restored is WeatherWidget)
-        assertEquals(weather.id, restored.id)
-        assertEquals(false, (restored as WeatherWidget).config.showForecast)
+        assertTrue(restored is AppsWidget)
+        assertEquals(apps.id, restored.id)
+        assertEquals(false, (restored as AppsWidget).config.customTags)
     }
 }

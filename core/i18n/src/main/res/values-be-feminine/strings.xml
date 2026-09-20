@@ -2,7 +2,6 @@
 <resources>
     <string name="owncloud_login_2fa_hint">Калі ў цябе ўключана праверка сапраўднасці, ты павінна ўвесці пароль тут.</string>
     <string name="widget_config_calendar_missing_calendars_hint">Не можаш знайсці свае календары?</string>
-    <string name="missing_permission_calendar_search">Для пошуку праз твой каляндар патрэбны доступ да календара</string>
     <string name="missing_permission_contact_search">Для пошуку праз твае кантакты патрэбны доступ да кантактнай кнігі</string>
     <string name="create_search_action_type">Якое дзеянне ты жадаеш стварыць?</string>
     <string name="create_search_action_website_invalid_url">Дадзены вэб-сайт не можа быць аўтаматычна імпартаваны як сродак пошуку. Ты можаш паспрабаваць іншы сайт або ўвесці ўсе патрэбныя дадзеныя ў наступным кроку</string>
@@ -20,7 +19,6 @@
     <string name="filter_settings_network_warning">Бягучы фільтр прадвызначана ўключае рэзультаты з сетцы. Твае пошукавыя запыты могуць выпадкова быць дасланыя да знешніх вэб-сэрвісаў. Дзеля прыватнасці, гэты фільтр не рэкамендуецца.</string>
     <string name="bad_configuration_title">Віншую, ты закрыла сама сябе!</string>
     <string name="bad_configuration_summary">Ты знайшла канфігурацыю, пры якой нельга адкрыць ні пошук, ні налады, тым самым зрабіўшы праграму непрыгоднай для выкарыстання</string>
-    <string name="preference_breezyweather_integration_instructions">Каб выкарыстоўваць Breezy Weather як пастаўшчыка дадзеных аб надвор\'і:\n\n1. Перайдзі ў Breezy Weather &gt; Налады &gt; Віджэты і жывыя шпалеры &gt; Адпраўляць даныя пра надвор’е ў Gadgetbridge &gt; Уключы %1$s\n\n2. Выберы Breezy Weather як пастаўшчыка надвор\'я ў %1$s</string>
     <string name="notes_widget_placeholder">Напішы нататку</string>
     <string name="edit_favorites_dialog_empty_section">Перацягні ярлыкі сюды</string>
     <string name="missing_permission_appshortcuts_search">Зрабі %1$s стандартным дамашнім экранам, каб шукаць праграмы.</string>

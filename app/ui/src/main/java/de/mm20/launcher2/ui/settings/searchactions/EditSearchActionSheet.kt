@@ -214,7 +214,6 @@ fun EditSearchActionSheet(
             ) {
                 when (it) {
                     EditSearchActionPage.SelectType -> SelectTypePage(viewModel)
-                    EditSearchActionPage.InitWebSearch -> InitWebSearchPage(viewModel)
                     EditSearchActionPage.InitAppSearch -> InitAppSearchPage(viewModel)
                     EditSearchActionPage.CustomizeWebSearch -> CustomizeWebSearch(viewModel)
                     EditSearchActionPage.CustomizeCustomIntent -> CustomizeCustomIntent(viewModel)
@@ -239,31 +238,6 @@ fun EditSearchActionSheet(
                     }
                 }
 
-                EditSearchActionPage.InitWebSearch -> {
-                    {
-                        val density = LocalDensity.current
-                        Button(
-                            onClick = {
-                                if (viewModel.skipWebsearchImport.value) {
-                                    viewModel.skipWebsearchImport()
-                                } else {
-                                    viewModel.importWebsearch(density)
-                                }
-                            },
-                            enabled = !viewModel.loadingWebsearch.value
-                        ) {
-                            Text(
-                                stringResource(
-                                    if (viewModel.skipWebsearchImport.value) {
-                                        R.string.skip
-                                    } else {
-                                        R.string.action_next
-                                    }
-                                )
-                            )
-                        }
-                    }
-                }
 
                 else -> null
             }
@@ -417,55 +391,6 @@ private fun InitAppSearchPage(viewModel: EditSearchActionSheetVM) {
                         )
                     }
                 }
-            }
-        }
-    }
-}
-
-@Composable
-private fun InitWebSearchPage(viewModel: EditSearchActionSheetVM) {
-    var url by viewModel.initWebsearchUrl
-    val importError by viewModel.websearchImportError
-    val loading by viewModel.loadingWebsearch
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp)
-    ) {
-        Text(
-            text = stringResource(R.string.create_search_action_website_url),
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.secondary
-        )
-        val density = LocalDensity.current
-        OutlinedTextField(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 12.dp),
-            value = url, onValueChange = { url = it },
-            singleLine = true,
-            keyboardActions = KeyboardActions(onDone = { viewModel.importWebsearch(density) }),
-            enabled = !loading,
-            trailingIcon = {
-                if (loading) {
-                    CircularProgressIndicator(modifier = Modifier.size(24.dp))
-                }
-            }
-        )
-        if (importError) {
-            Surface(
-                modifier = Modifier.padding(top = 16.dp),
-                color = MaterialTheme.colorScheme.surfaceVariant,
-                shape = MaterialTheme.shapes.medium,
-                contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                tonalElevation = 0.dp,
-                shadowElevation = 0.dp
-            ) {
-                Text(
-                    modifier = Modifier.padding(16.dp),
-                    text = stringResource(R.string.create_search_action_website_invalid_url),
-                    style = MaterialTheme.typography.bodySmall
-                )
             }
         }
     }

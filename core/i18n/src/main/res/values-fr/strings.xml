@@ -16,39 +16,22 @@
     <!-- Set the device's wallpaper -->
     <string name="wallpaper">Fond d\'écran</string>
     <!-- Calendar events that last the entire day -->
-    <string name="calendar_event_allday">Journée entière</string>
     <!-- Wind direction, used in weather widget -->
-    <string name="wind_north">Nord</string>
     <!-- Wind direction, used in weather widget -->
-    <string name="wind_north_east">Nord-Est</string>
     <!-- Wind direction, used in weather widget -->
-    <string name="wind_north_north_east">Nord-Nord-Est</string>
     <!-- Wind direction, used in weather widget -->
-    <string name="wind_east_north_east">Est-Nord-Est</string>
     <!-- Wind direction, used in weather widget -->
-    <string name="wind_east">Est</string>
     <!-- Wind direction, used in weather widget -->
-    <string name="wind_east_south_east">Est-Sud-Est</string>
     <!-- Wind direction, used in weather widget -->
-    <string name="wind_south_east">Sud-Est</string>
     <!-- Wind direction, used in weather widget -->
-    <string name="wind_south_south_east">Sud-Sud-Est</string>
     <!-- Wind direction, used in weather widget -->
-    <string name="wind_south">Sud</string>
     <!-- Wind direction, used in weather widget -->
-    <string name="wind_south_south_west">Sud-Sud-Ouest</string>
     <!-- Wind direction, used in weather widget -->
-    <string name="wind_south_west">Sud-Ouest</string>
     <!-- Wind direction, used in weather widget -->
-    <string name="wind_west_south_west">Ouest-Sud-Ouest</string>
     <!-- Wind direction, used in weather widget -->
-    <string name="wind_west">Ouest</string>
     <!-- Wind direction, used in weather widget -->
-    <string name="wind_west_north_west">Ouest-Nord-Ouest</string>
     <!-- Wind direction, used in weather widget -->
-    <string name="wind_north_west">Nord-Ouest</string>
     <!-- Wind direction, used in weather widget -->
-    <string name="wind_north_north_west">Nord-Nord-Ouest</string>
     <!-- Appearance preference title -->
     <string name="preference_screen_appearance">Apparence</string>
     <string name="preference_theme">Thème</string>
@@ -65,16 +48,10 @@
     <string name="open_webpage">Ouvrir le site Internet</string>
     <string name="preference_screen_about_summary">Informations sur l\'application et la licence</string>
     <string name="preference_screen_appearance_summary">Modifier l\'apparence</string>
-    <string name="preference_category_location">Position</string>
-    <string name="preference_automatic_location">Position automatique</string>
-    <string name="preference_automatic_location_summary">Utiliser les services de localisation pour déterminer la localisation automatiquement</string>
-    <string name="preference_location">Position</string>
     <string name="preference_imperial_units_summary">Utiliser les degrés Fahrenheit et les miles par heure</string>
     <string name="preference_imperial_units">Système impérial</string>
     <string name="preference_category_debug">Débogage</string>
     <!-- Wikipedia url prefix -->
-    <string name="wikipedia_url">https://fr.wikipedia.org</string>
-    <string name="wikipedia_source">Depuis Wikipédia</string>
     <string name="preference_category_icons">Icônes</string>
     <string name="preference_icon_shape">Forme</string>
     <string name="preference_icon_shape_square">Carré</string>
@@ -105,18 +82,12 @@
     <string name="websearch_dialog_url_error">Le terme \'${1}\' est manquant dans cette URL</string>
     <string name="websearch_dialog_replace_icon">Remplacer l\'icône</string>
     <string name="websearch_dialog_delete_icon">Supprimer l\'icône</string>
-    <string name="preference_weather_provider">Fournisseur</string>
-    <string name="provider_metno">MET Norway</string>
-    <string name="provider_openweathermap">OpenWeatherMap</string>
-    <string name="provider_brightsky">Deutscher Wetterdienst (seulement pour l\'Allemagne)</string>
     <string name="provider_here">HERE</string>
     <string name="preference_themed_icons">Icônes avec thème</string>
     <string name="preference_themed_icons_summary">Colorer les icônes avec les couleurs de l\'application</string>
     <string name="preference_icon_pack">Pack d\'icônes</string>
     <string name="preference_icon_pack_summary_empty">Aucun pack d\'icônes n\'est installé</string>
     <string name="menu_edit_widgets">Modifier les widgets</string>
-    <string name="widget_name_weather">Météo</string>
-    <string name="widget_name_calendar">Calendrier</string>
     <string name="widget_add_widget">Ajouter un widget</string>
     <string name="preference_category_system_bars">Barre système</string>
     <string name="widget_name_music">Média</string>
@@ -130,11 +101,8 @@
     <string name="file_type_drawing">Dessin</string>
     <string name="file_type_form">Formulaire</string>
     <string name="menu_delete">Supprimer</string>
-    <string name="menu_calendar_open_externally">Ouvrir dans l\'application de calendrier</string>
     <string name="preference_icon_shape_hexagon">Hexagone</string>
     <string name="shortcut_summary">Par %1$s</string>
-    <string name="missing_permission_calendar_widget">La permission d\'accès au calendrier est nécessaire pour afficher les évènements futurs ici.</string>
-    <string name="missing_permission_calendar_search">La permission d\'accéder au calendrier est nécessaire pour y faire des recherches</string>
     <string name="missing_permission_contact_search">La permission d\'accès aux contacts est nécessaire pour rechercher dans les contacts.</string>
     <string name="close">Fermer</string>
     <string name="websearch_dialog_custom_icon">Icône personnalisée</string>
@@ -174,82 +142,26 @@
     <string name="preference_cards_corner_radius">Rayon d\'angle</string>
     <string name="preference_cards_stroke_width">Épaisseur du contour</string>
     <string name="preference_cards_opacity">Opacité</string>
-    <string name="disclaimer">Clause de non-responsabilité</string>
-    <string name="disclaimer_currency_converter">Les taux de change sont publiés une fois par jour par la Banque Centrale Européenne. Toutes les informations sont fournies \"en l\'état\", sans aucune sorte de garantie. Aucune responsabilité n\'est assumée pour ces informations
-\n
-\nDernière mise-à-jour : %1$s</string>
     <string name="show_all">Tout afficher</string>
-    <string name="date_today">Aujourd\'hui</string>
-    <string name="date_tomorrow">Demain</string>
-    <string name="calendar_widget_pinned_events">À venir</string>
-    <string name="calendar_widget_no_events">Pas d\'évènement aujourd\'hui</string>
     <plurals name="calendar_widget_running_events">
         <item quantity="one">+%1$d évènement a eu lieu ces derniers jours</item>
         <item quantity="many">+%1$d évènements ont eu lieu ces derniers jours</item>
         <item quantity="other">+%1$d évènements ont eu lieu ces derniers jours</item>
     </plurals>
     <!-- Weather widget -->
-    <string name="weather_condition_sleetshowers">Averses de grésil</string>
-    <string name="weather_condition_heavysleet">Fort grésil</string>
-    <string name="weather_condition_lightrainshowersandthunder">Légères averses de pluie et orage</string>
-    <string name="weather_condition_heavyrain">Forte pluie</string>
-    <string name="weather_condition_lightsnowandthunder">Légère neige et orage</string>
-    <string name="weather_condition_lightrain">Légère pluie</string>
-    <string name="weather_condition_lightrainshowers">Légères averses</string>
-    <string name="weather_condition_lightsnow">Légère neige</string>
-    <string name="weather_condition_heavysleetshowersandthunder">Fortes averses de grésil et orage</string>
-    <string name="weather_condition_lightsnowshowers">Légères averses de neige</string>
-    <string name="weather_condition_lightssleetshowersandthunder">Légères averses de grésil et orage</string>
-    <string name="weather_condition_snowandthunder">Neige et orage</string>
-    <string name="weather_condition_heavysleetshowers">Fortes averses de grésil</string>
-    <string name="weather_condition_heavysnow">Forte neige</string>
-    <string name="weather_condition_cloudy">Nuageux</string>
-    <string name="weather_condition_lightrainandthunder">Légère pluie et orage</string>
-    <string name="weather_condition_snow">Neige</string>
-    <string name="weather_condition_hail">Grêle</string>
-    <string name="weather_condition_heavysnowshowers">Fortes averses de neige</string>
-    <string name="weather_condition_heavyrainshowers">Fortes averses</string>
-    <string name="weather_condition_rainshowersandthunder">Averses et orage</string>
-    <string name="weather_condition_clearsky">Ciel clair</string>
-    <string name="weather_condition_sleet">Grésil</string>
-    <string name="weather_condition_rain">Pluie</string>
-    <string name="weather_condition_sleetandthunder">Grésil et orage</string>
-    <string name="weather_condition_lightssnowshowersandthunder">Légères averses de neige et orage</string>
-    <string name="weather_condition_heavyrainshowersandthunder">Fortes averses et orage</string>
-    <string name="weather_condition_fair">Beau temps</string>
-    <string name="weather_condition_fog">Brouillard</string>
-    <string name="weather_condition_sleetshowersandthunder">Averses de grésil et orage</string>
-    <string name="weather_condition_rainandthunder">Pluie et orage</string>
-    <string name="weather_condition_lightsleet">Léger grésil</string>
-    <string name="weather_condition_heavysleetandthunder">Fort grésil et orage</string>
-    <string name="weather_condition_partlycloudy">Partiellement nuageux</string>
-    <string name="weather_condition_heavysnowandthunder">Forte neige et orage</string>
-    <string name="weather_condition_rainshowers">Averses</string>
-    <string name="weather_condition_lightsleetandthunder">Léger grésil et orage</string>
-    <string name="weather_condition_heavysnowshowersandthunder">Fortes averses de neige et orage</string>
-    <string name="weather_condition_lightsleetshowers">Légère averses de grésil</string>
-    <string name="weather_condition_snowshowersandthunder">Averses de neige et orage</string>
-    <string name="weather_condition_snowshowers">Averses de neige</string>
-    <string name="weather_condition_heavyrainandthunder">Forte pluie et orage</string>
-    <string name="weather_condition_unknown">Inconnu</string>
-    <string name="weather_no_data">Aucune donnée météo disponible.</string>
     <string name="preference_category_license">Licence</string>
     <string name="preference_about_license">Le code source de cette application est libre.</string>
     <string name="preference_about_license_summary">Sous la licence GNU General Public License 3.0</string>
     <string name="preference_category_grid">Grille</string>
     <string name="preference_grid_column_count">Nombre de colonnes</string>
     <string name="grant_permission">Accorder</string>
-    <string name="missing_permission_auto_location">La permission d\'accès à la position est nécessaire pour déterminer la position automatiquement</string>
     <string name="missing_permission_music_widget">La permission d\'accès aux notifications est nécessaire pour contrôler la lecture du média</string>
     <string name="missing_permission_contact_search_settings">La permission d\'accès aux contacts est nécessaire pour rechercher des contacts</string>
-    <string name="missing_permission_calendar_search_settings">La permission d\'accès au calendrier est nécessaire pour rechercher dans le calendrier</string>
     <string name="missing_permission_calendar_widget_settings">Ce widget nécessite la permission d\'accès au calendrier</string>
     <string name="missing_permission_notification_badges">La permission d\'accès aux notifications est nécessaire pour afficher les badges de notification</string>
-    <string name="weather_widget_set_location">Définir la position</string>
     <string name="preference_screen_debug">Débogage</string>
     <string name="preference_screen_debug_summary">Outils de débogage</string>
     <string name="preference_category_widgets">Widgets</string>
-    <string name="preference_screen_weatherwidget">Météo</string>
     <string name="preference_screen_clockwidget">Horloge</string>
     <string name="preference_clockwidget_layout_vertical">Défaut</string>
     <string name="preference_clockwidget_layout_horizontal">Compacte</string>
@@ -260,14 +172,9 @@
     <string name="preference_search_files_summary">Rechercher les fichiers locaux et les fichiers du cloud</string>
     <string name="preference_search_contacts">Contacts</string>
     <string name="preference_search_contacts_summary">Rechercher les contacts sur cet appareil</string>
-    <string name="preference_search_calendar">Calendrier</string>
     <string name="preference_search_calendar_summary">Rechercher les futurs évènements</string>
     <string name="preference_search_calculator">Calculatrice</string>
     <string name="preference_search_calculator_summary">Effectuer des calculs mathématiques</string>
-    <string name="preference_search_unitconverter">Convertisseur d\'unités</string>
-    <string name="preference_search_unitconverter_summary">Utilisation : 1.5 kg ou 4 cm &gt;&gt; en</string>
-    <string name="preference_search_wikipedia">Wikipédia</string>
-    <string name="preference_search_wikipedia_summary">Rechercher dans l\'encyclopédie libre</string>
     <string name="preference_search_websites">Sites internet</string>
     <string name="preference_search_websites_summary">Afficher un aperçu du site Internet si la recherche est une URL</string>
     <string name="preference_calendar_calendars">Calendriers</string>
@@ -275,11 +182,9 @@
     <string name="preference_screen_buildinfo_summary">Plus d\'informations à propos de la version de cette application</string>
     <string name="preference_search_bar_style">Style</string>
     <string name="preference_search_bar_style_summary">Modifier l\'apparence de la barre de recherche</string>
-    <string name="preference_wikipedia_customurl">URL Wikipédia</string>
     <string name="music_widget_default_title">%1$s joue un média</string>
     <string name="music_widget_no_data">Aucun média n\'a encore été joué</string>
     <string name="turn_off">Désactiver</string>
-    <string name="weather_condition_wind">Vent</string>
     <string name="preference_hide_status_bar">Cacher la barre d\'état</string>
     <string name="preference_hide_nav_bar">Cacher la barre de navigation</string>
     <string name="menu_launch">Lancer</string>
@@ -303,19 +208,15 @@
     <string name="preference_search_appshortcuts">Raccourcis d\'applications</string>
     <string name="preference_search_appshortcuts_summary">Rechercher les raccourcis d\'applications</string>
     <string name="preference_clockwidget_favorites_part_summary">Afficher les éléments épinglés sur le dock</string>
-    <string name="preference_search_currencyconverter">Convertisseur de devise</string>
     <string name="preference_cards_shape">Forme</string>
     <string name="preference_cards_shape_rounded">Arrondi</string>
     <string name="preference_cards_shape_cut">Coupé</string>
-    <string name="preference_search_currencyconverter_summary">Télécharger régulièrement les taux de change pour convertir les devises</string>
     <string name="preference_hidden_items">Résultats de recherche exclus</string>
     <string name="preference_hidden_items_summary">Gérer les applications et recherches exclus</string>
-    <string name="calendar_widget_next_events">Événement suivant</string>
     <string name="preference_grid_icon_size">Taille d\'icône</string>
     <string name="preference_clockwidget_favorites_part">Dock</string>
     <string name="action_undo">Annuler</string>
     <string name="save">Enregistrer</string>
-    <string name="weather_location_search_no_result">Emplacement inconnu</string>
     <string name="preference_enforce_icon_shape">Imposer la forme</string>
     <string name="preference_enforce_icon_shape_summary">Appliquer la forme à toutes les icônes, y compris celles qui ne la supporteraient pas normalement</string>
     <string name="preference_font">Police de caractères</string>
@@ -527,8 +428,6 @@
     <string name="plugin_state_setup_required">Vous devez d\'abord configurer ce plugin</string>
     <string name="plugin_action_setup">Configuration</string>
     <string name="plugin_type_weather">Fournisseur de services météo</string>
-    <string name="plugin_weather_provider_enable">Définir en tant que fournisseur de services météo</string>
-    <string name="plugin_weather_provider_enabled">Actuellement défini en tant que fournisseur de services météo</string>
     <string name="plugin_state_error">Ce plugin ne fonctionne pas correctement</string>
     <string name="preference_plugin_badges">Badges de plugin</string>
     <string name="preference_plugin_badges_summary">Indique par quel plugin un résultat de recherche a été créé</string>
@@ -553,7 +452,6 @@
     <string name="clock_style_orbit">Orbital</string>
     <string name="clock_style_binary">Binaire</string>
     <string name="clock_style_analog">Analogue</string>
-    <string name="weather_condition_thunderstorm">Orage</string>
     <string name="search_action_share">Partager</string>
     <string name="preference_clock_widget_show_seconds">Afficher les secondes</string>
     <string name="length_unit">Unité de longueur</string>
@@ -575,9 +473,7 @@
     <string name="poi_category_ice_cream">Glacier</string>
     <string name="poi_category_theater">Théâtre</string>
     <string name="poi_category_cinema">Cinéma</string>
-    <string name="preference_location_managed_summary">La localisation pour ce fournisseur est géré par un plugin</string>
     <string name="unavailable_searchable">Cet élément n\'existe plus</string>
-    <string name="preference_location_managed">Géré par un plugin</string>
     <string name="search_filter_online">Résultat web</string>
     <string name="clock_variant_outlined">Détouré</string>
     <string name="preference_search_locations_summary">Rechercher des boutiques ou d\'autres emplacements à proximité</string>
@@ -673,7 +569,6 @@
         <item quantity="other">%1$s adresses e-mail</item>
     </plurals>
     <string name="preference_calendar_hide_completed">Masquer les tâches terminées</string>
-    <string name="weather_widget_no_provider">Aucun fournisseur de services météorologiques n\'a été sélectionné ou le fournisseur sélectionné n\'est pas disponible</string>
     <string name="preference_compact_tags_summary">Masquer les étiquettes ou les icônes pour réduire l\'espace occupé par les étiquettes</string>
     <plurals name="contact_phone_numbers">
         <item quantity="one">%1$s numéro de téléphone</item>
@@ -690,27 +585,20 @@
         <item quantity="many">%1$s adresses postales</item>
         <item quantity="other">%1$s adresses postales</item>
     </plurals>
-    <string name="task_due_time">Échéance à %1$s</string>
-    <string name="task_due_date">Échéance le %1$s</string>
     <string name="item_visibility_calendar_default">Widget calendrier et résultats de recherche</string>
     <string name="contact_info_work">Bureau</string>
-    <string name="calendar_widget_next_day">Jour suivant</string>
-    <string name="calendar_widget_open_calendar">Ouvrir l\'application calendrier</string>
     <string name="plugin_type_calendar">Calendrier</string>
     <string name="music_widget_play">Jouer</string>
     <string name="hint_drag_and_drop_reorder">Maintenir et faire glisser les éléments pour les réorganiser</string>
-    <string name="calendar_widget_create_event">Créer un nouvel événement</string>
     <string name="profile_work_profile_action_unlock">Désactiver la pause</string>
     <plurals name="calendar_search_enabled_lists">
         <item quantity="one">%1$s liste sélectionnée</item>
         <item quantity="many">%1$s listes sélectionnées</item>
         <item quantity="other">%1$s listes sélectionnées</item>
     </plurals>
-    <string name="calendar_widget_previous_day">Jour précédent</string>
     <string name="action_clear">Effacer</string>
     <string name="item_visibility_hidden">Jamais</string>
     <string name="music_widget_previous_track">Titre précédent</string>
-    <string name="preference_search_supportedunits">Unités prises en charge</string>
     <string name="item_visibility_search_only">Résultats de recherche</string>
     <string name="music_widget_pause">Pause</string>
     <string name="music_widget_open_player">Ouvrir le lecteur</string>
@@ -718,7 +606,6 @@
     <string name="menu_show_filters">Afficher les filtres</string>
     <string name="menu_hide_filters">Masquer les filtres</string>
     <string name="profile_private_profile_action_unlock">Déverrouiller</string>
-    <string name="task_due_today">À terminer aujourd\'hui</string>
     <string name="profile_private_profile_state_locked">L\'espace privé est verrouillé</string>
     <string name="action_more_actions">Plus d\'actions</string>
     <string name="action_done">Fait</string>
@@ -728,11 +615,6 @@
     <string name="weather_forecast_wind">Vent</string>
     <string name="weather_forecast_precipitation">Précipitations</string>
     <string name="weather_forecast_humidity">Humidité</string>
-    <string name="weather_condition_thunder">Tonnerre</string>
-    <string name="weather_condition_haze">Brume</string>
-    <string name="provider_breezy">Breezy Weather</string>
-    <string name="preference_breezyweather_integration">Breezy Weather</string>
-    <string name="preference_breezyweather_integration_description">Breezy Weather est une application de météo gratuite et open-source. Si installée, %1$s peut utiliser Breezy Weather comme source pour les données météo.</string>
     <string name="action_install">Installer</string>
     <string name="preference_clock_widget_time_format_12h">12 heures</string>
     <string name="preference_clock_widget_time_format_24h">24 heures</string>
@@ -744,17 +626,8 @@
         <item quantity="other">dans %1$d minutes</item>
     </plurals>
     <string name="plugin_type_contacts">Contacts</string>
-    <string name="preference_location_breezy">Gestion de l\'emplacement dans Breezy Weather</string>
-    <string name="preference_search_tasks">Tâches</string>
-    <string name="preference_search_tasks_summary">Rechercher des tâches dans l\'application Tasks</string>
-    <string name="preference_launch_breezyweather_app">Ouvrir Breezy Weather</string>
-    <string name="missing_permission_tasks_integration">L\'autorisation Tâches est nécessaire pour utiliser l\'intégration avec Tasks</string>
-    <string name="missing_permission_tasks_search_settings">L\'autorisation Tâches est nécessaire pour rechercher des tâches dans l’application Tasks</string>
     <string name="preference_clock_widget_time_format">Format de l\'heure</string>
     <string name="preference_grid_list_icons_summary">Afficher les icônes pour l\'affichage en liste</string>
-    <string name="preference_tasks_integration">Tasks</string>
-    <string name="preference_tasks_integration_description">Tasks est application libre et gratuite de liste de tâches et rappels. Si elle est installée, %1$s peut afficher et rechercher vos tâches dans l\'application Tasks.</string>
-    <string name="preference_search_local_calendar_summary">Rechercher des agendas sur l\'appareil</string>
     <string name="preference_grid_list_style">Afficher les applications en tant que liste</string>
     <string name="preference_grid_list_icons">Afficher les icônes d\'applications dans la liste</string>
     <string name="preference_contacts_call_on_tap_summary">Démarrer un appel sans confirmation lors d\'un appui sur un numéro de téléphone</string>
@@ -765,9 +638,7 @@
         <item quantity="other">+%1$d tâches non terminées</item>
     </plurals>
     <string name="preference_grid_list_style_summary">Afficher les applications en tant que liste plutôt que grille</string>
-    <string name="preference_breezyweather_integration_instructions">Pour ouvrir Breezy Weather comme fournisseur météo :\n\n1. Se rendre dans Breezy Weather &gt; Paramètres &gt; Widgets &amp; Fond d\'écran animé &gt; Envoyer des données Gadgetbridge &gt; Activer %1$s\n\n2. Dans %1$s, sélectionner Breezy Weather comme fournisseur météo</string>
     <string name="profile_work_profile_state_locked">Les applications professionnelles sont en pause</string>
-    <string name="preference_tasks_integration_ready">L\'intégration avec Tasks est entièrement configurée et est prête à l\'usage.</string>
     <string name="preference_contacts_call_on_tap">Appuyer pour appeler</string>
     <string name="preference_widgets_on_home_screen">Widgets sur l\'écran d\'accueil</string>
     <string name="preference_widgets_on_home_screen_summary">Afficher les widgets sur l\'écran d\'accueil plutôt que sur une page supplémentaire</string>
@@ -775,7 +646,6 @@
     <string name="gesture_action_widgets">Widgets</string>
     <string name="bad_configuration_title">Félicitations, vous ne pouvez plus accéder au lanceur !</string>
     <string name="bad_configuration_summary">Vous avez découvert une combinaison de paramètres qui rendent à la fois la recherche et les paramètres inaccessibles — vous empêchant ainsi d’accéder au lanceur</string>
-    <string name="preference_launch_tasks_app">Ouvrir l\'application Tasks</string>
     <string name="import_theme_contents">Contenus</string>
     <string name="preference_shapes_default">Par défaut</string>
     <string name="preference_screen_shapes">Formes</string>
@@ -870,7 +740,6 @@
     <string name="typo_preview_short1">Ava</string>
     <string name="typo_preview_medium1">Hambourg</string>
     <string name="preference_category_donate">Soutenir le développement</string>
-    <string name="uv_index">UV %1$d</string>
     <string name="preference_clockwidget_battery_part_always_show">Toujours afficher</string>
     <string name="preference_clockwidget_battery_part_show">Afficher quand la batterie est faible ou en charge</string>
     <string name="preference_clockwidget_battery_part_hide">Désactivé</string>
@@ -881,7 +750,6 @@
     <string name="gesture_action_widgets_empty">Vide</string>
     <string name="gesture_action_launch_select_app">Sélectionner une appli ou un raccourci</string>
     <string name="preference_search_apps_show_details">Afficher les informations de l\'application</string>
-    <string name="preference_currency_settings">Paramètres de la devise</string>
     <string name="search_query_private_space">Espace privé</string>
     <string name="search_action_private_space_lock">Verrouiller l\'espace privé</string>
     <string name="search_action_private_space_unlock">Déverrouiller l\'espace privé</string>

@@ -29,23 +29,11 @@ sealed class Widget {
     companion object {
         fun fromDatabaseEntity(entity: WidgetEntity): Widget? {
             return when (entity.type) {
-                WeatherWidget.Type -> {
-                    val config: WeatherWidgetConfig =
-                        Json.decodeFromStringOrNull(entity.config?.takeIf { it.isNotBlank() })
-                            ?: WeatherWidgetConfig()
-                    WeatherWidget(entity.id, config)
-                }
                 MusicWidget.Type -> MusicWidget(
                     entity.id,
                     Json.decodeFromStringOrNull(entity.config?.takeIf { it.isNotBlank() })
                         ?: MusicWidgetConfig(),
                 )
-                CalendarWidget.Type -> {
-                    val config: CalendarWidgetConfig =
-                        Json.decodeFromStringOrNull(entity.config?.takeIf { it.isNotBlank() })
-                            ?: CalendarWidgetConfig()
-                    CalendarWidget(entity.id, config)
-                }
                 AppsWidget.Type -> {
                     val config: FavoritesWidgetConfig =
                         Json.decodeFromStringOrNull(entity.config?.takeIf { it.isNotBlank() })

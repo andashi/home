@@ -35,16 +35,12 @@ import de.mm20.launcher2.ui.launcher.search.filters.SearchFilters
 import de.mm20.launcher2.ui.locals.LocalBackStack
 import de.mm20.launcher2.ui.settings.apps.AppSearchSettingsRoute
 import de.mm20.launcher2.ui.settings.appshortcuts.AppShortcutsSettingsRoute
-import de.mm20.launcher2.ui.settings.calendarsearch.CalendarProviderSettingsRoute
-import de.mm20.launcher2.ui.settings.calendarsearch.CalendarSearchSettingsRoute
 import de.mm20.launcher2.ui.settings.contacts.ContactsSettingsRoute
 import de.mm20.launcher2.ui.settings.favorites.FavoritesSettingsRoute
 import de.mm20.launcher2.ui.settings.filterbar.FilterBarSettingsRoute
 import de.mm20.launcher2.ui.settings.hiddenitems.HiddenItemsSettingsRoute
 import de.mm20.launcher2.ui.settings.searchactions.SearchActionsSettingsRoute
 import de.mm20.launcher2.ui.settings.tags.TagsSettingsRoute
-import de.mm20.launcher2.ui.settings.unitconverter.UnitConverterSettingsRoute
-import de.mm20.launcher2.ui.settings.wikipedia.WikipediaSettingsRoute
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -69,17 +65,11 @@ fun SearchSettingsScreen() {
         null
     )
     val hasContactsPermission by viewModel.hasContactsPermission.collectAsStateWithLifecycle(null)
-    val hasCalendarPermission by viewModel.hasCalendarPermission.collectAsStateWithLifecycle(null)
 
     val favorites by viewModel.favorites.collectAsStateWithLifecycle(null)
     val allApps by viewModel.allApps.collectAsStateWithLifecycle(null)
     val appShortcuts by viewModel.appShortcuts.collectAsStateWithLifecycle(null)
-    val calendar by viewModel.calendarSearch.collectAsStateWithLifecycle(null)
     val contacts by viewModel.contacts.collectAsStateWithLifecycle(null)
-    val calculator by viewModel.calculator.collectAsStateWithLifecycle(null)
-    val unitConverter by viewModel.unitConverter.collectAsStateWithLifecycle(null)
-    val wikipedia by viewModel.wikipedia.collectAsStateWithLifecycle(null)
-    val websites by viewModel.websites.collectAsStateWithLifecycle(null)
 
 
     val autoFocus by viewModel.autoFocus.collectAsStateWithLifecycle(null)
@@ -90,171 +80,7 @@ fun SearchSettingsScreen() {
     PreferenceScreen(title = stringResource(R.string.preference_screen_search)) {
         item {
             PreferenceCategory {
-                PreferenceWithSwitch(
-                    title = stringResource(R.string.preference_search_favorites),
-                    summary = stringResource(R.string.preference_search_favorites_summary),
-                    icon = R.drawable.star_24px,
-                    switchValue = favorites == true,
-                    onSwitchChanged = {
-                        viewModel.setFavorites(it)
-                    },
-                    onClick = {
-                        backStack.add(FavoritesSettingsRoute)
-                    }
-                )
-                PreferenceWithSwitch(
-                    title = stringResource(R.string.preference_search_apps),
-                    summary = stringResource(R.string.preference_search_apps_summary),
-                    icon = R.drawable.apps_24px,
-                    switchValue = allApps == true,
-                    onSwitchChanged = {
-                        viewModel.setAllApps(it)
-                    },
-                    onClick = {
-                        backStack.add(AppSearchSettingsRoute)
-                    }
-                )
-            }
-        }
-        item {
-            PreferenceCategory {
 
-                if (hasContactPlugins != false) {
-                    Preference(
-                        title = stringResource(R.string.preference_search_contacts),
-                        summary = stringResource(R.string.preference_search_contacts_summary),
-                        icon = R.drawable.person_24px,
-                        onClick = {
-                            backStack.add(ContactsSettingsRoute)
-                        },
-                    )
-                } else {
-                    GuardedPreference(
-                        locked = hasContactsPermission == false,
-                        onUnlock = {
-                            viewModel.requestContactsPermission(context as AppCompatActivity)
-                        },
-                        description = stringResource(R.string.missing_permission_contact_search_settings),
-                    ) {
-                        PreferenceWithSwitch(
-                            title = stringResource(R.string.preference_search_contacts),
-                            summary = stringResource(R.string.preference_search_contacts_summary),
-                            icon = R.drawable.person_24px,
-                            switchValue = contacts == true && hasContactsPermission == true,
-                            onSwitchChanged = {
-                                viewModel.setContacts(it)
-                            },
-                            onClick = {
-                                backStack.add(ContactsSettingsRoute)
-                            },
-                            enabled = hasContactsPermission == true
-                        )
-                    }
-                }
-
-                if (hasCalendarPlugins != false || isTasksAppInstalled != false) {
-                    Preference(
-                        title = stringResource(R.string.preference_search_calendar),
-                        summary = stringResource(R.string.preference_search_calendar_summary),
-                        icon = R.drawable.today_24px,
-                        onClick = {
-                            backStack.add(CalendarSearchSettingsRoute)
-                        },
-                    )
-                } else {
-
-                    GuardedPreference(
-                        locked = hasCalendarPermission == false,
-                        onUnlock = {
-                            viewModel.requestCalendarPermission(context as AppCompatActivity)
-                        },
-                        description = stringResource(R.string.missing_permission_calendar_search_settings),
-                    ) {
-                        PreferenceWithSwitch(
-                            title = stringResource(R.string.preference_search_calendar),
-                            summary = stringResource(R.string.preference_search_calendar_summary),
-                            switchValue = calendar == true,
-                            onSwitchChanged = {
-                                viewModel.setCalendarSearch(it)
-                            },
-                            icon = R.drawable.today_24px,
-                            enabled = hasCalendarPermission == true,
-                            onClick = {
-                                backStack.add(CalendarProviderSettingsRoute(providerId = "local"))
-                            }
-                        )
-                    }
-                }
-                GuardedPreference(
-                    locked = hasAppShortcutsPermission == false,
-                    onUnlock = {
-                        viewModel.requestAppShortcutsPermission(context as AppCompatActivity)
-                    },
-                    description = stringResource(
-                        R.string.missing_permission_appshortcuts_search_settings,
-                        stringResource(R.string.app_name),
-                    ),
-                ) {
-                    PreferenceWithSwitch(
-                        title = stringResource(R.string.preference_search_appshortcuts),
-                        summary = stringResource(R.string.preference_search_appshortcuts_summary),
-                        icon = R.drawable.mobile_arrow_up_right_24px,
-                        switchValue = appShortcuts == true && hasAppShortcutsPermission == true,
-                        onSwitchChanged = {
-                            viewModel.setAppShortcuts(it)
-                        },
-                        enabled = hasAppShortcutsPermission == true,
-                        onClick = {
-                            backStack += AppShortcutsSettingsRoute
-                        }
-                    )
-                }
-
-                SwitchPreference(
-                    title = stringResource(R.string.preference_search_calculator),
-                    summary = stringResource(R.string.preference_search_calculator_summary),
-                    icon = R.drawable.calculate_24px,
-                    value = calculator == true,
-                    onValueChanged = {
-                        viewModel.setCalculator(it)
-                    }
-                )
-
-                PreferenceWithSwitch(
-                    title = stringResource(R.string.preference_search_unitconverter),
-                    summary = stringResource(R.string.preference_search_unitconverter_summary),
-                    icon = R.drawable.autorenew_24px,
-                    switchValue = unitConverter == true,
-                    onSwitchChanged = {
-                        viewModel.setUnitConverter(it)
-                    },
-                    onClick = {
-                        backStack.add(UnitConverterSettingsRoute)
-                    }
-                )
-
-                PreferenceWithSwitch(
-                    title = stringResource(R.string.preference_search_wikipedia),
-                    summary = stringResource(R.string.preference_search_wikipedia_summary),
-                    icon = R.drawable.wikipedia,
-                    switchValue = wikipedia == true,
-                    onSwitchChanged = {
-                        viewModel.setWikipedia(it)
-                    },
-                    onClick = {
-                        backStack.add(WikipediaSettingsRoute)
-                    }
-                )
-
-                SwitchPreference(
-                    title = stringResource(R.string.preference_search_websites),
-                    summary = stringResource(R.string.preference_search_websites_summary),
-                    icon = R.drawable.public_24px,
-                    value = websites == true,
-                    onValueChanged = {
-                        viewModel.setWebsites(it)
-                    }
-                )
 
                 Preference(
                     title = stringResource(R.string.preference_screen_search_actions),

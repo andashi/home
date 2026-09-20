@@ -18,19 +18,6 @@
     <string name="settings">Tənzimləmələr</string>
     <string name="help">Kömək</string>
     <string name="wallpaper">Divar kağızı</string>
-    <string name="wind_north">Şimal</string>
-    <string name="wind_north_east">Şimal-şərq</string>
-    <string name="wind_east_north_east">Şərq şimal-şərq</string>
-    <string name="wind_east">Şərq</string>
-    <string name="wind_south_east">Cənub-şərq</string>
-    <string name="wind_south_south_east">Cənub cənub-şərq</string>
-    <string name="wind_south">Cənub</string>
-    <string name="wind_south_south_west">Cənub cənub-qərb</string>
-    <string name="wind_south_west">Cənub-qərb</string>
-    <string name="wind_west">Qərb</string>
-    <string name="wind_west_north_west">Qərb şimal-qərb</string>
-    <string name="wind_north_west">Şimal-qərb</string>
-    <string name="wind_north_north_west">Şimal şimal-qərb</string>
     <string name="file_type_android">Android paket faylı</string>
     <string name="file_type_source_code">Qaynaq kodu faylı</string>
     <string name="file_type_document">Sənəd</string>
@@ -51,22 +38,16 @@
     <string name="websearch_dialog_advanced">Təkmilləşdirilmiş</string>
     <string name="websearch_dialog_query_encoding_url">Faiz kodlaşdırması</string>
     <string name="websearch_dialog_query_encoding_form">application/x-www-form-urlencoded</string>
-    <string name="menu_calendar_open_externally">Təqvim tətbiqində aç</string>
-    <string name="wind_west_south_west">Qərb cənub-qərb</string>
-    <string name="wikipedia_url">https://az.wikipedia.org</string>
     <string name="file_type_form">Forma</string>
     <string name="alert_delete_shortcut">%1$s qısayolu həmişəlik silinəcək. Davam edilsin?</string>
     <string name="default_websearch_2_url">https://www.youtube.com/results?search_query=${1}</string>
     <string name="websearch_dialog_query_encoding">Sorğunun kodlaşdırılması</string>
-    <string name="wind_east_south_east">Şərq cənub-şərq</string>
-    <string name="wikipedia_source">Vikipediyadan</string>
     <string name="file_type_none">Fayl</string>
     <string name="file_type_compressed">Sıxılmış fayl</string>
     <string name="default_websearch_2_name">YouTube</string>
     <string name="websearch_dialog_delete_icon">İkonu sil</string>
     <string name="menu_share_store_link">%1$s linki</string>
     <string name="menu_contacts_open_externally">Kontaktlar tətbiqində aç</string>
-    <string name="wind_north_north_east">Şimal şimal-şərq</string>
     <string name="file_type_archive">Arxiv faylı</string>
     <string name="file_type_drawing">Rəsm</string>
 </resources>

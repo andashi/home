@@ -51,14 +51,8 @@ import de.mm20.launcher2.ui.settings.apps.AppSearchSettingsRoute
 import de.mm20.launcher2.ui.settings.apps.AppSearchSettingsScreen
 import de.mm20.launcher2.ui.settings.appshortcuts.AppShortcutsSettingsRoute
 import de.mm20.launcher2.ui.settings.appshortcuts.AppShortcutsSettingsScreen
-import de.mm20.launcher2.ui.settings.breezyweather.BreezyWeatherSettingsRoute
-import de.mm20.launcher2.ui.settings.breezyweather.BreezyWeatherSettingsScreen
 import de.mm20.launcher2.ui.settings.buildinfo.BuildInfoSettingsRoute
 import de.mm20.launcher2.ui.settings.buildinfo.BuildInfoSettingsScreen
-import de.mm20.launcher2.ui.settings.calendarsearch.CalendarProviderSettingsRoute
-import de.mm20.launcher2.ui.settings.calendarsearch.CalendarProviderSettingsScreen
-import de.mm20.launcher2.ui.settings.calendarsearch.CalendarSearchSettingsRoute
-import de.mm20.launcher2.ui.settings.calendarsearch.CalendarSearchSettingsScreen
 import de.mm20.launcher2.ui.settings.colorscheme.ColorSchemeSettingsRoute
 import de.mm20.launcher2.ui.settings.colorscheme.ColorSchemeSettingsScreen
 import de.mm20.launcher2.ui.settings.colorscheme.ColorSchemesSettingsRoute
@@ -115,8 +109,6 @@ import de.mm20.launcher2.ui.settings.smartspacer.SmartspacerSettingsRoute
 import de.mm20.launcher2.ui.settings.smartspacer.SmartspacerSettingsScreen
 import de.mm20.launcher2.ui.settings.tags.TagsSettingsRoute
 import de.mm20.launcher2.ui.settings.tags.TagsSettingsScreen
-import de.mm20.launcher2.ui.settings.tasks.TasksIntegrationSettingsRoute
-import de.mm20.launcher2.ui.settings.tasks.TasksIntegrationSettingsScreen
 import de.mm20.launcher2.ui.settings.transparencies.TransparencySchemeSettingsRoute
 import de.mm20.launcher2.ui.settings.transparencies.TransparencySchemeSettingsScreen
 import de.mm20.launcher2.ui.settings.transparencies.TransparencySchemesSettingsRoute
@@ -125,14 +117,6 @@ import de.mm20.launcher2.ui.settings.typography.TypographiesSettingsRoute
 import de.mm20.launcher2.ui.settings.typography.TypographiesSettingsScreen
 import de.mm20.launcher2.ui.settings.typography.TypographySettingsRoute
 import de.mm20.launcher2.ui.settings.typography.TypographySettingsScreen
-import de.mm20.launcher2.ui.settings.unitconverter.UnitConverterHelpSettingsRoute
-import de.mm20.launcher2.ui.settings.unitconverter.UnitConverterHelpSettingsScreen
-import de.mm20.launcher2.ui.settings.unitconverter.UnitConverterSettingsRoute
-import de.mm20.launcher2.ui.settings.unitconverter.UnitConverterSettingsScreen
-import de.mm20.launcher2.ui.settings.weather.WeatherIntegrationSettingsRoute
-import de.mm20.launcher2.ui.settings.weather.WeatherIntegrationSettingsScreen
-import de.mm20.launcher2.ui.settings.wikipedia.WikipediaSettingsRoute
-import de.mm20.launcher2.ui.settings.wikipedia.WikipediaSettingsScreen
 import de.mm20.launcher2.ui.theme.LauncherTheme
 import de.mm20.launcher2.ui.theme.wallpaperColorsAsState
 
@@ -197,21 +181,6 @@ class SettingsActivity : BaseActivity() {
             entry<GesturesSettingsRoute> {
                 GestureSettingsScreen()
             }
-            entry<UnitConverterSettingsRoute> {
-                UnitConverterSettingsScreen()
-            }
-            entry<UnitConverterHelpSettingsRoute> {
-                UnitConverterHelpSettingsScreen()
-            }
-            entry<WikipediaSettingsRoute> {
-                WikipediaSettingsScreen()
-            }
-            entry<CalendarSearchSettingsRoute> {
-                CalendarSearchSettingsScreen()
-            }
-            entry<CalendarProviderSettingsRoute> {
-                CalendarProviderSettingsScreen(it.providerId)
-            }
             entry<SearchActionsSettingsRoute> {
                 SearchActionsSettingsScreen()
             }
@@ -223,9 +192,6 @@ class SettingsActivity : BaseActivity() {
             }
             entry<FilterBarSettingsRoute> {
                 FilterBarSettingsScreen()
-            }
-            entry<WeatherIntegrationSettingsRoute> {
-                WeatherIntegrationSettingsScreen()
             }
             entry<MediaIntegrationSettingsRoute> {
                 MediaIntegrationSettingsScreen()
@@ -241,12 +207,6 @@ class SettingsActivity : BaseActivity() {
             }
             entry<IntegrationsSettingsRoute> {
                 IntegrationsSettingsScreen()
-            }
-            entry<TasksIntegrationSettingsRoute> {
-                TasksIntegrationSettingsScreen()
-            }
-            entry<BreezyWeatherSettingsRoute> {
-                BreezyWeatherSettingsScreen()
             }
             entry<PluginsSettingsRoute> {
                 PluginsSettingsScreen()
@@ -370,7 +330,6 @@ class SettingsActivity : BaseActivity() {
             intent.getStringExtra(EXTRA_ROUTE) ?: return null
         }
         return when(routeName) {
-            ROUTE_WEATHER_INTEGRATION -> WeatherIntegrationSettingsRoute
             ROUTE_MEDIA_INTEGRATION -> MediaIntegrationSettingsRoute
             ROUTE_SEARCH_ACTIONS -> SearchActionsSettingsRoute
             ROUTE_HIDDEN_ITEMS -> HiddenItemsSettingsRoute
@@ -380,7 +339,6 @@ class SettingsActivity : BaseActivity() {
 
     companion object {
         const val EXTRA_ROUTE = "de.mm20.launcher2.settings.ROUTE"
-        const val ROUTE_WEATHER_INTEGRATION = "settings/integrations/weather"
         const val ROUTE_MEDIA_INTEGRATION = "settings/integrations/media"
         const val ROUTE_SEARCH_ACTIONS = "settings/search/searchactions"
         const val ROUTE_HIDDEN_ITEMS = "settings/search/hiddenitems"

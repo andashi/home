@@ -21,9 +21,7 @@ data object BuildInfoSettingsRoute: NavKey
 
 @Composable
 fun BuildInfoSettingsScreen() {
-    val viewModel: BuildInfoSettingsScreenVM = viewModel()
     val context = LocalContext.current
-    val buildFeatures by viewModel.buildFeatures.collectAsState(emptyMap())
     PreferenceScreen(title = stringResource(R.string.preference_screen_buildinfo)) {
         item {
             PreferenceCategory {
@@ -58,16 +56,6 @@ fun BuildInfoSettingsScreen() {
                     buildSignature = signatureHash
                 }
                 Preference(title = "Signature hash", summary = buildSignature)
-            }
-        }
-        item {
-            PreferenceCategory(title = "Features") {
-                for (feature in buildFeatures) {
-                    Preference(
-                        title = feature.key,
-                        summary = if (feature.value) "YES" else "NO"
-                    )
-                }
             }
         }
     }

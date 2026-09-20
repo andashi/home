@@ -7,8 +7,6 @@ import coil.decode.SvgDecoder
 import de.mm20.launcher2.applications.applicationsModule
 import de.mm20.launcher2.appshortcuts.appShortcutsModule
 import de.mm20.launcher2.badges.badgesModule
-import de.mm20.launcher2.calculator.calculatorModule
-import de.mm20.launcher2.calendar.calendarModule
 // Fork addition (Phase 2, ADR 0003): config convergence services
 import de.mm20.launcher2.config.service.configModule
 import de.mm20.launcher2.contacts.contactsModule
@@ -18,17 +16,13 @@ import de.mm20.launcher2.searchable.searchableModule
 import de.mm20.launcher2.icons.iconsModule
 import de.mm20.launcher2.music.musicModule
 import de.mm20.launcher2.search.searchModule
-import de.mm20.launcher2.unitconverter.unitConverterModule
-import de.mm20.launcher2.websites.websitesModule
 import de.mm20.launcher2.widgets.widgetsModule
-import de.mm20.launcher2.wikipedia.wikipediaModule
 import de.mm20.launcher2.database.databaseModule
 import de.mm20.launcher2.debug.initDebugMode
 import de.mm20.launcher2.globalactions.globalActionsModule
 import de.mm20.launcher2.notifications.notificationsModule
 import de.mm20.launcher2.permissions.permissionsModule
 import de.mm20.launcher2.data.plugins.dataPluginsModule
-import de.mm20.launcher2.devicepose.devicePoseModule
 import de.mm20.launcher2.feed.feedModule
 import de.mm20.launcher2.plugins.servicesPluginsModule
 import de.mm20.launcher2.preferences.preferencesModule
@@ -38,7 +32,6 @@ import de.mm20.launcher2.services.favorites.favoritesModule
 import de.mm20.launcher2.services.tags.servicesTagsModule
 import de.mm20.launcher2.services.widgets.widgetsServiceModule
 import de.mm20.launcher2.themes.themesModule
-import de.mm20.launcher2.weather.weatherModule
 import kotlinx.coroutines.*
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
@@ -64,9 +57,7 @@ class LauncherApplication : Application(), CoroutineScope, ImageLoaderFactory {
                     applicationsModule,
                     appShortcutsModule,
                     baseModule,
-                    calculatorModule,
                     badgesModule,
-                    calendarModule,
                     configModule, // Fork addition (Phase 2)
                     contactsModule,
                     customAttrsModule,
@@ -82,16 +73,11 @@ class LauncherApplication : Application(), CoroutineScope, ImageLoaderFactory {
                     searchModule,
                     searchActionsModule,
                     themesModule,
-                    unitConverterModule,
-                    weatherModule,
-                    websitesModule,
                     widgetsModule,
-                    wikipediaModule,
                     servicesTagsModule,
                     widgetsServiceModule,
                     dataPluginsModule,
                     servicesPluginsModule,
-                    devicePoseModule,
                     profilesModule,
                     i18nDataModule,
                     feedModule,

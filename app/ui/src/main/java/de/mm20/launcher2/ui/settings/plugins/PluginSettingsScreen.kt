@@ -52,8 +52,6 @@ import de.mm20.launcher2.ui.component.preferences.PreferenceCategory
 import de.mm20.launcher2.ui.component.preferences.PreferenceWithSwitch
 import de.mm20.launcher2.ui.component.preferences.SwitchPreference
 import de.mm20.launcher2.ui.locals.LocalBackStack
-import de.mm20.launcher2.ui.settings.calendarsearch.CalendarProviderSettingsRoute
-import de.mm20.launcher2.ui.settings.weather.WeatherIntegrationSettingsRoute
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -79,17 +77,7 @@ fun PluginSettingsScreen(pluginId: String) {
     )
 
 
-    val calendarPlugins by viewModel.calendarPlugins.collectAsStateWithLifecycle(
-        emptyList(),
-        minActiveState = Lifecycle.State.RESUMED
-    )
-
     val contactPlugins by viewModel.contactPlugins.collectAsStateWithLifecycle(
-        emptyList(),
-        minActiveState = Lifecycle.State.RESUMED
-    )
-
-    val weatherPlugins by viewModel.weatherPlugins.collectAsStateWithLifecycle(
         emptyList(),
         minActiveState = Lifecycle.State.RESUMED
     )
@@ -105,13 +93,7 @@ fun PluginSettingsScreen(pluginId: String) {
         null
     )
 
-    val enabledCalendarSearchPlugins by viewModel.enabledCalendarSearchPlugins.collectAsStateWithLifecycle(
-        null
-    )
 
-    val weatherProviderId by viewModel.weatherProvider.collectAsStateWithLifecycle(
-        null
-    )
 
     Scaffold(
         topBar = {
@@ -320,152 +302,6 @@ fun PluginSettingsScreen(pluginId: String) {
                                         )
                                     }
                                 }
-                            }
-                        }
-                        if (calendarPlugins.isNotEmpty()) {
-                            PreferenceCategory(
-                                stringResource(R.string.plugin_type_calendar),
-                                iconPadding = false,
-                            ) {
-                                val excludedCalendars by viewModel.excludedCalendars.collectAsState(
-                                    emptySet()
-                                )
-                                for (plugin in calendarPlugins) {
-                                    val state = plugin.state
-
-                                    val calendarLists by remember(plugin.state, plugin.plugin) {
-                                        viewModel.getCalendarLists(plugin.plugin)
-                                    }.collectAsStateWithLifecycle(
-                                        null,
-                                        minActiveState = Lifecycle.State.RESUMED
-                                    )
-                                    val selectedCalendars =
-                                        remember(excludedCalendars, calendarLists) {
-                                            calendarLists?.size?.minus(excludedCalendars.count {
-                                                it.startsWith(
-                                                    plugin.plugin.authority
-                                                )
-                                            })
-                                        }
-                                    GuardedPreference(
-                                        locked = state is PluginState.Error || state is PluginState.SetupRequired,
-                                        icon = if (state is PluginState.Error) R.drawable.error_24px else R.drawable.info_24px,
-                                        description = when (state) {
-                                            is PluginState.Error -> {
-                                                stringResource(R.string.plugin_state_error)
-                                            }
-
-                                            is PluginState.SetupRequired -> {
-                                                state.message
-                                                    ?: stringResource(R.string.plugin_state_setup_required)
-                                            }
-
-                                            else -> ""
-                                        },
-                                        onUnlock = if (state is PluginState.SetupRequired) {
-                                            {
-
-                                                try {
-                                                    state.setupActivity.sendWithBackgroundPermission(
-                                                        context
-                                                    )
-                                                } catch (e: PendingIntent.CanceledException) {
-                                                    CrashReporter.logException(e)
-                                                }
-                                            }
-                                        } else null
-                                    ) {
-                                        PreferenceWithSwitch(
-                                            title = plugin.plugin.label,
-                                            enabled = enabledCalendarSearchPlugins != null && state is PluginState.Ready,
-                                            summary = (state as? PluginState.SetupRequired)?.message
-                                                ?: if (selectedCalendars != null && calendarLists != null) {
-                                                    pluralStringResource(
-                                                        R.plurals.calendar_search_enabled_lists,
-                                                        selectedCalendars,
-                                                        selectedCalendars
-                                                    )
-                                                } else (state as? PluginState.Ready)?.text
-                                                    ?: plugin.plugin.description,
-                                            switchValue = enabledCalendarSearchPlugins?.contains(
-                                                plugin.plugin.authority
-                                            ) == true && state is PluginState.Ready,
-                                            onSwitchChanged = {
-                                                viewModel.setCalendarSearchPluginEnabled(
-                                                    plugin.plugin.authority,
-                                                    it
-                                                )
-                                            },
-                                            iconPadding = false,
-                                            onClick = {
-                                                backStack.add(
-                                                    CalendarProviderSettingsRoute(
-                                                        providerId = plugin.plugin.authority
-                                                    )
-                                                )
-                                            }
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                        if (weatherPlugins.isNotEmpty()) {
-                            PreferenceCategory(
-                                stringResource(R.string.plugin_type_weather),
-                                iconPadding = false,
-                            ) {
-                                for (plugin in weatherPlugins) {
-                                    val state = plugin.state
-                                    GuardedPreference(
-                                        locked = state is PluginState.Error || state is PluginState.SetupRequired,
-                                        icon = if (state is PluginState.Error) R.drawable.error_24px else R.drawable.info_24px,
-                                        description = when (state) {
-                                            is PluginState.Error -> {
-                                                stringResource(R.string.plugin_state_error)
-                                            }
-
-                                            is PluginState.SetupRequired -> {
-                                                state.message
-                                                    ?: stringResource(R.string.plugin_state_setup_required)
-                                            }
-
-                                            else -> ""
-                                        },
-                                        onUnlock = if (state is PluginState.SetupRequired) {
-                                            {
-
-                                                try {
-                                                    state.setupActivity.sendWithBackgroundPermission(
-                                                        context
-                                                    )
-                                                } catch (e: PendingIntent.CanceledException) {
-                                                    CrashReporter.logException(e)
-                                                }
-                                            }
-                                        } else null
-                                    ) {
-                                        Preference(
-                                            title = plugin.plugin.label,
-                                            enabled = state is PluginState.Ready && weatherProviderId != plugin.plugin.authority,
-                                            iconPadding = false,
-                                            summary = if (weatherProviderId != plugin.plugin.authority) {
-                                                stringResource(R.string.plugin_weather_provider_enable)
-                                            } else {
-                                                stringResource(R.string.plugin_weather_provider_enabled)
-                                            },
-                                            onClick = {
-                                                viewModel.setWeatherProvider(plugin.plugin.authority)
-                                            }
-                                        )
-                                    }
-                                }
-                                Preference(
-                                    title = stringResource(R.string.widget_config_weather_integration_settings),
-                                    icon = R.drawable.open_in_new_24px,
-                                    onClick = {
-                                        backStack.add(WeatherIntegrationSettingsRoute)
-                                    }
-                                )
                             }
                         }
                     }

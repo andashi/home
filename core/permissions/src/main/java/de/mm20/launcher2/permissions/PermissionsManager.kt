@@ -58,9 +58,6 @@ interface PermissionsManager {
 }
 
 enum class PermissionGroup {
-    Calendar,
-    Tasks,
-    Location,
     Contacts,
     Notifications,
     AppShortcuts,
@@ -75,17 +72,8 @@ internal class PermissionsManagerImpl(
 
     private val pendingPermissionRequests = mutableSetOf<PermissionGroup>()
 
-    private val calendarPermissionState = MutableStateFlow(
-        checkPermissionOnce(PermissionGroup.Calendar)
-    )
-    private val tasksPermissionState = MutableStateFlow(
-        checkPermissionOnce(PermissionGroup.Tasks)
-    )
     private val contactsPermissionState = MutableStateFlow(
         checkPermissionOnce(PermissionGroup.Contacts)
-    )
-    private val locationPermissionState = MutableStateFlow(
-        checkPermissionOnce(PermissionGroup.Location)
     )
     private val notificationsPermissionState = MutableStateFlow(false)
     private val accessibilityPermissionState = MutableStateFlow(false)
@@ -101,30 +89,6 @@ internal class PermissionsManagerImpl(
 
     override fun requestPermission(context: AppCompatActivity, permissionGroup: PermissionGroup) {
         when (permissionGroup) {
-            PermissionGroup.Calendar -> {
-                ActivityCompat.requestPermissions(
-                    context,
-                    calendarPermissions,
-                    permissionGroup.ordinal
-                )
-            }
-
-            PermissionGroup.Tasks -> {
-                ActivityCompat.requestPermissions(
-                    context,
-                    taskPermissions,
-                    permissionGroup.ordinal
-                )
-            }
-
-            PermissionGroup.Location -> {
-                ActivityCompat.requestPermissions(
-                    context,
-                    locationPermissions,
-                    permissionGroup.ordinal
-                )
-            }
-
             PermissionGroup.Contacts -> {
                 ActivityCompat.requestPermissions(
                     context,
@@ -176,18 +140,6 @@ internal class PermissionsManagerImpl(
 
     override fun checkPermissionOnce(permissionGroup: PermissionGroup): Boolean {
         return when (permissionGroup) {
-            PermissionGroup.Calendar -> {
-                calendarPermissions.all { context.checkPermission(it) }
-            }
-
-            PermissionGroup.Tasks -> {
-                taskPermissions.all { context.checkPermission(it) }
-            }
-
-            PermissionGroup.Location -> {
-                locationPermissions.any { context.checkPermission(it) }
-            }
-
             PermissionGroup.Contacts -> {
                 contactPermissions.all { context.checkPermission(it) }
             }
@@ -218,9 +170,6 @@ internal class PermissionsManagerImpl(
 
     override fun hasPermission(permissionGroup: PermissionGroup): Flow<Boolean> {
         return when (permissionGroup) {
-            PermissionGroup.Calendar -> calendarPermissionState
-            PermissionGroup.Tasks -> tasksPermissionState
-            PermissionGroup.Location -> locationPermissionState
             PermissionGroup.Contacts -> contactsPermissionState
             PermissionGroup.Notifications -> notificationsPermissionState
             PermissionGroup.AppShortcuts -> appShortcutsPermissionState
@@ -238,9 +187,6 @@ internal class PermissionsManagerImpl(
         val permissionGroup = PermissionGroup.entries.getOrNull(requestCode) ?: return
         val granted = grantResults.all { it == PackageManager.PERMISSION_GRANTED }
         when (permissionGroup) {
-            PermissionGroup.Calendar -> calendarPermissionState.value = granted
-            PermissionGroup.Tasks -> tasksPermissionState.value = granted
-            PermissionGroup.Location -> locationPermissionState.value = granted
             PermissionGroup.Contacts -> contactsPermissionState.value = granted
             PermissionGroup.Notifications -> notificationsPermissionState.value = granted
             PermissionGroup.AppShortcuts -> appShortcutsPermissionState.value = granted
@@ -264,12 +210,7 @@ internal class PermissionsManagerImpl(
     }
 
     companion object {
-        private val calendarPermissions = arrayOf(Manifest.permission.READ_CALENDAR)
         private val taskPermissions = arrayOf("org.tasks.permission.READ_TASKS")
-        private val locationPermissions = arrayOf(
-            Manifest.permission.ACCESS_COARSE_LOCATION,
-            Manifest.permission.ACCESS_FINE_LOCATION
-        )
         private val contactPermissions = arrayOf(Manifest.permission.READ_CONTACTS)
         private val callPermissions = arrayOf(Manifest.permission.CALL_PHONE)
     }
