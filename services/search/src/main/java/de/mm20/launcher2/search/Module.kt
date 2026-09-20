@@ -8,12 +8,7 @@ val searchModule = module {
         SearchServiceImpl(
             get(named<Application>()),
             get(named<AppShortcut>()),
-            get(named<CalendarEvent>()),
             get(named<Contact>()),
-            get(named<Article>()),
-            get(),
-            get(),
-            get(named<Website>()),
             get(),
             get(),
             get(),

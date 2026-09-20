@@ -11,7 +11,6 @@ import androidx.lifecycle.viewModelScope
 import de.mm20.launcher2.ktx.isAtLeastApiLevel
 import de.mm20.launcher2.permissions.PermissionGroup
 import de.mm20.launcher2.permissions.PermissionsManager
-import de.mm20.launcher2.preferences.search.CalendarSearchSettings
 import de.mm20.launcher2.preferences.search.ContactSearchSettings
 import de.mm20.launcher2.preferences.search.SearchFilterSettings
 import de.mm20.launcher2.preferences.search.ShortcutSearchSettings
@@ -20,8 +19,6 @@ import de.mm20.launcher2.profiles.Profile
 import de.mm20.launcher2.profiles.ProfileManager
 import de.mm20.launcher2.search.AppShortcut
 import de.mm20.launcher2.search.Application
-import de.mm20.launcher2.search.Article
-import de.mm20.launcher2.search.CalendarEvent
 import de.mm20.launcher2.search.Contact
 import de.mm20.launcher2.search.ResultScore
 import de.mm20.launcher2.search.SavableSearchable
@@ -29,9 +26,6 @@ import de.mm20.launcher2.search.SearchFilters
 import de.mm20.launcher2.search.SearchResults
 import de.mm20.launcher2.search.SearchService
 import de.mm20.launcher2.search.Searchable
-import de.mm20.launcher2.search.Website
-import de.mm20.launcher2.search.data.Calculator
-import de.mm20.launcher2.search.data.UnitConverter
 import de.mm20.launcher2.search.isUnspecified
 import de.mm20.launcher2.searchable.SavableSearchableRepository
 import de.mm20.launcher2.searchable.VisibilityLevel
@@ -58,7 +52,6 @@ class SearchVM : ViewModel(), KoinComponent {
     private val profileManager: ProfileManager by inject()
 
     private val contactSearchSettings: ContactSearchSettings by inject()
-    private val calendarSearchSettings: CalendarSearchSettings by inject()
     private val shortcutSearchSettings: ShortcutSearchSettings by inject()
     private val searchUiSettings: SearchUiSettings by inject()
     private val searchFilterSettings: SearchFilterSettings by inject()
@@ -94,11 +87,6 @@ class SearchVM : ViewModel(), KoinComponent {
 
     val appShortcutResults = mutableStateListOf<AppShortcut>()
     val contactResults = mutableStateListOf<Contact>()
-    val calendarResults = mutableStateListOf<CalendarEvent>()
-    val articleResults = mutableStateListOf<Article>()
-    val websiteResults = mutableStateListOf<Website>()
-    val calculatorResults = mutableStateListOf<Calculator>()
-    val unitConverterResults = mutableStateListOf<UnitConverter>()
     val searchActionResults = mutableStateListOf<SearchAction>()
 
     var previousResults: SearchResults? = null
@@ -174,10 +162,7 @@ class SearchVM : ViewModel(), KoinComponent {
         if (filters.enabledCategories == 1) {
             expandedCategory.value = when {
                 filters.apps -> SearchCategory.Apps
-                filters.events -> SearchCategory.Calendar
                 filters.contacts -> SearchCategory.Contacts
-                filters.websites -> SearchCategory.Website
-                filters.articles -> SearchCategory.Articles
                 filters.shortcuts -> SearchCategory.Shortcuts
                 else -> null
             }
@@ -271,18 +256,6 @@ class SearchVM : ViewModel(), KoinComponent {
                             results.contacts?.filterNot { hiddenKeys.contains(it.key) }
                                 ?.applyRanking(query)
                         )
-                        calendarResults.updateItems(
-                            results.calendars?.filterNot { hiddenKeys.contains(it.key) }
-                                ?.applyRanking(query)
-                        )
-                        articleResults.updateItems(
-                            results.wikipedia?.applyRanking(query)
-                        )
-                        websiteResults.updateItems(
-                            results.websites?.applyRanking(query)
-                        )
-                        calculatorResults.updateItems(results.calculators)
-                        unitConverterResults.updateItems(results.unitConverters)
 
                         if (results.searchActions != null) {
                             searchActionResults.updateItems(results.searchActions!!)
@@ -292,10 +265,7 @@ class SearchVM : ViewModel(), KoinComponent {
                             bestMatch.value = when {
                                 appResults.isNotEmpty() -> appResults.first()
                                 appShortcutResults.isNotEmpty() -> appShortcutResults.first()
-                                calendarResults.isNotEmpty() -> calendarResults.first()
                                 contactResults.isNotEmpty() -> contactResults.first()
-                                articleResults.isNotEmpty() -> articleResults.first()
-                                websiteResults.isNotEmpty() -> websiteResults.first()
                                 searchActionResults.isNotEmpty() -> searchActionResults.first()
                                 else -> null
                             }
@@ -305,19 +275,6 @@ class SearchVM : ViewModel(), KoinComponent {
                     }
             }
         }
-    }
-
-    val missingCalendarPermission = combine(
-        permissionsManager.hasPermission(PermissionGroup.Calendar),
-        calendarSearchSettings.providers,
-    ) { perm, providers -> !perm && providers.contains("local") }
-
-    fun requestCalendarPermission(context: AppCompatActivity) {
-        permissionsManager.requestPermission(context, PermissionGroup.Calendar)
-    }
-
-    fun disableCalendarSearch() {
-        calendarSearchSettings.setProviderEnabled("local", false)
     }
 
     val missingContactsPermission = combine(
@@ -395,11 +352,6 @@ class SearchVM : ViewModel(), KoinComponent {
 
 enum class SearchCategory {
     Apps,
-    Calculator,
-    Calendar,
     Contacts,
-    UnitConverter,
-    Articles,
-    Website,
     Shortcuts,
 }

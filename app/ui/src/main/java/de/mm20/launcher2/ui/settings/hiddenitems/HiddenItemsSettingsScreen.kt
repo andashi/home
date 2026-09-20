@@ -35,7 +35,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.NavKey
 import de.mm20.launcher2.icons.LauncherIcon
 import de.mm20.launcher2.search.Application
-import de.mm20.launcher2.search.CalendarEvent
 import de.mm20.launcher2.search.SavableSearchable
 import de.mm20.launcher2.searchable.VisibilityLevel
 import de.mm20.launcher2.ui.R
@@ -110,7 +109,7 @@ fun HiddenItemsSettingsScreen() {
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable {
-                            if (searchable is Application || searchable is CalendarEvent) {
+                            if (searchable is Application) {
                                 showDropdown = true
                             } else {
                                 if (visibility == null) return@clickable
@@ -175,7 +174,7 @@ fun HiddenItemsSettingsScreen() {
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable {
-                            if (searchable is Application || searchable is CalendarEvent) {
+                            if (searchable is Application) {
                                 showDropdown = true
                             } else {
                                 if (visibility == null) return@clickable
@@ -225,7 +224,7 @@ private fun VisibilityDropdown(
                 )
             }
 
-            val count = if (item is Application || item is CalendarEvent) 3 else 2
+            val count = if (item is Application) 3 else 2
 
             DropdownMenuItem(
                 selected = value == VisibilityLevel.Default,
@@ -246,7 +245,6 @@ private fun VisibilityDropdown(
                     Text(
                         when (item) {
                             is Application -> stringResource(R.string.item_visibility_app_default)
-                            is CalendarEvent -> stringResource(R.string.item_visibility_calendar_default)
                             else -> stringResource(R.string.item_visibility_search_only)
                         }
                     )
@@ -255,7 +253,7 @@ private fun VisibilityDropdown(
                     onValueChanged(VisibilityLevel.Default)
                 },
             )
-            if (item is Application || item is CalendarEvent) {
+            if (item is Application) {
                 DropdownMenuItem(
                     selected = value == VisibilityLevel.SearchOnly,
                     shapes = MenuDefaults.itemShape(1, count),

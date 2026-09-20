@@ -10,7 +10,6 @@
     <string name="app_info_version">버전 %1$s</string>
     <string name="settings">설정</string>
     <string name="wallpaper">배경화면</string>
-    <string name="wikipedia_source">위키백과에서 발췌</string>
     <string name="file_type_directory">디렉터리</string>
     <string name="file_type_archive">압축 파일</string>
     <string name="file_type_android">Android 패키지 파일</string>
@@ -32,7 +31,6 @@
     <string name="websearch_dialog_query_encoding_form">application/x-www-form-urlencoded</string>
     <string name="websearch_dialog_query_encoding_none">없음</string>
     <string name="menu_edit_widgets">위젯 편집</string>
-    <string name="widget_name_calendar">캘린더</string>
     <string name="widget_name_music">음악</string>
     <string name="widget_add_widget">위젯 추가</string>
     <string name="shortcut_summary">%1$s 제공</string>
@@ -55,9 +53,7 @@
     <string name="menu_favorites_unpin">고정 해제</string>
     <string name="action_undo">실행 취소</string>
     <string name="menu_contacts_open_externally">연락처 앱으로 열기</string>
-    <string name="menu_calendar_open_externally">캘린더 앱으로 열기</string>
     <string name="help">도움말</string>
-    <string name="wikipedia_url">https://ko.wikipedia.org</string>
     <string name="file_type_music">음악 파일</string>
     <string name="file_type_none">파일</string>
     <string name="alert_delete_shortcut">%1$s 바로 가기를 영구적으로 제거합니다. 계속하시겠습니까\?</string>
@@ -71,13 +67,8 @@
     <string name="edit_favorites_dialog_tag_section_empty">고정한 태그가 여기에 나타납니다.</string>
     <string name="owncloud_server_url">Owncloud 서버 URL</string>
     <string name="login_flow_continue">계속</string>
-    <string name="date_today">오늘</string>
-    <string name="date_tomorrow">내일</string>
-    <string name="calendar_widget_next_events">다음 일정</string>
     <string name="menu_customize">사용자 정의</string>
-    <string name="missing_permission_calendar_widget">다가오는 약속과 일정을 여기에 표시하려면 캘린더 권한이 필요합니다.</string>
     <string name="missing_permission_contact_search">연락처에서 항목을 검색하려면 연락처 권한이 필요합니다.</string>
-    <string name="missing_permission_calendar_search">캘린더에서 항목을 검색하려면 캘린더 권한이 필요합니다.</string>
     <string name="grant_permission">허용</string>
     <string name="widget_name_notes">메모</string>
     <string name="websearch_dialog_custom_icon">사용자 지정 아이콘</string>
@@ -158,9 +149,7 @@
     <string name="gesture_action_notifications">알림 서랍 열기</string>
     <string name="nextcloud_server_invalid_url">이 URL에는 Nextcloud가 설치되어 있지 않습니다.</string>
     <string name="owncloud_server_invalid_url">이 URL에는 Owncloud가 설치되어 있지 않습니다.</string>
-    <string name="disclaimer">면책 조항</string>
     <string name="preference_screen_debug_summary">문제 해결 도구</string>
-    <string name="calendar_widget_no_events">오늘 일정 없음</string>
     <string name="missing_permission_appshortcuts_create">바로 가기를 만들기 위해서는 %1$s 앱을 기본 홈 앱으로 지정해야 합니다.</string>
     <string name="preference_theme_light">밝은 테마</string>
     <string name="preference_theme_dark">어두운 테마</string>
@@ -175,13 +164,9 @@
     <string name="search_action_email">이메일</string>
     <string name="search_action_alarm">알람 설정</string>
     <string name="preference_search_calendar_summary">다가올 약속 및 일정 검색</string>
-    <string name="preference_search_calendar">캘린더</string>
     <string name="preference_search_files_summary">로컬 및 클라우드 파일 검색</string>
     <string name="preference_search_favorites_summary">앱 격자 위에 고정한 항목 및 자주 사용한 항목 표시</string>
-    <string name="preference_search_unitconverter_summary">사용법: \'1.5 kg\' 또는 \'4 cm &gt;&gt; in\'</string>
-    <string name="preference_search_currencyconverter">환율 변환</string>
     <string name="preference_search_websites_summary">검색어가 URL이면 해당 웹사이트의 미리보기 표시</string>
-    <string name="preference_search_unitconverter">단위 변환</string>
     <string name="preference_calendar_calendars">캘린더</string>
     <plurals name="battery_part_remaining_charge_time">
         <item quantity="other">%1$s분 뒤 충전 완료</item>
@@ -190,10 +175,7 @@
     <string name="search_action_timer">타이머 시작</string>
     <string name="gesture_action_power_menu">전원 메뉴 표시</string>
     <string name="widget_config_appwidget_background">배경 카드</string>
-    <string name="preference_wikipedia_customurl">위키백과 URL</string>
     <string name="preference_edit_favorites_summary">고정된 항목 순서 바꾸기</string>
-    <string name="preference_search_wikipedia">위키백과</string>
-    <string name="preference_search_wikipedia_summary">자유 백과사전에서 검색</string>
     <string name="battery_part_charging">충전 중</string>
     <string name="icon_picker_default_icon">기본값</string>
     <string name="icon_picker_suggestions">제안</string>
@@ -238,7 +220,6 @@
     <string name="preference_search_bar_style">스타일</string>
     <string name="preference_colors_default">기본</string>
     <string name="preference_colors_bw">흑백</string>
-    <string name="missing_permission_calendar_search_settings">캘린더를 검색하기 위해 캘린더 권한이 필요합니다.</string>
     <string name="preference_about_license">이 앱은 자유 소프트웨어입니다.</string>
     <string name="preference_about_license_summary">GNU 일반 공중 사용 허가서(GPL) 3.0을 따름</string>
     <string name="preference_clock_widget_fill_height">화면 높이 맞춤</string>
@@ -251,11 +232,6 @@
     <string name="gesture_action_recents">최근 앱 화면 열기</string>
     <string name="widget_config_weather_integration_settings">날씨 통합 설정</string>
     <string name="owncloud_login_failed">로그인 실패: 사용자 이름 또는 비밀번호가 잘못되었습니다.</string>
-    <string name="disclaimer_currency_converter">European Central Bank(유럽중앙은행)에서 하루에 한 번 게시하는 환율입니다. 모든 정보는 어떠한 종류나 성격의 보증도 제공하지 않고 \"있는 그대로\" 제공합니다. 이 정보에 대해서는 어떠한 책임도 지지 않습니다.
-\n
-\n마지막 업데이트: %1$s</string>
-    <string name="preference_search_currencyconverter_summary">주기적으로 현재 환율을 다운로드하여 환율 변환</string>
-    <string name="calendar_widget_pinned_events">다가올 일정</string>
     <string name="preference_screen_tags_summary">태그 및 태그한 항목 관리</string>
     <string name="preference_favorites_frequently_used_summary">즐겨찾기에 자주 사용한 항목 표시</string>
     <string name="missing_permission_music_widget">미디어 재생을 제어하기 위해 알림 권한이 필요합니다.</string>
@@ -283,7 +259,6 @@
     <string name="search_bar_position_bottom">아래쪽</string>
     <string name="preference_cards_shape_cut">각진 모서리</string>
     <string name="preference_debug_dump_heap_summary">메모리 사용량을 분석하기 위해 스냅샷을 찍습니다. 찍는 동안 앱이 잠시 멈춥니다.</string>
-    <string name="calendar_event_allday">종일</string>
     <string name="preference_icon_shape_triangle">뢸로 삼각형</string>
     <string name="preference_icon_shape_circle">원</string>
     <string name="preference_themed_icons">아이콘에 테마 적용</string>

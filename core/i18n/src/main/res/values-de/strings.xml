@@ -8,7 +8,6 @@
     <string name="app_info_version">Version %1$s</string>
     <string name="settings">Einstellungen</string>
     <string name="wallpaper">Hintergrundbild</string>
-    <string name="calendar_event_allday">ganztägig</string>
     <string name="preference_screen_appearance">Erscheinungsbild</string>
     <string name="preference_theme">Design</string>
     <string name="preference_theme_light">Hell</string>
@@ -24,8 +23,6 @@
     <string name="preference_imperial_units">Imperiale Einheiten</string>
     <string name="widget_config_weather_compact">Kompakter Modus</string>
     <string name="preference_category_debug">Debug</string>
-    <string name="wikipedia_url">https://de.wikipedia.org</string>
-    <string name="wikipedia_source">Aus Wikipedia</string>
     <string name="preference_category_icons">Icons</string>
     <string name="preference_icon_shape">Form</string>
     <string name="preference_icon_shape_square">Quadrat</string>
@@ -59,7 +56,6 @@
     <string name="preference_icon_pack_summary_empty">Keine Iconpacks installiert</string>
     <string name="preference_icon_pack">Iconpack</string>
     <string name="menu_edit_widgets">Widgets bearbeiten</string>
-    <string name="widget_name_calendar">Kalender</string>
     <string name="widget_add_widget">Widget hinzufügen</string>
     <string name="preference_category_system_bars">Systemleisten</string>
     <string name="preference_hide_status_bar">Statusleiste ausblenden</string>
@@ -76,12 +72,9 @@
     <string name="file_type_ebook">E-Book</string>
     <string name="file_type_form">Formular</string>
     <string name="menu_delete">Löschen</string>
-    <string name="menu_calendar_open_externally">In Kalender-App anzeigen</string>
     <string name="preference_icon_shape_hexagon">Sechseck</string>
     <string name="preference_icon_shape_triangle">Reuleaux-Dreieck</string>
     <string name="shortcut_summary">Von %1$s</string>
-    <string name="missing_permission_calendar_widget">Kalender-Berechtigung wird benötigt, um Ihre nächsten Termine hier anzuzeigen</string>
-    <string name="missing_permission_calendar_search">Kalender-Berechtigung wird benötigt, um Termine zu durchsuchen.</string>
     <string name="missing_permission_contact_search">Kontakt-Berechtigung wird benötigt, um Kontakte zu durchsuchen.</string>
     <string name="close">Schließen</string>
     <string name="websearch_dialog_custom_icon">Eigenes Icon</string>
@@ -122,18 +115,10 @@
     <string name="preference_cards_corner_radius">Eckradius</string>
     <string name="preference_cards_stroke_width">Rahmenstärke</string>
     <string name="preference_cards_opacity">Deckkraft</string>
-    <string name="disclaimer">Haftungsausschluss</string>
-    <string name="disclaimer_currency_converter">Wechselkurse so wie sie einmal täglich von der Europäischen Zentralbank herausgegeben werden. Alle Angaben sind ohne Gewähr. Es wird keine Haftung für die hier dargestellten Informationen übernommen.
-\n
-\nLetzte Aktualisierung: %1$s</string>
     <string name="show_all">Alle anzeigen</string>
     <string name="preference_screen_colors">Farbschema</string>
     <string name="preference_colors_default">Standard</string>
     <string name="preference_colors_bw">Schwarz-Weiß</string>
-    <string name="date_today">Heute</string>
-    <string name="date_tomorrow">Morgen</string>
-    <string name="calendar_widget_pinned_events">Demnächst</string>
-    <string name="calendar_widget_no_events">Heute keine Termine</string>
     <string name="preference_category_license">Lizenz</string>
     <string name="preference_about_license">Diese App ist freie Software.</string>
     <string name="preference_about_license_summary">Lizenziert unter der GNU General Public License 3.0</string>
@@ -148,7 +133,6 @@
     <string name="grant_permission">Gewähren</string>
     <string name="missing_permission_music_widget">Benachrichtigungszugriff wird benötigt, um Medienwiedergabe zu steuern</string>
     <string name="missing_permission_contact_search_settings">Kontaktberechtigung ist erforderlich, um Kontakte durchsuchen zu können</string>
-    <string name="missing_permission_calendar_search_settings">Kalenderberechtigung ist erforderlich, um Kalender durchsuchen zu können</string>
     <string name="preference_screen_debug">Debug</string>
     <string name="preference_screen_debug_summary">Werkzeuge zur Fehlerbehebung</string>
     <string name="preference_category_widgets">Widgets</string>
@@ -163,14 +147,9 @@
     <string name="preference_search_files_summary">Lokale Dateien und Cloud-Dateien durchsuchen</string>
     <string name="preference_search_contacts">Kontakte</string>
     <string name="preference_search_contacts_summary">Kontakte auf diesem Gerät durchsuchen</string>
-    <string name="preference_search_calendar">Kalender</string>
     <string name="preference_search_calendar_summary">Anstehende Termine durchsuchen</string>
     <string name="preference_search_calculator">Taschenrechner</string>
     <string name="preference_search_calculator_summary">Mathematische Terme auswerten</string>
-    <string name="preference_search_unitconverter">Einheitenrechner</string>
-    <string name="preference_search_unitconverter_summary">Benutzung: „1,5 kg“ oder „4 cm &gt;&gt; in“</string>
-    <string name="preference_search_wikipedia">Wikipedia</string>
-    <string name="preference_search_wikipedia_summary">Die freie Enzyklopädie durchsuchen</string>
     <string name="preference_search_websites">Webseiten</string>
     <string name="preference_search_websites_summary">Vorschau einer Webseite anzeigen, wenn die Suchanfrage eine URL ist</string>
     <string name="preference_screen_buildinfo">Build-Information</string>
@@ -181,7 +160,6 @@
     <string name="preference_search_bar_auto_focus_summary">Bildschirmtastatur beim Öffnen der App-Übersicht automatisch einblenden</string>
     <string name="preference_search_bar_launch_on_enter">Eingabe zum Starten</string>
     <string name="preference_search_bar_launch_on_enter_summary">Hervorgehobenes Suchergebnis mit der Eingabetaste aufrufen</string>
-    <string name="preference_wikipedia_customurl">Wikipedia-URL</string>
     <string name="music_widget_default_title">%1$s spielt Medien</string>
     <string name="music_widget_no_data">Bisher wurden keine Medien abgespielt</string>
     <string name="missing_permission_calendar_widget_settings">Kalenderzugriff wird benötigt, um Termine abzurufen</string>
@@ -207,10 +185,7 @@
     <string name="preference_clockwidget_favorites_part_summary">Favoriten im Dock anzeigen</string>
     <string name="preference_clockwidget_dock_rows">Dock-Zeilen</string>
     <string name="preference_grid_icon_size">Icongröße</string>
-    <string name="preference_search_currencyconverter">Währungsrechner</string>
-    <string name="preference_search_currencyconverter_summary">Regelmäßig Wechselkurse herunterladen, um Währungen umzurechnen</string>
     <string name="action_undo">Rückgängig</string>
-    <string name="calendar_widget_next_events">Nächstes Ereignis</string>
     <string name="preference_hidden_items">Ausgeblendete Suchergebnisse</string>
     <string name="preference_hidden_items_summary">Ausgeblendete Apps und Suchergebnisse verwalten</string>
     <string name="preference_cards_shape">Form</string>
@@ -589,10 +564,6 @@
     <string name="music_widget_play">Wiedergabe</string>
     <string name="music_widget_pause">Pause</string>
     <string name="music_widget_open_player">App öffnen</string>
-    <string name="calendar_widget_previous_day">Vorheriger Tag</string>
-    <string name="calendar_widget_next_day">Nächster Tag</string>
-    <string name="calendar_widget_create_event">Neuen Termin erstellen</string>
-    <string name="calendar_widget_open_calendar">Kalender-App öffnen</string>
     <string name="profile_work_profile_action_unlock">Nicht mehr pausieren</string>
     <string name="profile_work_profile_action_lock">Geschäftliche Apps pausieren</string>
     <string name="profile_private_profile_state_locked">Der private Bereich ist gesperrt</string>
@@ -601,11 +572,7 @@
     <string name="plugin_type_calendar">Kalender</string>
     <string name="profile_work_profile_state_locked">Geschäftliche Apps sind pausiert</string>
     <string name="hint_drag_and_drop_reorder">Zum Anordnen Elemente halten und ziehen</string>
-    <string name="preference_search_supportedunits">Unterstützte Einheiten</string>
     <string name="app_label_locked_profile">Gesperrt</string>
-    <string name="task_due_time">Fällig um %1$s</string>
-    <string name="task_due_date">Fällig am %1$s</string>
-    <string name="task_due_today">Heute fällig</string>
     <string name="preference_calendar_hide_completed">Abgeschlossene Aufgaben ausblenden</string>
     <plurals name="calendar_search_enabled_lists">
         <item quantity="one">%1$s Liste ausgewählt</item>
@@ -619,7 +586,6 @@
     </plurals>
     <string name="preference_contacts_call_on_tap">Zum Anrufen tippen</string>
     <string name="preference_contacts_call_on_tap_summary">Beim Antippen einer Telefonnummer ohne Bestätigung einen Anruf starten</string>
-    <string name="preference_search_local_calendar_summary">Kalender auf diesem Gerät durchsuchen</string>
     <string name="weather_forecast_wind">Wind</string>
     <string name="weather_forecast_humidity">Luftfeuchtigkeit</string>
     <string name="preference_grid_list_style">Apps als Liste anzeigen</string>
@@ -633,15 +599,7 @@
     <string name="widget_removed">Widget entfernt</string>
     <string name="missing_permission_call_contacts_settings">Telefonberechtigung wird benötigt, um Anrufe zu starten</string>
     <string name="action_install">Installieren</string>
-    <string name="missing_permission_tasks_integration">Aufgaben-Berechtigung wird benötigt, um die Tasks-Integration zu verwenden</string>
-    <string name="preference_search_tasks">Aufgaben</string>
-    <string name="missing_permission_tasks_search_settings">Tasks-Berechtigung ist erforderlich, um Aufgaben in der Tasks-App durchsuchen zu können</string>
-    <string name="preference_search_tasks_summary">Aufgaben in der Tasks-App durchsuchen</string>
-    <string name="preference_tasks_integration">Tasks</string>
     <string name="plugin_type_contacts">Kontakte</string>
-    <string name="preference_tasks_integration_ready">Die Tasks-Integration ist fertig eingerichtet und bereit zur Verwendung.</string>
-    <string name="preference_tasks_integration_description">Tasks ist eine freie und quelloffene To-do-Listen- und Erinnerungs-App. Wenn installiert kann %1$s Ihre Aufgaben aus der Tasks-App anzeigen und durchsuchen.</string>
-    <string name="preference_launch_tasks_app">Tasks-App öffnen</string>
     <plurals name="calendar_widget_running_tasks">
         <item quantity="one">+%1$d unerledigte Aufgabe</item>
         <item quantity="other">+%1$d unerledigte Aufgaben</item>
@@ -754,7 +712,6 @@
     <string name="gesture_action_launch_select_app">App oder Shortcut auswählen</string>
     <string name="preference_search_apps_show_details">App-Informationen anzeigen</string>
     <string name="preference_search_apps_show_details_summary">Version und Paketnamen einer App in ihrem Kontext-Menü anzeigen</string>
-    <string name="preference_currency_settings">Währungseinstellungen</string>
     <string name="preference_currencies">Währung</string>
     <string name="preference_add_currency">Währung hinzufügen</string>
     <string name="search_query_private_space">Vertrauliches Profil</string>

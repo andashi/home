@@ -10,11 +10,9 @@
     <string name="action_undo">เลิกทำ</string>
     <string name="menu_delete">ลบ</string>
     <string name="menu_remove">ลบ</string>
-    <string name="menu_calendar_open_externally">เปิดในแอปปฏิทิน</string>
     <string name="app_info_version">เวอร์ชั่น %1$s</string>
     <string name="help">ช่วยเหลือ</string>
     <string name="wallpaper">ภาพพื้นหลัง</string>
-    <string name="wikipedia_source">โดยวิกิพีเดีย</string>
     <string name="file_type_directory">โฟลเดอร์</string>
     <string name="file_type_archive">ไฟล์เก็บถาวร</string>
     <string name="file_type_document">เอกสาร</string>
@@ -35,7 +33,6 @@
     <string name="websearch_dialog_advanced">ขั้นสูง</string>
     <string name="websearch_dialog_query_encoding">เข้ารหัสคำค้นหา</string>
     <string name="websearch_dialog_query_encoding_none">ไม่ใช้</string>
-    <string name="widget_name_calendar">ปฏิทิน</string>
     <string name="widget_name_music">สื่อ</string>
     <string name="widget_name_notes">โน้ต</string>
     <string name="widget_name_unknown">ไม่รู้จัก</string>
@@ -63,15 +60,11 @@
     <string name="owncloud_username">ชื่อผู้ใช้</string>
     <string name="owncloud_login_failed">การลงชื่อเข้าใช้ไม่สำเร็จ เพราะชื่อผู้ใช้หรือรหัสผ่านผิด</string>
     <string name="login_flow_continue">ไปต่อ</string>
-    <string name="disclaimer">ข้อจำกัดความรับผิดชอบ</string>
     <string name="show_all">แสดงทั้งหมด</string>
-    <string name="date_today">วันนี้</string>
-    <string name="date_tomorrow">พรุ่งนี้</string>
     <string name="music_widget_no_data">ยังไม่มีสื่อใดที่ถูกเล่น</string>
     <string name="missing_permission_music_widget">คุณต้องอนุญาตให้แอปเข้าถึงการแจ้งเตือนเพื่อควบคุมการเล่นสื่อ</string>
     <string name="missing_permission_calendar_widget_settings">วิดเจ็ตนี้ต้องการต้องได้รับการอนุญาตการเข้าถึงปฏิทิน</string>
     <string name="widget_config_calendar_missing_calendars_hint">หาปฏิทินไม่เจอหรือ\?</string>
-    <string name="missing_permission_calendar_widget">คุณต้องอนุญาตให้แอปเข้าถึงปฏิทินเพื่อแสดงนัดหมายและกิจกรรมที่นี่</string>
     <string name="missing_permission_contact_search">คุณต้องอนุญาตให้แอปเข้าถึงรายชื่อผู้ติดต่อเพื่อค้นหาในรายชื่อผู้ติดต่อ</string>
     <string name="missing_permission_appshortcuts_search">กำหนดให้แอป %1$s เป็นลอนเชอร์เริ่มต้นเพื่อค้นหาทางลัดแอป</string>
     <string name="grant_permission">อนุญาต</string>
@@ -155,15 +148,9 @@
     <string name="preference_screen_search">ค้นหา</string>
     <string name="preference_search_favorites">รายการโปรด</string>
     <string name="preference_screen_search_summary">การค้นหา แท็ก ผลการค้นหาที่ถูกตัดออก</string>
-    <string name="preference_search_calendar">ปฏิทิน</string>
     <string name="preference_search_appshortcuts">ทางลัดแอป</string>
     <string name="preference_search_appshortcuts_summary">ค้นหาทางลัดแอป</string>
     <string name="preference_search_calculator">เครื่องคิดเลข</string>
-    <string name="preference_search_unitconverter">ตัวแปลงหน่วย</string>
-    <string name="preference_search_unitconverter_summary">วิธีใช้: 1.5 กก. หรือ 4 ซม. &gt;&gt; นิ้ว</string>
-    <string name="preference_search_currencyconverter">ตัวแปลงสกุลเงิน</string>
-    <string name="preference_search_wikipedia">วิกิพีเดีย</string>
-    <string name="preference_search_wikipedia_summary">ค้นหาในสารานุกรมเสรี</string>
     <string name="preference_search_websites">เว็บไซต์</string>
     <string name="preference_calendar_calendars">ปฏิทิน</string>
     <string name="preference_screen_buildinfo">ข้อมูลบิลด์</string>
@@ -176,7 +163,6 @@
     <string name="preference_hidden_items_reveal_button_summary">แสดงปุ่มเผยผลการค้นหาที่ถูกตัดออก</string>
     <string name="preference_screen_tags">แท็ก</string>
     <string name="preference_screen_tags_summary">จัดการแท็ก และสิ่งที่ถูกแท็ก</string>
-    <string name="preference_wikipedia_customurl">ลิงก์วิกิพีเดีย</string>
     <string name="preference_edit_favorites_summary">เปลี่ยนการเรียงของสิ่งที่ถูกปักหมุด</string>
     <string name="preference_category_favorites_frequently_used">ใช้บ่อย</string>
     <string name="preference_favorites_frequently_used_summary">แสดงสิ่งที่ถูกใช้บ่อยๆในรายการโปรด</string>
@@ -253,7 +239,6 @@
     <string name="preference_icon_pack">ชุดไอคอน</string>
     <string name="preference_screen_icons_summary">ลิ้นชักแอป ไอคอน ป้าย</string>
     <string name="icon_picker_search_icon">ค้นหาในชุดไอคอน</string>
-    <string name="wikipedia_url">https://th.wikipedia.org</string>
     <string name="websearch_dialog_replace_icon">แทนที่ไอคอน</string>
     <string name="websearch_dialog_delete_icon">ลบไอคอน</string>
     <string name="preference_category_icons">ไอคอน</string>
@@ -294,23 +279,16 @@
     <string name="menu_contacts_open_externally">เปิดในแอปรายชื่อผู้ติดต่อ</string>
     <string name="search_bar_placeholder">ค้นหา</string>
     <string name="settings">การตั้งค่า</string>
-    <string name="disclaimer_currency_converter">ธนาคารกลางยุโรปทำการประกาศอัตราแรกเปลี่ยนวันละครั้ง ข้อมูลทั้งหมดนี้มีให้ \"ตามสภาพ\" โดยไม่มีการรับประกันใดๆ จะไม่มีความรับผิดชอบใดๆต่อความเสียหายจากข้อมูลเหล่านี้
-\n
-\nอัพเดตครั้งล่าสุด: %1$s</string>
     <string name="edit_favorites_dialog_unpinned">ไม่ได้ปักหมุด - ถูกใช้บ่อย</string>
-    <string name="calendar_widget_pinned_events">ที่จะถึง</string>
     <string name="edit_favorites_dialog_pinned_unsorted">ปัดหมุด - เรียงโดยอัตโนมัติ</string>
-    <string name="calendar_widget_next_events">กิจกรรมต่อไป</string>
     <string name="preference_category_links">ลิงก์</string>
     <string name="edit_favorites_dialog_tag_section_empty">แท็กที่ถูกปักหมุดจะถูกแสดงที่นี่</string>
-    <string name="calendar_widget_no_events">วันนี้ไม่มีกิจกรรมใดๆ</string>
     <string name="preference_category_licenses">ใบอนุญาตโอเพ่นซอร์ส</string>
     <string name="nextcloud_server_url">ลิงก์เซิร์ฟเวอร์ Nextcloud</string>
     <plurals name="calendar_widget_running_events">
         <item quantity="other">+อีก %1$d กิจกรรมที่ยังไม่สิ้นสุดจากวันก่อนๆ</item>
     </plurals>
     <string name="preference_screen_about_summary">ข้อมูลแอปและใบอนุญาต</string>
-    <string name="calendar_event_allday">ทั้งวัน</string>
     <string name="owncloud_server_invalid_url">ลิงก์นี้ไม่ได้ชี้ไปที่เซิร์ฟเวอร์ Owncloud ที่ถูกต้อง</string>
     <string name="music_widget_default_title">%1$s กำลังเล่นสื่อ</string>
     <string name="owncloud_password">รหัสผ่าน</string>
@@ -333,7 +311,6 @@
     <string name="preference_clockwidget_layout_vertical">ค่าเริ่มต้น</string>
     <string name="preference_clockwidget_favorites_part_summary">แสดงรายการที่ปักหมุดไว้บนแถบด็อค</string>
     <string name="missing_permission_contact_search_settings">คุณต้องอนุญาตให้แอปเข้าถึงรายชื่อผู้ติดต่อเพื่อค้นหาผู้ติดต่อ</string>
-    <string name="missing_permission_calendar_search_settings">คุณต้องอนุญาตให้แอปเข้าถึงปฏิทินเพื่อค้นหาปฏิทิน</string>
     <string name="missing_permission_appshortcuts_search_settings">คุณต้องกำหนดให้แอป %1$s เป็นลอนเชอร์เริ่มต้นจึงจะค้นหาทางลัดแอปได้</string>
     <string name="preference_search_favorites_summary">แสดงสิ่งที่ถูกปักหมุดและสิ่งที่ถูกใช้งานบ่อยข้างบนลิ้นชักแอป</string>
     <string name="preference_widgets_edit_button_summary">แสดงปุ่มสำหรับการเพิ่ม ลบ และจัดเรียงวิดเจ็ต</string>
@@ -344,12 +321,10 @@
     <string name="missing_permission_notification_badges">คุณต้องอนุญาตให้แอปเข้าถึงการแจ้งเตือนเพื่อการแสดงป้ายการแจ้งเตือน</string>
     <string name="preference_search_contacts_summary">ค้นหารายชื่อผู้ติดต่อบนอุปกรณ์นี้</string>
     <string name="preference_screen_homescreen_summary">นาฬิกา แถบค้นหา ภาพพื้นหลัง แถบระบบ</string>
-    <string name="missing_permission_calendar_search">คุณต้องอนุญาตให้แอปเข้าถึงปฏิทินเพื่อค้นหาในปฏิทินของคุณ</string>
     <string name="preference_search_calendar_summary">ค้นหานัดหมายและกิจกรรมที่กำลังมาถึง</string>
     <string name="preference_weather_integration">สภาพอากาศ</string>
     <string name="preference_search_calculator_summary">คำนวณและดำเนินการทางคณิตศาสตร์</string>
     <string name="missing_permission_appshortcuts_create">กำหนดให้แอป %1$s เป็นลอนเชอร์เริ่มต้นเพื่อสร้างทางลัด</string>
-    <string name="preference_search_currencyconverter_summary">ดาวน์โหลดอัตราแรกเปลี่ยนเพื่อแปลงสกุลเงินเป็นระยะๆ</string>
     <string name="preference_search_websites_summary">แสดงตัวอย่างของเว็บไซต์ถ้าคำค้นหาเป็นลิงก์</string>
     <string name="preference_media_integration">ตัวควบคุมสื่อ</string>
     <string name="preference_theme">ธีม</string>
@@ -460,7 +435,6 @@
     <string name="clock_style_binary">เลขฐานสอง</string>
     <string name="preference_default_filter_summary">ตั้งค่าตัวกรองเริ่มต้นสำหรับการค้นหา</string>
     <string name="filter_settings_network_warning">คุณได้เปิดใช้งานผลการค้นหาออนไลน์ในตัวกรองปัจจุบันซึ่งไม่แนะนำให้ใช้ด้วยเหตุผลด้านความเป็นส่วนตัว เนื่องจากคำค้นหาของคุณอาจถูกส่งไปยังบริการค้นหาภายนอก</string>
-    <string name="calendar_widget_open_calendar">เปิดแอปปฏิทิน</string>
     <plurals name="contact_postal_addresses">
         <item quantity="other">ที่อยู่ไปรษณีย์ %1$s ที่</item>
     </plurals>
@@ -501,12 +475,10 @@
     <string name="poi_category_nightclub">ไนต์คลับ</string>
     <string name="poi_category_cinema">โรงภาพยนตร์</string>
     <string name="poi_category_clinic">คลินิก</string>
-    <string name="calendar_widget_previous_day">วันก่อนหน้า</string>
     <string name="poi_category_basketball">สนามบาสเกตบอล</string>
     <string name="poi_category_kiosk">แผงลอย</string>
     <string name="poi_category_atm">ตู้ ATM</string>
     <string name="poi_category_museum">พิพิธภัณฑ์</string>
-    <string name="preference_search_supportedunits">หน่วยที่รองรับ</string>
     <string name="search_filter_apps">แอป</string>
     <string name="preference_filter_bar">แสดงแผงตัวกรอง</string>
     <string name="poi_category_church">โบสถ์คริสต์</string>
@@ -545,9 +517,6 @@
     <string name="profile_private_profile_state_locked">Private space ถูกล็อกอยู่</string>
     <string name="profile_private_profile_action_unlock">ปลดล็อก</string>
     <string name="profile_private_profile_action_lock">ล็อก private space</string>
-    <string name="task_due_time">ครบกำหนดเวลา %1$s</string>
-    <string name="task_due_date">ครบกำหนดวันที่ %1$s</string>
-    <string name="task_due_today">ครบกำหนดวันนี้</string>
     <string name="apps_profile_private">ส่วนตัว</string>
     <string name="app_label_locked_profile">ล็อกอยู่</string>
     <string name="clock_style_analog">นาฬิกาเข็ม</string>
@@ -597,8 +566,6 @@
     <string name="music_widget_play">เล่น</string>
     <string name="music_widget_pause">พัก</string>
     <string name="music_widget_open_player">เปิดเครื่องเล่น</string>
-    <string name="calendar_widget_next_day">วันถัดไป</string>
-    <string name="calendar_widget_create_event">สร้างกิจกรรมใหม่</string>
     <string name="preference_compact_tags">แท็กขนาดกะทัดรัด</string>
     <string name="preference_compact_tags_summary">ซ่อนชื่อหรือไอคอนของแท็กเพื่อทำให้แท็กใช้พื้นที่น้อยลง</string>
     <string name="weather_forecast_precipitation">หยาดน้ำฟ้า</string>
@@ -611,7 +578,6 @@
     <plurals name="departure_time_in">
         <item quantity="other">ในอีก %1$d นาที</item>
     </plurals>
-    <string name="preference_search_local_calendar_summary">ค้นหาปฏิทินบนอุปกรณ์นี้</string>
     <string name="plugin_type_contacts">ผู้ติดต่อ</string>
     <string name="preference_grid_list_icons">แสดงไอคอนแอปในรายการ</string>
     <string name="preference_grid_list_style_summary">แสดงแอปแบบเรียงรายการ แทนการแสดงแอปแบบเรียงเป็นตาราง</string>
@@ -622,7 +588,6 @@
     <string name="missing_permission_call_contacts_settings">คุณต้องอนุญาตให้แอปเข้าถึงโทรศัพท์เพื่อเริ่มการโทรฯ</string>
     <string name="import_theme_exists">ธีมนี้ถูกติดตั้งไว้แล้วและจะถูกอัปเดต</string>
     <string name="import_theme_contents">รายการการปรับแต่ง</string>
-    <string name="preference_tasks_integration_description">Tasks คือแอปเสรีและโอเพนซอร์สสำหรับการจดบันทึกและแจ้งเตือนรายการสิ่งที่ต้องทำ คุณสามารถติดตั้งแอป Tasks เพื่อให้ %1$s แสดงและค้นหางานของคุณได้</string>
     <string name="theme_import_title">นำเข้าธีม</string>
     <string name="preference_screen_shapes">รูปร่าง</string>
     <string name="preference_shapes_default">ค่าเริ่มต้น</string>
@@ -632,26 +597,19 @@
     <string name="confirmation_delete_shapes_scheme">คุณต้องการลบชุดรูปร่าง %1$s ใช่หรือไม่?</string>
     <string name="bad_configuration_title">ยินดีด้วย คุณใช้งานแอปนี้ไม่ได้แล้ว!</string>
     <string name="bad_configuration_summary">คุณได้ค้นพบวิธีการตั้งค่าที่ทำให้ทั้งการค้นหาและการตั้งค่าของแอปใช้งานไม่ได้ ทำให้คุณไม่สามารถใช้งานแอปนี้ได้อีกต่อไป</string>
-    <string name="missing_permission_tasks_integration">คุณต้องอนุญาตให้เข้าถึง Tasks เพื่อใช้งานตัวเชื่อมต่อ Tasks</string>
     <string name="no_selection">ยังไม่ได้เลือกสิ่งใด</string>
     <string name="save_as_file">บันทึกเป็นไฟล์</string>
     <string name="theme_export_title">ส่งออกธีม</string>
     <string name="theme_bundle_name">ชื่อ</string>
     <string name="theme_bundle_author">ผู้สร้าง</string>
     <string name="action_install">ติดตั้ง</string>
-    <string name="preference_tasks_integration">Tasks</string>
-    <string name="preference_tasks_integration_ready">การตั้งค่าตัวเชื่อมต่อ Tasks เสร็จสมบูรณ์และพร้อมใช้งาน</string>
     <plurals name="calendar_widget_running_tasks">
         <item quantity="other">+ อีก %1$d งานที่ยังไม่เสร็จ</item>
     </plurals>
-    <string name="missing_permission_tasks_search_settings">คุณต้องอนุญาตให้เข้าถึง Tasks เพื่อค้นหางาน</string>
-    <string name="preference_search_tasks">งาน</string>
-    <string name="preference_search_tasks_summary">ค้นหางานในแอป Tasks</string>
     <string name="preference_widgets_on_home_screen">วิดเจ็ตบนหน้าจอหลัก</string>
     <string name="preference_widgets_on_home_screen_summary">แสดงวิดเจ็ตบนหน้าจอหลักแทนการใช้อีกหน้าหนึ่ง</string>
     <string name="preference_gesture_swipe_up">ปัดขึ้น</string>
     <string name="gesture_action_widgets">วิดเจ็ต</string>
-    <string name="preference_launch_tasks_app">เปิดแอป Tasks</string>
     <string name="preference_colors_high_contrast">คมชัดสูง</string>
     <string name="preference_transparencies_default">ค่าเริ่มต้น</string>
     <string name="preference_transparencies_semi_transparent">โปร่งแสง</string>
@@ -691,7 +649,6 @@
     <string name="preference_search_apps_summary">แสดงแอปทั้งหมดเมื่อยังไม่ได้พิมพ์สิ่งใดในแถบการค้นหา</string>
     <string name="preference_search_apps_show_details">แสดงข้อมูลแอป</string>
     <string name="preference_search_apps_show_details_summary">แสดงเวอร์ชันและชื่อแพ็กเกจของแอปในเมนูกดค้าง</string>
-    <string name="preference_currency_settings">การตั้งค่าสกุลเงิน</string>
     <string name="preference_smartspacer_integration">Smartspacer</string>
     <string name="preference_smartspacer_integration_description">Smartspacer คือแอปเสรีและโอเพนซอร์สสำหรับวิดเจ็ตข้อมูลโดยย่อ (At a Glance) คุณสามารถติดตั้งแอป Smartspacer เพื่อนำไปใช้ในโซนไดนามิกของวิดเจ็ตนาฬิกาได้</string>
     <string name="preference_smartspacer_enable">เปิดใช้งานการเชื่อมต่อกับ Smartspacer</string>

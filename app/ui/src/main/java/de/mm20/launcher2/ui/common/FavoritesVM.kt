@@ -10,7 +10,6 @@ import de.mm20.launcher2.search.SavableSearchable
 import de.mm20.launcher2.search.Tag
 import de.mm20.launcher2.searchable.PinnedLevel
 import de.mm20.launcher2.services.favorites.FavoritesService
-import de.mm20.launcher2.widgets.CalendarWidget
 import de.mm20.launcher2.widgets.WidgetRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -48,38 +47,22 @@ abstract class FavoritesVM : ViewModel(), KoinComponent {
 
     open val favorites: Flow<List<SavableSearchable>> = selectedTag.flatMapLatest { tag ->
         if (tag == null) {
-            val excludeCalendar = widgetRepository.exists(CalendarWidget.Type)
-
-            combine(
-                excludeCalendar,
-                settings,
-            ) { (a, b) -> a as Boolean to b as FavoritesSettingsData }
+            settings
                 .transformLatest {
 
-                    val columns = it.second.columns
-                    val excludeCalendar = it.first
-                    val includeFrequentlyUsed = it.second.frequentlyUsed
-                    val frequentlyUsedRows = it.second.frequentlyUsedRows
+                    val columns = it.columns
+                    val includeFrequentlyUsed = it.frequentlyUsed
+                    val frequentlyUsedRows = it.frequentlyUsedRows
 
                     val pinned = favoritesService.getFavorites(
-                        excludeTypes = if (excludeCalendar) listOf(
-                            "calendar",
-                            "tasks.org",
-                            "tag",
-                            "plugin.calendar"
-                        ) else listOf("tag"),
+                        excludeTypes = listOf("tag"),
                         minPinnedLevel = PinnedLevel.AutomaticallySorted,
                         limit = 10 * columns,
                     )
                     if (includeFrequentlyUsed) {
                         emitAll(pinned.flatMapLatest { pinned ->
                             favoritesService.getFavorites(
-                                excludeTypes = if (excludeCalendar) listOf(
-                                    "calendar",
-                                    "tasks.org",
-                                    "tag",
-                                    "plugin.calendar"
-                                ) else listOf("tag"),
+                                excludeTypes = listOf("tag"),
                                 maxPinnedLevel = PinnedLevel.FrequentlyUsed,
                                 minPinnedLevel = PinnedLevel.FrequentlyUsed,
                                 limit = frequentlyUsedRows * columns - pinned.size % columns,

@@ -24,8 +24,6 @@
     <plurals name="calendar_widget_running_events">
         <item quantity="other">+%1$d sự kiện đang chạy từ ngày trước</item>
     </plurals>
-    <string name="menu_calendar_open_externally">Mở trong ứng dụng lịch</string>
-    <string name="wikipedia_url">https://en.wikipedia.org</string>
     <string name="file_type_ebook">E-book</string>
     <string name="file_type_drawing">Vẽ</string>
     <string name="alert_delete_shortcut">Lối tắt %1$s sẽ bị xóa vĩnh viễn. Tiếp tục?</string>
@@ -37,7 +35,6 @@
     <string name="notes_widget_export_filename">Lưu ý_%1$s</string>
     <string name="edit_favorites_dialog_empty_section">Kéo các mục vào đây</string>
     <string name="login_flow_continue">Tiếp tục</string>
-    <string name="calendar_event_allday">cả ngày</string>
     <string name="music_widget_default_title">%1$s đang phát phương tiện</string>
     <string name="missing_permission_appshortcuts_create">Đặt %1$s làm ứng dụng trang chủ mặc định để tạo lối tắt.</string>
     <string name="preference_font">Phông chữ</string>
@@ -99,7 +96,6 @@
     <string name="settings">Thiết đặt</string>
     <string name="help">Trợ giúp</string>
     <string name="wallpaper">Hình nền</string>
-    <string name="wikipedia_source">Từ Wikipedia</string>
     <string name="file_type_directory">Thư mục</string>
     <string name="file_type_archive">Lưu trữ tệp tin</string>
     <string name="file_type_android">Tệp gói Android</string>
@@ -121,7 +117,6 @@
     <string name="default_websearch_3_url">https://play.google.com/store/search?q=${1}</string>
     <string name="websearch_dialog_query_encoding_form">application/x-www-form-urlencoded</string>
     <string name="menu_edit_widgets">Chỉnh sửa tiện ích</string>
-    <string name="widget_name_calendar">Lịch</string>
     <string name="widget_name_music">Âm nhạc</string>
     <string name="widget_name_notes">Ghi chú</string>
     <string name="notes_widget_action_save">Lưu</string>
@@ -153,26 +148,14 @@
     <string name="owncloud_login_2fa_hint">Nếu bạn đã bật xác thực hai yếu tố, bạn phải sử dụng mật khẩu ứng dụng tại đây.</string>
     <string name="owncloud_login_failed">Đăng nhập thất bại: tên người dùng hoặc mật khẩu không chính xác.</string>
     <string name="login_flow_login">Đăng nhập</string>
-    <string name="disclaimer">Tuyên bố miễn trừ trách nhiệm</string>
-    <string name="disclaimer_currency_converter">Tỷ giá hối đoái được Ngân hàng Trung ương Châu Âu công bố một lần mỗi ngày. Tất cả thông tin được cung cấp \"nguyên trạng\" mà không có bất kỳ hình thức đảm bảo nào. Không có trách nhiệm pháp lý nào được giả định đối với những thông tin này.
-\n
-\nCập nhật lần cuối: %1$s</string>
     <string name="show_all">Hiển thị tất cả</string>
-    <string name="date_today">Hôm nay</string>
-    <string name="date_tomorrow">Ngày mai</string>
-    <string name="calendar_widget_pinned_events">Sắp tới</string>
-    <string name="calendar_widget_next_events">Sự kiện tiếp theo</string>
-    <string name="calendar_widget_no_events">Không có sự kiện nào hôm nay</string>
     <string name="music_widget_no_data">Chưa có phương tiện nào được phát</string>
     <string name="missing_permission_music_widget">Cần có quyền truy cập thông báo để kiểm soát việc phát lại phương tiện</string>
     <string name="missing_permission_contact_search_settings">Cần có quyền danh bạ để tìm kiếm liên hệ</string>
-    <string name="missing_permission_calendar_search_settings">Cần có quyền lịch để tìm kiếm lịch</string>
     <string name="missing_permission_calendar_widget_settings">Tiện ích này yêu cầu quyền truy cập lịch</string>
     <string name="widget_config_calendar_missing_calendars_hint">Không thể tìm thấy lịch của bạn?</string>
     <string name="missing_permission_appshortcuts_search_settings">%1$s phải được đặt làm ứng dụng trang chủ mặc định để tìm kiếm các lối tắt ứng dụng</string>
     <string name="missing_permission_notification_badges">Cần có quyền truy cập thông báo để hiển thị dấu hiệu thông báo</string>
-    <string name="missing_permission_calendar_widget">Cấp quyền cho lịch hiển thị các cuộc hẹn và sự kiện sắp tới tại đây.</string>
-    <string name="missing_permission_calendar_search">Cấp quyền cho lịch để tìm kiếm lịch của bạn.</string>
     <string name="missing_permission_contact_search">Cấp quyền danh bạ để tìm kiếm liên hệ của bạn.</string>
     <string name="missing_permission_appshortcuts_search">Đặt %1$s làm ứng dụng trang chủ mặc định để tìm kiếm các lối tắt ứng dụng.</string>
     <string name="preference_version">Phiên bản</string>
@@ -294,18 +277,11 @@
     <string name="preference_search_files_summary">Tìm kiếm tệp cục bộ và tệp đám mây</string>
     <string name="preference_search_contacts">Danh bạ</string>
     <string name="preference_search_contacts_summary">Tìm kiếm danh bạ trên thiết bị này</string>
-    <string name="preference_search_calendar">Lịch</string>
     <string name="preference_search_calendar_summary">Tìm kiếm các cuộc hẹn và sự kiện sắp tới</string>
     <string name="preference_search_appshortcuts">Lối tắt ứng dụng</string>
     <string name="preference_search_appshortcuts_summary">Tìm kiếm lối tắt ứng dụng</string>
     <string name="preference_search_calculator">Máy tính</string>
     <string name="preference_search_calculator_summary">Đánh giá các thuật ngữ toán học</string>
-    <string name="preference_search_unitconverter">Bộ chuyển đổi đơn vị</string>
-    <string name="preference_search_unitconverter_summary">Cách sử dụng: 1,5 kg hoặc 4 cm &gt;&gt; trong</string>
-    <string name="preference_search_currencyconverter">Công cụ chuyển đổi tiền tệ</string>
-    <string name="preference_search_currencyconverter_summary">Định kỳ tải xuống tỷ giá hối đoái để chuyển đổi tiền tệ</string>
-    <string name="preference_search_wikipedia">Wikipedia</string>
-    <string name="preference_search_wikipedia_summary">Tìm kiếm bách khoa toàn thư miễn phí</string>
     <string name="preference_search_websites">Trang web</string>
     <string name="preference_search_websites_summary">Hiển thị bản xem trước của trang web nếu truy vấn tìm kiếm là URL</string>
     <string name="preference_search_locations_summary">Tìm kiếm các cửa hàng và địa điểm khác trong khu vực địa phương</string>
@@ -325,7 +301,6 @@
     <string name="preference_hidden_items_reveal_button_summary">Hiển thị nút để hiển thị kết quả tìm kiếm bị ẩn</string>
     <string name="preference_screen_tags">Thẻ</string>
     <string name="preference_screen_tags_summary">Quản lý thẻ và mục được gắn thẻ</string>
-    <string name="preference_wikipedia_customurl">URL Wikipedia</string>
     <string name="preference_edit_favorites_summary">Thay đổi thứ tự của các mục được ghim</string>
     <string name="preference_category_favorites_frequently_used">Được sử dụng thường xuyên</string>
     <string name="preference_favorites_frequently_used_summary">Hiển thị các mục được sử dụng thường xuyên trong mục yêu thích</string>

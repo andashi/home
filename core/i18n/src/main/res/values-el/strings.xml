@@ -14,7 +14,6 @@
     <string name="menu_remove">Αφαίρεση</string>
     <string name="menu_contacts_open_externally">Άνοιγμα στις επαφές</string>
     <string name="app_info_version">Έκδοση %1$s</string>
-    <string name="preference_wikipedia_customurl">Wikipedia URL</string>
     <string name="file_type_directory">Φάκελος</string>
     <string name="file_type_android">Αρχείο εφαρμογής Android</string>
     <string name="file_type_document">Έγγραφο</string>
@@ -36,7 +35,6 @@
     <string name="websearch_dialog_delete_icon">Διαγραφή εικονιδίου</string>
     <string name="websearch_dialog_advanced">Προχωρημένο</string>
     <string name="websearch_dialog_url_error">Το σύμβολο θέσης \'${1}\' λείπει σε αυτήν τη διεύθυνση URL</string>
-    <string name="widget_name_calendar">Ημερολόγιο</string>
     <string name="widget_name_music">Μουσική</string>
     <string name="websearch_dialog_query_encoding">Κωδικοποίηση ερωτήματος</string>
     <string name="websearch_dialog_query_encoding_url">Κωδικοποίηση URL</string>
@@ -54,19 +52,14 @@
     <string name="owncloud_login_failed">Η σύνδεση απέτυχε: λανθασμένο όνομα χρήστη ή κωδικός πρόσβασης.</string>
     <string name="login_flow_continue">Συνέχεια</string>
     <string name="login_flow_login">Είσοδος</string>
-    <string name="disclaimer">Αποποίηση ευθυνών</string>
     <string name="show_all">Εμφάνιση όλων</string>
-    <string name="date_today">Σήμερα</string>
-    <string name="calendar_widget_pinned_events">Επερχόμενα</string>
     <plurals name="battery_part_remaining_charge_time">
         <item quantity="one">Πλήρες σε %1$s λεπτό</item>
         <item quantity="other">Πλήρες σε %1$s λεπτά</item>
     </plurals>
-    <string name="calendar_event_allday">ολοήμερη</string>
     <string name="music_widget_default_title">Το %1$s αναπαράγει πολυμέσα</string>
     <string name="music_widget_no_data">Δεν έχει αναπαραχθεί ακόμα κανένα μέσο</string>
     <string name="missing_permission_contact_search_settings">Απαιτείται άδεια πρόσβασης στις επαφές για την αναζήτησή τους</string>
-    <string name="missing_permission_calendar_search_settings">Απαιτείται άδεια πρόσβασης στο ημερολόγιο για αναζήτηση εκδηλώσεων</string>
     <string name="missing_permission_notification_badges">Απαιτείται πρόσβαση στις ειδοποιήσεις για την εμφάνιση σημάτων ειδοποιήσεων</string>
     <string name="missing_permission_appshortcuts_create">Ορίστε τ %1$s ως προεπιλεγμένη εφαρμογή αρχικής οθόνης, για δημιουργία συντομεύσεων.</string>
     <string name="preference_screen_appearance">Εμφάνιση</string>
@@ -139,13 +132,9 @@
     <string name="preference_clockwidget_alarm_part">Ξυπνητήρια</string>
     <string name="preference_screen_search">Αναζήτηση</string>
     <string name="preference_search_favorites">Αγαπημένα</string>
-    <string name="preference_search_calendar">Ημερολόγιο</string>
     <string name="preference_search_calendar_summary">Αναζητήστε επερχόμενων ραντεβού και εκδηλώσεων</string>
     <string name="preference_search_appshortcuts">Συντομεύσεις εφαρμογών</string>
     <string name="preference_search_calculator_summary">Αξιολόγηση μαθηματικών όρων</string>
-    <string name="preference_search_unitconverter">Μετατροπέας μονάδων</string>
-    <string name="preference_search_currencyconverter">Μετατροπέας νομίσματος</string>
-    <string name="preference_search_wikipedia">Wikipedia</string>
     <string name="preference_search_websites">Ιστοσελίδες</string>
     <string name="preference_calendar_calendars">Ημερολόγια</string>
     <string name="preference_search_bar_style">Στυλ</string>
@@ -177,7 +166,6 @@
     <string name="menu_share">Κοινοποίηση</string>
     <string name="menu_edit_widgets">Επεξεργασία γραφικών στοιχείων</string>
     <string name="widget_action_remove">Αφαίρεση</string>
-    <string name="menu_calendar_open_externally">Άνοιγμα στο ημερολόγιο</string>
     <string name="widget_add_widget">Προσθήκη γραφικού στοιχείου</string>
     <string name="edit_favorites_dialog_pinned_unsorted">Καρφιτσωμένο - αυτόματα ταξινομημένο</string>
     <string name="search_bar_placeholder">Αναζήτηση</string>
@@ -188,14 +176,6 @@
     <string name="owncloud_server_url">URL διακομιστή Owncloud</string>
     <string name="owncloud_server_invalid_url">Αυτή η διεύθυνση URL δεν οδηγεί σε έγκυρη εγκατάσταση Owncloud</string>
     <string name="owncloud_login_2fa_hint">Εάν έχετε ενεργοποιημένο τον έλεγχο ταυτότητας δύο παραγόντων, πρέπει να χρησιμοποιήσετε εδώ έναν κωδικό πρόσβασης εφαρμογής.</string>
-    <string name="wikipedia_url">https://el.wikipedia.org</string>
-    <string name="wikipedia_source">Από τη Wikipedia</string>
-    <string name="disclaimer_currency_converter">Συναλλαγματικές ισοτιμίες όπως δημοσιεύονται μία φορά την ημέρα από την Ευρωπαϊκή Κεντρική Τράπεζα. Όλες οι πληροφορίες παρέχονται «ως έχουν» χωρίς κανενός είδους εγγύηση. Δεν αναλαμβάνεται καμία ευθύνη για αυτές τις πληροφορίες.
-\n
-\nΤελευταία ενημέρωση: %1$s</string>
-    <string name="date_tomorrow">Αύριο</string>
-    <string name="calendar_widget_next_events">Επόμενη εκδήλωση</string>
-    <string name="calendar_widget_no_events">Καμία εκδήλωση σήμερα</string>
     <string name="file_type_source_code">Αρχείο πηγαίου κώδικα</string>
     <string name="file_type_spreadsheet">Υπολογιστικό φύλλο</string>
     <plurals name="calendar_widget_running_events">
@@ -205,7 +185,6 @@
     <string name="menu_share_store_link">%1$s σύνδεσμος</string>
     <string name="file_type_drawing">Ζωγραφιά</string>
     <string name="alert_delete_shortcut">Η συντόμευση %1$s θα αφαιρεθεί μόνιμα. Συνέχεια;</string>
-    <string name="missing_permission_calendar_search">Παραχωρήστε άδεια στο ημερολόγιο για αναζήτηση εκδηλώσεων ημερολογίου.</string>
     <string name="missing_permission_contact_search">Παραχωρήστε άδεια στις επαφές για αναζήτηση επαφών.</string>
     <string name="missing_permission_appshortcuts_search">Ορίστε το %1$s ως προεπιλεγμένη εφαρμογή αρχικής οθόνης, για αναζήτηση συντομεύσεων εφαρμογών.</string>
     <string name="grant_permission">Παραχώρηση</string>
@@ -215,7 +194,6 @@
     <string name="missing_permission_calendar_widget_settings">Αυτό το γραφικό στοιχείο απαιτεί άδεια πρόσβασης στο ημερολόγιο</string>
     <string name="preference_screen_about_summary">Πληροφορίες εφαρμογής και άδειας χρήσης</string>
     <string name="preference_screen_appearance_summary">Προσαρμογή εμφάνισης και αίσθησης</string>
-    <string name="missing_permission_calendar_widget">Παραχωρήστε άδεια στο ημερολόγιο για την εμφάνιση προσεχών συναντήσεων και εκδηλώσεων.</string>
     <string name="preference_imperial_units">Αγγλικό σύστημα μέτρησης</string>
     <string name="preference_shortcut_badges_summary">Εμφάνιση ενός σήματος που υποδεικνύει σε ποια εφαρμογή ανήκει μια συντόμευση</string>
     <string name="preference_category_debug_tools">Εργαλεία</string>
@@ -262,8 +240,6 @@
     <string name="preference_suspended_badges_summary">Εμφάνιση σήματος για εφαρμογές σε αναστολή</string>
     <string name="preference_search_calculator">Αριθμομηχανή</string>
     <string name="preference_cloud_badges">Σήματα αρχείων στο cloud</string>
-    <string name="preference_search_currencyconverter_summary">Λήψη περιοδικών συναλλαγματικών ισοτιμιών για μετατροπή νομισμάτων</string>
-    <string name="preference_search_wikipedia_summary">Αναζήτηση στην ελεύθερη εγκυκλοπαίδεια</string>
     <string name="preference_search_websites_summary">Εμφάνιση προεπισκόπησης του ιστότοπου εάν το ερώτημα αναζήτησης είναι διεύθυνση URL</string>
     <string name="preference_search_bar_style_summary">Παραμετροποίηση εμφάνισης γραμμής αναζήτησης</string>
     <string name="action_next">Επόμενο</string>
@@ -285,7 +261,6 @@
     <string name="notes_widget_export_filename">Σημείωση_%1$s</string>
     <string name="notes_widget_action_dismiss">Απόρριψη</string>
     <string name="notes_widget_action_save">Αποθήκευση</string>
-    <string name="preference_search_unitconverter_summary">Χρήση: 1,5 kg ή 4 cm &gt;&gt; σε</string>
     <string name="preference_category_media_apps">Εφαρμογές πολυμέσων</string>
     <string name="preference_screen_icons_summary">Πλέγμα, μέγεθος εικονιδίου, πακέτα εικονιδίων, σήματα</string>
     <string name="preference_screen_search_actions">Γρήγορες ενέργειες</string>

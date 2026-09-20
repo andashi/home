@@ -46,7 +46,6 @@ dependencies {
 
     implementation(libs.koin.android)
     implementation(libs.jsoup)
-    implementation(libs.bundles.ktor)
     implementation(libs.coil.core)
 
     implementation(project(":core:base"))

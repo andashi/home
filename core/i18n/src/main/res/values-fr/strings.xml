@@ -16,7 +16,6 @@
     <!-- Set the device's wallpaper -->
     <string name="wallpaper">Fond d\'écran</string>
     <!-- Calendar events that last the entire day -->
-    <string name="calendar_event_allday">Journée entière</string>
     <!-- Wind direction, used in weather widget -->
     <!-- Wind direction, used in weather widget -->
     <!-- Wind direction, used in weather widget -->
@@ -53,8 +52,6 @@
     <string name="preference_imperial_units">Système impérial</string>
     <string name="preference_category_debug">Débogage</string>
     <!-- Wikipedia url prefix -->
-    <string name="wikipedia_url">https://fr.wikipedia.org</string>
-    <string name="wikipedia_source">Depuis Wikipédia</string>
     <string name="preference_category_icons">Icônes</string>
     <string name="preference_icon_shape">Forme</string>
     <string name="preference_icon_shape_square">Carré</string>
@@ -91,7 +88,6 @@
     <string name="preference_icon_pack">Pack d\'icônes</string>
     <string name="preference_icon_pack_summary_empty">Aucun pack d\'icônes n\'est installé</string>
     <string name="menu_edit_widgets">Modifier les widgets</string>
-    <string name="widget_name_calendar">Calendrier</string>
     <string name="widget_add_widget">Ajouter un widget</string>
     <string name="preference_category_system_bars">Barre système</string>
     <string name="widget_name_music">Média</string>
@@ -105,11 +101,8 @@
     <string name="file_type_drawing">Dessin</string>
     <string name="file_type_form">Formulaire</string>
     <string name="menu_delete">Supprimer</string>
-    <string name="menu_calendar_open_externally">Ouvrir dans l\'application de calendrier</string>
     <string name="preference_icon_shape_hexagon">Hexagone</string>
     <string name="shortcut_summary">Par %1$s</string>
-    <string name="missing_permission_calendar_widget">La permission d\'accès au calendrier est nécessaire pour afficher les évènements futurs ici.</string>
-    <string name="missing_permission_calendar_search">La permission d\'accéder au calendrier est nécessaire pour y faire des recherches</string>
     <string name="missing_permission_contact_search">La permission d\'accès aux contacts est nécessaire pour rechercher dans les contacts.</string>
     <string name="close">Fermer</string>
     <string name="websearch_dialog_custom_icon">Icône personnalisée</string>
@@ -149,15 +142,7 @@
     <string name="preference_cards_corner_radius">Rayon d\'angle</string>
     <string name="preference_cards_stroke_width">Épaisseur du contour</string>
     <string name="preference_cards_opacity">Opacité</string>
-    <string name="disclaimer">Clause de non-responsabilité</string>
-    <string name="disclaimer_currency_converter">Les taux de change sont publiés une fois par jour par la Banque Centrale Européenne. Toutes les informations sont fournies \"en l\'état\", sans aucune sorte de garantie. Aucune responsabilité n\'est assumée pour ces informations
-\n
-\nDernière mise-à-jour : %1$s</string>
     <string name="show_all">Tout afficher</string>
-    <string name="date_today">Aujourd\'hui</string>
-    <string name="date_tomorrow">Demain</string>
-    <string name="calendar_widget_pinned_events">À venir</string>
-    <string name="calendar_widget_no_events">Pas d\'évènement aujourd\'hui</string>
     <plurals name="calendar_widget_running_events">
         <item quantity="one">+%1$d évènement a eu lieu ces derniers jours</item>
         <item quantity="many">+%1$d évènements ont eu lieu ces derniers jours</item>
@@ -172,7 +157,6 @@
     <string name="grant_permission">Accorder</string>
     <string name="missing_permission_music_widget">La permission d\'accès aux notifications est nécessaire pour contrôler la lecture du média</string>
     <string name="missing_permission_contact_search_settings">La permission d\'accès aux contacts est nécessaire pour rechercher des contacts</string>
-    <string name="missing_permission_calendar_search_settings">La permission d\'accès au calendrier est nécessaire pour rechercher dans le calendrier</string>
     <string name="missing_permission_calendar_widget_settings">Ce widget nécessite la permission d\'accès au calendrier</string>
     <string name="missing_permission_notification_badges">La permission d\'accès aux notifications est nécessaire pour afficher les badges de notification</string>
     <string name="preference_screen_debug">Débogage</string>
@@ -188,14 +172,9 @@
     <string name="preference_search_files_summary">Rechercher les fichiers locaux et les fichiers du cloud</string>
     <string name="preference_search_contacts">Contacts</string>
     <string name="preference_search_contacts_summary">Rechercher les contacts sur cet appareil</string>
-    <string name="preference_search_calendar">Calendrier</string>
     <string name="preference_search_calendar_summary">Rechercher les futurs évènements</string>
     <string name="preference_search_calculator">Calculatrice</string>
     <string name="preference_search_calculator_summary">Effectuer des calculs mathématiques</string>
-    <string name="preference_search_unitconverter">Convertisseur d\'unités</string>
-    <string name="preference_search_unitconverter_summary">Utilisation : 1.5 kg ou 4 cm &gt;&gt; en</string>
-    <string name="preference_search_wikipedia">Wikipédia</string>
-    <string name="preference_search_wikipedia_summary">Rechercher dans l\'encyclopédie libre</string>
     <string name="preference_search_websites">Sites internet</string>
     <string name="preference_search_websites_summary">Afficher un aperçu du site Internet si la recherche est une URL</string>
     <string name="preference_calendar_calendars">Calendriers</string>
@@ -203,7 +182,6 @@
     <string name="preference_screen_buildinfo_summary">Plus d\'informations à propos de la version de cette application</string>
     <string name="preference_search_bar_style">Style</string>
     <string name="preference_search_bar_style_summary">Modifier l\'apparence de la barre de recherche</string>
-    <string name="preference_wikipedia_customurl">URL Wikipédia</string>
     <string name="music_widget_default_title">%1$s joue un média</string>
     <string name="music_widget_no_data">Aucun média n\'a encore été joué</string>
     <string name="turn_off">Désactiver</string>
@@ -230,14 +208,11 @@
     <string name="preference_search_appshortcuts">Raccourcis d\'applications</string>
     <string name="preference_search_appshortcuts_summary">Rechercher les raccourcis d\'applications</string>
     <string name="preference_clockwidget_favorites_part_summary">Afficher les éléments épinglés sur le dock</string>
-    <string name="preference_search_currencyconverter">Convertisseur de devise</string>
     <string name="preference_cards_shape">Forme</string>
     <string name="preference_cards_shape_rounded">Arrondi</string>
     <string name="preference_cards_shape_cut">Coupé</string>
-    <string name="preference_search_currencyconverter_summary">Télécharger régulièrement les taux de change pour convertir les devises</string>
     <string name="preference_hidden_items">Résultats de recherche exclus</string>
     <string name="preference_hidden_items_summary">Gérer les applications et recherches exclus</string>
-    <string name="calendar_widget_next_events">Événement suivant</string>
     <string name="preference_grid_icon_size">Taille d\'icône</string>
     <string name="preference_clockwidget_favorites_part">Dock</string>
     <string name="action_undo">Annuler</string>
@@ -610,27 +585,20 @@
         <item quantity="many">%1$s adresses postales</item>
         <item quantity="other">%1$s adresses postales</item>
     </plurals>
-    <string name="task_due_time">Échéance à %1$s</string>
-    <string name="task_due_date">Échéance le %1$s</string>
     <string name="item_visibility_calendar_default">Widget calendrier et résultats de recherche</string>
     <string name="contact_info_work">Bureau</string>
-    <string name="calendar_widget_next_day">Jour suivant</string>
-    <string name="calendar_widget_open_calendar">Ouvrir l\'application calendrier</string>
     <string name="plugin_type_calendar">Calendrier</string>
     <string name="music_widget_play">Jouer</string>
     <string name="hint_drag_and_drop_reorder">Maintenir et faire glisser les éléments pour les réorganiser</string>
-    <string name="calendar_widget_create_event">Créer un nouvel événement</string>
     <string name="profile_work_profile_action_unlock">Désactiver la pause</string>
     <plurals name="calendar_search_enabled_lists">
         <item quantity="one">%1$s liste sélectionnée</item>
         <item quantity="many">%1$s listes sélectionnées</item>
         <item quantity="other">%1$s listes sélectionnées</item>
     </plurals>
-    <string name="calendar_widget_previous_day">Jour précédent</string>
     <string name="action_clear">Effacer</string>
     <string name="item_visibility_hidden">Jamais</string>
     <string name="music_widget_previous_track">Titre précédent</string>
-    <string name="preference_search_supportedunits">Unités prises en charge</string>
     <string name="item_visibility_search_only">Résultats de recherche</string>
     <string name="music_widget_pause">Pause</string>
     <string name="music_widget_open_player">Ouvrir le lecteur</string>
@@ -638,7 +606,6 @@
     <string name="menu_show_filters">Afficher les filtres</string>
     <string name="menu_hide_filters">Masquer les filtres</string>
     <string name="profile_private_profile_action_unlock">Déverrouiller</string>
-    <string name="task_due_today">À terminer aujourd\'hui</string>
     <string name="profile_private_profile_state_locked">L\'espace privé est verrouillé</string>
     <string name="action_more_actions">Plus d\'actions</string>
     <string name="action_done">Fait</string>
@@ -659,15 +626,8 @@
         <item quantity="other">dans %1$d minutes</item>
     </plurals>
     <string name="plugin_type_contacts">Contacts</string>
-    <string name="preference_search_tasks">Tâches</string>
-    <string name="preference_search_tasks_summary">Rechercher des tâches dans l\'application Tasks</string>
-    <string name="missing_permission_tasks_integration">L\'autorisation Tâches est nécessaire pour utiliser l\'intégration avec Tasks</string>
-    <string name="missing_permission_tasks_search_settings">L\'autorisation Tâches est nécessaire pour rechercher des tâches dans l’application Tasks</string>
     <string name="preference_clock_widget_time_format">Format de l\'heure</string>
     <string name="preference_grid_list_icons_summary">Afficher les icônes pour l\'affichage en liste</string>
-    <string name="preference_tasks_integration">Tasks</string>
-    <string name="preference_tasks_integration_description">Tasks est application libre et gratuite de liste de tâches et rappels. Si elle est installée, %1$s peut afficher et rechercher vos tâches dans l\'application Tasks.</string>
-    <string name="preference_search_local_calendar_summary">Rechercher des agendas sur l\'appareil</string>
     <string name="preference_grid_list_style">Afficher les applications en tant que liste</string>
     <string name="preference_grid_list_icons">Afficher les icônes d\'applications dans la liste</string>
     <string name="preference_contacts_call_on_tap_summary">Démarrer un appel sans confirmation lors d\'un appui sur un numéro de téléphone</string>
@@ -679,7 +639,6 @@
     </plurals>
     <string name="preference_grid_list_style_summary">Afficher les applications en tant que liste plutôt que grille</string>
     <string name="profile_work_profile_state_locked">Les applications professionnelles sont en pause</string>
-    <string name="preference_tasks_integration_ready">L\'intégration avec Tasks est entièrement configurée et est prête à l\'usage.</string>
     <string name="preference_contacts_call_on_tap">Appuyer pour appeler</string>
     <string name="preference_widgets_on_home_screen">Widgets sur l\'écran d\'accueil</string>
     <string name="preference_widgets_on_home_screen_summary">Afficher les widgets sur l\'écran d\'accueil plutôt que sur une page supplémentaire</string>
@@ -687,7 +646,6 @@
     <string name="gesture_action_widgets">Widgets</string>
     <string name="bad_configuration_title">Félicitations, vous ne pouvez plus accéder au lanceur !</string>
     <string name="bad_configuration_summary">Vous avez découvert une combinaison de paramètres qui rendent à la fois la recherche et les paramètres inaccessibles — vous empêchant ainsi d’accéder au lanceur</string>
-    <string name="preference_launch_tasks_app">Ouvrir l\'application Tasks</string>
     <string name="import_theme_contents">Contenus</string>
     <string name="preference_shapes_default">Par défaut</string>
     <string name="preference_screen_shapes">Formes</string>
@@ -792,7 +750,6 @@
     <string name="gesture_action_widgets_empty">Vide</string>
     <string name="gesture_action_launch_select_app">Sélectionner une appli ou un raccourci</string>
     <string name="preference_search_apps_show_details">Afficher les informations de l\'application</string>
-    <string name="preference_currency_settings">Paramètres de la devise</string>
     <string name="search_query_private_space">Espace privé</string>
     <string name="search_action_private_space_lock">Verrouiller l\'espace privé</string>
     <string name="search_action_private_space_unlock">Déverrouiller l\'espace privé</string>

@@ -113,9 +113,6 @@ enum class BuiltinWidget {
     @SerialName("music")
     Music,
 
-    @SerialName("calendar")
-    Calendar,
-
     @SerialName("apps")
     Apps,
 

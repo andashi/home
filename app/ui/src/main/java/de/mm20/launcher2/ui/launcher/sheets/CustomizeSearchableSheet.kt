@@ -43,7 +43,6 @@ import de.mm20.launcher2.badges.Badge
 import de.mm20.launcher2.badges.BadgeIcon
 import de.mm20.launcher2.icons.CustomIconWithPreview
 import de.mm20.launcher2.search.Application
-import de.mm20.launcher2.search.CalendarEvent
 import de.mm20.launcher2.search.SavableSearchable
 import de.mm20.launcher2.searchable.VisibilityLevel
 import de.mm20.launcher2.ui.R
@@ -162,7 +161,6 @@ fun CustomizeSearchableSheet(
                         VisibilityLevel.Default -> {
                             when (searchable) {
                                 is Application -> stringResource(R.string.item_visibility_app_default)
-                                is CalendarEvent -> stringResource(R.string.item_visibility_calendar_default)
                                 else -> stringResource(R.string.item_visibility_search_only)
                             }
                         }
@@ -210,7 +208,7 @@ fun CustomizeSearchableSheet(
                                 Icon(painterResource(R.drawable.visibility_24px_filled), null)
                             }
                         )
-                    } else if (searchable is CalendarEvent) {
+                    } else if (false) {
                         DropdownMenuItem(
                             onClick = {
                                 visibility = VisibilityLevel.Default
@@ -237,7 +235,7 @@ fun CustomizeSearchableSheet(
                             }
                         )
                     }
-                    if (searchable is Application || searchable is CalendarEvent) {
+                    if (searchable is Application) {
                         DropdownMenuItem(
                             onClick = {
                                 visibility = VisibilityLevel.SearchOnly

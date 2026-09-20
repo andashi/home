@@ -35,7 +35,6 @@
     <!-- Open a contact in the contacts app -->
     <string name="menu_contacts_open_externally">Kişiler uygulamasında aç</string>
     <!-- Open an event in the calendar app -->
-    <string name="menu_calendar_open_externally">Takvim uygulamasında aç</string>
     <!-- Shown in the search bar when the search text field is empty -->
     <string name="search_bar_placeholder">Ara</string>
     <!-- App version, used in application details %1$s is the version -->
@@ -67,9 +66,7 @@
      This should point to the Wikipedia in the given language. If no such Wikipedia exists,
       a fallback that is suited best for most users of this language should be used
       (English in most cases) -->
-    <string name="wikipedia_url">https://tr.wikipedia.org</string>
     <!-- Shown in Wikipedia results to indicate where they come from -->
-    <string name="wikipedia_source">Vikipedi\'den</string>
     <!-- File meta data, title of audio tracks -->
     <!-- File meta data, artist of audio tracks -->
     <!-- File meta data, album of audio tracks -->
@@ -177,7 +174,6 @@
     <string name="websearch_dialog_query_encoding_form">application/x-www-form-urlencoded</string>
     <string name="websearch_dialog_query_encoding_none">Hiçbiri</string>
     <string name="menu_edit_widgets">Araçları düzenle</string>
-    <string name="widget_name_calendar">Takvim</string>
     <string name="widget_name_music">Medya</string>
     <string name="widget_name_notes">Not</string>
     <string name="widget_name_unknown">Bilinmeyen</string>
@@ -241,21 +237,12 @@
     <string name="login_flow_continue">Devam</string>
     <!-- Nextcloud/Owncloud login flow, login button -->
     <string name="login_flow_login">Giriş yap</string>
-    <string name="disclaimer">Sorumluluk Reddi</string>
     <!-- Info and disclaimer for currency conversions. %1$s: formatted date of last currency data update  -->
-    <string name="disclaimer_currency_converter">Döviz kurları Avrupa Merkez Bankası tarafından günde bir kez yayınlandığı gibidir. Tüm bilgiler herhangi bir garanti olmaksızın \"olduğu gibi\" sağlanır. Bu bilgiler için hiçbir sorumluluk kabul edilmez.
-\n
-\nSon güncelleme: %1$s</string>
     <string name="show_all">Tümünü göster</string>
     <!-- Used in calendar widget date selector. -->
-    <string name="date_today">Bugün</string>
     <!-- Used in calendar widget date selector. -->
-    <string name="date_tomorrow">Yarın</string>
     <!-- Headline used in calendar widget for pinned events -->
-    <string name="calendar_widget_pinned_events">Yaklaşan</string>
     <!-- Headline used in calendar widget for the next event, if there is no event today -->
-    <string name="calendar_widget_next_events">Sıradaki etkinlik</string>
-    <string name="calendar_widget_no_events">Bugün etkinlik yok</string>
     <!--
         In the calendar widget, only events that start or end at the selected date are shown.
         If an event runs for three days, it won't be listed if the second day is selected.
@@ -271,10 +258,6 @@
         <item quantity="other">+%1$d tamamlanmamış görev</item>
     </plurals>
     <!-- Calendar events that last the entire day -->
-    <string name="calendar_event_allday">Tüm gün</string>
-    <string name="task_due_time">Bitiş saati %1$s</string>
-    <string name="task_due_date">Bitiş tarihi %1$s</string>
-    <string name="task_due_today">Bugün bitiyor</string>
     <!-- Default title that is shown in the music widget if the app that is playing media did not publish a title -->
     <string name="music_widget_default_title">%1$s medya oynatıyor</string>
     <string name="music_widget_no_data">Henüz medya oynatılmadı</string>
@@ -291,9 +274,6 @@
     <!-- Missing call permission in contacts settings screen -->
     <string name="missing_permission_call_contacts_settings">Arama başlatmak için çağrı izni gereklidir</string>
     <!-- Missing calendar permission in search settings screen -->
-    <string name="missing_permission_calendar_search_settings">Takvimi aramak için takvim izni gereklidir</string>
-    <string name="missing_permission_tasks_search_settings">Görevler uygulamasında görevleri aramak için görevler izni gereklidir</string>
-    <string name="missing_permission_tasks_integration">Görevler entegrasyonunu kullanmak için görevler izni gereklidir</string>
     <!-- Missing calendar permission in calendar widget settings screen -->
     <string name="missing_permission_calendar_widget_settings">Bu araç takvim izni gerektirir</string>
     <string name="widget_config_calendar_missing_calendars_hint">Takvimlerinizi bulamıyor musunuz?</string>
@@ -306,9 +286,7 @@
     <!-- Missing notification permission, used in badge settings screen -->
     <string name="missing_permission_notification_badges">Bildirim rozetlerini görüntülemek için bildirim erişimi gereklidir</string>
     <!-- Missing calendar permission, used in calendar widget -->
-    <string name="missing_permission_calendar_widget">Yaklaşan etkinlikleri burada görüntülemek için takvim izni gereklidir</string>
     <!-- Missing calendar permission, used in calendar search results -->
-    <string name="missing_permission_calendar_search">Takviminizde arama yapmak için takvim izni gereklidir</string>
     <!-- Missing location permission, used in location search results -->
     <!-- Missing files permission, used in files search results -->
     <!-- Missing files permission, used in contact search results -->
@@ -479,22 +457,11 @@
     <string name="preference_search_files_summary">Yerel dosyaları ve bulut dosyalarını ara</string>
     <string name="preference_search_contacts">Kişiler</string>
     <string name="preference_search_contacts_summary">Bu cihazdaki kişileri ara</string>
-    <string name="preference_search_calendar">Takvim</string>
     <string name="preference_search_calendar_summary">Yaklaşan randevuları ve etkinlikleri ara</string>
-    <string name="preference_search_local_calendar_summary">Bu cihazdaki takvimleri ara</string>
-    <string name="preference_search_tasks">Görevler</string>
-    <string name="preference_search_tasks_summary">Görevler uygulamasındaki görevleri ara</string>
     <string name="preference_search_appshortcuts">Uygulama kısayolları</string>
     <string name="preference_search_appshortcuts_summary">Uygulama kısayollarını ara</string>
     <string name="preference_search_calculator">Hesap makinesi</string>
     <string name="preference_search_calculator_summary">Matematiksel terimleri değerlendir</string>
-    <string name="preference_search_unitconverter">Birim dönüştürücü</string>
-    <string name="preference_search_unitconverter_summary">Kullanım: 1.5 kg veya 4 cm &gt;&gt; in</string>
-    <string name="preference_search_currencyconverter">Para birimi dönüştürücü</string>
-    <string name="preference_search_currencyconverter_summary">Para birimlerini dönüştürmek için döviz kurlarını periyodik olarak indirin</string>
-    <string name="preference_search_supportedunits">Desteklenen birimler</string>
-    <string name="preference_search_wikipedia">Vikipedi</string>
-    <string name="preference_search_wikipedia_summary">Özgür ansiklopedide ara</string>
     <string name="preference_search_websites">Web siteleri</string>
     <string name="preference_search_websites_summary">Arama sorgusu bir URL ise web sitesinin bir önizlemesini göster</string>
     <string name="preference_search_locations_summary">Yerel bölgedeki dükkanları ve diğer yerleri ara</string>
@@ -515,7 +482,6 @@
     <string name="preference_hidden_items_reveal_button_summary">Hariç tutulan arama sonuçlarını göstermek için bir düğme göster</string>
     <string name="preference_screen_tags">Etiketler</string>
     <string name="preference_screen_tags_summary">Etiketleri ve etiketlenmiş öğeleri yönet</string>
-    <string name="preference_wikipedia_customurl">Vikipedi URL\'si</string>
     <string name="preference_edit_favorites_summary">Sabitlenmiş öğelerin sırasını değiştir</string>
     <string name="preference_category_favorites_frequently_used">Sık kullanılanlar</string>
     <string name="preference_favorites_frequently_used_summary">Sık kullanılan öğeleri favorilerde göster</string>
@@ -532,11 +498,7 @@
     <string name="preference_screen_icons_summary">Izgara boyutu, simgeler, rozetler</string>
     <string name="preference_weather_integration">Hava Durumu</string>
     <string name="preference_media_integration">Medya kontrolü</string>
-    <string name="preference_tasks_integration">Görevler</string>
     <!-- %1$s: app name (Kvaesitso) -->
-    <string name="preference_tasks_integration_description">Tasks, ücretsiz ve açık kaynaklı bir yapılacaklar listesi ve hatırlatıcı uygulamasıdır. Yüklüyse, %1$s görevlerinizi Tasks uygulamasından görüntüleyebilir ve arayabilir.</string>
-    <string name="preference_tasks_integration_ready">Görevler entegrasyonu tamamen kuruldu ve kullanıma hazır.</string>
-    <string name="preference_launch_tasks_app">Tasks uygulamasını aç</string>
     <string name="preference_contacts_call_on_tap">Aramak için dokun</string>
     <string name="preference_contacts_call_on_tap_summary">Bir telefon numarasına dokunduğunuzda onay vermeden bir arama başlatın</string>
     <!-- Used in an info banner if a specific feature requires a Nextcloud account -->
@@ -832,10 +794,6 @@
     <string name="music_widget_play">Oynat</string>
     <string name="music_widget_pause">Duraklat</string>
     <string name="music_widget_open_player">Oynatıcıyı aç</string>
-    <string name="calendar_widget_previous_day">Önceki gün</string>
-    <string name="calendar_widget_next_day">Sonraki gün</string>
-    <string name="calendar_widget_create_event">Yeni etkinlik oluştur</string>
-    <string name="calendar_widget_open_calendar">Takvim uygulamasını aç</string>
     <string name="profile_work_profile_state_locked">İş uygulamaları duraklatıldı</string>
     <string name="profile_work_profile_action_unlock">Devam ettir</string>
     <string name="profile_work_profile_action_lock">İş uygulamalarını duraklat</string>

@@ -4,13 +4,8 @@
     <string name="menu_contacts_open_externally">Apri nell\'app contatti</string>
     <string name="owncloud_username">Nome utente</string>
     <string name="owncloud_login_2fa_hint">Se hai abilitato l\'autenticazione a due fattori, devi usare una password per l\'app qui.</string>
-    <string name="wikipedia_url">https://it.wikipedia.org</string>
-    <string name="disclaimer_currency_converter">Tassi di cambio pubblicati una volta al giorno dalla Banca Centrale Europea. Tutte le informazioni sono fornite \"così come sono\" senza alcun tipo di garanzia. Non si assume alcuna responsabilità per queste informazioni.
-\n
-\nUltimo aggiornamento: %1$s</string>
     <string name="file_type_source_code">File codice sorgente</string>
     <string name="default_websearch_3_url">https://play.google.com/store/search\?q=${1}</string>
-    <string name="missing_permission_calendar_search_settings">È richiesta l\'autorizzazione Calendario per cercare nel calendario</string>
     <string name="missing_permission_contact_search">È richiesta l\'autorizzazione Contatti per cercare i tuoi contatti</string>
     <string name="open_webpage">Apri sito web</string>
     <string name="preference_cards_stroke_width">Larghezza bordo</string>
@@ -24,7 +19,6 @@
     <string name="preference_clockwidget_layout_horizontal">Compatto</string>
     <string name="preference_clockwidget_music_part_summary">Mostra i controlli multimediali quando c\'è una riproduzione attiva</string>
     <string name="preference_search_files_summary">Cerca file locali e nel cloud</string>
-    <string name="preference_search_unitconverter_summary">Uso: 1.5 kg oppure 4 cm &gt;&gt; in</string>
     <string name="edit_favorites_dialog_unpinned">Non appuntati - usati frequentemente</string>
     <string name="edit_favorites_dialog_pinned_unsorted">Appuntati: ordinati automaticamente</string>
     <plurals name="calendar_widget_running_events">
@@ -41,12 +35,10 @@
     <string name="menu_app_info">Info app</string>
     <string name="menu_launch">Avvia</string>
     <string name="menu_delete">Elimina</string>
-    <string name="menu_calendar_open_externally">Apri nell\'app calendario</string>
     <string name="search_bar_placeholder">Ricerca</string>
     <string name="app_info_version">Versione %1$s</string>
     <string name="settings">Impostazioni</string>
     <string name="wallpaper">Sfondo</string>
-    <string name="wikipedia_source">Da Wikipedia</string>
     <string name="file_type_directory">Cartella</string>
     <string name="file_type_archive">File archivio</string>
     <string name="file_type_android">File pacchetto Android</string>
@@ -71,7 +63,6 @@
     <string name="websearch_dialog_delete_icon">Elimina icona</string>
     <string name="websearch_dialog_custom_icon">Icona personalizzata</string>
     <string name="menu_edit_widgets">Modifica widget</string>
-    <string name="widget_name_calendar">Calendario</string>
     <string name="widget_name_music">Media</string>
     <string name="widget_add_widget">Aggiungi widget</string>
     <string name="shortcut_summary">Da %1$s</string>
@@ -89,20 +80,12 @@
     <string name="login_flow_continue">Continua</string>
     <string name="login_flow_login">Accedi</string>
     <string name="show_all">Mostra tutti</string>
-    <string name="date_today">Oggi</string>
-    <string name="date_tomorrow">Domani</string>
-    <string name="calendar_widget_pinned_events">In arrivo</string>
-    <string name="calendar_widget_no_events">Nessun evento oggi</string>
-    <string name="calendar_event_allday">Tutto il giorno</string>
     <string name="music_widget_default_title">%1$s sta riproducendo file multimediali</string>
     <string name="music_widget_no_data">Nessun file multimediale è stato ancora riprodotto</string>
-    <string name="disclaimer">Esclusione di responsabilità</string>
     <string name="missing_permission_music_widget">È richiesto l\'accesso alle Notifiche per controllare la riproduzione multimediale</string>
     <string name="missing_permission_contact_search_settings">È richiesta l\'autorizzazione Contatti per cercare i contatti</string>
     <string name="missing_permission_calendar_widget_settings">Questo widget richiede l\'autorizzazione Calendario</string>
     <string name="missing_permission_notification_badges">È richiesto l\'accesso alle Notifiche per visualizzare i badge di notifica</string>
-    <string name="missing_permission_calendar_widget">È richiesta l\'autorizzazione Calendario per visualizzare gli eventi imminenti qui</string>
-    <string name="missing_permission_calendar_search">È richiesta l\'autorizzazione Calendario per cercare nel tuo calendario</string>
     <string name="grant_permission">Concedi</string>
     <string name="preference_screen_appearance">Aspetto</string>
     <string name="preference_theme">Tema</string>
@@ -175,12 +158,8 @@
     <string name="preference_search_favorites">Preferiti</string>
     <string name="preference_search_contacts">Contatti</string>
     <string name="preference_search_contacts_summary">Cerca contatti su questo dispositivo</string>
-    <string name="preference_search_calendar">Calendario</string>
     <string name="preference_search_calendar_summary">Cerca prossimi appuntamenti ed eventi</string>
     <string name="preference_search_calculator">Calcolatrice</string>
-    <string name="preference_search_unitconverter">Convertitore di unità</string>
-    <string name="preference_search_wikipedia">Wikipedia</string>
-    <string name="preference_search_wikipedia_summary">Cerca nell\'enciclopedia libera</string>
     <string name="preference_search_websites">Siti web</string>
     <string name="preference_search_websites_summary">Mostra un\'anteprima dei siti web se la ricerca è un URL</string>
     <string name="preference_search_favorites_summary">Mostra elementi appuntati e usati frequentemente sopra la griglia delle app</string>
@@ -190,7 +169,6 @@
     <string name="preference_search_bar_style">Stile</string>
     <string name="preference_search_bar_style_summary">Personalizza l\'aspetto della barra di ricerca</string>
     <string name="preference_search_bar_auto_focus">Apri tastiera</string>
-    <string name="preference_wikipedia_customurl">URL Wikipedia</string>
     <string name="battery_part_charging">In carica</string>
     <plurals name="battery_part_remaining_charge_time">
         <item quantity="one">Carico in %1$s minuto</item>
@@ -208,7 +186,6 @@
     <string name="preference_search_appshortcuts">Scorciatoie app</string>
     <string name="preference_search_appshortcuts_summary">Cerca scorciatoie app</string>
     <string name="preference_grid_icon_size">Dimensione icona</string>
-    <string name="preference_search_currencyconverter">Convertitore di valuta</string>
     <string name="preference_hidden_items">Risultati ricerca esclusi</string>
     <string name="preference_hidden_items_summary">Gestisci app escluse e risultati di ricerca</string>
     <string name="icon_picker_default_icon">Predefinito</string>
@@ -221,9 +198,7 @@
     <string name="preference_font">Carattere</string>
     <string name="preference_clockwidget_favorites_part">Dock</string>
     <string name="preference_clockwidget_favorites_part_summary">Mostra elementi appuntati nel dock</string>
-    <string name="preference_search_currencyconverter_summary">Scarica periodicamente i tassi di cambio per convertire le valute</string>
     <string name="menu_customize">Personalizza</string>
-    <string name="calendar_widget_next_events">Evento successivo</string>
     <string name="missing_permission_appshortcuts_search">Imposta %1$s come app Home predefinita per cercare le scorciatoie delle app.</string>
     <string name="preference_enforce_icon_shape_summary">Applica la forma a tutte le icone comprese quelle che normalmente non la supporterebbero</string>
     <string name="alert_delete_shortcut">La scorciatoia %1$s verrà rimossa in modo permanente. Procedere\?</string>
@@ -594,21 +569,13 @@
     <string name="music_widget_next_track">Titolo successivo</string>
     <string name="music_widget_pause">Pausa</string>
     <string name="music_widget_open_player">Apri lettore</string>
-    <string name="calendar_widget_previous_day">Giorno precedente</string>
-    <string name="calendar_widget_next_day">Giorno successivo</string>
-    <string name="calendar_widget_create_event">Crea nuovo evento</string>
-    <string name="calendar_widget_open_calendar">Apri app calendario</string>
     <string name="plugin_type_calendar">Calendario</string>
     <plurals name="calendar_search_enabled_lists">
         <item quantity="one">Selezionato %1$s elenco</item>
         <item quantity="many">Selezionati %1$s elenchi</item>
         <item quantity="other">Selezionati %1$s elenchi</item>
     </plurals>
-    <string name="task_due_time">Scadenza alle %1$s</string>
     <string name="preference_calendar_hide_completed">Nascondi attività completate</string>
-    <string name="preference_search_supportedunits">Unità supportate</string>
-    <string name="task_due_date">Scadenza il %1$s</string>
-    <string name="task_due_today">Scadenza oggi</string>
     <string name="profile_work_profile_state_locked">Le app di lavoro sono in pausa</string>
     <string name="profile_work_profile_action_unlock">Riattiva</string>
     <string name="profile_work_profile_action_lock">Metti in pausa app di lavoro</string>
@@ -631,7 +598,6 @@
         <item quantity="many">tra %1$d minuti</item>
         <item quantity="other">tra %1$d minuti</item>
     </plurals>
-    <string name="preference_search_local_calendar_summary">Cerca calendari su questo dispositivo</string>
     <string name="plugin_type_contacts">Contatti</string>
     <string name="preference_grid_list_style">Mostra le app come lista</string>
     <string name="preference_grid_list_style_summary">Sotituisci la griglia delle app con una lista</string>
@@ -640,20 +606,12 @@
     <string name="preference_contacts_call_on_tap">Clicca per chiamare</string>
     <string name="preference_contacts_call_on_tap_summary">Avvia una chiamata senza conferma quando tocchi un numero di telefono</string>
     <string name="missing_permission_call_contacts_settings">È richiesta l\'autorizzazione Telefono per avviare le chiamate</string>
-    <string name="missing_permission_tasks_integration">È richiesta l\'autorizzazione Attività per utilizzare l\'integrazione Attività</string>
-    <string name="preference_search_tasks">Attività</string>
-    <string name="preference_search_tasks_summary">Cerca attività nell\'app Tasks</string>
     <string name="action_install">Installa</string>
-    <string name="missing_permission_tasks_search_settings">È richiesta l\'autorizzazione Attività per cercare le attività nell\'app Attività</string>
-    <string name="preference_tasks_integration">Tasks</string>
-    <string name="preference_tasks_integration_ready">L\'integrazione con Tasks è completamente configurata e pronta all\'uso.</string>
-    <string name="preference_tasks_integration_description">Tasks è un\'app gratuita e open source per liste di cose da fare e promemoria. Se installata, %1$s può visualizzare e cercare le tue attività dall\'app Tasks.</string>
     <plurals name="calendar_widget_running_tasks">
         <item quantity="one">+%1$d attività non completata</item>
         <item quantity="many">+%1$d attività non completate</item>
         <item quantity="other">+%1$d attività non completate</item>
     </plurals>
-    <string name="preference_launch_tasks_app">Apri app Tasks</string>
     <string name="preference_widgets_on_home_screen_summary">Mostra i widget sulla schermata Home anziché su una pagina separata</string>
     <string name="preference_widgets_on_home_screen">Widget nella schermata home</string>
     <string name="preference_gesture_swipe_up">Scorri su</string>
@@ -766,7 +724,6 @@
     <string name="preference_search_apps_show_details_summary">Visualizza la versione e il nome del pacchetto di un\'app nel suo menu contestuale</string>
     <string name="preference_search_apps_show_details">Mostra informazioni app</string>
     <string name="preference_add_currency">Aggiungi valuta</string>
-    <string name="preference_currency_settings">Impostazioni valuta</string>
     <string name="preference_currencies">Valuta</string>
     <string name="search_query_private_space">Spazio privato</string>
     <string name="search_action_private_space_lock">Blocca spazio privato</string>

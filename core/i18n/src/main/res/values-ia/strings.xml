@@ -38,11 +38,9 @@
     <string name="search_action_call">Telephonar</string>
     <string name="shortcut_label_unavailable">Non disponibile</string>
     <string name="search_action_email">Email</string>
-    <string name="calendar_widget_no_events">Necun eventos hodie</string>
     <string name="preference_screen_about">A proposito de</string>
     <string name="preference_about_fdroid">Repositorio de Telegram</string>
     <string name="preference_about_license_summary">Sub licentia GNU General Public License 3.0</string>
-    <string name="date_today">Hodie</string>
     <string name="preference_category_widgets">Widgets</string>
     <string name="menu_edit_widgets">Modificar le widgets</string>
     <string name="preference_screen_about_summary">Information de application e licentia</string>
@@ -62,7 +60,6 @@
     <string name="owncloud_username">Nomine de usator</string>
     <string name="login_flow_continue">Continuar</string>
     <string name="login_flow_login">Initiar le session</string>
-    <string name="date_tomorrow">Deman</string>
     <string name="preference_screen_appearance">Apparentia</string>
     <string name="preference_theme_light">Clar</string>
     <string name="preference_theme_dark">Obscur</string>
@@ -98,7 +95,6 @@
     <string name="edit_favorites_dialog_new_tag">Crear etiquetta…</string>
     <string name="owncloud_server_url">URL de servitor Owncloud</string>
     <string name="show_all">Monstrar toto</string>
-    <string name="calendar_widget_next_events">Proxime evento</string>
     <string name="preference_colors_default">Predefinite</string>
     <string name="preference_mdy_color_source_system">Systema</string>
     <string name="music_widget_default_title">%1$s es in reproduction de medio</string>

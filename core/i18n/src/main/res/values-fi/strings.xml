@@ -21,8 +21,6 @@
     <string name="menu_customize">Mukauta</string>
     <string name="action_undo">Peru</string>
     <string name="menu_delete">Poista</string>
-    <string name="wikipedia_url">https://fi.wikipedia.org</string>
-    <string name="wikipedia_source">Wikipediasta</string>
     <string name="file_type_directory">Hakemisto</string>
     <string name="alert_delete_shortcut">Oikotie %1$s poistetaan lopullisesti. Jatka\?</string>
     <string name="default_websearch_3_url">https://play.google.com/store/search\?q=${1}</string>
@@ -32,7 +30,6 @@
     <string name="websearch_dialog_query_encoding">Haun koodaus</string>
     <string name="websearch_dialog_query_encoding_none">Ei mitään</string>
     <string name="menu_edit_widgets">Muokkaa pienoisohjelmia</string>
-    <string name="widget_name_calendar">Kalenteri</string>
     <string name="widget_name_music">Musiikki</string>
     <string name="widget_name_notes">Muistiinpano</string>
     <string name="notes_widget_action_save">Tallenna</string>
@@ -46,7 +43,6 @@
     <string name="owncloud_password">Salasana</string>
     <string name="owncloud_username">Käyttäjänimi</string>
     <string name="action_import">Tuo</string>
-    <string name="menu_calendar_open_externally">Avaa kalenterisovelluksessa</string>
     <string name="search_bar_placeholder">Hae</string>
     <string name="app_info_version">Versio %1$s</string>
     <string name="settings">Asetukset</string>
@@ -95,7 +91,6 @@
     <string name="owncloud_login_failed">Kirjautuminen epäonnistui: virheellinen käyttäjänimi tai salasana.</string>
     <string name="login_flow_continue">Jatka</string>
     <string name="login_flow_login">Kirjaudu sisään</string>
-    <string name="disclaimer">Vastuuvapauslauseke</string>
     <string name="preference_font">Fontti</string>
     <string name="provider_here">HERE</string>
     <string name="preference_imperial_units_summary">Käytä Fahrenheitia ja maileja</string>
@@ -154,17 +149,11 @@
     <string name="preference_search_favorites">Suosikit</string>
     <string name="preference_search_calculator_summary">Laske matemaattisia termejä</string>
     <string name="preference_search_bar_color">Väri</string>
-    <string name="preference_wikipedia_customurl">Wikipedian osoite</string>
     <string name="preference_edit_favorites_summary">Vaihda kiinnitettyjen kohteiden järjestystä</string>
     <string name="icon_picker_default_icon">Oletus</string>
     <string name="preference_search_files_summary">Hae tiedostoja laitteelta ja pilvestä</string>
     <string name="preference_search_contacts">Yhteystiedot</string>
     <string name="preference_search_contacts_summary">Hae yhteystietoja tältä laitteelta</string>
-    <string name="preference_search_calendar">Kalenteri</string>
-    <string name="preference_search_unitconverter">Yksikkömuunnin</string>
-    <string name="preference_search_unitconverter_summary">Käyttö: 1.5 kg tai 4 cm &gt;&gt; in</string>
-    <string name="preference_search_currencyconverter">Valuuttamuunnin</string>
-    <string name="preference_search_wikipedia">Wikipedia</string>
     <string name="preference_search_websites">Verkkosivut</string>
     <string name="preference_search_websites_summary">Näytä esikatselu verkkosivusta jos hakutermi on verkko-osoite</string>
     <string name="preference_screen_buildinfo">Koontiversion tiedot</string>
@@ -200,10 +189,6 @@
     </plurals>
     <string name="open_search_swipe_right">Oikealle pyyhkäisy</string>
     <string name="show_all">Näytä kaikki</string>
-    <string name="disclaimer_currency_converter">Euroopan keskuspankin päivittäin julkaisemat vaihtokurssit. Tiedot toimitetaan sellaisinaan ilman minkäänlaista takuuta. Mitään vastuuta ei oteta näistä tiedoista.
-\n
-\nTiedot päivitetty: %1$s</string>
-    <string name="calendar_event_allday">koko päivän</string>
     <string name="music_widget_no_data">Mediaa ei ole soitettu vielä</string>
     <plurals name="calendar_widget_running_events">
         <item quantity="one">+%1$d keskeneräinen tapahtuma viime päiviltä</item>
@@ -212,7 +197,6 @@
     <string name="missing_permission_music_widget">Pääsy ilmoituksiin vaaditaan mediatoiston hallintaan</string>
     <string name="missing_permission_contact_search_settings">Yhteystietojen käyttöoikeus tarvitaan yhteystietojen hakuun</string>
     <string name="widget_config_calendar_missing_calendars_hint">Etkö löydä kalentereitasi?</string>
-    <string name="missing_permission_calendar_search_settings">Kalenterin käyttöoikeus tarvitaan tapahtumien hakuun</string>
     <string name="missing_permission_calendar_widget_settings">Tämä pienoisohjelma vaatii kalenterin käyttöoikeuden</string>
     <string name="missing_permission_appshortcuts_search_settings">%1$s on asetettava aloitusnäyttösovellukseksi sovellusoikoteiden hakua varten</string>
     <string name="preference_screen_appearance">Ulkoasu</string>
@@ -339,24 +323,15 @@
     <string name="preference_layout_open_search">Haku / sovelluslaatikko</string>
     <string name="preference_layout_search_results">Hakutulosten järjestys</string>
     <string name="preference_layout_fixed_search_bar_summary">Älä vieritä hakupalkkia pois näkyvistä</string>
-    <string name="preference_search_currencyconverter_summary">Lataa säännöllisesti valuuttojen vaihtokurssit</string>
     <string name="preference_layout_fixed_rotation">Lukittu näytön kierto</string>
     <string name="preference_shortcut_badges">Oikoteiden merkit</string>
-    <string name="preference_search_wikipedia_summary">Hae vapaasta tietosanakirjasta</string>
     <string name="frequently_used_rows">Rivien määrä</string>
     <string name="search_action_message">Viesti</string>
     <string name="search_action_app">Sovellus</string>
-    <string name="date_today">Tänään</string>
-    <string name="date_tomorrow">Huomenna</string>
-    <string name="calendar_widget_pinned_events">Tulevat</string>
-    <string name="calendar_widget_next_events">Seuraava tapahtuma</string>
-    <string name="calendar_widget_no_events">Ei tapahtumia tänään</string>
     <string name="music_widget_default_title">%1$s toistaa mediaa</string>
     <string name="preference_theme_light">Vaalea</string>
     <string name="preference_theme_dark">Tumma</string>
     <string name="missing_permission_notification_badges">Pääsy ilmoituksiin tarvitaan ilmoitusten pistemerkkien näyttämiseen</string>
-    <string name="missing_permission_calendar_widget">Anna kalenterin käyttöoikeus tulevien tapaamisten ja tapahtumien näyttämiseksi.</string>
-    <string name="missing_permission_calendar_search">Anna kalenterin käyttöoikeus tapahtumien hakua varten.</string>
     <string name="missing_permission_contact_search">Anna yhteystietojen käyttöoikeus yhteystietojen hakua varten.</string>
     <string name="missing_permission_appshortcuts_search">Aseta %1$s aloitusnäyttösovellukseksi sovellusoikoteiden hakua varten.</string>
     <string name="missing_permission_appshortcuts_create">Aseta %1$s aloitusnäyttösovellukseksi sovellusoikoteiden luomista varten.</string>

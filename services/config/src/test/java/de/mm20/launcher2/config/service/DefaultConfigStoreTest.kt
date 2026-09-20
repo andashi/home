@@ -34,8 +34,8 @@ import de.mm20.launcher2.themes.transparencies.Transparencies
 import de.mm20.launcher2.themes.transparencies.TransparenciesRepository
 import de.mm20.launcher2.widgets.AppWidget
 import de.mm20.launcher2.widgets.AppWidgetConfig
-import de.mm20.launcher2.widgets.CalendarWidget
 import de.mm20.launcher2.widgets.AppsWidget
+import de.mm20.launcher2.widgets.MusicWidget
 import de.mm20.launcher2.widgets.NotesWidget
 import de.mm20.launcher2.widgets.NotesWidgetConfig
 import de.mm20.launcher2.widgets.Widget
@@ -273,15 +273,15 @@ class DefaultConfigStoreTest {
         widgetRepository.widgets = listOf(apps, notes, external)
 
         val diagnostics = store.apply(
-            listOf(ConfigMutation.SetWidgets(listOf(BuiltinWidget.Notes, BuiltinWidget.Calendar)))
+            listOf(ConfigMutation.SetWidgets(listOf(BuiltinWidget.Notes, BuiltinWidget.Music)))
         )
 
         val result = widgetRepository.widgets
         assertEquals(3, result.size)
         // Notes keeps ID and content.
         assertEquals(notes, result[0])
-        // Calendar is new.
-        assertTrue(result[1] is CalendarWidget)
+        // Music is new.
+        assertTrue(result[1] is MusicWidget)
         // The external app widget is preserved, not deleted.
         assertEquals(external, result[2])
         assertEquals(1, diagnostics.size)

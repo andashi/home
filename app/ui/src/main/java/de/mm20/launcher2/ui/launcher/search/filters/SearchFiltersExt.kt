@@ -5,32 +5,20 @@ import de.mm20.launcher2.search.SearchFilters
 fun SearchFilters.withAllCategories(): SearchFilters {
     return copy(
         apps = true,
-        websites = true,
-        articles = true,
         shortcuts = true,
         contacts = true,
-        events = true,
-        tools = true
     )
 }
 
 fun SearchFilters.withOnlyCategory(
     apps: Boolean = false,
-    websites: Boolean = false,
-    articles: Boolean = false,
     shortcuts: Boolean = false,
     contacts: Boolean = false,
-    events: Boolean = false,
-    utilities: Boolean = false
 ): SearchFilters {
     return copy(
         apps = apps,
-        websites = websites,
-        articles = articles,
         shortcuts = shortcuts,
         contacts = contacts,
-        events = events,
-        tools = utilities
     )
 }
 
@@ -49,28 +37,6 @@ fun SearchFilters.toggleApps(): SearchFilters {
     }
 
     return copy(apps = !apps)
-}
-
-fun SearchFilters.toggleWebsites(): SearchFilters {
-    if (allCategoriesEnabled) {
-        return withOnlyCategory(websites = true)
-    }
-    if (websites && enabledCategories == 1) {
-        return withAllCategories()
-    }
-
-    return copy(websites = !websites)
-}
-
-fun SearchFilters.toggleArticles(): SearchFilters {
-    if (allCategoriesEnabled) {
-        return withOnlyCategory(articles = true)
-    }
-    if (articles && enabledCategories == 1) {
-        return withAllCategories()
-    }
-
-    return copy(articles = !articles)
 }
 
 fun SearchFilters.toggleShortcuts(): SearchFilters {
@@ -95,24 +61,3 @@ fun SearchFilters.toggleContacts(): SearchFilters {
     return copy(contacts = !contacts)
 }
 
-fun SearchFilters.toggleEvents(): SearchFilters {
-    if (allCategoriesEnabled) {
-        return withOnlyCategory(events = true)
-    }
-    if (events && enabledCategories == 1) {
-        return withAllCategories()
-    }
-
-    return copy(events = !events)
-}
-
-fun SearchFilters.toggleTools(): SearchFilters {
-    if (allCategoriesEnabled) {
-        return withOnlyCategory(utilities = true)
-    }
-    if (tools && enabledCategories == 1) {
-        return withAllCategories()
-    }
-
-    return copy(tools = !tools)
-}

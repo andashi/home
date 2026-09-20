@@ -66,7 +66,16 @@ class EditSearchActionSheetVM : ViewModel(), KoinComponent {
     }
 
     fun initWebSearch() {
-        currentPage.value = EditSearchActionPage.InitWebSearch
+        // There is no OpenSearch import any more (it was the launcher's last
+        // network access, see ADR 0008), so a custom web search is entered by
+        // hand: straight to the form.
+        searchAction.value = CustomWebsearchActionBuilder(
+            urlTemplate = "",
+            iconColor = 0,
+            icon = SearchActionIcon.Search,
+            label = "",
+        )
+        currentPage.value = EditSearchActionPage.CustomizeWebSearch
     }
 
     fun selectSearchableApp(app: SearchableApp) {
@@ -125,49 +134,6 @@ class EditSearchActionSheetVM : ViewModel(), KoinComponent {
         }
 
         searchAction.value = newAction
-    }
-
-
-    val initWebsearchUrl = mutableStateOf("")
-
-    /**
-     * Last imported URL that failed (if the current URL is equal to this, show an error banner)
-     */
-    private val websearchImportErrorUrl = mutableStateOf<String?>(null)
-    val websearchImportError =
-        derivedStateOf { websearchImportErrorUrl.value == initWebsearchUrl.value }
-    val loadingWebsearch = mutableStateOf(false)
-
-    val skipWebsearchImport =
-        derivedStateOf { websearchImportError.value || initWebsearchUrl.value.isEmpty() }
-
-    fun importWebsearch(density: Density) {
-        if (loadingWebsearch.value) return
-        viewModelScope.launch {
-            val url = initWebsearchUrl.value
-            loadingWebsearch.value = true
-            val action = searchActionService.importWebsearch(
-                url,
-                with(density) { 20.dp.toPx().roundToInt() })
-            if (action == null) {
-                websearchImportErrorUrl.value = url
-            } else {
-                websearchImportErrorUrl.value = null
-                searchAction.value = action
-                currentPage.value = EditSearchActionPage.CustomizeWebSearch
-            }
-            loadingWebsearch.value = false
-        }
-    }
-
-    fun skipWebsearchImport() {
-        searchAction.value = CustomWebsearchActionBuilder(
-            urlTemplate = "",
-            iconColor = 0,
-            icon = SearchActionIcon.Search,
-            label = "",
-        )
-        currentPage.value = EditSearchActionPage.CustomizeWebSearch
     }
 
     fun setUrlTemplate(template: String) {
@@ -602,7 +568,6 @@ class EditSearchActionSheetVM : ViewModel(), KoinComponent {
 enum class EditSearchActionPage {
     SelectType,
     InitAppSearch,
-    InitWebSearch,
     CustomizeAppSearch,
     CustomizeWebSearch,
     CustomizeCustomIntent,

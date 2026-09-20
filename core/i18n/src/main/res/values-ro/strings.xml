@@ -7,12 +7,10 @@
     <string name="action_undo">Anulează</string>
     <string name="menu_delete">Șterge</string>
     <string name="menu_contacts_open_externally">Deschide în aplicația Contacte</string>
-    <string name="menu_calendar_open_externally">Deschide in aplicatia Calendar</string>
     <string name="search_bar_placeholder">Caută</string>
     <string name="app_info_version">Versiunea %1$s</string>
     <string name="settings">Setari</string>
     <string name="wallpaper">Imagine fundal</string>
-    <string name="wikipedia_source">Din Wikipedia</string>
     <string name="file_type_directory">Director</string>
     <string name="file_type_archive">Fișier arhivă</string>
     <string name="file_type_android">Fișier pachet Android</string>
@@ -31,14 +29,11 @@
     <string name="default_websearch_2_name">YouTube</string>
     <string name="default_websearch_2_url">https://www.youtube.com/results\?search_query=${1}</string>
     <string name="default_websearch_3_url">https://play.google.com/store/search\?q=${1}</string>
-    <string name="widget_name_calendar">Calendar</string>
     <string name="widget_name_music">Muzică</string>
     <string name="widget_action_remove">Eliminați</string>
     <string name="owncloud_username">Nume utilizator</string>
     <string name="login_flow_continue">Continuați</string>
     <string name="login_flow_login">Autentificare</string>
-    <string name="date_today">Astăzi</string>
-    <string name="date_tomorrow">Mâine</string>
     <string name="menu_share">Distribuie</string>
     <string name="menu_share_apk_file">Fișier de aplicație</string>
     <string name="menu_uninstall">Dezinstalare</string>
@@ -47,8 +42,6 @@
     <string name="default_websearch_3_name">Google Play</string>
     <string name="close">Închide</string>
     <string name="owncloud_password">Parolă</string>
-    <string name="calendar_widget_next_events">Următorul eveniment</string>
-    <string name="wikipedia_url">https://ro.wikipedia.org</string>
     <string name="file_type_presentation">Prezentare</string>
     <string name="file_type_generic">Fișier %1$s</string>
     <string name="websearch_dialog_replace_icon">Înlocuire pictogramă</string>
@@ -68,20 +61,15 @@
     <string name="owncloud_server_invalid_url">Această adresă URL nu indică spre o instalare Owncloud validă</string>
     <string name="owncloud_login_2fa_hint">Dacă aveți activată autentificarea cu doi factori, trebuie să utilizați o parolă de aplicație aici.</string>
     <string name="owncloud_login_failed">Autentificarea nu a reușit: nume de utilizator sau parolă incorectă.</string>
-    <string name="disclaimer">Atenționare</string>
     <string name="show_all">Afișați toate</string>
-    <string name="calendar_widget_pinned_events">Viitoare</string>
-    <string name="calendar_widget_no_events">Nu există evenimente astăzi</string>
     <plurals name="calendar_widget_running_events">
         <item quantity="one">+%1$d eveniment în desfășurare din zilele trecute</item>
         <item quantity="few">+%1$d evenimente în desfășurare din zilele trecute</item>
         <item quantity="other">+%1$d de elemente în desfăşurare din zilele trecute</item>
     </plurals>
-    <string name="calendar_event_allday">Toată ziua</string>
     <string name="music_widget_default_title">%1$s redă media</string>
     <string name="music_widget_no_data">Nu a fost redată media încă</string>
     <string name="missing_permission_contact_search_settings">Permisiunea contactelor este necesară pentru a căuta persoane de contact</string>
-    <string name="missing_permission_calendar_search_settings">Permisiunea la calendar este necesară pentru a căuta în calendar</string>
     <string name="missing_permission_appshortcuts_search_settings">%1$s trebuie setată ca aplicație de pornire implicită pentru a căuta comenzi rapide în aplicație</string>
     <string name="missing_permission_notification_badges">Accesul la notificare este necesar pentru a afișa ecusoane de notificare</string>
     <string name="grant_permission">Acordați</string>
@@ -156,15 +144,11 @@
     <string name="preference_screen_search">Caută</string>
     <string name="preference_search_favorites">Favorite</string>
     <string name="preference_search_contacts">Contacte</string>
-    <string name="preference_search_calendar">Calendar</string>
     <string name="preference_search_calendar_summary">Caută programări și evenimente viitoare</string>
     <string name="preference_search_appshortcuts">Scurtături aplicație</string>
     <string name="preference_search_appshortcuts_summary">Caută scurtături aplicație</string>
     <string name="preference_search_calculator">Calculator</string>
     <string name="preference_search_calculator_summary">Evaluează termeni matematici</string>
-    <string name="preference_search_unitconverter">Convertor de unități</string>
-    <string name="preference_search_currencyconverter">Convertor valutar</string>
-    <string name="preference_search_currencyconverter_summary">Descarcă periodic cursurile de schimb pentru a converti valute</string>
     <string name="preference_search_websites">Site-uri web</string>
     <string name="preference_search_websites_summary">Afișează previzualizarea unui site web dacă interogarea de căutare este o adresă URL</string>
     <string name="preference_calendar_calendars">Calendare</string>
@@ -176,7 +160,6 @@
     <string name="preference_search_bar_auto_focus_summary">Afișarea automată a tastaturii la deschiderea căutării</string>
     <string name="preference_hidden_items">Rezultate de căutare ascunse</string>
     <string name="preference_hidden_items_summary">Gestionarea aplicațiilor ascunse și a rezultatelor căutării</string>
-    <string name="preference_wikipedia_customurl">Url-ul Wikipedia</string>
     <string name="battery_part_charging">Încărcare</string>
     <plurals name="battery_part_remaining_charge_time">
         <item quantity="one">Încărcat în %1$s minute</item>
@@ -184,31 +167,23 @@
         <item quantity="other"/>
     </plurals>
     <string name="websearch_dialog_url_error">Substituentul \'${1}\' lipsește din această adresă URL</string>
-    <string name="missing_permission_calendar_widget">Acordați permisiunea de calendar pentru a afișa rezervările și evenimentele viitoare aici.</string>
     <string name="preference_icon_shape_squircle">Pătrat rotunjit</string>
     <string name="preference_icon_shape_triangle">Triunghi Reuleaux</string>
     <string name="missing_permission_music_widget">Accesul la notificări este necesar pentru a controla redarea media</string>
     <string name="preference_category_licenses">Licențe open source</string>
     <string name="preference_themed_icons_summary">Colorați pictogramele cu schema de culori a aplicației</string>
-    <string name="disclaimer_currency_converter">Cursurile de schimb sunt cele publicate o dată pe zi de Banca Centrală Europeană. Toate informațiile sunt furnizate \"ca atare\", fără niciun fel de garanție. Nu este asumată nicio răspundere pentru aceste informații.
-\n
-\nUltima actualizare: %1$s</string>
     <string name="missing_permission_calendar_widget_settings">Acest widget necesită permisiunea la calendar</string>
     <string name="preference_screen_integrations_summary">Gestionează conturile și serviciile conectate</string>
     <string name="preference_cards_summary">Particularizarea aspectului cardului</string>
     <string name="preference_cloud_badges_summary">Afișarea unei insigne pentru fișierele stocate într-un cloud</string>
     <string name="missing_permission_appshortcuts_search">Seteaza %1$s ca aplicație de pornire implicită pentru a căuta comenzi rapide pentru aplicații.</string>
     <string name="preference_notification_badges_summary">Afișează insigne pentru aplicații cu notificări necitite</string>
-    <string name="missing_permission_calendar_search">Acorda permisiunea de calendar pentru a căuta în calendarul tău.</string>
     <string name="preference_about_license_summary">Licențiat sub Licența Publică Generală GNU 3.0</string>
     <string name="preference_search_files_summary">Căutați fișiere locale și cloud</string>
     <string name="preference_search_contacts_summary">Caută contactele de pe acest dispozitiv</string>
     <string name="preference_clockwidget_date_part">Dată</string>
-    <string name="preference_search_unitconverter_summary">Utilizare: 1.5 kg sau 4 cm &gt;&gt; in</string>
     <string name="preference_clockwidget_music_part_summary">Afișează controale media atunci când există o sesiune media activă</string>
-    <string name="preference_search_wikipedia">Wikipedia</string>
     <string name="preference_screen_search_summary">Configurarea căutării</string>
-    <string name="preference_search_wikipedia_summary">Caută în enciclopedia liberă</string>
     <string name="preference_search_favorites_summary">Afișarea elementelor fixate și utilizate frecvent deasupra grilei de aplicații</string>
     <string name="preference_mdy_color_source_wallpaper">Imagine fundal</string>
     <string name="preference_font">Font</string>
@@ -308,9 +283,6 @@
     <string name="preference_enforce_icon_shape_summary">Aplică forme la toate iconițele incluziv cele care in mod normal nu le suportă</string>
     <string name="preference_enforce_icon_shape">Formă forțată</string>
     <string name="preference_clock_widget_show_seconds">Arată secundele</string>
-    <string name="task_due_time">Din cauză la %1$s</string>
-    <string name="task_due_date">Cauza la %1$s</string>
-    <string name="task_due_today">Cauza azi</string>
     <string name="preference_plugin_badges_summary">Indică care plugin la rezultatul căutări va fi creat</string>
     <string name="preference_search_bar_style_hidden">Ascuns</string>
     <string name="preference_search_bar_style_transparent">Transparent</string>
@@ -393,7 +365,6 @@
     <string name="experimental_feature">Experimental</string>
     <string name="preference_gesture_swipe_up">Glisează sus</string>
     <string name="gesture_action_widgets">Widgeturi</string>
-    <string name="preference_search_local_calendar_summary">Căutați calendare pe acest dispozitiv</string>
     <string name="gesture_action_launch_app">Lansează aplicație</string>
     <string name="gesture_action_notifications">Deschide panoul de notificări</string>
 </resources>

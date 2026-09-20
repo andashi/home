@@ -36,7 +36,6 @@
     <!-- Open a contact in the contacts app -->
     <string name="menu_contacts_open_externally">Open in contacts app</string>
     <!-- Open an event in the calendar app -->
-    <string name="menu_calendar_open_externally">Open in calendar app</string>
     <!-- Shown in the search bar when the search text field is empty -->
     <string name="search_bar_placeholder">Search</string>
     <!-- App version, used in application details %1$s is the version -->
@@ -68,9 +67,7 @@
      This should point to the Wikipedia in the given language. If no such Wikipedia exists,
       a fallback that is suited best for most users of this language should be used
       (English in most cases) -->
-    <string name="wikipedia_url">https://en.wikipedia.org</string>
     <!-- Shown in Wikipedia results to indicate where they come from -->
-    <string name="wikipedia_source">From Wikipedia</string>
     <!-- File metadata, title of audio tracks -->
     <!-- File metadata, artist of audio tracks -->
     <!-- File metadata, album of audio tracks -->
@@ -178,7 +175,6 @@
     <string name="websearch_dialog_query_encoding_form">application/x-www-form-urlencoded</string>
     <string name="websearch_dialog_query_encoding_none">None</string>
     <string name="menu_edit_widgets">Edit widgets</string>
-    <string name="widget_name_calendar">Calendar</string>
     <string name="widget_name_music">Media</string>
     <string name="widget_name_apps">Apps</string>
     <string name="widget_name_notes">Note</string>
@@ -242,21 +238,12 @@
     <string name="login_flow_continue">Continue</string>
     <!-- Nextcloud/Owncloud login flow, login button -->
     <string name="login_flow_login">Log in</string>
-    <string name="disclaimer">Disclaimer</string>
     <!-- Info and disclaimer for currency conversions. %1$s: formatted date of last currency data update  -->
-    <string name="disclaimer_currency_converter">Exchange rates as published once per day by the European Central Bank. All information is provided \"as is\" without any kind of guarantee. No liability is assumed for these information.
-\n
-\nLast update: %1$s</string>
     <string name="show_all">Show all</string>
     <!-- Used in calendar widget date selector. -->
-    <string name="date_today">Today</string>
     <!-- Used in calendar widget date selector. -->
-    <string name="date_tomorrow">Tomorrow</string>
     <!-- Headline used in calendar widget for pinned events -->
-    <string name="calendar_widget_pinned_events">Upcoming</string>
     <!-- Headline used in calendar widget for the next event, if there is no event today -->
-    <string name="calendar_widget_next_events">Next event</string>
-    <string name="calendar_widget_no_events">No events today</string>
     <!--
         In the calendar widget, only events that start or end at the selected date are shown.
         If an event runs for three days, it won't be listed if the second day is selected.
@@ -272,10 +259,6 @@
         <item quantity="other">+%1$d unfinished tasks</item>
     </plurals>
     <!-- Calendar events that last the entire day -->
-    <string name="calendar_event_allday">All day</string>
-    <string name="task_due_time">Due at %1$s</string>
-    <string name="task_due_date">Due on %1$s</string>
-    <string name="task_due_today">Due today</string>
     <!-- Default title that is shown in the music widget if the app that is playing media did not publish a title -->
     <string name="music_widget_default_title">%1$s is playing media</string>
     <string name="music_widget_no_data">No media has been played yet</string>
@@ -293,9 +276,6 @@
     <!-- Missing call permission in contacts settings screen -->
     <string name="missing_permission_call_contacts_settings">Phone permission is required to start calls</string>
     <!-- Missing calendar permission in search settings screen -->
-    <string name="missing_permission_calendar_search_settings">Calendar permission is required to search calendar</string>
-    <string name="missing_permission_tasks_search_settings">Tasks permission is required to search tasks in the Tasks app</string>
-    <string name="missing_permission_tasks_integration">Tasks permission is required to use the Tasks integration</string>
     <!-- Missing calendar permission in calendar widget settings screen -->
     <string name="missing_permission_calendar_widget_settings">This widget requires the calendar permission</string>
     <string name="widget_config_calendar_missing_calendars_hint">Can\'t find your calendars?</string>
@@ -308,9 +288,7 @@
     <!-- Missing notification permission, used in badge settings screen -->
     <string name="missing_permission_notification_badges">Notification access is required to display notification badges</string>
     <!-- Missing calendar permission, used in calendar widget -->
-    <string name="missing_permission_calendar_widget">Calendar permission is required to display upcoming events here</string>
     <!-- Missing calendar permission, used in calendar search results -->
-    <string name="missing_permission_calendar_search">Calendar permission is required to search your calendar</string>
     <!-- Missing location permission, used in location search results -->
     <!-- Missing files permission, used in files search results -->
     <!-- Missing files permission, used in contact search results -->
@@ -497,23 +475,11 @@
     <string name="preference_search_files_summary">Search local files and cloud files</string>
     <string name="preference_search_contacts">Contacts</string>
     <string name="preference_search_contacts_summary">Search contacts on this device</string>
-    <string name="preference_search_calendar">Calendar</string>
     <string name="preference_search_calendar_summary">Search upcoming appointments and events</string>
-    <string name="preference_search_local_calendar_summary">Search calendars on this device</string>
-    <string name="preference_search_tasks">Tasks</string>
-    <string name="preference_search_tasks_summary">Search tasks in the Tasks app</string>
     <string name="preference_search_appshortcuts">App shortcuts</string>
     <string name="preference_search_appshortcuts_summary">Search app shortcuts</string>
     <string name="preference_search_calculator">Calculator</string>
     <string name="preference_search_calculator_summary">Evaluate mathematical terms</string>
-    <string name="preference_search_unitconverter">Unit converter</string>
-    <string name="preference_search_unitconverter_summary">Usage: 1.5 kg or 4 cm &gt;&gt; in</string>
-    <string name="preference_search_currencyconverter">Currency converter</string>
-    <string name="preference_search_currencyconverter_summary">Periodically download exchange rates to convert currencies</string>
-    <string name="preference_search_supportedunits">Supported units</string>
-    <string name="preference_currency_settings">Currency settings</string>
-    <string name="preference_search_wikipedia">Wikipedia</string>
-    <string name="preference_search_wikipedia_summary">Search the free encyclopedia</string>
     <string name="preference_search_websites">Websites</string>
     <string name="preference_search_websites_summary">Show a preview of a website if the search query is a URL</string>
     <string name="preference_search_locations_summary">Search the local area for shops and other places</string>
@@ -537,7 +503,6 @@
     <string name="preference_hidden_items_reveal_button_summary">Show a button to reveal excluded search results</string>
     <string name="preference_screen_tags">Tags</string>
     <string name="preference_screen_tags_summary">Manage tags and tagged items</string>
-    <string name="preference_wikipedia_customurl">Wikipedia URL</string>
     <string name="preference_edit_favorites_summary">Change the order of pinned items</string>
     <string name="preference_category_favorites_frequently_used">Frequently used</string>
     <string name="preference_favorites_frequently_used_summary">Show frequently used items in favorites</string>
@@ -554,11 +519,7 @@
     <string name="preference_screen_icons_summary">Grid size, icons, badges</string>
     <string name="preference_weather_integration">Weather</string>
     <string name="preference_media_integration">Media control</string>
-    <string name="preference_tasks_integration">Tasks</string>
     <!-- %1$s: app name (Kvaesitso) -->
-    <string name="preference_tasks_integration_description">Tasks is a free and open source to-do list and reminders app. If installed, %1$s can display and search your tasks from the Tasks app.</string>
-    <string name="preference_tasks_integration_ready">Tasks integration is fully set up and ready to use.</string>
-    <string name="preference_launch_tasks_app">Open Tasks app</string>
     <string name="preference_smartspacer_integration">Smartspacer</string>
     <string name="preference_smartspacer_integration_description">Smartspacer is a free and open source At a Glance widget. If installed, it can be integrated into the dynamic zone of the clock widget</string>
     <string name="preference_smartspacer_enable">Enable Smartspacer integration</string>
@@ -883,10 +844,6 @@
     <string name="music_widget_play">Play</string>
     <string name="music_widget_pause">Pause</string>
     <string name="music_widget_open_player">Open player</string>
-    <string name="calendar_widget_previous_day">Previous day</string>
-    <string name="calendar_widget_next_day">Next day</string>
-    <string name="calendar_widget_create_event">Create new event</string>
-    <string name="calendar_widget_open_calendar">Open calendar app</string>
     <string name="profile_work_profile_state_locked">Work apps are paused</string>
     <string name="profile_work_profile_action_unlock">Unpause</string>
     <string name="profile_work_profile_action_lock">Pause work apps</string>

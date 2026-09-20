@@ -12,9 +12,6 @@
     <string name="menu_customize">কাস্টোমাইজ করুন</string>
     <string name="widget_name_notes">নোট</string>
     <string name="owncloud_login_2fa_hint">যদি আপনার দ্বি-স্তর অথেনটিকেশন চালু থাকে, তাহলে অবশ্যই আপনাকে একটি অ্যাপ পাসওয়ার্ড ব্যবহার করতে হবে।</string>
-    <string name="disclaimer_currency_converter">ইউরোপীয় সেন্ট্রাল ব্যাংক দ্বারা প্রতিদিন একবার প্রকাশিত বিনিময় হার। সমস্ত তথ্য কোন ধরনের গ্যারান্টি ছাড়াই \"যেমন আছে\" তেমন প্রদান করা হয়। এই তথ্যের জন্য কোন দায়বদ্ধতা ধরে নেয়া যাবে না।
-\n
-\nশেষ আপডেট: %1$s</string>
     <plurals name="calendar_widget_running_events">
         <item quantity="one">বিগত দিনের +%1$d চলমান ইভেন্ট</item>
         <item quantity="other">বিগত দিনের %1$dটি চলমান ইভেন্ট</item>
@@ -28,7 +25,6 @@
     <string name="settings">সেটিংস</string>
     <string name="help">সাহায্য</string>
     <string name="wallpaper">ওয়ালপেপার</string>
-    <string name="wikipedia_source">উইকিপিডিয়া থেকে</string>
     <string name="file_type_directory">ডিরেক্টরি</string>
     <string name="file_type_archive">জিপ ফাইল</string>
     <string name="file_type_source_code">সোর্স কোড ফাইল</string>
@@ -58,7 +54,6 @@
     <string name="websearch_dialog_query_encoding_form">application/x-www-form-urlencoded</string>
     <string name="websearch_dialog_query_encoding_none">কোনোটিই নয়</string>
     <string name="menu_edit_widgets">উইজেট সম্পাদনা করুন</string>
-    <string name="widget_name_calendar">ক্যালেন্ডার</string>
     <string name="widget_name_music">সঙ্গীত</string>
     <string name="widget_name_unknown">অজানা অ্যাপের উইজেট</string>
     <string name="notes_widget_placeholder">একটি নোট লিখুন…</string>
@@ -88,18 +83,10 @@
     <string name="owncloud_username">ইউজার নাম</string>
     <string name="login_flow_continue">চালিয়ে যান</string>
     <string name="login_flow_login">লগইন</string>
-    <string name="disclaimer">ডিসক্লেইমার</string>
     <string name="show_all">সব দেখুন</string>
-    <string name="date_today">আজ</string>
-    <string name="date_tomorrow">আগামীকাল</string>
-    <string name="calendar_widget_pinned_events">আসন্ন</string>
-    <string name="calendar_widget_next_events">পরবর্তী ঘটনা</string>
-    <string name="calendar_widget_no_events">আজ কোনো ঘটনা নেই</string>
-    <string name="calendar_event_allday">সারাদিন</string>
     <string name="music_widget_default_title">%1$s মিডিয়া চালাচ্ছে</string>
     <string name="music_widget_no_data">কোনো মিডিয়া চলছে না</string>
     <string name="action_undo">আগের অবস্থায় ফিরুন</string>
-    <string name="wikipedia_url">https://bn.wikipedia.org</string>
     <string name="file_type_android">অ্যান্ড্রয়েড এপিকে ফাইল</string>
     <string name="file_type_none">ফাইল</string>
     <string name="file_type_drawing">আঁকাবুকি ফাইল</string>
@@ -111,22 +98,15 @@
     <string name="edit_favorites_dialog_tag_section_empty">পিন করা ট্যাগ এখানে দেখা যাবে</string>
     <string name="owncloud_server_invalid_url">এই লিংকটি একটি Owncloud সার্ভারকে নির্দেশ করে না</string>
     <string name="owncloud_login_failed">লগইন ব্যর্থ: ইউজার নাম অথবা পাসওয়ার্ড সঠিক নয়।</string>
-    <string name="menu_calendar_open_externally">ক্যালেন্ডার অ্যাপে খুলুন</string>
-    <string name="task_due_time">শেষ সময় %1$s</string>
-    <string name="task_due_date">শেষ তারিখ %1$s</string>
-    <string name="task_due_today">আজকে শেষ সময়</string>
     <string name="widget_config_calendar_missing_calendars_hint">আপনার ক্যালেন্ডার খুঁজে পাচ্ছেন না?</string>
     <string name="action_done">হয়েছে</string>
     <string name="action_more_actions">আরো একশন</string>
     <string name="action_clear">মুছে ফেলুন</string>
     <string name="missing_permission_music_widget">মিডিয়া প্লেব্যাক নিয়ন্ত্রণ করতে নোটিফিকেশন অ্যাক্সেস প্রয়োজন</string>
     <string name="missing_permission_contact_search_settings">কন্টাক্ট অনুসন্ধান করতে কন্টাক্ট অনুমতির প্রয়োজন</string>
-    <string name="missing_permission_calendar_search_settings">ক্যালেন্ডার অনুসন্ধান করতে ক্যালেন্ডার অনুমতির প্রয়োজন</string>
     <string name="missing_permission_calendar_widget_settings">এই উইজেটটির ব্যবহারের জন্য ক্যালেন্ডার অনুমতির প্রয়োজন</string>
     <string name="missing_permission_appshortcuts_search_settings">অ্যাপ শর্টকাট অনুসন্ধান করার জন্য %1$s-কে ডিফল্ট হোম অ্যাপ হিসেবে সেট করা আবশ্যক</string>
     <string name="missing_permission_notification_badges">বিজ্ঞপ্তি ব্যাজ প্রদর্শন করতে নোটিফিকেশন অ্যাক্সেস প্রয়োজন</string>
-    <string name="missing_permission_calendar_widget">এখানে আসন্ন অ্যাপয়েন্টমেন্ট এবং ইভেন্টগুলি প্রদর্শন করতে ক্যালেন্ডার অনুমতি প্রদান করুন।</string>
-    <string name="missing_permission_calendar_search">আপনার ক্যালেন্ডার অনুসন্ধান করতে ক্যালেন্ডার অনুমতি প্রদান করুন।</string>
     <string name="preference_debug_dump_heap_summary">মেমোরি ব্যবহারের বিশ্লেষণ করতে একটি স্ন্যাপশট ক্যাপচার করুন। এই প্রক্রিয়া সম্পন্ন হওয়া পর্যন্ত অ্যাপটি থেমে থাকবে।</string>
     <string name="preference_force_themed_icons">থিমযুক্ত আইকন প্রয়োগ করুন</string>
     <string name="preference_debug_reinstall_iconpacks">আইকন প্যাক পুনরায় ইনস্টল করুন</string>

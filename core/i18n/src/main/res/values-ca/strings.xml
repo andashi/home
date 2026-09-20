@@ -13,7 +13,6 @@
     <string name="settings">Configuració</string>
     <string name="help">Ajuda</string>
     <string name="wallpaper">Fons de pantalla</string>
-    <string name="wikipedia_source">Font: Wikipedia</string>
     <string name="file_type_directory">Directori</string>
     <string name="file_type_archive">Nom del fitxer</string>
     <string name="file_type_android">Fitxer APK</string>
@@ -42,7 +41,6 @@
     <string name="websearch_dialog_query_encoding_form">application/x-www-form-urlencoded</string>
     <string name="websearch_dialog_query_encoding_none">Rés</string>
     <string name="menu_edit_widgets">Edita els ginys</string>
-    <string name="widget_name_calendar">Calendari</string>
     <string name="widget_name_music">Media</string>
     <string name="widget_name_notes">Nota</string>
     <string name="widget_name_unknown">Desconegut</string>
@@ -79,23 +77,13 @@
     <string name="owncloud_login_failed">Inici de sessió fallit: usuari o contrasenya erronis.</string>
     <string name="login_flow_continue">Continua</string>
     <string name="login_flow_login">Inici de sessió</string>
-    <string name="disclaimer">Exempció de responsabilitat</string>
     <string name="show_all">Mostra-ho tot</string>
-    <string name="date_today">Avui</string>
-    <string name="date_tomorrow">Demà</string>
-    <string name="calendar_widget_pinned_events">Properament</string>
-    <string name="calendar_widget_next_events">Pròxim esdeveniment</string>
-    <string name="calendar_widget_no_events">Sense esdeveniments avui</string>
-    <string name="calendar_event_allday">Tot el dia</string>
     <string name="missing_permission_music_widget">Cal accedir a les notificacions per controlar la reproducció multimèdia</string>
     <string name="missing_permission_contact_search_settings">Cal permís d\'accés als contactes per cercar contactes</string>
-    <string name="missing_permission_calendar_search_settings">Cal permís d\'accés al calendari per cercar</string>
     <string name="missing_permission_calendar_widget_settings">Aquest giny requereix permís d\'accés al calendari</string>
     <string name="widget_config_calendar_missing_calendars_hint">No trobeu els vostres calendaris\?</string>
     <string name="missing_permission_appshortcuts_search_settings">%1$s s\'ha de configurar com a aplicació d\'inici predeterminada per cercar dreceres d\'aplicacions</string>
-    <string name="missing_permission_calendar_widget">Cal permís de calendari per mostrar els propers esdeveniments aquí</string>
     <string name="missing_permission_notification_badges">Cal tenir permís d\'accés a les notificacions per mostrar les insígnies de notificació</string>
-    <string name="missing_permission_calendar_search">Cal permís de Calendar per cercar al calendari</string>
     <string name="missing_permission_contact_search">Doneu permís d\'accés per cercar els vostres contactes</string>
     <string name="missing_permission_appshortcuts_search">Configura %1$s com a aplicació d\'inici predeterminada per cercar dreceres d\'aplicacions.</string>
     <string name="missing_permission_appshortcuts_create">Configura %1$s com a aplicació d\'inici predeterminada per crear dreceres.</string>
@@ -204,18 +192,11 @@
     <string name="preference_search_files_summary">Cerca fitxers locals i fitxers al núvol</string>
     <string name="preference_search_contacts">Contactes</string>
     <string name="preference_search_contacts_summary">Cerca contactes en aquest dispositiu</string>
-    <string name="preference_search_calendar">Calendari</string>
     <string name="preference_search_calendar_summary">Cerca properes cites i esdeveniments</string>
     <string name="preference_search_appshortcuts">Dreceres d\'aplicacions</string>
     <string name="preference_search_appshortcuts_summary">Cerca dreceres d\'aplicacions</string>
     <string name="preference_search_calculator">Calculadora</string>
     <string name="preference_search_calculator_summary">Avaluar termes matemàtics</string>
-    <string name="preference_search_unitconverter">Convertidor d\'unitats</string>
-    <string name="preference_search_unitconverter_summary">Ús: 1,5 kg o 4 cm &gt;&gt; polzades</string>
-    <string name="preference_search_currencyconverter">Convertidor de moneda</string>
-    <string name="preference_search_currencyconverter_summary">Baixeu periòdicament els tipus de canvi per convertir monedes</string>
-    <string name="preference_search_wikipedia">Wikipedia</string>
-    <string name="preference_search_wikipedia_summary">Cerca a l\'enciclopèdia lliure</string>
     <string name="preference_search_websites">Llocs web</string>
     <string name="preference_search_websites_summary">Mostra una vista prèvia d\'un lloc web si la cerca és una URL</string>
     <string name="preference_calendar_calendars">Calendaris</string>
@@ -232,7 +213,6 @@
     <string name="preference_hidden_items_reveal_button_summary">Mostra un botó per mostrar els resultats de la cerca ocults</string>
     <string name="preference_screen_tags">Etiquetes</string>
     <string name="preference_screen_tags_summary">Gestioneu les etiquetes i els elements etiquetats</string>
-    <string name="preference_wikipedia_customurl">URL de la Wikipedia</string>
     <string name="preference_edit_favorites_summary">Canvia l\'ordre dels elements fixats</string>
     <string name="preference_category_favorites_frequently_used">Freqüentment utilitzats</string>
     <string name="preference_favorites_frequently_used_summary">Mostra els elements utilitzats freqüentment als preferits</string>
@@ -341,13 +321,9 @@
     <string name="note_widget_file_read_error_description">No s\'ha pogut llegir el fitxer enllaçat. S\'ha restaurat una còpia des de l\'emmagatzematge intern del llançador. Si editeu la nota, és possible que el fitxer enllaçat se sobreescrigui</string>
     <string name="note_widget_file_write_error">S\'ha produït un error en desar la nota</string>
     <string name="menu_share">Comparteix</string>
-    <string name="wikipedia_url">https://ca.wikipedia.org/</string>
     <string name="nextcloud_server_invalid_url">Aquesta URL no apunta a cap punt d\'instal·lació Nextcloud vàlid</string>
     <string name="battery_part_charging">Carregant</string>
     <string name="menu_share_store_link">%1$s enllaç</string>
-    <string name="disclaimer_currency_converter">Tipus de canvi publicats un cop al dia pel Banc Central Europeu. Tota la informació es facilita \"tal i com està\" sense cap tipus de garantia. No s\'assumeix cap responsabilitat per aquesta informació.
-\n
-\nÚltima actualització: %1$s</string>
     <string name="menu_share_apk_file">fitxer APK</string>
     <plurals name="battery_part_remaining_charge_time">
         <item quantity="one">Càrrega completa en %1$s minut</item>
@@ -369,7 +345,6 @@
     <string name="preference_debug_dump_heap_summary">Captura una instantània per analitzar l\'ús de la memòria. L\'aplicació es congelarà fins que finalitzi aquest procés.</string>
     <string name="create_search_action_website_invalid_url">El lloc web indicat no es pot importar automàticament com a cerca web. Podeu provar un lloc web diferent o introduir les dades necessàries manualment al pas següent</string>
     <string name="menu_contacts_open_externally">Visualitza a l\'agenda de contactes</string>
-    <string name="menu_calendar_open_externally">Visualitza al calendari</string>
     <string name="default_websearch_3_url">https://play.google.com/store/search\?q=${1}</string>
     <string name="preference_themed_icons_summary">Icones de colors amb l\'esquema de colors de l\'aplicació</string>
     <string name="preference_layout_fixed_search_bar">Barra de cerca fixada</string>
@@ -588,10 +563,6 @@
         <item quantity="many">d\'aquí a %1$d minuts</item>
         <item quantity="other">d\'aquí a %1$d minuts</item>
     </plurals>
-    <string name="task_due_time">Realitzat a %1$s</string>
-    <string name="task_due_date">Realitzat al dia %1$s</string>
-    <string name="task_due_today">Realitzat avui</string>
-    <string name="preference_search_local_calendar_summary">Cerca calendaris en aquest dispositiu</string>
     <string name="preference_calendar_hide_completed">Amaga les tasques completades</string>
     <string name="profile_private_profile_state_locked">L\'espai privat està bloquejat</string>
     <string name="music_widget_next_track">Següent títol</string>
@@ -608,7 +579,6 @@
     <string name="hint_drag_and_drop_reorder">Manteniu premut i arrossegueu els elements per reordenar-los</string>
     <string name="preference_clock_widget_time_format_24h">24h</string>
     <string name="preference_clock_widget_time_format_12h">12h</string>
-    <string name="preference_search_supportedunits">Unitats suportades</string>
     <string name="apps_profile_private">Privat</string>
     <plurals name="app_info_notifications">
         <item quantity="one">%1$s notificació</item>
@@ -618,10 +588,6 @@
     <string name="music_widget_previous_track">Títol anterior</string>
     <string name="music_widget_play">Jugar</string>
     <string name="music_widget_open_player">Jugador</string>
-    <string name="calendar_widget_previous_day">Dia anterior</string>
-    <string name="calendar_widget_next_day">L\'endemà</string>
-    <string name="calendar_widget_create_event">Crea un nou esdeveniment</string>
-    <string name="calendar_widget_open_calendar">Obre l\'aplicació de calendari</string>
     <string name="profile_private_profile_action_lock">Tanca l\'espai privat</string>
     <string name="weather_forecast_precipitation">Precipitació</string>
     <string name="preference_clock_widget_time_format">Format horari</string>
@@ -645,13 +611,8 @@
     <string name="theme_bundle_name">Nom</string>
     <string name="action_install">Instal·la</string>
     <string name="preference_colors_high_contrast">Alt contrast</string>
-    <string name="missing_permission_tasks_integration">Cal permís de Tasks per utilitzar la integració de Tasks</string>
-    <string name="missing_permission_tasks_search_settings">Cal permís de Tasques per cercar tasques a l\'aplicació Tasques</string>
-    <string name="preference_tasks_integration_description">Tasks és una aplicació gratuïta i de codi obert de llistes de tasques pendents i recordatoris. Si està instal·lada, %1$s pot mostrar i cercar les teves tasques des de l\'aplicació Tasks.</string>
-    <string name="preference_tasks_integration_ready">La integració de tasques està completament configurada i llesta per utilitzar.</string>
     <string name="music_widget_interactive_progress_bar">Barra de progrés interactiva</string>
     <string name="preference_grid_list_icons_summary">Mostra les icones a la vista de llista</string>
-    <string name="preference_search_tasks">Tasques</string>
     <string name="preference_grid_list_icons">Mostra les icones de les aplicacions a la llista</string>
     <string name="preference_grid_list_style">Mostrar aplicacions en una llista</string>
     <string name="preference_transparencies_default">Per defecte</string>
@@ -660,7 +621,6 @@
     <string name="preference_grid_list_style_summary">Mostra les aplicacions en una llista en comptes d\'una quadrícula</string>
     <string name="save_as_file">Desa com a fitxer</string>
     <string name="no_selection">Sense selecció</string>
-    <string name="preference_search_tasks_summary">Cercar tasques a l\'aplicació Tasques</string>
     <string name="import_theme_exists">El tema ja existeix i s\'actualitzarà</string>
     <plurals name="calendar_widget_running_tasks">
         <item quantity="one">+%1$d tasca inacabada</item>
@@ -668,7 +628,6 @@
         <item quantity="other">+%1$d tasques inacabades</item>
     </plurals>
     <string name="preference_screen_typography">Tipografia</string>
-    <string name="preference_tasks_integration">Tasques</string>
     <string name="confirmation_delete_typography_scheme">De veritat voleu suprimir l\'esquema tipogràfic %1$s?</string>
     <string name="confirmation_delete_transparencies_scheme">De veritat voleu suprimir l\'esquema de transparència %1$s?</string>
     <string name="new_theme_name">(sense títol)</string>
@@ -692,7 +651,6 @@
     <string name="preference_search_bar_style_transparent">Transparent</string>
     <string name="preference_search_bar_style_solid">Sòlid</string>
     <string name="preference_search_bar_style_hidden">Ocult</string>
-    <string name="preference_launch_tasks_app">Obre l\'aplicació Tasques</string>
     <string name="poi_category_stationery">Papereria</string>
     <string name="poi_category_climbing_gym">Gimnàs d\'escalada</string>
     <string name="poi_category_hackerspace">Espai hacker</string>

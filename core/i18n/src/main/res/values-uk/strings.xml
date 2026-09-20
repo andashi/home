@@ -14,15 +14,12 @@
     <string name="menu_delete">Видалити</string>
     <string name="menu_remove">Прибрати</string>
     <string name="menu_contacts_open_externally">Відкрити у Контактах</string>
-    <string name="menu_calendar_open_externally">Відкрити у Календарі</string>
     <string name="search_bar_placeholder">Пошук</string>
     <string name="app_info_version">Версія %1$s</string>
     <string name="settings">Налаштування</string>
     <string name="help">Допомога</string>
     <string name="wallpaper">Фон</string>
     <string name="file_type_directory">Шлях</string>
-    <string name="wikipedia_url">https://uk.wikipedia.org</string>
-    <string name="wikipedia_source">З Вікіпедії</string>
     <string name="file_type_image">Зображення</string>
     <string name="file_type_ebook">Файл електронної книги</string>
     <string name="file_type_document">Документ</string>
@@ -52,9 +49,6 @@
     <string name="nextcloud_server_url">URL сервера Nextcloud</string>
     <string name="owncloud_login_failed">Не вдалося увійти: неправильне ім’я користувача або пароль.</string>
     <string name="shortcut_summary">Від %1$s</string>
-    <string name="calendar_widget_next_events">Наступна подія</string>
-    <string name="calendar_widget_no_events">Сьогодні немає подій</string>
-    <string name="calendar_widget_pinned_events">Найближчі події</string>
     <string name="close">Закрити</string>
     <string name="save">Зберегти</string>
     <string name="duplicate">Дублювати</string>
@@ -66,7 +60,6 @@
     <string name="owncloud_password">Пароль</string>
     <string name="login_flow_login">Увійти</string>
     <string name="login_flow_continue">Продовжити</string>
-    <string name="calendar_event_allday">Весь день</string>
     <string name="music_widget_default_title">%1$s відтворює медіа</string>
     <string name="edit">Редагувати</string>
     <string name="widget_action_remove">Прибрати</string>
@@ -79,10 +72,7 @@
     <string name="show_all">Показати все</string>
     <string name="notes_widget_export_filename">Нотатка_%1$s</string>
     <string name="edit_favorites_dialog_pinned_sorted">Закріплені – відсортовані вручну</string>
-    <string name="date_today">Сьогодні</string>
     <string name="owncloud_login_2fa_hint">Якщо у вас увімкнено двофакторну автентифікацію, ви повинні тут ввести пароль.</string>
-    <string name="disclaimer">Застереження</string>
-    <string name="date_tomorrow">Завтра</string>
     <string name="notes_widget_action_dismiss">Відхилити</string>
     <string name="notes_widget_dismissed">Нотатку відхилено</string>
     <string name="widget_action_replace">Замінити</string>
@@ -91,10 +81,8 @@
     <string name="owncloud_server_url">URL сервера Owncloud</string>
     <string name="edit_favorites_dialog_tag_section_empty">Закріплені теги з’являться тут</string>
     <string name="nextcloud_server_invalid_url">Цей URL не веде на Nextcloud</string>
-    <string name="task_due_time">Виконати до %1$s</string>
     <string name="owncloud_server_invalid_url">Цей URL не веде на Owncloud</string>
     <string name="owncloud_username">Ім’я користувача</string>
-    <string name="disclaimer_currency_converter">Курси валют публікуються один раз на день Європейським центральним банком. Вся інформація надається «як є», без будь-яких гарантій. Ми не несемо відповідальності за цю інформацію.\n\nОстаннє оновлення: %1$s</string>
     <plurals name="calendar_widget_running_events">
         <item quantity="one">+%1$d поточна подія з минулих днів</item>
         <item quantity="few">+%1$d поточні події з минулих днів</item>
@@ -102,8 +90,6 @@
         <item quantity="other">+%1$d поточних подій з минулих днів</item>
     </plurals>
     <string name="music_widget_no_data">Поки не відтворено жодного медіа</string>
-    <string name="task_due_date">Виконати до %1$s</string>
-    <string name="task_due_today">Виконати сьогодні</string>
     <plurals name="calendar_widget_running_tasks">
         <item quantity="one">+%1$d незавершене завдання</item>
         <item quantity="few">+%1$d незавершені завдання</item>
@@ -142,7 +128,6 @@
     <string name="websearch_dialog_query_encoding">Кодування запиту</string>
     <string name="websearch_dialog_query_encoding_none">Нема</string>
     <string name="menu_edit_widgets">Налаштувати віджети</string>
-    <string name="widget_name_calendar">Календар</string>
     <string name="notes_widget_placeholder">Напишіть нотатку...</string>
     <string name="notes_widget_action_new">Нова нотатка</string>
     <string name="notes_widget_action_save">Зберегти</string>
@@ -155,16 +140,11 @@
     <string name="preference_screen_colors">Колірна схема</string>
     <string name="missing_permission_appshortcuts_search">Встановіть %1$s як застосунок головного екрана, щоби шукати застосунки.</string>
     <string name="preference_clockwidget_favorites_part">Док-панель</string>
-    <string name="missing_permission_tasks_search_settings">Для пошуку завдань у Tasks потрібен дозвіл</string>
-    <string name="missing_permission_calendar_widget">Для відображення майбутніх подій потрібен доступ до календаря</string>
-    <string name="missing_permission_tasks_integration">Для інтеграції Tasks потрібен дозвіл</string>
     <string name="preference_colors_default">За замовчуванням</string>
-    <string name="missing_permission_calendar_search">Для пошуку в календарі потрібен дозвіл</string>
     <string name="preference_category_favorites_frequently_used">Часто використовувані</string>
     <string name="preference_favorites_frequently_used_summary">Показувати часто використовувані значки в улюблених</string>
     <string name="preference_clockwidget_favorites_part_summary">Показувати перший рядок закріплених значків</string>
     <string name="preference_edit_favorites_summary">Змінити порядок закріплених значків</string>
-    <string name="missing_permission_calendar_search_settings">Для пошуку в календарі потрібен дозвіл</string>
     <string name="preference_search_favorites_summary">Показувати закріплені та часто використовувані значки над усіма застосунками</string>
     <string name="missing_permission_call_contacts_settings">Для здійснення дзвінків потрібен дозвіл</string>
     <string name="missing_permission_calendar_widget_settings">Цьому віджету потрібен доступ до календаря</string>
