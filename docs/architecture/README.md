@@ -9,21 +9,26 @@ reload, and integrated into a GrapheneOS multi-profile setup.
 
 1. **One page.** No paging, no app icons on the home surface. Widgets are placed on a
    grid; a dock holds a handful of favorites. Everything else is reached through
-   search / the app drawer, exactly as in stock Kvaesitso.
-2. **Dotfiles are the source of truth.** The complete home configuration lives in one
+   search / the app drawer.
+2. **Launch apps, host widgets, little else.** Search covers apps, app shortcuts
+   and contacts. Weather, calendar, music and notes are standard Android widgets,
+   not built-in ones; files belong to a file manager, places to a maps app. A
+   feature earns its place in the launcher when its cost is a scoped, revocable
+   permission — not when it costs a blanket grant (ADR 0008).
+3. **Dotfiles are the source of truth.** The complete home configuration lives in one
    JSON document under version control. The launcher converges its state towards it —
    check-before-set, never blind writes. UI editing remains possible, but the config
    file wins on reload.
-3. **Verifiable, not just applied.** Every externally applied change is readable back
+4. **Verifiable, not just applied.** Every externally applied change is readable back
    through an exported read-only interface, so provisioning can assert the state it
    intended (convergent steps, not set-once-unverifiable).
-4. **Test-driven from day one.** The upstream codebase has effectively no tests; this
+5. **Test-driven from day one.** The upstream codebase has effectively no tests; this
    fork is developed AI-assisted and therefore builds its own safety net first:
    pure-logic unit tests, Compose UI tests, and end-to-end tests on the GrapheneOS
    emulator driven by the provisioning repo.
-5. **Liquid Glass, unapologetically.** One polished visual direction (iOS-style
+6. **Liquid Glass, unapologetically.** One polished visual direction (iOS-style
    frosted glass, tinted monochrome icons). No half-maintained alternative styles.
-6. **GrapheneOS-native.** No Play Services dependencies, no telemetry, storage-scopes
+7. **GrapheneOS-native.** No Play Services dependencies, no telemetry, storage-scopes
    friendly, per-profile configuration, reproducible builds with pinned signing.
 
 ## Decisions
@@ -37,6 +42,7 @@ reload, and integrated into a GrapheneOS multi-profile setup.
 | [0005](adr/0005-testing-strategy.md) | Test pyramid and AI-driven development harness |
 | [0006](adr/0006-grapheneos-integration.md) | GrapheneOS-specific integration and constraints |
 | [0007](adr/0007-fork-strategy.md) | Fork strategy: hard fork, upstream as a source for cherry-picks |
+| [0008](adr/0008-launcher-scope.md) | The launcher launches apps and hosts widgets; it is not a search aggregator |
 
 ## Implementation order
 
@@ -46,9 +52,15 @@ reload, and integrated into a GrapheneOS multi-profile setup.
    GrapheneOS provisioning; works against existing settings, dock favorites and
    widgets even before the grid exists. Grid-specific config keys are added later
    as a schema version bump (non-breaking by design, ADR 0002).
-3. **Single-page widget grid** (ADR 0001) — the large piece, landing on top of the
-   test net and the config system.
-4. **Liquid Glass refinement** (ADR 0004) — iterated on top of a stable grid.
+3. **Scope reduction** (ADR 0008) — before the grid, not after. The grid has to
+   place widgets; if the built-in ones are going away, it only ever needs to
+   handle external `AppWidget`s and the dock, which is a smaller job than
+   building it twice. Removing providers also shrinks the settings surface the
+   grid and the config contract have to cover.
+4. **Single-page widget grid** (ADR 0001) — the large piece, landing on top of the
+   test net, the config system and a launcher that is no longer carrying what it
+   does not use.
+5. **Liquid Glass refinement** (ADR 0004) — iterated on top of a stable grid.
 
 ## Relationship to the provisioning repo
 

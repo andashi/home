@@ -16,7 +16,9 @@ The target design (iOS home screen, reduced to a single page) needs:
   grid coordinates with spans (`x, y, spanX, spanY`)
 - **no app icons on the grid** — the only icons are the dock favorites
 - a dock: a fixed band at the bottom holding a small, ordered set of favorites
-- everything else reachable via search / app drawer, as in stock Kvaesitso
+- everything else reachable via search / app drawer (narrowed by ADR 0008: the
+  search reaches apps, app shortcuts and contacts, not stock Kvaesitso's full
+  set of providers)
 
 Upstream closed "app icons on the desktop" as *not planned* (MM2-0/Kvaesitso#1943),
 so this cannot land upstream and defines the fork's core divergence.
