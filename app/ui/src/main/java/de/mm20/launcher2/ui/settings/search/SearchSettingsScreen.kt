@@ -75,8 +75,74 @@ fun SearchSettingsScreen() {
     PreferenceScreen(title = stringResource(R.string.preference_screen_search)) {
         item {
             PreferenceCategory {
-
-
+                PreferenceWithSwitch(
+                    title = stringResource(R.string.preference_search_favorites),
+                    summary = stringResource(R.string.preference_search_favorites_summary),
+                    icon = R.drawable.star_24px,
+                    switchValue = favorites == true,
+                    onSwitchChanged = {
+                        viewModel.setFavorites(it)
+                    },
+                    onClick = {
+                        backStack.add(FavoritesSettingsRoute)
+                    }
+                )
+                PreferenceWithSwitch(
+                    title = stringResource(R.string.preference_search_apps),
+                    summary = stringResource(R.string.preference_search_apps_summary),
+                    icon = R.drawable.apps_24px,
+                    switchValue = allApps == true,
+                    onSwitchChanged = {
+                        viewModel.setAllApps(it)
+                    },
+                    onClick = {
+                        backStack.add(AppSearchSettingsRoute)
+                    }
+                )
+                GuardedPreference(
+                    locked = hasAppShortcutsPermission == false,
+                    onUnlock = {
+                        viewModel.requestAppShortcutsPermission(context as AppCompatActivity)
+                    },
+                    description = stringResource(R.string.missing_permission_appshortcuts_search_settings),
+                ) {
+                    PreferenceWithSwitch(
+                        title = stringResource(R.string.preference_search_appshortcuts),
+                        summary = stringResource(R.string.preference_search_appshortcuts_summary),
+                        icon = R.drawable.arrow_outward_24px,
+                        switchValue = appShortcuts == true && hasAppShortcutsPermission == true,
+                        onSwitchChanged = {
+                            viewModel.setAppShortcuts(it)
+                        },
+                        onClick = {
+                            backStack.add(AppShortcutsSettingsRoute)
+                        }
+                    )
+                }
+                GuardedPreference(
+                    locked = hasContactsPermission == false,
+                    onUnlock = {
+                        viewModel.requestContactsPermission(context as AppCompatActivity)
+                    },
+                    description = stringResource(R.string.missing_permission_contact_search_settings),
+                ) {
+                    PreferenceWithSwitch(
+                        title = stringResource(R.string.preference_search_contacts),
+                        summary = stringResource(R.string.preference_search_contacts_summary),
+                        icon = R.drawable.person_24px,
+                        switchValue = contacts == true && hasContactsPermission == true,
+                        onSwitchChanged = {
+                            viewModel.setContacts(it)
+                        },
+                        onClick = {
+                            backStack.add(ContactsSettingsRoute)
+                        }
+                    )
+                }
+            }
+        }
+        item {
+            PreferenceCategory {
                 Preference(
                     title = stringResource(R.string.preference_screen_search_actions),
                     summary = stringResource(R.string.preference_search_search_actions_summary),

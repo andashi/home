@@ -59,6 +59,7 @@
     <string name="preference_favorites_edit_button_summary">Показувати кнопку для перегрупування улюблених</string>
     <string name="favorites">Улюблені</string>
     <string name="preference_search_favorites">Улюблені</string>
+    <string name="preference_search_favorites_summary">Показувати закріплені та часто використовувані значки над усіма застосунками</string>
     <string name="preference_colors_high_contrast">Висока контрастність</string>
     <string name="grant_permission">Надати</string>
     <string name="preference_shapes_default">За замовчуванням</string>

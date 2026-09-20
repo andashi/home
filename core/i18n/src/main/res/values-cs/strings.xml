@@ -108,6 +108,7 @@
     <string name="preference_screen_search_summary">Vyhledávání, štítky, vyloučené výsledky</string>
     <string name="preference_screen_search">Hledání</string>
     <string name="preference_search_favorites">Oblíbené</string>
+    <string name="preference_search_favorites_summary">Zobrazit připnuté a často používané položky nad mřízkou s aplikacemi</string>
     <string name="preference_search_contacts">Kontakty</string>
     <string name="preference_search_contacts_summary">Prohledávat kontakty na tomto zařízení</string>
     <string name="preference_search_appshortcuts">Záložky aplikací</string>
@@ -239,7 +240,7 @@
     <string name="preference_search_result_ordering_weight_factor_high">Různé</string>
     <string name="preference_search_result_ordering_weight_factor">Flexibilita hodnocení</string>
     <string name="preference_screen_homescreen">Domovská obrazovka</string>
-    <string name="preference_screen_homescreen_summary">Hodiny, vyhledávací lišta, pozadí, systémové lišty</string>
+    <string name="preference_screen_homescreen_summary">Vyhledávací lišta, pozadí, systémové lišty</string>
     <string name="preference_screen_icons">Mřížka a ikony</string>
     <string name="preference_screen_icons_summary">Velikost mřížky, ikony, odznaky</string>
     <string name="widget_action_replace">Nahradit</string>

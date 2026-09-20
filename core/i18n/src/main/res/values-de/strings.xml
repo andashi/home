@@ -92,6 +92,7 @@
     <string name="preference_screen_search">Suche</string>
     <string name="preference_screen_search_summary">Suche, Tags, ausgeblendete Suchergebnisse</string>
     <string name="preference_search_favorites">Favoriten</string>
+    <string name="preference_search_favorites_summary">Angepinnte und häufig genutzte Elemente über dem App-Raster anzeigen</string>
     <string name="preference_search_contacts">Kontakte</string>
     <string name="preference_search_contacts_summary">Kontakte auf diesem Gerät durchsuchen</string>
     <string name="preference_screen_buildinfo">Build-Information</string>
@@ -238,7 +239,7 @@
     <string name="gesture_action_launch_app">App starten</string>
     <string name="icon_picker_filter_all_packs">Alle Iconpacks</string>
     <string name="preference_screen_homescreen">Startbildschirm</string>
-    <string name="preference_screen_homescreen_summary">Uhr, Suchleiste, Hintergrundbild, Systemleisten</string>
+    <string name="preference_screen_homescreen_summary">Suchleiste, Hintergrundbild, Systemleisten</string>
     <string name="preference_screen_icons">Raster und Icons</string>
     <string name="preference_screen_icons_summary">Raster, Icons, Plaketten</string>
     <string name="widget_action_replace">Ersetzen</string>

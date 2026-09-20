@@ -87,6 +87,7 @@
     <string name="preference_clockwidget_favorites_part_summary">Εμφάνιση της πρώτης σειράς καρφιτσωμένων στοιχείων</string>
     <string name="preference_screen_search">Αναζήτηση</string>
     <string name="preference_search_favorites">Αγαπημένα</string>
+    <string name="preference_search_favorites_summary">Εμφάνιση καρφιτσωμένων και συχνά χρησιμοποιούμενων στοιχείων πάνω από το πλέγμα εφαρμογών</string>
     <string name="preference_search_appshortcuts">Συντομεύσεις εφαρμογών</string>
     <string name="preference_search_bar_style">Στυλ</string>
     <string name="preference_screen_buildinfo">Πληροφορίες έκδοσης</string>
@@ -197,7 +198,7 @@
     <string name="preference_screen_homescreen">Αρχική οθόνη</string>
     <string name="preference_custom_colors_corepalette">Παλέτα χρωμάτων</string>
     <string name="preference_screen_tags">Ετικέτες</string>
-    <string name="preference_screen_homescreen_summary">Ρολόι, γραμμή αναζήτησης, ταπετσαρία, γραμμές συστήματος</string>
+    <string name="preference_screen_homescreen_summary">Γραμμή αναζήτησης, ταπετσαρία, γραμμές συστήματος</string>
     <string name="preference_screen_icons">Πλέγμα και εικονίδια</string>
     <string name="search_action_alarm">Βάζω ξυπνητήρι</string>
     <string name="search_action_websearch">Διαδικτυακή αναζήτηση</string>

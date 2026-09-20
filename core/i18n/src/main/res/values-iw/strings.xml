@@ -143,6 +143,7 @@
     <string name="preference_screen_search">חיפוש</string>
     <string name="preference_screen_search_summary">חיפוש, תגיות, תוצאות מוחרגות</string>
     <string name="preference_search_favorites">מועדפים</string>
+    <string name="preference_search_favorites_summary">הצגת פריטים נעוצים ובשימוש נפוץ מעל רשת היישומים</string>
     <string name="preference_search_contacts_summary">חיפוש אנשי קשר במכשיר זה</string>
     <string name="preference_search_appshortcuts">קיצורי דרך ליישומים</string>
     <string name="preference_search_appshortcuts_summary">חיפוש קיצורי דרך ליישומים</string>

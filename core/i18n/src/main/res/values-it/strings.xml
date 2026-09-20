@@ -96,6 +96,7 @@
     <string name="preference_screen_search">Ricerca</string>
     <string name="preference_screen_search_summary">Ricerca, tag, risultati esclusi</string>
     <string name="preference_search_favorites">Preferiti</string>
+    <string name="preference_search_favorites_summary">Mostra elementi appuntati e usati frequentemente sopra la griglia delle app</string>
     <string name="preference_search_contacts">Contatti</string>
     <string name="preference_search_contacts_summary">Cerca contatti su questo dispositivo</string>
     <string name="preference_screen_buildinfo">Informazioni build</string>
@@ -240,7 +241,7 @@
     <string name="preference_search_result_ordering_weight_factor_high">Variabile</string>
     <string name="preference_screen_homescreen">Schermata home</string>
     <string name="preference_screen_icons_summary">Dimensioni griglia, icone, badge</string>
-    <string name="preference_screen_homescreen_summary">Orologio, barra di ricerca, sfondo, barre di sistema</string>
+    <string name="preference_screen_homescreen_summary">Barra di ricerca, sfondo, barre di sistema</string>
     <string name="preference_screen_icons">Griglia e icone</string>
     <string name="widget_action_replace">Sostituisci</string>
     <string name="app_widget_loading_failed">Impossibile caricare il widget dell\'app</string>

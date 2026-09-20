@@ -367,6 +367,7 @@
     <string name="preference_screen_search">Search</string>
     <string name="preference_screen_search_summary">Search, tags, excluded results</string>
     <string name="preference_search_favorites">Favorites</string>
+    <string name="preference_search_favorites_summary">Show pinned and frequently used items above app grid</string>
     <string name="preference_search_apps">Apps</string>
     <string name="preference_search_apps_summary">Show all apps when the search field is empty</string>
     <string name="preference_search_apps_show_details">Show app information</string>
@@ -403,7 +404,7 @@
     <string name="preference_widgets_on_home_screen">Widgets on home screen</string>
     <string name="preference_widgets_on_home_screen_summary">Show widgets on the home screen instead of a separate page</string>
     <string name="preference_screen_homescreen">Home screen</string>
-    <string name="preference_screen_homescreen_summary">Clock, search bar, wallpaper, system bars</string>
+    <string name="preference_screen_homescreen_summary">Search bar, wallpaper, system bars</string>
     <string name="preference_screen_icons">Grid and icons</string>
     <string name="preference_screen_icons_summary">Grid size, icons, badges</string>
     <!-- %1$s: app name (Kvaesitso) -->

@@ -162,6 +162,7 @@
     <string name="preference_screen_search">Пошук</string>
     <string name="preference_search_contacts_summary">Пошук кантактаў на гэтай прыладзе</string>
     <string name="preference_search_favorites">Абраныя</string>
+    <string name="preference_search_favorites_summary">Адлюстроўваць замацаваныя праграмы і праграмы, якія часта выкарыстоўваюцца, уверсе меню</string>
     <string name="preference_search_appshortcuts_summary">Пошук ярлыкоў праграм</string>
     <string name="preference_screen_search_summary">Пошук, цэтлікі, выключаныя вынікі</string>
     <string name="preference_search_contacts">Кантакты</string>

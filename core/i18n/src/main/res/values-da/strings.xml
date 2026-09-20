@@ -43,6 +43,7 @@
     <string name="preference_clockwidget_favorites_part">Dock</string>
     <string name="preference_screen_search">Søg</string>
     <string name="preference_search_favorites">Favoritter</string>
+    <string name="preference_search_favorites_summary">Vis fastgjorte og ofte brugte elementer over app-gitter</string>
     <string name="preference_search_contacts_summary">Søg i kontakter på denne enhed</string>
     <string name="edit_favorites_dialog_pinned_sorted">Fastgjort – sorteret manuelt</string>
     <string name="edit_favorites_dialog_empty_section">Træk elementer hertil</string>

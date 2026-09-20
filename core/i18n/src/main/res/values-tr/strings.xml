@@ -361,6 +361,7 @@
     <string name="preference_screen_search">Arama</string>
     <string name="preference_screen_search_summary">Arama, etiketler, hariç tutulan sonuçlar</string>
     <string name="preference_search_favorites">Favoriler</string>
+    <string name="preference_search_favorites_summary">Sabitlenmiş ve sık kullanılan öğeleri uygulama ızgarasının üzerinde göster</string>
     <string name="preference_search_contacts">Kişiler</string>
     <string name="preference_search_contacts_summary">Bu cihazdaki kişileri ara</string>
     <string name="preference_search_appshortcuts">Uygulama kısayolları</string>
@@ -390,7 +391,7 @@
     <string name="preference_widgets_on_home_screen">Ana ekrandaki araçlar</string>
     <string name="preference_widgets_on_home_screen_summary">Widget\'ları ayrı bir sayfa yerine ana ekranda göster</string>
     <string name="preference_screen_homescreen">Ana ekran</string>
-    <string name="preference_screen_homescreen_summary">Saat, arama çubuğu, duvar kağıdı, sistem çubukları</string>
+    <string name="preference_screen_homescreen_summary">Arama çubuğu, duvar kağıdı, sistem çubukları</string>
     <string name="preference_screen_icons">Izgara ve simgeler</string>
     <string name="preference_screen_icons_summary">Izgara boyutu, simgeler, rozetler</string>
     <!-- %1$s: app name (Kvaesitso) -->

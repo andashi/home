@@ -68,6 +68,7 @@
     <string name="search_bar_placeholder">Szukaj</string>
     <string name="preference_screen_search">Wyszukiwanie</string>
     <string name="preference_search_favorites">Ulubione</string>
+    <string name="preference_search_favorites_summary">Pokazuje przypięte oraz często używane rzeczy nad listą aplikacji</string>
     <string name="default_websearch_2_name">YouTube</string>
     <string name="preference_category_license">Licencja</string>
     <string name="default_websearch_3_url">https://play.google.com/store/search\?q=${1}</string>
@@ -257,7 +258,7 @@
     <string name="edit">Edytuj</string>
     <string name="preference_debug_dump_heap_summary">Przechwytywanie migawki w celu analizy wykorzystania pamięci. Aplikacja zawiesi się do czasu zakończenia tego procesu.</string>
     <string name="preference_screen_homescreen">Ekran domowy</string>
-    <string name="preference_screen_homescreen_summary">Zegar, pasek wyszukiwania, tapeta, paski systemowe</string>
+    <string name="preference_screen_homescreen_summary">Pasek wyszukiwania, tapeta, paski systemowe</string>
     <string name="preference_gesture_home_button">Przycisk strony głównej/gest</string>
     <string name="preference_search_result_ordering_weight_factor_low">Stabilny</string>
     <string name="theme_color_scheme_palette_color">Paleta</string>
