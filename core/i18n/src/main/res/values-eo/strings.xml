@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="menu_open_file">Aperti</string>
     <string name="settings">Agordoj</string>
     <string name="menu_share">Kvoto</string>
     <string name="menu_uninstall">Malinstali</string>
@@ -35,5 +34,4 @@
     <string name="date_tomorrow">Morgaŭo</string>
     <string name="weather_condition_unknown">Nekonata</string>
     <string name="preference_search_apps_show_details_summary"></string>
-    <string name="preference_search_files"></string>
 </resources>

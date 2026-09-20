@@ -135,8 +135,6 @@ dependencies {
     implementation(libs.coil.svg)
 
     implementation(libs.koin.android)
-
-    implementation(project(":services:accounts"))
     implementation(project(":data:applications"))
     implementation(project(":data:appshortcuts"))
     implementation(project(":services:badges"))
@@ -152,14 +150,11 @@ dependencies {
     implementation(project(":data:plugins"))
     implementation(project(":data:themes"))
     implementation(project(":data:i18n"))
-    implementation(project(":data:files"))
     implementation(project(":core:i18n"))
     implementation(project(":services:icons"))
     implementation(project(":core:ktx"))
     implementation(project(":services:music"))
-    implementation(project(":libs:nextcloud"))
     implementation(project(":data:notifications"))
-    implementation(project(":libs:owncloud"))
     implementation(project(":core:permissions"))
     implementation(project(":core:profiles"))
     implementation(project(":core:preferences"))

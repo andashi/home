@@ -14,7 +14,6 @@ import de.mm20.launcher2.icons.StaticLauncherIcon
 import de.mm20.launcher2.ktx.tryStartActivity
 import de.mm20.launcher2.plugin.config.StorageStrategy
 import de.mm20.launcher2.search.Contact
-import de.mm20.launcher2.search.File
 import de.mm20.launcher2.search.SavableSearchable
 import de.mm20.launcher2.search.SearchableSerializer
 import de.mm20.launcher2.search.UpdatableSearchable

@@ -31,18 +31,6 @@
     <string name="wind_north_west">Noordwest</string>
     <string name="wind_north_north_west">Noordnoordwest</string>
     <string name="wikipedia_source">Via Wikipedia</string>
-    <string name="file_meta_title">Titel: %1$s</string>
-    <string name="file_meta_artist">Artiest: %1$s</string>
-    <string name="file_meta_album">Album: %1$s</string>
-    <string name="file_meta_duration">Duurtijd: %1$s</string>
-    <string name="file_meta_year">Jaar: %1$s</string>
-    <string name="file_meta_path">Pad: %1$s</string>
-    <string name="file_meta_type">Type: %1$s</string>
-    <string name="file_meta_dimensions">Afmetingen: %1$s</string>
-    <string name="file_meta_app_name">Applicatienaam: %1$s</string>
-    <string name="file_meta_app_min_sdk">Min SDK-versie: %1$s</string>
-    <string name="file_meta_owner">Eigenaar: %1$s</string>
-    <string name="file_meta_location">Locatie: %1$s</string>
     <string name="file_type_directory">Map</string>
     <string name="file_type_archive">Archiefbestand</string>
     <string name="file_type_android">Android pakketbestand</string>
@@ -58,7 +46,6 @@
     <string name="file_type_ebook">E-boek</string>
     <string name="file_type_form">Formulier</string>
     <string name="file_type_generic">%1$s bestand</string>
-    <string name="alert_delete_file">Het bestand %1$s wordt definitief verwijderd. Doorgaan\?</string>
     <string name="alert_delete_shortcut">De snelkoppeling %1$s wordt definitief verwijderd. Doorgaan\?</string>
     <string name="default_websearch_2_name">YouTube</string>
     <string name="default_websearch_3_name">Google Play</string>
@@ -86,8 +73,6 @@
     <string name="disclaimer">Disclaimer</string>
     <string name="menu_share">Delen</string>
     <string name="menu_share_apk_file">Installatiebestand</string>
-    <string name="alert_delete_directory">De map %1$s en al haar inhoud worden definitief verwijderd. Doorgaan\?</string>
-    <string name="menu_open_file">Openen</string>
     <string name="default_websearch_2_url">https://www.youtube.com/results\?search_query=${1}</string>
     <string name="wind_north_east">Noordoost</string>
     <string name="default_websearch_3_url">https://play.google.com/store/search\?q=${1}</string>
@@ -95,9 +80,6 @@
     <string name="websearch_dialog_replace_icon">Pictogram vervangen</string>
     <string name="websearch_dialog_custom_icon">Aangepast pictogram</string>
     <string name="wikipedia_url">https://nl.wikipedia.org</string>
-    <string name="file_meta_size">Grootte: %1$s</string>
-    <string name="file_meta_app_version">Versie: %1$s</string>
-    <string name="file_meta_app_pkgname">Pakketnaam: %1$s</string>
     <string name="file_type_source_code">Broncodebestand</string>
     <string name="edit_favorites_dialog_unpinned">Niet vastgezet - regelmatig gebruikt</string>
     <string name="file_type_drawing">Tekening</string>
@@ -154,7 +136,6 @@
     <string name="missing_permission_music_widget">Om het afspelen van media te beheren is toegang tot meldingen nodig</string>
     <string name="missing_permission_calendar_search_settings">Om de kalender te doorzoeken is toegang tot de kalender nodig</string>
     <string name="missing_permission_calendar_widget_settings">Het widget heeft toegang tot de kalender nodig</string>
-    <string name="missing_permission_file_search_settings_android10">Om lokale bestanden te doorzoeken is toegang tot alle bestanden nodig</string>
     <string name="preference_theme">Thema</string>
     <string name="preference_theme_light">Licht</string>
     <string name="preference_theme_dark">Donker</string>
@@ -184,7 +165,6 @@
     <string name="weather_condition_heavysnowshowers">Zware sneeuwbuien</string>
     <string name="missing_permission_contact_search_settings">Om contactpersonen te doorzoeken is toegang tot contacten nodig</string>
     <string name="weather_condition_heavyrainshowers">Zware regenbuien</string>
-    <string name="missing_permission_file_search_settings">Om bestanden op dit toestel te doorzoeken is toegang tot externe bestanden nodig</string>
     <string name="weather_condition_partlycloudy">Gedeeltelijk bewolkt</string>
     <string name="weather_no_data">Geen weergegevens beschikbaar</string>
     <string name="weather_widget_set_location">Locatie instellen</string>
@@ -207,7 +187,6 @@
     <string name="preference_icon_shape_hexagon">Zeshoek</string>
     <string name="menu_remove">Verwijderen</string>
     <string name="missing_permission_calendar_search">Geef toegang tot de kalender om afspraken te doorzoeken</string>
-    <string name="missing_permission_files_search">Geef toegang tot bestanden en media om bestanden op dit apparaat te doorzoeken</string>
     <string name="missing_permission_appshortcuts_search">Stel %1$s in als standaard startschermapplicatie om applicatiesnelkoppelingen te doorzoeken.</string>
     <string name="missing_permission_appshortcuts_create">Stel %1$s in als standaard startschermapplicatie om applicatiesnelkoppelingen te maken.</string>
     <string name="preference_screen_about_summary">Applicatie- en licentie-informatie</string>
@@ -245,7 +224,6 @@
     <string name="preference_icon_pack">Pictogrammenpakket</string>
     <string name="preference_category_system_bars">Systeembalken</string>
     <string name="preference_hide_status_bar">Statusbalk verbergen</string>
-    <string name="preference_summary_not_logged_in">Je bent niet ingelogd</string>
     <string name="preference_icon_shape_pentagon">Vijfhoek</string>
     <string name="preference_category_wallpaper">Achtergrond</string>
     <string name="preference_about_license">Deze applicatie is vrije software.</string>
@@ -255,7 +233,6 @@
     <string name="preference_icon_pack_summary_empty">Geen pictogrammenpakketten geïnstalleerd</string>
     <string name="preference_hide_nav_bar">Navigatiebalk verbergen</string>
     <string name="preference_screen_integrations_summary">Verbonden accounts en diensten beheren</string>
-    <string name="preference_signin_user">Ingelogd als %1$s</string>
     <string name="preference_dim_wallpaper">Achtergrond dimmen</string>
     <string name="preference_dim_wallpaper_summary">Dim de achtergrond bij donkere thema\'s</string>
     <string name="preference_blur_wallpaper">Achtergrond vervagen</string>
@@ -271,12 +248,6 @@
     <string name="preference_cloud_badges_summary">Toon een badge voor bestanden in de cloud</string>
     <string name="preference_shortcut_badges">Snelkoppelingbadges</string>
     <string name="preference_shortcut_badges_summary">Toon een badge om te tonen tot welke applicatie een snelkoppeling behoort</string>
-    <string name="preference_nextcloud_signin">Inloggen bij Nextcloud</string>
-    <string name="preference_nextcloud_signin_summary">Log in om jouw Nextcloudserver te doorzoeken</string>
-    <string name="preference_nextcloud">Nextcloud</string>
-    <string name="preference_owncloud">Owncloud</string>
-    <string name="preference_owncloud_signin">Inloggen bij Owncloud</string>
-    <string name="preference_owncloud_signin_summary">Log in om jouw Owncloudserver te doorzoeken</string>
     <string name="preference_about_telegram">Telegramgroep</string>
     <string name="preference_about_fdroid">F-Droid repository</string>
     <string name="preference_enforce_icon_shape">Vorm forceren</string>
@@ -316,7 +287,6 @@
     <string name="preference_clockwidget_favorites_part">Dock</string>
     <string name="preference_search_favorites">Favorieten</string>
     <string name="preference_search_favorites_summary">Vastgezette en vaak gebruikte items tonen boven het applicatieraster</string>
-    <string name="preference_search_files">Bestanden</string>
     <string name="preference_search_files_summary">Lokale en cloudbestanden doorzoeken</string>
     <string name="preference_search_contacts">Contacten</string>
     <string name="preference_search_contacts_summary">Contactpersonen op het apparaat doorzoeken</string>
@@ -332,7 +302,6 @@
     <string name="preference_search_websites">Websites</string>
     <string name="preference_search_websites_summary">Voorbeeld van een website tonen als de zoekterm een URL is</string>
     <string name="preference_search_calculator">Rekenmachine</string>
-    <string name="preference_search_nextcloud">Nextcloud</string>
     <string name="preference_search_currencyconverter_summary">Periodiek wisselkoersen downloaden om munteenheden te converteren</string>
     <string name="preference_search_wikipedia">Wikipedia</string>
     <string name="preference_screen_buildinfo">Buildinformatie</string>
@@ -343,9 +312,7 @@
     <string name="preference_hidden_items">Uitgesloten zoekresultaten</string>
     <string name="preference_hidden_items_summary">Uitgesloten applicaties en zoekresultaten beheren</string>
     <string name="preference_wikipedia_customurl">Wikipedia URL</string>
-    <string name="no_account_nextcloud">Je bent nog niet ingelogd bij Nextcloud</string>
     <string name="preference_widgets_edit_button_summary">Knop tonen om widgets toe te voegen, te verwijderen of te verplaatsen</string>
-    <string name="connect_account">Account verbinden</string>
     <string name="icon_picker_default_icon">Standaard</string>
     <string name="frequently_used_rows">Aantal rijen</string>
     <string name="icon_picker_suggestions">Suggesties</string>
@@ -353,10 +320,6 @@
     <string name="preference_search_currencyconverter">Munteenhedenconversie</string>
     <string name="preference_search_calculator_summary">Wiskundige uitdrukkingen evalueren</string>
     <string name="preference_search_unitconverter">Eenhedenconversie</string>
-    <string name="preference_search_localfiles">Lokale bestanden</string>
-    <string name="preference_search_localfiles_summary">Documenten, foto\'s en andere bestanden op dit apparaat doorzoeken</string>
-    <string name="preference_search_cloud_summary">Bestanden van %1$s doorzoeken</string>
-    <string name="preference_search_owncloud">Owncloud</string>
     <string name="preference_search_bar_auto_focus_summary">Altijd het toetsenbord tonen wanneer applicatielijst geopend wordt</string>
     <string name="apps_profile_main">Persoonlijk</string>
     <string name="preference_calendar_calendars">Kalenders</string>
@@ -365,7 +328,6 @@
         <item quantity="one">Volledig opgeladen binnen %1$s minuut</item>
         <item quantity="other">Volledig opgeladen binnen %1$s minuten</item>
     </plurals>
-    <string name="no_account_owncloud">Je bent nog niet ingelogd bij Owncloud</string>
     <string name="icon_picker_search_icon">Pictogrammenpaketten doorzoeken</string>
     <string name="apps_profile_work">Werk</string>
     <string name="favorites">Favorieten</string>
@@ -606,7 +568,6 @@
     <string name="plugin_state_error">Deze plug-in werkt niet correct</string>
     <string name="plugin_state_setup_required">Je moet eerst deze plug-in instellen</string>
     <string name="plugin_action_setup">Instellen</string>
-    <string name="plugin_type_filesearch">Bestanden</string>
     <string name="plugin_type_weather">Aanbieder van weergegevens</string>
     <string name="plugin_weather_provider_enable">Instellen als aanbieder van weer</string>
     <string name="plugin_weather_provider_enabled">Momenteel ingesteld als aanbieder van weer</string>
@@ -690,7 +651,6 @@
     <string name="poi_category_cricket">Cricketveld</string>
     <string name="poi_category_monument">Monument</string>
     <string name="poi_category_brunch_restaurant">Brunch restaurant</string>
-    <string name="preference_signout">Afmelden</string>
     <string name="poi_category_car_rental">Autoverhuur</string>
     <string name="poi_category_car_sharing">Autodelen</string>
     <string name="customize_item_label">Label</string>

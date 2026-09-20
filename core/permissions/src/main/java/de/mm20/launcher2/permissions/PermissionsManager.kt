@@ -62,7 +62,6 @@ enum class PermissionGroup {
     Tasks,
     Location,
     Contacts,
-    ExternalStorage,
     Notifications,
     AppShortcuts,
     Accessibility,
@@ -84,9 +83,6 @@ internal class PermissionsManagerImpl(
     )
     private val contactsPermissionState = MutableStateFlow(
         checkPermissionOnce(PermissionGroup.Contacts)
-    )
-    private val externalStoragePermissionState = MutableStateFlow(
-        checkPermissionOnce(PermissionGroup.ExternalStorage)
     )
     private val locationPermissionState = MutableStateFlow(
         checkPermissionOnce(PermissionGroup.Location)
@@ -135,23 +131,6 @@ internal class PermissionsManagerImpl(
                     contactPermissions,
                     permissionGroup.ordinal
                 )
-            }
-
-            PermissionGroup.ExternalStorage -> {
-                if (isAtLeastApiLevel(Build.VERSION_CODES.R)) {
-                    val intent =
-                        Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION).also {
-                            it.data = "package:${context.packageName}".toUri()
-                        }
-                    context.tryStartActivity(intent)
-                    pendingPermissionRequests.add(PermissionGroup.ExternalStorage)
-                } else {
-                    ActivityCompat.requestPermissions(
-                        context,
-                        externalStoragePermissions,
-                        permissionGroup.ordinal
-                    )
-                }
             }
 
             PermissionGroup.Notifications -> {
@@ -213,14 +192,6 @@ internal class PermissionsManagerImpl(
                 contactPermissions.all { context.checkPermission(it) }
             }
 
-            PermissionGroup.ExternalStorage -> {
-                if (isAtLeastApiLevel(Build.VERSION_CODES.R)) {
-                    Environment.isExternalStorageManager()
-                } else {
-                    externalStoragePermissions.all { context.checkPermission(it) }
-                }
-            }
-
             PermissionGroup.Notifications -> {
                 notificationsPermissionState.value
             }
@@ -251,7 +222,6 @@ internal class PermissionsManagerImpl(
             PermissionGroup.Tasks -> tasksPermissionState
             PermissionGroup.Location -> locationPermissionState
             PermissionGroup.Contacts -> contactsPermissionState
-            PermissionGroup.ExternalStorage -> externalStoragePermissionState
             PermissionGroup.Notifications -> notificationsPermissionState
             PermissionGroup.AppShortcuts -> appShortcutsPermissionState
             PermissionGroup.Accessibility -> accessibilityPermissionState
@@ -272,7 +242,6 @@ internal class PermissionsManagerImpl(
             PermissionGroup.Tasks -> tasksPermissionState.value = granted
             PermissionGroup.Location -> locationPermissionState.value = granted
             PermissionGroup.Contacts -> contactsPermissionState.value = granted
-            PermissionGroup.ExternalStorage -> externalStoragePermissionState.value = granted
             PermissionGroup.Notifications -> notificationsPermissionState.value = granted
             PermissionGroup.AppShortcuts -> appShortcutsPermissionState.value = granted
             PermissionGroup.Accessibility -> accessibilityPermissionState.value = granted
@@ -282,7 +251,6 @@ internal class PermissionsManagerImpl(
     }
 
     override fun onResume() {
-        externalStoragePermissionState.value = checkPermissionOnce(PermissionGroup.ExternalStorage)
         appShortcutsPermissionState.value = checkPermissionOnce(PermissionGroup.AppShortcuts)
         manageProfilesPermissionState.value = checkPermissionOnce(PermissionGroup.ManageProfiles)
     }
@@ -303,10 +271,6 @@ internal class PermissionsManagerImpl(
             Manifest.permission.ACCESS_FINE_LOCATION
         )
         private val contactPermissions = arrayOf(Manifest.permission.READ_CONTACTS)
-        private val externalStoragePermissions = arrayOf(
-            Manifest.permission.READ_EXTERNAL_STORAGE,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE
-        )
         private val callPermissions = arrayOf(Manifest.permission.CALL_PHONE)
     }
 }

@@ -4,7 +4,6 @@
     <string name="menu_back">뒤로</string>
     <string name="menu_app_info">앱 정보</string>
     <string name="menu_launch">앱 열기</string>
-    <string name="menu_open_file">열기</string>
     <string name="menu_delete">삭제</string>
     <string name="menu_remove">제거</string>
     <string name="search_bar_placeholder">검색</string>
@@ -24,18 +23,6 @@
     <string name="wind_west_north_west">서북서풍</string>
     <string name="wind_north_west">북서풍</string>
     <string name="wikipedia_source">위키백과에서 발췌</string>
-    <string name="file_meta_title">제목: %1$s</string>
-    <string name="file_meta_artist">아티스트: %1$s</string>
-    <string name="file_meta_duration">길이: %1$s</string>
-    <string name="file_meta_year">연도: %1$s</string>
-    <string name="file_meta_size">크기: %1$s</string>
-    <string name="file_meta_path">경로: %1$s</string>
-    <string name="file_meta_type">형식: %1$s</string>
-    <string name="file_meta_app_name">앱 이름: %1$s</string>
-    <string name="file_meta_app_version">버전: %1$s</string>
-    <string name="file_meta_app_pkgname">패키지 이름: %1$s</string>
-    <string name="file_meta_app_min_sdk">최소 SDK 버전: %1$s</string>
-    <string name="file_meta_owner">소유자: %1$s</string>
     <string name="file_type_directory">디렉터리</string>
     <string name="file_type_archive">압축 파일</string>
     <string name="file_type_android">Android 패키지 파일</string>
@@ -90,13 +77,8 @@
     <string name="wind_west_south_west">서남서풍</string>
     <string name="wind_north_north_west">북북서풍</string>
     <string name="wikipedia_url">https://ko.wikipedia.org</string>
-    <string name="file_meta_album">앨범: %1$s</string>
-    <string name="file_meta_dimensions">해상도: %1$s</string>
-    <string name="file_meta_location">위치: %1$s</string>
     <string name="file_type_music">음악 파일</string>
     <string name="file_type_none">파일</string>
-    <string name="alert_delete_directory">%1$s 디렉터리 및 하위 항목을 영구적으로 삭제합니다. 계속하시겠습니까\?</string>
-    <string name="alert_delete_file">%1$s 파일을 영구적으로 삭제합니다. 계속하시겠습니까\?</string>
     <string name="alert_delete_shortcut">%1$s 바로 가기를 영구적으로 제거합니다. 계속하시겠습니까\?</string>
     <string name="default_websearch_2_name">YouTube</string>
     <string name="default_websearch_2_url">https://www.youtube.com/results\?search_query=${1}</string>
@@ -116,7 +98,6 @@
     <string name="weather_condition_fog">안개</string>
     <string name="menu_customize">사용자 정의</string>
     <string name="missing_permission_calendar_widget">다가오는 약속과 일정을 여기에 표시하려면 캘린더 권한이 필요합니다.</string>
-    <string name="missing_permission_files_search">이 기기에 있는 사진이나 문서, 미디어를 검색하려면 저장공간 권한이 필요합니다.</string>
     <string name="missing_permission_contact_search">연락처에서 항목을 검색하려면 연락처 권한이 필요합니다.</string>
     <string name="missing_permission_calendar_search">캘린더에서 항목을 검색하려면 캘린더 권한이 필요합니다.</string>
     <string name="grant_permission">허용</string>
@@ -130,8 +111,6 @@
     <string name="notes_widget_action_dismiss">취소</string>
     <string name="notes_widget_dismissed">메모를 취소했습니다.</string>
     <string name="widget_action_replace">교체</string>
-    <string name="preference_nextcloud">Nextcloud</string>
-    <string name="preference_owncloud">Owncloud</string>
     <string name="edit_favorites_dialog_pinned_unsorted">고정됨 – 자동 정렬됨</string>
     <string name="edit_favorites_dialog_empty_section">여기에 항목 끌어다 놓기</string>
     <string name="preference_about_telegram">텔레그램 그룹</string>
@@ -212,24 +191,19 @@
     <string name="tag_name">태그 이름</string>
     <string name="preference_screen_gestures">제스처</string>
     <string name="gesture_action_notifications">알림 서랍 열기</string>
-    <string name="preference_owncloud_signin">Owncloud에 로그인</string>
     <string name="nextcloud_server_invalid_url">이 URL에는 Nextcloud가 설치되어 있지 않습니다.</string>
     <string name="owncloud_server_invalid_url">이 URL에는 Owncloud가 설치되어 있지 않습니다.</string>
-    <string name="preference_owncloud_signin_summary">로그인하여 Owncloud 항목 검색</string>
     <string name="disclaimer">면책 조항</string>
     <string name="preference_screen_debug_summary">문제 해결 도구</string>
     <string name="calendar_widget_no_events">오늘 일정 없음</string>
     <string name="weather_condition_lightsnow">눈 조금</string>
     <string name="weather_condition_rainshowers">소나기</string>
     <string name="weather_condition_wind">바람</string>
-    <string name="preference_summary_not_logged_in">로그인하지 않음</string>
-    <string name="preference_signin_user">%1$s 사용자로 로그인됨</string>
     <string name="missing_permission_appshortcuts_create">바로 가기를 만들기 위해서는 %1$s 앱을 기본 홈 앱으로 지정해야 합니다.</string>
     <string name="preference_theme_light">밝은 테마</string>
     <string name="preference_theme_dark">어두운 테마</string>
     <string name="preference_theme">테마</string>
     <string name="preference_screen_colors">색상 구성</string>
-    <string name="preference_nextcloud_signin">Nextcloud에 로그인</string>
     <string name="preference_weather_provider">공급자</string>
     <string name="preference_search_calculator_summary">수학 식 계산</string>
     <string name="preference_cards_stroke_width">획 너비</string>
@@ -241,16 +215,13 @@
     <string name="search_action_alarm">알람 설정</string>
     <string name="preference_search_calendar_summary">다가올 약속 및 일정 검색</string>
     <string name="preference_search_calendar">캘린더</string>
-    <string name="preference_search_files">파일</string>
     <string name="preference_search_files_summary">로컬 및 클라우드 파일 검색</string>
     <string name="preference_search_favorites_summary">앱 격자 위에 고정한 항목 및 자주 사용한 항목 표시</string>
     <string name="preference_search_unitconverter_summary">사용법: \'1.5 kg\' 또는 \'4 cm &gt;&gt; in\'</string>
     <string name="preference_search_currencyconverter">환율 변환</string>
     <string name="preference_search_websites_summary">검색어가 URL이면 해당 웹사이트의 미리보기 표시</string>
     <string name="preference_search_unitconverter">단위 변환</string>
-    <string name="preference_search_localfiles">로컬 파일</string>
     <string name="preference_calendar_calendars">캘린더</string>
-    <string name="no_account_nextcloud">아직 Nextcloud 계정을 연결하지 않았습니다.</string>
     <plurals name="battery_part_remaining_charge_time">
         <item quantity="other">%1$s분 뒤 충전 완료</item>
     </plurals>
@@ -282,15 +253,12 @@
     <string name="preference_screen_appearance_summary">앱 생김새 사용자 정의</string>
     <string name="preference_screen_about_summary">앱 및 라이선스 정보</string>
     <string name="preference_screen_icons">격자 및 아이콘</string>
-    <string name="no_account_owncloud">아직 Owncloud 계정을 연결하지 않았습니다.</string>
     <string name="favorites">즐겨찾기</string>
     <string name="frequently_used_show_in_favorites">즐겨찾기에 표시</string>
     <string name="frequently_used_rows">줄 수</string>
     <string name="search_action_event">일정 추가</string>
     <string name="search_action_open_url">웹사이트 보기</string>
     <string name="preference_search_calculator">계산기</string>
-    <string name="preference_search_nextcloud">Nextcloud</string>
-    <string name="preference_search_cloud_summary">%1$s의 파일 검색</string>
     <string name="preference_screen_buildinfo">빌드 정보</string>
     <string name="preference_screen_buildinfo_summary">이 빌드에 대한 추가 정보</string>
     <string name="preference_search_bar_style_summary">검색 표시줄 외관 사용자 정의</string>
@@ -312,7 +280,6 @@
     <string name="preference_colors_default">기본</string>
     <string name="preference_colors_bw">흑백</string>
     <string name="missing_permission_calendar_search_settings">캘린더를 검색하기 위해 캘린더 권한이 필요합니다.</string>
-    <string name="preference_nextcloud_signin_summary">로그인하여 Nextcloud 항목 검색</string>
     <string name="preference_about_license">이 앱은 자유 소프트웨어입니다.</string>
     <string name="preference_about_license_summary">GNU 일반 공중 사용 허가서(GPL) 3.0을 따름</string>
     <string name="preference_clock_widget_fill_height">화면 높이 맞춤</string>
@@ -329,11 +296,9 @@
 \n
 \n마지막 업데이트: %1$s</string>
     <string name="preference_search_currencyconverter_summary">주기적으로 현재 환율을 다운로드하여 환율 변환</string>
-    <string name="preference_search_localfiles_summary">이 기기에 저장된 문서, 사진 및 기타 파일 검색</string>
     <string name="calendar_widget_pinned_events">다가올 일정</string>
     <string name="weather_condition_heavyrain">많은 비</string>
     <string name="weather_condition_lightrain">비 조금</string>
-    <string name="preference_search_owncloud">Owncloud</string>
     <string name="weather_condition_cloudy">흐림</string>
     <string name="preference_screen_tags_summary">태그 및 태그한 항목 관리</string>
     <string name="missing_permission_auto_location">자동으로 위치를 찾기 위해 위치 권한이 필요합니다.</string>
@@ -342,7 +307,6 @@
     <string name="preference_widgets_edit_button_summary">위젯을 추가, 제거하거나 정렬할 수 있는 버튼 표시</string>
     <string name="missing_permission_contact_search_settings">연락처를 검색하기 위해 연락처 권한이 필요합니다.</string>
     <string name="missing_permission_appshortcuts_search">앱 바로 가기를 검색하려면 %1$s 앱을 기본 홈 앱으로 지정해야 합니다.</string>
-    <string name="connect_account">계정 연결</string>
     <string name="icon_picker_filter_all_packs">모든 아이콘 팩</string>
     <string name="preference_font">글꼴</string>
     <string name="search_action_contact">연락처에 추가</string>

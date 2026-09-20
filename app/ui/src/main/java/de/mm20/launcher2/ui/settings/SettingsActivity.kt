@@ -75,8 +75,6 @@ import de.mm20.launcher2.ui.settings.favorites.FavoritesSettingsRoute
 import de.mm20.launcher2.ui.settings.favorites.FavoritesSettingsScreen
 import de.mm20.launcher2.ui.settings.feed.FeedIntegrationSettingsRoute
 import de.mm20.launcher2.ui.settings.feed.FeedIntegrationSettingsScreen
-import de.mm20.launcher2.ui.settings.filesearch.FileSearchSettingsRoute
-import de.mm20.launcher2.ui.settings.filesearch.FileSearchSettingsScreen
 import de.mm20.launcher2.ui.settings.filterbar.FilterBarSettingsRoute
 import de.mm20.launcher2.ui.settings.filterbar.FilterBarSettingsScreen
 import de.mm20.launcher2.ui.settings.gestures.GestureSettingsScreen
@@ -103,12 +101,8 @@ import de.mm20.launcher2.ui.settings.main.MainRoute
 import de.mm20.launcher2.ui.settings.main.MainSettingsScreen
 import de.mm20.launcher2.ui.settings.media.MediaIntegrationSettingsRoute
 import de.mm20.launcher2.ui.settings.media.MediaIntegrationSettingsScreen
-import de.mm20.launcher2.ui.settings.nextcloud.NextcloudSettingsRoute
-import de.mm20.launcher2.ui.settings.nextcloud.NextcloudSettingsScreen
 import de.mm20.launcher2.ui.settings.osm.OsmSettingsRoute
 import de.mm20.launcher2.ui.settings.osm.OsmSettingsScreen
-import de.mm20.launcher2.ui.settings.owncloud.OwncloudSettingsRoute
-import de.mm20.launcher2.ui.settings.owncloud.OwncloudSettingsScreen
 import de.mm20.launcher2.ui.settings.plugins.PluginSettingsRoute
 import de.mm20.launcher2.ui.settings.plugins.PluginSettingsScreen
 import de.mm20.launcher2.ui.settings.plugins.PluginsSettingsRoute
@@ -222,9 +216,6 @@ class SettingsActivity : BaseActivity() {
             entry<OsmSettingsRoute> {
                 OsmSettingsScreen()
             }
-            entry<FileSearchSettingsRoute> {
-                FileSearchSettingsScreen()
-            }
             entry<CalendarSearchSettingsRoute> {
                 CalendarSearchSettingsScreen()
             }
@@ -260,12 +251,6 @@ class SettingsActivity : BaseActivity() {
             }
             entry<IntegrationsSettingsRoute> {
                 IntegrationsSettingsScreen()
-            }
-            entry<NextcloudSettingsRoute> {
-                NextcloudSettingsScreen()
-            }
-            entry<OwncloudSettingsRoute> {
-                OwncloudSettingsScreen()
             }
             entry<TasksIntegrationSettingsRoute> {
                 TasksIntegrationSettingsScreen()

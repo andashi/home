@@ -27,7 +27,6 @@
     <string name="menu_share_store_link">%1$s リンク</string>
     <string name="menu_customize">カスタマイズ</string>
     <string name="menu_launch">開く</string>
-    <string name="menu_open_file">開く</string>
     <string name="menu_app_info">アプリ情報</string>
     <string name="menu_back">戻る</string>
     <string name="menu_favorites_unpin">ピン解除</string>
@@ -74,18 +73,6 @@
     <string name="preference_icon_shape_square">スクエア</string>
     <string name="preference_clockwidget_alarm_part">アラーム</string>
     <string name="wikipedia_source">Wikipedia から</string>
-    <string name="file_meta_title">タイトル: %1$s</string>
-    <string name="file_meta_artist">アーティスト: %1$s</string>
-    <string name="file_meta_size">サイズ: %1$s</string>
-    <string name="file_meta_duration">長さ: %1$s</string>
-    <string name="file_meta_year">年: %1$s</string>
-    <string name="file_meta_path">パス: %1$s</string>
-    <string name="file_meta_type">タイプ: %1$s</string>
-    <string name="file_meta_dimensions">解像度: %1$s</string>
-    <string name="file_meta_app_version">バージョン: %1$s</string>
-    <string name="file_meta_app_pkgname">パッケージ名: %1$s</string>
-    <string name="file_meta_app_min_sdk">最小 SDK バージョン: %1$s</string>
-    <string name="file_meta_owner">所有者: %1$s</string>
     <string name="file_type_directory">ディレクトリ</string>
     <string name="file_type_source_code">ソースコードファイル</string>
     <string name="file_type_document">文書ファイル</string>
@@ -97,8 +84,6 @@
     <string name="file_type_image">画像</string>
     <string name="file_type_none">ファイル</string>
     <string name="file_type_presentation">プレゼンテーション</string>
-    <string name="alert_delete_file">ファイル %1$s は永久に削除されます。続行しますか？</string>
-    <string name="alert_delete_directory">ディレクトリ %1$s とそのすべての内容は永久に削除されます。続行しますか？</string>
     <string name="alert_delete_shortcut">ショートカット %1$s は永久に削除されます。続行しますか？</string>
     <string name="widget_add_widget">ウィジェットを追加</string>
     <string name="owncloud_username">ユーザー名</string>
@@ -117,7 +102,6 @@
     <string name="weather_condition_lightrainshowers">小雨</string>
     <string name="weather_condition_lightrain">小雨</string>
     <string name="weather_condition_heavysleet">激しいみぞれ</string>
-    <string name="file_meta_location">場所: %1$s</string>
     <string name="calendar_widget_pinned_events">まもなく</string>
     <plurals name="calendar_widget_running_events">
         <item quantity="other">%1$d 件の継続しているイベント</item>
@@ -135,8 +119,6 @@
     <string name="nextcloud_server_url">Nextcloud サーバーの URL</string>
     <string name="owncloud_server_invalid_url">この URL は、有効な ownCloud のインストールを指定していません</string>
     <string name="owncloud_password">パスワード</string>
-    <string name="file_meta_album">アルバム: %1$s</string>
-    <string name="file_meta_app_name">アプリ名: %1$s</string>
     <string name="file_type_archive">アーカイブファイル</string>
     <string name="file_type_android">Android パッケージファイル</string>
     <string name="file_type_ebook">電子ブック</string>

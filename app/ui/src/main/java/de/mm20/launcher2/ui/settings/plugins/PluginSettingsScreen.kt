@@ -77,10 +77,6 @@ fun PluginSettingsScreen(pluginId: String) {
         null,
         minActiveState = Lifecycle.State.RESUMED
     )
-    val filePlugins by viewModel.filePlugins.collectAsStateWithLifecycle(
-        emptyList(),
-        minActiveState = Lifecycle.State.RESUMED
-    )
 
     val locationPlugins by viewModel.locationPlugins.collectAsStateWithLifecycle(
         emptyList(),
@@ -108,10 +104,6 @@ fun PluginSettingsScreen(pluginId: String) {
                 viewModel.setPluginEnabled(true)
             }
         }
-
-    val enabledFileSearchPlugins by viewModel.enabledFileSearchPlugins.collectAsStateWithLifecycle(
-        null
-    )
 
     val enabledContactPlugins by viewModel.enabledContactPlugins.collectAsStateWithLifecycle(
         null
@@ -284,61 +276,6 @@ fun PluginSettingsScreen(pluginId: String) {
                     Column(
                         modifier = Modifier.verticalScroll(rememberScrollState())
                     ) {
-                        if (filePlugins.isNotEmpty()) {
-                            PreferenceCategory(
-                                stringResource(R.string.plugin_type_filesearch),
-                                iconPadding = false,
-                            ) {
-                                for (plugin in filePlugins) {
-                                    val state = plugin.state
-                                    GuardedPreference(
-                                        locked = state is PluginState.Error || state is PluginState.SetupRequired,
-                                        icon = if (state is PluginState.Error) R.drawable.error_24px else R.drawable.info_24px,
-                                        description = when (state) {
-                                            is PluginState.Error -> {
-                                                stringResource(R.string.plugin_state_error)
-                                            }
-
-                                            is PluginState.SetupRequired -> {
-                                                state.message
-                                                    ?: stringResource(R.string.plugin_state_setup_required)
-                                            }
-
-                                            else -> ""
-                                        },
-                                        onUnlock = if (state is PluginState.SetupRequired) {
-                                            {
-
-                                                try {
-                                                    state.setupActivity.sendWithBackgroundPermission(
-                                                        context
-                                                    )
-                                                } catch (e: PendingIntent.CanceledException) {
-                                                    CrashReporter.logException(e)
-                                                }
-                                            }
-                                        } else null
-                                    ) {
-                                        SwitchPreference(
-                                            title = plugin.plugin.label,
-                                            enabled = enabledFileSearchPlugins != null && state is PluginState.Ready,
-                                            summary = (state as? PluginState.Ready)?.text
-                                                ?: (state as? PluginState.SetupRequired)?.message
-                                                ?: plugin.plugin.description,
-                                            value = enabledFileSearchPlugins?.contains(plugin.plugin.authority) == true && state is PluginState.Ready,
-                                            onValueChanged = {
-                                                viewModel.setFileSearchPluginEnabled(
-                                                    plugin.plugin.authority,
-                                                    it
-                                                )
-                                            },
-                                            iconPadding = false,
-                                        )
-                                    }
-
-                                }
-                            }
-                        }
                         if (contactPlugins.isNotEmpty()) {
                             PreferenceCategory(
                                 stringResource(R.string.plugin_type_contacts),

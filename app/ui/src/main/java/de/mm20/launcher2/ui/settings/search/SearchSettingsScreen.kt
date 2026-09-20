@@ -39,7 +39,6 @@ import de.mm20.launcher2.ui.settings.calendarsearch.CalendarProviderSettingsRout
 import de.mm20.launcher2.ui.settings.calendarsearch.CalendarSearchSettingsRoute
 import de.mm20.launcher2.ui.settings.contacts.ContactsSettingsRoute
 import de.mm20.launcher2.ui.settings.favorites.FavoritesSettingsRoute
-import de.mm20.launcher2.ui.settings.filesearch.FileSearchSettingsRoute
 import de.mm20.launcher2.ui.settings.filterbar.FilterBarSettingsRoute
 import de.mm20.launcher2.ui.settings.hiddenitems.HiddenItemsSettingsRoute
 import de.mm20.launcher2.ui.settings.locations.LocationsSettingsRoute
@@ -123,15 +122,6 @@ fun SearchSettingsScreen() {
         }
         item {
             PreferenceCategory {
-
-                Preference(
-                    title = stringResource(R.string.preference_search_files),
-                    summary = stringResource(R.string.preference_search_files_summary),
-                    icon = R.drawable.description_24px,
-                    onClick = {
-                        backStack.add(FileSearchSettingsRoute)
-                    }
-                )
 
                 if (hasContactPlugins != false) {
                     Preference(

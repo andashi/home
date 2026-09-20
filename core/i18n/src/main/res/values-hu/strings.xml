@@ -19,25 +19,10 @@
     <string name="help">Súgó</string>
     <string name="wallpaper">Háttérkép</string>
     <string name="menu_share_store_link">%1$s hivatkozás</string>
-    <string name="menu_open_file">Megnyitás</string>
     <string name="menu_calendar_open_externally">Megnyitás a naptár alkalmazásban</string>
     <string name="wind_north">Észak</string>
     <string name="wind_north_east">Északkelet</string>
     <string name="wikipedia_source">Forrás: Wikipédia</string>
-    <string name="file_meta_title">Cím: %1$s</string>
-    <string name="file_meta_artist">Előadó: %1$s</string>
-    <string name="file_meta_album">Album: %1$s</string>
-    <string name="file_meta_duration">Időtartam: %1$s</string>
-    <string name="file_meta_year">Év: %1$s</string>
-    <string name="file_meta_size">Méret: %1$s</string>
-    <string name="file_meta_path">Hely: %1$s</string>
-    <string name="file_meta_type">Típus: %1$s</string>
-    <string name="file_meta_app_name">Alkalmazás neve: %1$s</string>
-    <string name="file_meta_app_version">Verzió: %1$s</string>
-    <string name="file_meta_app_pkgname">Csomag neve: %1$s</string>
-    <string name="file_meta_app_min_sdk">Minimum SDK-verzió: %1$s</string>
-    <string name="file_meta_owner">Tulajdonos: %1$s</string>
-    <string name="file_meta_location">Hely: %1$s</string>
     <string name="file_type_directory">Könyvtár</string>
     <string name="file_type_android">Android csomagfájl</string>
     <string name="file_type_source_code">Forráskód-fájl</string>
@@ -52,7 +37,6 @@
     <string name="file_type_ebook">E-könyv</string>
     <string name="file_type_drawing">Rajz</string>
     <string name="file_type_generic">%1$s fájl</string>
-    <string name="alert_delete_file">A(z) %1$s fájl véglegesen törlődni fog. Folytatja?</string>
     <string name="alert_delete_shortcut">A(z) %1$s parancsikon véglegesen el lesz távolítva. Folytatja?</string>
     <string name="default_websearch_3_url">https://play.google.com/store/search\?q=${1}</string>
     <string name="websearch_dialog_replace_icon">Ikon cseréje</string>
@@ -75,7 +59,6 @@
     <string name="file_type_archive">Archivált fájl</string>
     <string name="file_type_presentation">Bemutató</string>
     <string name="file_type_form">Űrlap</string>
-    <string name="alert_delete_directory">A(z) %1$s könyvtár és annak teljes tartalma véglegesen törlődni fog. Folytatja?</string>
     <string name="default_websearch_2_name">YouTube</string>
     <string name="default_websearch_2_url">https://www.youtube.com/results\?search_query=${1}</string>
     <string name="default_websearch_3_name">Google Play</string>
@@ -152,7 +135,6 @@
     <string name="weather_condition_lightsnow">Enyhe havazás</string>
     <string name="weather_condition_heavysleetshowersandthunder">Heves havas eső záporok és mennydörgés</string>
     <string name="file_type_launchertheme">%1$s téma</string>
-    <string name="file_meta_dimensions">Méretek: %1$s</string>
     <string name="websearch_dialog_url_error">A(z) „${1}” helyőrző hiányzik ebből az webcímből</string>
     <string name="websearch_dialog_query_encoding_form">application/x-www-form-urlencoded</string>
     <string name="weather_condition_snow">Hó</string>
@@ -194,9 +176,7 @@
     <string name="preference_category_licenses">Nyílt forráskódú licencek</string>
     <string name="preference_icon_shape_hexagon">Hatszög</string>
     <string name="preference_category_searchbar">Keresősáv</string>
-    <string name="missing_permission_file_search_settings">A fájlok kereséséhez tárhelyengedély szükséges ezen az eszközön</string>
     <string name="widget_config_calendar_missing_calendars_hint">Nem találja a naptárakat?</string>
-    <string name="missing_permission_file_search_settings_android10">A helyi fájlok kereséséhez az összes fájlhoz való hozzáférés szükséges</string>
     <string name="missing_permission_contact_search">A névjegyek kereséséhez névjegyengedély szükséges</string>
     <string name="preference_category_debug">Hibakeresés</string>
     <string name="preference_category_debug_tools">Eszközök</string>
@@ -281,8 +261,6 @@
     <string name="preference_system_bar_icons_light">Világos</string>
     <string name="preference_system_bar_icons_dark">Sötét</string>
     <string name="preference_hide_status_bar">Állapotsor elrejtése</string>
-    <string name="preference_signin_user">Bejelentkezve %1$s néven</string>
-    <string name="preference_summary_not_logged_in">Ön nincs bejelentkezve</string>
     <string name="preference_icon_shape_pentagon">Ötszög</string>
     <string name="preference_category_wallpaper">Háttérkép</string>
     <string name="weather_condition_sleet">Havas eső</string>
@@ -291,7 +269,6 @@
     <string name="missing_permission_calendar_search_settings">A naptárban való kereséshez naptárengedély szükséges</string>
     <string name="weather_condition_heavyrainshowersandthunder">Heves eső záporok és mennydörgés</string>
     <string name="weather_condition_heavysleetandthunder">Heves havas eső és mennydörgés</string>
-    <string name="missing_permission_files_search">A fájlok kereséséhez tárhelyengedély szükséges ezen az eszközön</string>
     <string name="missing_permission_appshortcuts_create">Állítsa be a(z) %1$s alkalmazást alapértelmezett indítóként a parancsikonok létrehozásához.</string>
     <string name="import_theme_error">A kiválasztott fájlt nem lehetett beolvasni. Győződjön meg arról, hogy érvényes témát (*.kvtheme) választott ki és hogy a fájl nem-e sérült.</string>
     <string name="preference_hidden_items_reveal_button">Kibontásgomb megjelenítése</string>
@@ -353,11 +330,9 @@
     <string name="preference_shortcut_badges_summary">Egy jelvény megjelenítése, amely azt jelzi, hogy egy parancsikon melyik alkalmazáshoz tartozik</string>
     <string name="app_widget_loading_failed">Az alkalmazásmodult nem sikerült betölteni</string>
     <string name="preference_screen_search">Keresés</string>
-    <string name="preference_nextcloud_signin_summary">A Nextcloud kiszolgálón való kereséshez be kell jelentkezni</string>
     <string name="preference_screen_debug_summary">Hibaelhárítási eszközök</string>
     <string name="preference_category_widgets">Modulok</string>
     <string name="preference_clockwidget_music_part_summary">Médiavezérlők megjelenítése, ha aktív médiamunkamenet van</string>
-    <string name="plugin_type_filesearch">Fájlok</string>
     <string name="preference_search_result_ordering_weight_factor_high">Változtatható</string>
     <string name="preference_search_currencyconverter">Valutaváltó</string>
     <string name="preference_search_bar_auto_focus_summary">Billentyűzet automatikus megjelenítése az alkalmazásfiók megnyitásakor</string>
@@ -371,7 +346,6 @@
     <string name="plugin_state_error">Ez a bővítmény nem működik megfelelően</string>
     <string name="preference_screen_search_summary">Keresés, címkék, kizárt eredmények</string>
     <string name="preference_search_files_summary">Keresés helyi- és felhőfájlok között</string>
-    <string name="preference_search_cloud_summary">Keresés a(z) %1$s fájljai között</string>
     <string name="preference_favorites_frequently_used_summary">Gyakran használt elemek megjelenítése a kedvencek között</string>
     <plurals name="tag_selected_items">
         <item quantity="one">%1$d kiválasztott elem</item>
@@ -379,7 +353,6 @@
     </plurals>
     <string name="open_search_swipe_left">Balra húzás</string>
     <string name="preference_search_contacts_summary">Keresés a névjegyek között</string>
-    <string name="no_account_owncloud">Még nem kapcsolódik egyetlen Owncloud fiókhoz sem</string>
     <string name="search_action_message">Üzenet</string>
     <string name="preference_calendar_calendars">Naptárak</string>
     <string name="preference_search_bar_auto_focus">Billentyűzet megjelenítése</string>
@@ -417,7 +390,6 @@
     <string name="preference_edit_button">Szerkesztésgomb</string>
     <string name="preference_favorites_edit_button_summary">Egy gomb megjelenítése a kedvencek átrendezéséhez</string>
     <string name="preference_screen_icons">Rács és ikonok</string>
-    <string name="connect_account">Bejelentkezés a fiókba</string>
     <string name="icon_picker_search_icon">Keresés az ikoncsomagok között</string>
     <string name="search_bar_position_bottom">Lent</string>
     <string name="preference_screen_gestures">Gesztusok</string>
@@ -448,12 +420,7 @@
     <string name="preference_suspended_badges">Felfüggesztett alkalmazások</string>
     <string name="preference_cloud_badges">Felhőjelvények</string>
     <string name="preference_cloud_badges_summary">Felhőben tárolt fájlok jelvényeinek megjelenítése</string>
-    <string name="preference_nextcloud_signin">Bejelentkezés a Nextcloudba</string>
-    <string name="preference_nextcloud">Nextcloud</string>
     <string name="preference_category_badges">Jelvények</string>
-    <string name="preference_owncloud">Owncloud</string>
-    <string name="preference_owncloud_signin">Bejelentkezés az Owncloudba</string>
-    <string name="preference_owncloud_signin_summary">Az Owncloud kiszolgálón való kereséshez be kell jelentkezni</string>
     <string name="preference_enforce_icon_shape_summary">Alakzat használata az összes ikonra, beleértve azokat is, amelyek általában nem támogatnák</string>
     <string name="preference_category_license">Licence</string>
     <string name="preference_about_license">Ez az alkalmazás egy szabad szoftver.</string>
@@ -478,7 +445,6 @@
     <string name="preference_clockwidget_alarm_part">Riasztások</string>
     <string name="preference_search_favorites">Kedvencek</string>
     <string name="preference_search_favorites_summary">Kitűzött és gyakran használt elemek megjelenítése az alkalmazásrács felett</string>
-    <string name="preference_search_files">Fájlok</string>
     <string name="preference_search_calendar">Naptár</string>
     <string name="preference_search_calendar_summary">Keresés a naptárban a közelgő találkozók és események között</string>
     <string name="preference_search_appshortcuts">Telepített alkalmazások</string>
@@ -489,10 +455,6 @@
     <string name="preference_search_currencyconverter_summary">Rendszeresen töltse le az árfolyamokat a valuták átváltásához</string>
     <string name="preference_search_wikipedia">Wikipédia</string>
     <string name="preference_search_wikipedia_summary">Keresés a Wikipédián</string>
-    <string name="preference_search_localfiles">Helyi fájlok</string>
-    <string name="preference_search_localfiles_summary">Dokumentumok, fényképek és egyéb, ezen az eszközön tárolt fájlok keresése ezen az eszközön</string>
-    <string name="preference_search_nextcloud">Nextcloud</string>
-    <string name="preference_search_owncloud">Owncloud</string>
     <string name="preference_search_bar_style">Stílus</string>
     <string name="preference_search_bar_style_summary">Keresősáv megjelenésének testreszabása</string>
     <string name="preference_search_bar_color">Szín</string>
@@ -503,7 +465,6 @@
     <string name="preference_screen_homescreen_summary">Óra, keresősáv, háttérkép, rendszersávok</string>
     <string name="preference_weather_integration">Időjárás</string>
     <string name="preference_media_integration">Médiavezérlés</string>
-    <string name="no_account_nextcloud">Még nem kapcsolódik egyetlen Nextcloud fiókhoz sem</string>
     <string name="icon_picker_default_icon">Alapértelmezés</string>
     <string name="icon_picker_suggestions">Javaslatok</string>
     <string name="favorites">Kedvencek</string>
@@ -642,7 +603,6 @@
     <string name="poi_category_museum">Múzeum</string>
     <string name="poi_category_jewelry">Ékszerbolt</string>
     <string name="weather_condition_thunderstorm">Zivatar</string>
-    <string name="preference_signout">Kijelentkezés</string>
     <string name="preference_search_osm_locations">OpenStreetMap</string>
     <string name="preference_search_osm_locations_summary">Üzletek és más helyek keresése a közelben az OpenStreetMapen</string>
     <string name="poi_category_synagogue">Zsinagóga</string>

@@ -56,6 +56,5 @@ dependencies {
     implementation(project(":core:preferences"))
     implementation(project(":core:profiles"))
     implementation(project(":core:base"))
-    implementation(project(":data:files"))
     implementation(project(":data:searchable"))
 }

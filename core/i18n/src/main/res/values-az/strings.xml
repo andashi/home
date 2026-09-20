@@ -36,15 +36,6 @@
     <string name="wind_west_north_west">Qərb şimal-qərb</string>
     <string name="wind_north_west">Şimal-qərb</string>
     <string name="wind_north_north_west">Şimal şimal-qərb</string>
-    <string name="file_meta_title">Başlıq: %1$s</string>
-    <string name="file_meta_year">İl: %1$s</string>
-    <string name="file_meta_size">Ölçü: %1$s</string>
-    <string name="file_meta_path">Yol: %1$s</string>
-    <string name="file_meta_dimensions">Ölçülər: %1$s</string>
-    <string name="file_meta_app_name">Tətbiq adı: %1$s</string>
-    <string name="file_meta_app_version">Versiya: %1$s</string>
-    <string name="file_meta_app_pkgname">Paket adı: %1$s</string>
-    <string name="file_meta_location">Yer: %1$s</string>
     <string name="file_type_android">Android paket faylı</string>
     <string name="file_type_source_code">Qaynaq kodu faylı</string>
     <string name="file_type_document">Sənəd</string>
@@ -57,7 +48,6 @@
     <string name="file_type_ebook">E-kitab</string>
     <string name="file_type_launchertheme">%1$s teması</string>
     <string name="file_type_generic">%1$s faylı</string>
-    <string name="alert_delete_file">%1$s faylı həmişəlik silinəcək. Davam edilsin?</string>
     <string name="default_websearch_3_name">Google Play</string>
     <string name="default_websearch_3_url">https://play.google.com/store/search?q=${1}</string>
     <string name="websearch_dialog_url_error">Bu URL-də \'${1}\' yer tutucusu yoxdur</string>
@@ -71,8 +61,6 @@
     <string name="menu_calendar_open_externally">Təqvim tətbiqində aç</string>
     <string name="wind_west_south_west">Qərb cənub-qərb</string>
     <string name="wikipedia_url">https://az.wikipedia.org</string>
-    <string name="file_meta_duration">Müddət: %1$s</string>
-    <string name="file_meta_owner">Sahibi: %1$s</string>
     <string name="file_type_form">Forma</string>
     <string name="alert_delete_shortcut">%1$s qısayolu həmişəlik silinəcək. Davam edilsin?</string>
     <string name="default_websearch_2_url">https://www.youtube.com/results?search_query=${1}</string>
@@ -80,19 +68,13 @@
     <string name="location_closes">bağlanır %1$s</string>
     <string name="wind_east_south_east">Şərq cənub-şərq</string>
     <string name="wikipedia_source">Vikipediyadan</string>
-    <string name="file_meta_album">Albom: %1$s</string>
-    <string name="file_meta_app_min_sdk">Min SDK versiyası: %1$s</string>
     <string name="file_type_none">Fayl</string>
     <string name="file_type_compressed">Sıxılmış fayl</string>
     <string name="default_websearch_2_name">YouTube</string>
     <string name="websearch_dialog_delete_icon">İkonu sil</string>
     <string name="menu_share_store_link">%1$s linki</string>
-    <string name="menu_open_file">Aç</string>
     <string name="menu_contacts_open_externally">Kontaktlar tətbiqində aç</string>
     <string name="wind_north_north_east">Şimal şimal-şərq</string>
-    <string name="file_meta_artist">Sənətkar: %1$s</string>
-    <string name="file_meta_type">Tip: %1$s</string>
     <string name="file_type_archive">Arxiv faylı</string>
     <string name="file_type_drawing">Rəsm</string>
-    <string name="alert_delete_directory">%1$s direktoriyası və onun bütün məzmunu həmişəlik silinəcək. Davam edilsin?</string>
 </resources>

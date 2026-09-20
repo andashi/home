@@ -105,10 +105,6 @@ class IconsSettingsScreenVM(
         permissionsManager.requestPermission(context, PermissionGroup.Notifications)
     }
 
-    val cloudFileBadges = badgeSettings.cloudFiles
-    fun setCloudFiles(cloudFiles: Boolean) {
-        badgeSettings.setCloudFiles(cloudFiles)
-    }
 
     val shortcutBadges = badgeSettings.shortcuts
     fun setShortcuts(shortcuts: Boolean) {

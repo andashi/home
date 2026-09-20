@@ -41,7 +41,6 @@ internal class SearchServiceImpl(
     private val appShortcutRepository: SearchableRepository<AppShortcut>,
     private val calendarRepository: SearchableRepository<CalendarEvent>,
     private val contactRepository: SearchableRepository<Contact>,
-    private val fileRepository: SearchableRepository<File>,
     private val articleRepository: SearchableRepository<Article>,
     private val locationRepository: SearchableRepository<Location>,
     private val unitConverterRepository: UnitConverterRepository,
@@ -65,7 +64,6 @@ internal class SearchServiceImpl(
                         shortcuts = if (filters.shortcuts) it.shortcuts else null,
                         contacts = if (filters.contacts) it.contacts else null,
                         calendars = if (filters.events) it.calendars else null,
-                        files = if (filters.files) it.files else null,
                         calculators = if (filters.tools) it.calculators else null,
                         unitConverters = if (filters.tools) it.unitConverters else null,
                         websites = if (filters.websites) it.websites else null,
@@ -81,7 +79,6 @@ internal class SearchServiceImpl(
                     val shortcuts = mutableListOf<AppShortcut>()
                     val contacts = mutableListOf<Contact>()
                     val events = mutableListOf<CalendarEvent>()
-                    val files = mutableListOf<File>()
                     val unitConverters = mutableListOf<UnitConverter>()
                     val websites = mutableListOf<Website>()
                     val wikipedia = mutableListOf<Article>()
@@ -93,7 +90,6 @@ internal class SearchServiceImpl(
                             is AppShortcut -> if (filters.shortcuts) shortcuts.add(it)
                             is Contact -> if (filters.contacts) contacts.add(it)
                             is CalendarEvent -> if (filters.events) events.add(it)
-                            is File -> if (filters.files) files.add(it)
                             is UnitConverter -> if (filters.tools) unitConverters.add(it)
                             is Website -> if (filters.websites) websites.add(it)
                             is Article -> if (filters.articles) wikipedia.add(it)
@@ -106,7 +102,6 @@ internal class SearchServiceImpl(
                         shortcuts = shortcuts,
                         contacts = contacts,
                         calendars = events,
-                        files = files,
                         unitConverters = unitConverters,
                         websites = websites,
                         wikipedia = wikipedia,
@@ -249,24 +244,6 @@ internal class SearchServiceImpl(
                         }
                 }
             }
-            if (filters.files) {
-                launch {
-                    fileRepository.search(
-                        query,
-                        filters.allowNetwork
-                    )
-                        .combine(customAttrResults) { files, customAttrs ->
-                            if (customAttrs.files != null) files + customAttrs.files
-                            else files
-                        }
-                        .withCustomLabels(customAttributesRepository)
-                        .collectLatest { r ->
-                            results.update {
-                                it.copy(files = r)
-                            }
-                        }
-                }
-            }
             emitAll(results)
         }
     }
@@ -320,7 +297,6 @@ data class SearchResults(
     val shortcuts: List<AppShortcut>? = null,
     val contacts: List<Contact>? = null,
     val calendars: List<CalendarEvent>? = null,
-    val files: List<File>? = null,
     val calculators: List<Calculator>? = null,
     val unitConverters: List<UnitConverter>? = null,
     val websites: List<Website>? = null,
@@ -341,7 +317,6 @@ fun SearchResults.toList(): List<Searchable> {
         shortcuts,
         contacts,
         calendars,
-        files,
         calculators,
         unitConverters,
         websites,

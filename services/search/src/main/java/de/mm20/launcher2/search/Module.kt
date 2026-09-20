@@ -10,7 +10,6 @@ val searchModule = module {
             get(named<AppShortcut>()),
             get(named<CalendarEvent>()),
             get(named<Contact>()),
-            get(named<File>()),
             get(named<Article>()),
             get(named<Location>()),
             get(),

@@ -4,11 +4,6 @@
     <string name="widget_config_calendar_missing_calendars_hint">Не можаш знайсці свае календары?</string>
     <string name="missing_permission_calendar_search">Для пошуку праз твой каляндар патрэбны доступ да календара</string>
     <string name="missing_permission_contact_search">Для пошуку праз твае кантакты патрэбны доступ да кантактнай кнігі</string>
-    <string name="preference_summary_not_logged_in">Ты не ўвайшоў</string>
-    <string name="preference_nextcloud_signin_summary">Увайдзі, каб выконваць пошук праз твой сервер Nextcloud</string>
-    <string name="preference_owncloud_signin_summary">Увайдзі, каб выконваць пошук праз твой сервер Owncloud</string>
-    <string name="no_account_nextcloud">Ты яшчэ не далучыў уліковы запіс Nextcloud</string>
-    <string name="no_account_owncloud">Ты яшчэ не далучыў уліковы запіс Owncloud</string>
     <string name="create_search_action_type">Якое дзеянне ты жадаеш стварыць?</string>
     <string name="create_search_action_website_invalid_url">Дадзены вэб-сайт не можа быць аўтаматычна імпартаваны як сродак пошуку. Ты можаш паспрабаваць іншы сайт або ўвесці ўсе патрэбныя дадзеныя ў наступным кроку</string>
     <string name="preference_breezyweather_integration_instructions">Каб выкарыстоўваць Breezy Weather як пастаўшчыка дадзеных аб надвор\'і:\n\n1. Перайдзі ў Breezy Weather &gt; Налады &gt; Віджэты і жывыя шпалеры &gt; Адпраўляць даныя пра надвор’е ў Gadgetbridge &gt; Уключы %1$s\n\n2. Выберы Breezy Weather як пастаўшчыка надвор\'я ў %1$s</string>
@@ -40,5 +35,4 @@
     <string name="gesture_action_launch_select_app">Выберы праграму або ярлык</string>
     <string name="preference_customize_filter_bar_summary">Дапасуй элементы ў панэлі фільтраў</string>
     <string name="hint_drag_and_drop_reorder">Утрымлівай і перацягвай элементы, каб змяніць іх парадак</string>
-    <string name="preference_signin_user">Увайшоў як %1$s</string>
 </resources>

@@ -7,7 +7,6 @@
     <string name="menu_back">Recuar</string>
     <string name="menu_app_info">Informações</string>
     <string name="menu_launch">Iniciar</string>
-    <string name="menu_open_file">Abrir</string>
     <string name="action_undo">Desfazer</string>
     <string name="action_import">Importar</string>
     <string name="menu_delete">Eliminar</string>
@@ -28,15 +27,6 @@
     <string name="wind_west">Oeste</string>
     <string name="wind_north_west">Noroeste</string>
     <string name="wind_north_north_west">Norte, noroeste</string>
-    <string name="file_meta_title">Título: %1$s</string>
-    <string name="file_meta_artist">Artista: %1$s</string>
-    <string name="file_meta_duration">Duração: %1$s</string>
-    <string name="file_meta_year">Ano: %1$s</string>
-    <string name="file_meta_path">Caminho: %1$s</string>
-    <string name="file_meta_app_name">Nome da aplicação: %1$s</string>
-    <string name="file_meta_app_version">Versão: %1$s</string>
-    <string name="file_meta_app_pkgname">Nome do pacote: %1$s</string>
-    <string name="file_meta_app_min_sdk">Versão SDK mínima: %1$s</string>
     <string name="file_type_directory">Diretório</string>
     <string name="file_type_archive">Arquivo</string>
     <string name="file_type_android">Ficheiro Android (APK)</string>
@@ -52,7 +42,6 @@
     <string name="file_type_form">Formulário</string>
     <string name="file_type_launchertheme">Tema de %1$s</string>
     <string name="file_type_generic">Ficheiro %1$s</string>
-    <string name="alert_delete_file">O ficheiro %1$s será eliminado permanentemente. Continuar?</string>
     <string name="default_websearch_3_name">Google Play</string>
     <string name="websearch_dialog_url_error">\'${1}\' está em falta no URL</string>
     <string name="websearch_dialog_replace_icon">Substituir ícone</string>
@@ -103,17 +92,10 @@
     <string name="wind_east">Este</string>
     <string name="wind_east_south_east">Este, sudeste</string>
     <string name="wind_west_north_west">Oeste, noroeste</string>
-    <string name="file_meta_owner">Dono: %1$s</string>
     <string name="file_type_compressed">Ficheiro comprimido</string>
     <string name="default_websearch_2_url">https://www.youtube.com/results?search_query=${1}</string>
     <string name="wikipedia_url">https://en.wikipedia.org</string>
-    <string name="file_meta_album">Álbum: %1$s</string>
-    <string name="file_meta_size">Tamanho: %1$s</string>
-    <string name="file_meta_type">Tipo: %1$s</string>
-    <string name="alert_delete_directory">O diretório %1$s e todo o seu conteúdo será eliminado permanentemente. Continuar?</string>
-    <string name="file_meta_dimensions">Dimensão: %1$s</string>
     <string name="default_websearch_3_url">https://play.google.com/store/search?q=${1}</string>
-    <string name="file_meta_location">Localização: %1$s</string>
     <string name="file_type_document">Documento</string>
     <string name="default_websearch_2_name">YouTube</string>
     <string name="notes_widget_action_new">Nova nota</string>
@@ -183,7 +165,6 @@
     <string name="weather_widget_set_location">Definir localização</string>
     <string name="missing_permission_calendar_widget_settings">Este widget requer acesso ao calendário</string>
     <string name="weather_condition_fog">Nevoeiro</string>
-    <string name="missing_permission_file_search_settings">Requer acesso ao \"Armazenamento externo\" para pesquisar ficheiros localmente</string>
     <string name="missing_permission_calendar_search">Requer acesso ao calendário para pesquisar eventos e tarefas</string>
     <string name="grant_permission">Conceder</string>
     <string name="preference_screen_appearance">Aparência</string>
@@ -266,8 +247,6 @@
     <string name="preference_hide_status_bar">Ocultar barra de estado</string>
     <string name="preference_hide_nav_bar">Ocultar barra de navegação</string>
     <string name="preference_screen_integrations_summary">Gerir contas e serviços conectados</string>
-    <string name="preference_signin_user">Sessão iniciada como %1$s</string>
-    <string name="preference_summary_not_logged_in">Não tem sessão iniciada</string>
     <string name="preference_icon_shape_pentagon">Pentágono</string>
     <string name="preference_category_wallpaper">Papel de parede</string>
     <string name="preference_dim_wallpaper">Escurecer papel de parede</string>
@@ -277,7 +256,6 @@
     <string name="preference_blur_wallpaper_unsupported">Não suportado neste dispositivo</string>
     <string name="preference_blur_wallpaper_radius">Raio de desfoque</string>
     <string name="preference_wallpaper_summary">Escolher papel de parede</string>
-    <string name="missing_permission_file_search_settings_android10">Requer acesso a \"Gerir todos os ficheiros\" para pesquisar ficheiros locais</string>
     <string name="missing_permission_notification_badges">Requer acesso às notificações para mostrar os alertas</string>
     <string name="no_plugins_installed">Nenhum plugin instalado</string>
     <string name="preference_force_themed_icons">Impor ícones coloridos</string>
@@ -306,7 +284,6 @@
     <string name="preference_about_license_summary">Licenciada nos termos da GNU General Public License 3.0</string>
     <string name="preference_clockwidget_battery_part">Bateria</string>
     <string name="preference_suspended_badges_summary">Mostra um indicador nas aplicações suspensas</string>
-    <string name="preference_owncloud_signin_summary">Inicie sessão para pesquisar no servidor Owncloud</string>
     <string name="missing_permission_appshortcuts_create">Defina %1$s como a aplicação padrão para criar atalhos.</string>
     <string name="missing_permission_appshortcuts_search_settings">Tem que definir %1$s como a aplicação padrão para pesquisar por atalhos de aplicações</string>
     <string name="preference_location_managed">Gerido pelo plugin</string>
@@ -315,14 +292,10 @@
     <string name="preference_grid_column_count">Número de colunas</string>
     <string name="preference_clock_widget_show_seconds">Mostrar segundos</string>
     <string name="weather_condition_thunderstorm">Trovoada</string>
-    <string name="missing_permission_files_search">Requer acesso ao armazenamento para pesquisar ficheiros no dispositivo</string>
     <string name="missing_permission_location_search">Requer acesso à localização para pesquisar locais próximos</string>
     <string name="missing_permission_appshortcuts_search">Defina %1$s como a aplicação padrão para pesquisar atalhos de aplicações.</string>
     <string name="preference_notification_badges_summary">Mostra um indicador nas aplicações com notificações por ler</string>
     <string name="preference_suspended_badges">Aplicações suspensas</string>
-    <string name="preference_nextcloud">Nextcloud</string>
-    <string name="preference_owncloud">Owncloud</string>
-    <string name="preference_owncloud_signin">Iniciar sessão em Owncloud</string>
     <string name="preference_about_telegram">Grupo no Telegram</string>
     <string name="preference_about_fdroid">Repositório F-Droid</string>
     <string name="preference_enforce_icon_shape">Impor forma</string>
@@ -367,7 +340,6 @@
     <string name="plugin_type_weather">Serviço de meteorologia</string>
     <string name="location_closes_other_day">fecha %1$s, às %2$s</string>
     <string name="plugin_state_setup_required">Tem que configurar o plugin para o utilizar</string>
-    <string name="connect_account">Conectar conta</string>
     <string name="preference_screen_search_actions">Ações rápidas</string>
     <string name="widget_pick_widget">Escolha o widget</string>
     <string name="note_widget_conflict">Conflito</string>
@@ -397,12 +369,8 @@
     <string name="preference_icon_shape_pebble">Pedra</string>
     <string name="preference_use_system_default">Predefinição do sistema</string>
     <string name="plugin_weather_provider_enable">Definir como serviço de meteorologia</string>
-    <string name="preference_nextcloud_signin_summary">Inicie sessão para pesquisar no servidor Nextcloud</string>
     <string name="widget_config_appwidget_resize">Redimensionar</string>
     <string name="preference_search_websites_summary">Pré-visualização de sites se o termo de pesquisa for um URL</string>
-    <string name="preference_search_localfiles">Ficheiros locais</string>
-    <string name="preference_search_cloud_summary">Pesquisar ficheiros de %1$s</string>
-    <string name="preference_search_owncloud">Owncloud</string>
     <string name="preference_weather_integration">Meteorologia</string>
     <string name="preference_search_bar_launch_on_enter">Abrir ao entrar</string>
     <string name="preference_search_bar_auto_focus_summary">Mostrar teclado ao abrir o menu de aplicações</string>
@@ -427,7 +395,6 @@
     <string name="preference_search_result_ordering_weight_factor">Precisão da avaliação</string>
     <string name="note_widget_file_write_error">Erro ao guardar</string>
     <string name="tag_select_items">Selecionar itens:</string>
-    <string name="preference_signout">Terminar sessão</string>
     <string name="preference_search_appshortcuts_summary">Pesquisar atalhos de aplicações</string>
     <string name="preference_calendar_calendars">Calendários</string>
     <string name="preference_screen_buildinfo">Informação de compilação</string>
@@ -466,9 +433,7 @@
     <string name="preference_search_result_ordering_weight_factor_high">Variável</string>
     <string name="plugin_type_locationsearch">Pesquisa em locais</string>
     <string name="plugin_type_calendar">Calendário</string>
-    <string name="preference_nextcloud_signin">Iniciar sessão em Nextcloud</string>
     <string name="preference_search_favorites_summary">Mostrar itens afixados e frequentes por cima da grelha de aplicações</string>
-    <string name="preference_search_files">Ficheiros</string>
     <string name="preference_cloud_badges">Indicadores de cloud</string>
     <string name="preference_cloud_badges_summary">Mostra um indicador para ficheiros que estejam na cloud</string>
     <string name="preference_shortcut_badges">Indicadores de atalhos</string>
@@ -497,8 +462,6 @@
     <string name="preference_search_locations">Locais</string>
     <string name="preference_search_locations_radius">Raio de pesquisa</string>
     <string name="preference_search_locations_summary">Pesquisar lojas e outros locais na área</string>
-    <string name="preference_search_localfiles_summary">Pesquisar documentos, fotos e outros ficheiros guardados no dispositivo</string>
-    <string name="preference_search_nextcloud">Nextcloud</string>
     <string name="preference_calendar_hide_completed">Ocultar tarefas terminadas</string>
     <string name="preference_screen_buildinfo_summary">Mais informações acerca desta versão</string>
     <string name="preference_search_bar_style">Estilo</string>
@@ -512,8 +475,6 @@
     <string name="preference_screen_icons">Grelha e ícones</string>
     <string name="preference_screen_icons_summary">Grelha, ícones e indicadores</string>
     <string name="preference_media_integration">Controlo multimédia</string>
-    <string name="no_account_nextcloud">Ainda não está conectado a uma conta Nextcloud</string>
-    <string name="no_account_owncloud">Ainda não está conectado a uma conta Owncloud</string>
     <plurals name="battery_part_remaining_charge_time">
         <item quantity="one">Totalmente carregado dentro de %1$s minuto</item>
         <item quantity="many">Totalmente carregado dentro de %1$s minutos</item>
@@ -529,7 +490,6 @@
     <string name="search_action_app">Aplicação</string>
     <string name="search_action_websearch_url">Modelo de URL</string>
     <string name="preference_plugin_enable">Ativar plugin</string>
-    <string name="plugin_type_filesearch">Ficheiros</string>
     <string name="experimental_feature">Experimental</string>
     <string name="tag_exists_error">Já existe uma etiqueta com este nome</string>
     <string name="tag_exists_message">Já existe uma etiqueta com este nome. Se continuar, as etiquetas serão combinadas.</string>

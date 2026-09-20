@@ -28,20 +28,6 @@
     <string name="uv_index">UV %1$d</string>
     <string name="wikipedia_url">https://pt.wikipedia.org</string>
     <string name="wikipedia_source">de Wikipédia</string>
-    <string name="file_meta_title">Título: %1$s</string>
-    <string name="file_meta_artist">Artista: %1$s</string>
-    <string name="file_meta_album">Álbum: %1$s</string>
-    <string name="file_meta_duration">Duração: %1$s</string>
-    <string name="file_meta_year">Ano: %1$s</string>
-    <string name="file_meta_size">Tamanho: %1$s</string>
-    <string name="file_meta_path">Caminho: %1$s</string>
-    <string name="file_meta_type">Tipo: %1$s</string>
-    <string name="file_meta_dimensions">Dimensões: %1$s</string>
-    <string name="file_meta_app_name">Nome do app: %1$s</string>
-    <string name="file_meta_app_version">Versão: %1$s</string>
-    <string name="file_meta_app_pkgname">Nome do pacote: %1$s</string>
-    <string name="file_meta_owner">Proprietário: %1$s</string>
-    <string name="file_meta_location">Localização: %1$s</string>
     <string name="file_type_directory">Diretório</string>
     <string name="file_type_source_code">Arquivo de código-fonte</string>
     <string name="file_type_document">Documento</string>
@@ -59,7 +45,6 @@
     <string name="file_type_drawing">Desenho</string>
     <string name="file_type_form">Formulário</string>
     <string name="file_type_generic">Arquivo %1$s</string>
-    <string name="alert_delete_file">O arquivo %1$s será deletado permanentemente. Proceder\?</string>
     <string name="default_websearch_2_name">YouTube</string>
     <string name="default_websearch_2_url">https://www.youtube.com/results\?search_query=${1}</string>
     <string name="default_websearch_3_name">Google Play</string>
@@ -88,10 +73,7 @@
     <string name="menu_favorites_unpin">Desfixar</string>
     <string name="menu_app_info">Informação do app</string>
     <string name="menu_launch">Iniciar</string>
-    <string name="menu_open_file">Abrir</string>
     <string name="wind_west_north_west">Oeste-Noroeste</string>
-    <string name="file_meta_app_min_sdk">Versão mínima do SDK : %1$s</string>
-    <string name="alert_delete_directory">O diretório %1$s e todo seu conteúdo será deletado permanentemente. Proceder?</string>
     <string name="websearch_dialog_url_error">O atributo \'${1}\' está faltando na URL</string>
     <string name="edit_favorites_dialog_unpinned">Não fixado - frequentemente usado</string>
     <string name="nextcloud_server_url">URL de servidor Nextcloud</string>
@@ -138,7 +120,6 @@
     <string name="preference_screen_search_summary">Pesquisa, tags, items escondidos</string>
     <string name="preference_search_favorites">Favoritos</string>
     <string name="preference_search_apps_summary">Mostrar todos os aplicativos quando o campo de pesquisa estiver vazio</string>
-    <string name="preference_search_files">Arquivos</string>
     <string name="preference_search_contacts">Contatos</string>
     <string name="preference_search_calendar">Calendário</string>
     <string name="preference_search_appshortcuts">Atalhos de aplicativos</string>
@@ -147,13 +128,10 @@
     <string name="preference_search_unitconverter_summary">Uso: 1.5 kg ou 4 cm &gt;&gt; in</string>
     <string name="preference_search_wikipedia">Wikipédia</string>
     <string name="preference_search_websites">Sites</string>
-    <string name="preference_search_localfiles">Arquivos locais</string>
     <string name="weather_condition_heavyrainandthunder">Chuva intensa e trovões</string>
     <string name="weather_condition_wind">Vento</string>
     <string name="weather_condition_snowshowers">Neve pouco intensa</string>
-    <string name="preference_search_nextcloud">Nextcloud</string>
     <string name="missing_permission_music_widget">O acesso às notificações é necessário para controlar a reprodução de mídia</string>
-    <string name="preference_search_owncloud">Owncloud</string>
     <string name="weather_no_data">Não há dados meteorológicos disponíveis.</string>
     <string name="missing_permission_contact_search_settings">O acesso aos contatos é necessário para pesquisar contatos</string>
     <string name="preference_search_bar_style">Estilo</string>
@@ -186,7 +164,6 @@
     <string name="grant_permission">Conceder</string>
     <string name="preference_colors_bw">Preto e Branco</string>
     <string name="preference_dim_wallpaper_summary">Escurece o papel de parede em temas escuros</string>
-    <string name="preference_owncloud_signin">Entrar com Owncloud</string>
     <string name="weather_condition_heavysnowandthunder">Neve intensa e trovões</string>
     <string name="weather_condition_rainshowers">Chuva leve</string>
     <string name="calendar_event_allday">todo o dia</string>
@@ -240,14 +217,7 @@
     <string name="preference_hide_status_bar">Ocultar a barra de status</string>
     <string name="preference_hide_nav_bar">Ocultar a barra de navegação</string>
     <string name="preference_screen_integrations_summary">Gerenciar as contas e serviços conectados</string>
-    <string name="preference_signin_user">Autenticado como %1$s</string>
-    <string name="preference_summary_not_logged_in">Você não está logado</string>
     <string name="preference_icon_shape_pentagon">Pentágono</string>
-    <string name="preference_nextcloud_signin">Entrar com Nextcloud</string>
-    <string name="preference_nextcloud_signin_summary">Entrar para pesquisar no seu servidor Nextcloud</string>
-    <string name="preference_nextcloud">Nextcloud</string>
-    <string name="preference_owncloud">Owncloud</string>
-    <string name="preference_owncloud_signin_summary">Entrar para pesquisar no seu servidor Owncloud</string>
     <string name="preference_about_fdroid">Repositório F-Droid</string>
     <string name="preference_category_license">Licença</string>
     <string name="preference_about_license">Este aplicativo é um software livre.</string>
@@ -268,7 +238,6 @@
     <string name="websearch_dialog_query_encoding">Codificação de consulta</string>
     <string name="websearch_dialog_query_encoding_url">Codificação de porcentagem</string>
     <string name="missing_permission_calendar_widget_settings">Esse widget requer a permissão de calendário</string>
-    <string name="missing_permission_files_search">Conceda permissão de armazenamento para pesquisar fotos, mídia e documentos neste dispositivo.</string>
     <string name="missing_permission_appshortcuts_search">Defina %1$s como aplicativo de tela inicial padrão para pesquisar atalhos de aplicativos.</string>
     <string name="duplicate">Duplicar</string>
     <string name="action_next">Próximo</string>
@@ -278,9 +247,7 @@
     <string name="menu_customize">Personalizar</string>
     <string name="edit_favorites_dialog_new_tag">Criar etiqueta…</string>
     <string name="missing_permission_calendar_search_settings">A permissão de calendário é necessária para pesquisar o calendário</string>
-    <string name="missing_permission_file_search_settings">Permissão de armazenamento externo é necessária para pesquisar arquivos locais</string>
     <string name="missing_permission_notification_badges">Acesso a notificações é necessário para mostrar selos de notificação</string>
-    <string name="missing_permission_file_search_settings_android10">A permissão gerenciar todos os arquivos é necessária para pesquisar arquivos locais</string>
     <string name="missing_permission_contact_search">Conceda permissão de contato para pesquisar seus contatos.</string>
     <string name="weather_location_search_no_result">Localização não encontrada.</string>
     <string name="missing_permission_calendar_widget">Conceda permissão de calendário para exibir compromissos e eventos futuros aqui.</string>
@@ -343,8 +310,6 @@
     <string name="preference_search_currencyconverter_summary">Baixe periodicamente as taxas de câmbio para converter moedas</string>
     <string name="preference_search_wikipedia_summary">Pesquisa na enciclopédia gratuita</string>
     <string name="preference_search_websites_summary">Mostra uma visualização de um site se a consulta de pesquisa for um URL</string>
-    <string name="preference_search_localfiles_summary">Pesquisa documentos, fotos e outros arquivos armazenados neste dispositivo</string>
-    <string name="preference_search_cloud_summary">Pesquisar arquivos de %1$s</string>
     <string name="preference_calendar_calendars">Calendários</string>
     <string name="preference_screen_buildinfo_summary">Mais informações sobre esta compilação deste aplicativo</string>
     <string name="preference_screen_buildinfo">informações de compilação</string>
@@ -397,9 +362,6 @@
     <string name="preference_favorites_edit_button_summary">Mostra um botão para reorganizar os favoritos</string>
     <string name="preference_widgets_edit_button_summary">Mostra um botão para adicionar, remover e reorganizar widgets</string>
     <string name="preference_wikipedia_customurl">URL da Wikipédia</string>
-    <string name="no_account_nextcloud">Você ainda não conectou uma conta Nextcloud</string>
-    <string name="no_account_owncloud">Você ainda não conectou uma conta Owncloud</string>
-    <string name="connect_account">Conectar conta</string>
     <string name="apps_profile_work">Trabalho</string>
     <string name="apps_profile_main">Pessoal</string>
     <string name="favorites">Favoritos</string>
@@ -535,7 +497,6 @@
     <string name="no_plugins_installed">Nenhuma extensão instalada</string>
     <string name="preference_category_advanced">Avançado</string>
     <string name="theme_color_scheme_custom_color">Personalizado</string>
-    <string name="preference_signout">Desconectar</string>
     <string name="preference_use_system_default">Usar o padrão do sistema</string>
     <string name="theme_color_scheme_palette_color">Palheta</string>
     <string name="action_import">Importar</string>
@@ -555,7 +516,6 @@
     <string name="poi_category_climbing_gym">Academia de escalada</string>
     <string name="poi_category_hackerspace">Hackerspace</string>
     <string name="customize_item_label">Etiqueta</string>
-    <string name="plugin_type_filesearch">Arquivos</string>
     <string name="plugin_action_setup">Configurar</string>
     <string name="apps_profile_private">Privado</string>
     <string name="preference_compact_tags">Tags compactas</string>

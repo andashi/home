@@ -4,13 +4,11 @@
     <string name="file_type_image">Obrázek</string>
     <string name="edit_favorites_dialog_unpinned">Není připnuto – často používáno</string>
     <string name="owncloud_server_invalid_url">Tato adresa URL neodkazuje na platnou instalaci Owncloud</string>
-    <string name="alert_delete_directory">Adresář %1$s a jeho obsah bude nenávratně smazán. Pokračovat\?</string>
     <string name="default_websearch_3_url">https://play.google.com/store/search\?q=${1}</string>
     <string name="disclaimer_currency_converter">Směnné kurzy tak, jak jsou zveřejňovány jednou denně Evropskou centrální bankou. Veškeré informace jsou poskytovány „tak, jak jsou“, bez jakékoliv záruky. Za tyto informace nepřebíráme žádnou odpovědnost.
 \n
 \nPoslední aktualizace: %1$s</string>
     <string name="weather_condition_lightrainshowers">Slabé dešťové přeháňky</string>
-    <string name="missing_permission_file_search_settings_android10">Pro prohledávání místních souborů je vyžadován přístup ke všem souborům</string>
     <string name="weather_condition_heavysleetshowersandthunder">Silné sněhové přeháňky a bouřky</string>
     <string name="missing_permission_appshortcuts_search">Pro prohledávání záložek aplikací nastavte %1$s jako výchozí spouštěč.</string>
     <plurals name="calendar_widget_running_events">
@@ -31,10 +29,8 @@
     <string name="preference_icon_pack_summary_empty">Nejsou nainstalovány žádné balíčky ikon</string>
     <string name="weather_widget_set_location">Nastavit polohu</string>
     <string name="missing_permission_calendar_widget_settings">Tento widget vyžaduje přístup ke kalendáři</string>
-    <string name="preference_summary_not_logged_in">Nejste přihlášeni</string>
     <string name="preference_blur_wallpaper_unsupported">Není podporováno na tomto zařízení</string>
     <string name="preference_suspended_badges_summary">Zobrazit puntík u pozastavených aplikací</string>
-    <string name="preference_owncloud_signin_summary">Přihlaste se pro prohledání vašeho Owncloud serveru</string>
     <string name="preference_about_license_summary">Licencováno pod GNU General Public License 3.0</string>
     <string name="preference_screen_debug_summary">Nástroje pro řešení potíží</string>
     <string name="preference_clockwidget_date_part_summary">Zobrazit aktuální datum</string>
@@ -42,7 +38,6 @@
     <string name="preference_search_calculator_summary">Vyhodnocování matematických výrazů</string>
     <string name="preference_search_unitconverter_summary">Použití: 1.5 kg nebo 4 cm &gt;&gt; in</string>
     <string name="preference_search_currencyconverter_summary">Pravidelně stahovat směnné kurzy pro převod měn</string>
-    <string name="preference_search_localfiles_summary">Prohledávat dokumenty, fotky a další soubory uložené na tomto zařízení</string>
     <plurals name="battery_part_remaining_charge_time">
         <item quantity="one">Plná za %1$s minutu</item>
         <item quantity="few">Plná za %1$s minuty</item>
@@ -57,7 +52,6 @@
     <string name="menu_back">Zpět</string>
     <string name="menu_app_info">Informace o aplikaci</string>
     <string name="menu_launch">Spustit</string>
-    <string name="menu_open_file">Otevřít</string>
     <string name="action_undo">Zrušit</string>
     <string name="menu_delete">Odstranit</string>
     <string name="menu_contacts_open_externally">Otevřít v kontaktech</string>
@@ -83,21 +77,6 @@
     <string name="wind_north_west">Severozápad</string>
     <string name="wind_north_north_west">Severní severozápad</string>
     <string name="wikipedia_source">Z Wikipedie</string>
-    <string name="file_meta_title">Název: %1$s</string>
-    <string name="file_meta_artist">Umělec: %1$s</string>
-    <string name="file_meta_album">Album: %1$s</string>
-    <string name="file_meta_duration">Délka: %1$s</string>
-    <string name="file_meta_year">Rok: %1$s</string>
-    <string name="file_meta_size">Velikost: %1$s</string>
-    <string name="file_meta_path">Cesta: %1$s</string>
-    <string name="file_meta_type">Typ: %1$s</string>
-    <string name="file_meta_dimensions">Rozměry: %1$s</string>
-    <string name="file_meta_app_name">Název aplikace: %1$s</string>
-    <string name="file_meta_app_version">Verze: %1$s</string>
-    <string name="file_meta_app_pkgname">Název balíčku: %1$s</string>
-    <string name="file_meta_app_min_sdk">Min verze SDK: %1$s</string>
-    <string name="file_meta_owner">Majitel: %1$s</string>
-    <string name="file_meta_location">Lokace: %1$s</string>
     <string name="file_type_directory">Adresář</string>
     <string name="file_type_archive">Archiv</string>
     <string name="file_type_android">Soubor balíčku Android</string>
@@ -114,7 +93,6 @@
     <string name="file_type_drawing">Malba</string>
     <string name="file_type_form">Formulář</string>
     <string name="file_type_generic">Soubor %1$s</string>
-    <string name="alert_delete_file">Soubor %1$s bude nenávratně smazán. Pokračovat\?</string>
     <string name="default_websearch_2_name">YouTube</string>
     <string name="default_websearch_2_url">https://www.youtube.com/results\?search_query=${1}</string>
     <string name="default_websearch_3_name">Google Play</string>
@@ -198,10 +176,8 @@
     <string name="missing_permission_contact_search_settings">Pro prohledávání kontaktů je vyžadován přístup ke kontaktům</string>
     <string name="missing_permission_calendar_search_settings">Pro prohledávání kalendáře je vyžadován přístup ke kalendáři</string>
     <string name="missing_permission_appshortcuts_search_settings">%1$s musí být nastaven jako výchozí aplikace pro domácnost pro prohledávání záložek aplikací</string>
-    <string name="missing_permission_file_search_settings">Pro prohledávání souborů na tomto zařízení je vyžadován přístup k externímu úložišti</string>
     <string name="missing_permission_calendar_widget">Pro zobrazování nadcházejících schůzek a událostí zde je vyžadován přístup ke kalendáři</string>
     <string name="missing_permission_calendar_search">Pro prohledávání vašeho kalendáře je vyžadován přístup ke kalendáři</string>
-    <string name="missing_permission_files_search">Pro prohledávání souborů na tomto zařízení je vyžadováno oprávnění k úložišti</string>
     <string name="missing_permission_contact_search">Pro prohledávání vašich kontaktů je vyžadován přístup ke kontaktům</string>
     <string name="grant_permission">Udělit</string>
     <string name="preference_screen_appearance">Vzhled</string>
@@ -252,7 +228,6 @@
     <string name="preference_hide_status_bar">Skrýt stavovou lištu</string>
     <string name="preference_hide_nav_bar">Skrýt navigační lištu</string>
     <string name="preference_screen_integrations_summary">Spravovat připojené účty a služby</string>
-    <string name="preference_signin_user">Přihlášen jako %1$s</string>
     <string name="preference_icon_shape_pentagon">Pentagon</string>
     <string name="preference_category_wallpaper">Pozadí</string>
     <string name="preference_dim_wallpaper">Ztmavit pozadí</string>
@@ -268,11 +243,6 @@
     <string name="preference_cloud_badges">Ikony cloudu</string>
     <string name="preference_shortcut_badges">Ikony záložek</string>
     <string name="preference_shortcut_badges_summary">Zobrazit ikonu značící aplikaci, ke které patří záložka</string>
-    <string name="preference_nextcloud_signin">Přihlásit se k Nextcloudu</string>
-    <string name="preference_nextcloud_signin_summary">Přihlaste se pro prohledání vašeho Nextcloud serveru</string>
-    <string name="preference_nextcloud">Nextcloud</string>
-    <string name="preference_owncloud">Owncloud</string>
-    <string name="preference_owncloud_signin">Přihlásit se k Owncloudu</string>
     <string name="preference_about_telegram">Telegram skupina</string>
     <string name="preference_about_fdroid">F-Droid repozitář</string>
     <string name="preference_enforce_icon_shape">Vynutit tvar</string>
@@ -299,7 +269,6 @@
     <string name="preference_screen_search_summary">Vyhledávání, štítky, vyloučené výsledky</string>
     <string name="preference_screen_search">Hledání</string>
     <string name="preference_search_favorites">Oblíbené</string>
-    <string name="preference_search_files">Soubory</string>
     <string name="preference_search_files_summary">Prohledávat místní a cloudové soubory</string>
     <string name="preference_search_contacts">Kontakty</string>
     <string name="preference_search_contacts_summary">Prohledávat kontakty na tomto zařízení</string>
@@ -314,10 +283,6 @@
     <string name="preference_search_wikipedia_summary">Prohledávat bezplatnou encyklopedii</string>
     <string name="preference_search_websites">Weby</string>
     <string name="preference_search_websites_summary">Zobrazit náhled webu, když je vyhledávací dotaz URL</string>
-    <string name="preference_search_localfiles">Místní soubory</string>
-    <string name="preference_search_nextcloud">Nextcloud</string>
-    <string name="preference_search_cloud_summary">Prohledávat soubory uživatele %1$s</string>
-    <string name="preference_search_owncloud">Owncloud</string>
     <string name="preference_calendar_calendars">Kalendáře</string>
     <string name="preference_screen_buildinfo">Informace o sestavení</string>
     <string name="preference_screen_buildinfo_summary">Více informací o tomto sestavení této aplikace</string>
@@ -328,9 +293,6 @@
     <string name="preference_hidden_items">Vyloučené výsledky vyhledávání</string>
     <string name="preference_hidden_items_summary">Spravovat vyloučené aplikace a výsledky vyhledávání</string>
     <string name="preference_wikipedia_customurl">URL Wikipedie</string>
-    <string name="no_account_nextcloud">Zatím jste nepřipojili svůj účet Nextcloud</string>
-    <string name="no_account_owncloud">Zatím jste nepřipojili svůj účet Owncloud</string>
-    <string name="connect_account">Připojit účet</string>
     <string name="battery_part_charging">Nabíjení</string>
     <string name="create_search_action_website_url">Zadejte adresu webu:</string>
     <string name="websearch_dialog_query_encoding">Kódování dotazu</string>
@@ -538,7 +500,6 @@
     <string name="preference_plugin_badges_summary">Zobrazit, který doplněk vytvořil výsledek vyhledávání</string>
     <string name="plugin_state_setup_required">Nejprve musíte nastavit tento doplněk</string>
     <string name="plugin_action_setup">Nastavit</string>
-    <string name="plugin_type_filesearch">Soubory</string>
     <string name="plugin_type_weather">Poskytovatel počasí</string>
     <string name="plugin_weather_provider_enable">Nastavit jako poskytovatele počasí</string>
     <string name="plugin_weather_provider_enabled">Momentálně nastaven jako poskytovatel počasí</string>
@@ -696,7 +657,6 @@
     <string name="poi_category_gymnastics">Gymnastika</string>
     <string name="poi_category_baseball">Baseballové hřiště</string>
     <string name="poi_category_amusement_park">Zábavní park</string>
-    <string name="preference_signout">Odhlásit se</string>
     <string name="customize_item_tags">Štítky</string>
     <string name="customize_item_visibility">Zobrazit v</string>
     <string name="item_visibility_app_default">Mřížka aplikací a výsledky hledání</string>

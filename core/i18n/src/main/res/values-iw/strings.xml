@@ -16,7 +16,6 @@
     <string name="menu_favorites_unpin">הסרת הנעיצה</string>
     <string name="menu_launch">הפעלה</string>
     <string name="menu_customize">התאמה אישית</string>
-    <string name="menu_open_file">פתיחה</string>
     <string name="menu_website">פתיחת האתר</string>
     <string name="menu_map">הצגה במפה</string>
     <string name="action_undo">ביטול</string>
@@ -52,21 +51,6 @@
     <string name="wind_west_north_west">מערב צפון-מערב</string>
     <string name="wikipedia_url">https://he.wikipedia.org</string>
     <string name="wikipedia_source">מוויקיפדיה</string>
-    <string name="file_meta_title">כותרת: %1$s</string>
-    <string name="file_meta_artist">האמן: %1$s</string>
-    <string name="file_meta_album">אלבום: %1$s</string>
-    <string name="file_meta_duration">משך: %1$s</string>
-    <string name="file_meta_year">שנה: %1$s</string>
-    <string name="file_meta_size">גודל: %1$s</string>
-    <string name="file_meta_path">נתיב: %1$s</string>
-    <string name="file_meta_type">סוג: %1$s</string>
-    <string name="file_meta_dimensions">מידות: %1$s</string>
-    <string name="file_meta_app_name">שם היישום: %1$s</string>
-    <string name="file_meta_app_version">גרסה: %1$s</string>
-    <string name="file_meta_app_pkgname">שם החבילה: %1$s</string>
-    <string name="file_meta_app_min_sdk">גרסת SDK מינימלית: ‍%1$s</string>
-    <string name="file_meta_owner">בעלים: ‌%1$s</string>
-    <string name="file_meta_location">מיקום: %1$s</string>
     <string name="file_type_directory">תיקיה</string>
     <string name="file_type_archive">קובץ ארכיב</string>
     <string name="file_type_document">מסמך</string>
@@ -85,8 +69,6 @@
     <string name="file_type_form">טופס</string>
     <string name="file_type_launchertheme">ערכת נושא %1$s</string>
     <string name="file_type_generic">קובץ %1$s</string>
-    <string name="alert_delete_directory">התיקיה %1$s וכל התוכן שלה יימחקו לצמיתות. האם להמשיך?</string>
-    <string name="alert_delete_file">הקובץ %1$s יימחק לצמיתות. האם להמשיך?</string>
     <string name="alert_delete_shortcut">הקיצור %1$s יימחק לצמיתות. האם להמשיך?</string>
     <string name="default_websearch_2_url">‪https://www.youtube.com/results?search_query=${1}‬</string>
     <string name="default_websearch_3_name">גוגל פליי</string>
@@ -228,15 +210,12 @@
     <string name="missing_permission_tasks_integration">נדרשת הרשאה למטלות כדי להשתמש באינטגרציית המטלות</string>
     <string name="missing_permission_calendar_widget_settings">יישומון זה מחייב הרשאה ללוח השנה</string>
     <string name="widget_config_calendar_missing_calendars_hint">לא מצליחים למצוא את לוח השנה שלכם?</string>
-    <string name="missing_permission_file_search_settings">נדרשת הרשאה לאחסון החיצוני כדי לחפש קבצים במכשיר זה</string>
-    <string name="missing_permission_file_search_settings_android10">נדרשת הרשאה לכל הקבצים כדי לחפש קבצים מקומיים</string>
     <string name="missing_permission_appshortcuts_search_settings">יש להגדיר את %1$s כיישום הבית המוגדר כברירת מחדל כדי לחפש קיצורי דרך ליישומים</string>
     <string name="missing_permission_notification_badges">נדרשת גישה להתראות כדי להציג תגי התראה</string>
     <string name="missing_permission_appshortcuts_search">הגדרת %1$s כיישום הבית המוגדר כברירת מחדל כדי לחפש קיצורי דרך ליישומים.</string>
     <string name="grant_permission">הענקה</string>
     <string name="missing_permission_calendar_search">דרושה הרשאה ללוח השנה כדי לחפש בלוח השנה שלך</string>
     <string name="missing_permission_location_search">דרושה הרשאה למיקום כדי לחפש מיקומים קרובים</string>
-    <string name="missing_permission_files_search">דרושה הרשאה לאחסון כדי לחפש קבצים במכשיר זה</string>
     <string name="missing_permission_contact_search">דרושה הרשאה לאנשי הקשר כדי לחפש בין אנשי הקשר שלך</string>
     <string name="preference_screen_appearance">מראֶה</string>
     <string name="preference_theme">ערכת נושא</string>
@@ -322,10 +301,6 @@
     <string name="preference_shortcut_badges_summary">הצגת תג המציין לאיזה יישום שייך קיצור הדרך</string>
     <string name="preference_plugin_badges">תגי תוספים</string>
     <string name="preference_plugin_badges_summary">חיווי התוסף ששימש ליצירת תוצאת החיפוש</string>
-    <string name="preference_nextcloud_signin">התחברות ל-Nextcloud</string>
-    <string name="preference_nextcloud_signin_summary">התחברות כדי לחפש את שרת ה-Nextcloud שלך</string>
-    <string name="preference_nextcloud">Nextcloud</string>
-    <string name="preference_owncloud">Owncloud</string>
     <string name="preference_suspended_badges">יישומים מושעים</string>
     <string name="preference_cloud_badges">תגי ענן</string>
     <string name="preference_cloud_badges_summary">הצגת תג עבור קבצים ששמורים בענן</string>
@@ -358,7 +333,6 @@
     <string name="preference_screen_search">חיפוש</string>
     <string name="preference_screen_search_summary">חיפוש, תגיות, תוצאות מוחרגות</string>
     <string name="preference_search_favorites_summary">הצגת פריטים נעוצים ובשימוש נפוץ מעל רשת היישומים</string>
-    <string name="preference_search_files">קבצים</string>
     <string name="preference_search_favorites">מועדפים</string>
     <string name="preference_search_contacts_summary">חיפוש אנשי קשר במכשיר זה</string>
     <string name="preference_search_calendar_summary">חיפוש פגישות ואירועים קרובים</string>
@@ -378,10 +352,7 @@
     <string name="preference_search_locations">מקומות</string>
     <string name="preference_search_locations_summary">חיפוש באזור המקומי חנויות ומקומות אחרים</string>
     <string name="preference_search_locations_radius">רדיוס החיפוש</string>
-    <string name="preference_search_localfiles">קבצים מקומיים</string>
-    <string name="preference_search_nextcloud">Nextcloud</string>
     <string name="preference_search_websites_summary">הצגת תצוגה מקדימה של אתר אינטרנט אם שאילתת החיפוש היא כתובת URL</string>
-    <string name="preference_search_owncloud">Owncloud</string>
     <string name="preference_calendar_hide_completed">הסתרת משימות שהושלמו</string>
     <string name="preference_screen_buildinfo">מידע על בניית התוכנה</string>
     <string name="preference_calendar_calendars">לוחות שנה</string>
@@ -416,9 +387,7 @@
     <string name="preference_launch_tasks_app">פתיחת היישום Tasks</string>
     <string name="preference_breezyweather_integration">Breezy Weather</string>
     <string name="preference_breezyweather_integration_description">יישומון Breezy Weather הינו יישומון מזג אוויר חופשי בקוד פתוח. אם מותקן, %1$s יכול להשתמש ב-Breezy Weather כמקור נתונים לנתוני מזג אוויר.</string>
-    <string name="no_account_owncloud">טרם חיברת חשבון Owncloud</string>
     <string name="battery_part_charging">טעינה</string>
-    <string name="no_account_nextcloud">טרם חיברת חשבון Nextcloud</string>
     <plurals name="battery_part_remaining_charge_time">
         <item quantity="one">מלאה בעוד %1$s דקה</item>
         <item quantity="two">מלאה בעוד %1$s דקות</item>
@@ -448,8 +417,6 @@
     <string name="preference_icon_pack_summary_empty">לא מותקנות חבילות סמלים</string>
     <string name="preference_category_system_bars">סרגלי המערכת</string>
     <string name="preference_status_bar_icons">סמלי שורת המצב</string>
-    <string name="preference_signout">יציאה</string>
-    <string name="preference_summary_not_logged_in">לא נכנסת</string>
     <string name="preference_icon_shape_pentagon">מחומש</string>
     <string name="preference_category_wallpaper">תמונת הרקע</string>
     <string name="preference_dim_wallpaper">עמעום תמונת הרקע</string>
@@ -458,8 +425,6 @@
     <string name="preference_notification_badges">תגי התראה</string>
     <string name="preference_notification_badges_summary">הצגת תג עבור יישומים עם התראות שלא נקראו</string>
     <string name="preference_suspended_badges_summary">הצגת תג עבור יישומים מושעים</string>
-    <string name="preference_owncloud_signin">התחברות ל-Owncloud</string>
-    <string name="preference_owncloud_signin_summary">התחברות כדי לחפש את שרת ה-Owncloud שלך</string>
     <string name="preference_about_telegram">קבוצת טלגרם</string>
     <string name="preference_about_fdroid">מאגר F-Droid</string>
     <string name="preference_enforce_icon_shape">אכיפת צורה</string>
@@ -484,8 +449,6 @@
     <string name="preference_search_unitconverter">ממיר יחידות</string>
     <string name="preference_search_unitconverter_summary">שימוש: 1.5 ק\"ג או 4 ס\"מ &gt;&gt; אינץ\'</string>
     <string name="preference_search_currencyconverter">ממיר מטבע</string>
-    <string name="preference_search_localfiles_summary">חיפוש מסמכים, תמונות וקבצים אחרים השמורים במכשיר זה</string>
-    <string name="preference_search_cloud_summary">חיפוש הקבצים של %1$s</string>
     <string name="preference_screen_buildinfo_summary">עוד מידע על בנייה זו של יישום זה</string>
     <string name="preference_search_bar_style">סגנון</string>
     <string name="preference_search_bar_style_summary">התאמה אישית של מראה שורת החיפוש</string>
@@ -496,9 +459,7 @@
     <string name="preference_hidden_items_reveal_button_summary">הצגת כפתור לחשיפת תוצאות חיפוש שלא נכללו</string>
     <string name="preference_compact_tags">תגיות קומפקטיות</string>
     <string name="preference_compact_tags_summary">הסתרת תוויות או סמלים של תגיות כדי לצמצם את השטח שממלאות התגיות</string>
-    <string name="connect_account">חיבור חשבון</string>
     <string name="missing_permission_calendar_widget">דרושה הרשאה ללוח השנה כדי להציג כאן אירועים קרובים</string>
-    <string name="preference_signin_user">מחובר בתור %1$s</string>
     <string name="missing_permission_appshortcuts_create">הגדרת %1$s כיישום הבית המוגדר כברירת מחדל כדי ליצור קיצורי דרך.</string>
     <string name="favorites_empty_tag">אין פריטים עם תגית זו</string>
     <string name="frequently_used_show_in_favorites">הצגה במועדפים</string>
@@ -788,7 +749,6 @@
     <string name="plugin_state_error">התוסף אינו פועל כראוי</string>
     <string name="plugin_state_setup_required">עליך להגדיר תוסף זה תחילה</string>
     <string name="plugin_action_setup">הגדרה</string>
-    <string name="plugin_type_filesearch">קבצים</string>
     <string name="plugin_type_contacts">אנשי קשר</string>
     <string name="plugin_type_weather">ספק מזג אוויר</string>
     <string name="plugin_weather_provider_enable">הגדרה כספק מזג אוויר</string>

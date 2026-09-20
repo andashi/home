@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="help">說明</string>
-    <string name="file_meta_year">年份：%1$s</string>
     <string name="file_type_directory">目錄</string>
     <string name="show_all">顯示所有</string>
     <string name="weather_condition_lightsnowshowers">輕度陣雪</string>
@@ -36,7 +35,6 @@
     <string name="menu_app_info">應用程式資訊</string>
     <string name="menu_launch">啟動</string>
     <string name="menu_customize">自訂</string>
-    <string name="menu_open_file">開啟</string>
     <string name="menu_share">分享</string>
     <string name="menu_share_store_link">連結 %1$s</string>
     <string name="menu_share_apk_file">APK 安裝套件</string>
@@ -68,20 +66,6 @@
     <string name="wind_north_north_west">北北西</string>
     <string name="wikipedia_url">https://zh.wikipedia.org/zh-tw/</string>
     <string name="wikipedia_source">來自維基百科</string>
-    <string name="file_meta_title">標題：%1$s</string>
-    <string name="file_meta_artist">作者：%1$s</string>
-    <string name="file_meta_album">專輯：%1$s</string>
-    <string name="file_meta_duration">時長：%1$s</string>
-    <string name="file_meta_size">大小：%1$s</string>
-    <string name="file_meta_path">路徑：%1$s</string>
-    <string name="file_meta_type">類別：%1$s</string>
-    <string name="file_meta_dimensions">尺寸：%1$s</string>
-    <string name="file_meta_app_name">應用程式名稱：%1$s</string>
-    <string name="file_meta_app_version">版本：%1$s</string>
-    <string name="file_meta_app_pkgname">套件名稱：%1$s</string>
-    <string name="file_meta_app_min_sdk">最小 SDK 版本：%1$s</string>
-    <string name="file_meta_owner">擁有者：%1$s</string>
-    <string name="file_meta_location">地理位置：%1$s</string>
     <string name="file_type_archive">存檔檔案</string>
     <string name="file_type_android">Android 套件檔案</string>
     <string name="file_type_source_code">原始碼檔案</string>
@@ -98,8 +82,6 @@
     <string name="file_type_drawing">繪圖</string>
     <string name="file_type_form">表單</string>
     <string name="file_type_generic">%1$s 檔案</string>
-    <string name="alert_delete_directory">將永久刪除資料夾「%1$s」以及「%1$s」中的所有檔案。您要繼續嗎？</string>
-    <string name="alert_delete_file">將永久刪除檔案「%1$s」。您要繼續嗎？</string>
     <string name="alert_delete_shortcut">將永久移除捷徑「%1$s」。您要繼續嗎？</string>
     <string name="default_websearch_2_name">YouTube</string>
     <string name="default_websearch_2_url">https://www.youtube.com/results\?search_query=${1}</string>
@@ -205,12 +187,9 @@
     <string name="missing_permission_contact_search_settings">需要聯絡人權限以搜尋聯絡人</string>
     <string name="missing_permission_calendar_search_settings">需要日曆權限以搜尋日曆</string>
     <string name="missing_permission_appshortcuts_search_settings">若要搜尋應用程式捷徑，必須將 %1$s 設為預設主畫面應用程式</string>
-    <string name="missing_permission_file_search_settings">需要外部儲存空間權限以搜尋裝置上的檔案</string>
-    <string name="missing_permission_file_search_settings_android10">需要「所有檔案的存取權」權限以便搜尋本機檔案</string>
     <string name="missing_permission_notification_badges">需要通知存取權以便顯示通知標記</string>
     <string name="missing_permission_calendar_widget">授予日曆許可權以在此處顯示即將到來的事件</string>
     <string name="missing_permission_calendar_search">需要日曆權限以存取日曆</string>
-    <string name="missing_permission_files_search">需要檔案權限以在此裝置上搜尋檔案</string>
     <string name="missing_permission_contact_search">需要聯絡人權限以搜尋您的聯絡人</string>
     <string name="missing_permission_appshortcuts_search">將 %1$s 設為預設主畫面應用程式以搜尋應用程式捷徑。</string>
     <string name="missing_permission_appshortcuts_create">將 %1$s 設為預設主畫面應用程式以建立捷徑。</string>
@@ -281,8 +260,6 @@
     <string name="preference_hide_status_bar">隱藏狀態列</string>
     <string name="preference_hide_nav_bar">隱藏導覽列</string>
     <string name="preference_screen_integrations_summary">管理已連線的帳戶與服務</string>
-    <string name="preference_signin_user">以 %1$s 身份登入</string>
-    <string name="preference_summary_not_logged_in">您尚未登入</string>
     <string name="preference_icon_shape_pentagon">五角形</string>
     <string name="preference_dim_wallpaper">調暗桌布</string>
     <string name="preference_dim_wallpaper_summary">在深色主題中，使桌布變暗</string>
@@ -293,12 +270,6 @@
     <string name="preference_category_badges">標記</string>
     <string name="preference_notification_badges">通知標記</string>
     <string name="preference_notification_badges_summary">為帶有未讀通知的應用程式顯示標記</string>
-    <string name="preference_nextcloud_signin">登入到 Nextcloud</string>
-    <string name="preference_nextcloud_signin_summary">登入以查詢您的 Nextcloud 服務</string>
-    <string name="preference_nextcloud">Nextcloud</string>
-    <string name="preference_owncloud">Owncloud</string>
-    <string name="preference_owncloud_signin">登入到 Owncloud</string>
-    <string name="preference_owncloud_signin_summary">登入以查詢您的 Owncloud 服務</string>
     <string name="preference_about_telegram">Telegram 群組</string>
     <string name="preference_about_fdroid">F-Droid 儲存庫</string>
     <string name="preference_enforce_icon_shape">強制設定形狀</string>
@@ -329,7 +300,6 @@
     <string name="preference_clockwidget_alarm_part">鬧鐘</string>
     <string name="preference_clockwidget_alarm_part_summary">顯示未來 8 小時內響起的鬧鐘</string>
     <string name="preference_search_favorites_summary">在應用程式抽屜上方顯示釘選與常用項目</string>
-    <string name="preference_search_files">檔案</string>
     <string name="preference_search_files_summary">搜尋本機檔案與雲端伺服器檔案</string>
     <string name="preference_search_contacts">聯絡人</string>
     <string name="preference_search_contacts_summary">搜尋裝置上的聯絡人</string>
@@ -347,18 +317,12 @@
     <string name="preference_search_wikipedia_summary">搜尋自由的百科全書</string>
     <string name="preference_search_websites">網站</string>
     <string name="preference_search_websites_summary">如果搜尋查詢是 URL，則顯示網站的預覽</string>
-    <string name="preference_search_localfiles">本機檔案</string>
-    <string name="preference_search_localfiles_summary">搜尋儲存在此裝置上的文件、照片與其它檔案</string>
-    <string name="preference_search_nextcloud">Nextcloud</string>
-    <string name="preference_search_cloud_summary">搜尋%1$s的檔案</string>
-    <string name="preference_search_owncloud">Owncloud</string>
     <string name="preference_calendar_calendars">日曆</string>
     <string name="preference_screen_buildinfo_summary">有關此版本應用程式的更多資訊</string>
     <string name="preference_search_bar_style">風格</string>
     <string name="preference_search_bar_style_summary">自訂搜尋欄外觀</string>
     <string name="preference_search_bar_color">顏色</string>
     <string name="preference_search_bar_auto_focus">開啟鍵盤</string>
-    <string name="no_account_owncloud">您尚未連線 Owncloud 帳戶</string>
     <string name="preference_search_bar_auto_focus_summary">開啟應用程式抽屜時自動顯示鍵盤</string>
     <string name="preference_hidden_items">已排除的搜尋結果</string>
     <string name="preference_hidden_items_summary">管理已排除的應用程式與搜尋結果</string>
@@ -371,8 +335,6 @@
     <string name="preference_edit_button">編輯按鈕</string>
     <string name="preference_favorites_edit_button_summary">顯示一個按鈕以重新排列我的最愛</string>
     <string name="preference_widgets_edit_button_summary">顯示一個按鈕以新增、移除與重新排列小工具</string>
-    <string name="no_account_nextcloud">您尚未連線 Nextcloud 帳戶</string>
-    <string name="connect_account">連線帳戶</string>
     <string name="battery_part_charging">充電中</string>
     <string name="icon_picker_default_icon">預設</string>
     <string name="icon_picker_suggestions">建議</string>
@@ -507,7 +469,6 @@
     <string name="theme_color_scheme_autogenerate">從原色開始</string>
     <string name="preference_mdy_color_source">動態色彩來源</string>
     <string name="preference_debug_dump_heap_in_progress">正在擷取快照…</string>
-    <string name="plugin_type_filesearch">檔案</string>
     <string name="poi_category_mobile_phone">手機店</string>
     <string name="preference_search_locations_radius">搜尋半徑</string>
     <string name="preference_use_system_default">使用系統預設</string>
@@ -712,7 +673,6 @@
     <string name="preference_mdy_color_source_wallpaper">桌布</string>
     <string name="preference_category_advanced">進階</string>
     <string name="preference_screen_plugins">外掛程式</string>
-    <string name="preference_signout">登出</string>
     <string name="preference_calendar_hide_completed">隱藏完成的任務</string>
     <string name="preference_clock_widget_alignment_top">頂部</string>
     <string name="preference_location_managed_summary">此供應商的位置由外掛應用程式管理</string>

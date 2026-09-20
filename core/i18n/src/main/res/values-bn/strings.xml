@@ -10,7 +10,6 @@
     <string name="menu_app_info">অ্যাপের তথ্য</string>
     <string name="menu_launch">চালু করুন</string>
     <string name="menu_customize">কাস্টোমাইজ করুন</string>
-    <string name="menu_open_file">খুলুন</string>
     <string name="wind_east_north_east">পূর্ব উত্তর-পূর্ব</string>
     <string name="wind_south_south_west">দক্ষিণ দক্ষিণ-পশ্চিম</string>
     <string name="widget_name_notes">নোট</string>
@@ -48,20 +47,6 @@
     <string name="wind_west_north_west">পশ্চিম উত্তর-পশ্চিম</string>
     <string name="wind_north_west">উত্তর পশ্চিম</string>
     <string name="wikipedia_source">উইকিপিডিয়া থেকে</string>
-    <string name="file_meta_title">নাম: %1$s</string>
-    <string name="file_meta_artist">শিল্পী: %1$s</string>
-    <string name="file_meta_album">অ্যালবাম: %1$s</string>
-    <string name="file_meta_duration">ব্যাপ্তি: %1$s</string>
-    <string name="file_meta_year">বছর: %1$s</string>
-    <string name="file_meta_size">আকার: %1$s</string>
-    <string name="file_meta_path">পথ: %1$s</string>
-    <string name="file_meta_type">ধরন: %1$s</string>
-    <string name="file_meta_dimensions">মাত্রা: %1$s</string>
-    <string name="file_meta_app_name">অ্যাপের নাম: %1$s</string>
-    <string name="file_meta_app_version">ভার্সন: %1$s</string>
-    <string name="file_meta_app_pkgname">প্যাকেজের নাম: %1$s</string>
-    <string name="file_meta_owner">মালিক: %1$s</string>
-    <string name="file_meta_location">স্থান: %1$s</string>
     <string name="file_type_directory">ডিরেক্টরি</string>
     <string name="file_type_archive">জিপ ফাইল</string>
     <string name="file_type_source_code">সোর্স কোড ফাইল</string>
@@ -77,7 +62,6 @@
     <string name="file_type_launchertheme">%1$s থীম</string>
     <string name="file_type_generic">%1$s ফাইল</string>
     <string name="file_type_music">সঙ্গীত ফাইল</string>
-    <string name="alert_delete_file">%1$s ফাইলটি স্থায়ীভাবে মুছে ফেলা হবে৷ আপনি নিশ্চিত?</string>
     <string name="default_websearch_2_name">ইউটিউব</string>
     <string name="default_websearch_2_url">https://www.youtube.com/results?search_query=${1}</string>
     <string name="default_websearch_3_name">প্লে স্টোর</string>
@@ -174,7 +158,6 @@
     <string name="notes_widget_action_save">সংরক্ষণ করুন</string>
     <string name="turn_off">বন্ধ করুন</string>
     <string name="menu_delete">মুছুন</string>
-    <string name="file_meta_app_min_sdk">ন্যূনতম SDK ভার্সন: %1$s</string>
     <string name="widget_add_widget">উইজেট যোগ করুন</string>
     <string name="edit_favorites_dialog_tag_section_empty">পিন করা ট্যাগ এখানে দেখা যাবে</string>
     <string name="owncloud_server_invalid_url">এই লিংকটি একটি Owncloud সার্ভারকে নির্দেশ করে না</string>
@@ -182,7 +165,6 @@
     <string name="weather_condition_heavysleetshowers">প্রচণ্ড শিলা বৃষ্টি</string>
     <string name="weather_condition_heavysnowandthunder">প্রচণ্ড তুষার এবং বজ্রপাত</string>
     <string name="menu_calendar_open_externally">ক্যালেন্ডার অ্যাপে খুলুন</string>
-    <string name="alert_delete_directory">ডিরেক্টরি %1$s এবং এর সমস্ত সামগ্রী স্থায়ীভাবে মুছে ফেলা হবে৷ আগাবেন?</string>
     <string name="weather_condition_lightsleet">হালকা তুষার বৃষ্টি</string>
     <string name="task_due_time">শেষ সময় %1$s</string>
     <string name="task_due_date">শেষ তারিখ %1$s</string>
@@ -191,7 +173,6 @@
     <string name="location_closes_other_day">বন্ধ হবে %1$s, %2$s</string>
     <string name="location_opens_other_day">খোলে %1$s, %2$s</string>
     <string name="location_opens">%1$s তে খুলবে</string>
-    <string name="missing_permission_file_search_settings_android10">লোকাল ফাইল অনুসন্ধান করতে সব ফাইল পরিচালনা করার অনুমতির প্রয়োজন</string>
     <string name="widget_config_calendar_missing_calendars_hint">আপনার ক্যালেন্ডার খুঁজে পাচ্ছেন না?</string>
     <string name="action_done">হয়েছে</string>
     <string name="action_more_actions">আরো একশন</string>
@@ -209,7 +190,6 @@
     <string name="missing_permission_contact_search_settings">কন্টাক্ট অনুসন্ধান করতে কন্টাক্ট অনুমতির প্রয়োজন</string>
     <string name="missing_permission_calendar_search_settings">ক্যালেন্ডার অনুসন্ধান করতে ক্যালেন্ডার অনুমতির প্রয়োজন</string>
     <string name="missing_permission_calendar_widget_settings">এই উইজেটটির ব্যবহারের জন্য ক্যালেন্ডার অনুমতির প্রয়োজন</string>
-    <string name="missing_permission_file_search_settings">লোকাল ফাইল অনুসন্ধান করতে এক্সটার্নাল স্টোরেজ অনুমতির প্রয়োজন</string>
     <string name="missing_permission_appshortcuts_search_settings">অ্যাপ শর্টকাট অনুসন্ধান করার জন্য %1$s-কে ডিফল্ট হোম অ্যাপ হিসেবে সেট করা আবশ্যক</string>
     <string name="missing_permission_notification_badges">বিজ্ঞপ্তি ব্যাজ প্রদর্শন করতে নোটিফিকেশন অ্যাক্সেস প্রয়োজন</string>
     <string name="missing_permission_calendar_widget">এখানে আসন্ন অ্যাপয়েন্টমেন্ট এবং ইভেন্টগুলি প্রদর্শন করতে ক্যালেন্ডার অনুমতি প্রদান করুন।</string>
@@ -253,7 +233,6 @@
     <string name="preference_force_themed_icons_summary">সমস্ত আইকনে, সমর্থিত না হওয়া আইকনসহ, অ্যাপ্লিকেশনের রঙের স্কিম প্রয়োগ করুন (প্রস্তাবিত নয়)</string>
     <string name="preference_colors_bw">সাদা-কালো</string>
     <string name="missing_permission_contact_search">আপনার কন্টাক্ট খোঁজার জন্য কন্টাক্ট অনুমতি দিন।</string>
-    <string name="missing_permission_files_search">এই ডিভাইসে ছবি, মিডিয়া এবং ডকুমেন্ট খোঁজার জন্য স্টোরেজের অনুমতি দিন</string>
     <string name="preference_theme">থিম</string>
     <string name="preference_font">অক্ষররেখা</string>
     <string name="preference_colors_default">পূর্বনির্ধারিত</string>

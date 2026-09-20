@@ -28,20 +28,6 @@
     <string name="wind_west_north_west">Запад-северо-западный</string>
     <string name="wind_north_west">Северо-западный</string>
     <string name="wikipedia_source">Из Википедии</string>
-    <string name="file_meta_title">Название: %1$s</string>
-    <string name="file_meta_artist">Исполнитель: %1$s</string>
-    <string name="file_meta_album">Альбом: %1$s</string>
-    <string name="file_meta_duration">Длительность: %1$s</string>
-    <string name="file_meta_year">Год: %1$s</string>
-    <string name="file_meta_size">Размер: %1$s</string>
-    <string name="file_meta_path">Путь: %1$s</string>
-    <string name="file_meta_type">Тип файла: %1$s</string>
-    <string name="file_meta_dimensions">Разрешение: %1$s</string>
-    <string name="file_meta_app_name">Имя приложения: %1$s</string>
-    <string name="file_meta_app_version">Версия: %1$s</string>
-    <string name="file_meta_app_pkgname">Имя пакета: %1$s</string>
-    <string name="file_meta_owner">Владелец: %1$s</string>
-    <string name="file_meta_location">Местоположение: %1$s</string>
     <string name="file_type_directory">Каталог</string>
     <string name="file_type_archive">Файл архива</string>
     <string name="file_type_android">Файл пакета Android</string>
@@ -58,7 +44,6 @@
     <string name="file_type_drawing">Рисунок</string>
     <string name="file_type_form">Форма</string>
     <string name="file_type_generic">%1$s-файл</string>
-    <string name="alert_delete_file">Файл %1$s будет удалён навсегда. Продолжить\?</string>
     <string name="default_websearch_2_name">YouTube</string>
     <string name="default_websearch_3_name">Google Play</string>
     <string name="default_websearch_3_url">https://play.google.com/store/search\?q=${1}</string>
@@ -134,7 +119,6 @@
     <string name="missing_permission_music_widget">Доступ к уведомлениям необходим для управления воспроизведением медиа</string>
     <string name="missing_permission_calendar_search_settings">Для поиска в календаре требуется соответствующее разрешение</string>
     <string name="missing_permission_calendar_widget_settings">Этому виджету требуется доступ к календарю</string>
-    <string name="missing_permission_file_search_settings">Для поиска файлов требуется разрешение на доступ к хранилищу</string>
     <string name="missing_permission_notification_badges">Для отображения значков-оповещений требуется доступ к уведомлениям</string>
     <string name="missing_permission_calendar_widget">Для отображения предстоящих встреч и событий требуется разрешение на доступ к календарю</string>
     <string name="missing_permission_calendar_search">Поиска по календарю требуется разрешение на доступ к нему</string>
@@ -170,14 +154,11 @@
     <string name="preference_theme_system">Следовать системе</string>
     <string name="menu_share_store_link">%1$s – ссылка</string>
     <string name="menu_app_info">Информация о приложении</string>
-    <string name="menu_open_file">Открыть</string>
     <string name="wind_north_north_east">Северо-северо-восточный</string>
     <string name="wind_south_south_east">Юго-юго-восточный</string>
     <string name="wind_north_north_west">Северо-северо-западный</string>
     <string name="wikipedia_url">https://ru.wikipedia.org</string>
-    <string name="file_meta_app_min_sdk">Минимальная версия SDK: %1$s</string>
     <string name="file_type_presentation">Презентация</string>
-    <string name="alert_delete_directory">Каталог %1$s и всё его содержимое будут удалены навсегда. Продолжить?</string>
     <string name="default_websearch_2_url">https://www.youtube.com/results\?search_query=${1}</string>
     <string name="menu_item_edit_favs">Редактировать избранное</string>
     <string name="edit_favorites_dialog_pinned_unsorted">Закреплены — отсортированы автоматически</string>
@@ -204,8 +185,6 @@
     <string name="weather_widget_set_location">Установить местоположение</string>
     <string name="missing_permission_auto_location">Доступ к местоположению требуется для его автоматического определения</string>
     <string name="missing_permission_contact_search_settings">Для поиска контактов требуется соответствующее разрешение</string>
-    <string name="missing_permission_file_search_settings_android10">Для поиска файлов требуется разрешение «Доступ ко всем файлам»</string>
-    <string name="missing_permission_files_search">Для поиска фотографий, медиафайлов и документов на этом устройстве требуется разрешение на доступ к хранилищу</string>
     <string name="preference_theme">Тема</string>
     <string name="preference_colors_bw">Чёрно-белая</string>
     <string name="open_webpage">Открыть веб-сайт</string>
@@ -230,10 +209,7 @@
     <string name="preference_search_calculator">Калькулятор</string>
     <string name="preference_search_wikipedia_summary">Поиск в свободной энциклопедии</string>
     <string name="preference_search_websites_summary">Показать предварительный просмотр веб-сайта, если поисковый запрос является URL-ссылкой</string>
-    <string name="preference_search_localfiles">Локальные файлы</string>
-    <string name="preference_search_localfiles_summary">Поиск документов, фотографий и других файлов, хранящихся на этом устройстве</string>
     <string name="preference_calendar_calendars">Календари</string>
-    <string name="preference_search_files">Файлы</string>
     <string name="preference_clockwidget_date_part">Дата</string>
     <string name="preference_clockwidget_battery_part">Батарея</string>
     <string name="preference_search_bar_style">Стиль</string>
@@ -248,7 +224,6 @@
     <string name="preference_dim_wallpaper">Тусклые обои</string>
     <string name="preference_dim_wallpaper_summary">Затемнять обои тёмных темах</string>
     <string name="preference_wallpaper_summary">Выберите обои</string>
-    <string name="preference_nextcloud">Nextcloud</string>
     <string name="preference_about_telegram">Группа Telegram</string>
     <string name="preference_about_fdroid">Репозиторий F-Droid</string>
     <string name="preference_category_license">Лицензия</string>
@@ -301,12 +276,9 @@
     <string name="preference_font">Шрифт</string>
     <string name="preference_status_bar_icons">Цвет значков строки состояния</string>
     <string name="preference_system_bar_icons_dark">Тёмный</string>
-    <string name="preference_signin_user">Вы вошли как %1$s</string>
     <string name="preference_system_bar_icons_light">Светлый</string>
     <string name="preference_icon_shape_pentagon">Пятиугольник</string>
-    <string name="connect_account">Подключить учётную запись</string>
     <string name="preference_icon_shape_pebble">Булыжник</string>
-    <string name="preference_summary_not_logged_in">Вы не вошли</string>
     <string name="battery_part_charging">Идёт зарядка</string>
     <string name="search_action_contact">Добавить в контакты</string>
     <string name="search_action_websearch_url">Образец URL</string>
@@ -379,20 +351,13 @@
     <string name="gesture_action_recents">Показать недавние приложения</string>
     <string name="gesture_failed_message">Вы выполнили жест «%1$s». В данный момент он настроен на запуск действия «%2$s». Однако оно не может быть выполнено по следующей причине:</string>
     <string name="create_search_action_pick_app">Выберите приложение для поиска:</string>
-    <string name="preference_nextcloud_signin">Войти в Nextcloud</string>
-    <string name="preference_owncloud">Owncloud</string>
-    <string name="preference_nextcloud_signin_summary">Войдите для поиска на сервере Nextcloud</string>
-    <string name="preference_owncloud_signin">Войти в Owncloud</string>
-    <string name="preference_owncloud_signin_summary">Войдите для поиска на сервере Owncloud</string>
     <string name="preference_clockwidget_favorites_part">Быстрый доступ</string>
     <string name="preference_search_favorites">Избранные</string>
     <string name="preference_search_favorites_summary">Отображать закрепленные и часто используемые над списком приложений</string>
-    <string name="preference_search_nextcloud">Nextcloud</string>
     <string name="preference_search_bar_style_summary">Настроить внешний вид строки поиска</string>
     <string name="preference_search_bar_color">Цвет</string>
     <string name="preference_favorites_edit_button_summary">Показывать кнопку для редактирования избранных</string>
     <string name="preference_widgets_edit_button_summary">Показывать кнопку для добавления, удаления и редактирования виджетов</string>
-    <string name="no_account_nextcloud">Вы ещё не подключили учётную запись Nextcloud</string>
     <string name="preference_hidden_items">Скрытые результаты поиска</string>
     <string name="preference_hidden_items_summary">Управление скрытыми приложениями и результатами поиска</string>
     <string name="preference_screen_tags">Теги</string>
@@ -400,7 +365,6 @@
     <string name="preference_category_favorites_frequently_used">Часто используемые</string>
     <string name="preference_favorites_frequently_used_summary">Показывать часто используемые в избранном</string>
     <string name="preference_edit_button">Кнопка для редактирования</string>
-    <string name="no_account_owncloud">Вы ещё не подключили учётную запись Owncloud</string>
     <string name="favorites">Избранные</string>
     <string name="favorites_empty">Закрепленные и часто используемые элементы будут находиться здесь</string>
     <string name="widget_config_weather_compact">Компактный вид</string>
@@ -445,8 +409,6 @@
     <string name="widget_config_appwidget_background">Фон карточки</string>
     <string name="preference_shortcut_badges">Значки ярлыков</string>
     <string name="preference_cloud_badges">Облачные значки</string>
-    <string name="preference_search_owncloud">Owncloud</string>
-    <string name="preference_search_cloud_summary">Искать файлы %1$s</string>
     <string name="preference_screen_homescreen">Главный экран</string>
     <string name="preference_screen_icons">Сетка и иконки</string>
     <string name="preference_weather_integration">Погода</string>
@@ -527,7 +489,6 @@
     <string name="plugin_state_setup_required">Сначала вам нужно настроить этот плагин</string>
     <string name="plugin_action_setup">Настроить</string>
     <string name="preference_clock_widget_alignment_top">Вверху</string>
-    <string name="plugin_type_filesearch">Файлы</string>
     <string name="preference_clock_widget_alignment_center">По центру</string>
     <string name="import_theme_error">Не удалось прочитать выбранный файл. Убедитесь, что вы выбрали корректный файл темы (*.kvtheme) и что он не повреждён.</string>
     <string name="plugin_weather_provider_enable">Назначить провайдером погоды</string>
@@ -699,7 +660,6 @@
     <string name="poi_category_monument">Памятник</string>
     <string name="poi_category_courthouse">Здание суда</string>
     <string name="clock_style_segment">Семисегментные</string>
-    <string name="preference_signout">Выйти</string>
     <string name="poi_category_baseball">Бейсбольное поле</string>
     <string name="poi_category_handball">Площадка для гандбола</string>
     <string name="poi_category_volleyball">Волейбольная площадка</string>

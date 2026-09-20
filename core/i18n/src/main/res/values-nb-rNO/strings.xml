@@ -10,7 +10,6 @@
     <string name="menu_app_info">App-info</string>
     <string name="menu_launch">Åpne</string>
     <string name="menu_customize">Tilpass</string>
-    <string name="menu_open_file">Åpne</string>
     <string name="action_undo">Angre</string>
     <string name="action_import">Importer</string>
     <string name="menu_remove">Fjern</string>
@@ -34,19 +33,6 @@
     <string name="wind_west_north_west">Vest-nord-vest</string>
     <string name="wind_north_west">Nord-vest</string>
     <string name="wikipedia_source">Fra Wikipedia</string>
-    <string name="file_meta_title">Tittel: %1$s</string>
-    <string name="file_meta_album">Album: %1$s</string>
-    <string name="file_meta_duration">Lengde: %1$s</string>
-    <string name="file_meta_year">År: %1$s</string>
-    <string name="file_meta_path">Sti: %1$s</string>
-    <string name="file_meta_type">Type: %1$s</string>
-    <string name="file_meta_dimensions">Dimensjoner: %1$s</string>
-    <string name="file_meta_app_name">App-navn: %1$s</string>
-    <string name="file_meta_app_version">Versjon: %1$s</string>
-    <string name="file_meta_app_pkgname">Pakkenavn: %1$s</string>
-    <string name="file_meta_app_min_sdk">Minimum SDK-versjon: %1$s</string>
-    <string name="file_meta_owner">Eier: %1$s</string>
-    <string name="file_meta_location">Sted: %1$s</string>
     <string name="file_type_directory">Katalog</string>
     <string name="file_type_archive">Arkivfil</string>
     <string name="file_type_android">Android-pakkefil</string>
@@ -62,7 +48,6 @@
     <string name="file_type_form">Skjema</string>
     <string name="file_type_launchertheme">%1$s-tema</string>
     <string name="file_type_generic">%1$s-fil</string>
-    <string name="alert_delete_file">Fila %1$s vil bli permanent slettet. Vil du fortsette?</string>
     <string name="alert_delete_shortcut">Snarveien %1$s vil ble permanent slettet. Vil du fortsette?</string>
     <string name="default_websearch_2_name">YouTube</string>
     <string name="default_websearch_3_name">Google Play</string>
@@ -177,10 +162,8 @@
     <string name="file_type_none">Fil</string>
     <string name="default_websearch_2_url">https://www.youtube.com/results?search_query=${1}</string>
     <string name="notes_widget_action_save">Lagre</string>
-    <string name="plugin_type_filesearch">Filsøk</string>
     <string name="missing_permission_calendar_search_settings">Kalendertilgang kreves for å søke i kalender</string>
     <string name="provider_openweathermap">OpenWeatherMap</string>
-    <string name="alert_delete_directory">Katalogen %1$s og all dens innhold vil bli slettet permanent. Vil du fortsette?</string>
     <string name="owncloud_login_2fa_hint">Dersom du har tofaktor-autentisering akrivert, må du bruke et app-passord her.</string>
     <string name="disclaimer_currency_converter">Valutakurser publiseres en gang om dagen av den europeiske sentralbanken. All informasjon gis «som den er» uten noen form for garanti. Vi fraskriver oss alt ansvar for denne informasjonen.
 \n
@@ -189,7 +172,6 @@
     <string name="preference_cloud_badges_summary">Vis en prikk for filer som er lagret i skyen</string>
     <string name="search_bar_placeholder">Søk</string>
     <string name="wikipedia_url">https://no.wikipedia.org</string>
-    <string name="file_meta_artist">Artist: %1$s</string>
     <string name="file_type_compressed">Komprimert fil</string>
     <string name="websearch_dialog_query_encoding">Spørrings-enkoding</string>
     <string name="menu_delete">Slett</string>
@@ -200,7 +182,6 @@
     <string name="preference_clockwidget_favorites_part_summary">Vis den første raden med festede enheter</string>
     <string name="missing_permission_calendar_widget_settings">Denne widgeten krever kalendertilgang</string>
     <string name="menu_contacts_open_externally">Åpne i kontakt-app</string>
-    <string name="file_meta_size">Størrelse: %1$s</string>
     <string name="preference_clock_widget_alignment">Justering</string>
     <string name="missing_permission_music_widget">Varseltilgang kreves for å styre mediaavspilling</string>
     <string name="preference_font">Font</string>
@@ -268,8 +249,6 @@
     <string name="preference_dim_wallpaper">Demp bakgrunn</string>
     <string name="preference_blur_wallpaper_unsupported">Støttes ikke på denne enheten</string>
     <string name="preference_wallpaper_summary">Velg en bakgrunn</string>
-    <string name="preference_nextcloud">Nextcloud</string>
-    <string name="preference_owncloud">Owncloud</string>
     <string name="preference_about_telegram">Telegram-gruppe</string>
     <string name="preference_enforce_icon_shape">Tving form</string>
     <string name="preference_category_license">Lisens</string>
@@ -287,10 +266,6 @@
     <string name="preference_screen_clockwidget_summary">Konfigurer klokkestil og -komponenter</string>
     <string name="preference_clockwidget_date_part_summary">Vis dagens dato</string>
     <string name="preference_search_favorites">Favoritter</string>
-    <string name="preference_search_files">Filer</string>
-    <string name="preference_search_nextcloud">Nextcloud</string>
-    <string name="preference_search_cloud_summary">Søk i %1$s sine filer</string>
-    <string name="preference_search_owncloud">Owncloud</string>
     <string name="preference_calendar_calendars">Kalendere</string>
     <string name="preference_screen_buildinfo">Bygg-informasjon</string>
     <string name="preference_screen_buildinfo_summary">Mer informasjon on dette bygget av denne appen</string>
@@ -298,8 +273,6 @@
     <string name="preference_favorites_edit_button_summary">Vis en knapp for å omrokkere favorittene</string>
     <string name="preference_weather_integration">Vær</string>
     <string name="preference_media_integration">Mediakontroll</string>
-    <string name="no_account_owncloud">Du har ikke koblet til en Owncloud-konto ennå</string>
-    <string name="connect_account">Koble til konto</string>
     <string name="battery_part_charging">Lader</string>
     <plurals name="battery_part_remaining_charge_time">
         <item quantity="one">Fullt om %1$s minutt</item>
@@ -348,16 +321,11 @@
     <string name="note_widget_conflict_keep_selected">Behold valgt</string>
     <string name="preference_screen_plugins">Programtillegg</string>
     <string name="preference_screen_homescreen">Hjemskjerm</string>
-    <string name="no_account_nextcloud">Du har ikke koblet til en Nextcloud-konto ennå</string>
     <string name="search_action_contact">Ny kontakt</string>
     <string name="create_search_action_website_url">Skriv inn nettsidens adresse:</string>
     <string name="tag_exists_message">En merkelapp med dette navnet eksisterer allerede. Om du fortsetter vil merkelappene flettes sammen</string>
-    <string name="preference_search_localfiles_summary">Søk dokumenter, foto og andre filer lagret på denne enheten</string>
-    <string name="missing_permission_file_search_settings">Tilgang til ekstern lagring kreves for å søke i denne enhetens filer</string>
     <string name="preference_blur_wallpaper">Tilslør bakgrunn</string>
-    <string name="missing_permission_files_search">Gi tilgang til lagring for å søke i bilder, media og dokumenter på denne enheten.</string>
     <string name="preference_screen_homescreen_summary">Klokke, søkefelt, bakgrunn, systemlinjer</string>
-    <string name="preference_search_localfiles">Lokale filer</string>
     <string name="preference_widgets_edit_button_summary">Vis en knapp for å legge til, fjerne og omrokkere widgeter</string>
     <plurals name="debug_cleanup_database_result">
         <item quantity="one">Fjernet %1$d oppføring.</item>
@@ -408,9 +376,6 @@
     <string name="weather_condition_heavysnowshowers">Kraftige snøbyger</string>
     <string name="missing_permission_auto_location">Lokasjonstilgang kreves for å automatisk kunne fastslå lokasjon</string>
     <string name="widget_use_theme_colors">Bruk temafarge</string>
-    <string name="preference_signin_user">Innlogget som %1$s</string>
-    <string name="preference_summary_not_logged_in">Du er ikke pålogget</string>
-    <string name="preference_signout">Logg ut</string>
     <string name="preference_search_contacts">Kontakter</string>
     <string name="preference_search_contacts_summary">Søk i kontakter på denne enheten</string>
     <string name="preference_search_calendar">Kalender</string>
@@ -427,7 +392,6 @@
     <string name="theme_color_scheme_autogenerate">Fra primærfarge</string>
     <string name="app_label_locked_profile">Låst</string>
     <string name="preference_search_favorites_summary">Vis festede og ofte brukte oppføringer over app-rutenettet</string>
-    <string name="preference_nextcloud_signin_summary">Logg inn for å søke på din Nextcloud-tjener</string>
     <string name="customize_item_label">Etikett</string>
     <string name="poi_category_burger_restaurant">Burgerrestaurant</string>
     <string name="poi_category_volleyball">Volleyballbane</string>
@@ -562,14 +526,10 @@
     <string name="preference_search_locations">Steder</string>
     <string name="preference_search_wikipedia_summary">Søk i den frie encyklopedi</string>
     <string name="preference_search_locations_show_map_summary">Vis et kartutsnitt for steder</string>
-    <string name="missing_permission_file_search_settings_android10">Tilgang til alle filer kreves for å kunne søke i lokale filer</string>
     <string name="search_filter_tools">Verktøy</string>
     <string name="search_filter_apps">Apper</string>
     <string name="confirmation_delete_color_scheme">Er du sikker på at du vil slette fargeskjemaet %1$s?</string>
     <string name="profile_work_profile_state_locked">Jobb-apper er satt på pause.</string>
-    <string name="preference_nextcloud_signin">Logg inn på Nextcloud</string>
-    <string name="preference_owncloud_signin">Logg inn på Owncloud</string>
-    <string name="preference_owncloud_signin_summary">Logg inn for å søke på din Owncloud-tjener</string>
     <string name="preference_notification_badges_summary">Vis en prikk for applikasjoner med uleste varsler</string>
     <string name="preference_screen_search_summary">Søk, etiketter, skjulte oppføringer</string>
     <string name="preference_search_calendar_summary">Søk i kommende avtaler og hendelser</string>

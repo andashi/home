@@ -19,7 +19,6 @@
     <string name="menu_app_info">Sovelluksen tiedot</string>
     <string name="menu_launch">Käynnistä</string>
     <string name="menu_customize">Mukauta</string>
-    <string name="menu_open_file">Avaa</string>
     <string name="action_undo">Peru</string>
     <string name="menu_delete">Poista</string>
     <string name="wind_north">Pohjoinen</string>
@@ -34,12 +33,8 @@
     <string name="wind_south_south_west">Etelälounas</string>
     <string name="wikipedia_url">https://fi.wikipedia.org</string>
     <string name="wikipedia_source">Wikipediasta</string>
-    <string name="file_meta_size">Koko: %1$s</string>
-    <string name="file_meta_app_name">Sovelluksen nimi: %1$s</string>
     <string name="file_type_directory">Hakemisto</string>
     <string name="alert_delete_shortcut">Oikotie %1$s poistetaan lopullisesti. Jatka\?</string>
-    <string name="alert_delete_directory">Hakemisto %1$s ja kaikki sen sisältö poistetaan lopullisesti. Jatka\?</string>
-    <string name="alert_delete_file">Tiedosto %1$s poistetaan lopullisesti. Jatka\?</string>
     <string name="default_websearch_3_url">https://play.google.com/store/search\?q=${1}</string>
     <string name="websearch_dialog_delete_icon">Poista kuvake</string>
     <string name="websearch_dialog_custom_icon">Mukautettu kuvake</string>
@@ -74,19 +69,6 @@
     <string name="wind_west_north_west">Länsiluode</string>
     <string name="wind_north_west">Luode</string>
     <string name="wind_north_north_west">Pohjoisluode</string>
-    <string name="file_meta_artist">Artisti: %1$s</string>
-    <string name="file_meta_title">Kappale: %1$s</string>
-    <string name="file_meta_album">Albumi: %1$s</string>
-    <string name="file_meta_duration">Kesto: %1$s</string>
-    <string name="file_meta_year">Vuosi: %1$s</string>
-    <string name="file_meta_path">Polku: %1$s</string>
-    <string name="file_meta_type">Tyyppi: %1$s</string>
-    <string name="file_meta_dimensions">Mitat: %1$s</string>
-    <string name="file_meta_app_version">Versio: %1$s</string>
-    <string name="file_meta_app_pkgname">Paketin nimi: %1$s</string>
-    <string name="file_meta_app_min_sdk">Minimi SDK-versio: %1$s</string>
-    <string name="file_meta_owner">Omistaja: %1$s</string>
-    <string name="file_meta_location">Sijainti: %1$s</string>
     <string name="file_type_archive">Arkisto</string>
     <string name="file_type_android">Androidin pakettitiedosto</string>
     <string name="file_type_source_code">Lähdekooditiedosto</string>
@@ -143,7 +125,6 @@
     <string name="preference_cards_corner_radius">Kulman säde</string>
     <string name="preference_force_themed_icons">Pakota teeman kuvakkeet</string>
     <string name="preference_category_system_bars">Järjestelmän palkit</string>
-    <string name="missing_permission_file_search_settings_android10">Kaikkien tiedostojen käyttöoikeus tarvitaan paikallisten tiedostojen hakuun</string>
     <string name="preference_cards_stroke_width">Lyönnin leveys</string>
     <string name="preference_search_calendar_summary">Hae tulevia tapaamisia ja tapahtumia</string>
     <string name="provider_metno">Norjan meteorologinen instituutti (MET Norway)</string>
@@ -157,7 +138,6 @@
         <item quantity="one">%1$d tapahtuma on poistettu.</item>
         <item quantity="other">%1$d tapahtumaa on poistettu.</item>
     </plurals>
-    <string name="no_account_nextcloud">Et ole liittänyt Nextcloud-tiliä vielä</string>
     <string name="preference_enforce_icon_shape_summary">Käytä muotoa kaikkiin kuvakkeisiin, myös niihin, jotka eivät tue sitä</string>
     <string name="preference_clockwidget_layout_horizontal">Tiivis</string>
     <string name="preference_search_search_actions_summary">Säädä pikatoimintoja ja hakuoikoteitä</string>
@@ -202,7 +182,6 @@
     <string name="preference_edit_favorites_summary">Vaihda kiinnitettyjen kohteiden järjestystä</string>
     <string name="icon_picker_default_icon">Oletus</string>
     <string name="preference_search_files_summary">Hae tiedostoja laitteelta ja pilvestä</string>
-    <string name="preference_search_files">Tiedostot</string>
     <string name="preference_search_contacts">Yhteystiedot</string>
     <string name="preference_search_contacts_summary">Hae yhteystietoja tältä laitteelta</string>
     <string name="preference_search_calendar">Kalenteri</string>
@@ -212,10 +191,6 @@
     <string name="preference_search_wikipedia">Wikipedia</string>
     <string name="preference_search_websites">Verkkosivut</string>
     <string name="preference_search_websites_summary">Näytä esikatselu verkkosivusta jos hakutermi on verkko-osoite</string>
-    <string name="preference_search_localfiles">Paikalliset tiedostot</string>
-    <string name="preference_search_localfiles_summary">Hae asiakirjoja, kuvia ja muita tiedostoja tältä laitteelta</string>
-    <string name="preference_search_nextcloud">Nextcloud</string>
-    <string name="preference_search_owncloud">Owncloud</string>
     <string name="preference_screen_buildinfo">Koontiversion tiedot</string>
     <string name="preference_calendar_calendars">Kalenterit</string>
     <string name="preference_search_bar_style">Tyyli</string>
@@ -230,7 +205,6 @@
     <string name="preference_screen_tags">Avainsanat</string>
     <string name="preference_weather_integration">Sää</string>
     <string name="preference_media_integration">Mediasäätimet</string>
-    <string name="no_account_owncloud">Et ole liittänyt Owncloud-tiliä vielä</string>
     <string name="battery_part_charging">Ladataan</string>
     <string name="icon_picker_search_icon">Hae kuvakepaketeista</string>
     <string name="icon_picker_filter_all_packs">Kaikki kuvakepaketit</string>
@@ -283,7 +257,6 @@
     <string name="missing_permission_calendar_search_settings">Kalenterin käyttöoikeus tarvitaan tapahtumien hakuun</string>
     <string name="missing_permission_calendar_widget_settings">Tämä pienoisohjelma vaatii kalenterin käyttöoikeuden</string>
     <string name="missing_permission_appshortcuts_search_settings">%1$s on asetettava aloitusnäyttösovellukseksi sovellusoikoteiden hakua varten</string>
-    <string name="missing_permission_file_search_settings">Ulkoisen tallennustilan käyttöoikeus tarvitaan paikallisten tiedostojen hakuun</string>
     <string name="preference_screen_appearance">Ulkoasu</string>
     <string name="preference_imperial_units">Brittiläiset yksiköt</string>
     <string name="widget_config_weather_compact">Tiivis tila</string>
@@ -347,8 +320,6 @@
     <string name="preference_hide_nav_bar">Piilota ohjauspalkki</string>
     <string name="preference_screen_integrations_summary">Hallitse liitettyjä tilejä ja palveluja</string>
     <string name="preference_icon_shape_hexagon">Kuusikulmio</string>
-    <string name="preference_signin_user">Kirjauduttu sisään käyttäjänä %1$s</string>
-    <string name="preference_summary_not_logged_in">Et ole kirjautuneena</string>
     <string name="preference_blur_wallpaper_unsupported">Ei tueta tällä laitteella</string>
     <string name="preference_blur_wallpaper_radius">Sumennuksen säde</string>
     <string name="preference_wallpaper_summary">Valitse taustakuva</string>
@@ -360,12 +331,6 @@
     <string name="preference_cloud_badges">Pilvimerkit</string>
     <string name="preference_cloud_badges_summary">Näytä merkki pilvessä oleville tiedostoille</string>
     <string name="preference_shortcut_badges_summary">Näytä oikotien merkkinä sovellus, johon oikotie viittaa</string>
-    <string name="preference_nextcloud_signin">Kirjaudu Nextcloud-tilille</string>
-    <string name="preference_nextcloud_signin_summary">Kirjaudu hakeaksesi Nextcloud-palvelimeltasi</string>
-    <string name="preference_nextcloud">Nextcloud</string>
-    <string name="preference_owncloud">Owncloud</string>
-    <string name="preference_owncloud_signin">Kirjaudu Owncloud-tilille</string>
-    <string name="preference_owncloud_signin_summary">Kirjaudu hakeaksesi Owncloud-palvelimeltasi</string>
     <string name="preference_about_telegram">Telegram-ryhmä</string>
     <string name="preference_about_fdroid">F-Droid-pakettivarasto</string>
     <string name="preference_enforce_icon_shape">Pakota muoto</string>
@@ -383,7 +348,6 @@
     <string name="preference_clockwidget_favorites_part_summary">Näytä ensimmäinen rivi kiinnitettyjä kohteita</string>
     <string name="preference_clockwidget_music_part_summary">Näytä mediaohjaimet, kun mediaa on aktiivisena</string>
     <string name="preference_search_calculator">Laskin</string>
-    <string name="preference_search_cloud_summary">Hae %1$s:n tiedostoja</string>
     <string name="preference_screen_buildinfo_summary">Lisätietoja sovelluksen tästä koontiversiosta</string>
     <string name="preference_search_bar_auto_focus">Avaa näppäimistö</string>
     <string name="preference_screen_tags_summary">Hallitse avainsanoja ja merkittyjä kohteita</string>
@@ -393,7 +357,6 @@
     <string name="preference_screen_homescreen_summary">Kello, hakupalkki, taustakuva, järjestelmän palkit</string>
     <string name="preference_screen_icons">Ruudukko ja kuvakkeet</string>
     <string name="preference_screen_icons_summary">Ruudukko, kuvakkeiden koko, kuvakepaketit, pistemerkit</string>
-    <string name="connect_account">Liitä tili</string>
     <plurals name="battery_part_remaining_charge_time">
         <item quantity="one">Täynnä %1$s minuutissa</item>
         <item quantity="other">Täynnä %1$s minuutissa</item>
@@ -468,7 +431,6 @@
     <string name="missing_permission_notification_badges">Pääsy ilmoituksiin tarvitaan ilmoitusten pistemerkkien näyttämiseen</string>
     <string name="missing_permission_calendar_widget">Anna kalenterin käyttöoikeus tulevien tapaamisten ja tapahtumien näyttämiseksi.</string>
     <string name="missing_permission_calendar_search">Anna kalenterin käyttöoikeus tapahtumien hakua varten.</string>
-    <string name="missing_permission_files_search">Anna tallennustilan käyttöoikeus laitteella olevien kuvien, median ja asiakirjojen hakua varten.</string>
     <string name="missing_permission_contact_search">Anna yhteystietojen käyttöoikeus yhteystietojen hakua varten.</string>
     <string name="missing_permission_appshortcuts_search">Aseta %1$s aloitusnäyttösovellukseksi sovellusoikoteiden hakua varten.</string>
     <string name="missing_permission_appshortcuts_create">Aseta %1$s aloitusnäyttösovellukseksi sovellusoikoteiden luomista varten.</string>

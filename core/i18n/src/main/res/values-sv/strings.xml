@@ -32,18 +32,7 @@
     <string name="wind_north_north_west">NNV</string>
     <string name="preference_icon_shape_circle">Cirkel</string>
     <string name="wikipedia_source">Från Wikipedia</string>
-    <string name="file_meta_title">Titel: %1$s</string>
-    <string name="file_meta_artist">Artist: %1$s</string>
-    <string name="file_meta_album">Album: %1$s</string>
     <string name="wikipedia_url">https://sv.wikipedia.org</string>
-    <string name="file_meta_path">Sökväg: %1$s</string>
-    <string name="file_meta_type">Typ: %1$s</string>
-    <string name="file_meta_app_name">Appnamn: %1$s</string>
-    <string name="file_meta_app_version">Version: %1$s</string>
-    <string name="file_meta_app_pkgname">Paketnamn: %1$s</string>
-    <string name="file_meta_app_min_sdk">Lägsta SDK-version: %1$s</string>
-    <string name="file_meta_owner">Ägare: %1$s</string>
-    <string name="file_meta_location">Plats: %1$s</string>
     <string name="file_type_directory">Katalog</string>
     <string name="file_type_archive">Arkivfil</string>
     <string name="file_type_android">Android-paketfil</string>
@@ -60,19 +49,14 @@
     <string name="file_type_drawing">Ritning</string>
     <string name="file_type_form">Form</string>
     <string name="file_type_generic">%1$s-fil</string>
-    <string name="alert_delete_file">Filen %1$s kommer raderas permanent. Vill du fortsätta\?</string>
     <string name="edit_favorites_dialog_unpinned">Ej fästa – ofta använda</string>
     <string name="weather_condition_lightssnowshowersandthunder">Lätt snöfall och åska</string>
     <string name="preference_themed_icons_summary">Färglägg ikoner med appens färgschema</string>
-    <string name="file_meta_duration">Längd: %1$s</string>
     <string name="websearch_dialog_url_error">Platshållaren \'${1}\' saknas i denna URL</string>
-    <string name="file_meta_year">År: %1$s</string>
     <string name="websearch_dialog_custom_icon">Anpassad ikon</string>
     <string name="edit_favorites_dialog_pinned_unsorted">Fästa – automatiskt sorterade</string>
     <string name="weather_condition_heavysnowshowersandthunder">Kraftigt snöfall och åska</string>
-    <string name="file_meta_size">Storlek: %1$s</string>
     <string name="edit_favorites_dialog_pinned_sorted">Fästa – manuellt sorterade</string>
-    <string name="file_meta_dimensions">Dimensioner: %1$s</string>
     <string name="widget_name_music">Musik</string>
     <string name="websearch_dialog_replace_icon">Ersätt ikon</string>
     <string name="websearch_dialog_delete_icon">Radera ikon</string>
@@ -119,9 +103,7 @@
     <string name="weather_condition_heavysnow">Kraftigt snöfall</string>
     <string name="weather_condition_cloudy">Molnigt</string>
     <string name="weather_condition_lightrainandthunder">Lätt åskregn</string>
-    <string name="alert_delete_directory">Katalogen %1$s och dess innehåll kommer raderas permanent. Vill du fortsätta\?</string>
     <string name="shortcut_summary">Från %1$s</string>
-    <string name="preference_summary_not_logged_in">Du är för närvarande inte inloggad</string>
     <string name="preference_search_unitconverter_summary">Användning: 1.5 kg eller 4 cm &gt;&gt; in</string>
     <string name="weather_condition_hail">Hagel</string>
     <string name="weather_condition_heavysnowshowers">Kraftigt snöfall</string>
@@ -154,7 +136,6 @@
     <string name="missing_permission_contact_search_settings">Kontaktåtkomst krävs för att söka kontakter</string>
     <string name="missing_permission_calendar_search_settings">Kalenderåtkomst krävs för att söka i kalender</string>
     <string name="missing_permission_calendar_widget_settings">Denna widget kräver kalenderåtkomst</string>
-    <string name="missing_permission_file_search_settings">Lagringsåtkomst krävs för att söka bland lokala filer</string>
     <string name="missing_permission_notification_badges">Notifikationsåtkomst krävs för att visa aviseringsprickar</string>
     <string name="missing_permission_calendar_widget">Tillåt kalenderåtkomst för att visa kommande aktiviteter här.</string>
     <string name="missing_permission_calendar_search">Tillåt kalenderåtkomst för att söka i din kalender.</string>
@@ -205,7 +186,6 @@
     <string name="preference_hide_status_bar">Göm statusfält</string>
     <string name="preference_hide_nav_bar">Göm navigationsfält</string>
     <string name="preference_screen_integrations_summary">Hantera anslutna konton och tjänster</string>
-    <string name="preference_signin_user">Inloggad som %1$s</string>
     <string name="preference_icon_shape_pentagon">Pentagon</string>
     <string name="preference_category_wallpaper">Bakgrund</string>
     <string name="preference_dim_wallpaper">Dämpa bakgrund</string>
@@ -219,11 +199,6 @@
     <string name="preference_cloud_badges">Molnprickar</string>
     <string name="preference_shortcut_badges">Genvägsprickar</string>
     <string name="preference_shortcut_badges_summary">Prick som visar vilken app en genväg hör till</string>
-    <string name="preference_nextcloud_signin">Logga in på Nextcloud</string>
-    <string name="preference_nextcloud_signin_summary">Logga in för att söka i din Nextcloud-server</string>
-    <string name="preference_nextcloud">Nextcloud</string>
-    <string name="preference_owncloud">Owncloud</string>
-    <string name="preference_owncloud_signin">Logga in på Owncloud</string>
     <string name="preference_about_telegram">Telegram-grupp</string>
     <string name="preference_about_fdroid">F-Droid-kodförråd</string>
     <string name="preference_category_license">Licens</string>
@@ -246,7 +221,6 @@
     <string name="preference_screen_search">Sök</string>
     <string name="preference_screen_search_summary">Konfigurera sökningen</string>
     <string name="preference_search_favorites">Favoriter</string>
-    <string name="preference_search_files">Filer</string>
     <string name="preference_search_files_summary">Sök bland lokala filer och filer i molnet</string>
     <string name="preference_search_contacts">Kontakter</string>
     <string name="preference_search_contacts_summary">Sök bland kontakter på denna enhet</string>
@@ -259,13 +233,8 @@
     <string name="preference_search_wikipedia_summary">Sök i den fria encyklopedin</string>
     <string name="preference_search_websites">Hemsidor</string>
     <string name="preference_search_websites_summary">Förhandsvisa hemsida om söktermen är en URL</string>
-    <string name="preference_search_localfiles">Lokala filer</string>
-    <string name="preference_search_nextcloud">Nextcloud</string>
-    <string name="preference_search_cloud_summary">Sök bland %1$ss filer</string>
-    <string name="preference_search_owncloud">Owncloud</string>
     <string name="nextcloud_server_invalid_url">Denna URL hänvisar inte till en giltig Nextcloud-installation</string>
     <string name="preference_cloud_badges_summary">Visa en prick på filer som lagras i molnet</string>
-    <string name="preference_search_localfiles_summary">Sök dokument, foton och andra filer lagrade på denna enhet</string>
     <string name="preference_calendar_calendars">Kalendrar</string>
     <string name="preference_screen_buildinfo">Build-information</string>
     <string name="preference_screen_buildinfo_summary">Mer information om denna build av appen</string>
@@ -274,9 +243,6 @@
     <string name="preference_search_bar_auto_focus">Visa tangentbord</string>
     <string name="preference_search_bar_auto_focus_summary">Visa automatiskt tangentbordet när sökfältet öppnas</string>
     <string name="preference_wikipedia_customurl">Wikipedia-länk</string>
-    <string name="no_account_nextcloud">Du har inte anslutit ett Nextcloud-konto ännu</string>
-    <string name="no_account_owncloud">Du har inte anslutit ett Owncloud-konto ännu</string>
-    <string name="connect_account">Anslut konto</string>
     <string name="battery_part_charging">Laddar</string>
     <plurals name="battery_part_remaining_charge_time">
         <item quantity="one">%1$s minut till fullt</item>
@@ -284,25 +250,21 @@
     </plurals>
     <string name="owncloud_server_invalid_url">Denna URL hänvisar inte till en giltig Owncloud-installation</string>
     <string name="missing_permission_music_widget">Notifikationsåtkomst krävs för att styra uppspelning av media</string>
-    <string name="preference_owncloud_signin_summary">Logga in för att söka i din Owncloud-server</string>
     <string name="menu_share">Dela</string>
     <string name="default_websearch_2_name">YouTube</string>
     <string name="owncloud_login_failed">Inloggning misslyckades: fel användarnamn eller lösenord.</string>
-    <string name="missing_permission_file_search_settings_android10">Filhanteringsåtkomst krävs för att söka bland lokala filer</string>
     <string name="preference_screen_debug_summary">Felsökningsverktyg</string>
     <string name="menu_share_store_link">%1$s-länk</string>
     <string name="default_websearch_2_url">https://www.youtube.se/results\?search_query=${1}</string>
     <string name="disclaimer_currency_converter">Valutakursen publiceras en gång per dag av den Europeiska centralbanken. All information anges därefter utan någon form av garanti. Vi frånsäger oss ansvaret för nämnd information.
 \n
 \nSenaste uppdateringen: %1$s</string>
-    <string name="missing_permission_files_search">Tillåt lagringsåtkomst för att söka bland foton, media och dokument på den här enheten.</string>
     <string name="menu_uninstall">Avinstallera</string>
     <string name="default_websearch_3_name">Google Play</string>
     <string name="widget_action_remove">Radera</string>
     <string name="weather_condition_snow">Snöfall</string>
     <string name="preference_screen_about_summary">App- och licensinformation</string>
     <string name="preference_clockwidget_music_part_summary">Visa mediareglage vid aktiv uppspelning</string>
-    <string name="menu_open_file">Öppna</string>
     <string name="default_websearch_3_url">https://play.google.com/store/search\?q=${1}</string>
     <string name="preference_automatic_location_summary">Använd GPS- och platstjänster för att automatiskt ange plats</string>
     <string name="preference_search_favorites_summary">Visa fastnålade och ofta använda objekt ovanför apprutan</string>

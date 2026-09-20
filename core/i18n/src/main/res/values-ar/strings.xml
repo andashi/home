@@ -9,7 +9,6 @@
     <string name="menu_back">رجوع</string>
     <string name="menu_launch">فتح</string>
     <string name="menu_customize">تخصيص</string>
-    <string name="menu_open_file">افتح</string>
     <string name="action_undo">تراجع</string>
     <string name="action_import">استيراد</string>
     <string name="action_done">تم</string>
@@ -37,18 +36,6 @@
     <string name="wind_north_north_west">شمال الشمال الغربي</string>
     <string name="wikipedia_url">https://ar.wikipedia.org</string>
     <string name="wikipedia_source">من ويكيبيديا</string>
-    <string name="file_meta_title">العنوان: %1$s</string>
-    <string name="file_meta_artist">الفنان: %1$s</string>
-    <string name="file_meta_album">الألبوم: %1$s</string>
-    <string name="file_meta_duration">المدة: %1$s</string>
-    <string name="file_meta_year">السنة: %1$s</string>
-    <string name="file_meta_size">الحجم: %1$s</string>
-    <string name="file_meta_path">المسار: %1$s</string>
-    <string name="file_meta_dimensions">الأبعاد: %1$s</string>
-    <string name="file_meta_app_name">اسم التطبيق: %1$s</string>
-    <string name="file_meta_app_pkgname">اسم الحزمة: %1$s</string>
-    <string name="file_meta_app_min_sdk">أقل اصدار SDK: %1$s</string>
-    <string name="file_meta_owner">المالك: %1$s</string>
     <string name="file_type_directory">مسار</string>
     <string name="file_type_archive">ملف أرشيف</string>
     <string name="file_type_android">ملف حزمة أندرويد</string>
@@ -63,7 +50,6 @@
     <string name="file_type_ebook">كتاب الكتروني</string>
     <string name="file_type_drawing">ملف رسم غوغل</string>
     <string name="file_type_form">استمارة</string>
-    <string name="alert_delete_file">سوف يتم مسح الملف %1$s نهائيا. هل تريد المتابعة؟</string>
     <string name="alert_delete_shortcut">سوف يتم ازالة اختصار %1$s نهائيا. هل تريد المتابعة؟</string>
     <string name="default_websearch_2_url">https://www.youtube.com/results\?search_query=${1}</string>
     <string name="menu_app_info">معلومات التطبيق</string>
@@ -75,10 +61,6 @@
     <string name="wind_south_south_east">جنوب الجنوب الشرقي</string>
     <string name="file_type_generic">ملف %1$s</string>
     <string name="wind_west_south_west">غرب الجنوب الغربي</string>
-    <string name="alert_delete_directory">سوف يتم مسح المسار %1$s و كل محتوياته نهائيا. هل تريد المتابعة؟</string>
-    <string name="file_meta_type">النوع: %1$s</string>
-    <string name="file_meta_app_version">الإصدار: %1$s</string>
-    <string name="file_meta_location">المكان: %1$s</string>
     <string name="default_websearch_2_name">يوتيوب</string>
     <string name="default_websearch_3_name">غوغل بلاي</string>
     <string name="default_websearch_3_url">https://play.google.com/store/search\?q=${1}</string>
@@ -247,12 +229,9 @@
     <string name="missing_permission_location_search">يلزم الحصول على إذن الموقع للبحث عن المواقع القريبة</string>
     <string name="preference_theme_dark">مظلم</string>
     <string name="preference_category_licenses">رخص مفتوحة المصدر</string>
-    <string name="missing_permission_file_search_settings">أذونات التخزين مطلوبة للوصول الى الملفات المحلية</string>
     <string name="missing_permission_calendar_search_settings">اذونات التقويم مطلوبة للبحث بالتقويم</string>
-    <string name="missing_permission_file_search_settings_android10">أذونات الوصول إلى الملفات مطلوبة للوصول الى الملفات المحلية</string>
     <string name="grant_permission">منح</string>
     <string name="preference_debug_dump_heap">لقطة للذاكرة</string>
-    <string name="missing_permission_files_search">يلزم الحصول على إذن التخزين للبحث عن الملفات على هذا الجهاز</string>
     <string name="missing_permission_appshortcuts_create">عين %1$s كتطبيق الشاشة الرئيسية الافتراضي لانشاء اختصارات.</string>
     <string name="weather_condition_thunderstorm">عاصفة رعدية</string>
     <string name="missing_permission_calendar_search">يلزم الحصول على إذن الوصول إلى التقويم للبحث في تقويمك</string>
@@ -319,14 +298,11 @@
     <string name="preference_system_bar_icons_auto">تلقائي</string>
     <string name="preference_system_bar_icons_light">فاتح</string>
     <string name="preference_system_bar_icons_dark">داكن</string>
-    <string name="preference_summary_not_logged_in">أنت غير مسجل دخولك</string>
     <string name="preference_icon_shape_pentagon">خماسي</string>
     <string name="preference_category_wallpaper">خلفية الشاشة</string>
     <string name="preference_dim_wallpaper">تعتيم خلفية الشاشة</string>
     <string name="preference_blur_wallpaper_summary">استخدم تأثير تشويش على خلفية الشاشة</string>
     <string name="preference_cloud_badges">شارات السحابة</string>
-    <string name="preference_nextcloud_signin">تسجيل الدخول إلى Nextcloud</string>
-    <string name="preference_owncloud_signin_summary">سجّل الدخول للبحث في خادم Owncloud الخاص بك</string>
     <string name="preference_enforce_icon_shape_summary">تطبيق الشكل على جميع الرموز بما في ذلك تلك التي لا تدعمها عادةً</string>
     <string name="preference_about_license">هذا التطبيق برنامج مجاني.</string>
     <string name="preference_about_license_summary">مرخص بموجب ترخيص جنو العمومي العام 3.0</string>
@@ -388,7 +364,6 @@
     <string name="preference_clockwidget_alarm_part">التنبيهات</string>
     <string name="preference_screen_search">البحث</string>
     <string name="preference_search_currencyconverter_summary">تنزيل أسعار الصرف بشكل دوري لتحويل العملات</string>
-    <string name="preference_search_nextcloud">نكست كلاود Nextcloud</string>
     <string name="preference_icon_shape_triangle">مثلث رولو</string>
     <string name="preference_category_searchbar">شريط البحث</string>
     <string name="preference_screen_integrations">التكاملات</string>
@@ -399,11 +374,9 @@
     <string name="preference_hide_status_bar">إخفاء شريط الحالة</string>
     <string name="preference_hide_nav_bar">إخفاء شريط التنقل</string>
     <string name="preference_screen_integrations_summary">إدارة الحسابات والخدمات المتصلة</string>
-    <string name="preference_signin_user">تم تسجيل الدخول باسم %1$s</string>
     <string name="preference_notification_badges_summary">إظهار شارة للتطبيقات التي تحتوي على إشعارات غير مقراءة</string>
     <string name="preference_shortcut_badges">شارات الاختصارات</string>
     <string name="preference_shortcut_badges_summary">إظهار شارة تشير إلى التطبيق الذي ينتمي إليه الاختصار</string>
-    <string name="preference_owncloud_signin">تسجيل الدخول إلى Owncloud</string>
     <string name="preference_about_telegram">مجموعة Telegram</string>
     <string name="preference_category_license">الترخيص</string>
     <string name="preference_category_grid">الشبكة</string>
@@ -424,9 +397,6 @@
     <string name="preference_screen_icons">الشبكة والأيقونات</string>
     <string name="preference_clock_widget_fill_height">ملء ارتفاع الشاشة</string>
     <string name="preference_screen_icons_summary">حجم الشبكة، والأيقونات، والشارات</string>
-    <string name="no_account_nextcloud">لم تقم بتوصيل حساب Nextcloud حتى الآن</string>
-    <string name="no_account_owncloud">لم تقم بتوصيل حساب Owncloud حتى الآن</string>
-    <string name="connect_account">توصيل الحساب</string>
     <string name="battery_part_charging">جاري الشحن</string>
     <string name="icon_picker_default_icon">افتراضي</string>
     <string name="icon_picker_suggestions">اقتراحات</string>
@@ -563,14 +533,10 @@
     <string name="preference_plugin_enable">تمكين المكون الإضافي</string>
     <string name="poi_category_discount_store">متجر خصومات</string>
     <string name="poi_category_pet">متجر حيوانات أليفة</string>
-    <string name="preference_signout">تسجيل الخروج</string>
     <string name="preference_dim_wallpaper_summary">في السمات الداكنة، قم بتعتيم خلفية الشاشة</string>
     <string name="preference_blur_wallpaper">تشويش خلفية الشاشة</string>
     <string name="preference_wallpaper_summary">اختر خلفية</string>
     <string name="preference_notification_badges">شارات الإشعارات</string>
-    <string name="preference_nextcloud_signin_summary">سجّل الدخول للبحث في خادم Nextcloud الخاص بك</string>
-    <string name="preference_nextcloud">Nextcloud</string>
-    <string name="preference_owncloud">Owncloud</string>
     <string name="preference_clock_widget_alignment_top">أعلى</string>
     <string name="preference_clock_widget_alignment_center">وسط</string>
     <string name="preference_clock_widget_alignment_bottom">أسفل</string>
@@ -581,14 +547,11 @@
     <string name="preference_screen_search_summary">البحث، والوسوم، والنتائج المستبعدة</string>
     <string name="preference_search_favorites">المفضلة</string>
     <string name="preference_search_favorites_summary">إظهار العناصر المثبتة والمستخدمة بشكل متكرر أعلى شبكة التطبيقات</string>
-    <string name="preference_search_files">الملفات</string>
     <string name="preference_search_files_summary">البحث في الملفات المحلية وملفات السحابة</string>
     <string name="preference_search_currencyconverter">محول العملات</string>
     <string name="preference_search_wikipedia_summary">البحث في الموسوعة الحرة</string>
     <string name="preference_search_locations">الأماكن</string>
-    <string name="preference_search_cloud_summary">البحث في ملفات %1$s</string>
     <string name="preference_screen_buildinfo">معلومات الإصدار</string>
-    <string name="preference_search_owncloud">أون كلاود Owncloud</string>
     <string name="preference_search_bar_style_summary">تخصيص مظهر شريط البحث</string>
     <string name="preference_search_bar_color">اللون</string>
     <string name="preference_search_bar_auto_focus">فتح لوحة المفاتيح</string>
@@ -618,8 +581,6 @@
     <string name="preference_clockwidget_alarm_part_summary">إظهار التنبيهات التي سترن في غضون 8 ساعات القادمة</string>
     <string name="preference_search_locations_radius">نصف قطر البحث</string>
     <string name="preference_search_locations_summary">البحث في المنطقة المحلية عن المتاجر والأماكن الأخرى</string>
-    <string name="preference_search_localfiles">الملفات المحلية</string>
-    <string name="preference_search_localfiles_summary">البحث عن المستندات والصور والملفات الأخرى المخزنة على هذا الجهاز</string>
     <string name="preference_search_bar_auto_focus_summary">إظهار لوحة المفاتيح تلقائيًا عند فتح درج التطبيقات</string>
     <string name="preference_category_favorites_frequently_used">مستخدم بشكل متكرر</string>
     <string name="apps_profile_main">شخصي</string>
@@ -750,7 +711,6 @@
     <string name="preference_search_result_ordering_weight_factor_high">متغير</string>
     <string name="widget_config_appwidget_borderless">بدون حدود</string>
     <string name="location_open_24_7">مفتوح 24/7</string>
-    <string name="plugin_type_filesearch">الملفات</string>
     <string name="plugin_weather_provider_enabled">تم تعيينه حاليًا كموفر للطقس</string>
     <string name="clock_style_segment">7-قطع</string>
     <string name="poi_category_laundry">مغسلة</string>

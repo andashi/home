@@ -27,7 +27,6 @@
     <plurals name="calendar_widget_running_events">
         <item quantity="other">+%1$d sự kiện đang chạy từ ngày trước</item>
     </plurals>
-    <string name="menu_open_file">Mở</string>
     <string name="menu_calendar_open_externally">Mở trong ứng dụng lịch</string>
     <string name="wind_west_south_west">Tây tây nam</string>
     <string name="wikipedia_url">https://en.wikipedia.org</string>
@@ -57,12 +56,9 @@
     <plurals name="debug_cleanup_database_result">
         <item quantity="other">Mục nhập %1$d đã bị loại bỏ.</item>
     </plurals>
-    <string name="preference_signout">Đăng xuất</string>
     <string name="preference_clockwidget_date_part">Ngày</string>
     <string name="preference_clockwidget_date_part_summary">Hiển thị ngày hiện tại</string>
     <string name="preference_clockwidget_favorites_part">Dock</string>
-    <string name="preference_search_cloud_summary">Tìm kiếm tệp tin của %1$s\\</string>
-    <string name="preference_search_owncloud">Owncloud</string>
     <string name="preference_weather_integration">Thời tiết</string>
     <string name="preference_media_integration">Kiểm soát phương tiện</string>
     <plurals name="battery_part_remaining_charge_time">
@@ -135,21 +131,6 @@
     <string name="wind_north_west">Tây Bắc</string>
     <string name="wind_north_north_west">Bắc Tây Bắc</string>
     <string name="wikipedia_source">Từ Wikipedia</string>
-    <string name="file_meta_title">Tiêu đề: %1$s</string>
-    <string name="file_meta_artist">Nghệ sĩ: %1$s</string>
-    <string name="file_meta_album">Album: %1$s</string>
-    <string name="file_meta_duration">Thời lượng: %1$s</string>
-    <string name="file_meta_year">Năm: %1$s</string>
-    <string name="file_meta_size">Kích thước: %1$s</string>
-    <string name="file_meta_path">Đường dẫn: %1$s</string>
-    <string name="file_meta_type">Loại: %1$s</string>
-    <string name="file_meta_dimensions">Kích thước: %1$s</string>
-    <string name="file_meta_app_name">Tên ứng dụng: %1$s</string>
-    <string name="file_meta_app_version">Phiên bản: %1$s</string>
-    <string name="file_meta_app_pkgname">Tên gói: %1$s</string>
-    <string name="file_meta_app_min_sdk">Phiên bản SDK tối thiểu: %1$s</string>
-    <string name="file_meta_owner">Chủ sở hữu: %1$s</string>
-    <string name="file_meta_location">Vị trí: %1$s</string>
     <string name="file_type_directory">Thư mục</string>
     <string name="file_type_archive">Lưu trữ tệp tin</string>
     <string name="file_type_android">Tệp gói Android</string>
@@ -165,8 +146,6 @@
     <string name="file_type_form">Biểu mẫu</string>
     <string name="file_type_launchertheme">%1$s chủ đề</string>
     <string name="file_type_generic">Tệp %1$s</string>
-    <string name="alert_delete_directory">Thư mục %1$s và tất cả nội dung của nó sẽ bị xóa vĩnh viễn. Tiếp tục?</string>
-    <string name="alert_delete_file">Tệp %1$s sẽ bị xóa vĩnh viễn. Tiếp tục?</string>
     <string name="default_websearch_2_name">YouTube</string>
     <string name="default_websearch_2_url">https://www.youtube.com/results?search_query=${1}</string>
     <string name="default_websearch_3_name">Google Play</string>
@@ -265,13 +244,10 @@
     <string name="missing_permission_calendar_widget_settings">Tiện ích này yêu cầu quyền truy cập lịch</string>
     <string name="widget_config_calendar_missing_calendars_hint">Không thể tìm thấy lịch của bạn?</string>
     <string name="missing_permission_appshortcuts_search_settings">%1$s phải được đặt làm ứng dụng trang chủ mặc định để tìm kiếm các lối tắt ứng dụng</string>
-    <string name="missing_permission_file_search_settings">Cần có quyền lưu trữ bên ngoài để tìm kiếm các tệp cục bộ</string>
-    <string name="missing_permission_file_search_settings_android10">Manage all files permission is required to search local files</string>
     <string name="missing_permission_notification_badges">Cần có quyền truy cập thông báo để hiển thị dấu hiệu thông báo</string>
     <string name="missing_permission_calendar_widget">Cấp quyền cho lịch hiển thị các cuộc hẹn và sự kiện sắp tới tại đây.</string>
     <string name="missing_permission_calendar_search">Cấp quyền cho lịch để tìm kiếm lịch của bạn.</string>
     <string name="missing_permission_location_search">Cấp quyền vị trí để tìm kiếm các vị trí lân cận.</string>
-    <string name="missing_permission_files_search">Cấp quyền lưu trữ để tìm kiếm ảnh, phương tiện và tài liệu trên thiết bị này.</string>
     <string name="missing_permission_contact_search">Cấp quyền danh bạ để tìm kiếm liên hệ của bạn.</string>
     <string name="missing_permission_appshortcuts_search">Đặt %1$s làm ứng dụng trang chủ mặc định để tìm kiếm các lối tắt ứng dụng.</string>
     <string name="preference_version">Phiên bản</string>
@@ -342,8 +318,6 @@
     <string name="preference_hide_status_bar">Ẩn thanh trạng thái</string>
     <string name="preference_hide_nav_bar">Ẩn thanh điều hướng</string>
     <string name="preference_screen_integrations_summary">Quản lý các tài khoản và dịch vụ được kết nối</string>
-    <string name="preference_signin_user">Đã đăng nhập với tên %1$s</string>
-    <string name="preference_summary_not_logged_in">Bạn hiện chưa đăng nhập</string>
     <string name="preference_icon_shape_pentagon">Ngũ giác</string>
     <string name="preference_category_wallpaper">Hình nền</string>
     <string name="preference_dim_wallpaper">Hình nền mờ</string>
@@ -364,12 +338,6 @@
     <string name="preference_shortcut_badges_summary">Hiển thị dấu hiệu cho biết lối tắt thuộc về ứng dụng nào</string>
     <string name="preference_plugin_badges">Dấu hiệu plugin</string>
     <string name="preference_plugin_badges_summary">Cho biết kết quả tìm kiếm được tạo bằng plugin nào</string>
-    <string name="preference_nextcloud_signin">Đăng nhập vào Nextcloud</string>
-    <string name="preference_nextcloud_signin_summary">Đăng nhập để tìm kiếm máy chủ Nextcloud của bạn</string>
-    <string name="preference_nextcloud">Nextcloud</string>
-    <string name="preference_owncloud">Owncloud</string>
-    <string name="preference_owncloud_signin">Đăng nhập vào Owncloud</string>
-    <string name="preference_owncloud_signin_summary">Đăng nhập để tìm kiếm máy chủ Owncloud của bạn</string>
     <string name="preference_about_telegram">Nhóm Telegram</string>
     <string name="preference_about_fdroid">Kho lưu trữ F-Droid</string>
     <string name="preference_enforce_icon_shape">Hình dạng lực</string>
@@ -409,7 +377,6 @@
     <string name="preference_screen_search_summary">Tìm kiếm, gắn thẻ, mục ẩn</string>
     <string name="preference_search_favorites">Yêu thích</string>
     <string name="preference_search_favorites_summary">Hiển thị các mục được ghim và sử dụng thường xuyên phía trên lưới ứng dụng</string>
-    <string name="preference_search_files">Tệp tin</string>
     <string name="preference_search_files_summary">Tìm kiếm tệp cục bộ và tệp đám mây</string>
     <string name="preference_search_contacts">Danh bạ</string>
     <string name="preference_search_contacts_summary">Tìm kiếm danh bạ trên thiết bị này</string>
@@ -430,9 +397,6 @@
     <string name="preference_search_locations_radius">Bán kính tìm kiếm</string>
     <string name="preference_search_websites_summary">Hiển thị bản xem trước của trang web nếu truy vấn tìm kiếm là URL</string>
     <string name="preference_search_locations_summary">Tìm kiếm các cửa hàng và địa điểm khác trong khu vực địa phương</string>
-    <string name="preference_search_localfiles">Tệp cục bộ</string>
-    <string name="preference_search_localfiles_summary">Tìm kiếm tài liệu, ảnh và các tệp khác được lưu trữ trên thiết bị này</string>
-    <string name="preference_search_nextcloud">Nextcloud</string>
     <string name="preference_calendar_calendars">Lịch</string>
     <string name="preference_screen_buildinfo">Xây dựng thông tin</string>
     <string name="preference_screen_buildinfo_summary">Thông tin thêm về bản dựng của ứng dụng này</string>
@@ -460,9 +424,6 @@
     <string name="preference_screen_homescreen_summary">Đồng hồ, thanh tìm kiếm, hình nền, thanh hệ thống</string>
     <string name="preference_screen_icons">Lưới &amp; biểu tượng</string>
     <string name="preference_screen_icons_summary">Lưới, kích thước biểu tượng, gói biểu tượng, dấu hiệu</string>
-    <string name="no_account_nextcloud">Bạn chưa kết nối tài khoản Nextcloud</string>
-    <string name="no_account_owncloud">Bạn chưa kết nối tài khoản Owncloud</string>
-    <string name="connect_account">Kết nối tài khoản</string>
     <string name="battery_part_charging">Sạc</string>
     <string name="icon_picker_default_icon">Mặc định</string>
     <string name="icon_picker_suggestions">Đề xuất</string>
@@ -589,7 +550,6 @@
     <string name="plugin_state_error">Plugin này không hoạt động chính xác</string>
     <string name="plugin_state_setup_required">Bạn cần thiết lập plugin này trước</string>
     <string name="plugin_action_setup">Thiết lập</string>
-    <string name="plugin_type_filesearch">Tìm kiếm tệp tin</string>
     <string name="plugin_type_weather">Nhà cung cấp thời tiết</string>
     <string name="plugin_weather_provider_enable">Đặt làm nhà cung cấp thời tiết</string>
     <string name="plugin_weather_provider_enabled">Hiện được đặt làm nhà cung cấp thời tiết</string>

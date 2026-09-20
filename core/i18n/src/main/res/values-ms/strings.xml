@@ -10,7 +10,6 @@
     <string name="menu_share_store_link">%1$s pautan</string>
     <string name="menu_launch">Buka</string>
     <string name="menu_customize">Ubahsuai</string>
-    <string name="menu_open_file">Buka</string>
     <string name="action_undo">Kembali</string>
     <string name="action_import">Import</string>
     <string name="menu_delete">Padam</string>
@@ -39,19 +38,6 @@
     <string name="wind_north_west">Barat laut</string>
     <string name="wind_north_north_west">Utara barat laut</string>
     <string name="wikipedia_source">Daripada Wikipedia</string>
-    <string name="file_meta_title">Tajuk: %1$s</string>
-    <string name="file_meta_artist">Artis: %1$s</string>
-    <string name="file_meta_album">Album: %1$s</string>
-    <string name="file_meta_duration">Tempoh: %1$s</string>
-    <string name="file_meta_year">Tahun: %1$s</string>
-    <string name="file_meta_size">Saiz: %1$s</string>
-    <string name="file_meta_type">Jenis: %1$s</string>
-    <string name="file_meta_app_name">Nama apl: %1$s</string>
-    <string name="file_meta_app_version">Versi: %1$s</string>
-    <string name="file_meta_app_pkgname">Nama pakej: %1$s</string>
-    <string name="file_meta_app_min_sdk">Versi SDK min: %1$s</string>
-    <string name="file_meta_owner">Pemilik: %1$s</string>
-    <string name="file_meta_location">Lokasi: %1$s</string>
     <string name="file_type_directory">Direktori</string>
     <string name="file_type_android">Fail pakej android</string>
     <string name="file_type_source_code">Sumber fail kod</string>
@@ -66,18 +52,14 @@
     <string name="file_type_form">Borang</string>
     <string name="file_type_launchertheme">%1$s tema</string>
     <string name="file_type_generic">%1$s fail</string>
-    <string name="alert_delete_file">Fail %1$s akan dipadamkan secara kekal. Teruskan?</string>
     <string name="default_websearch_2_name">YouTube</string>
     <string name="default_websearch_2_url">https://www.youtube.com/results?search_query=${1}</string>
     <string name="default_websearch_3_name">Google Play</string>
-    <string name="alert_delete_directory">Direktori %1$s dan semua kandungannya akan dipadamkan secara kekal. Teruskan?</string>
     <string name="alert_delete_shortcut">Pintasan %1$s akan dibuang secara kekal. Teruskan?</string>
-    <string name="file_meta_path">Laluan: %1$s</string>
     <string name="wikipedia_url">https://ms.wikipedia.org</string>
     <string name="file_type_video">Video</string>
     <string name="file_type_text">Fail teks</string>
     <string name="file_type_archive">Fail arkib</string>
     <string name="file_type_none">Fail</string>
-    <string name="file_meta_dimensions">Dimensi: %1$s</string>
     <string name="default_websearch_3_url">https://play.google.com/store/search?q=${1}</string>
 </resources>
