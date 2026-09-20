@@ -175,6 +175,26 @@ knowing: after removing an entire module and an always-on animation,
 spreads. This series has not yet freed measurable memory, and the harness
 says so rather than letting a single flattering cycle claim otherwise.
 
+## Check the mechanism before believing a runtime delta
+
+Removing the plugin system (`no-tools` -> `no-plugins`) printed a 13.0% faster
+cold start, 22.5% less startup CPU and a 61.5% lower `cpu.home_screen`. All
+three are worth nothing: the previous measurement's own spreads on those
+metrics were 31.2%, 16.3% and 71.8%, every one of them larger than or close to
+the delta it would have to support.
+
+The useful part was asking *how* the removal could have made startup faster.
+`PluginServiceImpl` did real work in its `init` - a `queryIntentContentProviders`
+scan across every installed package, two database writes, and a receiver for
+five package-change actions - but it was registered as a plain Koin `single`,
+which is lazy, and the only things that injected it were settings screens. It
+was therefore never constructed during a launcher start, and its removal cannot
+have changed startup at all. The numbers were noise wearing a plausible shape.
+
+If a runtime delta matters, find the code path that produced it before quoting
+it. A delta with no mechanism is a measurement artifact until proven otherwise,
+and the metrics in the table above are more than capable of manufacturing one.
+
 ## Caveats that apply to every number here
 
 - Debug builds, not minified. Release figures are smaller across the board;
