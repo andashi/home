@@ -148,7 +148,9 @@ compare() { # $1 = before.tsv, $2 = after.tsv
         if (bv != "" && av != "" && bv + 0 == bv && av + 0 == av) {
           d = av - bv
           pct = (bv + 0 != 0) ? sprintf("%+.1f%%", d * 100.0 / bv) : ""
-          printf "%-28s %14s %14s %+14d %9s\n", m, bv, av, d, pct
+          # %d would truncate: a 3.90 -> 1.50 change printed as -2, not -2.40
+          delta = (d == int(d)) ? sprintf("%+d", d) : sprintf("%+.2f", d)
+          printf "%-28s %14s %14s %14s %9s\n", m, bv, av, delta, pct
         } else {
           printf "%-28s %14s %14s %14s %9s\n", m, (bv == "" ? "-" : bv), (av == "" ? "-" : av), "", ""
         }
@@ -156,8 +158,12 @@ compare() { # $1 = before.tsv, $2 = after.tsv
     }
   ' "$before" "$after"
 
+  # Not optional: silently skipping the comparison would let a missing artifact
+  # hide an added permission while --compare still exits 0.
   local bperm="${before%.tsv}.permissions" aperm="${after%.tsv}.permissions"
-  if [ -f "$bperm" ] && [ -f "$aperm" ]; then
+  [ -f "$bperm" ] || die "permission list not found: $bperm"
+  [ -f "$aperm" ] || die "permission list not found: $aperm"
+  if true; then
     local gone added
     gone="$(comm -23 <(sort "$bperm") <(sort "$aperm") || true)"
     added="$(comm -13 <(sort "$bperm") <(sort "$aperm") || true)"
@@ -312,7 +318,7 @@ run_cycle() { # $1 = run number
   holder="$(adb -s "$SERIAL" shell cmd role get-role-holders --user 0 android.app.role.HOME 2>/dev/null | tr -d '\r')"
   case "$holder" in
     *"$PKG"*) ;;
-    *) warn "HOME role is '$holder', not $PKG - figures are for a non-default launcher" >&2 ;;
+    *) die "HOME role is '$holder', not $PKG - startup and runtime figures would not be a launcher's" ;;
   esac
 
   # The battery is unplugged before anything is measured, and this is not a
@@ -385,7 +391,8 @@ run_cycle() { # $1 = run number
       adb -s "$SERIAL" shell dumpsys battery set status 2 >/dev/null 2>&1 || true
       sleep 3   # the animation starts from a battery broadcast, not immediately
       tc0="$(read_ticks || true)"
-      if [ -n "$tc0" ]; then
+      [ -n "$tc0" ] || die "/proc/$pid/stat unreadable before the charging CPU window"
+      if true; then
         sleep "$CPU_WINDOW"
         tc1="$(read_ticks || true)"
         [ -n "$tc1" ] || die "/proc/$pid/stat became unreadable during the charging CPU window"
@@ -454,6 +461,10 @@ emit_aggregated() {
       for (i = 1; i <= n; i++) {
         m = order[i]
         c = split(vals[m], v, " ")
+        if (c != runs) {
+          printf "metric %s has %d of %d samples - a cycle did not report it\n", m, c, runs > "/dev/stderr"
+          bad = 1
+        }
         numeric = 1
         for (j = 1; j <= c; j++) if (v[j] + 0 != v[j] && v[j] != "0") numeric = 0
         if (!numeric || c == 0) { printf "%s\t%s\t%s\n", m, v[1], unit[m]; continue }
@@ -468,6 +479,7 @@ emit_aggregated() {
           printf "%s.spread\t%.1f\tpct\n", m, (med != 0 ? (hi - lo) * 100.0 / med : 0)
         }
       }
+      if (bad) exit 1
     }' "$RAW"
 }
 emit_aggregated >> "$OUT"

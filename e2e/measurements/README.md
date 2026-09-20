@@ -40,10 +40,16 @@ launcher process, so it costs a boot cycle and obeys the usual instance rules
 (`SERIAL`/`OVERLAY_DIR` together, never another session's instance — see
 `AGENTS.md`).
 
+A run fails rather than reporting a partial result: the launcher must actually
+hold the HOME role, every metric must arrive from every requested cycle, and
+`--compare` needs both `.permissions` files. A median over fewer samples than
+were asked for, or a permission list quietly skipped, reads exactly like a
+clean run, which is the one thing a measurement must never do.
+
 ## Reading one
 
 ```bash
-e2e/measure-footprint.sh --compare measurements/baseline.tsv measurements/no-backup.tsv
+e2e/measure-footprint.sh --compare e2e/measurements/baseline.tsv e2e/measurements/no-backup.tsv
 ```
 
 Prints every metric with its delta and names the permissions that appeared or
@@ -62,7 +68,7 @@ requested at all.
 | `dex.method_refs` | method *references*, the figure the 64k-per-dex limit counts; it tracks how much library surface the build still reaches into |
 | `manifest.permissions` | number of declared permissions |
 | `gradle.modules` | `include(...)` lines in `settings.gradle.kts` |
-| `start.cold.median` / `.min` / `.max` | `am start -W` TotalTime over `START_RUNS` runs after `WARMUP_RUNS` discarded ones |
+| `start.cold.median` | `am start -W` TotalTime over `START_RUNS` runs after `WARMUP_RUNS` discarded ones |
 | `mem.pss.total` / `mem.rss.total` | App Summary totals from `dumpsys meminfo` after the settle window |
 | `mem.java_heap` / `mem.native_heap` / `mem.code` / `mem.graphics` | the App Summary rows that move when modules go |
 | `cpu.startup` | CPU seconds the process burned from launch through the settle window — the cost of starting up and reaching steady state, where a removed module's initialisation shows |
