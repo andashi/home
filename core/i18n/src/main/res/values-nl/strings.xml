@@ -11,12 +11,10 @@
     <string name="action_undo">Ongedaan maken</string>
     <string name="menu_delete">Verwijderen</string>
     <string name="menu_contacts_open_externally">Openen in contacten-app</string>
-    <string name="menu_calendar_open_externally">Openen in kalender-app</string>
     <string name="search_bar_placeholder">Zoeken</string>
     <string name="app_info_version">Versie %1$s</string>
     <string name="settings">Instellingen</string>
     <string name="wallpaper">Achtergrond</string>
-    <string name="wikipedia_source">Via Wikipedia</string>
     <string name="file_type_directory">Map</string>
     <string name="file_type_archive">Archiefbestand</string>
     <string name="file_type_android">Android pakketbestand</string>
@@ -38,7 +36,6 @@
     <string name="websearch_dialog_url_error">De URL bevat \'${1}\' niet</string>
     <string name="websearch_dialog_delete_icon">Pictogram verwijderen</string>
     <string name="menu_edit_widgets">Widgets bewerken</string>
-    <string name="widget_name_calendar">Kalender</string>
     <string name="widget_name_music">Media</string>
     <string name="widget_add_widget">Widget toevoegen</string>
     <string name="shortcut_summary">Via %1$s</string>
@@ -55,14 +52,12 @@
     <string name="owncloud_username">Gebruikersnaam</string>
     <string name="owncloud_login_failed">Fout bij inloggen: ongeldige gebruikersnaam of wachtwoord.</string>
     <string name="login_flow_continue">Doorgaan</string>
-    <string name="disclaimer">Disclaimer</string>
     <string name="menu_share">Delen</string>
     <string name="menu_share_apk_file">Installatiebestand</string>
     <string name="default_websearch_2_url">https://www.youtube.com/results\?search_query=${1}</string>
     <string name="default_websearch_3_url">https://play.google.com/store/search\?q=${1}</string>
     <string name="websearch_dialog_replace_icon">Pictogram vervangen</string>
     <string name="websearch_dialog_custom_icon">Aangepast pictogram</string>
-    <string name="wikipedia_url">https://nl.wikipedia.org</string>
     <string name="file_type_source_code">Broncodebestand</string>
     <string name="edit_favorites_dialog_unpinned">Niet vastgezet - regelmatig gebruikt</string>
     <string name="file_type_drawing">Tekening</string>
@@ -71,15 +66,9 @@
     <string name="owncloud_login_2fa_hint">Als meerfactorauthenticatie ingeschakeld is, moet je hier een applicatiewachtwoord gebruiken.</string>
     <string name="login_flow_login">Inloggen</string>
     <string name="show_all">Alles tonen</string>
-    <string name="date_today">Vandaag</string>
-    <string name="date_tomorrow">Morgen</string>
-    <string name="calendar_widget_pinned_events">Toekomstig</string>
-    <string name="calendar_widget_no_events">Geen afspraken vandaag</string>
-    <string name="calendar_event_allday">Hele dag</string>
     <string name="music_widget_default_title">%1$s speelt media</string>
     <string name="music_widget_no_data">Nog geen media afgespeeld</string>
     <string name="missing_permission_music_widget">Om het afspelen van media te beheren is toegang tot meldingen nodig</string>
-    <string name="missing_permission_calendar_search_settings">Om de kalender te doorzoeken is toegang tot de kalender nodig</string>
     <string name="missing_permission_calendar_widget_settings">Het widget heeft toegang tot de kalender nodig</string>
     <string name="preference_theme">Thema</string>
     <string name="preference_theme_light">Licht</string>
@@ -92,11 +81,7 @@
     <string name="preference_category_links">Koppelingen</string>
     <string name="preference_category_licenses">Open source licenties</string>
     <string name="open_webpage">Website openen</string>
-    <string name="calendar_widget_next_events">Volgende afspraak</string>
     <string name="preference_screen_appearance">Weergave</string>
-    <string name="disclaimer_currency_converter">Wisselkoersen worden een keer per dag gepubliceerd door de Europese Centrale Bank. Alle informatie wordt verschaft zoals ze is, zonder enige vorm van garantie. Er wordt geen verantwoordelijkheid genomen voor deze informatie.
-\n
-\nLaatste update: %1$s</string>
     <plurals name="calendar_widget_running_events">
         <item quantity="one">+%1$d actieve afspraak uit het verleden</item>
         <item quantity="other">+%1$d actieve afspraken uit het verleden</item>
@@ -115,13 +100,11 @@
     <string name="preference_icon_shape_teardrop">Traan</string>
     <string name="preference_theme_system">Systeem volgen</string>
     <string name="missing_permission_notification_badges">Toegang tot meldingen is nodig om meldingsstipjes te tonen</string>
-    <string name="missing_permission_calendar_widget">Geef toegang tot de kalender om hier toekomstige afspraken te tonen</string>
     <string name="grant_permission">Geef toegang</string>
     <string name="preference_cards_stroke_width">Lijndikte</string>
     <string name="preference_cards_opacity">Transparantie</string>
     <string name="preference_icon_shape_hexagon">Zeshoek</string>
     <string name="menu_remove">Verwijderen</string>
-    <string name="missing_permission_calendar_search">Geef toegang tot de kalender om afspraken te doorzoeken</string>
     <string name="missing_permission_appshortcuts_search">Stel %1$s in als standaard startschermapplicatie om applicatiesnelkoppelingen te doorzoeken.</string>
     <string name="missing_permission_appshortcuts_create">Stel %1$s in als standaard startschermapplicatie om applicatiesnelkoppelingen te maken.</string>
     <string name="preference_screen_about_summary">Applicatie- en licentie-informatie</string>
@@ -216,7 +199,6 @@
     <string name="preference_search_files_summary">Lokale en cloudbestanden doorzoeken</string>
     <string name="preference_search_contacts">Contacten</string>
     <string name="preference_search_contacts_summary">Contactpersonen op het apparaat doorzoeken</string>
-    <string name="preference_search_calendar">Kalender</string>
     <string name="websearch_dialog_advanced">Geavanceerd</string>
     <string name="frequently_used_show_in_favorites">In favorieten tonen</string>
     <string name="preference_edit_favorites_summary">Volgorde van de vastgezette items aanpassen</string>
@@ -224,12 +206,9 @@
     <string name="preference_favorites_frequently_used_summary">Vaak gebruikte items tonen in de favorieten</string>
     <string name="preference_edit_button">Bewerkknop</string>
     <string name="preference_favorites_edit_button_summary">Knop tonen om de volgorde van de favorieten te bewerken</string>
-    <string name="preference_search_wikipedia_summary">De vrije encyclopedie doorzoeken</string>
     <string name="preference_search_websites">Websites</string>
     <string name="preference_search_websites_summary">Voorbeeld van een website tonen als de zoekterm een URL is</string>
     <string name="preference_search_calculator">Rekenmachine</string>
-    <string name="preference_search_currencyconverter_summary">Periodiek wisselkoersen downloaden om munteenheden te converteren</string>
-    <string name="preference_search_wikipedia">Wikipedia</string>
     <string name="preference_screen_buildinfo">Buildinformatie</string>
     <string name="preference_screen_buildinfo_summary">Meer informatie over de build van deze applicatie</string>
     <string name="preference_search_bar_style">Stijl</string>
@@ -237,19 +216,15 @@
     <string name="preference_search_bar_auto_focus">Toetsenbord openen</string>
     <string name="preference_hidden_items">Uitgesloten zoekresultaten</string>
     <string name="preference_hidden_items_summary">Uitgesloten applicaties en zoekresultaten beheren</string>
-    <string name="preference_wikipedia_customurl">Wikipedia URL</string>
     <string name="preference_widgets_edit_button_summary">Knop tonen om widgets toe te voegen, te verwijderen of te verplaatsen</string>
     <string name="icon_picker_default_icon">Standaard</string>
     <string name="frequently_used_rows">Aantal rijen</string>
     <string name="icon_picker_suggestions">Suggesties</string>
     <string name="battery_part_charging">Aan het opladen</string>
-    <string name="preference_search_currencyconverter">Munteenhedenconversie</string>
     <string name="preference_search_calculator_summary">Wiskundige uitdrukkingen evalueren</string>
-    <string name="preference_search_unitconverter">Eenhedenconversie</string>
     <string name="preference_search_bar_auto_focus_summary">Altijd het toetsenbord tonen wanneer applicatielijst geopend wordt</string>
     <string name="apps_profile_main">Persoonlijk</string>
     <string name="preference_calendar_calendars">Kalenders</string>
-    <string name="preference_search_unitconverter_summary">Gebruik: 1.5 kg of 4cm &gt;&gt; in</string>
     <plurals name="battery_part_remaining_charge_time">
         <item quantity="one">Volledig opgeladen binnen %1$s minuut</item>
         <item quantity="other">Volledig opgeladen binnen %1$s minuten</item>
@@ -586,24 +561,16 @@
     <string name="menu_hide_filters">Filters verbergen</string>
     <string name="music_widget_pause">Pauze</string>
     <string name="music_widget_open_player">Speler openen</string>
-    <string name="calendar_widget_previous_day">Vorige dag</string>
-    <string name="calendar_widget_next_day">Volgende dag</string>
-    <string name="calendar_widget_open_calendar">Kalender-app openen</string>
-    <string name="calendar_widget_create_event">Nieuwe afspraak aanmaken</string>
-    <string name="preference_search_supportedunits">Ondersteunde eenheden</string>
     <string name="profile_work_profile_action_lock">Werk-apps pauzeren</string>
     <string name="profile_private_profile_action_unlock">Ontgrendelen</string>
     <string name="profile_work_profile_state_locked">Werk-apps zijn onderbroken</string>
     <string name="hint_drag_and_drop_reorder">Houd items vast en sleep ze om ze opnieuw te rangschikken</string>
-    <string name="task_due_time">Gepland voor %1$s</string>
     <plurals name="calendar_search_enabled_lists">
         <item quantity="one">%1$s lijst geselecteerd</item>
         <item quantity="other">%1$s lijsten geselecteerd</item>
     </plurals>
     <string name="preference_calendar_hide_completed">Voltooide taken verbergen</string>
     <string name="profile_work_profile_action_unlock">Pauze onderbreken</string>
-    <string name="task_due_date">Gepland voor %1$s</string>
-    <string name="task_due_today">Voor vandaag</string>
     <string name="apps_profile_private">Privé</string>
     <string name="app_label_locked_profile">Vergrendeld</string>
     <string name="profile_private_profile_action_lock">Privégedeelte vergrendelen</string>
@@ -622,7 +589,6 @@
         <item quantity="other">in %1$d minuten</item>
     </plurals>
     <string name="plugin_type_contacts">Contactpersonen</string>
-    <string name="preference_search_local_calendar_summary">Agenda\'s zoeken op dit apparaat</string>
     <string name="preference_grid_list_style">Apps in een lijst weergeven</string>
     <string name="preference_grid_list_icons">App-pictogrammen in lijst weergeven</string>
     <string name="preference_grid_list_style_summary">Apps weergeven in een lijst in plaats van in een raster</string>
@@ -631,18 +597,10 @@
     <string name="preference_contacts_call_on_tap_summary">Start direct, zonder bevestiging, een gesprek bij het tikken op een telefoonnummer</string>
     <string name="missing_permission_call_contacts_settings">Telefonierechten zijn vereist om oproepen te starten</string>
     <string name="action_install">Installeren</string>
-    <string name="missing_permission_tasks_search_settings">Toestemming voor taken is vereist om taken te zoeken in de Tasks-applicatitie</string>
-    <string name="missing_permission_tasks_integration">Toestemming voor taken is vereist om de takenintegratie te gebruiken</string>
-    <string name="preference_search_tasks">Taken</string>
-    <string name="preference_search_tasks_summary">Taken zoeken in de Tasks app</string>
-    <string name="preference_tasks_integration">Tasks</string>
-    <string name="preference_tasks_integration_description">Tasks is een gratis en open-source to-do-lijst en herinneringen-app. Indien geïnstalleerd, kan %1$s je taken vanuit de Tasks-app weergeven en doorzoeken.</string>
-    <string name="preference_tasks_integration_ready">Integratie met Tasks is volledig ingesteld en klaar voor gebruik.</string>
     <plurals name="calendar_widget_running_tasks">
         <item quantity="one">+%1$d onvoltooide taak</item>
         <item quantity="other">+%1$d onvoltooide taken</item>
     </plurals>
-    <string name="preference_launch_tasks_app">Tasks app openen</string>
     <string name="preference_widgets_on_home_screen_summary">Toon widgets op het thuisscherm in plaats van op een aparte pagina</string>
     <string name="preference_gesture_swipe_up">Naar boven vegen</string>
     <string name="gesture_action_widgets">Widgets</string>
@@ -755,7 +713,6 @@
     <string name="preference_search_apps_show_details_summary">Versie-informatie en pakketnaam van een applicatie tonen in het contextmenu</string>
     <string name="preference_search_apps_show_details">Applicatie-informatie tonen</string>
     <string name="preference_add_currency">Munteenheid toevoegen</string>
-    <string name="preference_currency_settings">Instellingen voor munteenheden</string>
     <string name="preference_currencies">Munteenheid</string>
     <string name="search_query_private_space">Privégedeelte</string>
     <string name="search_action_private_space_lock">Privégedeelte sluiten</string>

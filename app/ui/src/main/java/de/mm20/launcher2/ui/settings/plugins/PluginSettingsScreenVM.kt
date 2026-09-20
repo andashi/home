@@ -7,8 +7,6 @@ import android.net.Uri
 import android.provider.Settings
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import de.mm20.launcher2.calendar.CalendarRepository
-import de.mm20.launcher2.calendar.providers.CalendarList
 import de.mm20.launcher2.ktx.tryStartActivity
 import de.mm20.launcher2.plugin.Plugin
 import de.mm20.launcher2.plugin.PluginPackage
@@ -16,7 +14,6 @@ import de.mm20.launcher2.plugin.PluginState
 import de.mm20.launcher2.plugin.PluginType
 import de.mm20.launcher2.plugins.PluginService
 import de.mm20.launcher2.plugins.PluginWithState
-import de.mm20.launcher2.preferences.search.CalendarSearchSettings
 import de.mm20.launcher2.preferences.search.ContactSearchSettings
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -33,8 +30,6 @@ import org.koin.core.component.inject
 
 class PluginSettingsScreenVM : ViewModel(), KoinComponent {
     private val pluginService by inject<PluginService>()
-    private val calendarRepository by inject<CalendarRepository>()
-    private val calendarSearchSettings: CalendarSearchSettings by inject()
     private val contactSearchSettings: ContactSearchSettings by inject()
 
     private var pluginPackageName = MutableStateFlow<String?>(null)
@@ -69,11 +64,6 @@ class PluginSettingsScreenVM : ViewModel(), KoinComponent {
     val hasPermission = states
         .map {
             it.none { it.state is PluginState.NoPermission }
-        }
-
-    val calendarPlugins = states
-        .map {
-            it.filter { it.plugin.type == PluginType.Calendar }
         }
 
     val contactPlugins = states
@@ -113,18 +103,5 @@ class PluginSettingsScreenVM : ViewModel(), KoinComponent {
         contactSearchSettings.setPluginEnabled(authority, enabled)
     }
 
-    val enabledCalendarSearchPlugins = calendarSearchSettings.providers
-    fun setCalendarSearchPluginEnabled(authority: String, enabled: Boolean) {
-        calendarSearchSettings.setProviderEnabled(authority, enabled)
-    }
 
-
-    fun getCalendarLists(plugin: Plugin): Flow<List<CalendarList>> {
-        return calendarRepository.getCalendars(plugin.authority)
-    }
-
-    val excludedCalendars = calendarSearchSettings.excludedCalendars
-    fun setCalendarExcluded(calendarId: String, excluded: Boolean) {
-        calendarSearchSettings.setCalendarExcluded(calendarId, excluded)
-    }
 }

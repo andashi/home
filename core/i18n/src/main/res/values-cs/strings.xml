@@ -1,13 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="wikipedia_url">https://cs.wikipedia.org</string>
     <string name="file_type_image">Obrázek</string>
     <string name="edit_favorites_dialog_unpinned">Není připnuto – často používáno</string>
     <string name="owncloud_server_invalid_url">Tato adresa URL neodkazuje na platnou instalaci Owncloud</string>
     <string name="default_websearch_3_url">https://play.google.com/store/search\?q=${1}</string>
-    <string name="disclaimer_currency_converter">Směnné kurzy tak, jak jsou zveřejňovány jednou denně Evropskou centrální bankou. Veškeré informace jsou poskytovány „tak, jak jsou“, bez jakékoliv záruky. Za tyto informace nepřebíráme žádnou odpovědnost.
-\n
-\nPoslední aktualizace: %1$s</string>
     <string name="missing_permission_appshortcuts_search">Pro prohledávání záložek aplikací nastavte %1$s jako výchozí spouštěč.</string>
     <plurals name="calendar_widget_running_events">
         <item quantity="one">+%1$d probíhající událost z nedávných dnů</item>
@@ -26,8 +22,6 @@
     <string name="preference_clockwidget_date_part_summary">Zobrazit aktuální datum</string>
     <string name="preference_search_favorites_summary">Zobrazit připnuté a často používané položky nad mřízkou s aplikacemi</string>
     <string name="preference_search_calculator_summary">Vyhodnocování matematických výrazů</string>
-    <string name="preference_search_unitconverter_summary">Použití: 1.5 kg nebo 4 cm &gt;&gt; in</string>
-    <string name="preference_search_currencyconverter_summary">Pravidelně stahovat směnné kurzy pro převod měn</string>
     <plurals name="battery_part_remaining_charge_time">
         <item quantity="one">Plná za %1$s minutu</item>
         <item quantity="few">Plná za %1$s minuty</item>
@@ -45,12 +39,10 @@
     <string name="action_undo">Zrušit</string>
     <string name="menu_delete">Odstranit</string>
     <string name="menu_contacts_open_externally">Otevřít v kontaktech</string>
-    <string name="menu_calendar_open_externally">Otevřít v kalendáři</string>
     <string name="search_bar_placeholder">Hledat</string>
     <string name="app_info_version">Verze %1$s</string>
     <string name="settings">Nastavení</string>
     <string name="wallpaper">Pozadí</string>
-    <string name="wikipedia_source">Z Wikipedie</string>
     <string name="file_type_directory">Adresář</string>
     <string name="file_type_archive">Archiv</string>
     <string name="file_type_android">Soubor balíčku Android</string>
@@ -75,7 +67,6 @@
     <string name="websearch_dialog_delete_icon">Odstranit ikonu</string>
     <string name="websearch_dialog_custom_icon">Vlastní ikona</string>
     <string name="menu_edit_widgets">Upravit widgety</string>
-    <string name="widget_name_calendar">Kalendář</string>
     <string name="widget_name_music">Média</string>
     <string name="widget_add_widget">Přidat widget</string>
     <string name="shortcut_summary">Od %1$s</string>
@@ -95,22 +86,12 @@
     <string name="owncloud_login_failed">Přihlášení selhalo: nesprávné uživatelské jméno nebo heslo.</string>
     <string name="login_flow_continue">Pokračovat</string>
     <string name="login_flow_login">Přihlásit se</string>
-    <string name="disclaimer">Odmítnutí odpovědnosti</string>
     <string name="show_all">Zobrazit vše</string>
-    <string name="date_today">Dnes</string>
-    <string name="date_tomorrow">Zítra</string>
-    <string name="calendar_widget_pinned_events">Nadcházející</string>
-    <string name="calendar_widget_next_events">Další událost</string>
-    <string name="calendar_widget_no_events">Dnes žádné události</string>
-    <string name="calendar_event_allday">Celý den</string>
     <string name="music_widget_default_title">%1$s přehrává média</string>
     <string name="music_widget_no_data">Zatím nebyla přehrána žádná média</string>
     <string name="missing_permission_music_widget">Pro ovládání médií je vyžadován přístup k oznámením</string>
     <string name="missing_permission_contact_search_settings">Pro prohledávání kontaktů je vyžadován přístup ke kontaktům</string>
-    <string name="missing_permission_calendar_search_settings">Pro prohledávání kalendáře je vyžadován přístup ke kalendáři</string>
     <string name="missing_permission_appshortcuts_search_settings">%1$s musí být nastaven jako výchozí aplikace pro domácnost pro prohledávání záložek aplikací</string>
-    <string name="missing_permission_calendar_widget">Pro zobrazování nadcházejících schůzek a událostí zde je vyžadován přístup ke kalendáři</string>
-    <string name="missing_permission_calendar_search">Pro prohledávání vašeho kalendáře je vyžadován přístup ke kalendáři</string>
     <string name="missing_permission_contact_search">Pro prohledávání vašich kontaktů je vyžadován přístup ke kontaktům</string>
     <string name="grant_permission">Udělit</string>
     <string name="preference_screen_appearance">Vzhled</string>
@@ -198,15 +179,10 @@
     <string name="preference_search_files_summary">Prohledávat místní a cloudové soubory</string>
     <string name="preference_search_contacts">Kontakty</string>
     <string name="preference_search_contacts_summary">Prohledávat kontakty na tomto zařízení</string>
-    <string name="preference_search_calendar">Kalendář</string>
     <string name="preference_search_calendar_summary">Prohledávat nadcházející schůzky a události</string>
     <string name="preference_search_appshortcuts">Záložky aplikací</string>
     <string name="preference_search_appshortcuts_summary">Prohledávat záložky aplikací</string>
     <string name="preference_search_calculator">Kalkulačka</string>
-    <string name="preference_search_unitconverter">Převodník jednotek</string>
-    <string name="preference_search_currencyconverter">Převodník měn</string>
-    <string name="preference_search_wikipedia">Wikipedie</string>
-    <string name="preference_search_wikipedia_summary">Prohledávat bezplatnou encyklopedii</string>
     <string name="preference_search_websites">Weby</string>
     <string name="preference_search_websites_summary">Zobrazit náhled webu, když je vyhledávací dotaz URL</string>
     <string name="preference_calendar_calendars">Kalendáře</string>
@@ -218,7 +194,6 @@
     <string name="preference_search_bar_auto_focus_summary">Automaticky zobrazit klávesnici při otevření seznamu aplikací</string>
     <string name="preference_hidden_items">Vyloučené výsledky vyhledávání</string>
     <string name="preference_hidden_items_summary">Spravovat vyloučené aplikace a výsledky vyhledávání</string>
-    <string name="preference_wikipedia_customurl">URL Wikipedie</string>
     <string name="battery_part_charging">Nabíjení</string>
     <string name="create_search_action_website_url">Zadejte adresu webu:</string>
     <string name="websearch_dialog_query_encoding">Kódování dotazu</string>
@@ -594,14 +569,9 @@
     <string name="music_widget_play">Přehrát</string>
     <string name="music_widget_pause">Pozastavit</string>
     <string name="music_widget_open_player">Otevřít přehrávač</string>
-    <string name="calendar_widget_previous_day">Předchozí den</string>
-    <string name="calendar_widget_next_day">Další den</string>
-    <string name="calendar_widget_create_event">Vytvořit novou událost</string>
-    <string name="calendar_widget_open_calendar">Otevřít aplikaci kalendáře</string>
     <string name="plugin_type_calendar">Kalendář</string>
     <string name="profile_work_profile_action_unlock">Zrušit pozastavení</string>
     <string name="hint_drag_and_drop_reorder">Přeskládejte položky jejich podržením a přesunutím</string>
-    <string name="preference_search_supportedunits">Podporované jednotky</string>
     <string name="app_label_locked_profile">Uzamčeno</string>
     <string name="profile_work_profile_state_locked">Pracovní aplikace jsou pozastaveny</string>
     <string name="profile_work_profile_action_lock">Pozastavit pracovní aplikace</string>
@@ -613,9 +583,6 @@
         <item quantity="few">Vybrány %1$s seznamy</item>
         <item quantity="other">Vybráno %1$s seznamů</item>
     </plurals>
-    <string name="task_due_time">Dokončit do %1$s</string>
-    <string name="task_due_date">Dokončit do %1$s</string>
-    <string name="task_due_today">Dokončit dnes</string>
     <string name="preference_calendar_hide_completed">Skrýt dokončené úkoly</string>
     <string name="preference_compact_tags">Kompaktní štítky</string>
     <string name="preference_compact_tags_summary">Skrýt popisky nebo ikony štítků, aby se zmenšilo místo jimi zabrané</string>
@@ -631,7 +598,6 @@
         <item quantity="few">za %1$d minuty</item>
         <item quantity="other">za %1$d minut</item>
     </plurals>
-    <string name="preference_search_local_calendar_summary">Hledat kalendáře na tomto zařízení</string>
     <string name="missing_permission_call_contacts_settings">Pro provádění hovorů je vyžadováno oprávnění k telefonu</string>
     <string name="preference_contacts_call_on_tap">Klepněte pro vytočení</string>
     <string name="preference_contacts_call_on_tap_summary">Po klepnutí na telefonní číslo zahájit hovor bez potvrzení</string>
@@ -641,14 +607,6 @@
     <string name="preference_grid_list_icons_summary">Zobrazit ikony v zobrazení seznamu</string>
     <string name="plugin_type_contacts">Kontakty</string>
     <string name="action_install">Instalovat</string>
-    <string name="missing_permission_tasks_search_settings">Pro prohledávání úkolů je vyžadován přístup k úkolům v aplikaci Tasks</string>
-    <string name="missing_permission_tasks_integration">Pro použití integrace Tasks je vyžadován přístup k úkolům</string>
-    <string name="preference_search_tasks">Úkoly</string>
-    <string name="preference_search_tasks_summary">Hledat úkoly v aplikaci Tasks</string>
-    <string name="preference_tasks_integration_ready">Integrace Tasks je plně nastavena a připravena k použití.</string>
-    <string name="preference_tasks_integration">Tasks</string>
-    <string name="preference_tasks_integration_description">Tasks je bezplatná a otevřená aplikace pro seznam úkolů připomínky. Pokud je nainstalována, %1$s může zobrazovat a vyhledávat vaše úkoly.</string>
-    <string name="preference_launch_tasks_app">Otevřít aplikaci Tasks</string>
     <plurals name="calendar_widget_running_tasks">
         <item quantity="one">+%1$d nedokončený úkol</item>
         <item quantity="few">+%1$d nedokončené úkoly</item>
@@ -765,7 +723,6 @@
     <string name="gesture_action_launch_select_app">Vyberte aplikaci nebo zkratku</string>
     <string name="preference_search_apps_show_details">Zobrazit informace o aplikaci</string>
     <string name="preference_search_apps_show_details_summary">Zobrazit verzi a název balíčku aplikace v její kontextové nabídce</string>
-    <string name="preference_currency_settings">Nastavení měny</string>
     <string name="search_query_private_space">Soukromý prostor</string>
     <string name="search_action_private_space_lock">Zamknout soukromý prostor</string>
     <string name="search_action_private_space_unlock">Odemknout soukromý prostor</string>

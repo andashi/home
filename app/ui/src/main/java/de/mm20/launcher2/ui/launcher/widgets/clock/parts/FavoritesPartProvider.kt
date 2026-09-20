@@ -16,7 +16,6 @@ import de.mm20.launcher2.preferences.ui.UiSettings
 import de.mm20.launcher2.searchable.PinnedLevel
 import de.mm20.launcher2.services.favorites.FavoritesService
 import de.mm20.launcher2.ui.launcher.search.common.grid.SearchResultGrid
-import de.mm20.launcher2.widgets.CalendarWidget
 import de.mm20.launcher2.widgets.WidgetRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -42,13 +41,9 @@ class FavoritesPartProvider : PartProvider, KoinComponent {
             }
         }.collectAsState(0)
         val dockRows by uiSettings.dockRows.collectAsState(1)
-        val excludeCalendar by remember { widgetRepository.exists(CalendarWidget.Type) }.collectAsState(
-            true
-        )
-
-        val favorites by remember(columns, dockRows, excludeCalendar) {
+        val favorites by remember(columns, dockRows) {
             favoritesService.getFavorites(
-                excludeTypes = if (excludeCalendar) listOf("calendar", "tag") else listOf("tag"),
+                excludeTypes = listOf("tag"),
                 minPinnedLevel = PinnedLevel.FrequentlyUsed,
                 limit = columns * dockRows
             )

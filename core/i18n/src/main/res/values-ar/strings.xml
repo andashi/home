@@ -16,13 +16,10 @@
     <string name="action_quit">إغلاق</string>
     <string name="menu_delete">حذف</string>
     <string name="menu_remove">أزِل</string>
-    <string name="menu_calendar_open_externally">افتح في تطبيق التقويم</string>
     <string name="app_info_version">إصدار %1$s</string>
     <string name="settings">الإعدادت</string>
     <string name="help">مساعدة</string>
     <string name="wallpaper">الخلفية</string>
-    <string name="wikipedia_url">https://ar.wikipedia.org</string>
-    <string name="wikipedia_source">من ويكيبيديا</string>
     <string name="file_type_directory">مسار</string>
     <string name="file_type_archive">ملف أرشيف</string>
     <string name="file_type_android">ملف حزمة أندرويد</string>
@@ -58,7 +55,6 @@
     <string name="websearch_dialog_query_encoding_form">نموذج محرّر URL</string>
     <string name="websearch_dialog_query_encoding_none">لا شيء</string>
     <string name="menu_edit_widgets">تحرير أدوات الواجهة</string>
-    <string name="widget_name_calendar">التقويم</string>
     <string name="widget_name_music">الصوتيات</string>
     <string name="widget_name_notes">ملاحظة</string>
     <string name="widget_name_unknown">أداة واجهة تطبيق غير معروفة</string>
@@ -86,10 +82,6 @@
     <string name="owncloud_username">اسم المستخدم</string>
     <string name="owncloud_login_2fa_hint">إذا قمت بتمكين المصادقة الثنائية، فيجب عليك استخدام كلمة مرور التطبيق هنا.</string>
     <string name="owncloud_login_failed">فشل تسجيل الدخول: اسم المستخدم أو كلمة المرور غير صحيحة.</string>
-    <string name="date_tomorrow">غدا</string>
-    <string name="calendar_widget_pinned_events">القادمة</string>
-    <string name="calendar_widget_next_events">الحدث القادم</string>
-    <string name="calendar_event_allday">طوال اليوم</string>
     <string name="preference_restore_default">استعادة‫ الافتراضي</string>
     <string name="widget_action_replace">إستبدال</string>
     <string name="edit_favorites_dialog_pinned_unsorted">مثبت - يتم فرزه تلقائيا</string>
@@ -103,11 +95,8 @@
     <string name="nextcloud_server_invalid_url">لا يشير عنوان URL هذا إلى تثبيت Nextcloud صالح</string>
     <string name="owncloud_server_url">عنوان URL لخادم Owncloud</string>
     <string name="login_flow_login">تسجيل الدخول</string>
-    <string name="date_today">اليوم</string>
     <string name="login_flow_continue">متابعة</string>
-    <string name="disclaimer">اخلاء المسؤولية</string>
     <string name="show_all">عرض الكل</string>
-    <string name="calendar_widget_no_events">لا توجد أحداث اليوم</string>
     <string name="music_widget_no_data">لم يتم تشغيل أي وسائط حتى الآن</string>
     <string name="music_widget_default_title">%1$s يقوم بتشغيل الوسائط</string>
     <plurals name="calendar_widget_running_events">
@@ -118,14 +107,8 @@
         <item quantity="many">+%1$d حدث جاري من الأيام السابقة</item>
         <item quantity="other">+%1$d حدث جاري من الأيام السابقة</item>
     </plurals>
-    <string name="disclaimer_currency_converter">أسعار الصرف كما ينشرها البنك المركزي الأوروبي مرة واحدة في اليوم. يتم توفير جميع المعلومات \"كما هي\" دون أي نوع من الضمان. لا نتحمل أي مسؤولية عن هذه المعلومات.
-\n
-\nاخر تحديث: %1$s</string>
     <string name="file_type_launchertheme">سمة %1$s</string>
     <string name="plugin_state_setup_required">عليك أن تهيء هذه الاضافة أولا</string>
-    <string name="task_due_time">الموعد على %1$s</string>
-    <string name="task_due_date">الموعد في %1$s</string>
-    <string name="task_due_today">الموعد اليوم</string>
     <string name="missing_permission_music_widget">أذونات الاشعارات مطلوبة للتحكم بمشغل الوسائط</string>
     <string name="missing_permission_calendar_widget_settings">الويدجيت تطلب اذونات التقويم</string>
     <string name="preference_theme_light">فاتح</string>
@@ -139,7 +122,6 @@
     <string name="provider_here">هنا</string>
     <string name="missing_permission_notification_badges">الوصول الى الاشعارات مطلوب لعرض شارات الاشعارات</string>
     <string name="missing_permission_contact_search_settings">أذونات جهات الاتصال مطلوبة للبحث في قائمة الاتصالات</string>
-    <string name="missing_permission_calendar_widget">منح اذن الوصول الى التقويم لعرض المواعيد و الأحداث القادمة</string>
     <string name="missing_permission_contact_search">يلزم الحصول على إذن الوصول إلى جهات الاتصال للبحث فيها</string>
     <string name="missing_permission_appshortcuts_search">عين %1$s كتطبيق الشاشة الرئيسية الافتراضي للبحث في اختصارات التطبيقات.</string>
     <string name="preference_screen_about">حول</string>
@@ -150,11 +132,9 @@
     <string name="widget_config_calendar_missing_calendars_hint">لا يمكنك ايجاد تقويماتك؟</string>
     <string name="preference_theme_dark">مظلم</string>
     <string name="preference_category_licenses">رخص مفتوحة المصدر</string>
-    <string name="missing_permission_calendar_search_settings">اذونات التقويم مطلوبة للبحث بالتقويم</string>
     <string name="grant_permission">منح</string>
     <string name="preference_debug_dump_heap">لقطة للذاكرة</string>
     <string name="missing_permission_appshortcuts_create">عين %1$s كتطبيق الشاشة الرئيسية الافتراضي لانشاء اختصارات.</string>
-    <string name="missing_permission_calendar_search">يلزم الحصول على إذن الوصول إلى التقويم للبحث في تقويمك</string>
     <string name="preference_screen_appearance">المظهر</string>
     <string name="preference_theme">السمة</string>
     <string name="preference_colors_default">افتراضي</string>
@@ -228,7 +208,6 @@
     <string name="preference_screen_clockwidget_summary">تكوين نمط الساعة ومكوناتها</string>
     <string name="preference_clockwidget_layout_horizontal">مضغوط</string>
     <string name="preference_search_contacts_summary">البحث في جهات الاتصال على هذا الجهاز</string>
-    <string name="preference_search_calendar">التقويم</string>
     <string name="preference_search_calendar_summary">البحث عن المواعيد والأحداث القادمة</string>
     <string name="preference_search_appshortcuts">اختصارات التطبيقات</string>
     <string name="preference_search_calculator">الآلة الحاسبة</string>
@@ -276,7 +255,6 @@
     <string name="shortcut_label_unavailable">غير متاح</string>
     <string name="preference_clockwidget_alarm_part">التنبيهات</string>
     <string name="preference_screen_search">البحث</string>
-    <string name="preference_search_currencyconverter_summary">تنزيل أسعار الصرف بشكل دوري لتحويل العملات</string>
     <string name="preference_icon_shape_triangle">مثلث رولو</string>
     <string name="preference_category_searchbar">شريط البحث</string>
     <string name="preference_screen_integrations">التكاملات</string>
@@ -300,7 +278,6 @@
     <string name="preference_clockwidget_date_part">التاريخ</string>
     <string name="preference_search_contacts">جهات الاتصال</string>
     <string name="preference_search_appshortcuts_summary">البحث عن اختصارات التطبيقات</string>
-    <string name="preference_search_supportedunits">الوحدات المدعومة</string>
     <string name="preference_calendar_calendars">التقويمات</string>
     <string name="preference_calendar_hide_completed">إخفاء المهام المكتملة</string>
     <string name="preference_search_bar_launch_on_enter_summary">تشغيل التطابق المميز أو الإجراء السريع عند النقر فوق انتقال</string>
@@ -408,9 +385,6 @@
     <string name="preference_clockwidget_date_part_summary">إظهار التاريخ الحالي</string>
     <string name="preference_clockwidget_favorites_part">قاعدة التثبيت</string>
     <string name="preference_search_calculator_summary">تقييم المصطلحات الرياضية</string>
-    <string name="preference_search_unitconverter">محول الوحدات</string>
-    <string name="preference_search_unitconverter_summary">الاستخدام: 1.5 كجم أو 4 سم &gt;&gt; بوصة</string>
-    <string name="preference_search_wikipedia">ويكيبيديا</string>
     <string name="preference_screen_buildinfo_summary">مزيد من المعلومات حول هذا الإصدار من هذا التطبيق</string>
     <string name="preference_search_bar_style">النمط</string>
     <string name="preference_hidden_items">نتائج البحث المستبعدة</string>
@@ -439,7 +413,6 @@
     <string name="item_visibility_search_only">نتائج البحث</string>
     <string name="widget_use_theme_colors">استخدام لون السمة</string>
     <string name="music_widget_pause">إيقاف مؤقت</string>
-    <string name="calendar_widget_open_calendar">فتح تطبيق التقويم</string>
     <string name="widget_config_appwidget_resize">تغيير الحجم</string>
     <string name="preference_plugin_enable">تمكين المكون الإضافي</string>
     <string name="poi_category_discount_store">متجر خصومات</string>
@@ -459,8 +432,6 @@
     <string name="preference_search_favorites">المفضلة</string>
     <string name="preference_search_favorites_summary">إظهار العناصر المثبتة والمستخدمة بشكل متكرر أعلى شبكة التطبيقات</string>
     <string name="preference_search_files_summary">البحث في الملفات المحلية وملفات السحابة</string>
-    <string name="preference_search_currencyconverter">محول العملات</string>
-    <string name="preference_search_wikipedia_summary">البحث في الموسوعة الحرة</string>
     <string name="preference_screen_buildinfo">معلومات الإصدار</string>
     <string name="preference_search_bar_style_summary">تخصيص مظهر شريط البحث</string>
     <string name="preference_search_bar_color">اللون</string>
@@ -468,7 +439,6 @@
     <string name="preference_search_bar_launch_on_enter">التشغيل عند الإدخال</string>
     <string name="preference_hidden_items_reveal_button_summary">أظهر زرًا لعرض نتائج البحث المستبعدة</string>
     <string name="preference_screen_tags">العلامات</string>
-    <string name="preference_wikipedia_customurl">عنوان URL في ويكيبيديا</string>
     <string name="preference_edit_favorites_summary">تغيير ترتيب العناصر المثبتة</string>
     <string name="preference_edit_button">زر التحرير</string>
     <string name="preference_widgets_edit_button_summary">إظهار زر لإضافة وإزالة وإعادة ترتيب الأدوات</string>
@@ -568,8 +538,6 @@
         <item quantity="other"/>
     </plurals>
     <string name="music_widget_open_player">فتح المشغل</string>
-    <string name="calendar_widget_previous_day">اليوم السابق</string>
-    <string name="calendar_widget_next_day">اليوم التالي</string>
     <string name="profile_work_profile_action_lock">إيقاف تطبيقات العمل مؤقتًا</string>
     <string name="profile_private_profile_action_lock">قفل المساحة الخاصة</string>
     <plurals name="debug_cleanup_database_result">
@@ -633,7 +601,6 @@
         <item quantity="other"/>
     </plurals>
     <string name="poi_category_courthouse">محكمة</string>
-    <string name="calendar_widget_create_event">إنشاء حدث جديد</string>
     <string name="hint_drag_and_drop_reorder">اضغط مع الاستمرار واسحب العناصر لإعادة ترتيبها</string>
     <string name="theme_color_scheme_autogenerate">من اللون الأساسي</string>
     <string name="poi_category_doctors">أطباء</string>
@@ -664,7 +631,6 @@
     <string name="weather_forecast_wind">رياح</string>
     <string name="weather_forecast_precipitation">هطول الأمطار</string>
     <string name="plugin_type_contacts">جهات الاتصال</string>
-    <string name="preference_search_local_calendar_summary">البحث في التقويمات على هذا الجهاز</string>
     <string name="preference_grid_list_style">عرض التطبيقات في قائمة</string>
     <string name="preference_grid_list_icons">إظهار أيقونات التطبيقات في القائمة</string>
     <string name="preference_grid_list_style_summary">عرض التطبيقات في قائمة بدلاً من شبكة</string>
@@ -705,8 +671,6 @@
     <string name="gesture_action_widgets">الأدوات الذكية</string>
     <string name="import_theme_contents">المحتويات</string>
     <string name="import_theme_exists">المظهر موجود. سيتم استبداله</string>
-    <string name="missing_permission_tasks_integration">يتطلب إذن الوصول لتطبيق المهام</string>
-    <string name="missing_permission_tasks_search_settings">يتطلب إذن الوصول للبحث في المهام</string>
     <string name="music_widget_interactive_progress_bar">شريط التقدم القابل للتفاعل</string>
     <string name="new_theme_name">(بدون اسم)</string>
     <string name="no_feed_providers">لم يتم تثبيت تطبيقات الأخبار</string>
@@ -728,7 +692,6 @@
     <string name="preference_gesture_swipe_up">تمرير لأعلى</string>
     <string name="preference_language">لغة التطبيق</string>
     <string name="preference_launch_smartspacer_app">تشغيل Smartspacer</string>
-    <string name="preference_launch_tasks_app">تشغيل تطبيق المهام</string>
     <string name="preference_measurement_system">وحدات القياس</string>
     <string name="preference_measurement_system_metric">كيلومتر وكيلوجرام</string>
     <string name="preference_measurement_system_uk">النظام البريطاني</string>
@@ -740,14 +703,9 @@
     <string name="preference_search_bar_style_hidden">مختفي</string>
     <string name="preference_search_bar_style_solid">معتم</string>
     <string name="preference_search_bar_style_transparent">شفاف</string>
-    <string name="preference_search_tasks">البحث في المهام</string>
-    <string name="preference_search_tasks_summary">إظهار المهام من تطبيق المهام</string>
     <string name="preference_smartspacer_enable">تفعيل Smartspacer</string>
     <string name="preference_smartspacer_integration">Smartspacer</string>
     <string name="preference_smartspacer_integration_description">Smartspacer أداة معلومات مجانية ومفتوحة المصدر. إن وُجدت، يمكن دمجها مع أداة الساعة</string>
-    <string name="preference_tasks_integration">تطبيق المهام</string>
-    <string name="preference_tasks_integration_description">تطبيق المهام مجاني ومفتوح المصدر. إن وُجد، يمكن عرض مهامك فيه من خلال %1$s.</string>
-    <string name="preference_tasks_integration_ready">تم الربط بنجاح. التطبيق جاهز للاستخدام.</string>
     <string name="preference_transliteration">طريقة كتابة الأحرف</string>
     <string name="preference_transliteration_auto">تلقائي</string>
     <string name="preference_value_disabled">معطل</string>

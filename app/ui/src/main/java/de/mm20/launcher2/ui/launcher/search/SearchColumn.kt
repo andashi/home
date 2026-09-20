@@ -36,22 +36,14 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import de.mm20.launcher2.profiles.Profile
 import de.mm20.launcher2.search.AppShortcut
 import de.mm20.launcher2.search.Application
-import de.mm20.launcher2.search.Article
-import de.mm20.launcher2.search.CalendarEvent
 import de.mm20.launcher2.search.Contact
-import de.mm20.launcher2.search.Website
 import de.mm20.launcher2.ui.component.LauncherCard
 import de.mm20.launcher2.ui.launcher.search.apps.AppResults
-import de.mm20.launcher2.ui.launcher.search.calculator.CalculatorResults
-import de.mm20.launcher2.ui.launcher.search.calendar.CalendarResults
 import de.mm20.launcher2.ui.launcher.search.contacts.ContactResults
 import de.mm20.launcher2.ui.launcher.search.favorites.SearchFavorites
 import de.mm20.launcher2.ui.launcher.search.favorites.SearchFavoritesVM
 import de.mm20.launcher2.ui.launcher.search.filters.SearchFilters
 import de.mm20.launcher2.ui.launcher.search.shortcut.ShortcutResults
-import de.mm20.launcher2.ui.launcher.search.unitconverter.UnitConverterResults
-import de.mm20.launcher2.ui.launcher.search.website.WebsiteResults
-import de.mm20.launcher2.ui.launcher.search.wikipedia.ArticleResults
 import de.mm20.launcher2.ui.launcher.sheets.HiddenItemsSheet
 import de.mm20.launcher2.ui.launcher.sheets.LocalBottomSheetManager
 import de.mm20.launcher2.ui.locals.LocalGridSettings
@@ -92,11 +84,6 @@ fun SearchColumn(
 
     val appShortcuts = viewModel.appShortcutResults
     val contacts = viewModel.contactResults
-    val events = viewModel.calendarResults
-    val unitConverter = viewModel.unitConverterResults
-    val calculator = viewModel.calculatorResults
-    val wikipedia = viewModel.articleResults
-    val website = viewModel.websiteResults
     val hiddenResults = viewModel.hiddenResults
 
     val bestMatch by viewModel.bestMatch
@@ -104,7 +91,6 @@ fun SearchColumn(
     val query by viewModel.searchQuery
     val isSearchEmpty by viewModel.isSearchEmpty
 
-    val missingCalendarPermission by viewModel.missingCalendarPermission.collectAsState(false)
     val missingShortcutsPermission by viewModel.missingAppShortcutPermission.collectAsState(false)
     val missingContactsPermission by viewModel.missingContactsPermission.collectAsState(false)
     val hasProfilesPermission by viewModel.hasProfilesPermission.collectAsState(false)
@@ -120,10 +106,7 @@ fun SearchColumn(
     var selectedAppProfileIndex by remember { mutableIntStateOf(-1) }
     var selectedAppIndex: Int by remember(query) { mutableIntStateOf(-1) }
     var selectedContactIndex: Int by remember(query) { mutableIntStateOf(-1) }
-    var selectedCalendarIndex: Int by remember(query) { mutableIntStateOf(-1) }
     var selectedShortcutIndex: Int by remember(query) { mutableIntStateOf(-1) }
-    var selectedArticleIndex: Int by remember(query) { mutableIntStateOf(-1) }
-    var selectedWebsiteIndex: Int by remember(query) { mutableIntStateOf(-1) }
 
     val showFilters by viewModel.showFilters
 
@@ -265,39 +248,6 @@ fun SearchColumn(
                         },
                     )
 
-                    UnitConverterResults(
-                        converters = unitConverter,
-                        reverse = reverse,
-                        truncate = expandedCategory != SearchCategory.UnitConverter,
-                        onShowAll = {
-                            viewModel.expandCategory(SearchCategory.UnitConverter)
-                        }
-                    )
-
-                    CalculatorResults(
-                        calculator,
-                        reverse = reverse
-                    )
-
-                    CalendarResults(
-                        events = events,
-                        missingPermission = missingCalendarPermission,
-                        onPermissionRequest = {
-                            viewModel.requestCalendarPermission(context as AppCompatActivity)
-                        },
-                        onPermissionRequestRejected = {
-                            viewModel.disableCalendarSearch()
-                        },
-                        reverse = reverse,
-                        selectedIndex = selectedCalendarIndex,
-                        onSelect = { selectedCalendarIndex = it },
-                        highlightedItem = bestMatch as? CalendarEvent,
-                        truncate = expandedCategory != SearchCategory.Calendar,
-                        onShowAll = {
-                            viewModel.expandCategory(SearchCategory.Calendar)
-                        }
-                    )
-
                     ContactResults(
                         contacts = contacts,
                         missingPermission = missingContactsPermission,
@@ -317,20 +267,6 @@ fun SearchColumn(
                         },
                     )
 
-                    ArticleResults(
-                        articles = wikipedia,
-                        selectedIndex = selectedArticleIndex,
-                        onSelect = { selectedArticleIndex = it },
-                        highlightedItem = bestMatch as? Article,
-                        reverse = reverse,
-                    )
-                    WebsiteResults(
-                        websites = website,
-                        selectedIndex = selectedWebsiteIndex,
-                        onSelect = { selectedWebsiteIndex = it },
-                        highlightedItem = bestMatch as? Website,
-                        reverse = reverse,
-                    )
                 }
             }
         }

@@ -12,7 +12,6 @@
     <string name="action_undo">واگرد</string>
     <string name="action_import">وارد کردن</string>
     <string name="menu_delete">پاک‌کردن</string>
-    <string name="menu_calendar_open_externally">بازکردن در برنامه تقویم</string>
     <string name="search_bar_placeholder">جستجو</string>
     <string name="app_info_version">نگارش %1$s</string>
     <string name="settings">تنظیمات</string>
@@ -50,7 +49,6 @@
     <string name="websearch_dialog_query_encoding_form">application/x-www-form-urlencoded</string>
     <string name="websearch_dialog_query_encoding_none">هیچکدام</string>
     <string name="menu_edit_widgets">ویرایش ابزارک‌ها</string>
-    <string name="widget_name_calendar">تقویم</string>
     <string name="widget_name_music">موسیقی</string>
     <string name="widget_name_notes">یادداشت</string>
     <string name="widget_name_unknown">ابزارک برنامه ناشناخته</string>
@@ -80,13 +78,7 @@
     <string name="owncloud_username">نام کاربری</string>
     <string name="owncloud_login_failed">ورود ناموفق: نام کاربری یا گذرواژه نادرست.</string>
     <string name="login_flow_continue">ادامه</string>
-    <string name="disclaimer">بیانیه انکار</string>
     <string name="show_all">نمایش همه</string>
-    <string name="date_today">امروز</string>
-    <string name="date_tomorrow">فردا</string>
-    <string name="calendar_widget_pinned_events">به زودی</string>
-    <string name="calendar_widget_no_events">امروز کاری نداری</string>
-    <string name="calendar_event_allday">کل-روز</string>
     <string name="music_widget_default_title">%1$s در حال اجرا محتوا</string>
     <string name="music_widget_no_data">محتوایی در حال اجرا نیست</string>
     <string name="missing_permission_music_widget">دسترسی به آگاه‌ساز ها برای نمایش رسانه در حال پخش لازم است</string>
@@ -94,7 +86,6 @@
     <string name="missing_permission_calendar_widget_settings">ابزارک نیاز به دسترسی تقویم دارد</string>
     <string name="widget_config_calendar_missing_calendars_hint">تقویم تان را نمی‌یابید؟</string>
     <string name="missing_permission_notification_badges">دسترسی به آگاه‌سازها برای نمایش نشان آگاهساز لازم است</string>
-    <string name="missing_permission_calendar_search">دسترسی تقویم را برای جستجو در تقویم بدهید.</string>
     <string name="edit_favorites_dialog_unpinned">سنجاق نشده - بیشتر به‌کار گرفته شده‌ها</string>
     <string name="edit_favorites_dialog_tags">برچسب‌ها</string>
     <string name="menu_app_info">درباره برنامه</string>
@@ -102,9 +93,7 @@
     <string name="edit">ویرایش</string>
     <string name="turn_off">خاموش کردن</string>
     <string name="login_flow_login">ورود</string>
-    <string name="missing_permission_calendar_search_settings">دسترسی تقویم برای جستجو در تقویم لازم است</string>
     <string name="missing_permission_appshortcuts_search_settings">%1$s برای جستجوی در میانبرهای برنامه لازم است به عنوان برنامه خانه انتخاب شود</string>
-    <string name="missing_permission_calendar_widget">دسترسی تقویم را برای نمایش فعالیت‌های پیش رو و رویدادها اینجا بدهید.</string>
     <string name="menu_remove">برداشتن</string>
     <string name="default_websearch_2_name">یوتیوب</string>
     <string name="shortcut_summary">با %1$s</string>
@@ -115,7 +104,6 @@
     <string name="edit_favorites_dialog_tag_section_empty">برچسب‌های سنجاق شده اینجا نمایش داده می‌شوند</string>
     <string name="owncloud_server_invalid_url">نشانی به یک کارساز معتبر اشاره نمیکند</string>
     <string name="owncloud_login_2fa_hint">اگر ورود دو مرحله ای را روشن کرده‌اید باید از app password بهره ببرید.</string>
-    <string name="calendar_widget_next_events">فعالیت بعدی</string>
     <string name="preference_cards_stroke_width">عرض خط دور</string>
     <string name="preference_cards_opacity">شفافیت</string>
     <string name="preference_cards_shape">شکل</string>
@@ -143,7 +131,6 @@
     <string name="gesture_action_lock_screen">خاموش کردن صفحه</string>
     <string name="poi_category_fitness_center">مرکز تناسب اندام</string>
     <string name="poi_category_amusement_park">پارک تفریحی</string>
-    <string name="wikipedia_url">https://en.wikipedia.org</string>
     <string name="provider_here">Here</string>
     <string name="preference_debug_dump_heap">تصویر حافظه</string>
     <string name="preference_icon_shape_hexagon">شش‌ضلعی</string>
@@ -206,7 +193,6 @@
     <string name="preference_clockwidget_music_part">رسانه</string>
     <string name="preference_clockwidget_music_part_summary">هنگامی که جلسه رسانه‌ای فعال است، نمایش کنترل‌های رسانه‌ای</string>
     <string name="preference_clockwidget_battery_part">باتری</string>
-    <string name="preference_search_calendar">تقویم</string>
     <string name="preference_search_calendar_summary">جستجوی تعهدات و رویدادهای آینده</string>
     <string name="preference_search_files_summary">جستجوی پرونده‌های محلی و ابری</string>
     <string name="preference_search_contacts">مخاطبین</string>
@@ -233,8 +219,6 @@
     <string name="poi_category_chinese_restaurant">رستوران چینی</string>
     <string name="poi_category_american_football">زمین فوتبال آمریکایی</string>
     <string name="weather_forecast_humidity">رطوبت</string>
-    <string name="disclaimer_currency_converter">نرخ ارز منتشر شده روزانه توسط بانک مرکزی اروپا. تمامی داده‌ها «به همان صورت» ارائه شده و بدون هیچ گونه ضمانتی است. مسئولیتی در قبال این اطلاعات پذیرفته نمی‌شود.\n\nآخرین به‌روزرسانی: %1$s</string>
-    <string name="preference_search_local_calendar_summary">جستجوی تقویم‌ها روی این دستگاه</string>
     <string name="preference_search_bar_auto_focus_summary">به شیوه خودکار هنگام بازکردن کشوی برنامه‌ها، صفحه‌کلید نمایش داده شود</string>
     <string name="preference_screen_icons">شبکه و نمادها</string>
     <string name="preference_screen_icons_summary">شبکه، اندازه نماد، بسته‌های نماد، نشان‌ها</string>
@@ -301,9 +285,6 @@
     <string name="music_widget_play">پخش</string>
     <string name="music_widget_pause">ایست</string>
     <string name="music_widget_open_player">بازکردن پخش‌کننده</string>
-    <string name="calendar_widget_previous_day">روز پیشین</string>
-    <string name="calendar_widget_next_day">روز پسین</string>
-    <string name="calendar_widget_create_event">ایجاد رویداد جدید</string>
     <string name="profile_private_profile_action_unlock">بازکردن</string>
     <string name="profile_private_profile_action_lock">قفل کردن فضای شخصی</string>
     <string name="hint_drag_and_drop_reorder">نگه‌داشتن و درگ کردن موارد برای بازچینی آن‌ها</string>
@@ -317,9 +298,6 @@
         <item quantity="one">%1$s فهرست انتخاب‌شده</item>
         <item quantity="other">%1$s فهرست انتخاب‌شده</item>
     </plurals>
-    <string name="task_due_time">سر رسید در %1$s</string>
-    <string name="task_due_today">وظیفه امروز</string>
-    <string name="task_due_date">تا تاریخ %1$s</string>
     <string name="preference_category_debug">اشکال‌زدایی</string>
     <string name="preference_category_debug_tools">ابزارها</string>
     <string name="preference_imperial_units_summary">به‌کار بردن درجه فارنهایت و مایل بر ساعت</string>
@@ -390,7 +368,6 @@
     <string name="poi_category_parking">پارکینگ</string>
     <string name="poi_category_fuel">پمپ بنزین</string>
     <string name="filter_settings_network_warning">پالایش کنونی به شیوه پیش‌گزیده یافته‌های برخط را روشن می‌کند. جستجوی شما شاید ناخواسته به خدمات وب خارجی فرستاده شوند. به دلایل حریم خصوصی، این کار توصیه نمی‌شود.</string>
-    <string name="calendar_widget_open_calendar">بازکردن برنامه تقویم</string>
     <string name="profile_work_profile_state_locked">برنامه‌های کاری متوقف شده‌اند.</string>
     <string name="profile_work_profile_action_unlock">بازگشایی</string>
     <string name="profile_work_profile_action_lock">متوقف کردن برنامه‌های کاری</string>
@@ -451,7 +428,6 @@
     <string name="action_more_actions">کنش‌های بیشتر</string>
     <string name="preference_layout_search_bar_position">جایگاه نوار جستجو</string>
     <string name="action_clear">پاک‌سازی</string>
-    <string name="wikipedia_source">از ویکی‌پدیا</string>
     <string name="preference_layout_fixed_search_bar">نوار جستجوی ثابت</string>
     <string name="preference_layout_fixed_search_bar_summary">نوار جستجو را بیرون از دیدره پیمایش نکنید</string>
     <string name="preference_layout_fixed_rotation">چرخش ثابت صفحه</string>
@@ -488,11 +464,7 @@
     <string name="preference_screen_search_summary">جستجو، برچسب‌ها، موارد مخفی</string>
     <string name="preference_search_favorites">موارد دلخواه</string>
     <string name="preference_search_favorites_summary">نمایش موارد دلخواه و مورد استفاده بالا بالای شبکه برنامه‌ها</string>
-    <string name="preference_search_unitconverter_summary">کاربرد: ۱.۵ کیلوگرم یا ۴ سانتی‌متر &gt;&gt; اینچ</string>
-    <string name="preference_search_currencyconverter">تبدیل ارز</string>
-    <string name="preference_search_wikipedia">ویکی‌پدیا</string>
     <string name="preference_search_calculator_summary">محاسبه عبارات ریاضی</string>
-    <string name="preference_search_unitconverter">تبدیل واحد</string>
     <string name="preference_edit_button">گزینه ویرایش</string>
     <string name="preference_search_result_ordering_weight_factor_high">متغیر</string>
     <string name="poi_category_synagogue">کنیسه</string>
@@ -507,7 +479,6 @@
         <item quantity="other">%1$d مورد پاک‌شده.</item>
     </plurals>
     <string name="poi_category_park">پارک</string>
-    <string name="preference_search_supportedunits">واحدهای پشتیبانی شده</string>
     <string name="preference_clock_widget_time_format">فرمت زمان</string>
     <string name="preference_clock_widget_time_format_24h">24 ساعته</string>
     <string name="preference_clock_widget_time_format_12h">12 ساعته</string>
@@ -521,8 +492,6 @@
     <string name="preference_clockwidget_date_part_summary">نمایش تاریخ کنونی</string>
     <string name="preference_clockwidget_favorites_part">نوار ابزار</string>
     <string name="preference_clockwidget_favorites_part_summary">نمایش اولین ردیف موارد دلخواه</string>
-    <string name="preference_search_currencyconverter_summary">به شیوه دوره‌ای نرخ ارزها را برای تبدیل واحد پولی دریافت کنید</string>
-    <string name="preference_search_wikipedia_summary">جستجوی دانشنامه آزاد</string>
     <string name="preference_search_websites">وبگاه‌ها</string>
     <string name="preference_search_websites_summary">اگر متن جستجو شده بک آدرس وب باشد، پیش‌نمایشی از وبگاه نمایش دهید</string>
     <string name="preference_search_locations_summary">جستجوی منطقه محلی برای فروشگاه‌ها و سایر مکان‌ها</string>
@@ -544,7 +513,6 @@
     <string name="preference_favorites_frequently_used_summary">نمایش موارد مورد استفاده بالا در موارد دلخواه</string>
     <string name="preference_favorites_edit_button_summary">نمایش دکمه‌ای برای بازچینی موارد دلخواه</string>
     <string name="preference_screen_tags_summary">مدیریت برچسب‌ها و موارد برچسب‌گذاری شده</string>
-    <string name="preference_wikipedia_customurl">نشانی وبگاه ویکی‌پدیا</string>
     <string name="preference_edit_favorites_summary">تغییر ترتیب موارد سنجاق‌شده</string>
     <string name="preference_category_favorites_frequently_used">بیشتر به‌کار گرفته شده</string>
     <string name="preference_weather_integration">آب و هوا</string>

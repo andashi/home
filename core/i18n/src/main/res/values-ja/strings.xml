@@ -5,7 +5,6 @@
     <string name="wallpaper">壁紙</string>
     <string name="menu_delete">削除</string>
     <string name="settings">設定</string>
-    <string name="wikipedia_url">https://ja.wikipedia.org</string>
     <string name="menu_favorites_pin">お気に入りにピン留め</string>
     <string name="menu_share_apk_file">APK ファイル</string>
     <string name="menu_share_store_link">%1$s リンク</string>
@@ -16,14 +15,10 @@
     <string name="menu_favorites_unpin">ピン解除</string>
     <string name="action_undo">元に戻す</string>
     <string name="menu_contacts_open_externally">連絡先アプリで開く</string>
-    <string name="menu_calendar_open_externally">カレンダーアプリで開く</string>
     <string name="menu_remove">削除</string>
     <string name="app_info_version">バージョン %1$s</string>
     <string name="default_websearch_2_name">YouTube</string>
-    <string name="disclaimer">免責事項</string>
-    <string name="date_today">今日</string>
     <string name="login_flow_login">ログイン</string>
-    <string name="date_tomorrow">明日</string>
     <string name="preference_screen_appearance">外観</string>
     <string name="preference_colors_bw">黒と白</string>
     <string name="preference_font">フォント</string>
@@ -41,9 +36,6 @@
     <string name="default_websearch_3_url">https://play.google.com/store/search\?q=${1}</string>
     <string name="default_websearch_3_name">Play ストア</string>
     <string name="login_flow_continue">続行</string>
-    <string name="disclaimer_currency_converter">ヨーロッパ中央銀行が1日1回公表する為替レートです。すべての情報は、いかなる保証もなく「そのまま」提供されます。これらの情報に対する責任は負いません。
-\n
-\n最終更新: %1$s</string>
     <string name="preference_icon_shape">形</string>
     <string name="preference_icon_shape_squircle">スクワークル</string>
     <string name="preference_category_wallpaper">壁紙</string>
@@ -51,11 +43,9 @@
     <string name="preference_clockwidget_battery_part">電池</string>
     <string name="help">ヘルプ</string>
     <string name="default_websearch_2_url">https://www.youtube.com/results\?search_query=${1}</string>
-    <string name="widget_name_calendar">カレンダー</string>
     <string name="preference_icon_shape_rounded_square">角丸</string>
     <string name="preference_icon_shape_square">スクエア</string>
     <string name="preference_clockwidget_alarm_part">アラーム</string>
-    <string name="wikipedia_source">Wikipedia から</string>
     <string name="file_type_directory">ディレクトリ</string>
     <string name="file_type_source_code">ソースコードファイル</string>
     <string name="file_type_document">文書ファイル</string>
@@ -73,12 +63,8 @@
     <string name="owncloud_login_2fa_hint">2要素認証を有効にしている場合は、ここでアプリパスワードを使用する必要があります。</string>
     <string name="owncloud_login_failed">ログイン失敗: ユーザー名またはパスワードが正しくありません。</string>
     <string name="show_all">すべて表示</string>
-    <string name="calendar_widget_no_events">今日はイベントがありません</string>
-    <string name="calendar_widget_next_events">次のイベント</string>
-    <string name="calendar_event_allday">終日</string>
     <string name="music_widget_default_title">%1$s がメディアを再生しています</string>
     <string name="music_widget_no_data">メディアは再生されていません</string>
-    <string name="calendar_widget_pinned_events">まもなく</string>
     <plurals name="calendar_widget_running_events">
         <item quantity="other">%1$d 件の継続しているイベント</item>
     </plurals>
@@ -180,13 +166,9 @@
     <plurals name="calendar_search_enabled_lists">
         <item quantity="other">%1$s個のリストが選択されました</item>
     </plurals>
-    <string name="calendar_widget_previous_day">前日</string>
     <string name="music_widget_next_track">次のタイトル</string>
     <string name="music_widget_play">プレイ</string>
     <string name="music_widget_pause">ポーズ</string>
-    <string name="calendar_widget_next_day">翌日</string>
-    <string name="calendar_widget_create_event">新イベント作成</string>
-    <string name="calendar_widget_open_calendar">カレンダーアプリを開く</string>
     <string name="profile_work_profile_state_locked">仕事用アプリは一時停止されています。</string>
     <string name="profile_private_profile_state_locked">プライベートスペースはロックされています。</string>
     <string name="profile_private_profile_action_unlock">ロック解除</string>

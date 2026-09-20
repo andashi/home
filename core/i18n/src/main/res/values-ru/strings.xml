@@ -9,12 +9,10 @@
     <string name="menu_launch">Запустить</string>
     <string name="menu_delete">Убрать</string>
     <string name="menu_contacts_open_externally">Открыть в Контактах</string>
-    <string name="menu_calendar_open_externally">Открыть в Календаре</string>
     <string name="search_bar_placeholder">Поиск</string>
     <string name="app_info_version">Версия %1$s</string>
     <string name="settings">Настройки</string>
     <string name="wallpaper">Обои</string>
-    <string name="wikipedia_source">Из Википедии</string>
     <string name="file_type_directory">Каталог</string>
     <string name="file_type_archive">Файл архива</string>
     <string name="file_type_android">Файл пакета Android</string>
@@ -39,7 +37,6 @@
     <string name="websearch_dialog_delete_icon">Удалить иконку</string>
     <string name="websearch_dialog_custom_icon">Пользовательская иконка</string>
     <string name="menu_edit_widgets">Редактировать виджеты</string>
-    <string name="widget_name_calendar">Календарь</string>
     <string name="widget_name_music">Медиа</string>
     <string name="widget_add_widget">Добавить виджет</string>
     <string name="shortcut_summary">От %1$s</string>
@@ -56,21 +53,12 @@
     <string name="owncloud_login_2fa_hint">Если у вас включена двухфакторная аутентификация, вы должны здесь использовать пароль приложения.</string>
     <string name="login_flow_continue">Далее</string>
     <string name="login_flow_login">Войти</string>
-    <string name="disclaimer">Отказ от ответственности</string>
     <string name="show_all">Показать все</string>
-    <string name="date_today">Сегодня</string>
-    <string name="date_tomorrow">Завтра</string>
-    <string name="calendar_widget_pinned_events">Предстоящее</string>
-    <string name="calendar_widget_no_events">Сегодня событий нет</string>
-    <string name="calendar_event_allday">Весь день</string>
     <string name="music_widget_no_data">Пока что медиа не включались</string>
     <string name="music_widget_default_title">%1$s проигрывает медиа</string>
     <string name="missing_permission_music_widget">Доступ к уведомлениям необходим для управления воспроизведением медиа</string>
-    <string name="missing_permission_calendar_search_settings">Для поиска в календаре требуется соответствующее разрешение</string>
     <string name="missing_permission_calendar_widget_settings">Этому виджету требуется доступ к календарю</string>
     <string name="missing_permission_notification_badges">Для отображения значков-оповещений требуется доступ к уведомлениям</string>
-    <string name="missing_permission_calendar_widget">Для отображения предстоящих встреч и событий требуется разрешение на доступ к календарю</string>
-    <string name="missing_permission_calendar_search">Поиска по календарю требуется разрешение на доступ к нему</string>
     <string name="missing_permission_contact_search">Для поиска по контактной книге требуется разрешение на доступ к ней</string>
     <string name="grant_permission">Предоставить</string>
     <string name="preference_screen_appearance">Внешний вид</string>
@@ -99,16 +87,12 @@
     <string name="preference_theme_system">Следовать системе</string>
     <string name="menu_share_store_link">%1$s – ссылка</string>
     <string name="menu_app_info">Информация о приложении</string>
-    <string name="wikipedia_url">https://ru.wikipedia.org</string>
     <string name="file_type_presentation">Презентация</string>
     <string name="default_websearch_2_url">https://www.youtube.com/results\?search_query=${1}</string>
     <string name="menu_item_edit_favs">Редактировать избранное</string>
     <string name="edit_favorites_dialog_pinned_unsorted">Закреплены — отсортированы автоматически</string>
     <string name="owncloud_server_invalid_url">Этот адрес не ведёт к действующей сборке Owncloud</string>
     <string name="owncloud_login_failed">Ошибка входа: неверное имя пользователя или пароль.</string>
-    <string name="disclaimer_currency_converter">Обменные курсы публикуются один раз в день Европейским центральным банком. Вся информация предоставляется «как есть», без каких-либо гарантий. Мы не несём никакой ответственности за эту информацию.
-\n
-\nПоследнее обновление: %1$s</string>
     <string name="provider_here">HERE</string>
     <plurals name="calendar_widget_running_events">
         <item quantity="one">+%1$d текущее событие за прошедшие дни</item>
@@ -131,11 +115,9 @@
     <string name="preference_screen_search">Поиск</string>
     <string name="preference_search_contacts">Контакты</string>
     <string name="preference_search_contacts_summary">Поиск контактов на этом устройстве</string>
-    <string name="preference_search_calendar">Календарь</string>
     <string name="preference_search_calendar_summary">Поиск предстоящих встреч и событий</string>
     <string name="preference_search_appshortcuts">Ярлыки приложений</string>
     <string name="preference_search_calculator">Калькулятор</string>
-    <string name="preference_search_wikipedia_summary">Поиск в свободной энциклопедии</string>
     <string name="preference_search_websites_summary">Показать предварительный просмотр веб-сайта, если поисковый запрос является URL-ссылкой</string>
     <string name="preference_calendar_calendars">Календари</string>
     <string name="preference_clockwidget_date_part">Дата</string>
@@ -160,7 +142,6 @@
     <string name="preference_screen_debug">Отладка</string>
     <string name="preference_category_widgets">Виджеты</string>
     <string name="save">Сохранить</string>
-    <string name="calendar_widget_next_events">Следующее событие</string>
     <string name="missing_permission_appshortcuts_search_settings">Для поиска ярлыков приложений %1$s должно быть установлено главным экраном по умолчанию</string>
     <string name="missing_permission_appshortcuts_search">Установите %1$s главным экраном по умолчанию для поиска ярлыков приложений.</string>
     <string name="preference_cards_shape_rounded">Закруглённая</string>
@@ -236,11 +217,6 @@
     <string name="preference_clockwidget_alarm_part">Будильники</string>
     <string name="preference_clockwidget_alarm_part_summary">Показывать будильники, которые сработают в течении следующих 8 часов</string>
     <string name="preference_screen_search_summary">Поиск, теги, скрытые элементы</string>
-    <string name="preference_search_currencyconverter">Конвертер валют</string>
-    <string name="preference_search_currencyconverter_summary">Периодически скачивать курсы обмена валют для конвертирования</string>
-    <string name="preference_search_unitconverter">Конвертер величин</string>
-    <string name="preference_search_unitconverter_summary">Использование: 1.5 kg или 4 cm &gt;&gt; in</string>
-    <string name="preference_search_wikipedia">Wikipedia</string>
     <string name="preference_search_websites">Веб-сайты</string>
     <string name="preference_screen_buildinfo">Информация о сборке</string>
     <string name="preference_screen_buildinfo_summary">Больше информации об этой сборке приложения</string>
@@ -287,7 +263,6 @@
     <string name="preference_hidden_items">Скрытые результаты поиска</string>
     <string name="preference_hidden_items_summary">Управление скрытыми приложениями и результатами поиска</string>
     <string name="preference_screen_tags">Теги</string>
-    <string name="preference_wikipedia_customurl">Адрес Wikipedia</string>
     <string name="preference_category_favorites_frequently_used">Часто используемые</string>
     <string name="preference_favorites_frequently_used_summary">Показывать часто используемые в избранном</string>
     <string name="preference_edit_button">Кнопка для редактирования</string>
@@ -593,12 +568,9 @@
     <string name="poi_category_car_wash">Мойка</string>
     <string name="apps_profile_private">Личное пространство</string>
     <string name="music_widget_previous_track">Предыдущий трек</string>
-    <string name="calendar_widget_next_day">Следующий день</string>
-    <string name="calendar_widget_create_event">Создать новое событие</string>
     <string name="action_done">Выполнено</string>
     <string name="action_more_actions">Больше действий</string>
     <string name="action_clear">Очистить поле</string>
-    <string name="preference_search_supportedunits">Поддерживаемые единицы</string>
     <string name="menu_show_filters">Показать фильтры</string>
     <string name="menu_hide_filters">Скрыть фильтры</string>
     <string name="music_widget_next_track">Следующий трек</string>
@@ -606,15 +578,10 @@
     <string name="plugin_type_calendar">Календарь</string>
     <string name="profile_work_profile_state_locked">Рабочие приложения были приостановлены.</string>
     <string name="profile_work_profile_action_lock">Остановить рабочие приложения</string>
-    <string name="task_due_time">Выполнить до %1$s</string>
-    <string name="task_due_date">Выполнить до %1$s</string>
-    <string name="task_due_today">Выполнить до конца сегодняшнего дня</string>
     <string name="preference_calendar_hide_completed">Скрыть выполненные задачи</string>
     <string name="music_widget_play">Воспроизвести</string>
     <string name="music_widget_pause">Пауза</string>
-    <string name="calendar_widget_previous_day">Предыдущий день</string>
     <string name="app_label_locked_profile">Заблокировано</string>
-    <string name="calendar_widget_open_calendar">Открыть приложение календаря</string>
     <string name="preference_contacts_call_on_tap">Нажмите, чтобы позвонить</string>
     <string name="preference_contacts_call_on_tap_summary">Совершить вызов при нажатии на номер телефона</string>
     <string name="plugin_type_contacts">Контакты</string>
@@ -641,7 +608,6 @@
     <string name="preference_grid_list_icons">Показывать иконки приложений в списке</string>
     <string name="preference_grid_list_style_summary">Отображать приложения в виде списка, а не сетки</string>
     <string name="preference_grid_list_icons_summary">Отображать иконки в виде списка</string>
-    <string name="preference_search_local_calendar_summary">Поиск календарей на этом устройстве</string>
     <string name="profile_work_profile_action_unlock">Снять с паузы</string>
     <string name="hint_drag_and_drop_reorder">Удерживайте и перетаскивайте элементы, чтобы изменить их порядок</string>
     <string name="profile_private_profile_action_lock">Заблокировать личное пространство</string>
@@ -650,21 +616,13 @@
     <string name="preference_clock_widget_time_format">Формат времени</string>
     <string name="preference_clock_widget_time_format_24h">24-часовой</string>
     <string name="preference_clock_widget_time_format_12h">12-часовой</string>
-    <string name="missing_permission_tasks_search_settings">Для поиска в задачах приложения Tasks требуется соответствующее разрешение</string>
-    <string name="missing_permission_tasks_integration">Для использования интеграции с задачами требуется соответствующее разрешение</string>
     <string name="action_install">Установить</string>
-    <string name="preference_search_tasks_summary">Поиск задач в приложении Tasks</string>
-    <string name="preference_tasks_integration_ready">Tasks интеграция полностью настроена и готова к использованию.</string>
     <plurals name="calendar_widget_running_tasks">
         <item quantity="one">+%1$d незавершённая задача</item>
         <item quantity="few">+%1$d незавершённые задачи</item>
         <item quantity="many">+%1$d незавершённых задач</item>
         <item quantity="other">+%1$d незавершённых задач</item>
     </plurals>
-    <string name="preference_search_tasks">Задачи</string>
-    <string name="preference_tasks_integration">Tasks</string>
-    <string name="preference_tasks_integration_description">Tasks — бесплатное приложение с открытым исходным кодом для напоминаний о списках дел. Если установлено, %1$s сможет отображать и искать ваши задачи.</string>
-    <string name="preference_launch_tasks_app">Открыть приложение Tasks</string>
     <string name="theme_import_title">Импортировать тему</string>
     <string name="import_theme_contents">Содержание</string>
     <string name="preference_colors_high_contrast">Высокая контрастность</string>

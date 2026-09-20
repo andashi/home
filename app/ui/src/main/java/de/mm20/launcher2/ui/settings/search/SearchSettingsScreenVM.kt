@@ -8,14 +8,9 @@ import de.mm20.launcher2.applications.AppRepository
 import de.mm20.launcher2.permissions.PermissionGroup
 import de.mm20.launcher2.permissions.PermissionsManager
 import de.mm20.launcher2.plugins.PluginService
-import de.mm20.launcher2.preferences.search.CalculatorSearchSettings
-import de.mm20.launcher2.preferences.search.CalendarSearchSettings
 import de.mm20.launcher2.preferences.search.ContactSearchSettings
 import de.mm20.launcher2.preferences.search.SearchFilterSettings
 import de.mm20.launcher2.preferences.search.ShortcutSearchSettings
-import de.mm20.launcher2.preferences.search.UnitConverterSettings
-import de.mm20.launcher2.preferences.search.WebsiteSearchSettings
-import de.mm20.launcher2.preferences.search.WikipediaSearchSettings
 import de.mm20.launcher2.preferences.ui.SearchUiSettings
 import de.mm20.launcher2.search.SearchFilters
 import kotlinx.coroutines.flow.SharingStarted
@@ -27,12 +22,7 @@ import org.koin.core.component.inject
 class SearchSettingsScreenVM : ViewModel(), KoinComponent {
     private val searchUiSettings: SearchUiSettings by inject()
     private val contactSearchSettings: ContactSearchSettings by inject()
-    private val calendarSearchSettings: CalendarSearchSettings by inject()
     private val shortcutSearchSettings: ShortcutSearchSettings by inject()
-    private val wikipediaSearchSettings: WikipediaSearchSettings by inject()
-    private val websiteSearchSettings: WebsiteSearchSettings by inject()
-    private val unitConverterSettings: UnitConverterSettings by inject()
-    private val calculatorSearchSettings: CalculatorSearchSettings by inject()
     private val searchFilterSettings: SearchFilterSettings by inject()
 
     private val appRepository: AppRepository by inject()
@@ -54,14 +44,6 @@ class SearchSettingsScreenVM : ViewModel(), KoinComponent {
         searchUiSettings.setAllApps(allApps)
     }
 
-    val hasCalendarPermission = permissionsManager.hasPermission(PermissionGroup.Calendar)
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), null)
-
-    val calendarSearch = calendarSearchSettings.isProviderEnabled("local")
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), null)
-    fun setCalendarSearch(enabled: Boolean) {
-        calendarSearchSettings.setProviderEnabled("local", enabled)
-    }
 
     val hasContactsPermission = permissionsManager.hasPermission(PermissionGroup.Contacts)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), null)
@@ -73,41 +55,12 @@ class SearchSettingsScreenVM : ViewModel(), KoinComponent {
     }
 
 
-    fun requestCalendarPermission(activity: AppCompatActivity) {
-        permissionsManager.requestPermission(activity, PermissionGroup.Calendar)
-    }
-
     fun requestContactsPermission(activity: AppCompatActivity) {
         permissionsManager.requestPermission(activity, PermissionGroup.Contacts)
     }
 
-    val calculator = calculatorSearchSettings.enabled
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), null)
 
-    fun setCalculator(calculator: Boolean) {
-        calculatorSearchSettings.setEnabled(calculator)
-    }
 
-    val unitConverter = unitConverterSettings.enabled
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), null)
-
-    fun setUnitConverter(unitConverter: Boolean) {
-        unitConverterSettings.setEnabled(unitConverter)
-    }
-
-    val wikipedia = wikipediaSearchSettings.enabled
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), null)
-
-    fun setWikipedia(wikipedia: Boolean) {
-        wikipediaSearchSettings.setEnabled(wikipedia)
-    }
-
-    val websites = websiteSearchSettings.enabled
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), null)
-
-    fun setWebsites(websites: Boolean) {
-        websiteSearchSettings.setEnabled(websites)
-    }
 
     val autoFocus = searchUiSettings.openKeyboard
 

@@ -12,7 +12,6 @@
     <string name="settings">Nustatymai</string>
     <string name="help">Pagalba</string>
     <string name="wallpaper">Fonas</string>
-    <string name="wikipedia_source">Iš Vikipedijos</string>
     <string name="file_type_directory">Aplankas</string>
     <string name="file_type_archive">Archyvinis failas (zip,rar...)</string>
     <string name="file_type_android">APK</string>
@@ -37,7 +36,6 @@
     <string name="websearch_dialog_custom_icon">Tinkinta ikona</string>
     <string name="websearch_dialog_query_encoding_none">Nėvienas</string>
     <string name="menu_edit_widgets">Keisti valdiklius</string>
-    <string name="widget_name_calendar">Kalendorius</string>
     <string name="widget_name_music">Muzika</string>
     <string name="widget_name_notes">Ūžrašo knygelė</string>
     <string name="widget_name_unknown">Nežinomos programos valdiklis</string>
@@ -65,17 +63,11 @@
     <string name="login_flow_continue">Tęsti</string>
     <string name="login_flow_login">Prisijungti</string>
     <string name="show_all">Rodyti visus</string>
-    <string name="date_today">Šiandien</string>
-    <string name="date_tomorrow">Rytoj</string>
-    <string name="calendar_widget_pinned_events">Vėliau</string>
-    <string name="calendar_widget_no_events">Šiandien jokių įvykių</string>
     <string name="music_widget_default_title">%1$s groja</string>
     <string name="music_widget_no_data">Nebuvo paleista medija</string>
-    <string name="missing_permission_calendar_search_settings">Kalendoriaus teisė yra būtina ,kad ieškoti kalendorį</string>
     <string name="widget_config_calendar_missing_calendars_hint">Negalite susirasti savo kalendoriaus\?</string>
     <string name="missing_permission_appshortcuts_search_settings">%1$s turi būti nustatytas kaip namų programa ,kad ieškoti programos nuoradas</string>
     <string name="missing_permission_notification_badges">Pranešimų teisė yra reikalinga ,kad rodyti programėlės pranešimų kiekį burbule</string>
-    <string name="missing_permission_calendar_search">Leiskite kalendoriaus teisę ,kad ieškoti kalendorių.</string>
     <string name="missing_permission_contact_search">Leiskite kontaktų teisę ,kad ieškoti kontaktus.</string>
     <string name="missing_permission_appshortcuts_create">Nustatykite %1$s kaip numatyta namų programa ,kad kurti nuoradas.</string>
     <string name="grant_permission">Leisti</string>
@@ -183,28 +175,19 @@
     <string name="menu_item_edit_favs">Keisti mėgstamus</string>
     <string name="menu_contacts_open_externally">Atidaryti kontaktus</string>
     <string name="edit_favorites_dialog_unpinned">Ne pridėta - dažnai naudojama</string>
-    <string name="menu_calendar_open_externally">Atidaryti kalendoriuje</string>
     <string name="app_info_version">Versija %1$s</string>
     <string name="owncloud_server_invalid_url">Šis URL ne rodo į veikiančia Owncloud instaliacija</string>
     <string name="owncloud_login_2fa_hint">Jei turite dviejų faktorių authentikaciją ,čia turite naudoti programėlės slaptažodį.</string>
     <string name="owncloud_login_failed">Prisijungimas nepavyko: netinkamas vartotojas ar slaptažodis.</string>
-    <string name="wikipedia_url">https://lt.wikipedia.org</string>
     <string name="edit_favorites_dialog_empty_section">Tempti daiktus čia</string>
-    <string name="disclaimer">Atsisakymas</string>
     <string name="nextcloud_server_url">Nextcloud serverio URL</string>
-    <string name="disclaimer_currency_converter">Mainų vertė yra paskelbta kasdien pagal Centrinį Europos banką.Visa informacija yra pateikiama\" kaip ir yra\" be jokios garantijos .Mes neatsakingi už šią informaciją.
-\n
-\nPaskutinis atnaujinimas: %1$s</string>
-    <string name="calendar_widget_next_events">Sekantis įvykis</string>
     <plurals name="calendar_widget_running_events">
         <item quantity="one">+%1$d įvykis šiuo metu</item>
         <item quantity="few">+%1$d įvykiai šiuo metu</item>
         <item quantity="other">+%1$d ivykių šiuo metu</item>
     </plurals>
-    <string name="calendar_event_allday">Visa diena</string>
     <string name="file_type_video">Vaizdelis</string>
     <string name="file_type_drawing">Piešinys</string>
-    <string name="missing_permission_calendar_widget">Leiskite kalendoriaus teisę ,kad čia rodyti sekančius kalendoriaus įvykius.</string>
     <string name="default_websearch_2_name">YouTube</string>
     <string name="missing_permission_music_widget">Pranešimų teisė reikalinga ,kad kontroliuoti medijos grojima</string>
     <string name="missing_permission_appshortcuts_search">Nustatykite %1$s kaip numatyta namų programa ,kad ieškoti programų nuoradas.</string>
@@ -265,11 +248,6 @@
     <string name="preference_search_files_summary">Ieškoti vietinius failus ir debesies failus</string>
     <string name="preference_search_calculator">Skaičiuotuvas</string>
     <string name="preference_search_calculator_summary">Apskaičiuoti matematinius uždavinius</string>
-    <string name="preference_search_unitconverter">Vienetų konvertuotojas</string>
-    <string name="preference_search_unitconverter_summary">Naudojamas: 1.5 kg ar 4 cm &gt;&gt; in</string>
-    <string name="preference_search_currencyconverter">Valiūtų konvertuotojas</string>
-    <string name="preference_search_currencyconverter_summary">Perioodiškai atsisiųsti keitimo vertę ,kad konvertuoti valiutas</string>
-    <string name="preference_search_wikipedia_summary">Ieškoti nemokama enciklopedija</string>
     <string name="preference_search_websites">Puslapiai</string>
     <string name="preference_search_websites_summary">Rodyti peržiūra puslapio jei paieškos terminas yra URL</string>
     <string name="preference_calendar_calendars">Kalendoriai</string>
@@ -343,17 +321,14 @@
     <string name="no_plugins_installed">Nėra priedų</string>
     <string name="preference_search_contacts">Kontaktai</string>
     <string name="preference_search_contacts_summary">Ieškoti kontaktų prietaise</string>
-    <string name="preference_search_calendar">Kalendorius</string>
     <string name="preference_search_appshortcuts">Programų nuorodos</string>
     <string name="preference_search_appshortcuts_summary">Ieškoti programų nuorodas</string>
-    <string name="preference_search_wikipedia">Vikipedija</string>
     <string name="preference_screen_buildinfo_summary">Daugiau informacijos iš šio programos Build</string>
     <string name="preference_search_bar_auto_focus">Atidaryti klaviatūra</string>
     <string name="preference_search_bar_auto_focus_summary">Automatiškai rodyti klaviatūra kai atidarant programų stalčių</string>
     <string name="preference_search_bar_launch_on_enter">Atidaryti ateinant</string>
     <string name="preference_screen_tags">Žymos</string>
     <string name="preference_screen_tags_summary">Tvarkyti žymas ir pažymėtus daiktus</string>
-    <string name="preference_wikipedia_customurl">Vikipedija URL</string>
     <string name="preference_screen_icons">Išdėstymas ir ikonos</string>
     <string name="preference_screen_icons_summary">Išdėstymas ,ikonų dydis , ikonų paketai , ženkleliai</string>
     <string name="preference_media_integration">Medijos kontrolė</string>

@@ -19,7 +19,6 @@
     <string name="app_info_version">Versioon %1$s</string>
     <string name="settings">Seaded</string>
     <string name="wallpaper">Taustapilt</string>
-    <string name="wikipedia_source">Wikipediast</string>
     <string name="file_type_directory">Kaust</string>
     <string name="file_type_archive">Arhiivifail</string>
     <string name="file_type_android">Androidi paketifail</string>
@@ -39,7 +38,6 @@
     <string name="websearch_dialog_advanced">Edasijõudnutele</string>
     <string name="websearch_dialog_query_encoding">Päringu kodeering</string>
     <string name="menu_edit_widgets">Muuda vidinaid</string>
-    <string name="widget_name_calendar">Kalender</string>
     <string name="widget_name_music">Muusika</string>
     <string name="websearch_dialog_query_encoding_form">application/x-www-form-urlencoded</string>
     <string name="widget_name_unknown">Tundmatu rakenduse vidin</string>
@@ -63,18 +61,10 @@
     <string name="nextcloud_server_url">Nextcloud serveri URL</string>
     <string name="owncloud_username">Kasutajanimi</string>
     <string name="login_flow_login">Logi sisse</string>
-    <string name="disclaimer">Lahtiütlus</string>
-    <string name="date_tomorrow">Homme</string>
-    <string name="calendar_widget_pinned_events">Tulemas</string>
-    <string name="calendar_widget_next_events">Järgmine sündmus</string>
-    <string name="calendar_widget_no_events">Täna sündmusi pole</string>
-    <string name="calendar_event_allday">kogu päev</string>
     <plurals name="calendar_widget_running_tasks">
         <item quantity="one">+%1$d lõpetamata ülesanne</item>
         <item quantity="other">+%1$d lõpetamata ülesannet</item>
     </plurals>
-    <string name="task_due_today">Tähtaeg on täna</string>
-    <string name="task_due_date">Tähtaeg: %1$s</string>
     <string name="preference_screen_appearance">Välimus</string>
     <string name="preference_theme">Teema</string>
     <string name="preference_theme_light">Hele</string>
@@ -167,17 +157,10 @@
     <string name="preference_screen_search_summary">Otsing, sildid, peidetud kirjed</string>
     <string name="preference_search_contacts">Kontaktid</string>
     <string name="preference_search_contacts_summary">Otsi selle seadme kontaktidest</string>
-    <string name="preference_search_calendar">Kalender</string>
     <string name="preference_search_favorites_summary">Näita kinnitatud ja sageli kasutatud rakendusi rakenduste võrgustiku kohal</string>
-    <string name="preference_search_local_calendar_summary">Otsi selle seadme kalendritest</string>
-    <string name="preference_search_tasks">Ülesanded</string>
-    <string name="preference_search_tasks_summary">Otsi ülesandeid rakenduses Tasks</string>
     <string name="preference_search_appshortcuts">Rakenduste otseteed</string>
     <string name="preference_search_appshortcuts_summary">Otsi rakenduste otseteid</string>
     <string name="preference_search_calculator">Kalkulaator</string>
-    <string name="preference_search_unitconverter">Ühiku konvertija</string>
-    <string name="preference_search_currencyconverter">Valuuta konverter</string>
-    <string name="preference_search_wikipedia">Wikipedia</string>
     <string name="preference_search_websites">Veebisaidid</string>
     <string name="preference_search_bar_style">Stiil</string>
     <string name="preference_calendar_calendars">Kalendrid</string>
@@ -190,7 +173,6 @@
     <string name="preference_hidden_items">Peidetud otsingu tulemused</string>
     <string name="preference_screen_tags">Sildid</string>
     <string name="preference_screen_tags_summary">Halda silte ja sildistatud kirjeid</string>
-    <string name="preference_wikipedia_customurl">Wikipedia URL</string>
     <string name="preference_category_favorites_frequently_used">Sageli kasutatud</string>
     <string name="preference_edit_button">Muutmise nupp</string>
     <string name="preference_favorites_edit_button_summary">Näita lemmikute muutmise nuppu</string>
@@ -198,8 +180,6 @@
     <string name="preference_screen_icons">Võrgustik ja ikoonid</string>
     <string name="preference_screen_icons_summary">Võrgustik, ikooni suurus, ikoonipakid, embleemid</string>
     <string name="preference_media_integration">Multimeedia</string>
-    <string name="preference_tasks_integration">Ülesanded</string>
-    <string name="preference_launch_tasks_app">Ava rakendus Tasks</string>
     <string name="battery_part_charging">Laadimine</string>
     <string name="icon_picker_suggestions">Soovitused</string>
     <string name="icon_picker_search_icon">Otsi ikoonipakke</string>
@@ -361,10 +341,6 @@
     <string name="music_widget_play">Esita</string>
     <string name="music_widget_pause">Paus</string>
     <string name="music_widget_open_player">Ava meediapleier</string>
-    <string name="calendar_widget_previous_day">Eelmine päev</string>
-    <string name="calendar_widget_next_day">Järgmine päev</string>
-    <string name="calendar_widget_create_event">Loo uus sündmus</string>
-    <string name="calendar_widget_open_calendar">Ava kalendri rakendus</string>
     <string name="profile_work_profile_state_locked">Töö rakendused on pausil.</string>
     <string name="profile_work_profile_action_lock">Peata töörakendused</string>
     <string name="weather_forecast_humidity">Niiskus</string>
@@ -391,18 +367,15 @@
     <string name="preference_grid_list_style_summary">Näita rakendusi võrgustiku asemel nimekirjana</string>
     <string name="preference_screen_clockwidget">Kell</string>
     <string name="preference_search_calendar_summary">Otsi tulevasi kokkuleppeid ja sündmusi</string>
-    <string name="preference_search_wikipedia_summary">Otsi tasuta Wikipediast</string>
     <string name="preference_search_bar_launch_on_enter">Käivita sisenemisel</string>
     <string name="preference_hidden_items_summary">Halda peidetud rakendusi ja otsingutulemusi</string>
     <string name="preference_screen_homescreen_summary">Kell, otsinguriba, taustapilt, süsteemiriba</string>
     <string name="tag_select_items">Vali kirjed:</string>
     <string name="gesture_action_quick_settings">Ava kiirseaded</string>
     <string name="menu_share">Jaga</string>
-    <string name="menu_calendar_open_externally">Ava kalendri rakenduses</string>
     <string name="file_type_image">Pilt</string>
     <string name="websearch_dialog_query_encoding_none">Pole</string>
     <string name="edit">Muuda</string>
-    <string name="wikipedia_url">https://et.wikipedia.org</string>
     <string name="help">Abiinfo</string>
     <string name="file_type_music">Muusikafail</string>
     <string name="file_type_text">Tekstifail</string>
@@ -414,7 +387,6 @@
     <string name="websearch_dialog_delete_icon">Kustuta ikoon</string>
     <string name="widget_name_notes">Märkus</string>
     <string name="edit_favorites_dialog_tags">Sildid</string>
-    <string name="date_today">Täna</string>
     <string name="preference_screen_colors">Värviskeem</string>
     <string name="preference_mdy_color_source_system">Süsteem</string>
     <string name="preference_category_links">Lingid</string>
@@ -428,7 +400,6 @@
     <string name="preference_hide_status_bar">Peida staatuseriba</string>
     <string name="preference_clock_widget_fill_height">Täida ekraani kõrgus</string>
     <string name="preference_clockwidget_date_part_summary">Näita tänast kuupäeva</string>
-    <string name="preference_search_supportedunits">Toetatud ühikud</string>
     <string name="preference_weather_integration">Ilm</string>
     <string name="preference_layout_fixed_search_bar">Fikseeritud otsinguriba</string>
     <string name="preference_search_result_ordering_weight_factor_default">Tasakaalus</string>

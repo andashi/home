@@ -42,13 +42,10 @@
     <string name="menu_delete">刪除</string>
     <string name="menu_remove">移除</string>
     <string name="menu_contacts_open_externally">在「聯絡人」應用程式中開啟</string>
-    <string name="menu_calendar_open_externally">在「日曆」應用程式中開啟</string>
     <string name="search_bar_placeholder">搜尋</string>
     <string name="app_info_version">版本 %1$s</string>
     <string name="settings">設定</string>
     <string name="wallpaper">桌布</string>
-    <string name="wikipedia_url">https://zh.wikipedia.org/zh-tw/</string>
-    <string name="wikipedia_source">來自維基百科</string>
     <string name="file_type_archive">存檔檔案</string>
     <string name="file_type_android">Android 套件檔案</string>
     <string name="file_type_source_code">原始碼檔案</string>
@@ -80,7 +77,6 @@
     <string name="websearch_dialog_query_encoding_form">application/x-www-form-urlencoded</string>
     <string name="websearch_dialog_query_encoding_none">無</string>
     <string name="menu_edit_widgets">編輯小工具</string>
-    <string name="widget_name_calendar">日曆</string>
     <string name="widget_name_music">多媒體</string>
     <string name="widget_add_widget">新增小工具</string>
     <string name="shortcut_summary">由 %1$s</string>
@@ -108,23 +104,12 @@
     <string name="owncloud_login_2fa_hint">若您開啟了兩步驟驗證，您必須在此使用一個應用密碼。</string>
     <string name="owncloud_login_failed">登入失敗：不正確的使用者名稱或者密碼。</string>
     <string name="login_flow_continue">繼續</string>
-    <string name="disclaimer">宣告</string>
-    <string name="disclaimer_currency_converter">歐洲中央銀行每日公佈一次的匯率。所有資訊均按「原樣」提供，不提供任何保證。對於這些資訊，我們不承擔任何責任。 \n \n最後更新：%1$s</string>
-    <string name="date_today">今日</string>
-    <string name="date_tomorrow">明日</string>
-    <string name="calendar_widget_pinned_events">即將來臨</string>
-    <string name="calendar_widget_next_events">下一個事件</string>
-    <string name="calendar_widget_no_events">今天沒有事件</string>
-    <string name="calendar_event_allday">全天</string>
     <string name="music_widget_default_title">%1$s 正在播放媒體</string>
     <string name="music_widget_no_data">未播放任何媒體</string>
     <string name="missing_permission_music_widget">需要通知權限以控制媒體播放</string>
     <string name="missing_permission_contact_search_settings">需要聯絡人權限以搜尋聯絡人</string>
-    <string name="missing_permission_calendar_search_settings">需要日曆權限以搜尋日曆</string>
     <string name="missing_permission_appshortcuts_search_settings">若要搜尋應用程式捷徑，必須將 %1$s 設為預設主畫面應用程式</string>
     <string name="missing_permission_notification_badges">需要通知存取權以便顯示通知標記</string>
-    <string name="missing_permission_calendar_widget">授予日曆許可權以在此處顯示即將到來的事件</string>
-    <string name="missing_permission_calendar_search">需要日曆權限以存取日曆</string>
     <string name="missing_permission_contact_search">需要聯絡人權限以搜尋您的聯絡人</string>
     <string name="missing_permission_appshortcuts_search">將 %1$s 設為預設主畫面應用程式以搜尋應用程式捷徑。</string>
     <string name="missing_permission_appshortcuts_create">將 %1$s 設為預設主畫面應用程式以建立捷徑。</string>
@@ -229,18 +214,11 @@
     <string name="preference_search_files_summary">搜尋本機檔案與雲端伺服器檔案</string>
     <string name="preference_search_contacts">聯絡人</string>
     <string name="preference_search_contacts_summary">搜尋裝置上的聯絡人</string>
-    <string name="preference_search_calendar">日曆</string>
     <string name="preference_search_calendar_summary">搜尋即將到來的事件</string>
     <string name="preference_search_appshortcuts">應用程式捷徑</string>
     <string name="preference_search_appshortcuts_summary">搜尋應用程式捷徑</string>
     <string name="preference_search_calculator">計算機</string>
     <string name="preference_search_calculator_summary">計算數學算式</string>
-    <string name="preference_search_unitconverter">單位轉換器</string>
-    <string name="preference_search_unitconverter_summary">用法：1.5 kg 或者 4 cm &gt;&gt; in</string>
-    <string name="preference_search_currencyconverter">貨幣轉換器</string>
-    <string name="preference_search_currencyconverter_summary">定期下載匯率來轉換貨幣</string>
-    <string name="preference_search_wikipedia">維基百科</string>
-    <string name="preference_search_wikipedia_summary">搜尋自由的百科全書</string>
     <string name="preference_search_websites">網站</string>
     <string name="preference_search_websites_summary">如果搜尋查詢是 URL，則顯示網站的預覽</string>
     <string name="preference_calendar_calendars">日曆</string>
@@ -254,7 +232,6 @@
     <string name="preference_hidden_items_summary">管理已排除的應用程式與搜尋結果</string>
     <string name="preference_screen_tags">標籤</string>
     <string name="preference_screen_tags_summary">管理標籤與標記項目</string>
-    <string name="preference_wikipedia_customurl">Wikipedia 網址</string>
     <string name="preference_edit_favorites_summary">改變釘選項目的順序</string>
     <string name="preference_category_favorites_frequently_used">常用</string>
     <string name="preference_favorites_frequently_used_summary">在我的最愛顯示常用的項目</string>
@@ -449,7 +426,6 @@
     <string name="action_clear">清除</string>
     <string name="action_done">完成</string>
     <string name="action_more_actions">更多動作</string>
-    <string name="preference_search_supportedunits">支援的單位</string>
     <string name="preference_search_locations_summary">搜尋附近的商店或其他地點</string>
     <string name="plugin_type_weather">天氣資訊提供者</string>
     <string name="poi_category_bar">酒吧</string>
@@ -562,9 +538,6 @@
     <string name="poi_category_cricket">板球道</string>
     <string name="app_label_locked_profile">已鎖定</string>
     <string name="poi_category_clothes">服飾店</string>
-    <string name="task_due_time">於 %1$s 到期</string>
-    <string name="task_due_date">於 %1$s 到期</string>
-    <string name="task_due_today">今日到期</string>
     <string name="preference_mdy_color_source_system">系統</string>
     <string name="preference_mdy_color_source_wallpaper">桌布</string>
     <string name="preference_category_advanced">進階</string>
@@ -577,7 +550,6 @@
     <string name="preference_compact_tags_summary">隱藏標籤文字或圖示以減少標籤佔用空間</string>
     <string name="profile_private_profile_action_lock">鎖定私人空間</string>
     <string name="item_visibility_app_default">應用程式網格與搜尋結果</string>
-    <string name="calendar_widget_open_calendar">開啟日曆應用程式</string>
     <plurals name="contact_email_addresses">
         <item quantity="other">%1$s 個電子郵件位址</item>
     </plurals>
@@ -594,9 +566,6 @@
     <string name="contact_info_mobile">手機</string>
     <string name="music_widget_pause">暫停</string>
     <string name="music_widget_open_player">開啟播放器</string>
-    <string name="calendar_widget_previous_day">前一日</string>
-    <string name="calendar_widget_next_day">後一日</string>
-    <string name="calendar_widget_create_event">建立新事件</string>
     <string name="music_widget_previous_track">上一首</string>
     <string name="music_widget_next_track">下一首</string>
     <plurals name="calendar_search_enabled_lists">
@@ -615,7 +584,6 @@
     <string name="preference_grid_list_icons">在列表中顯示應用程式圖示</string>
     <string name="preference_grid_list_style_summary">以列表而不是網格顯示應用程式</string>
     <string name="preference_grid_list_icons_summary">在列表檢視中顯示圖示</string>
-    <string name="preference_search_local_calendar_summary">在此裝置上搜尋日曆</string>
     <string name="preference_grid_list_style">在列表中顯示應用程式</string>
     <string name="missing_permission_call_contacts_settings">需要電話權限以撥號</string>
     <string name="import_theme_exists">即將更新已存在的主題</string>
@@ -636,14 +604,11 @@
     <string name="preference_screen_transparencies">透明度</string>
     <string name="preference_transparencies_default">預設</string>
     <string name="preference_transparencies_semi_transparent">半透明</string>
-    <string name="preference_tasks_integration">Tasks</string>
     <string name="confirmation_delete_transparencies_scheme">確定要刪除透明度設定「%1$s」嗎？</string>
     <string name="new_theme_name">（無標題）</string>
     <string name="no_selection">尚未選擇</string>
     <string name="save_as_file">匯出為檔案</string>
     <string name="action_install">安裝</string>
-    <string name="preference_search_tasks_summary">於 Tasks 應用程式搜尋任務</string>
-    <string name="preference_search_tasks">Tasks</string>
     <string name="preference_typography_fonts">字體</string>
     <string name="font_category_device_default">裝置預設</string>
     <string name="font_name_device_headline">預設標題字體</string>
@@ -652,17 +617,12 @@
     <plurals name="calendar_widget_running_tasks">
         <item quantity="other">%1$d 個未完成任務</item>
     </plurals>
-    <string name="missing_permission_tasks_integration">需要 Tasks 權限以與 Kvaesitso 啟動器整合</string>
-    <string name="missing_permission_tasks_search_settings">需要 Tasks 權限以搜尋任務</string>
-    <string name="preference_tasks_integration_description">Tasks 是一個開源待辦事項與備忘錄應用程式。若已安裝，%1$s 可以顯示並從 Tasks 應用程式中搜尋任務。</string>
-    <string name="preference_tasks_integration_ready">已將 Tasks 整合並可供使用。</string>
     <string name="preference_screen_typography">字體</string>
     <string name="confirmation_delete_typography_scheme">確定要刪除字體設定「%1$s」嗎？</string>
     <string name="preference_widgets_on_home_screen">在主畫面上顯示小工具</string>
     <string name="preference_widgets_on_home_screen_summary">直接於主畫面顯示小工具而不放置於另一個頁面</string>
     <string name="preference_gesture_swipe_up">向上滑動</string>
     <string name="gesture_action_widgets">小工具</string>
-    <string name="preference_launch_tasks_app">開啟 Tasks 應用程式</string>
     <string name="preference_search_bar_style_solid">不透明</string>
     <string name="preference_search_bar_style_hidden">隱藏</string>
     <string name="preference_search_bar_style_transparent">透明</string>
@@ -737,7 +697,6 @@
     <string name="gesture_action_launch_select_app">選擇應用程式或捷徑</string>
     <string name="preference_search_apps_show_details">顯示應用程式資訊</string>
     <string name="preference_search_apps_show_details_summary">顯示應用程式的版本與套件名稱</string>
-    <string name="preference_currency_settings">貨幣設定</string>
     <string name="search_query_private_space">私人空間</string>
     <string name="search_action_private_space_lock">鎖定私人空間</string>
     <string name="search_action_private_space_unlock">解鎖私人空間</string>

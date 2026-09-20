@@ -53,11 +53,9 @@ dependencies {
     implementation(libs.koin.android)
 
     implementation(project(":core:base"))
-    implementation(project(":data:calendar"))
     implementation(project(":data:database"))
     implementation(project(":core:preferences"))
     implementation(project(":core:ktx"))
-    implementation(project(":data:wikipedia"))
     implementation(project(":core:crashreporter"))
 
     testImplementation(libs.bundles.tests)

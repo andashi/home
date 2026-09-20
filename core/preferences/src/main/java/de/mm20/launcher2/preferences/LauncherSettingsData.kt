@@ -186,11 +186,7 @@ data class LauncherSettingsData internal constructor(
         KeyboardFilterBarItem.OnlineResults,
         KeyboardFilterBarItem.Apps,
         KeyboardFilterBarItem.Shortcuts,
-        KeyboardFilterBarItem.Events,
         KeyboardFilterBarItem.Contacts,
-        KeyboardFilterBarItem.Articles,
-        KeyboardFilterBarItem.Websites,
-        KeyboardFilterBarItem.Tools,
         KeyboardFilterBarItem.HiddenResults,
     ),
 
@@ -444,12 +440,8 @@ data class ProviderSettings(
 enum class KeyboardFilterBarItem {
     @SerialName("online") OnlineResults,
     @SerialName("apps") Apps,
-    @SerialName("websites") Websites,
-    @SerialName("articles") Articles,
     @SerialName("shortcuts") Shortcuts,
     @SerialName("contacts") Contacts,
-    @SerialName("events") Events,
-    @SerialName("tools") Tools,
     @SerialName("hidden") HiddenResults,
 }
 

@@ -1,16 +1,12 @@
 package de.mm20.launcher2.search
 
 import android.util.Log
-import de.mm20.launcher2.calculator.CalculatorRepository
 import de.mm20.launcher2.data.customattrs.CustomAttributesRepository
 import de.mm20.launcher2.data.customattrs.utils.withCustomLabels
 import de.mm20.launcher2.profiles.Profile
 import de.mm20.launcher2.profiles.ProfileManager
-import de.mm20.launcher2.search.data.Calculator
-import de.mm20.launcher2.search.data.UnitConverter
 import de.mm20.launcher2.searchactions.SearchActionService
 import de.mm20.launcher2.searchactions.actions.SearchAction
-import de.mm20.launcher2.unitconverter.UnitConverterRepository
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -39,12 +35,7 @@ interface SearchService {
 internal class SearchServiceImpl(
     private val appRepository: SearchableRepository<Application>,
     private val appShortcutRepository: SearchableRepository<AppShortcut>,
-    private val calendarRepository: SearchableRepository<CalendarEvent>,
     private val contactRepository: SearchableRepository<Contact>,
-    private val articleRepository: SearchableRepository<Article>,
-    private val unitConverterRepository: UnitConverterRepository,
-    private val calculatorRepository: CalculatorRepository,
-    private val websiteRepository: SearchableRepository<Website>,
     private val searchActionService: SearchActionService,
     private val customAttributesRepository: CustomAttributesRepository,
     private val profileManager: ProfileManager,
@@ -62,11 +53,6 @@ internal class SearchServiceImpl(
                         apps = if (filters.apps) it.apps else null,
                         shortcuts = if (filters.shortcuts) it.shortcuts else null,
                         contacts = if (filters.contacts) it.contacts else null,
-                        calendars = if (filters.events) it.calendars else null,
-                        calculators = if (filters.tools) it.calculators else null,
-                        unitConverters = if (filters.tools) it.unitConverters else null,
-                        websites = if (filters.websites) it.websites else null,
-                        wikipedia = if (filters.articles) it.wikipedia else null,
                     )
                 }
                     ?: SearchResults())
@@ -76,20 +62,12 @@ internal class SearchServiceImpl(
                     val apps = mutableListOf<Application>()
                     val shortcuts = mutableListOf<AppShortcut>()
                     val contacts = mutableListOf<Contact>()
-                    val events = mutableListOf<CalendarEvent>()
-                    val unitConverters = mutableListOf<UnitConverter>()
-                    val websites = mutableListOf<Website>()
-                    val wikipedia = mutableListOf<Article>()
                     val searchActions = mutableListOf<SearchAction>()
                     for (it in items) {
                         when (it) {
                             is Application -> if (filters.apps) apps.add(it)
                             is AppShortcut -> if (filters.shortcuts) shortcuts.add(it)
                             is Contact -> if (filters.contacts) contacts.add(it)
-                            is CalendarEvent -> if (filters.events) events.add(it)
-                            is UnitConverter -> if (filters.tools) unitConverters.add(it)
-                            is Website -> if (filters.websites) websites.add(it)
-                            is Article -> if (filters.articles) wikipedia.add(it)
                             is SearchAction -> searchActions.add(it)
                         }
                     }
@@ -97,10 +75,6 @@ internal class SearchServiceImpl(
                         apps = apps,
                         shortcuts = shortcuts,
                         contacts = contacts,
-                        calendars = events,
-                        unitConverters = unitConverters,
-                        websites = websites,
-                        wikipedia = wikipedia,
                         searchActions = searchActions,
                     )
                 }.shareIn(this, SharingStarted.WhileSubscribed(), 1)
@@ -158,71 +132,6 @@ internal class SearchServiceImpl(
                         }
                 }
             }
-            if (filters.events) {
-                launch {
-                    calendarRepository.search(query, filters.allowNetwork)
-                        .combine(customAttrResults) { calendars, customAttrs ->
-                            if (customAttrs.calendars != null) calendars + customAttrs.calendars
-                            else calendars
-                        }
-                        .withCustomLabels(customAttributesRepository)
-                        .collectLatest { r ->
-                            results.update {
-                                it.copy(calendars = r)
-                            }
-                        }
-                }
-            }
-            if (filters.tools) {
-                launch {
-                    calculatorRepository.search(query).collectLatest { r ->
-                        results.update {
-                            it.copy(calculators = r?.let { listOf(it) }
-                                ?: listOf())
-                        }
-                    }
-                }
-                launch {
-                    unitConverterRepository.search(query)
-                        .collectLatest { r ->
-                            results.update {
-                                it.copy(unitConverters = r?.let { listOf(it) }
-                                    ?: listOf())
-                            }
-                        }
-                }
-            }
-            if (filters.websites) {
-                launch {
-                    websiteRepository.search(query, filters.allowNetwork)
-                        .combine(customAttrResults) { websites, customAttrs ->
-                            if (customAttrs.websites != null) websites + customAttrs.websites
-                            else websites
-                        }
-                        .withCustomLabels(customAttributesRepository)
-                        .collectLatest { r ->
-                            results.update {
-                                it.copy(websites = r)
-                            }
-                        }
-                }
-            }
-            if (filters.articles) {
-                launch {
-                    delay(750)
-                    articleRepository.search(query, filters.allowNetwork)
-                        .combine(customAttrResults) { articles, customAttrs ->
-                            if (customAttrs.wikipedia != null) articles + customAttrs.wikipedia
-                            else articles
-                        }
-                        .withCustomLabels(customAttributesRepository)
-                        .collectLatest { r ->
-                            results.update {
-                                it.copy(wikipedia = r)
-                            }
-                        }
-                }
-            }
             emitAll(results)
         }
     }
@@ -275,11 +184,6 @@ data class SearchResults(
     val apps: List<Application>? = null,
     val shortcuts: List<AppShortcut>? = null,
     val contacts: List<Contact>? = null,
-    val calendars: List<CalendarEvent>? = null,
-    val calculators: List<Calculator>? = null,
-    val unitConverters: List<UnitConverter>? = null,
-    val websites: List<Website>? = null,
-    val wikipedia: List<Article>? = null,
     val searchActions: List<SearchAction>? = null,
 )
 
@@ -294,11 +198,6 @@ fun SearchResults.toList(): List<Searchable> {
         apps,
         shortcuts,
         contacts,
-        calendars,
-        calculators,
-        unitConverters,
-        websites,
-        wikipedia,
         searchActions,
     ).flatten()
 }

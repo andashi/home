@@ -38,13 +38,10 @@
     <string name="websearch_dialog_advanced">Təkmilləşdirilmiş</string>
     <string name="websearch_dialog_query_encoding_url">Faiz kodlaşdırması</string>
     <string name="websearch_dialog_query_encoding_form">application/x-www-form-urlencoded</string>
-    <string name="menu_calendar_open_externally">Təqvim tətbiqində aç</string>
-    <string name="wikipedia_url">https://az.wikipedia.org</string>
     <string name="file_type_form">Forma</string>
     <string name="alert_delete_shortcut">%1$s qısayolu həmişəlik silinəcək. Davam edilsin?</string>
     <string name="default_websearch_2_url">https://www.youtube.com/results?search_query=${1}</string>
     <string name="websearch_dialog_query_encoding">Sorğunun kodlaşdırılması</string>
-    <string name="wikipedia_source">Vikipediyadan</string>
     <string name="file_type_none">Fayl</string>
     <string name="file_type_compressed">Sıxılmış fayl</string>
     <string name="default_websearch_2_name">YouTube</string>

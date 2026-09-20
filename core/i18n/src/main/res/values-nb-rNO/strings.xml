@@ -13,12 +13,10 @@
     <string name="action_undo">Angre</string>
     <string name="action_import">Importer</string>
     <string name="menu_remove">Fjern</string>
-    <string name="menu_calendar_open_externally">Åpne i kalender-app</string>
     <string name="app_info_version">Versjon %1$s</string>
     <string name="settings">Innstillinger</string>
     <string name="help">Hjelp</string>
     <string name="wallpaper">Bakgrunn</string>
-    <string name="wikipedia_source">Fra Wikipedia</string>
     <string name="file_type_directory">Katalog</string>
     <string name="file_type_archive">Arkivfil</string>
     <string name="file_type_android">Android-pakkefil</string>
@@ -47,7 +45,6 @@
     <string name="websearch_dialog_query_encoding_form">application/x-www-form-urlencoded</string>
     <string name="websearch_dialog_query_encoding_none">Ingen</string>
     <string name="menu_edit_widgets">Redigere widgets</string>
-    <string name="widget_name_calendar">Kalender</string>
     <string name="widget_name_music">Medier</string>
     <string name="widget_name_notes">Notat</string>
     <string name="widget_name_unknown">Ukjent</string>
@@ -82,14 +79,7 @@
     <string name="owncloud_login_failed">Innlogging feilet: feil brukernavn eller passord.</string>
     <string name="login_flow_continue">Fortsett</string>
     <string name="login_flow_login">Logg inn</string>
-    <string name="disclaimer">Ansvarsfraskrivelse</string>
     <string name="show_all">Vis alle</string>
-    <string name="date_today">I dag</string>
-    <string name="date_tomorrow">I morgen</string>
-    <string name="calendar_widget_pinned_events">Kommende</string>
-    <string name="calendar_widget_next_events">Neste hendelse</string>
-    <string name="calendar_widget_no_events">Ingen aktiviteter i dag</string>
-    <string name="calendar_event_allday">hele dagen</string>
     <string name="music_widget_default_title">%1$s spiller media</string>
     <string name="music_widget_no_data">Ingen media har blitt spilt ennå</string>
     <string name="missing_permission_contact_search_settings">Kontakttilgang kreves for å søke i kontakter</string>
@@ -130,15 +120,10 @@
     <string name="file_type_none">Fil</string>
     <string name="default_websearch_2_url">https://www.youtube.com/results?search_query=${1}</string>
     <string name="notes_widget_action_save">Lagre</string>
-    <string name="missing_permission_calendar_search_settings">Kalendertilgang kreves for å søke i kalender</string>
     <string name="owncloud_login_2fa_hint">Dersom du har tofaktor-autentisering akrivert, må du bruke et app-passord her.</string>
-    <string name="disclaimer_currency_converter">Valutakurser publiseres en gang om dagen av den europeiske sentralbanken. All informasjon gis «som den er» uten noen form for garanti. Vi fraskriver oss alt ansvar for denne informasjonen.
-\n
-\nSist oppdatert: %1$s</string>
     <string name="preference_category_links">Lenker</string>
     <string name="preference_cloud_badges_summary">Vis en prikk for filer som er lagret i skyen</string>
     <string name="search_bar_placeholder">Søk</string>
-    <string name="wikipedia_url">https://no.wikipedia.org</string>
     <string name="file_type_compressed">Komprimert fil</string>
     <string name="websearch_dialog_query_encoding">Spørrings-enkoding</string>
     <string name="menu_delete">Slett</string>
@@ -152,8 +137,6 @@
     <string name="missing_permission_music_widget">Varseltilgang kreves for å styre mediaavspilling</string>
     <string name="preference_font">Font</string>
     <string name="widget_config_calendar_missing_calendars_hint">Kan du ikke finne dine kalendre?</string>
-    <string name="missing_permission_calendar_widget">Kalendertilgang kreves for å vise hendelser</string>
-    <string name="missing_permission_calendar_search">Kalendertilgang kreves for å kunne søke i kalenderen</string>
     <string name="missing_permission_contact_search">Gi tilgang til kontakter for å søke i dine kontakter.</string>
     <string name="grant_permission">Tillat</string>
     <string name="preference_screen_appearance">Utseende</string>
@@ -283,8 +266,6 @@
         <item quantity="one">Fjernet %1$d oppføring.</item>
         <item quantity="other">Fjernet %1$d oppføringer.</item>
     </plurals>
-    <string name="task_due_date">Forfaller %1$s</string>
-    <string name="task_due_today">Forfaller i dag</string>
     <string name="preference_mdy_color_source">Kilde til dynamiske farger</string>
     <string name="preference_debug_reinstall_iconpacks">Installer ikonpakker på nytt</string>
     <string name="preference_blur_wallpaper_radius">Tilsløringsradius</string>
@@ -294,8 +275,6 @@
     <string name="widget_use_theme_colors">Bruk temafarge</string>
     <string name="preference_search_contacts">Kontakter</string>
     <string name="preference_search_contacts_summary">Søk i kontakter på denne enheten</string>
-    <string name="preference_search_calendar">Kalender</string>
-    <string name="task_due_time">Forfaller klokka %1$s</string>
     <string name="preference_hide_status_bar">Skjul statusmeny</string>
     <string name="preference_debug_reinstall_iconpacks_summary">Tøm og bygg ikonpakke-mellomlager på nytt</string>
     <string name="preference_about_fdroid">F-Droid-pakkebrønn</string>
@@ -316,7 +295,6 @@
         <item quantity="one">%1$s liste valgt</item>
         <item quantity="other">%1$s lister valgt</item>
     </plurals>
-    <string name="preference_search_currencyconverter_summary">Periodisk nedlasting av valutakurser for valutakonvertering</string>
     <string name="preference_screen_gestures">Bevegelser</string>
     <string name="preference_notification_badges">Varselprikker</string>
     <string name="contact_info_home">Hjem</string>
@@ -334,7 +312,6 @@
     <string name="preference_plugin_enable">Aktiver programtillegg</string>
     <string name="poi_category_mosque">Moské</string>
     <string name="preference_screen_tags">Etiketter</string>
-    <string name="preference_search_wikipedia">Wikipedia</string>
     <string name="preference_search_locations_summary">Søk i nærområdet etter butikker og andre steder</string>
     <string name="preference_search_bar_color">Farge</string>
     <string name="preference_hidden_items">Skjulte søkeresultater</string>
@@ -385,7 +362,6 @@
     <string name="item_visibility_search_only">Søkeresultater</string>
     <string name="customize_item_tags">Etiketter</string>
     <string name="music_widget_previous_track">Forrige tittel</string>
-    <string name="calendar_widget_open_calendar">Åpne kalenderapp</string>
     <string name="poi_category_car_rental">Bilutleie</string>
     <string name="poi_category_car_sharing">Bildeling</string>
     <string name="poi_category_mall">Kjøpesenter</string>
@@ -434,7 +410,6 @@
     <string name="poi_category_museum">Museum</string>
     <string name="poi_category_fitness_center">Treningssenter</string>
     <string name="preference_search_websites">Nettsider</string>
-    <string name="preference_search_wikipedia_summary">Søk i den frie encyklopedi</string>
     <string name="search_filter_tools">Verktøy</string>
     <string name="search_filter_apps">Apper</string>
     <string name="confirmation_delete_color_scheme">Er du sikker på at du vil slette fargeskjemaet %1$s?</string>
@@ -445,12 +420,8 @@
     <string name="preference_search_appshortcuts">App-snarveier</string>
     <string name="preference_search_appshortcuts_summary">Søk i app-snarveier</string>
     <string name="preference_search_calculator_summary">Evaluer matematiske termer</string>
-    <string name="preference_search_currencyconverter">Valutakalkulator</string>
-    <string name="preference_search_unitconverter">Enhetskalkulator</string>
-    <string name="preference_search_unitconverter_summary">Bruk: 1,5 kg eller 4 cm &gt;&gt; til</string>
     <string name="preference_calendar_hide_completed">Skjul utførte oppgaver</string>
     <string name="preference_search_bar_auto_focus">Åpne tastatur</string>
-    <string name="preference_wikipedia_customurl">Wikipedia-URL</string>
     <string name="preference_edit_favorites_summary">Endre rekkefølgen til festede oppføringer</string>
     <string name="preference_category_favorites_frequently_used">Ofte brukt</string>
     <string name="open_search_swipe_right">Sveip til høyre</string>
@@ -491,9 +462,6 @@
     <string name="music_widget_next_track">Neste tittel</string>
     <string name="music_widget_pause">Pause</string>
     <string name="music_widget_open_player">Åpne spiller</string>
-    <string name="calendar_widget_previous_day">Forrige dag</string>
-    <string name="calendar_widget_next_day">Neste dag</string>
-    <string name="calendar_widget_create_event">Opprett ny hendelse</string>
     <string name="profile_work_profile_action_unlock">Slå av pause</string>
     <string name="profile_work_profile_action_lock">Sett jobb-apper på pause</string>
     <string name="profile_private_profile_action_unlock">Lås opp</string>
@@ -561,14 +529,9 @@
     <string name="preference_grid_list_icons_summary">Vis ikoner i listevisningen</string>
     <string name="preference_clockwidget_battery_part_hide">Av</string>
     <string name="preference_search_apps_show_details">Vis appinformasjon</string>
-    <string name="preference_search_tasks">Oppgaver</string>
-    <string name="preference_search_tasks_summary">Finn oppgaver i Tasks-appen</string>
     <string name="preference_search_bar_style_hidden">Gjemt</string>
     <string name="preference_widgets_on_home_screen">Widgets på hjemmeskjermen</string>
     <string name="preference_screen_icons_summary">Størrelse på rutenett, ikoner, etiketter</string>
-    <string name="preference_tasks_integration_description">Tasks er en app med fritt og åpen kildekode for gjøremålslister og påminnelser. %1$s kan vise og søke gjennom oppgavene fra Tasks-appen, hvis den er installert.</string>
-    <string name="preference_tasks_integration_ready">Integreringen med Tasks er satt opp og klar for bruk.</string>
-    <string name="preference_launch_tasks_app">Åpne Tasks-appen</string>
     <string name="preference_smartspacer_enable">Skru på integreringen med Smartspacer</string>
     <string name="preference_launch_smartspacer_app">Åpne Smartspacer</string>
     <string name="preference_feed_integration">Feed</string>

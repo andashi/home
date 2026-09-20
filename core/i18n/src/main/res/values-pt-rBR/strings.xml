@@ -5,13 +5,10 @@
     <string name="action_quit">Sair</string>
     <string name="menu_delete">Excluir</string>
     <string name="menu_contacts_open_externally">Abrir no aplicativo de contatos</string>
-    <string name="menu_calendar_open_externally">Abrir no aplicativo de calendário</string>
     <string name="search_bar_placeholder">Pesquisar</string>
     <string name="app_info_version">Versão %1$s</string>
     <string name="settings">Configurações</string>
     <string name="wallpaper">Papel de parede</string>
-    <string name="wikipedia_url">https://pt.wikipedia.org</string>
-    <string name="wikipedia_source">de Wikipédia</string>
     <string name="file_type_directory">Diretório</string>
     <string name="file_type_source_code">Arquivo de código-fonte</string>
     <string name="file_type_document">Documento</string>
@@ -36,7 +33,6 @@
     <string name="websearch_dialog_delete_icon">Excluir ícone</string>
     <string name="websearch_dialog_custom_icon">Ícone personalizado</string>
     <string name="menu_edit_widgets">Editar widgets</string>
-    <string name="widget_name_calendar">Calendário</string>
     <string name="widget_name_music">Música</string>
     <string name="widget_add_widget">Adicionar widget</string>
     <string name="shortcut_summary">De %1$s</string>
@@ -69,15 +65,9 @@
     <string name="preference_category_debug">Depuração</string>
     <string name="preference_imperial_units">Unidades imperiais</string>
     <string name="owncloud_login_2fa_hint">Se a autenticação de dois fatores estiver ativada, deverá usar uma senha de aplicativo aqui.</string>
-    <string name="disclaimer_currency_converter">Taxas de câmbio atualizadas conforme são publicadas pelo Banco Central Europeu. Todas as informações são fornecidas \"como estão\", sem qualquer tipo de garantia. Nenhuma responsabilidade é assumida por estas informações.\n \nÚltima atualização: %1$s</string>
     <string name="owncloud_login_failed">Falha no login: nome de usuário ou senha incorretos.</string>
     <string name="login_flow_continue">Continuar</string>
     <string name="login_flow_login">Conectar</string>
-    <string name="disclaimer">Isenção de responsabilidade</string>
-    <string name="date_today">Hoje</string>
-    <string name="date_tomorrow">Amanhã</string>
-    <string name="calendar_widget_pinned_events">Próximos</string>
-    <string name="calendar_widget_no_events">Sem eventos hoje</string>
     <string name="music_widget_default_title">%1$s está reproduzindo mídia</string>
     <string name="music_widget_no_data">Nenhuma mídia foi reproduzida ainda</string>
     <string name="open_webpage">Abrir site</string>
@@ -95,12 +85,8 @@
     <string name="preference_search_favorites">Favoritos</string>
     <string name="preference_search_apps_summary">Mostrar todos os aplicativos quando o campo de pesquisa estiver vazio</string>
     <string name="preference_search_contacts">Contatos</string>
-    <string name="preference_search_calendar">Calendário</string>
     <string name="preference_search_appshortcuts">Atalhos de aplicativos</string>
     <string name="preference_search_calculator">Calculadora</string>
-    <string name="preference_search_unitconverter">Conversão de unidades</string>
-    <string name="preference_search_unitconverter_summary">Uso: 1.5 kg ou 4 cm &gt;&gt; in</string>
-    <string name="preference_search_wikipedia">Wikipédia</string>
     <string name="preference_search_websites">Sites</string>
     <string name="missing_permission_music_widget">O acesso às notificações é necessário para controlar a reprodução de mídia</string>
     <string name="missing_permission_contact_search_settings">O acesso aos contatos é necessário para pesquisar contatos</string>
@@ -133,7 +119,6 @@
     <string name="grant_permission">Conceder</string>
     <string name="preference_colors_bw">Preto e Branco</string>
     <string name="preference_dim_wallpaper_summary">Escurece o papel de parede em temas escuros</string>
-    <string name="calendar_event_allday">todo o dia</string>
     <string name="preference_screen_about_summary">Informações sobre o aplicativo e licenças</string>
     <string name="preference_screen_appearance_summary">Personalizar a aparência</string>
     <string name="provider_here">HERE</string>
@@ -169,14 +154,10 @@
     <string name="duplicate">Duplicar</string>
     <string name="action_next">Próximo</string>
     <string name="action_undo">Desfazer</string>
-    <string name="calendar_widget_next_events">Próximo evento</string>
-    <string name="missing_permission_calendar_search">Conceda permissão de calendário para pesquisar o seu calendário.</string>
     <string name="menu_customize">Personalizar</string>
     <string name="edit_favorites_dialog_new_tag">Criar etiqueta…</string>
-    <string name="missing_permission_calendar_search_settings">A permissão de calendário é necessária para pesquisar o calendário</string>
     <string name="missing_permission_notification_badges">Acesso a notificações é necessário para mostrar selos de notificação</string>
     <string name="missing_permission_contact_search">Conceda permissão de contato para pesquisar seus contatos.</string>
-    <string name="missing_permission_calendar_widget">Conceda permissão de calendário para exibir compromissos e eventos futuros aqui.</string>
     <string name="preference_font">Fonte</string>
     <string name="alert_delete_shortcut">O atalho %1$s será removido permanentemente. Continuar?</string>
     <string name="menu_remove">Remover</string>
@@ -231,9 +212,6 @@
     <string name="preference_search_calendar_summary">Pesquisa compromissos e eventos futuros</string>
     <string name="preference_search_appshortcuts_summary">Pesquisa atalhos de aplicativos</string>
     <string name="preference_search_calculator_summary">Avalia termos matemáticos</string>
-    <string name="preference_search_currencyconverter">Conversor de moedas</string>
-    <string name="preference_search_currencyconverter_summary">Baixe periodicamente as taxas de câmbio para converter moedas</string>
-    <string name="preference_search_wikipedia_summary">Pesquisa na enciclopédia gratuita</string>
     <string name="preference_search_websites_summary">Mostra uma visualização de um site se a consulta de pesquisa for um URL</string>
     <string name="preference_calendar_calendars">Calendários</string>
     <string name="preference_screen_buildinfo_summary">Mais informações sobre esta compilação deste aplicativo</string>
@@ -286,7 +264,6 @@
     <string name="preference_edit_button">Botão editar</string>
     <string name="preference_favorites_edit_button_summary">Mostra um botão para reorganizar os favoritos</string>
     <string name="preference_widgets_edit_button_summary">Mostra um botão para adicionar, remover e reorganizar widgets</string>
-    <string name="preference_wikipedia_customurl">URL da Wikipédia</string>
     <string name="apps_profile_work">Trabalho</string>
     <string name="apps_profile_main">Pessoal</string>
     <string name="favorites">Favoritos</string>
@@ -453,7 +430,6 @@
     <string name="widget_use_theme_colors">Use a cor do tema</string>
     <string name="preference_clock_widget_alignment">Alinhamento</string>
     <string name="poi_category_car_rental">Aluguel de carros</string>
-    <string name="preference_search_supportedunits">Unidades suportadas</string>
     <string name="shortcut_label_unavailable">Indisponível</string>
     <string name="length_unit">Unidade de comprimento</string>
     <string name="shortcut_unavailable_description">Esse atalho esta indisponível porque o %1$s não é o launcher padrão</string>
@@ -476,9 +452,6 @@
     <string name="preference_customize_filter_bar">Personalizar barra de filtros</string>
     <string name="plugin_type_calendar">Calendário</string>
     <string name="preference_default_filter_summary">Personalizar o filtro padrão para pesquisas</string>
-    <string name="task_due_time">Vence às %1$s</string>
-    <string name="task_due_date">Vence em %1$s</string>
-    <string name="task_due_today">Vence hoje</string>
     <string name="preference_plugin_badges_summary">Indica por qual plugin uma pesquisa foi criada</string>
     <string name="preference_clock_widget_show_seconds">Mostrar segundos</string>
     <string name="preference_clock_widget_alignment_bottom">Embaixo</string>
@@ -539,7 +512,6 @@
     <string name="poi_category_cricket">Campo de críquete</string>
     <string name="item_visibility_hidden">Nunca</string>
     <string name="music_widget_next_track">Próxima faixa</string>
-    <string name="calendar_widget_create_event">Criar novo evento</string>
     <string name="poi_category_place_of_worship">Local de culto</string>
     <string name="poi_category_chinese_restaurant">Restaurante chinês</string>
     <string name="poi_category_museum">Museu</string>
@@ -573,11 +545,7 @@
     <string name="poi_category_american_football">Campo de futebol americano</string>
     <string name="music_widget_pause">Pausar</string>
     <string name="music_widget_open_player">Abrir reprodutor</string>
-    <string name="missing_permission_tasks_search_settings">Permissão para o Tasks é necessária para procurar tarefas</string>
-    <string name="missing_permission_tasks_integration">Permissão para o Tasks é necessária para usar integração com Tasks</string>
     <string name="preference_clock_widget_time_format_12h">12-horas</string>
-    <string name="preference_search_tasks_summary">Procurar tarefas no aplicativo Tasks</string>
-    <string name="preference_tasks_integration_ready">A integração com Tasks está totalmente configurada e pronta para uso.</string>
     <string name="preference_contacts_call_on_tap_summary">Iniciar a chamada imediatamente ao tocar em um número de telefone</string>
     <string name="poi_category_mobile_phone">Loja de celulares</string>
     <string name="poi_category_florist">Floricultura</string>
@@ -597,7 +565,6 @@
     <string name="weather_forecast_wind">Vento</string>
     <string name="poi_category_park">Parque</string>
     <string name="profile_private_profile_state_locked">Espaço Privado está bloqueado.</string>
-    <string name="calendar_widget_previous_day">Dia anterior</string>
     <string name="preference_grid_list_style">Exibir aplicativos em lista</string>
     <string name="preference_grid_list_icons">Exibir ícones de aplicativos em lista</string>
     <string name="preference_clock_widget_time_format_24h">24-horas</string>
@@ -605,13 +572,11 @@
     <string name="preference_grid_list_icons_summary">Mostrar ícones na exibição por lista</string>
     <string name="preference_clock_widget_monospaced">Dígitos monoespaçados</string>
     <string name="preference_clock_widget_time_format">Formato de horário</string>
-    <string name="preference_search_local_calendar_summary">Procurar calendários no dispositivo</string>
     <string name="poi_category_amusement_park">Parque de diversões</string>
     <string name="poi_category_concert_hall">Sala de concertos</string>
     <string name="customize_item_visibility">Exibir em</string>
     <string name="contact_info_mobile">Celular</string>
     <string name="music_widget_play">Reproduzir</string>
-    <string name="calendar_widget_open_calendar">Abrir aplicativo de calendário</string>
     <string name="profile_work_profile_action_unlock">Despausar</string>
     <string name="profile_private_profile_action_unlock">Desbloquear</string>
     <plurals name="calendar_search_enabled_lists">
@@ -628,7 +593,6 @@
         <item quantity="many">+%1$d tarefas inacabadas</item>
         <item quantity="other">+%1$d tarefas inacabadas</item>
     </plurals>
-    <string name="preference_tasks_integration_description">Tasks é um aplicativo gratuito e open source de lista de tarefas e lembretes. Se instalado, %1$s poderá exibir e procurar suas tarefas do aplicativo Tasks.</string>
     <string name="no_feed_providers">Nenhum provedor de feed instalado</string>
     <string name="preference_contacts_call_on_tap">Toque para chamar</string>
     <string name="poi_category_optician">Oftalmologista</string>
@@ -640,7 +604,6 @@
     <string name="poi_category_discount_store">Loja de descontos</string>
     <string name="poi_category_martial_arts">Artes marciais</string>
     <string name="poi_category_gymnastics">Ginástica</string>
-    <string name="preference_search_tasks">Tarefas</string>
     <string name="item_visibility_calendar_default">Widget de calendário e resultado de busca</string>
     <string name="poi_category_monument">Monumento</string>
     <string name="poi_category_government_building">Prédio do governo</string>
@@ -656,8 +619,6 @@
     <string name="preference_widgets_on_home_screen_summary">Exibir widgets na tela inicial em vez de uma página extra</string>
     <string name="preference_gesture_swipe_up">Deslize para cima</string>
     <string name="poi_category_asian_restaurant">Restaurante asiático</string>
-    <string name="calendar_widget_next_day">Próximo dia</string>
-    <string name="preference_launch_tasks_app">Abrir aplicativo Tasks</string>
     <string name="poi_category_gallery">Galeria</string>
     <string name="weather_forecast_precipitation">Chuva</string>
     <string name="poi_category_charging_station">Estação de recarga</string>
@@ -693,7 +654,6 @@
     <string name="confirmation_delete_transparencies_scheme">Tem certeza que deseja excluir o esquema de transparência %1$s?</string>
     <string name="new_theme_name">(sem título)</string>
     <string name="theme_bundle_name">Nome</string>
-    <string name="preference_tasks_integration">Tasks</string>
     <plurals name="contact_phone_numbers">
         <item quantity="one">%1$s número de telefone</item>
         <item quantity="many">%1$s números de telefone</item>

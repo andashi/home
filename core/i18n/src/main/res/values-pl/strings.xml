@@ -8,11 +8,9 @@
     <string name="menu_back">Wróć</string>
     <string name="menu_launch">Uruchom</string>
     <string name="menu_contacts_open_externally">Otwórz w kontaktach</string>
-    <string name="menu_calendar_open_externally">Otwórz w kalendarzu</string>
     <string name="app_info_version">Wersja %1$s</string>
     <string name="settings">Ustawienia</string>
     <string name="wallpaper">Tapeta</string>
-    <string name="wikipedia_source">Z Wikipedii</string>
     <string name="file_type_directory">Folder</string>
     <string name="file_type_archive">Plik archiwum</string>
     <string name="file_type_source_code">Plik kodu źródłowego</string>
@@ -35,7 +33,6 @@
     <string name="websearch_dialog_delete_icon">Usuń ikonkę</string>
     <string name="websearch_dialog_custom_icon">Niestandardowa ikonka</string>
     <string name="menu_edit_widgets">Edytuj widżety</string>
-    <string name="widget_name_calendar">Kalendarz</string>
     <string name="widget_name_music">Muzyka</string>
     <string name="widget_add_widget">Dodaj widżet</string>
     <string name="turn_off">Wyłącz</string>
@@ -50,12 +47,7 @@
     <string name="owncloud_server_invalid_url">Adres URL nie wskazuje na żadną właściwą instalacje Owncloud</string>
     <string name="login_flow_continue">Kontynuuj</string>
     <string name="login_flow_login">Zaloguj się</string>
-    <string name="disclaimer">Ostrzeżenie</string>
     <string name="show_all">Pokaż wszystkie</string>
-    <string name="date_today">Dzisiaj</string>
-    <string name="date_tomorrow">Jutro</string>
-    <string name="calendar_widget_pinned_events">Nadchodzące</string>
-    <string name="calendar_widget_no_events">Brak wydarzeń</string>
     <string name="preference_screen_appearance">Wygląd</string>
     <string name="preference_theme">Motyw</string>
     <string name="preference_theme_light">Jasny</string>
@@ -105,15 +97,10 @@
     <string name="preference_clockwidget_alarm_part">Alarmy</string>
     <string name="preference_search_contacts">Kontakty</string>
     <string name="preference_search_contacts_summary">Szukaj kontaktów zapisanych na urządzeniu</string>
-    <string name="preference_search_calendar">Kalendarz</string>
     <string name="preference_search_calendar_summary">Szukaj nadchodzących wydarzeń</string>
     <string name="preference_search_calculator">Kalkulator</string>
     <string name="preference_search_calculator_summary">Wykonywaj obliczenia matematyczne</string>
-    <string name="preference_search_unitconverter">Konwerter jednostek</string>
-    <string name="preference_search_unitconverter_summary">Użycie: 1.5 kg lub 4 cm &gt;&gt; in</string>
-    <string name="preference_search_currencyconverter">Konwerter walut</string>
     <string name="preference_search_websites">Strony internetowe</string>
-    <string name="preference_search_wikipedia_summary">Przeszukaj wolną encyklopedię</string>
     <string name="preference_calendar_calendars">Kalendarze</string>
     <string name="preference_search_bar_style">Styl</string>
     <string name="preference_search_bar_auto_focus">Pokaż klawiaturę</string>
@@ -131,8 +118,6 @@
     <string name="preference_search_favorites">Ulubione</string>
     <string name="preference_search_favorites_summary">Pokazuje przypięte oraz często używane rzeczy nad listą aplikacji</string>
     <string name="preference_search_files_summary">Szukaj lokalnych plików oraz plików zapisanych w chmurze</string>
-    <string name="wikipedia_url">https://pl.wikipedia.org</string>
-    <string name="preference_search_wikipedia">Wikipedia</string>
     <string name="default_websearch_2_name">YouTube</string>
     <string name="preference_category_license">Licencja</string>
     <string name="default_websearch_3_url">https://play.google.com/store/search\?q=${1}</string>
@@ -144,25 +129,19 @@
     <string name="preference_clockwidget_music_part">Media</string>
     <string name="owncloud_login_failed">Logowanie nie powiodło się: nieprawidłowa nazwa użytkownika lub hasło.</string>
     <string name="preference_clockwidget_battery_part">Bateria</string>
-    <string name="calendar_event_allday">cały dzień</string>
     <string name="menu_share_store_link">Link %1$s</string>
     <string name="preference_clockwidget_alarm_part_summary">Pokaż alarmy które zadzwonią w ciągu 15 minut</string>
     <string name="websearch_dialog_replace_icon">Zastąp ikonkę</string>
     <string name="shortcut_summary">Z %1$s</string>
     <string name="nextcloud_server_url">Adres URL serwera Nextcloud</string>
     <string name="grant_permission">Przyznaj</string>
-    <string name="disclaimer_currency_converter">Kurs walut, taki jak udostępniany codziennie przez Centralny Bank Europejski. Wszystkie informacje są dostarczane \"takie jakie są\" bez jakiejkolwiek gwarancji. Nie ponosimy odpowiedzialności za podane informacje.
-\n
-\nOstatnia aktualizacja: %1$s</string>
     <string name="preference_category_licenses">Licencje otwarto źródłowe</string>
     <string name="open_webpage">Otwórz stronę internetową</string>
     <string name="preference_icon_shape_circle">Okrąg</string>
     <string name="preference_imperial_units_summary">Użyj stopni Fahrenheit\'a oraz mil na godzinę</string>
     <string name="preference_category_searchbar">Pasek wyszukiwania</string>
     <string name="preference_screen_integrations_summary">Zarządzaj połączonymi kontami i usługami</string>
-    <string name="preference_search_currencyconverter_summary">Cyklicznie pobieraj kurs walut do konwersji walut</string>
     <string name="preference_search_websites_summary">Pokazuj podgląd strony internetowej gdy wyszukiwaną frazą jest adres URL</string>
-    <string name="preference_wikipedia_customurl">Adres URL Wikipedii</string>
     <string name="preference_search_bar_auto_focus_summary">Automatyczne wyświetlanie klawiatury po otwarciu szuflady aplikacji</string>
     <string name="preference_search_bar_style_summary">Dostosuj wygląd paska wyszukiwania</string>
     <string name="action_undo">Cofnij</string>
@@ -178,10 +157,8 @@
     </plurals>
     <string name="save">Zapisz</string>
     <string name="missing_permission_calendar_widget_settings">Ten widżet potrzebuje uprawnień dostępu do kalendarza</string>
-    <string name="calendar_widget_next_events">Następne wydarzenie</string>
     <string name="music_widget_default_title">%1$s odtwarza media</string>
     <string name="missing_permission_music_widget">Dostęp do powiadomień jest wymagany do sterowania odtwarzaniem mediów</string>
-    <string name="missing_permission_calendar_search_settings">Dostęp do kalendarza jest wymagany do przeszukiwania kalendarza</string>
     <string name="missing_permission_contact_search_settings">Dostęp do kontaktów jest wymagany do wyszukiwania kontaktów</string>
     <string name="frequently_used_show_in_favorites">Pokaż w ulubionych</string>
     <string name="apps_profile_main">Osobisty</string>
@@ -196,7 +173,6 @@
     <string name="preference_enforce_icon_shape_summary">Zastosuj kształt do wszystkich ikon, również do tych, które normalnie by go nie obsługiwały</string>
     <string name="preference_grid_labels">Pokaż etykiety</string>
     <string name="duplicate">Duplikuj</string>
-    <string name="missing_permission_calendar_widget">Nadaj kalendarzowi uprawnienia do wyświetlania tutaj nadchodzących terminów i wydarzeń.</string>
     <string name="preference_icon_shape_triangle">Trójkąt Reuleaux</string>
     <string name="preference_shortcut_badges_summary">Pokaż plakietkę, która wskazuje do jakiej aplikacji należy dany skrót</string>
     <string name="preference_grid_labels_summary">Pokaż nazwę aplikacji pod ikoną</string>
@@ -215,7 +191,6 @@
     <string name="tag_select_items">Wybierz elementy:</string>
     <string name="search_action_event">Zaplanuj wydarzenie</string>
     <string name="edit_favorites_dialog_new_tag">Utwórz tag…</string>
-    <string name="missing_permission_calendar_search">Przyznaj uprawnienia do kalendarza, aby przeszukać Twój kalendarz.</string>
     <string name="preference_category_debug_tools">Narzędzia</string>
     <string name="preference_debug_cleanup_database">Wyczyść bazę danych</string>
     <string name="preference_themed_icons">Ikony tematyczne</string>

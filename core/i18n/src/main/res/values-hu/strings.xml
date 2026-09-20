@@ -19,8 +19,6 @@
     <string name="help">Súgó</string>
     <string name="wallpaper">Háttérkép</string>
     <string name="menu_share_store_link">%1$s hivatkozás</string>
-    <string name="menu_calendar_open_externally">Megnyitás a naptár alkalmazásban</string>
-    <string name="wikipedia_source">Forrás: Wikipédia</string>
     <string name="file_type_directory">Könyvtár</string>
     <string name="file_type_android">Android csomagfájl</string>
     <string name="file_type_source_code">Forráskód-fájl</string>
@@ -43,7 +41,6 @@
     <string name="websearch_dialog_advanced">Speciális</string>
     <string name="websearch_dialog_query_encoding_none">Nincs</string>
     <string name="menu_edit_widgets">Modulok szerkesztése</string>
-    <string name="widget_name_calendar">Naptár</string>
     <string name="widget_name_music">Média</string>
     <string name="widget_add_widget">Modul hozzáadása</string>
     <string name="shortcut_summary">Készítette: %1$s</string>
@@ -53,7 +50,6 @@
     <string name="turn_off">Kikapcsolás</string>
     <string name="widget_action_remove">Eltávolítás</string>
     <string name="menu_item_edit_favs">Kedvencek módosítása</string>
-    <string name="wikipedia_url">https://en.wikipedia.org</string>
     <string name="file_type_archive">Archivált fájl</string>
     <string name="file_type_presentation">Bemutató</string>
     <string name="file_type_form">Űrlap</string>
@@ -70,9 +66,6 @@
     <string name="owncloud_password">Jelszó</string>
     <string name="login_flow_continue">Folytatás</string>
     <string name="login_flow_login">Bejelentkezés</string>
-    <string name="calendar_widget_no_events">Ma nincsenek események</string>
-    <string name="date_tomorrow">Holnap</string>
-    <string name="calendar_event_allday">Egész nap</string>
     <string name="music_widget_default_title">A(z) %1$s médiát játszik le</string>
     <string name="widget_name_notes">Jegyzet</string>
     <string name="edit_favorites_dialog_pinned_sorted">Kitűzött - kézzel rendezett</string>
@@ -83,10 +76,7 @@
     <string name="owncloud_login_2fa_hint">Ha engedélyezte a kétfaktoros hitelesítést, akkor itt egy alkalmazásjelszót kell használnia.</string>
     <string name="owncloud_login_failed">Skertelen bejelentkezés: helytelen felhasználónév vagy jelszó.</string>
     <string name="owncloud_server_url">Owncloud kiszolgáló webcíme</string>
-    <string name="calendar_widget_pinned_events">Közelgő</string>
-    <string name="calendar_widget_next_events">Következő esemény</string>
     <string name="show_all">Összes megjelenítése</string>
-    <string name="date_today">Ma</string>
     <string name="notes_widget_action_new">Új jegyzet</string>
     <string name="notes_widget_action_save">Mentés</string>
     <string name="notes_widget_placeholder">Jegyzet írása</string>
@@ -96,7 +86,6 @@
     <string name="nextcloud_server_invalid_url">Ez a webcím nem egy érvényes Nextcloud telepítésre mutat</string>
     <string name="widget_name_unknown">Érvénytelen alkalmazásmodulokhoz használt címke</string>
     <string name="widget_action_replace">Csere</string>
-    <string name="disclaimer">Jogi nyilatkozat</string>
     <string name="edit_favorites_dialog_tags">Címkék</string>
     <plurals name="calendar_widget_running_events">
         <item quantity="one">+%1$d folyamatban lévő esemény az elmúlt napokból</item>
@@ -105,7 +94,6 @@
     <string name="edit">Szerkesztés</string>
     <string name="edit_favorites_dialog_empty_section">Húzza ide az elemeket</string>
     <string name="action_import">Importálás</string>
-    <string name="disclaimer_currency_converter">Az Európai Központi Bank által naponta egyszer közzétett árfolyamok. Az összes adat „úgy, ahogy van”, mindenféle garancia nélkül. Ezen adakoért semmilyen felelősséget nem vállalunk. \n \nUtoljára frissítve: %1$s</string>
     <string name="music_widget_no_data">Még nem játszott le média tartalmat</string>
     <string name="file_type_launchertheme">%1$s téma</string>
     <string name="websearch_dialog_url_error">A(z) „${1}” helyőrző hiányzik ebből az webcímből</string>
@@ -114,7 +102,6 @@
     <string name="preference_colors_default">Alapértelmezés</string>
     <string name="preference_force_themed_icons">Ikonok kényszerítése a témához</string>
     <string name="missing_permission_music_widget">A médialejátszás vezérléséhez értesítési hozzáférés szükséges</string>
-    <string name="missing_permission_calendar_search">A naptárban való kereséshez naptárengedély szükséges</string>
     <string name="preference_debug_dump_heap_summary">Pillanatfelvétel készítése a memóriahasználat elemzéséhez. Az alkalmazás lefagy, amíg ez a folyamat be nem fejeződik.</string>
     <string name="preference_debug_cleanup_database_summary">Hibás- és nem használt bejegyzések eltávolítása az indító adatbázisából</string>
     <plurals name="debug_cleanup_database_result">
@@ -122,7 +109,6 @@
         <item quantity="other">%1$d bejegyzés eltávolítva</item>
     </plurals>
     <string name="preference_screen_integrations_summary">Fiókok és szolgáltatások kezelése</string>
-    <string name="missing_permission_calendar_widget">A közelgő események megjelenítéséhez naptárengedély szükséges</string>
     <string name="preference_colors_bw">Fekete-fehér</string>
     <string name="preference_force_themed_icons_summary">Alkalmazás színösszeállításának használata az összes ikonra, beleértve a nem támogatottakat is (nem ajánlott)</string>
     <string name="preference_screen_colors">Színösszeállítás</string>
@@ -195,14 +181,12 @@
     <string name="preference_hide_status_bar">Állapotsor elrejtése</string>
     <string name="preference_icon_shape_pentagon">Ötszög</string>
     <string name="preference_category_wallpaper">Háttérkép</string>
-    <string name="missing_permission_calendar_search_settings">A naptárban való kereséshez naptárengedély szükséges</string>
     <string name="missing_permission_appshortcuts_create">Állítsa be a(z) %1$s alkalmazást alapértelmezett indítóként a parancsikonok létrehozásához.</string>
     <string name="import_theme_error">A kiválasztott fájlt nem lehetett beolvasni. Győződjön meg arról, hogy érvényes témát (*.kvtheme) választott ki és hogy a fájl nem-e sérült.</string>
     <string name="preference_hidden_items_reveal_button">Kibontásgomb megjelenítése</string>
     <string name="favorites_empty_tag">Nincsenek elemek ilyen címkével</string>
     <string name="preference_layout_open_search">Keresés és alkalmazásfiók</string>
     <string name="preference_category_media_apps">Médiaalkalmazások</string>
-    <string name="preference_search_unitconverter_summary">Használat: 1,5 kg, vagy 4 cm &gt;&gt; in</string>
     <string name="preference_search_bar_launch_on_enter_summary">Ugrás a kiemelt keresési találatra vagy gyorsműveletre, az „Enter” gomb megérintésekor</string>
     <string name="preference_hidden_items">Kizárt keresési eredmények</string>
     <string name="icon_picker_filter_all_packs">Minden ikoncsomag</string>
@@ -215,7 +199,6 @@
     <string name="preference_screen_buildinfo_summary">További tudnivalók az alkalmazás ezen verziójáról</string>
     <string name="preference_search_bar_launch_on_enter">Keresés enterrel</string>
     <string name="preference_hidden_items_summary">Kizárt alkalmazások és keresési eredmények kezelése</string>
-    <string name="preference_wikipedia_customurl">Wikipédia-webcím</string>
     <string name="preference_screen_icons_summary">Rácsméret, ikonok, jelvények</string>
     <string name="apps_profile_main">Személyes</string>
     <string name="favorites_empty">A kitűzött és gyakran használt elemek itt jelennek meg</string>
@@ -259,7 +242,6 @@
     <string name="preference_category_widgets">Modulok</string>
     <string name="preference_clockwidget_music_part_summary">Médiavezérlők megjelenítése, ha aktív médiamunkamenet van</string>
     <string name="preference_search_result_ordering_weight_factor_high">Változtatható</string>
-    <string name="preference_search_currencyconverter">Valutaváltó</string>
     <string name="preference_search_bar_auto_focus_summary">Billentyűzet automatikus megjelenítése az alkalmazásfiók megnyitásakor</string>
     <string name="note_widget_link_file_summary">Szinkronizálja a modul tartalmát egy külső fájllal</string>
     <string name="preference_search_websites">Weboldalak</string>
@@ -369,16 +351,11 @@
     <string name="preference_clockwidget_alarm_part">Riasztások</string>
     <string name="preference_search_favorites">Kedvencek</string>
     <string name="preference_search_favorites_summary">Kitűzött és gyakran használt elemek megjelenítése az alkalmazásrács felett</string>
-    <string name="preference_search_calendar">Naptár</string>
     <string name="preference_search_calendar_summary">Keresés a naptárban a közelgő találkozók és események között</string>
     <string name="preference_search_appshortcuts">Telepített alkalmazások</string>
     <string name="preference_search_appshortcuts_summary">Keresés a telepített alkalmazások között</string>
     <string name="preference_search_calculator">Számológép</string>
     <string name="preference_search_calculator_summary">Matematikai kifejezések kiértékelése</string>
-    <string name="preference_search_unitconverter">Mértékegységváltó</string>
-    <string name="preference_search_currencyconverter_summary">Rendszeresen töltse le az árfolyamokat a valuták átváltásához</string>
-    <string name="preference_search_wikipedia">Wikipédia</string>
-    <string name="preference_search_wikipedia_summary">Keresés a Wikipédián</string>
     <string name="preference_search_bar_style">Stílus</string>
     <string name="preference_search_bar_style_summary">Keresősáv megjelenésének testreszabása</string>
     <string name="preference_search_bar_color">Szín</string>
@@ -584,10 +561,6 @@
     <string name="music_widget_play">Lejátszás</string>
     <string name="music_widget_pause">Szünet</string>
     <string name="music_widget_open_player">Lejátszó megnyitása</string>
-    <string name="calendar_widget_previous_day">Előző nap</string>
-    <string name="calendar_widget_next_day">Következő nap</string>
-    <string name="calendar_widget_create_event">Új esemény létrehozása</string>
-    <string name="calendar_widget_open_calendar">Naptáralkalmazás megnyitása</string>
     <string name="plugin_type_calendar">Naptár</string>
     <string name="profile_work_profile_state_locked">A munka-alkalmazások szünetelnek</string>
     <string name="profile_work_profile_action_unlock">Szüneteltetés feloldása</string>
@@ -596,15 +569,11 @@
     <string name="profile_private_profile_action_lock">Privát szféra lezárása</string>
     <string name="profile_private_profile_state_locked">Privát szféra lezárva</string>
     <string name="hint_drag_and_drop_reorder">Tartsa lenyomva és húzza az elemeket az átrendezésükhöz</string>
-    <string name="preference_search_supportedunits">Támogatott mértékegységek</string>
     <string name="app_label_locked_profile">Lezárva</string>
     <plurals name="calendar_search_enabled_lists">
         <item quantity="one">%1$s lista kiválasztva</item>
         <item quantity="other">%1$s lista kiválasztva</item>
     </plurals>
-    <string name="task_due_time">Ekkor esedékes: %1$s</string>
-    <string name="task_due_date">Ekkor esedékes: %1$s</string>
-    <string name="task_due_today">Ekkor esedékes: Ma</string>
     <string name="preference_calendar_hide_completed">Befejezett események elrejtése</string>
     <string name="preference_compact_tags">Kompakt címkék</string>
     <string name="preference_compact_tags_summary">Címkenevek vagy ikonok elrejtése a címkék által elfoglalt hely csökkentése érdekében</string>
@@ -619,7 +588,6 @@
         <item quantity="one">1 perc múlva indúl</item>
         <item quantity="other">%1$d perc múlva indúl</item>
     </plurals>
-    <string name="preference_search_local_calendar_summary">Naptárak keresése ezen az eszközön</string>
     <string name="preference_grid_list_style">Alkalmazások megjelenítése listában</string>
     <string name="preference_grid_list_icons">Alkalmazások ikonjainak megjelenítése listában</string>
     <string name="preference_grid_list_style_summary">Alkalmazások listában történő megjelenítése rács helyett</string>
@@ -628,15 +596,7 @@
     <string name="preference_contacts_call_on_tap_summary">Hívás azonnali indítása megerősítés kérése nélkül egy telefonszámra való koppintáskor</string>
     <string name="missing_permission_call_contacts_settings">A hívások indításához hívásengedély szükséges</string>
     <string name="plugin_type_contacts">Névjegyek</string>
-    <string name="preference_search_tasks">Feladatok</string>
-    <string name="preference_search_tasks_summary">Feladatok keresése a „Feladatok” alkalmazásban</string>
     <string name="action_install">Telepítés</string>
-    <string name="missing_permission_tasks_integration">A feladatok-integráció használatához hozzáférési engedély szükséges a feladatokhoz</string>
-    <string name="missing_permission_tasks_search_settings">A feladatok kereséséhez hozzáférési engedély szükséges a feladatokhoz a Feladatok alkalmazásban</string>
-    <string name="preference_tasks_integration_ready">A feladatok-integráció teljesen be van állítva és használatra kész.</string>
-    <string name="preference_tasks_integration">Feladatok</string>
-    <string name="preference_tasks_integration_description">A „Feladatok” egy szabad és nyílt forráskódú feladatlista- és emlékeztető alkalmazás. Ha telepítve van, akkor a(z) %1$s megjelenítheti és keresheti a feladatait a „Feladatok” alkalmazásból.</string>
-    <string name="preference_launch_tasks_app">„Feladatok” alkalmazás megnyitása</string>
     <plurals name="calendar_widget_running_tasks">
         <item quantity="one">+%1$d befejezetlen feladat</item>
         <item quantity="other">+%1$d befejezetlen feladat</item>
@@ -752,7 +712,6 @@
     <string name="gesture_action_launch_select_app">Alkalmazás vagy parancsikon kiválasztása</string>
     <string name="preference_search_apps_show_details">Alkalmazás adatainak megjelenítése</string>
     <string name="preference_search_apps_show_details_summary">Az alkalmazás verziójának és csomagjának megjelenítése a helyi menüben</string>
-    <string name="preference_currency_settings">Pénznem-beállítások</string>
     <string name="preference_currencies">Pénznem</string>
     <string name="preference_add_currency">Pénznem hozzáadása</string>
     <string name="search_query_private_space">Privát tér</string>

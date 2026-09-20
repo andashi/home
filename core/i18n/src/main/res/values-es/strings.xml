@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="default_websearch_3_url">https://play.google.com/store/search\?q=${1}</string>
-    <string name="menu_calendar_open_externally">Abrir en la aplicación de calendario</string>
-    <string name="wikipedia_url">https://es.wikipedia.org</string>
     <string name="owncloud_password">Contraseña</string>
     <string name="menu_share">Compartir</string>
     <string name="menu_uninstall">Desinstalar</string>
@@ -14,7 +12,6 @@
     <string name="app_info_version">Versión %1$s</string>
     <string name="settings">Ajustes</string>
     <string name="wallpaper">Fondo de pantalla</string>
-    <string name="wikipedia_source">De Wikipedia</string>
     <string name="menu_share_store_link">Enlace de %1$s</string>
     <string name="file_type_directory">Directorio</string>
     <string name="file_type_document">Documento</string>
@@ -35,7 +32,6 @@
     <string name="websearch_dialog_delete_icon">Eliminar icono</string>
     <string name="websearch_dialog_custom_icon">Icono personalizado</string>
     <string name="menu_edit_widgets">Editar widgets</string>
-    <string name="widget_name_calendar">Calendario</string>
     <string name="widget_name_music">Multimedia</string>
     <string name="widget_add_widget">Añadir widget</string>
     <string name="shortcut_summary">De %1$s</string>
@@ -47,14 +43,8 @@
     <string name="login_flow_continue">Continuar</string>
     <string name="login_flow_login">Iniciar sesión</string>
     <string name="show_all">Mostrar todo</string>
-    <string name="date_today">Hoy</string>
-    <string name="date_tomorrow">Mañana</string>
-    <string name="calendar_widget_pinned_events">Próximas</string>
-    <string name="calendar_widget_no_events">No hay eventos hoy</string>
-    <string name="calendar_event_allday">Todo el día</string>
     <string name="default_websearch_3_name">Google Play</string>
     <string name="owncloud_login_failed">Inicio de sesión fallido: nombre de usuario o contraseña incorrectos.</string>
-    <string name="missing_permission_calendar_widget">Se requiere el permiso de calendario para mostrar las próximas citas y eventos aquí</string>
     <string name="grant_permission">Otorgar</string>
     <string name="preference_colors_bw">Blanco y negro</string>
     <string name="preference_cards_summary">Personalizar la apariencia de la tarjeta</string>
@@ -63,9 +53,7 @@
     <string name="music_widget_default_title">%1$s está reproduciendo música</string>
     <string name="music_widget_no_data">Aún no se ha reproducido música</string>
     <string name="missing_permission_contact_search_settings">Se requiere permiso de contactos para buscar contactos</string>
-    <string name="missing_permission_calendar_search_settings">Se requiere permiso de calendario para buscar en el calendario</string>
     <string name="missing_permission_calendar_widget_settings">Este widget requiere el permiso de calendario</string>
-    <string name="missing_permission_calendar_search">Se requiere el permiso de calendario para buscar en tu calendario</string>
     <string name="missing_permission_contact_search">Se requiere permiso de contactos para buscar en tus contactos</string>
     <string name="preference_screen_appearance">Apariencia</string>
     <string name="preference_theme">Tema</string>
@@ -107,7 +95,6 @@
     <string name="nextcloud_server_invalid_url">Esta URL no apunta a una instalación válida de Nextcloud</string>
     <string name="owncloud_server_invalid_url">Esta URL no apunta a una instalación válida de Owncloud</string>
     <string name="owncloud_login_2fa_hint">Si tiene habilitada la autenticación de dos factores, debe usar una contraseña de aplicación aquí.</string>
-    <string name="disclaimer">Descargo de responsabilidad</string>
     <string name="websearch_dialog_query_encoding">Codificación de consulta</string>
     <string name="websearch_dialog_query_encoding_url">Codificación-percentil</string>
     <string name="websearch_dialog_query_encoding_form">application/x-www-form-urlencoded</string>
@@ -124,7 +111,6 @@
     <string name="preference_icon_pack">Paquete de iconos</string>
     <string name="preference_category_badges">Insignias</string>
     <string name="preference_search_files_summary">Buscar archivos locales y archivos en la nube</string>
-    <string name="preference_search_calendar">Calendario</string>
     <string name="preference_blur_wallpaper">Desenfocar fondo de pantalla</string>
     <string name="search_action_alarm">Crear alarma</string>
     <string name="create_search_action_type_web">Buscar en internet</string>
@@ -196,11 +182,6 @@
     <string name="preference_search_calendar_summary">Buscar citas y eventos próximos</string>
     <string name="preference_search_appshortcuts_summary">Buscar accesos directos de aplicaciones</string>
     <string name="preference_search_calculator">Calculadora</string>
-    <string name="preference_search_unitconverter">Conversor de unidades</string>
-    <string name="preference_search_unitconverter_summary">Uso: 1.5 kg o 4 cm &gt;&gt; in (pulgadas)</string>
-    <string name="preference_search_currencyconverter">Conversor de divisas</string>
-    <string name="preference_search_wikipedia">Wikipedia</string>
-    <string name="preference_search_wikipedia_summary">Busca en la enciclopedia libre</string>
     <string name="preference_search_websites_summary">Mostrar vista previa de la página web si la consulta de búsqueda es una URL</string>
     <string name="preference_calendar_calendars">Calendarios</string>
     <string name="preference_screen_buildinfo">Información de versión de aplicación</string>
@@ -208,7 +189,6 @@
     <string name="preference_search_bar_style_summary">Personalizar apariencia de barra de búsqueda</string>
     <string name="preference_search_bar_color">Color</string>
     <string name="preference_hidden_items">Resultados de búsqueda excluidos</string>
-    <string name="preference_wikipedia_customurl">URL de Wikipedia</string>
     <string name="icon_picker_default_icon">Por defecto</string>
     <string name="icon_picker_search_icon">Buscar en paquetes de iconos</string>
     <string name="apps_profile_main">Personal</string>
@@ -281,7 +261,6 @@
     <string name="preference_screen_search_summary">Búsqueda, etiquetas, elementos excluidos</string>
     <string name="preference_search_calculator_summary">Evaluar términos matemáticos</string>
     <string name="preference_search_appshortcuts">Accesos directos de aplicaciones</string>
-    <string name="preference_search_currencyconverter_summary">Descargar periódicamente tasas de conversión actualizadas para convertir divisas</string>
     <string name="preference_search_websites">Páginas web</string>
     <string name="search_action_message">Mensaje</string>
     <string name="search_action_email">Correo</string>
@@ -306,9 +285,6 @@
     <string name="edit_favorites_dialog_tag_section_empty">Las etiquetas ancladas aparecerán aquí</string>
     <string name="alert_delete_shortcut">El acceso directo %1$s será eliminado permanentemente. ¿Continuar\?</string>
     <string name="missing_permission_appshortcuts_search_settings">%1$s debe ser definida como app de inicio predeterminada para buscar accesos directos</string>
-    <string name="disclaimer_currency_converter">Tipos de cambio publicados una vez al día por el Banco Central Europeo. Toda la información se proporciona \"tal cual\", sin ningún tipo de garantía. No se asume ninguna responsabilidad por esta información.
-\n
-\nÚltima actualización: %1$s</string>
     <string name="edit_favorites_dialog_empty_section">Arrastra elementos aquí</string>
     <string name="missing_permission_music_widget">Se requiere el acceso a las notificaciones para controlar la reproducción multimedia</string>
     <string name="websearch_dialog_advanced">Avanzado</string>
@@ -324,7 +300,6 @@
     <string name="skip">Omitir</string>
     <string name="action_next">Siguiente</string>
     <string name="edit_favorites_dialog_tags">Etiquetas</string>
-    <string name="calendar_widget_next_events">Siguiente evento</string>
     <string name="missing_permission_notification_badges">Se requiere acceso a notificaciones para mostrar globos de notificación</string>
     <string name="missing_permission_appshortcuts_search">Defina %1$s como app de inicio predeterminada para buscar accesos directos de aplicaciones.</string>
     <string name="missing_permission_appshortcuts_create">Defina %1$s como app de inicio predeterminada para crear accesos directos.</string>
@@ -507,10 +482,7 @@
     <string name="poi_category_soccer">Campo de fútbol</string>
     <string name="poi_category_basketball">Cancha de baloncesto</string>
     <string name="poi_category_tennis">Cancha de tenis</string>
-    <string name="preference_search_tasks_summary">Buscar tareas en la aplicación Tasks</string>
     <string name="action_install">Instalar</string>
-    <string name="preference_tasks_integration_ready">Integración con Tasks está completamente configurada y lista para usarse.</string>
-    <string name="preference_search_local_calendar_summary">Buscar calendarios en este dispositivo</string>
     <string name="preference_grid_list_style">Mostrar aplicaciones en una lista</string>
     <string name="preference_grid_list_icons">Mostrar íconos de aplicaciones en lista</string>
     <string name="preference_grid_list_icons_summary">Mostrar íconos en la vista de lista</string>
@@ -521,17 +493,14 @@
         <item quantity="other">+%1$d tareas sin terminar</item>
     </plurals>
     <string name="preference_grid_list_style_summary">Mostrar aplicaciones en una lista en lugar de una cuadrícula</string>
-    <string name="preference_search_tasks">Tareas</string>
     <string name="preference_calendar_hide_completed">Ocultar tareas completadas</string>
     <string name="action_clear">Limpiar</string>
     <string name="action_more_actions">Más acciones</string>
     <string name="preference_clock_widget_time_format_12h">12 horas</string>
     <string name="preference_clock_widget_time_format">Formato de hora</string>
     <string name="preference_clock_widget_time_format_24h">24 horas</string>
-    <string name="preference_search_supportedunits">Unidades soportadas</string>
     <string name="preference_contacts_call_on_tap">Toca para llamar</string>
     <string name="widget_removed">Widget eliminado</string>
-    <string name="preference_launch_tasks_app">Abrir aplicación Tasks</string>
     <string name="action_done">Hecho</string>
     <string name="missing_permission_call_contacts_settings">Se requiere el permiso de teléfono para marcar</string>
     <plurals name="app_info_notifications">
@@ -539,10 +508,8 @@
         <item quantity="many">%1$s notificaciones</item>
         <item quantity="other">%1$s notificaciones</item>
     </plurals>
-    <string name="calendar_widget_open_calendar">Abrir app de calendario</string>
     <string name="profile_work_profile_action_lock">Pausar apps de trabajo</string>
     <string name="customize_item_label">Título</string>
-    <string name="calendar_widget_create_event">Crear nuevo evento</string>
     <plurals name="departure_time_in">
         <item quantity="one">en un minuto</item>
         <item quantity="many">en %1$d minutos</item>
@@ -551,9 +518,6 @@
     <string name="poi_category_discount_store">Tienda de descuentos</string>
     <string name="music_widget_pause">Pausa</string>
     <string name="poi_category_martial_arts">Artes marciales</string>
-    <string name="calendar_widget_previous_day">Día anterior</string>
-    <string name="missing_permission_tasks_search_settings">Se requiere permiso de Tasks para buscar tareas en la aplicación Tasks</string>
-    <string name="missing_permission_tasks_integration">Se requiere permiso de Tasks para utilizar la integración con Tasks</string>
     <string name="poi_category_swimming">Alberca</string>
     <string name="poi_category_soup_restaurant">Restaurante de sopa</string>
     <string name="poi_category_car_wash">Lavado de autos</string>
@@ -582,9 +546,6 @@
         <item quantity="other">%1$s direcciones de correo electrónico</item>
     </plurals>
     <string name="weather_forecast_wind">Viento</string>
-    <string name="task_due_today">Acaba hoy</string>
-    <string name="task_due_time">Acaba a las %1$s</string>
-    <string name="task_due_date">Acaba el %1$s</string>
     <string name="customize_item_visibility">Mostrar en</string>
     <string name="poi_category_burger_restaurant">Restaurante de hamburguesas</string>
     <string name="poi_category_kebab_restaurant">Restaurante de kebab</string>
@@ -609,7 +570,6 @@
     <string name="poi_category_ramen_restaurant">Restaurante de ramen</string>
     <string name="weather_forecast_precipitation">Precipitación</string>
     <string name="music_widget_open_player">Abrir reproductor</string>
-    <string name="calendar_widget_next_day">Siguiente día</string>
     <string name="profile_private_profile_state_locked">El espacio privado está bloqueado</string>
     <string name="poi_category_motorcycle_rental">Renta de motocicletas</string>
     <string name="poi_category_gallery">Galería de arte</string>
@@ -638,8 +598,6 @@
     <string name="profile_work_profile_action_unlock">Reanudar</string>
     <string name="plugin_type_contacts">Contactos</string>
     <string name="poi_category_casino">Casino</string>
-    <string name="preference_tasks_integration">Tasks</string>
-    <string name="preference_tasks_integration_description">Tasks es una aplicación de listas de tareas y recordatorios gratuita y de código abierto. Si está instalada, %1$s puede mostrar y buscar tus tareas de la aplicación Tasks.</string>
     <string name="poi_category_synagogue">Sinagoga</string>
     <string name="poi_category_pizza_restaurant">Pizzería</string>
     <string name="poi_category_stadium">Estadio</string>
@@ -765,7 +723,6 @@
     <string name="preference_category_donate">Apoya el desarrollo</string>
     <string name="preference_search_apps_show_details">Mostrar información de la aplicación</string>
     <string name="preference_search_apps_show_details_summary">Mostrar versión y nombre del paquete de la aplicación en su menú contextual</string>
-    <string name="preference_currency_settings">Ajustes de divisa</string>
     <string name="preference_add_currency">Añadir divisa</string>
     <string name="search_query_private_space">Espacio privado</string>
     <string name="search_action_private_space_lock">Bloquear espacio privado</string>
