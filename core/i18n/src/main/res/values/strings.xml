@@ -1,15 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools" tools:locale="en">
-    <string name="location_open">Open</string>
-    <string name="location_closed">Closed</string>
     <!-- Time when a place next closes (on the same day). $1%s: time (hh:mm) -->
-    <string name="location_closes">closes at %1$s</string>
     <!-- Time when a place next closes (on a different day). $1%s: day of week, %2$s: time (hh:mm) -->
-    <string name="location_closes_other_day">closes %1$s, %2$s</string>
     <!-- Time when a place next opens (on the same day). $1%s: time (hh:mm) -->
-    <string name="location_opens">opens at %1$s</string>
     <!-- Time when a place next opens (on a different day). $1%s: day of week, %2$s: time (hh:mm) -->
-    <string name="location_opens_other_day">opens %1$s, %2$s</string>
     <!-- Name of the app -->
     <!-- Share something. Can be anything, an app, a website, a file, … -->
     <string name="menu_share">Share</string>
@@ -28,9 +22,6 @@
     <string name="menu_launch">Launch</string>
     <string name="menu_customize">Customize</string>
     <!-- Open a file in the corresponding app -->
-    <string name="menu_open_file">Open</string>
-    <string name="menu_map">View on map</string>
-    <string name="menu_website">Open website</string>
     <!-- Shown in a snackbar after an item has been hidden. %1$s: label of the item -->
     <string name="action_undo">Undo</string>
     <string name="action_import">Import</string>
@@ -98,35 +89,20 @@
     <!-- Shown in Wikipedia results to indicate where they come from -->
     <string name="wikipedia_source">From Wikipedia</string>
     <!-- File metadata, title of audio tracks -->
-    <string name="file_meta_title">Title: %1$s</string>
     <!-- File metadata, artist of audio tracks -->
-    <string name="file_meta_artist">Artist: %1$s</string>
     <!-- File metadata, album of audio tracks -->
-    <string name="file_meta_album">Album: %1$s</string>
     <!-- File metadata, duration of audio tracks -->
-    <string name="file_meta_duration">Duration: %1$s</string>
     <!-- File metadata, year of audio tracks -->
-    <string name="file_meta_year">Year: %1$s</string>
     <!-- File size -->
-    <string name="file_meta_size">Size: %1$s</string>
     <!-- File path -->
-    <string name="file_meta_path">Path: %1$s</string>
     <!-- File type (MIME type) -->
-    <string name="file_meta_type">Type: %1$s</string>
     <!-- File metadata, image/video dimensions -->
-    <string name="file_meta_dimensions">Dimensions: %1$s</string>
     <!-- File metadata, app name of APK files -->
-    <string name="file_meta_app_name">App name: %1$s</string>
     <!-- File metadata, version name of APK files -->
-    <string name="file_meta_app_version">Version: %1$s</string>
     <!-- File metadata, package name of APK files -->
-    <string name="file_meta_app_pkgname">Package name: %1$s</string>
     <!-- File metadata, minimum SDK version of APK files -->
-    <string name="file_meta_app_min_sdk">Min SDK version: %1$s</string>
     <!-- File metadata, owner (for cloud files) -->
-    <string name="file_meta_owner">Owner: %1$s</string>
     <!-- File metadata, location -->
-    <string name="file_meta_location">Location: %1$s</string>
     <string name="file_type_directory">Directory</string>
     <!-- Archive file  -->
     <string name="file_type_archive">Archive file</string>
@@ -159,15 +135,12 @@
     <!-- Form file -->
     <string name="file_type_form">Form</string>
     <!-- Launcher backup, %1$s: app name -->
-    <string name="file_type_launcherbackup">%1$s backup</string>
     <!-- Launcher theme, %1$s: app name -->
     <string name="file_type_launchertheme">%1$s theme</string>
     <!-- Generic file , %1$s is the file extension -->
     <string name="file_type_generic">%1$s file</string>
     <!-- Warning message that is shown when a user attempts to delete a directory -->
-    <string name="alert_delete_directory">The directory %1$s and all its content will be deleted permanently. Proceed\?</string>
     <!-- Warning message that is shown when a user attempts to delete a file -->
-    <string name="alert_delete_file">The file %1$s will be deleted permanently. Proceed\?</string>
     <!-- Warning message that is shown when a user attempts to delete a pinned shortcut -->
     <string name="alert_delete_shortcut">The shortcut %1$s will be removed permanently. Proceed\?</string>
     <!-- A somewhat generic error message that is shown when something (a file of a specific file, an app, …)
@@ -398,11 +371,9 @@
     <!-- Missing permission app shortcuts permission in search settings screen. %1$s: app name -->
     <string name="missing_permission_appshortcuts_search_settings">%1$s must be set as default home app to search app shortcuts</string>
     <!-- Missing file permission in search settings screen -->
-    <string name="missing_permission_file_search_settings">External storage permission is required to search files on this device</string>
     <!-- Missing file permission in search settings screen.
         Used in Android 10+ because the required permission has changed from READ_EXTERNAL_STORAGE
         to MANAGE_EXTERNAL_STORAGE which is labeled differently in the Android OS -->
-    <string name="missing_permission_file_search_settings_android10">All files access is required to search local files</string>
     <!-- Missing notification permission, used in badge settings screen -->
     <string name="missing_permission_notification_badges">Notification access is required to display notification badges</string>
     <!-- Missing calendar permission, used in calendar widget -->
@@ -410,9 +381,7 @@
     <!-- Missing calendar permission, used in calendar search results -->
     <string name="missing_permission_calendar_search">Calendar permission is required to search your calendar</string>
     <!-- Missing location permission, used in location search results -->
-    <string name="missing_permission_location_search">Location permission is required to search nearby locations</string>
     <!-- Missing files permission, used in files search results -->
-    <string name="missing_permission_files_search">Storage permission is required to search files on this device</string>
     <!-- Missing files permission, used in contact search results -->
     <string name="missing_permission_contact_search">Contacts permission is required to search your contacts</string>
     <!-- Missing permission app shortcuts permission, used in app shortcut search results. %1$s: app name -->
@@ -519,9 +488,6 @@
     <string name="preference_icon_pack">Icon pack</string>
     <string name="preference_icon_pack_summary_empty">No icon packs installed</string>
     <!-- Indicates that an icon pack supports dynamic colors (icon colors adapt to the launchers color scheme) -->
-    <string name="preference_category_animations">Animations</string>
-    <string name="preference_charging_animation">Charging animation</string>
-    <string name="preference_charging_animation_summary">Play a bubble animation while the device is charging</string>
     <string name="preference_category_system_bars">System bars</string>
     <string name="preference_status_bar_icons">Status bar icons</string>
     <string name="preference_nav_bar_icons">Navigation bar icons</string>
@@ -531,9 +497,6 @@
     <string name="preference_hide_status_bar">Hide status bar</string>
     <string name="preference_hide_nav_bar">Hide navigation bar</string>
     <string name="preference_screen_integrations_summary">Manage connected accounts and services</string>
-    <string name="preference_signin_user">Signed in as %1$s</string>
-    <string name="preference_signout">Sign out</string>
-    <string name="preference_summary_not_logged_in">You are not logged in</string>
     <string name="preference_icon_shape_pentagon">Pentagon</string>
     <string name="preference_category_wallpaper">Wallpaper</string>
     <string name="preference_dim_wallpaper">Dim wallpaper</string>
@@ -554,12 +517,6 @@
     <string name="preference_shortcut_badges_summary">Show a badge which indicates to which app a shortcut belongs</string>
     <string name="preference_plugin_badges">Plugin badges</string>
     <string name="preference_plugin_badges_summary">Indicate by which plugin a search result was created</string>
-    <string name="preference_nextcloud_signin">Sign in to Nextcloud</string>
-    <string name="preference_nextcloud_signin_summary">Sign in to search your Nextcloud server</string>
-    <string name="preference_nextcloud">Nextcloud</string>
-    <string name="preference_owncloud">Owncloud</string>
-    <string name="preference_owncloud_signin">Sign in to Owncloud</string>
-    <string name="preference_owncloud_signin_summary">Sign in to search your Owncloud server</string>
     <string name="preference_about_telegram">Telegram group</string>
     <string name="preference_about_fdroid">F-Droid repository</string>
     <string name="preference_enforce_icon_shape">Enforce shape</string>
@@ -611,16 +568,6 @@
     <string name="preference_clockwidget_battery_part_hide">Off</string>
     <string name="preference_clockwidget_alarm_part">Alarms</string>
     <string name="preference_clockwidget_alarm_part_summary">Show alarms that will ring within the next 8 hours</string>
-    <string name="preference_screen_backup">Backup and restore</string>
-    <string name="preference_screen_backup_summary">Export and import launcher data</string>
-    <string name="preference_backup">Backup</string>
-    <string name="preference_backup_summary">Export preferences and launcher data</string>
-    <string name="preference_restore">Restore</string>
-    <string name="preference_restore_summary">Import a previously created backup</string>
-    <string name="preference_crash_reporter">Crash reporter</string>
-    <string name="preference_crash_reporter_summary">Error and crash reports</string>
-    <string name="preference_logs">Logs</string>
-    <string name="preference_logs_summary">View and export application logs</string>
     <string name="preference_screen_search">Search</string>
     <string name="preference_screen_search_summary">Search, tags, excluded results</string>
     <string name="preference_search_favorites">Favorites</string>
@@ -629,7 +576,6 @@
     <string name="preference_search_apps_summary">Show all apps when the search field is empty</string>
     <string name="preference_search_apps_show_details">Show app information</string>
     <string name="preference_search_apps_show_details_summary">Display version and package name of an app in its context menu</string>
-    <string name="preference_search_files">Files</string>
     <string name="preference_search_files_summary">Search local files and cloud files</string>
     <string name="preference_search_contacts">Contacts</string>
     <string name="preference_search_contacts_summary">Search contacts on this device</string>
@@ -651,15 +597,8 @@
     <string name="preference_search_wikipedia">Wikipedia</string>
     <string name="preference_search_wikipedia_summary">Search the free encyclopedia</string>
     <string name="preference_search_websites">Websites</string>
-    <string name="preference_search_locations">Places</string>
-    <string name="preference_search_locations_radius">Search radius</string>
     <string name="preference_search_websites_summary">Show a preview of a website if the search query is a URL</string>
     <string name="preference_search_locations_summary">Search the local area for shops and other places</string>
-    <string name="preference_search_localfiles">Local files</string>
-    <string name="preference_search_localfiles_summary">Search documents, photos and other files stored on this device</string>
-    <string name="preference_search_nextcloud">Nextcloud</string>
-    <string name="preference_search_cloud_summary">Search %1$s\'s files</string>
-    <string name="preference_search_owncloud">Owncloud</string>
     <string name="preference_calendar_calendars">Calendars</string>
     <string name="preference_calendar_hide_completed">Hide completed tasks</string>
     <string name="preference_screen_buildinfo">Build information</string>
@@ -717,26 +656,17 @@
     <string name="preference_contacts_call_on_tap">Tap to call</string>
     <string name="preference_contacts_call_on_tap_summary">Start a call without confirmation when tapping a phone number</string>
     <!-- Used in an info banner if a specific feature requires a Nextcloud account -->
-    <string name="no_account_nextcloud">You haven\'t connected a Nextcloud account yet</string>
     <!-- Used in an info banner if a specific feature requires an Owncloud account -->
-    <string name="no_account_owncloud">You haven\'t connected an Owncloud account yet</string>
     <!-- Used in an info banner if a specific feature requires a Google account -->
     <!-- Used in info banners that indicate that an account is required to enable a certain feature -->
-    <string name="connect_account">Connect account</string>
     <string name="battery_part_charging">Charging</string>
     <plurals name="battery_part_remaining_charge_time">
         <item quantity="one">Full in %1$s minute</item>
         <item quantity="other">Full in %1$s minutes</item>
     </plurals>
-    <string name="backup_complete">The backup has been completed.</string>
-    <string name="restore_invalid_file">The selected file does not appear to be a backup. Are you sure you selected the right file?</string>
     <!-- %1$s: app name -->
-    <string name="restore_incompatible_file">This backup has been created with a different version of %1$s and cannot be restored with this version.</string>
     <!-- %1$s: app name -->
-    <string name="restore_different_minor_version">This backup has been created with a different version of %1$s. Some data might not be restored correctly.</string>
     <!-- %1$s: date and time of backup creation, %s$s: name of the device this backup has been created on, %s$s app name and version of creating app-->
-    <string name="restore_meta">Created %1$s on %2$s with %3$s.</string>
-    <string name="restore_complete">The backup has been restored.</string>
     <string name="icon_picker_default_icon">Default</string>
     <string name="icon_picker_suggestions">Suggestions</string>
     <string name="icon_picker_search_icon">Search in icon packs</string>
@@ -885,22 +815,9 @@
     <string name="length_unit">Unit of length</string>
     <string name="imperial">Imperial</string>
     <string name="metric">Metric</string>
-    <string name="preference_search_location_custom_overpass_url">Overpass URL</string>
-    <string name="preference_search_locations_hide_uncategorized">Hide uncategorized places</string>
-    <string name="preference_search_locations_hide_uncategorized_summary">Only show results with well defined categories, like cafés or restaurants</string>
-    <string name="preference_search_locations_show_map">Map</string>
-    <string name="preference_search_locations_show_map_summary">Show a map preview for places</string>
-    <string name="preference_search_locations_theme_map">Map theming</string>
-    <string name="preference_search_locations_theme_map_summary">Apply the color scheme of the launcher to the map</string>
-    <string name="preference_search_location_custom_tile_server_url">Tileserver URL</string>
-    <string name="menu_dial">Call</string>
-    <string name="menu_navigation">Navigation</string>
-    <string name="menu_bugreport">Bug Report</string>
-    <string name="location_open_24_7">Open 24/7</string>
     <string name="plugin_state_error">This plugin isn\'t working correctly</string>
     <string name="plugin_state_setup_required">You need to set up this plugin first</string>
     <string name="plugin_action_setup">Set up</string>
-    <string name="plugin_type_filesearch">Files</string>
     <string name="plugin_type_contacts">Contacts</string>
     <string name="plugin_type_weather">Weather provider</string>
     <string name="plugin_weather_provider_enable">Set as weather provider</string>
@@ -930,8 +847,6 @@
     <string name="preference_customize_filter_bar">Customize filter bar</string>
     <string name="preference_customize_filter_bar_summary">Customize which items are included in the filter bar</string>
     <string name="filter_settings_network_warning">The current filter enables online results by default. Your search queries might unintentionally be sent to external web services. For privacy reasons, this is not recommended.</string>
-    <string name="preference_search_osm_locations">OpenStreetMap</string>
-    <string name="preference_search_osm_locations_summary">Search OpenStreetMap for shops and other places in the local area</string>
     <string name="poi_category_restaurant">Restaurant</string>
     <string name="poi_category_fast_food">Fast food</string>
     <string name="poi_category_bar">Bar</string>
@@ -1075,12 +990,10 @@
     <string name="weather_forecast_humidity">Humidity</string>
     <string name="weather_forecast_wind">Wind</string>
     <string name="weather_forecast_precipitation">Precipitation</string>
-    <string name="departure_time_now">now</string>
     <plurals name="departure_time_in">
         <item quantity="one">in one minute</item>
         <item quantity="other">in %1$d minutes</item>
     </plurals>
-    <string name="departure_time_departed">departed</string>
     <string name="bad_configuration_title">Congratulations, you\'ve locked yourself out!</string>
     <string name="bad_configuration_summary">You\'ve discovered a combination of settings that makes both the search and settings inaccessible — effectively locking you out of the launcher</string>
     <string name="theme_export_title">Export theme</string>

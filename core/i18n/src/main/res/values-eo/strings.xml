@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="menu_open_file">Aperti</string>
     <string name="settings">Agordoj</string>
     <string name="menu_share">Kvoto</string>
     <string name="menu_uninstall">Malinstali</string>
@@ -20,7 +19,6 @@
     <string name="menu_remove">Fortiri</string>
     <string name="wallpaper">Murpapero</string>
     <string name="file_type_directory">Adreslibro</string>
-    <string name="file_type_launcherbackup">%1$s restaŭrokopio</string>
     <string name="file_type_form">Formo</string>
     <string name="file_type_image">Figuro</string>
     <string name="file_type_presentation">Prezentado</string>
@@ -36,5 +34,4 @@
     <string name="date_tomorrow">Morgaŭo</string>
     <string name="weather_condition_unknown">Nekonata</string>
     <string name="preference_search_apps_show_details_summary"></string>
-    <string name="preference_search_files"></string>
 </resources>

@@ -26,13 +26,11 @@ installed. If the version number ends in `-fdroid`, you have the F-Droid version
 
 ## Switch between versions
 
-You cannot switch versions without uninstalling the current version first. First, backup your
-data in Settings > Backup & restore. Then, uninstall the current version and install the other
-version. You can then restore your data in Settings > Backup & restore > Restore.
+You cannot switch versions without uninstalling the current version first, and uninstalling
+removes the launcher's data.
 
 ::: warning
-The backup file format isn't guaranteed to be backward compatible. To ensure that all data is restored
-correctly, it is recommended to install the previous version first, restore the backup, then update to
-the latest version. For example, if you want to upgrade from `1.34.2-fdroid` to `1.35.0` (GitHub), install
-`1.34.2` (GitHub) first, restore the backup, then update to `1.35.0` (GitHub).
+There is no backup and restore. Settings that the launcher manages through its `launcher.json`
+configuration come back by applying that file again after reinstalling. Anything the configuration
+does not cover — favorites, tags, custom labels and icons — is lost with the uninstall.
 :::

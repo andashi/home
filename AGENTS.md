@@ -32,6 +32,22 @@ module being touched, never a full build:
 
 Example module paths: `:core:preferences`, `:data:widgets`, `:app:ui`.
 
+## Diagnosing a crash
+
+The launcher has no in-app crash reporter; it was removed with the module
+diet (#20) because it duplicated what the platform already keeps. Caught
+exceptions go to logcat under the `MM20` tag via
+`CrashReporter.logException`. Uncaught ones land in the platform's DropBox,
+which survives a reboot:
+
+```bash
+adb -s "$SERIAL" shell dumpsys dropbox --print | grep -A40 '<package>'
+```
+
+Verified on the GrapheneOS test instance 2026-09-20: a forced crash
+(`am crash <pkg>`) went from zero DropBox entries to two carrying `Process:`
+and `Package:`, and they were still there after a reboot.
+
 ## Test policy
 
 This fork is developed AI-assisted, so tests are the safety net, not an
@@ -52,8 +68,9 @@ afterthought (see `docs/architecture/adr/0005-testing-strategy.md`):
 - **L1 unit tests**: JUnit4 + Robolectric 4.17 (SDK 36/37 supported; needs the
   `--add-opens` JVM args already wired in the module build files — copy that
   `tasks.withType<Test>` block when adding tests to another module). Modules
-  with test wiring so far: `:core:preferences`, `:services:backup`,
-  `:data:database`, `:app:ui`.
+  with test wiring so far: `:core:base`, `:core:config`, `:core:preferences`,
+  `:services:config`, `:data:database`, `:data:searchable`,
+  `:data:themes`, `:data:widgets`, `:app:ui`.
 - **L3 screenshot tests**: Roborazzi in `:app:ui`; goldens are committed under
   `app/ui/src/test/roborazzi/`.
   - record: `./gradlew :app:ui:recordRoborazziDebug`
@@ -67,6 +84,14 @@ afterthought (see `docs/architecture/adr/0005-testing-strategy.md`):
   `:data:database:kspDebugKotlin` once to export the new schema JSON, commit it.
 - **L4**: `e2e/l4-smoke.sh` (and future scenarios) — see the emulator section
   below.
+- **Footprint**: `e2e/measure-footprint.sh` — APK size, dex method references,
+  declared permissions and Gradle module count on the host (`--static`,
+  seconds), plus cold start, PSS/RSS and CPU on the test instance, unplugged
+  and charging (a boot cycle per run; `--runs N` repeats the cycle and adds a
+  `<metric>.spread` line, which is what makes a small runtime delta quotable). Results are committed under `e2e/measurements/`; `--compare
+  <before>.tsv <after>.tsv` prints the deltas and names the permissions that
+  appeared or disappeared. Every module-diet PR (#20) carries a before/after
+  from it.
 
 ## CI
 

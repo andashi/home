@@ -68,25 +68,6 @@ fun SearchFilters(
             )
             FilterChip(
                 modifier = Modifier.padding(end = 16.dp),
-                selected = filters.files && (!allCategoriesEnabled || settings),
-                onClick = {
-                    if (settings) {
-                        onFiltersChange(filters.copy(files = !filters.files))
-                    } else {
-                        onFiltersChange(filters.toggleFiles())
-                    }
-                },
-                leadingIcon = {
-                    Icon(
-                        painter = painterResource(R.drawable.description_20px),
-                        contentDescription = null,
-                        modifier = Modifier.size(FilterChipDefaults.IconSize)
-                    )
-                },
-                label = { Text(stringResource(R.string.preference_search_files)) }
-            )
-            FilterChip(
-                modifier = Modifier.padding(end = 16.dp),
                 selected = filters.contacts && (!allCategoriesEnabled || settings),
                 onClick = {
                     if (settings) {
@@ -179,25 +160,6 @@ fun SearchFilters(
                     )
                 },
                 label = { Text(stringResource(R.string.preference_search_websites)) }
-            )
-            FilterChip(
-                modifier = Modifier.padding(end = 16.dp),
-                selected = filters.places && (!allCategoriesEnabled || settings),
-                onClick = {
-                    if (settings) {
-                        onFiltersChange(filters.copy(places = !filters.places))
-                    } else {
-                        onFiltersChange(filters.togglePlaces())
-                    }
-                },
-                leadingIcon = {
-                    Icon(
-                        painter = painterResource(R.drawable.location_on_20px),
-                        contentDescription = null,
-                        modifier = Modifier.size(FilterChipDefaults.IconSize)
-                    )
-                },
-                label = { Text(stringResource(R.string.preference_search_locations)) }
             )
             FilterChip(
                 selected = filters.tools && (!allCategoriesEnabled || settings),

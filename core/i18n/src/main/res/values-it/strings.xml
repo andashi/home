@@ -10,14 +10,11 @@
 \n
 \nUltimo aggiornamento: %1$s</string>
     <string name="weather_condition_sleet">Nevischio</string>
-    <string name="file_meta_dimensions">Dimensioni: %1$s</string>
     <string name="file_type_source_code">File codice sorgente</string>
     <string name="weather_condition_sleetandthunder">Nevischio e tuono</string>
-    <string name="alert_delete_directory">La cartella %1$s e tutto il suo contenuto saranno eliminati definitivamente. Procedo\?</string>
     <string name="weather_widget_set_location">Imposta posizione</string>
     <string name="default_websearch_3_url">https://play.google.com/store/search\?q=${1}</string>
     <string name="missing_permission_calendar_search_settings">È richiesta l\'autorizzazione Calendario per cercare nel calendario</string>
-    <string name="missing_permission_file_search_settings_android10">È richiesto l\'accesso a tutti i file per cercare i file locali</string>
     <string name="missing_permission_contact_search">È richiesta l\'autorizzazione Contatti per cercare i tuoi contatti</string>
     <string name="open_webpage">Apri sito web</string>
     <string name="preference_automatic_location_summary">Usa i servizi di localizzazione per determinare la posizione automaticamente</string>
@@ -25,9 +22,7 @@
     <string name="preference_screen_buildinfo_summary">Maggiori informazioni sulla build di questa app</string>
     <string name="preference_themed_icons_summary">Icone colorate con la combinazione di colori dell\'applicazione</string>
     <string name="preference_search_bar_auto_focus_summary">Mostra automaticamente la tastiera all\'apertura del cassetto</string>
-    <string name="connect_account">Connetti account</string>
     <string name="preference_hide_status_bar">Nascondi barra di stato</string>
-    <string name="preference_summary_not_logged_in">Non hai eseguito l\'accesso</string>
     <string name="preference_notification_badges_summary">Mostra un indicatore per le applicazioni con notifiche non lette</string>
     <string name="preference_shortcut_badges_summary">Mostra un indicatore che indichi a quale app appartiene una scorciatoia</string>
     <string name="preference_about_license">Questa app è software libero.</string>
@@ -43,7 +38,6 @@
         <item quantity="other">+%1$d eventi in corso da giorni passati</item>
     </plurals>
     <string name="menu_share">Condividi</string>
-    <string name="file_meta_path">Percorso: %1$s</string>
     <string name="menu_share_apk_file">File pacchetto</string>
     <string name="menu_uninstall">Disinstalla</string>
     <string name="menu_favorites_pin">Aggiungi ai preferiti</string>
@@ -51,7 +45,6 @@
     <string name="menu_back">Indietro</string>
     <string name="menu_app_info">Info app</string>
     <string name="menu_launch">Avvia</string>
-    <string name="menu_open_file">Apri</string>
     <string name="menu_delete">Elimina</string>
     <string name="menu_calendar_open_externally">Apri nell\'app calendario</string>
     <string name="search_bar_placeholder">Ricerca</string>
@@ -74,19 +67,6 @@
     <string name="wind_north_west">Nord ovest</string>
     <string name="wind_north_north_west">Nord nord ovest</string>
     <string name="wikipedia_source">Da Wikipedia</string>
-    <string name="file_meta_title">Titolo: %1$s</string>
-    <string name="file_meta_artist">Autore: %1$s</string>
-    <string name="file_meta_album">Album: %1$s</string>
-    <string name="file_meta_duration">Durata: %1$s</string>
-    <string name="file_meta_year">Anno: %1$s</string>
-    <string name="file_meta_size">Dimensione: %1$s</string>
-    <string name="file_meta_type">Tipo: %1$s</string>
-    <string name="file_meta_app_name">Nome app: %1$s</string>
-    <string name="file_meta_app_version">Versione: %1$s</string>
-    <string name="file_meta_app_pkgname">Nome pacchetto: %1$s</string>
-    <string name="file_meta_app_min_sdk">Versione minima SDK: %1$s</string>
-    <string name="file_meta_owner">Proprietario: %1$s</string>
-    <string name="file_meta_location">Posizione: %1$s</string>
     <string name="file_type_directory">Cartella</string>
     <string name="file_type_archive">File archivio</string>
     <string name="file_type_android">File pacchetto Android</string>
@@ -103,7 +83,6 @@
     <string name="file_type_drawing">Disegno</string>
     <string name="file_type_form">Modulo</string>
     <string name="file_type_generic">File %1$s</string>
-    <string name="alert_delete_file">Il file %1$s sarà eliminato definitivamente. Procedere\?</string>
     <string name="default_websearch_2_name">YouTube</string>
     <string name="default_websearch_2_url">https://www.youtube.com/results\?search_query=${1}</string>
     <string name="default_websearch_3_name">Google Play</string>
@@ -168,11 +147,9 @@
     <string name="missing_permission_music_widget">È richiesto l\'accesso alle Notifiche per controllare la riproduzione multimediale</string>
     <string name="missing_permission_contact_search_settings">È richiesta l\'autorizzazione Contatti per cercare i contatti</string>
     <string name="missing_permission_calendar_widget_settings">Questo widget richiede l\'autorizzazione Calendario</string>
-    <string name="missing_permission_file_search_settings">È richiesta l\'autorizzazione Spazio di archiviazione esterno per cercare i file su questo dispositivo</string>
     <string name="missing_permission_notification_badges">È richiesto l\'accesso alle Notifiche per visualizzare i badge di notifica</string>
     <string name="missing_permission_calendar_widget">È richiesta l\'autorizzazione Calendario per visualizzare gli eventi imminenti qui</string>
     <string name="missing_permission_calendar_search">È richiesta l\'autorizzazione Calendario per cercare nel tuo calendario</string>
-    <string name="missing_permission_files_search">È richiesta l\'autorizzazione Spazio di archiviazione per cercare i file su questo dispositivo</string>
     <string name="weather_condition_fair">Soleggiato</string>
     <string name="weather_condition_heavyrainandthunder">Forti piogge e temporale</string>
     <string name="weather_condition_heavysleetandthunder">Forte nevischio e temporale</string>
@@ -223,7 +200,6 @@
     <string name="preference_icon_shape_triangle">Triangolo di Reuleaux</string>
     <string name="preference_hide_nav_bar">Nascondi barra di navigazione</string>
     <string name="preference_screen_integrations_summary">Gestisce account e servizi connessi</string>
-    <string name="preference_signin_user">Accesso eseguito come %1$s</string>
     <string name="preference_icon_shape_pentagon">Pentagono</string>
     <string name="preference_category_wallpaper">Sfondo</string>
     <string name="preference_dim_wallpaper">Scurisci sfondo</string>
@@ -236,12 +212,6 @@
     <string name="preference_cloud_badges">Indicatori cloud</string>
     <string name="preference_cloud_badges_summary">Mostra un indicatore per i file archiviati in un cloud</string>
     <string name="preference_shortcut_badges">Indicatori scorciatoie</string>
-    <string name="preference_nextcloud_signin">Accedi a Nextcloud</string>
-    <string name="preference_nextcloud_signin_summary">Accedi per cercare sul tuo server Nextcloud</string>
-    <string name="preference_nextcloud">Nextcloud</string>
-    <string name="preference_owncloud">Owncloud</string>
-    <string name="preference_owncloud_signin">Accedi a Owncloud</string>
-    <string name="preference_owncloud_signin_summary">Accedi per cercare sul tuo server Owncloud</string>
     <string name="preference_about_telegram">Gruppo Telegram</string>
     <string name="preference_about_fdroid">Repository F-Droid</string>
     <string name="preference_category_license">Licenza</string>
@@ -263,7 +233,6 @@
     <string name="preference_screen_search">Ricerca</string>
     <string name="preference_screen_search_summary">Ricerca, tag, risultati esclusi</string>
     <string name="preference_search_favorites">Preferiti</string>
-    <string name="preference_search_files">File</string>
     <string name="preference_search_contacts">Contatti</string>
     <string name="preference_search_contacts_summary">Cerca contatti su questo dispositivo</string>
     <string name="preference_search_calendar">Calendario</string>
@@ -274,14 +243,8 @@
     <string name="preference_search_wikipedia_summary">Cerca nell\'enciclopedia libera</string>
     <string name="preference_search_websites">Siti web</string>
     <string name="preference_search_websites_summary">Mostra un\'anteprima dei siti web se la ricerca è un URL</string>
-    <string name="preference_search_localfiles">File locali</string>
-    <string name="preference_search_localfiles_summary">Cerca documenti, foto e altri file salvati su questo dispositivo</string>
-    <string name="preference_search_nextcloud">Nextcloud</string>
-    <string name="preference_search_cloud_summary">Cerca i file di %1$s</string>
-    <string name="preference_search_owncloud">Owncloud</string>
     <string name="preference_search_favorites_summary">Mostra elementi appuntati e usati frequentemente sopra la griglia delle app</string>
     <string name="preference_search_calculator_summary">Calcola i termini matematici</string>
-    <string name="preference_crash_reporter_summary">Segnalazioni di errori e arresti anomali</string>
     <string name="preference_calendar_calendars">Calendari</string>
     <string name="preference_screen_buildinfo">Informazioni build</string>
     <string name="preference_search_bar_style">Stile</string>
@@ -294,10 +257,6 @@
         <item quantity="many">Carico in %1$s minuti</item>
         <item quantity="other">Carico in %1$s minuti</item>
     </plurals>
-    <string name="no_account_nextcloud">Non hai ancora collegato un account Nextcloud</string>
-    <string name="no_account_owncloud">Non hai ancora collegato un account Owncloud</string>
-    <string name="preference_restore_summary">Importa un backup creato in precedenza</string>
-    <string name="restore_meta">Creato il %1$s alle %2$s con %3$s.</string>
     <string name="preference_enforce_icon_shape">Applica forma</string>
     <string name="weather_condition_lightssleetshowersandthunder">Deboli rovesci di nevischio e tuoni</string>
     <string name="weather_condition_lightsnowshowers">Deboli rovesci di neve</string>
@@ -309,37 +268,25 @@
     <string name="preference_cards_shape_cut">Tagliata</string>
     <string name="preference_force_themed_icons">Applica icone a tema</string>
     <string name="preference_force_themed_icons_summary">Applica la combinazione di colori dell\'applicazione a tutte le icone, comprese quelle non supportate (non consigliato)</string>
-    <string name="preference_restore">Ripristino</string>
     <string name="preference_search_appshortcuts">Scorciatoie app</string>
     <string name="preference_search_appshortcuts_summary">Cerca scorciatoie app</string>
     <string name="preference_grid_icon_size">Dimensione icona</string>
     <string name="preference_search_currencyconverter">Convertitore di valuta</string>
     <string name="preference_hidden_items">Risultati ricerca esclusi</string>
     <string name="preference_hidden_items_summary">Gestisci app escluse e risultati di ricerca</string>
-    <string name="restore_incompatible_file">Questo backup è stato creato con una versione diversa di %1$s e non può essere ripristinato con questa versione.</string>
     <string name="icon_picker_default_icon">Predefinito</string>
     <string name="icon_picker_suggestions">Suggerimenti</string>
     <string name="icon_picker_search_icon">Cerca nei pacchetti icone</string>
     <string name="weather_condition_sleetshowersandthunder">Rovesci di nevischio e tuoni</string>
-    <string name="preference_crash_reporter">Riporta crash</string>
     <string name="preference_blur_wallpaper">Sfoca lo sfondo</string>
     <string name="preference_blur_wallpaper_summary">Usa un effetto sfocato sullo sfondo</string>
-    <string name="file_type_launcherbackup">%1$s backup</string>
     <string name="weather_condition_lightrainshowers">Pioggia leggera debole</string>
-    <string name="backup_complete">Il backup è stato completato.</string>
-    <string name="restore_invalid_file">Il file selezionato non sembra essere un backup. Sei sicuro di aver selezionato il file giusto\?</string>
     <string name="preference_blur_wallpaper_unsupported">Non supportato su questo dispositivo</string>
-    <string name="restore_different_minor_version">Questo backup è stato creato con una versione diversa di %1$s. Alcuni dati potrebbero non essere ripristinati correttamente.</string>
-    <string name="preference_screen_backup_summary">Esporta e importa i dati del launcher</string>
-    <string name="preference_backup">Backup</string>
-    <string name="preference_screen_backup">Backup e ripristino</string>
     <string name="action_undo">Annulla</string>
     <string name="weather_location_search_no_result">Posizione non trovata</string>
     <string name="preference_font">Carattere</string>
-    <string name="restore_complete">Il backup è stato ripristinato.</string>
     <string name="preference_clockwidget_favorites_part">Dock</string>
     <string name="preference_clockwidget_favorites_part_summary">Mostra elementi appuntati nel dock</string>
-    <string name="preference_backup_summary">Esporta preferenze e dati del launcher</string>
     <string name="preference_search_currencyconverter_summary">Scarica periodicamente i tassi di cambio per convertire le valute</string>
     <string name="menu_customize">Personalizza</string>
     <string name="calendar_widget_next_events">Evento successivo</string>
@@ -397,8 +344,6 @@
     <string name="preference_system_bar_icons_light">Chiaro</string>
     <string name="preference_system_bar_icons_dark">Scuro</string>
     <string name="preference_search_bar_color">Colore</string>
-    <string name="preference_logs">Log</string>
-    <string name="preference_logs_summary">Visualizza ed esporta i log dell\'applicazione</string>
     <string name="preference_screen_search_actions">Azioni rapide</string>
     <string name="preference_search_search_actions_summary">Configura azioni rapide e scorciatoie di ricerca</string>
     <string name="search_action_call">Chiamata</string>
@@ -533,9 +478,6 @@
     <string name="preference_use_system_default">Predefinita del sistema</string>
     <string name="theme_color_scheme_palette_color">Tavolozza</string>
     <string name="theme_color_scheme_custom_color">Personalizza</string>
-    <string name="preference_category_animations">Animazioni</string>
-    <string name="preference_charging_animation">Animazione ricarica</string>
-    <string name="preference_charging_animation_summary">Riproduci animazione a bolle mentre il dispositivo è in carica</string>
     <string name="edit">Modifica</string>
     <string name="confirmation_delete_color_scheme">Vuoi davvero eliminare la combinazione di colori %1$s\?</string>
     <string name="preference_restore_default">Ripristino predefinito</string>
@@ -561,25 +503,18 @@
     <string name="plugin_type_weather">Provider meteo</string>
     <string name="plugin_weather_provider_enabled">Attualmente impostato come provider meteo</string>
     <string name="plugin_state_error">Questo plugin non funziona correttamente</string>
-    <string name="plugin_type_filesearch">File</string>
     <string name="plugin_weather_provider_enable">Imposta come provider meteo</string>
     <string name="preference_category_advanced">Avanzate</string>
     <string name="preference_plugin_enable">Abilita plugin</string>
     <string name="preference_mdy_color_source">Sorgente colori dinamici</string>
     <string name="preference_mdy_color_source_system">Sistema</string>
     <string name="preference_mdy_color_source_wallpaper">Sfondo</string>
-    <string name="missing_permission_location_search">È richiesta l\'autorizzazione Posizione per cercare luoghi vicini</string>
-    <string name="preference_search_location_custom_overpass_url">URL Overpass</string>
-    <string name="preference_search_locations_hide_uncategorized">Nascondi luoghi senza categoria</string>
     <string name="preference_clock_widget_show_seconds">Mostra secondi</string>
     <string name="widget_use_theme_colors">Usa colore del tema</string>
-    <string name="preference_search_locations">Luoghi</string>
-    <string name="preference_search_locations_radius">Raggio di ricerca</string>
     <string name="preference_search_locations_summary">Cerca nella zona negozi e altri luoghi</string>
     <string name="length_unit">Unità di lunghezza</string>
     <string name="imperial">Imperiale</string>
     <string name="metric">Metrico</string>
-    <string name="menu_dial">Chiama</string>
     <string name="clock_style_digital1">Grassetto</string>
     <string name="clock_style_digital2">Semplice</string>
     <string name="clock_style_orbit">Orbita</string>
@@ -588,19 +523,7 @@
     <string name="clock_style_segment">7 segmenti</string>
     <string name="clock_style_empty">Nessun orologio</string>
     <string name="clock_variant_outlined">Delineato</string>
-    <string name="preference_search_locations_hide_uncategorized_summary">Mostra solo risultati con categorie ben definite, come bar o ristoranti</string>
-    <string name="preference_search_locations_show_map">Mappa</string>
-    <string name="preference_search_locations_show_map_summary">Mostra un\'anteprima della mappa per i luoghi</string>
-    <string name="preference_search_locations_theme_map">Tematizzazione mappa</string>
-    <string name="preference_search_locations_theme_map_summary">Applica combinazione di colori del launcher alla mappa</string>
-    <string name="preference_search_location_custom_tile_server_url">URL Tileserver</string>
-    <string name="menu_bugreport">Segnalazione bug</string>
-    <string name="location_open_24_7">Orario non stop</string>
     <string name="unavailable_searchable">Questo elemento non esiste più</string>
-    <string name="location_open">Aperto</string>
-    <string name="location_closed">Chiuso</string>
-    <string name="menu_map">Visualizza sulla mappa</string>
-    <string name="menu_website">Apri sito web</string>
     <string name="widget_pick_widget">Scegli widget</string>
     <string name="clock_style_custom">Widget personalizzato</string>
     <string name="widget_config_appwidget_resize">Ridimensiona</string>
@@ -652,7 +575,6 @@
     <string name="poi_category_bar">Bar</string>
     <string name="poi_category_cinema">Cinema</string>
     <string name="poi_category_mall">Centro commerciale</string>
-    <string name="menu_navigation">Navigazione</string>
     <string name="poi_category_restaurant">Ristorante</string>
     <string name="poi_category_fast_food">Fast food</string>
     <string name="poi_category_fuel">Stazione di servizio</string>
@@ -661,14 +583,9 @@
     <string name="poi_category_fitness_center">Centro fitness</string>
     <string name="poi_category_university">Università</string>
     <string name="poi_category_toilets">Servizi igienici</string>
-    <string name="location_closes">chiude alle %1$s</string>
-    <string name="location_closes_other_day">chiude %1$s alle %2$s</string>
-    <string name="location_opens">apre alle %1$s</string>
-    <string name="location_opens_other_day">apre %1$s alle %2$s</string>
     <string name="preference_customize_filter_bar">Personalizza barra dei filtri</string>
     <string name="preference_customize_filter_bar_summary">Personalizza quali elementi includere nella barra dei filtri</string>
     <string name="weather_condition_thunderstorm">Temporale</string>
-    <string name="preference_signout">Disconnetti</string>
     <string name="poi_category_pizza_restaurant">Ristorante pizzeria</string>
     <string name="poi_category_discount_store">Negozio discount</string>
     <string name="poi_category_burger_restaurant">Ristorante di hamburger</string>
@@ -687,7 +604,6 @@
     <string name="poi_category_skiing">Sciare</string>
     <string name="poi_category_casino">Casinò</string>
     <string name="plugin_type_locationsearch">Ricerca luoghi</string>
-    <string name="preference_search_osm_locations">OpenStreetMap</string>
     <string name="poi_category_buddhist_temple">Tempio buddista</string>
     <string name="poi_category_hindu_temple">Tempio indù</string>
     <string name="poi_category_synagogue">Sinagoga</string>
@@ -716,7 +632,6 @@
     <string name="poi_category_courthouse">Tribunale</string>
     <string name="poi_category_cricket">Campo da cricket</string>
     <string name="poi_category_park">Parco</string>
-    <string name="preference_search_osm_locations_summary">Trova su OpenStreetMap negozi e altri luoghi nelle vicinanze</string>
     <string name="item_visibility_calendar_default">Widget calendario e risultati ricerca</string>
     <string name="customize_item_tags">Tag</string>
     <string name="customize_item_visibility">Mostra in</string>
@@ -796,10 +711,8 @@
         <item quantity="many">tra %1$d minuti</item>
         <item quantity="other">tra %1$d minuti</item>
     </plurals>
-    <string name="departure_time_now">adesso</string>
     <string name="preference_search_local_calendar_summary">Cerca calendari su questo dispositivo</string>
     <string name="plugin_type_contacts">Contatti</string>
-    <string name="departure_time_departed">Partito</string>
     <string name="preference_grid_list_style">Mostra le app come lista</string>
     <string name="preference_grid_list_style_summary">Sotituisci la griglia delle app con una lista</string>
     <string name="preference_grid_list_icons">Mostra le icone delle app nella lista</string>

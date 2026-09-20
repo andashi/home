@@ -18,8 +18,6 @@ import de.mm20.launcher2.plugins.PluginService
 import de.mm20.launcher2.plugins.PluginWithState
 import de.mm20.launcher2.preferences.search.CalendarSearchSettings
 import de.mm20.launcher2.preferences.search.ContactSearchSettings
-import de.mm20.launcher2.preferences.search.FileSearchSettings
-import de.mm20.launcher2.preferences.search.LocationSearchSettings
 import de.mm20.launcher2.preferences.weather.WeatherSettings
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -37,8 +35,6 @@ import org.koin.core.component.inject
 class PluginSettingsScreenVM : ViewModel(), KoinComponent {
     private val pluginService by inject<PluginService>()
     private val calendarRepository by inject<CalendarRepository>()
-    private val fileSearchSettings: FileSearchSettings by inject()
-    private val locationSearchSettings: LocationSearchSettings by inject()
     private val calendarSearchSettings: CalendarSearchSettings by inject()
     private val contactSearchSettings: ContactSearchSettings by inject()
     private val weatherSettings: WeatherSettings by inject()
@@ -75,16 +71,6 @@ class PluginSettingsScreenVM : ViewModel(), KoinComponent {
     val hasPermission = states
         .map {
             it.none { it.state is PluginState.NoPermission }
-        }
-
-    val filePlugins = states
-        .map {
-            it.filter { it.plugin.type == PluginType.FileSearch }
-        }
-
-    val locationPlugins = states
-        .map {
-            it.filter { it.plugin.type == PluginType.LocationSearch }
         }
 
     val calendarPlugins = states
@@ -129,19 +115,9 @@ class PluginSettingsScreenVM : ViewModel(), KoinComponent {
     }
 
 
-    val enabledFileSearchPlugins = fileSearchSettings.enabledPlugins
-    fun setFileSearchPluginEnabled(authority: String, enabled: Boolean) {
-        fileSearchSettings.setPluginEnabled(authority, enabled)
-    }
-
     val enabledContactPlugins = contactSearchSettings.enabledPlugins
     fun setContactPluginEnabled(authority: String, enabled: Boolean) {
         contactSearchSettings.setPluginEnabled(authority, enabled)
-    }
-
-    val enabledLocationSearchPlugins = locationSearchSettings.enabledPlugins
-    fun setLocationSearchPluginEnabled(authority: String, enabled: Boolean) {
-        locationSearchSettings.setPluginEnabled(authority, enabled)
     }
 
     val enabledCalendarSearchPlugins = calendarSearchSettings.providers

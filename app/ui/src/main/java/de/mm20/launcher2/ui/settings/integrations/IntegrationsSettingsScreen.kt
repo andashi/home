@@ -14,8 +14,6 @@ import de.mm20.launcher2.ui.locals.LocalBackStack
 import de.mm20.launcher2.ui.settings.breezyweather.BreezyWeatherSettingsRoute
 import de.mm20.launcher2.ui.settings.feed.FeedIntegrationSettingsRoute
 import de.mm20.launcher2.ui.settings.media.MediaIntegrationSettingsRoute
-import de.mm20.launcher2.ui.settings.nextcloud.NextcloudSettingsRoute
-import de.mm20.launcher2.ui.settings.owncloud.OwncloudSettingsRoute
 import de.mm20.launcher2.ui.settings.smartspacer.SmartspacerSettingsRoute
 import de.mm20.launcher2.ui.settings.tasks.TasksIntegrationSettingsRoute
 import de.mm20.launcher2.ui.settings.weather.WeatherIntegrationSettingsRoute
@@ -60,20 +58,6 @@ fun IntegrationsSettingsScreen() {
         }
         item {
             PreferenceCategory {
-                Preference(
-                    title = stringResource(R.string.preference_nextcloud),
-                    icon = R.drawable.nextcloud,
-                    onClick = {
-                        backStack.add(NextcloudSettingsRoute)
-                    }
-                )
-                Preference(
-                    title = stringResource(R.string.preference_owncloud),
-                    icon = R.drawable.owncloud,
-                    onClick = {
-                        backStack.add(OwncloudSettingsRoute)
-                    }
-                )
                 Preference(
                     title = stringResource(R.string.preference_search_wikipedia),
                     icon = R.drawable.wikipedia,

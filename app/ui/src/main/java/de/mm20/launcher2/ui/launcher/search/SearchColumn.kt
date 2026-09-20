@@ -39,8 +39,6 @@ import de.mm20.launcher2.search.Application
 import de.mm20.launcher2.search.Article
 import de.mm20.launcher2.search.CalendarEvent
 import de.mm20.launcher2.search.Contact
-import de.mm20.launcher2.search.File
-import de.mm20.launcher2.search.Location
 import de.mm20.launcher2.search.Website
 import de.mm20.launcher2.ui.component.LauncherCard
 import de.mm20.launcher2.ui.launcher.search.apps.AppResults
@@ -49,9 +47,7 @@ import de.mm20.launcher2.ui.launcher.search.calendar.CalendarResults
 import de.mm20.launcher2.ui.launcher.search.contacts.ContactResults
 import de.mm20.launcher2.ui.launcher.search.favorites.SearchFavorites
 import de.mm20.launcher2.ui.launcher.search.favorites.SearchFavoritesVM
-import de.mm20.launcher2.ui.launcher.search.files.FileResults
 import de.mm20.launcher2.ui.launcher.search.filters.SearchFilters
-import de.mm20.launcher2.ui.launcher.search.location.LocationResults
 import de.mm20.launcher2.ui.launcher.search.shortcut.ShortcutResults
 import de.mm20.launcher2.ui.launcher.search.unitconverter.UnitConverterResults
 import de.mm20.launcher2.ui.launcher.search.website.WebsiteResults
@@ -96,12 +92,10 @@ fun SearchColumn(
 
     val appShortcuts = viewModel.appShortcutResults
     val contacts = viewModel.contactResults
-    val files = viewModel.fileResults
     val events = viewModel.calendarResults
     val unitConverter = viewModel.unitConverterResults
     val calculator = viewModel.calculatorResults
     val wikipedia = viewModel.articleResults
-    val locations = viewModel.locationResults
     val website = viewModel.websiteResults
     val hiddenResults = viewModel.hiddenResults
 
@@ -113,8 +107,6 @@ fun SearchColumn(
     val missingCalendarPermission by viewModel.missingCalendarPermission.collectAsState(false)
     val missingShortcutsPermission by viewModel.missingAppShortcutPermission.collectAsState(false)
     val missingContactsPermission by viewModel.missingContactsPermission.collectAsState(false)
-    val missingLocationPermission by viewModel.missingLocationPermission.collectAsState(false)
-    val missingFilesPermission by viewModel.missingFilesPermission.collectAsState(false)
     val hasProfilesPermission by viewModel.hasProfilesPermission.collectAsState(false)
 
     val pinnedTags by favoritesVM.pinnedTags.collectAsState(emptyList())
@@ -128,9 +120,7 @@ fun SearchColumn(
     var selectedAppProfileIndex by remember { mutableIntStateOf(-1) }
     var selectedAppIndex: Int by remember(query) { mutableIntStateOf(-1) }
     var selectedContactIndex: Int by remember(query) { mutableIntStateOf(-1) }
-    var selectedFileIndex: Int by remember(query) { mutableIntStateOf(-1) }
     var selectedCalendarIndex: Int by remember(query) { mutableIntStateOf(-1) }
-    var selectedLocationIndex: Int by remember(query) { mutableIntStateOf(-1) }
     var selectedShortcutIndex: Int by remember(query) { mutableIntStateOf(-1) }
     var selectedArticleIndex: Int by remember(query) { mutableIntStateOf(-1) }
     var selectedWebsiteIndex: Int by remember(query) { mutableIntStateOf(-1) }
@@ -327,24 +317,6 @@ fun SearchColumn(
                         },
                     )
 
-                    LocationResults(
-                        locations = locations,
-                        missingPermission = missingLocationPermission,
-                        onPermissionRequest = {
-                            viewModel.requestLocationPermission(context as AppCompatActivity)
-                        },
-                        onPermissionRequestRejected = {
-                            viewModel.disableLocationSearch()
-                        },
-                        reverse = reverse,
-                        selectedIndex = selectedLocationIndex,
-                        onSelect = { selectedLocationIndex = it },
-                        highlightedItem = bestMatch as? Location,
-                        truncate = expandedCategory != SearchCategory.Location,
-                        onShowAll = {
-                            viewModel.expandCategory(SearchCategory.Location)
-                        }
-                    )
                     ArticleResults(
                         articles = wikipedia,
                         selectedIndex = selectedArticleIndex,
@@ -358,26 +330,6 @@ fun SearchColumn(
                         onSelect = { selectedWebsiteIndex = it },
                         highlightedItem = bestMatch as? Website,
                         reverse = reverse,
-                    )
-                    FileResults(
-                        files = files,
-                        onPermissionRequest = {
-                            viewModel.requestFilesPermission(context as AppCompatActivity)
-                        },
-                        onPermissionRequestRejected = {
-                            viewModel.disableFilesSearch()
-                        },
-                        reverse = reverse,
-                        highlightedItem = bestMatch as? File,
-                        missingPermission = missingFilesPermission,
-                        selectedIndex = selectedFileIndex,
-                        onSelect = {
-                            selectedFileIndex = it
-                        },
-                        truncate = expandedCategory != SearchCategory.Files,
-                        onShowAll = {
-                            viewModel.expandCategory(SearchCategory.Files)
-                        }
                     )
                 }
             }

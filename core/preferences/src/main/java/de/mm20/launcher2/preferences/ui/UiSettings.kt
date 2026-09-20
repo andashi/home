@@ -197,17 +197,6 @@ class UiSettings internal constructor(
         }
     }
 
-    val chargingAnimation
-        get() = launcherDataStore.data.map {
-            it.animationsCharging
-        }.distinctUntilChanged()
-
-    fun setChargingAnimation(chargingAnimation: Boolean) {
-        launcherDataStore.update {
-            it.copy(animationsCharging = chargingAnimation)
-        }
-    }
-
     val clockFillScreen
         get() = launcherDataStore.data.map {
             it.homeScreenWidgets
@@ -273,7 +262,6 @@ class UiSettings internal constructor(
             it.searchBarKeyboard
         }.distinctUntilChanged()
 
-
     val orientation
         get() = launcherDataStore.data.map {
             it.uiOrientation
@@ -284,7 +272,6 @@ class UiSettings internal constructor(
             it.copy(uiOrientation = orientation)
         }
     }
-
 
     val colorsId
         get() = launcherDataStore.data.map {

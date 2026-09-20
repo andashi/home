@@ -1,9 +1,6 @@
 package de.mm20.launcher2.data.customattrs
 
-import de.mm20.launcher2.backup.Backupable
-import de.mm20.launcher2.crashreporter.CrashReporter
 import de.mm20.launcher2.database.AppDatabase
-import de.mm20.launcher2.database.entities.CustomAttributeEntity
 import de.mm20.launcher2.searchable.SavableSearchableRepository
 import de.mm20.launcher2.ktx.jsonObjectOf
 import de.mm20.launcher2.search.SavableSearchable
@@ -16,11 +13,8 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
-import org.json.JSONArray
-import org.json.JSONException
-import java.io.File
 
-interface CustomAttributesRepository: Backupable {
+interface CustomAttributesRepository {
 
     fun search(query: String): Flow<ImmutableList<SavableSearchable>>
 
@@ -185,63 +179,6 @@ internal class CustomAttributesRepositoryImpl(
         return dao.search("%$query%").flatMapLatest {
             searchableRepository.getByKeys(it).map {
                 it.toImmutableList()
-            }
-        }
-    }
-
-    override suspend fun backup(toDir: File) = withContext(Dispatchers.IO) {
-        val dao = appDatabase.backupDao()
-        var page = 0
-        do {
-            val customAttrs = dao.exportCustomAttributes(limit = 100, offset = page * 100)
-            val jsonArray = JSONArray()
-            for (customAttr in customAttrs) {
-                jsonArray.put(
-                    jsonObjectOf(
-                        "key" to customAttr.key,
-                        "value" to customAttr.value,
-                        "type" to customAttr.type,
-                    )
-                )
-            }
-
-            val file = File(toDir, "customizations.${page.toString().padStart(4, '0')}")
-            file.bufferedWriter().use {
-                it.write(jsonArray.toString())
-            }
-            page++
-        } while (customAttrs.size == 100)
-    }
-
-    override suspend fun restore(fromDir: File) = withContext(Dispatchers.IO) {
-        val dao = appDatabase.backupDao()
-        dao.wipeCustomAttributes()
-
-        val files =
-            fromDir.listFiles { _, name -> name.startsWith("customizations.") }
-                ?: return@withContext
-
-        for (file in files) {
-            val customAttrs = mutableListOf<CustomAttributeEntity>()
-            try {
-                val jsonArray = JSONArray(file.inputStream().reader().readText())
-
-                for (i in 0 until jsonArray.length()) {
-                    val json = jsonArray.getJSONObject(i)
-
-                    val entity = CustomAttributeEntity(
-                        id = null,
-                        type = json.getString("type"),
-                        value = json.optString("value"),
-                        key = json.optString("key"),
-                    )
-                    customAttrs.add(entity)
-                }
-
-                dao.importCustomAttributes(customAttrs)
-
-            } catch (e: JSONException) {
-                CrashReporter.logException(e)
             }
         }
     }

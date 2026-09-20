@@ -12,11 +12,16 @@ pages, and no dock concept; favorites are just one widget among others.
 The target design (iOS home screen, reduced to a single page) needs:
 
 - a fixed grid (configurable columns, e.g. 4) on **one** page — no paging
-- widgets (internal Kvaesitso widgets and standard Android `AppWidget`s) placed at
-  grid coordinates with spans (`x, y, spanX, spanY`)
+- widgets placed at grid coordinates with spans (`x, y, spanX, spanY`). Written
+  when the fork still had the stock set of internal widgets; ADR 0008 keeps only
+  the favourites widget and the `AppWidget` adapter, so `HomeGridItem` still
+  needs both cases below — favourites is itself an internal widget — but the
+  grid will hold one internal type, not a family of them
 - **no app icons on the grid** — the only icons are the dock favorites
 - a dock: a fixed band at the bottom holding a small, ordered set of favorites
-- everything else reachable via search / app drawer, as in stock Kvaesitso
+- everything else reachable via search / app drawer (narrowed by ADR 0008: the
+  search reaches apps, app shortcuts and contacts, not stock Kvaesitso's full
+  set of providers)
 
 Upstream closed "app icons on the desktop" as *not planned* (MM2-0/Kvaesitso#1943),
 so this cannot land upstream and defines the fork's core divergence.

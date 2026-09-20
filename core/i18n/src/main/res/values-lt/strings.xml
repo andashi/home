@@ -5,7 +5,6 @@
     <string name="menu_favorites_unpin">Pašalinti</string>
     <string name="menu_app_info">Programos info</string>
     <string name="menu_customize">Tinkinti</string>
-    <string name="menu_open_file">Atidaryti</string>
     <string name="action_undo">Atstatyti</string>
     <string name="menu_delete">Pašalinti</string>
     <string name="menu_remove">Pašalinti</string>
@@ -26,14 +25,6 @@
     <string name="wind_north_west">Šiaurės vakarų</string>
     <string name="wind_north_north_west">Šiaurės šiaurės vakarų</string>
     <string name="wikipedia_source">Iš Vikipedijos</string>
-    <string name="file_meta_title">Pavadinimas: %1$s</string>
-    <string name="file_meta_album">Albumas: %1$s</string>
-    <string name="file_meta_duration">Ilgumas: %1$s</string>
-    <string name="file_meta_size">Dydis: %1$s</string>
-    <string name="file_meta_app_name">Programos pavadinimas: %1$s</string>
-    <string name="file_meta_app_version">Versija: %1$s</string>
-    <string name="file_meta_app_pkgname">Apk pavadinimas: %1$s</string>
-    <string name="file_meta_owner">Savininkas: %1$s</string>
     <string name="file_type_directory">Aplankas</string>
     <string name="file_type_archive">Archyvinis failas (zip,rar...)</string>
     <string name="file_type_android">APK</string>
@@ -48,7 +39,6 @@
     <string name="file_type_text">Teksto failas</string>
     <string name="file_type_ebook">E-knyga</string>
     <string name="file_type_form">Forma</string>
-    <string name="file_type_launcherbackup">%1$s atsarginė kopija</string>
     <string name="file_type_launchertheme">%1$s tema</string>
     <string name="file_type_generic">%1$s failas</string>
     <string name="alert_delete_shortcut">Nuoroda (shortcut) %1$s bus pilnai ištrinta. Tęsti\?</string>
@@ -179,9 +169,6 @@
     <string name="preference_category_searchbar">Paieškos laukas</string>
     <string name="preference_force_themed_icons_summary">Nustatyti programos spalvų schema visom ikonom ,įskaičiuojant nepalaikomas (ne rekomenduotina)</string>
     <string name="preference_icon_pack_summary_empty">Nėra ikonų paketų</string>
-    <string name="preference_category_animations">Animacijos</string>
-    <string name="preference_charging_animation">Įkrovimo animacija</string>
-    <string name="preference_charging_animation_summary">Naudoti burbulo animacija kol prietaisas kraunamas</string>
     <string name="preference_category_system_bars">Sisteminis laukas</string>
     <string name="preference_system_bar_icons_auto">Automatiškai</string>
     <string name="preference_system_bar_icons_light">Šviesi</string>
@@ -191,7 +178,6 @@
     <string name="preference_nav_bar_icons">Navigacinio lauko ikonos</string>
     <string name="preference_hide_nav_bar">Slėpti navigacinę juosta</string>
     <string name="preference_screen_integrations_summary">Tvarkyti prijungtas paskyras ir paslaugas</string>
-    <string name="preference_signin_user">Prisijungta kaip %1$s</string>
     <string name="preference_icon_shape_pentagon">Penkiakampis</string>
     <string name="preference_category_wallpaper">Fonas</string>
     <string name="preference_dim_wallpaper_summary">Tamsiuose temose ,patamsinti foną</string>
@@ -205,11 +191,6 @@
     <string name="preference_suspended_badges">Sustabdytos programos</string>
     <string name="preference_shortcut_badges">Nuorodų ženkleliai</string>
     <string name="preference_shortcut_badges_summary">Rodyti ženklelį kuris rodo kuriai programai priklauso ženkleliai</string>
-    <string name="preference_nextcloud_signin">Prisijungti su Nextcloud</string>
-    <string name="preference_nextcloud">Nextcloud</string>
-    <string name="preference_owncloud">Owncloud</string>
-    <string name="preference_owncloud_signin">Prisijunkite su Owncloud</string>
-    <string name="preference_owncloud_signin_summary">Prisijunkite ,kad ieškoti Owncloud serverį</string>
     <string name="preference_about_telegram">Telegram grupę</string>
     <string name="preference_about_fdroid">F-Droid repozitorija</string>
     <string name="preference_category_license">Licensija</string>
@@ -237,14 +218,6 @@
     <string name="preference_clockwidget_music_part">Medija</string>
     <string name="preference_clockwidget_battery_part">Baterija</string>
     <string name="preference_clockwidget_alarm_part_summary">Rodyti žadintuvua kuris skambės per sekančias 15 minučių</string>
-    <string name="preference_screen_backup">Išsaugoti ir atstatyti</string>
-    <string name="preference_screen_backup_summary">Exportuoti ir importuoti paleidėjo duomenis</string>
-    <string name="preference_backup">Išsaugoti</string>
-    <string name="preference_backup_summary">Eksportuoti nustatymus ir paleidėjo duomenis</string>
-    <string name="preference_restore">Atstatyti</string>
-    <string name="preference_crash_reporter">Užlūžimo pranešėjas</string>
-    <string name="preference_crash_reporter_summary">Klaidų ir ūžlužimo pranešimas</string>
-    <string name="preference_logs">Logs</string>
     <string name="menu_share">Dalintis</string>
     <string name="menu_share_apk_file">APK failas</string>
     <string name="menu_uninstall">Ištrinti</string>
@@ -274,24 +247,17 @@
     <string name="wikipedia_url">https://lt.wikipedia.org</string>
     <string name="edit_favorites_dialog_empty_section">Tempti daiktus čia</string>
     <string name="disclaimer">Atsisakymas</string>
-    <string name="file_meta_artist">Artistas: %1$s</string>
     <string name="nextcloud_server_url">Nextcloud serverio URL</string>
-    <string name="file_meta_year">Metai: %1$s</string>
-    <string name="file_meta_path">Failas ,aplankas: %1$s</string>
-    <string name="file_meta_type">Tipas: %1$s</string>
     <string name="disclaimer_currency_converter">Mainų vertė yra paskelbta kasdien pagal Centrinį Europos banką.Visa informacija yra pateikiama\" kaip ir yra\" be jokios garantijos .Mes neatsakingi už šią informaciją.
 \n
 \nPaskutinis atnaujinimas: %1$s</string>
-    <string name="file_meta_dimensions">Dimensijos: %1$s</string>
     <string name="calendar_widget_next_events">Sekantis įvykis</string>
     <string name="weather_condition_heavysleetandthunder">Stipri šlapdriba ir griaustinis</string>
-    <string name="file_meta_app_min_sdk">Min SDK versija: %1$s</string>
     <plurals name="calendar_widget_running_events">
         <item quantity="one">+%1$d įvykis šiuo metu</item>
         <item quantity="few">+%1$d įvykiai šiuo metu</item>
         <item quantity="other">+%1$d ivykių šiuo metu</item>
     </plurals>
-    <string name="file_meta_location">Vietovė: %1$s</string>
     <string name="calendar_event_allday">Visa diena</string>
     <string name="weather_condition_heavysnowandthunder">Stiprus sniegas ir griaustinis</string>
     <string name="file_type_video">Vaizdelis</string>
@@ -300,17 +266,14 @@
     <string name="file_type_drawing">Piešinys</string>
     <string name="weather_condition_heavysleetshowersandthunder">Stipri šlapdriba ir griaustinis</string>
     <string name="weather_condition_lightsleetshowers">Lengva šlapdriba</string>
-    <string name="alert_delete_directory">Aplankas %1$s ir visi jo failai (turinys) bus pilnai ištrinti. Tęsti\?</string>
     <string name="weather_condition_heavysleetshowers">Stipri šlapdriba</string>
     <string name="weather_condition_heavyrainandthunder">Stiprus lietus ir griaustinis</string>
-    <string name="alert_delete_file">Failas %1$s bus ištrintas pilnai. Tęsti\?</string>
     <string name="weather_condition_lightrainandthunder">Lengvas lietus ir griaustinis</string>
     <string name="weather_condition_heavyrainshowers">Stiprus lietus</string>
     <string name="weather_widget_set_location">Nustatyti vietovę</string>
     <string name="missing_permission_calendar_widget">Leiskite kalendoriaus teisę ,kad čia rodyti sekančius kalendoriaus įvykius.</string>
     <string name="weather_condition_clearsky">Mėlynas dangus</string>
     <string name="missing_permission_auto_location">Vietovės teisė yra reikalinga ,kad automatiškai nustatyti vietovę</string>
-    <string name="missing_permission_files_search">Leiskite vietos teisės ,kad ieškoti nuotraukas ,medija ir dokumentus šiame prietaise.</string>
     <string name="default_websearch_2_name">YouTube</string>
     <string name="weather_condition_rain">Lietus</string>
     <string name="missing_permission_music_widget">Pranešimų teisė reikalinga ,kad kontroliuoti medijos grojima</string>
@@ -321,9 +284,7 @@
     <string name="default_websearch_3_name">Google Play</string>
     <string name="missing_permission_calendar_widget_settings">Šis valdiklis reikalauja kalendoriaus teisės</string>
     <string name="default_websearch_3_url">https://play.google.com/store/search\?q=${1}</string>
-    <string name="missing_permission_file_search_settings">Išorinės vietos teisė reikalinga ,kad ieškoti vietinius failus</string>
     <string name="preference_colors_default">Numatyta</string>
-    <string name="missing_permission_file_search_settings_android10">Tvarkyti visus failus teisė būtina ,kad ieškoti vietinius failus</string>
     <string name="preference_colors_bw">Juoda balta</string>
     <string name="preference_screen_about">Apie</string>
     <string name="preference_icon_shape_triangle">Reuleaux trikampis</string>
@@ -337,15 +298,12 @@
     <string name="preference_clockwidget_alarm_part">Žadintuvas</string>
     <string name="preference_automatic_location">Automatinė vietovė</string>
     <string name="preference_themed_icons_summary">Spalvotos ikonos su programos spalvų schema</string>
-    <string name="preference_restore_summary">Importuoti prieš tai sukurta atsarginę kopija</string>
     <string name="preference_automatic_location_summary">Naudoti GPS ir vietovės paslaugas ,kad rasti vietovę automatiškai</string>
     <string name="preference_force_themed_icons">Priversti temuotas ikonas</string>
-    <string name="preference_logs_summary">Žiurėti ir eksportuoti programos logs</string>
     <string name="preference_debug_dump_heap_summary">Naudoti nuotrauką ,kad analizuoti atminties naudojama. Programa užstriks kol procesas nebus baigtas.</string>
     <string name="preference_icon_pack">Ikonų paketas</string>
     <string name="preference_debug_dump_heap_in_progress">Gaunama nuotrauka (snapshot)…</string>
     <string name="preference_debug_cleanup_database_summary">Ištrinti sugedusius ir nenaudojamus įrašus iš paleidyklės databazės</string>
-    <string name="preference_summary_not_logged_in">Jūs dabar esate neprisijunges</string>
     <plurals name="debug_cleanup_database_result">
         <item quantity="one">%1$d įrašas buvo pašalintas.</item>
         <item quantity="few">%1$d įrašai buvo pašalinti.</item>
@@ -358,7 +316,6 @@
     <string name="preference_blur_wallpaper_radius">Suliejimo spindulys</string>
     <string name="preference_cloud_badges">Debesų ženkeliai</string>
     <string name="preference_cloud_badges_summary">Rodyti ženklelį failam kurie yra debesyje</string>
-    <string name="preference_nextcloud_signin_summary">Prisijunkite ,kad ieškoti Nextcloud serverį</string>
     <string name="preference_enforce_icon_shape">Priversti formą</string>
     <string name="preference_enforce_icon_shape_summary">Nustatyti formą visom ikonom įskaitant tas kurios įprastai nepalaikytų</string>
     <string name="preference_screen_debug">Taisymas (Debug)</string>
@@ -368,8 +325,6 @@
     <string name="preference_clockwidget_date_part">Data</string>
     <string name="preference_search_calendar_summary">Ieškoti sekančių susitikimū ir įvykių</string>
     <string name="preference_screen_plugins_summary">Tvarkyti instaliuotus priedus</string>
-    <string name="restore_invalid_file">Pasirinktas failas atrodo ,kad nėra atsarginė kopija. Ar esate tikri ,kad čia teisingas failas\?</string>
-    <string name="preference_search_localfiles_summary">Ieškoti dokumentus ,nuotraukas ir kitus failus šiame prietaise</string>
     <string name="search_action_websearch_url_hint">Šis URL pavizdys yra naudojamas ,kad sukurti paieškos URL. Naudokite \'${1}\' kaip vieta paieškos terminui pvz. https://google.com/search?q=${1}.</string>
     <string name="preference_gesture_home_button">Namų mygtukas / gestas</string>
     <string name="gesture_action_lock_screen">Išjungti ekraną</string>
@@ -381,7 +336,6 @@
     <string name="preference_screen_search_summary">Ieška ,žymos ,paslėptos programos</string>
     <string name="preference_search_favorites">Mėgstamiausi</string>
     <string name="preference_search_favorites_summary">Rodyti prisegtus ir dažnai naudojamus rodyti virš programų lauko</string>
-    <string name="preference_search_files">Failai</string>
     <string name="preference_search_files_summary">Ieškoti vietinius failus ir debesies failus</string>
     <string name="preference_search_calculator">Skaičiuotuvas</string>
     <string name="preference_search_calculator_summary">Apskaičiuoti matematinius uždavinius</string>
@@ -392,10 +346,6 @@
     <string name="preference_search_wikipedia_summary">Ieškoti nemokama enciklopedija</string>
     <string name="preference_search_websites">Puslapiai</string>
     <string name="preference_search_websites_summary">Rodyti peržiūra puslapio jei paieškos terminas yra URL</string>
-    <string name="preference_search_localfiles">Vietiniai failai</string>
-    <string name="preference_search_nextcloud">Nextcloud</string>
-    <string name="preference_search_cloud_summary">Ieškoti %1$s failus</string>
-    <string name="preference_search_owncloud">Owncloud</string>
     <string name="preference_calendar_calendars">Kalendoriai</string>
     <string name="preference_screen_buildinfo">Build informacija</string>
     <string name="preference_search_bar_style">Stilius</string>
@@ -420,9 +370,6 @@
         <item quantity="few">Pilnas po %1$s minučių</item>
         <item quantity="other">Pilnas po %1$s minučių</item>
     </plurals>
-    <string name="restore_different_minor_version">Ši atsarginė kopija buvo sukurta %1$s versijoje. Kažkurie duomenys gali būti neteisingai atstatyti.</string>
-    <string name="restore_meta">Sukurta %1$s prietaise %2$s su %3$s.</string>
-    <string name="restore_complete">Atsarginė kopija buvo atstatyta.</string>
     <string name="favorites">Mėgstami</string>
     <string name="favorites_empty">Prisegtos ir dažnai naudojamos programos bus čia</string>
     <string name="favorites_empty_tag">Čia nėra programų su šia žyma</string>
@@ -484,12 +431,7 @@
     <string name="preference_screen_icons">Išdėstymas ir ikonos</string>
     <string name="preference_screen_icons_summary">Išdėstymas ,ikonų dydis , ikonų paketai , ženkleliai</string>
     <string name="preference_media_integration">Medijos kontrolė</string>
-    <string name="no_account_nextcloud">Jūs dar neprijungėte Nextcloud paskyros</string>
-    <string name="no_account_owncloud">Jūs dar neprijungėtė Owncloud paskyros</string>
-    <string name="connect_account">Prijungti paskyra</string>
     <string name="battery_part_charging">Įkraunama</string>
-    <string name="backup_complete">Išsaugojimas baigtas.</string>
-    <string name="restore_incompatible_file">Ši atsarginė kopija buvo sukurta %1$s versijoje ir ji negali būti atstatyta šioje versijoje.</string>
     <string name="icon_picker_default_icon">Numatyta</string>
     <string name="icon_picker_suggestions">Pasiūlymai</string>
     <string name="icon_picker_search_icon">Ieškoti ikonų paketuose</string>
@@ -554,7 +496,4 @@
     <string name="preference_use_system_default">Naudokite sistemos numatyta spalva</string>
     <string name="shortcut_label_unavailable">Nepasiekemas</string>
     <string name="shortcut_unavailable_description">Nuoroda nepasiekiama ,nes %1$s nėra numatytoji namų programėlė</string>
-    <string name="location_open">Atidarytas</string>
-    <string name="location_closed">Uždaryta</string>
-    <string name="location_closes">Užsidaro %1$s</string>
 </resources>

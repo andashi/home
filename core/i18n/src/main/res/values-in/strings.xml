@@ -9,7 +9,6 @@
     <string name="menu_back">Kembali</string>
     <string name="menu_app_info">Informasi aplikasi</string>
     <string name="menu_launch">Luncurkan</string>
-    <string name="menu_open_file">Buka</string>
     <string name="menu_delete">Hapus</string>
     <string name="app_info_version">Versi %1$s</string>
     <string name="settings">Pengaturan</string>
@@ -28,17 +27,6 @@
     <string name="wind_north_west">Barat laut</string>
     <string name="wind_north_north_west">Utara-barat laut</string>
     <string name="wikipedia_source">Dari Wikipedia</string>
-    <string name="file_meta_title">Judul: %1$s</string>
-    <string name="file_meta_artist">Artis: %1$s</string>
-    <string name="file_meta_album">Album: %1$s</string>
-    <string name="file_meta_duration">Durasi: %1$s</string>
-    <string name="file_meta_year">Tahun: %1$s</string>
-    <string name="file_meta_size">Ukuran: %1$s</string>
-    <string name="file_meta_type">Tipe: %1$s</string>
-    <string name="file_meta_dimensions">Dimensi: %1$s</string>
-    <string name="file_meta_app_name">Nama aplikasi: %1$s</string>
-    <string name="file_meta_app_version">Versi: %1$s</string>
-    <string name="file_meta_location">Lokasi: %1$s</string>
     <string name="file_type_directory">Direktori</string>
     <string name="file_type_document">Dokumen</string>
     <string name="file_type_video">Video</string>
@@ -70,8 +58,6 @@
     <string name="wind_east_north_east">Timur-timur laut</string>
     <string name="date_today">Hari ini</string>
     <string name="wikipedia_url">https://id.wikipedia.org</string>
-    <string name="file_meta_owner">Pemilik: %1$s</string>
-    <string name="alert_delete_directory">Direktori %1$s dan seluruh isinya akan dihapus secara permanen. Lanjut\?</string>
     <string name="default_websearch_2_url">https://www.youtube.com/results\?search_query=${1}</string>
     <string name="default_websearch_3_url">https://play.google.com/store/search\?q=${1}</string>
     <string name="menu_customize">Kustomisasi</string>
@@ -125,16 +111,12 @@
     <string name="weather_condition_heavyrainandthunder">Hujan lebat disertai petir</string>
     <string name="weather_condition_heavyrainshowersandthunder">Hujan lebat disertai petir</string>
     <string name="weather_condition_lightssnowshowersandthunder">Salju ringan singkat disertai petir</string>
-    <string name="file_meta_path">Jalur: %1$s</string>
-    <string name="file_meta_app_pkgname">Nama paket: %1$s</string>
-    <string name="file_meta_app_min_sdk">Versi SDK minimal: %1$s</string>
     <string name="file_type_archive">Berkas arsip</string>
     <string name="file_type_image">Gambar</string>
     <string name="file_type_none">Berkas</string>
     <string name="file_type_android">Berkas paket Android</string>
     <string name="file_type_music">Musik</string>
     <string name="file_type_text">Berkas teks</string>
-    <string name="alert_delete_file">Berkas %1$s akan dihapus secara permanen. Lanjut\?</string>
     <string name="file_type_form">Formulir</string>
     <string name="file_type_generic">Berkas %1$s</string>
     <string name="alert_delete_shortcut">Pintasan %1$s akan dihapus secara permanen. Lanjut\?</string>
@@ -183,10 +165,8 @@
     <plurals name="debug_cleanup_database_result">
         <item quantity="other">Entri %1$d telah dibersihkan.</item>
     </plurals>
-    <string name="preference_search_localfiles_summary">Cari dokumen, foto, dan berkas lain yang tersimpan di dalam perangkat ini</string>
     <string name="missing_permission_calendar_widget">Berikan izin kalender untuk menampilkan janji temu dan acara mendatang di sini.</string>
     <string name="missing_permission_calendar_search">Berikan izin kalender untuk mencari kalender kamu.</string>
-    <string name="missing_permission_files_search">Setujui izin penyimpanan untuk mencari foto, media, dan dokumen di perangkat ini.</string>
     <string name="missing_permission_contact_search">Berikan izin kontak untuk mencari kontak kamu.</string>
     <string name="missing_permission_appshortcuts_create">Atur %1$s sebagai aplikasi layar utama untuk membuat pintasan.</string>
     <string name="grant_permission">Izinkan</string>
@@ -240,8 +220,6 @@
     <string name="preference_system_bar_icons_dark">Gelap</string>
     <string name="preference_hide_status_bar">Sembunyikan status bar</string>
     <string name="preference_screen_integrations_summary">Mengelola akun dan layanan yang tesambung</string>
-    <string name="preference_signin_user">Masuk sebagai %1$s</string>
-    <string name="preference_summary_not_logged_in">Anda sedang tidak masuk</string>
     <string name="preference_icon_shape_pentagon">Segi lima</string>
     <string name="preference_blur_wallpaper">Buramkan wallpaper</string>
     <string name="preference_category_wallpaper">Wallpaper</string>
@@ -255,13 +233,8 @@
     <string name="preference_notification_badges_summary">Tampilkan lencana untuk aplikasi dengan notifikasi tak terbaca</string>
     <string name="preference_cloud_badges">Lencana cloud</string>
     <string name="preference_shortcut_badges_summary">Tampilkan lencana yang mengindikasikan aplikasi asal dari pintasan</string>
-    <string name="preference_nextcloud_signin">Masuk ke Nextcloud</string>
-    <string name="preference_nextcloud_signin_summary">Masuk untuk mencari di server Nextcloud anda</string>
-    <string name="preference_owncloud_signin">Masuk ke Owncloud</string>
     <string name="preference_about_telegram">Grup Telegram</string>
     <string name="preference_about_fdroid">Repositories F-Droid</string>
-    <string name="preference_nextcloud">Nextcloud</string>
-    <string name="preference_owncloud">Owncloud</string>
     <string name="preference_category_license">Lisensi</string>
     <string name="preference_about_license">Aplikasi ini adalah perangkat lunak bebas.</string>
     <string name="preference_grid_icon_size">Ukuran ikon</string>
@@ -289,7 +262,6 @@
     <string name="preference_clockwidget_alarm_part_summary">Tampilkan alarm yang akan berdering sekitar 15 menit mendatang</string>
     <string name="preference_screen_search">Pencarian</string>
     <string name="preference_search_favorites">Favorit</string>
-    <string name="preference_search_files">Berkas</string>
     <string name="preference_search_contacts">Kontak</string>
     <string name="preference_search_contacts_summary">Cari kontak di perangkat ini</string>
     <string name="preference_search_calendar">Kalender</string>
@@ -304,10 +276,6 @@
     <string name="preference_search_wikipedia_summary">Cari ensiklopedia bebas</string>
     <string name="preference_search_wikipedia">Wikipedia</string>
     <string name="preference_search_websites_summary">Tampilkan pratinjau sebuah laman web jika kueri pencarian adalah URL</string>
-    <string name="preference_search_localfiles">Berkas lokal</string>
-    <string name="preference_search_cloud_summary">Mencari berkas %1$s</string>
-    <string name="preference_search_nextcloud">Nextcloud</string>
-    <string name="preference_search_owncloud">Owncloud</string>
     <string name="preference_calendar_calendars">Kalender</string>
     <string name="preference_screen_buildinfo">Informasi build</string>
     <string name="preference_search_bar_style">Gaya</string>
@@ -327,7 +295,6 @@
     <string name="preference_layout_search_bar_position">Posisi bar pencarian</string>
     <string name="search_bar_position_top">Atas</string>
     <string name="search_bar_position_bottom">Bawah</string>
-    <string name="missing_permission_file_search_settings">Izin penyimpanan eksternal diperlukan untuk mencari berkas lokal</string>
     <string name="missing_permission_notification_badges">Akses notifikasi diperlukan untuk menampilkan lencana notifikasi</string>
     <string name="preference_colors_bw">Hitam dan Putih</string>
     <string name="preference_screen_about_summary">Informasi aplikasi dan lisensi</string>
@@ -344,10 +311,8 @@
     <string name="preference_cards_shape_rounded">Melingkar</string>
     <string name="owncloud_server_invalid_url">URL ini tidak mengarah ke instalasi Owncloud yang valid</string>
     <string name="preference_blur_wallpaper_unsupported">Tidak didukung oleh perangkat ini</string>
-    <string name="missing_permission_file_search_settings_android10">Izin mengelola semua berkas diperlukan untuk mencari berkas lokal</string>
     <string name="preference_cloud_badges_summary">Tampilkan lencana untuk berkas yang disimpan di cloud</string>
     <string name="preference_font">Font</string>
-    <string name="preference_owncloud_signin_summary">Masuk untuk mencari di server Owncloud anda</string>
     <string name="preference_debug_cleanup_database_summary">Bersihkan entri rusak dan yang tidak digunakan dari database launcher</string>
     <string name="preference_hide_nav_bar">Sembunyikan bar navigasi</string>
     <string name="preference_enforce_icon_shape_summary">Paksa bentuk ke semua ikon, termasuk yang tidak didukung</string>
@@ -360,17 +325,8 @@
     <string name="file_type_source_code">Dokumen kode sumber</string>
     <string name="file_type_spreadsheet">Lembar kerja</string>
     <string name="file_type_ebook">Buku elektronik</string>
-    <string name="file_type_launcherbackup">%1$s cadangan</string>
     <string name="file_type_drawing">Gambar</string>
     <string name="action_import">Impor</string>
-    <string name="location_closes_other_day">tutup pada %1$s , %2$s</string>
-    <string name="location_closes">Tutup pada%1$s</string>
-    <string name="location_opens">buka pada %1$s</string>
-    <string name="location_opens_other_day">buka pada %1$s, %2$s</string>
-    <string name="location_open">Buka</string>
-    <string name="location_closed">Tutup</string>
-    <string name="menu_map">Tampillkan pada peta</string>
-    <string name="menu_website">Buka situs</string>
     <string name="preference_mdy_color_source">Sumber warna dinamis</string>
     <string name="preference_mdy_color_source_wallpaper">Walpaper</string>
     <string name="websearch_dialog_query_encoding_url">Pengkodean persen</string>
@@ -387,7 +343,6 @@
     <string name="preference_debug_dump_heap_summary">Ambil snapshot untuk menganalisis penggunaan memori. Aplikasi akan berhenti bekerja hingga proses ini selesai.</string>
     <string name="preference_plugin_badges_summary">Tunjukkan plugin mana yang digunakan untuk membuat hasil pencarian</string>
     <string name="preference_location_managed_summary">Lokasi untuk penyedia ini dikelola oleh aplikasi plugin</string>
-    <string name="restore_incompatible_file">Cadangan ini dibuat dengan versi %1$s yang berbeda dan tidak dapat dipulihkan dengan versi ini.</string>
     <string name="preference_plugin_badges">Lencana plugin</string>
     <string name="preference_debug_dump_heap">Cuplikan memori</string>
     <string name="preference_debug_dump_heap_in_progress">Mengambil snapshot…</string>
@@ -402,21 +357,13 @@
     <string name="task_due_today">Jatuh tempo hari ini</string>
     <string name="weather_condition_thunderstorm">Hujan badai</string>
     <string name="weather_condition_heavysnowandthunder">Salju lebat dan guntur</string>
-    <string name="missing_permission_location_search">Berikan izin lokasi untuk mencari lokasi terdekat.</string>
     <string name="preference_mdy_color_source_system">Sistem</string>
     <string name="provider_here">DISINI</string>
-    <string name="preference_category_animations">Animasi</string>
-    <string name="preference_charging_animation">Animasi pengisian daya</string>
-    <string name="preference_charging_animation_summary">Putar animasi gelembung saat perangkat sedang diisi daya</string>
-    <string name="preference_signout">Keluar</string>
     <string name="preference_suspended_badges_summary">Tampilkan lencana untuk aplikasi yang ditangguhkan</string>
     <string name="preference_suspended_badges">Aplikasi yang ditangguhkan</string>
     <string name="preference_about_license_summary">Dilisensikan di bawah Lisensi Publik Umum GNU 3.0</string>
     <string name="preference_screen_debug">DEBUG</string>
     <string name="preference_clock_widget_show_seconds">Tampilkan detik</string>
-    <string name="restore_complete">Cadangan telah dipulihkan.</string>
-    <string name="restore_different_minor_version">Cadangan ini dibuat dengan versi %1$s yang berbeda. Beberapa data mungkin tidak dapat dipulihkan dengan benar.</string>
-    <string name="restore_meta">Dibuat %1$s pada %2$s dengan %3$s.</string>
     <string name="action_done">Selesai</string>
     <string name="action_more_actions">Lebih banyak tindakan</string>
     <string name="action_clear">Bersihkan</string>

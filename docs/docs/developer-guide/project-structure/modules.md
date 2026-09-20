@@ -16,7 +16,6 @@ started this project so future refactorings are to be expected. This is the curr
 - `:services`: Higher level APIs for the app's business logic. Each module represents a specific
   functionality of the launcher
     - `:accounts`: Common APIs to manage different account types (Nextcloud, Owncloud)
-    - `:backup`: Backup and restore functionality
     - `:badges`: Provide different types of badges that are displayed on app icons
     - `:favorites`: Handles pinned items and item visibility
     - `:global-actions`: Handles global system actions like turning the screen off, and opening the

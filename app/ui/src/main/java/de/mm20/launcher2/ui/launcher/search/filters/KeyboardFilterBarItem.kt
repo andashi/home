@@ -10,8 +10,6 @@ val KeyboardFilterBarItem.iconMedium
         KeyboardFilterBarItem.Apps -> R.drawable.apps_24px
         KeyboardFilterBarItem.Events -> R.drawable.today_24px
         KeyboardFilterBarItem.Contacts -> R.drawable.person_24px
-        KeyboardFilterBarItem.Places -> R.drawable.location_on_24px
-        KeyboardFilterBarItem.Files -> R.drawable.description_24px
         KeyboardFilterBarItem.Tools -> R.drawable.handyman_24px
         KeyboardFilterBarItem.Articles -> R.drawable.wikipedia
         KeyboardFilterBarItem.Websites -> R.drawable.public_24px
@@ -25,8 +23,6 @@ val KeyboardFilterBarItem.iconSmall
         KeyboardFilterBarItem.Apps -> R.drawable.apps_20px
         KeyboardFilterBarItem.Events -> R.drawable.today_20px
         KeyboardFilterBarItem.Contacts -> R.drawable.person_20px
-        KeyboardFilterBarItem.Places -> R.drawable.location_on_20px
-        KeyboardFilterBarItem.Files -> R.drawable.description_20px
         KeyboardFilterBarItem.Tools -> R.drawable.handyman_20px
         KeyboardFilterBarItem.Articles -> R.drawable.wikipedia
         KeyboardFilterBarItem.Websites -> R.drawable.public_20px
@@ -40,8 +36,6 @@ fun KeyboardFilterBarItem.getLabel(context: Context): String {
         KeyboardFilterBarItem.Apps -> context.getString(R.string.search_filter_apps)
         KeyboardFilterBarItem.Events -> context.getString(R.string.preference_search_calendar)
         KeyboardFilterBarItem.Contacts -> context.getString(R.string.preference_search_contacts)
-        KeyboardFilterBarItem.Places -> context.getString(R.string.preference_search_locations)
-        KeyboardFilterBarItem.Files -> context.getString(R.string.preference_search_files)
         KeyboardFilterBarItem.Tools -> context.getString(R.string.search_filter_tools)
         KeyboardFilterBarItem.Articles -> context.getString(R.string.preference_search_wikipedia)
         KeyboardFilterBarItem.Websites -> context.getString(R.string.preference_search_websites)
@@ -63,8 +57,6 @@ fun SearchFilters.isSelected(item: KeyboardFilterBarItem): Boolean {
         KeyboardFilterBarItem.Apps -> apps
         KeyboardFilterBarItem.Events -> events
         KeyboardFilterBarItem.Contacts -> contacts
-        KeyboardFilterBarItem.Places -> places
-        KeyboardFilterBarItem.Files -> files
         KeyboardFilterBarItem.Tools -> tools
         KeyboardFilterBarItem.Articles -> articles
         KeyboardFilterBarItem.Websites -> websites
@@ -79,8 +71,6 @@ fun SearchFilters.toggle(item: KeyboardFilterBarItem): SearchFilters {
         KeyboardFilterBarItem.Apps -> return toggleApps()
         KeyboardFilterBarItem.Events -> return toggleEvents()
         KeyboardFilterBarItem.Contacts -> return toggleContacts()
-        KeyboardFilterBarItem.Places -> return togglePlaces()
-        KeyboardFilterBarItem.Files -> return toggleFiles()
         KeyboardFilterBarItem.Tools -> return toggleTools()
         KeyboardFilterBarItem.Articles -> return toggleArticles()
         KeyboardFilterBarItem.Websites -> return toggleWebsites()

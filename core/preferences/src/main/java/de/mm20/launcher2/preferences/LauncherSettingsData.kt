@@ -159,8 +159,6 @@ data class LauncherSettingsData internal constructor(
     val gesturesLongPress: GestureAction = GestureAction.NoAction,
     val gesturesHomeButton: GestureAction = GestureAction.NoAction,
 
-    val animationsCharging: Boolean = true,
-
     val stateTagsMultiline: Boolean = false,
 
     val weatherProvider: String = "metno",
@@ -190,10 +188,8 @@ data class LauncherSettingsData internal constructor(
         KeyboardFilterBarItem.Shortcuts,
         KeyboardFilterBarItem.Events,
         KeyboardFilterBarItem.Contacts,
-        KeyboardFilterBarItem.Files,
         KeyboardFilterBarItem.Articles,
         KeyboardFilterBarItem.Websites,
-        KeyboardFilterBarItem.Places,
         KeyboardFilterBarItem.Tools,
         KeyboardFilterBarItem.HiddenResults,
     ),
@@ -450,8 +446,6 @@ enum class KeyboardFilterBarItem {
     @SerialName("apps") Apps,
     @SerialName("websites") Websites,
     @SerialName("articles") Articles,
-    @SerialName("places") Places,
-    @SerialName("files") Files,
     @SerialName("shortcuts") Shortcuts,
     @SerialName("contacts") Contacts,
     @SerialName("events") Events,

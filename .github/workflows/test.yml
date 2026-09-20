@@ -24,14 +24,12 @@ jobs:
           ./gradlew
           :core:preferences:testDebugUnitTest
           :core:config:testDebugUnitTest
-          :services:backup:testDebugUnitTest
           :services:config:testDebugUnitTest
           :data:database:testDebugUnitTest
           :data:searchable:testDebugUnitTest
           :data:widgets:testDebugUnitTest
           :data:themes:testDebugUnitTest
           :core:base:testDebugUnitTest
-          :data:locations:testDebugUnitTest
 
   l3-screenshots:
     runs-on: ubuntu-latest

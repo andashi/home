@@ -27,7 +27,6 @@
     <string name="menu_share_store_link">%1$s リンク</string>
     <string name="menu_customize">カスタマイズ</string>
     <string name="menu_launch">開く</string>
-    <string name="menu_open_file">開く</string>
     <string name="menu_app_info">アプリ情報</string>
     <string name="menu_back">戻る</string>
     <string name="menu_favorites_unpin">ピン解除</string>
@@ -65,7 +64,6 @@
     <string name="preference_icon_shape_squircle">スクワークル</string>
     <string name="preference_category_wallpaper">壁紙</string>
     <string name="preference_icon_shape_pentagon">五角形</string>
-    <string name="preference_backup">バックアップ</string>
     <string name="preference_clockwidget_battery_part">電池</string>
     <string name="help">ヘルプ</string>
     <string name="default_websearch_2_url">https://www.youtube.com/results\?search_query=${1}</string>
@@ -75,18 +73,6 @@
     <string name="preference_icon_shape_square">スクエア</string>
     <string name="preference_clockwidget_alarm_part">アラーム</string>
     <string name="wikipedia_source">Wikipedia から</string>
-    <string name="file_meta_title">タイトル: %1$s</string>
-    <string name="file_meta_artist">アーティスト: %1$s</string>
-    <string name="file_meta_size">サイズ: %1$s</string>
-    <string name="file_meta_duration">長さ: %1$s</string>
-    <string name="file_meta_year">年: %1$s</string>
-    <string name="file_meta_path">パス: %1$s</string>
-    <string name="file_meta_type">タイプ: %1$s</string>
-    <string name="file_meta_dimensions">解像度: %1$s</string>
-    <string name="file_meta_app_version">バージョン: %1$s</string>
-    <string name="file_meta_app_pkgname">パッケージ名: %1$s</string>
-    <string name="file_meta_app_min_sdk">最小 SDK バージョン: %1$s</string>
-    <string name="file_meta_owner">所有者: %1$s</string>
     <string name="file_type_directory">ディレクトリ</string>
     <string name="file_type_source_code">ソースコードファイル</string>
     <string name="file_type_document">文書ファイル</string>
@@ -98,8 +84,6 @@
     <string name="file_type_image">画像</string>
     <string name="file_type_none">ファイル</string>
     <string name="file_type_presentation">プレゼンテーション</string>
-    <string name="alert_delete_file">ファイル %1$s は永久に削除されます。続行しますか？</string>
-    <string name="alert_delete_directory">ディレクトリ %1$s とそのすべての内容は永久に削除されます。続行しますか？</string>
     <string name="alert_delete_shortcut">ショートカット %1$s は永久に削除されます。続行しますか？</string>
     <string name="widget_add_widget">ウィジェットを追加</string>
     <string name="owncloud_username">ユーザー名</string>
@@ -118,7 +102,6 @@
     <string name="weather_condition_lightrainshowers">小雨</string>
     <string name="weather_condition_lightrain">小雨</string>
     <string name="weather_condition_heavysleet">激しいみぞれ</string>
-    <string name="file_meta_location">場所: %1$s</string>
     <string name="calendar_widget_pinned_events">まもなく</string>
     <plurals name="calendar_widget_running_events">
         <item quantity="other">%1$d 件の継続しているイベント</item>
@@ -136,14 +119,11 @@
     <string name="nextcloud_server_url">Nextcloud サーバーの URL</string>
     <string name="owncloud_server_invalid_url">この URL は、有効な ownCloud のインストールを指定していません</string>
     <string name="owncloud_password">パスワード</string>
-    <string name="file_meta_album">アルバム: %1$s</string>
-    <string name="file_meta_app_name">アプリ名: %1$s</string>
     <string name="file_type_archive">アーカイブファイル</string>
     <string name="file_type_android">Android パッケージファイル</string>
     <string name="file_type_ebook">電子ブック</string>
     <string name="file_type_drawing">図形描画</string>
     <string name="file_type_form">フォーム</string>
-    <string name="file_type_launcherbackup">%1$s バックアップ</string>
     <string name="file_type_generic">%1$s ファイル</string>
     <string name="nextcloud_server_invalid_url">この URL は、有効な Nextcloud のインストールを指定していません</string>
     <string name="websearch_dialog_url_error">この URL にはプレースホルダー「${1}」がありません。</string>
@@ -189,7 +169,6 @@
     <string name="weather_condition_sleet">みぞれ</string>
     <string name="weather_condition_clearsky">快晴</string>
     <string name="weather_condition_hail">雹</string>
-    <string name="preference_backup_summary">設定とランチャーのデータをエクスポートします</string>
     <string name="preference_screen_clockwidget">時計</string>
     <string name="preference_screen_appearance_summary">外観のカスタマイズ</string>
     <string name="preference_cards_opacity">透明度</string>
@@ -202,7 +181,6 @@
     <string name="preference_screen_search_summary">検索、タグ、非表示のアイテム</string>
     <string name="preference_screen_plugins">プラグイン</string>
     <string name="preference_screen_homescreen">ホーム画面</string>
-    <string name="preference_restore_summary">以前に作成されたバックアップをインポートします</string>
     <string name="preference_screen_homescreen_summary">時計、検索バー、壁紙、システムバー</string>
     <string name="preference_screen_icons">グリッド、アイコン</string>
     <string name="preference_screen_about_summary">アプリ情報、ライセンス情報</string>
@@ -220,7 +198,6 @@
     <string name="preference_screen_gestures">ジェスチャー</string>
     <string name="preference_about_telegram">Telegram グループ</string>
     <string name="icon_picker_default_icon">デフォルト</string>
-    <string name="restore_complete">バックアップが復元されました。</string>
     <string name="preference_cards">カード</string>
     <string name="preference_cards_summary">カードの外観をカスタマイズ</string>
     <string name="preference_cards_corner_radius">角の丸み</string>
@@ -229,13 +206,10 @@
     <string name="preference_themed_icons">テーマアイコン</string>
     <string name="preference_screen_plugins_summary">インストール済みのプラグインを管理</string>
     <string name="preference_screen_integrations">統合</string>
-    <string name="preference_screen_backup">バックアップと復元</string>
-    <string name="preference_screen_backup_summary">ランチャーのデータをインポート/エクスポート</string>
     <string name="preference_screen_weatherwidget">天気</string>
     <string name="preference_category_license">ライセンス</string>
     <string name="preference_about_license">このアプリはフリーソフトウェアです。</string>
     <string name="preference_about_license_summary">GNU 一般公衆ライセンス 3.0 のもとでライセンスされています</string>
-    <string name="backup_complete">バックアップが完了しました。</string>
     <string name="preference_screen_search_actions">クイックアクション</string>
     <string name="preference_restore_default">デフォルトに復元</string>
     <string name="preference_screen_about">このアプリについて</string>
@@ -263,14 +237,10 @@
     <string name="weather_condition_fair">晴れ</string>
     <string name="weather_condition_heavysleetandthunder">激しいみぞれと雷</string>
     <string name="weather_condition_lightsleetandthunder">弱いみぞれと雷</string>
-    <string name="menu_website">WEBサイトを開く</string>
-    <string name="menu_map">地図で見る</string>
     <string name="action_clear">削除</string>
     <plurals name="calendar_search_enabled_lists">
         <item quantity="other">%1$s個のリストが選択されました</item>
     </plurals>
-    <string name="location_closes">%1$sにクローズした</string>
-    <string name="location_opens">%1$sにオープンした</string>
     <string name="calendar_widget_previous_day">前日</string>
     <string name="music_widget_next_track">次のタイトル</string>
     <string name="music_widget_play">プレイ</string>
@@ -285,8 +255,6 @@
     <string name="profile_work_profile_action_lock">仕事用アプリを停止</string>
     <string name="profile_private_profile_action_lock">プライベートスペースをロック</string>
     <string name="hint_drag_and_drop_reorder">アイテムを押しながらドラッグして並べ替えてください</string>
-    <string name="location_open">オープン</string>
-    <string name="location_closed">クローズド</string>
     <string name="action_done">完了</string>
     <string name="action_install">インストール</string>
     <string name="action_quit">閉じる</string>

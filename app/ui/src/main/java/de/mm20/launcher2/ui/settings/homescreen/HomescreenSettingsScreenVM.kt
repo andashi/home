@@ -37,7 +37,6 @@ class HomescreenSettingsScreenVM(
 
     var showClockWidgetSheet by mutableStateOf(false)
 
-
     val dimWallpaper = uiSettings.dimWallpaper
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), false)
 
@@ -150,13 +149,6 @@ class HomescreenSettingsScreenVM(
 
     fun setWidgetEditButton(editButton: Boolean) {
         uiSettings.setWidgetEditButton(editButton)
-    }
-
-    val chargingAnimation = uiSettings.chargingAnimation
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), null)
-
-    fun setChargingAnimation(chargingAnimation: Boolean) {
-        uiSettings.setChargingAnimation(chargingAnimation)
     }
 
     val widgetsOnHomeScreen = uiSettings.homeScreenWidgets
