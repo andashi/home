@@ -17,7 +17,6 @@ import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.NavKey
-import de.mm20.launcher2.ktx.isAtLeastApiLevel
 import de.mm20.launcher2.ktx.tryStartActivity
 import de.mm20.launcher2.preferences.MeasurementSystem
 import de.mm20.launcher2.preferences.TimeFormat
@@ -57,8 +56,6 @@ fun LocaleSettingsScreen() {
     val currentLocale = locales?.get(0)
 
     val transliterators: List<Pair<String, String?>> = remember(locales) {
-        if (!isAtLeastApiLevel(29)) return@remember listOf()
-
         if (locales?.isEmpty == true) return@remember listOf(resources.getString(R.string.preference_value_disabled) to null)
 
         val scripts = mutableSetOf<String>()
@@ -129,7 +126,6 @@ fun LocaleSettingsScreen() {
                         selectedLocale.getDisplayName(selectedLocale)
                             .replaceFirstChar { it.uppercase(selectedLocale) }
                     },
-                    enabled = isAtLeastApiLevel(33),
                     onClick = {
                         context.tryStartActivity(
                             Intent(android.provider.Settings.ACTION_APP_LOCALE_SETTINGS).apply {
@@ -157,7 +153,6 @@ fun LocaleSettingsScreen() {
                                 it
                             )
                         },
-                        enabled = isAtLeastApiLevel(34),
                         items = listOf(
                             stringResource(R.string.preference_form_of_address_neutral) to GrammaticalInflectionManagerCompat.GRAMMATICAL_GENDER_NEUTRAL,
                             stringResource(R.string.preference_form_of_address_fem) to GrammaticalInflectionManagerCompat.GRAMMATICAL_GENDER_FEMININE,
@@ -165,7 +160,7 @@ fun LocaleSettingsScreen() {
                         )
                     )
                 }
-                if (isAtLeastApiLevel(29) && transliterators.size > 2) {
+                if (transliterators.size > 2) {
                     ListPreference(
                         icon = R.drawable.translate_24px,
                         title = stringResource(R.string.preference_transliteration),

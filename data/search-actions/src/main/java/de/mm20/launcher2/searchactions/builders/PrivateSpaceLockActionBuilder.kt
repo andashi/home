@@ -1,7 +1,6 @@
 package de.mm20.launcher2.searchactions.builders
 
 import android.content.Context
-import de.mm20.launcher2.ktx.isAtLeastApiLevel
 import de.mm20.launcher2.profiles.Profile
 import de.mm20.launcher2.profiles.ProfileManager
 import de.mm20.launcher2.search.ResultScore
@@ -25,8 +24,6 @@ class PrivateSpaceLockActionBuilder(
     override val icon = SearchActionIcon.PrivateSpace
 
     override fun build(context: Context, classifiedQuery: TextClassificationResult): SearchAction? {
-        if (!isAtLeastApiLevel(35)) return null
-
         val privateProfile = profileManager.getProfile(Profile.Type.Private) ?: return null
         val profileState = profileManager.getCurrentProfileState(privateProfile) ?: return null
 

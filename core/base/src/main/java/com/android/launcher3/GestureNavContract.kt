@@ -22,7 +22,6 @@ import android.graphics.RectF
 import android.os.*
 import android.util.Log
 import android.view.SurfaceControl
-import de.mm20.launcher2.ktx.isAtLeastApiLevel
 
 /**
  * Class to encapsulate the handshake protocol between Launcher and gestureNav.
@@ -61,9 +60,6 @@ class GestureNavContract(
          * Clears and returns the GestureNavContract if it was present in the intent.
          */
         fun fromIntent(intent: Intent): GestureNavContract? {
-            if (!isAtLeastApiLevel(Build.VERSION_CODES.R)) {
-                return null
-            }
             val extras = intent.getBundleExtra(EXTRA_GESTURE_CONTRACT)
                 ?: return null
             intent.removeExtra(EXTRA_GESTURE_CONTRACT)

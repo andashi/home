@@ -85,7 +85,6 @@ import androidx.core.net.toUri
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import de.mm20.launcher2.crashreporter.CrashReporter
 import de.mm20.launcher2.data.customattrs.CustomAttributesRepository
-import de.mm20.launcher2.ktx.isAtLeastApiLevel
 import de.mm20.launcher2.permissions.PermissionGroup
 import de.mm20.launcher2.permissions.PermissionsManager
 import de.mm20.launcher2.search.Tag
@@ -612,13 +611,9 @@ fun ColumnScope.ConfigureAppWidget(
                 onLightBackground = (!LocalDarkTheme.current && widget.config.background) || LocalPreferDarkContentOverWallpaper.current
             )
 
-            val maxWidth = if (isAtLeastApiLevel(31)) {
-                widgetInfo.maxResizeWidth.takeIf { it > 0 }?.toDp() ?: Dp.Unspecified
-            } else Dp.Unspecified
+            val maxWidth = widgetInfo.maxResizeWidth.takeIf { it > 0 }?.toDp() ?: Dp.Unspecified
 
-            val maxHeight = if (isAtLeastApiLevel(31)) {
-                widgetInfo.maxResizeHeight.takeIf { it > 0 }?.toDp() ?: 2000.dp
-            } else 2000.dp
+            val maxHeight = widgetInfo.maxResizeHeight.takeIf { it > 0 }?.toDp() ?: 2000.dp
 
             val minWidth = if (widgetInfo.minResizeWidth in 1..widgetInfo.minWidth) {
                 widgetInfo.minResizeWidth.toDp()
@@ -683,20 +678,18 @@ fun ColumnScope.ConfigureAppWidget(
                         onWidgetUpdated(widget.copy(config = widget.config.copy(background = it)))
                     }
                 )
-                if (isAtLeastApiLevel(31)) {
-                    HorizontalDivider()
-                    SwitchPreference(
-                        title = stringResource(R.string.widget_use_theme_colors),
-                        iconPadding = false,
-                        value = widget.config.themeColors,
-                        onValueChanged = {
-                            onWidgetUpdated(widget.copy(config = widget.config.copy(themeColors = it)))
-                        }
-                    )
-                }
+                HorizontalDivider()
+                SwitchPreference(
+                    title = stringResource(R.string.widget_use_theme_colors),
+                    iconPadding = false,
+                    value = widget.config.themeColors,
+                    onValueChanged = {
+                        onWidgetUpdated(widget.copy(config = widget.config.copy(themeColors = it)))
+                    }
+                )
             }
         }
-        if (isAtLeastApiLevel(28) && widgetInfo.widgetFeatures and AppWidgetProviderInfo.WIDGET_FEATURE_RECONFIGURABLE != 0) {
+        if (widgetInfo.widgetFeatures and AppWidgetProviderInfo.WIDGET_FEATURE_RECONFIGURABLE != 0) {
             val appWidgetHost = LocalAppWidgetHost.current
             TextButton(
                 modifier = Modifier
@@ -714,15 +707,11 @@ fun ColumnScope.ConfigureAppWidget(
                         widget.config.widgetId,
                         0,
                         0,
-                        if (Build.VERSION.SDK_INT < 34) {
-                            null
-                        } else {
-                            ActivityOptions.makeBasic()
-                                .setPendingIntentBackgroundActivityStartMode(
-                                    ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOWED
-                                )
-                                .toBundle()
-                        }
+                        ActivityOptions.makeBasic()
+                            .setPendingIntentBackgroundActivityStartMode(
+                                ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOWED
+                            )
+                            .toBundle()
                     )
                 }) {
                 Text(

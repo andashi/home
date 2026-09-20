@@ -182,11 +182,7 @@ internal class AndroidContactProvider(
                             ?: return@map it
                     it.copy(number = formattedNumber)
                 }.distinctByEquality { a, b ->
-                    if (Build.VERSION.SDK_INT < 31) {
-                        PhoneNumberUtils.compare(context, a.number, b.number)
-                    } else {
-                        PhoneNumberUtils.areSamePhoneNumber(a.number, b.number, defaultCountryIso)
-                    }
+                    PhoneNumberUtils.areSamePhoneNumber(a.number, b.number, defaultCountryIso)
                 },
                 emailAddresses = emailAddresses.distinct(),
                 postalAddresses = postalAddresses.distinct(),

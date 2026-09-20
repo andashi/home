@@ -17,7 +17,6 @@ import androidx.core.content.getSystemService
 import de.mm20.launcher2.crashreporter.CrashReporter
 import de.mm20.launcher2.icons.*
 import de.mm20.launcher2.ktx.getSerialNumber
-import de.mm20.launcher2.ktx.isAtLeastApiLevel
 import de.mm20.launcher2.search.AppShortcut
 import de.mm20.launcher2.search.ResultScore
 import de.mm20.launcher2.search.SearchableSerializer
@@ -126,7 +125,7 @@ internal data class LauncherShortcut(
             }
         } ?: return null
         if (icon is AdaptiveIconDrawable) {
-            if (themed && isAtLeastApiLevel(33) && icon.monochrome != null) {
+            if (themed && icon.monochrome != null) {
                 return StaticLauncherIcon(
                     foregroundLayer = TintedIconLayer(
                         scale = 1f,

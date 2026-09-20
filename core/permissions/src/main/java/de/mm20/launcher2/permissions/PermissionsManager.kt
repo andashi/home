@@ -16,7 +16,6 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.getSystemService
 import de.mm20.launcher2.crashreporter.CrashReporter
 import de.mm20.launcher2.ktx.checkPermission
-import de.mm20.launcher2.ktx.isAtLeastApiLevel
 import de.mm20.launcher2.ktx.tryStartActivity
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -107,15 +106,11 @@ internal class PermissionsManagerImpl(
 
             PermissionGroup.ManageProfiles,
             PermissionGroup.AppShortcuts -> {
-                if (isAtLeastApiLevel(29)) {
-                    val roleManager = context.getSystemService<RoleManager>()
-                    context.startActivityForResult(
-                        roleManager!!.createRequestRoleIntent(RoleManager.ROLE_HOME),
-                        permissionGroup.ordinal
-                    )
-                } else {
-                    context.tryStartActivity(Intent(Settings.ACTION_MANAGE_DEFAULT_APPS_SETTINGS))
-                }
+                val roleManager = context.getSystemService<RoleManager>()
+                context.startActivityForResult(
+                    roleManager!!.createRequestRoleIntent(RoleManager.ROLE_HOME),
+                    permissionGroup.ordinal
+                )
                 pendingPermissionRequests.add(PermissionGroup.AppShortcuts)
             }
 
@@ -153,9 +148,7 @@ internal class PermissionsManagerImpl(
             }
 
             PermissionGroup.ManageProfiles -> {
-                if (isAtLeastApiLevel(29)) {
-                    context.getSystemService<RoleManager>()?.isRoleHeld(RoleManager.ROLE_HOME) == true
-                } else false
+                context.getSystemService<RoleManager>()?.isRoleHeld(RoleManager.ROLE_HOME) == true
             }
 
             PermissionGroup.Accessibility -> {

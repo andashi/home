@@ -61,7 +61,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import de.mm20.launcher2.ktx.isAtLeastApiLevel
 import de.mm20.launcher2.ui.R
 import de.mm20.launcher2.ui.component.DismissableBottomSheet
 import de.mm20.launcher2.ui.ktx.animateShapeAsState
@@ -138,9 +137,6 @@ class BindAndConfigureAppWidgetActivity : Activity() {
     }
 
     private fun getConfigurationOptions(): Bundle? {
-        if (Build.VERSION.SDK_INT < 34) {
-            return null
-        }
         return ActivityOptions.makeBasic()
             .setPendingIntentBackgroundActivityStartMode(
                 ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOWED
@@ -511,14 +507,12 @@ fun WidgetPickerSheet(
                                         maxLines = 1,
                                         overflow = TextOverflow.Ellipsis,
                                     )
-                                    if (isAtLeastApiLevel(31)) {
-                                        val description = it.loadDescription(context)
-                                        if (!description.isNullOrBlank()) {
-                                            Text(description.toString(),
-                                                style = MaterialTheme.typography.bodySmall,
-                                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                                            )
-                                        }
+                                    val description = it.loadDescription(context)
+                                    if (!description.isNullOrBlank()) {
+                                        Text(description.toString(),
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
                                     }
                                 }
                                 if (it.profile != Process.myUserHandle()) {

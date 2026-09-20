@@ -1,0 +1,12 @@
+android.permission.ACCESS_HIDDEN_PROFILES
+android.permission.CALL_PHONE
+android.permission.EXPAND_STATUS_BAR
+android.permission.INTERACT_ACROSS_PROFILES
+android.permission.QUERY_ALL_PACKAGES
+android.permission.READ_CONTACTS
+android.permission.REQUEST_DELETE_PACKAGES
+android.permission.SET_ALARM
+android.permission.SET_WALLPAPER
+android.permission.VIBRATE
+com.android.alarm.permission.SET_ALARM
+org.andashi.home.debug.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION

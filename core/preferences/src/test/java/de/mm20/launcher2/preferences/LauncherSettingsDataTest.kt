@@ -41,10 +41,6 @@ class LauncherSettingsDataTest {
             gesturesSwipeDown = GestureAction.QuickSettings,
             gesturesLongPress = GestureAction.Launch("app://de.mm20.launcher2"),
             searchBarStyle = SearchBarStyle.Solid,
-            weatherLocation = LatLon(52.52, 13.405),
-            weatherProviderSettings = mapOf(
-                "metno" to ProviderSettings(locationId = "123", locationName = "Berlin")
-            ),
             iconsPack = "com.example.iconpack",
             localeCurrencies = listOf("EUR", "USD"),
         )

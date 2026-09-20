@@ -90,7 +90,7 @@ fun systemCorePalette(dark: Boolean): CorePalette {
         uiSettings.compatModeColors
     }.collectAsState(false)
 
-    if (Build.VERSION.SDK_INT >= 31 && !compatModeColors) {
+    if (!compatModeColors) {
         val context = LocalContext.current
         return CorePalette(
             primary = ContextCompat.getColor(context, android.R.color.system_accent1_500),

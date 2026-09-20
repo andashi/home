@@ -1,7 +1,6 @@
 package de.mm20.launcher2.searchactions.actions
 
 import android.content.Context
-import de.mm20.launcher2.ktx.isAtLeastApiLevel
 import de.mm20.launcher2.profiles.Profile
 import de.mm20.launcher2.profiles.ProfileManager
 
@@ -16,12 +15,10 @@ data class PrivateSpaceLockAction(
     override val customIcon = null
 
     override fun start(context: Context) {
-        if (isAtLeastApiLevel(28)) {
-            if (isLocked) {
-                profileManager.unlockProfile(profile)
-            } else {
-                profileManager.lockProfile(profile)
-            }
+        if (isLocked) {
+            profileManager.unlockProfile(profile)
+        } else {
+            profileManager.lockProfile(profile)
         }
     }
 }

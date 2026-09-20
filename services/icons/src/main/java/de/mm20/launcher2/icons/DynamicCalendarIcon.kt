@@ -6,7 +6,6 @@ import androidx.core.content.res.ResourcesCompat
 import de.mm20.launcher2.icons.compat.AdaptiveIconDrawableCompat
 import de.mm20.launcher2.icons.compat.toLauncherIcon
 import de.mm20.launcher2.icons.transformations.LauncherIconTransformation
-import de.mm20.launcher2.ktx.isAtLeastApiLevel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.time.Instant

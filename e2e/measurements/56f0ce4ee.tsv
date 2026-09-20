@@ -1,0 +1,15 @@
+# label: 56f0ce4ee
+# commit: 56f0ce4eea08960ede52d4f8ea23416dddc27e62
+# apk: app-default-debug.apk
+# measured: 2026-09-20T15:53:16Z
+apk.size.file	63431900	bytes
+apk.size.download	22327988	bytes
+apk.size.arsc	1983796	bytes
+apk.size.dex	55737956	bytes
+apk.size.lib	73584	bytes
+apk.size.other	197928	bytes
+apk.size.res	5083077	bytes
+dex.files	25	count
+dex.method_refs	229410	count
+manifest.permissions	12	count
+gradle.modules	33	count

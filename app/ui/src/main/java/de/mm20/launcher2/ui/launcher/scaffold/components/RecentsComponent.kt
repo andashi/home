@@ -25,7 +25,6 @@ import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import de.mm20.launcher2.globalactions.GlobalActionsService
-import de.mm20.launcher2.ktx.isAtLeastApiLevel
 import de.mm20.launcher2.permissions.PermissionGroup
 import de.mm20.launcher2.permissions.PermissionsManager
 import de.mm20.launcher2.preferences.GestureAction
@@ -85,7 +84,7 @@ internal object RecentsComponent : ScaffoldComponent(), KoinComponent {
     ): Modifier = Modifier.composed {
         val rtl = LocalLayoutDirection.current == LayoutDirection.Rtl
         val insets = LocalView.current.rootWindowInsets
-        val shape = if (isAtLeastApiLevel(31) && insets != null) {
+        val shape = if (insets != null) {
             RoundedCornerShape(
                 topStart = insets.getRoundedCorner(if (rtl) RoundedCorner.POSITION_TOP_RIGHT else RoundedCorner.POSITION_TOP_LEFT)?.radius?.toFloat()
                     ?: 0f,

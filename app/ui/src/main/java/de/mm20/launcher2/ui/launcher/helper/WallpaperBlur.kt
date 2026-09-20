@@ -6,11 +6,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
-import de.mm20.launcher2.ktx.isAtLeastApiLevel
 
 @Composable
 fun WallpaperBlur(blurRadius: () -> Int) {
-    if (!isAtLeastApiLevel(31)) return
     val context = LocalContext.current
     val density = LocalDensity.current
 
