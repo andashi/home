@@ -119,6 +119,7 @@
     <string name="preference_clockwidget_favorites_part_summary">Tampilkan baris pertama item yang tersemat</string>
     <string name="preference_screen_search">Pencarian</string>
     <string name="preference_search_favorites">Favorit</string>
+    <string name="preference_search_favorites_summary">Tampilkan item tersemat dan yang paling sering digunakan di atas daftar aplikasi</string>
     <string name="preference_search_contacts">Kontak</string>
     <string name="preference_search_contacts_summary">Cari kontak di perangkat ini</string>
     <string name="preference_search_appshortcuts">Pintasan aplikasi</string>

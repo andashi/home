@@ -152,6 +152,7 @@
     <string name="preference_screen_search">Pesquisar</string>
     <string name="preference_screen_search_summary">Pesquisas, etiquetas, itens ocultos</string>
     <string name="preference_search_favorites">Favoritos</string>
+    <string name="preference_search_favorites_summary">Mostrar itens afixados e frequentes por cima da grelha de aplicações</string>
     <string name="preference_screen_tags_summary">Gerir etiquetas e itens com etiqueta</string>
     <string name="icon_picker_filter_all_packs">Todos os pacotes de ícones</string>
     <string name="favorites">Favoritos</string>
@@ -244,7 +245,7 @@
     <string name="preference_screen_tags">Etiquetas</string>
     <string name="preference_widgets_edit_button_summary">Mostrar botão para adicionar, remover ou editar widgets</string>
     <string name="preference_screen_homescreen">Ecrã inicial</string>
-    <string name="preference_screen_homescreen_summary">Relógio, barra de pesquisa, papel de parede e barras</string>
+    <string name="preference_screen_homescreen_summary">Barra de pesquisa, papel de parede e barras</string>
     <string name="preference_screen_icons">Grelha e ícones</string>
     <string name="preference_screen_icons_summary">Grelha, ícones e indicadores</string>
     <string name="icon_picker_suggestions">Sugestões</string>

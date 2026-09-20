@@ -119,6 +119,7 @@
     <string name="preference_clockwidget_favorites_part">Aplikazio-barra</string>
     <string name="preference_clockwidget_favorites_part_summary">Erakutsi ainguratutako elementuak aplikazio-barran</string>
     <string name="preference_search_favorites">Gogokoak</string>
+    <string name="preference_search_favorites_summary">Ainguratutako eta maiz erabiltzen diren elementuak aplikazioen saretaren gainean erakutsi</string>
     <string name="preference_search_contacts">Kontaktuak</string>
     <string name="preference_search_contacts_summary">Kontaktuak gailu honetan bilatu</string>
     <string name="preference_notification_badges_summary">Irakurri gabeko jakinarazpenak dituzten aplikazioetan biribiltxoa erakutsi</string>

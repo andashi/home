@@ -268,6 +268,7 @@
     <string name="preference_screen_search">جستجو</string>
     <string name="preference_screen_search_summary">جستجو، برچسب‌ها، موارد مخفی</string>
     <string name="preference_search_favorites">موارد دلخواه</string>
+    <string name="preference_search_favorites_summary">نمایش موارد دلخواه و مورد استفاده بالا بالای شبکه برنامه‌ها</string>
     <string name="preference_edit_button">گزینه ویرایش</string>
     <string name="preference_search_result_ordering_weight_factor_high">متغیر</string>
     <plurals name="tag_selected_items">

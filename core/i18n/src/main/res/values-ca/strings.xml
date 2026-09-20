@@ -126,6 +126,7 @@
     <string name="preference_screen_search">Cerca</string>
     <string name="preference_screen_search_summary">Cerca, etiquetes, elements ocults</string>
     <string name="preference_search_favorites">Preferits</string>
+    <string name="preference_search_favorites_summary">Mostra els elements fixats i utilitzats freqüentment a sobre de la graella de les aplicacions</string>
     <string name="preference_search_contacts">Contactes</string>
     <string name="preference_search_contacts_summary">Cerca contactes en aquest dispositiu</string>
     <string name="preference_search_appshortcuts">Dreceres d\'aplicacions</string>
@@ -148,7 +149,7 @@
     <string name="preference_edit_button">Botó \"Edita\"</string>
     <string name="preference_favorites_edit_button_summary">Mostra un botó per reorganitzar els preferits</string>
     <string name="preference_screen_homescreen">Pantalla inicial</string>
-    <string name="preference_screen_homescreen_summary">Rellotge, barra de cerca, fons de pantalla, barres del sistema</string>
+    <string name="preference_screen_homescreen_summary">Barra de cerca, fons de pantalla, barres del sistema</string>
     <string name="preference_screen_icons">Quadrícula i icones</string>
     <string name="preference_screen_icons_summary">Quadrícula, mida d\'icones, paquets d\'icones, insígnies</string>
     <string name="icon_picker_default_icon">Per defecte</string>

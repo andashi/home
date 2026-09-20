@@ -84,6 +84,7 @@
     <string name="preference_screen_search">Sök</string>
     <string name="preference_screen_search_summary">Konfigurera sökningen</string>
     <string name="preference_search_favorites">Favoriter</string>
+    <string name="preference_search_favorites_summary">Visa fastnålade och ofta använda objekt ovanför apprutan</string>
     <string name="preference_search_contacts">Kontakter</string>
     <string name="preference_search_contacts_summary">Sök bland kontakter på denna enhet</string>
     <string name="preference_screen_buildinfo">Build-information</string>

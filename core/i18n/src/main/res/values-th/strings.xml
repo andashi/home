@@ -93,6 +93,7 @@
     <string name="preference_clockwidget_favorites_part">แถบด็อค</string>
     <string name="preference_screen_search">ค้นหา</string>
     <string name="preference_search_favorites">รายการโปรด</string>
+    <string name="preference_search_favorites_summary">แสดงสิ่งที่ถูกปักหมุดและสิ่งที่ถูกใช้งานบ่อยข้างบนลิ้นชักแอป</string>
     <string name="preference_screen_search_summary">การค้นหา แท็ก ผลการค้นหาที่ถูกตัดออก</string>
     <string name="preference_search_appshortcuts">ทางลัดแอป</string>
     <string name="preference_search_appshortcuts_summary">ค้นหาทางลัดแอป</string>

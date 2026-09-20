@@ -118,6 +118,7 @@
     <string name="preference_screen_search">Rechercher</string>
     <string name="preference_screen_search_summary">Recherche, étiquettes, résultats exclus</string>
     <string name="preference_search_favorites">Favoris</string>
+    <string name="preference_search_favorites_summary">Afficher les applications épinglées et fréquemment utilisées au-dessus de la grille</string>
     <string name="preference_search_contacts">Contacts</string>
     <string name="preference_search_contacts_summary">Rechercher les contacts sur cet appareil</string>
     <string name="preference_screen_buildinfo">Informations sur la version</string>
@@ -268,7 +269,7 @@
     <string name="preference_hidden_items_reveal_button">Afficher le bouton Révéler</string>
     <string name="preference_hidden_items_reveal_button_summary">Afficher un bouton pour révéler les résultats de recherche exclus</string>
     <string name="widget_config_appwidget_background">Carte de fond</string>
-    <string name="preference_screen_homescreen_summary">Horloge, barre de recherche, fond d\'écran, barres système</string>
+    <string name="preference_screen_homescreen_summary">Barre de recherche, fond d\'écran, barres système</string>
     <string name="preference_debug_reinstall_iconpacks_summary">Effacer et reconstruire le cache du pack d\'icônes</string>
     <string name="preference_search_result_ordering_weight_factor_high">Variable</string>
     <string name="preference_search_result_ordering_weight_factor_default">Équilibré</string>

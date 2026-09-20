@@ -177,6 +177,7 @@
     <string name="preference_screen_search">Tìm kiếm</string>
     <string name="preference_screen_search_summary">Tìm kiếm, gắn thẻ, mục ẩn</string>
     <string name="preference_search_favorites">Yêu thích</string>
+    <string name="preference_search_favorites_summary">Hiển thị các mục được ghim và sử dụng thường xuyên phía trên lưới ứng dụng</string>
     <string name="preference_search_contacts">Danh bạ</string>
     <string name="preference_search_contacts_summary">Tìm kiếm danh bạ trên thiết bị này</string>
     <string name="preference_search_appshortcuts">Lối tắt ứng dụng</string>

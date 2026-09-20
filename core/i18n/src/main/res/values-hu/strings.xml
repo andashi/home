@@ -233,6 +233,7 @@
     <string name="preference_clockwidget_favorites_part">Dokk</string>
     <string name="preference_clockwidget_favorites_part_summary">Kitűzött elemek megjelenítése a dokkon</string>
     <string name="preference_search_favorites">Kedvencek</string>
+    <string name="preference_search_favorites_summary">Kitűzött és gyakran használt elemek megjelenítése az alkalmazásrács felett</string>
     <string name="preference_search_appshortcuts">Telepített alkalmazások</string>
     <string name="preference_search_appshortcuts_summary">Keresés a telepített alkalmazások között</string>
     <string name="preference_search_bar_style">Stílus</string>
@@ -241,7 +242,7 @@
     <string name="preference_screen_tags_summary">Címkék és címkézett elemek kezelése</string>
     <string name="preference_category_favorites_frequently_used">Gyakran használt</string>
     <string name="preference_screen_homescreen">Kezdőképernyő</string>
-    <string name="preference_screen_homescreen_summary">Óra, keresősáv, háttérkép, rendszersávok</string>
+    <string name="preference_screen_homescreen_summary">Keresősáv, háttérkép, rendszersávok</string>
     <string name="icon_picker_default_icon">Alapértelmezés</string>
     <string name="icon_picker_suggestions">Javaslatok</string>
     <string name="favorites">Kedvencek</string>

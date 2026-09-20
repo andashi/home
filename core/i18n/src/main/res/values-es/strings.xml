@@ -119,6 +119,7 @@
     <string name="preference_clockwidget_favorites_part_summary">Mostrar elementos fijados en la barra de inicio</string>
     <string name="preference_search_bar_auto_focus">Abrir teclado</string>
     <string name="preference_search_favorites">Favoritos</string>
+    <string name="preference_search_favorites_summary">Mostrar elementos fijados y frecuentemente usados encima de la cuadrícula de aplicaciones</string>
     <string name="preference_search_contacts_summary">Buscar contactos en este dispositivo</string>
     <string name="preference_search_appshortcuts_summary">Buscar accesos directos de aplicaciones</string>
     <string name="preference_screen_buildinfo">Información de versión de aplicación</string>
@@ -245,7 +246,7 @@
     <string name="app_widget_loading_failed">El widget de la aplicación ha fallado en cargar</string>
     <string name="widget_config_appwidget_borderless">Sin bordes</string>
     <string name="preference_screen_homescreen">Pantalla de inicio</string>
-    <string name="preference_screen_homescreen_summary">Reloj, barra de búsqueda, fondo de pantalla, barras del sistema</string>
+    <string name="preference_screen_homescreen_summary">Barra de búsqueda, fondo de pantalla, barras del sistema</string>
     <string name="preference_screen_icons">Cuadrícula e ícono</string>
     <string name="preference_screen_icons_summary">Tamaño de cuadrícula, íconos, insignias</string>
     <string name="gesture_action_launch_app">Iniciar aplicación</string>

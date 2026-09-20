@@ -245,6 +245,7 @@
     <string name="preference_clockwidget_favorites_part_summary">عرض العناصر المثبتة في الشريط الجانبي</string>
     <string name="preference_screen_search_summary">البحث، والوسوم، والنتائج المستبعدة</string>
     <string name="preference_search_favorites">المفضلة</string>
+    <string name="preference_search_favorites_summary">إظهار العناصر المثبتة والمستخدمة بشكل متكرر أعلى شبكة التطبيقات</string>
     <string name="preference_screen_buildinfo">معلومات الإصدار</string>
     <string name="preference_search_bar_style_summary">تخصيص مظهر شريط البحث</string>
     <string name="preference_search_bar_auto_focus">فتح لوحة المفاتيح</string>

@@ -133,6 +133,7 @@
     <string name="edit_favorites_dialog_tag_section_empty">Vastgezette labels zullen hier getoond worden</string>
     <string name="preference_clockwidget_favorites_part">Dock</string>
     <string name="preference_search_favorites">Favorieten</string>
+    <string name="preference_search_favorites_summary">Vastgezette en vaak gebruikte items tonen boven het applicatieraster</string>
     <string name="preference_search_contacts">Contacten</string>
     <string name="preference_search_contacts_summary">Contactpersonen op het apparaat doorzoeken</string>
     <string name="websearch_dialog_advanced">Geavanceerd</string>
@@ -239,7 +240,7 @@
     <string name="app_widget_loading_failed">Applicatiewidget kon niet geladen worden</string>
     <string name="preference_screen_icons">Raster en pictogrammen</string>
     <string name="preference_screen_homescreen">Thuisscherm</string>
-    <string name="preference_screen_homescreen_summary">Klok, zoekbalk, achtergrond, systeembalken</string>
+    <string name="preference_screen_homescreen_summary">Zoekbalk, achtergrond, systeembalken</string>
     <string name="preference_screen_icons_summary">Rastergrootte, pictogrammen, badges</string>
     <string name="widget_config_appwidget_borderless">Randloos</string>
     <string name="widget_config_appwidget_configure">Widget instellen</string>

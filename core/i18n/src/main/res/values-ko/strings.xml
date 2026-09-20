@@ -57,6 +57,7 @@
     </plurals>
     <string name="preference_category_icons">아이콘</string>
     <string name="preference_search_favorites">즐겨찾기</string>
+    <string name="preference_search_favorites_summary">앱 격자 위에 고정한 항목 및 자주 사용한 항목 표시</string>
     <string name="preference_screen_homescreen">홈 화면</string>
     <string name="websearch_dialog_query_encoding">검색어 인코딩</string>
     <string name="websearch_dialog_query_encoding_url">퍼센트 인코딩</string>
