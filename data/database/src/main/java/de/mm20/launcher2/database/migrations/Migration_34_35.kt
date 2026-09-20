@@ -15,11 +15,19 @@ import androidx.sqlite.db.SupportSQLiteDatabase
  *
  * All three are pure caches or feature state, so dropping them loses nothing
  * the user would miss. Note that a downgrade is not supported either way.
+ *
+ * Also deletes the `Widget` rows of those features. Their types are no longer
+ * known to `Widget.fromDatabaseEntity`, which returns null for them, so they
+ * were invisible but still occupied positions in the widget column.
  */
 class Migration_34_35 : Migration(34, 35) {
     override fun migrate(db: SupportSQLiteDatabase) {
         db.execSQL("DROP TABLE IF EXISTS `Plugins`")
         db.execSQL("DROP TABLE IF EXISTS `forecasts`")
         db.execSQL("DROP TABLE IF EXISTS `Currency`")
+        db.execSQL(
+            "DELETE FROM `Widget` WHERE `type` IN " +
+                    "('weather', 'music', 'calendar', 'notes', 'clock')"
+        )
     }
 }

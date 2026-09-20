@@ -63,8 +63,6 @@ internal object WidgetsHomeComponent : ScaffoldComponent() {
 
     override val drawBackground: Boolean = false
 
-    override val showSearchBar: Boolean = false
-
     @Composable
     override fun Component(
         modifier: Modifier,
