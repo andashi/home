@@ -233,7 +233,6 @@
     <string name="preference_clock_widget_alignment_top">Viršus</string>
     <string name="preference_clockwidget_date_part">Data</string>
     <string name="preference_search_calendar_summary">Ieškoti sekančių susitikimū ir įvykių</string>
-    <string name="preference_screen_plugins_summary">Tvarkyti instaliuotus priedus</string>
     <string name="search_action_websearch_url_hint">Šis URL pavizdys yra naudojamas ,kad sukurti paieškos URL. Naudokite \'${1}\' kaip vieta paieškos terminui pvz. https://google.com/search?q=${1}.</string>
     <string name="preference_gesture_home_button">Namų mygtukas / gestas</string>
     <string name="gesture_action_lock_screen">Išjungti ekraną</string>
@@ -317,8 +316,6 @@
     <string name="import_theme_apply">Nustatyti tema</string>
     <string name="theme_color_scheme_custom_color">Neorignali</string>
     <string name="import_theme_error">Pasirinktas failas neperskaitytais. Įsitikinkite ,kad tai teisingas temos failas (*.kvtheme), ir galimai šis failas pažeistas.</string>
-    <string name="preference_screen_plugins">Priedai</string>
-    <string name="no_plugins_installed">Nėra priedų</string>
     <string name="preference_search_contacts">Kontaktai</string>
     <string name="preference_search_contacts_summary">Ieškoti kontaktų prietaise</string>
     <string name="preference_search_appshortcuts">Programų nuorodos</string>

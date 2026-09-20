@@ -10,28 +10,6 @@ export const DeveloperGuideSidebar: DefaultTheme.SidebarItem[] = [
     link: '/docs/developer-guide/setup',
   },
   {
-    text: 'External APIs',
-    link: '/docs/developer-guide/external-apis/',
-    items: [
-      {
-        text: 'Currency Exchange Rates',
-        link: '/docs/developer-guide/external-apis/exchange-rates',
-      },
-      {
-        text: 'Google Cloud Services',
-        link: '/docs/developer-guide/external-apis/google',
-      },
-      {
-        text: 'Weather Services',
-        link: '/docs/developer-guide/external-apis/weather',
-      },
-      {
-        text: 'Wikipedia',
-        link: '/docs/developer-guide/external-apis/wikipedia',
-      },
-    ],
-  },
-  {
     text: 'Project Structure',
     items: [
       {
@@ -50,79 +28,6 @@ export const DeveloperGuideSidebar: DefaultTheme.SidebarItem[] = [
       {
         text: 'Icon Packs',
         link: '/docs/developer-guide/integrations/icon-packs',
-      },
-    ],
-  },
-  {
-    text: 'Plugin Development',
-    items: [
-      {
-        text: 'Get Started',
-        link: '/docs/developer-guide/plugins/get-started',
-      },
-      {
-        text: 'Plugin Types',
-        items: [
-          {
-            text: 'Weather Provider',
-            link: '/docs/developer-guide/plugins/plugin-types/weather',
-          },
-          {
-            text: 'File Search Provider',
-            link: '/docs/developer-guide/plugins/plugin-types/file-search',
-          },
-          {
-            text: 'Contact Search Provider',
-            link: '/docs/developer-guide/plugins/plugin-types/contact-search',
-          },
-          {
-            text: 'Places Search Provider',
-            link: '/docs/developer-guide/plugins/plugin-types/places-search',
-          },
-          {
-            text: 'Calendar Provider',
-            link: '/docs/developer-guide/plugins/plugin-types/calendar',
-          },
-        ],
-      },
-      {
-        text: 'Metadata',
-        link: '/docs/developer-guide/plugins/metadata',
-      },
-      {
-        text: 'Plugin Settings',
-        link: '/docs/developer-guide/plugins/settings',
-      },
-      {
-        text: 'Access Control',
-        link: '/docs/developer-guide/plugins/access-control',
-      },
-      {
-        text: 'SDK Changelogs',
-        items: [
-          {
-            text: 'v2.3.0',
-            link: '/docs/developer-guide/plugins/changelogs/v2.3.0',
-          },
-          {
-            text: 'v2.2.0',
-            link: '/docs/developer-guide/plugins/changelogs/v2.2.0',
-          },
-          {
-            text: 'v2.1.0',
-            link: '/docs/developer-guide/plugins/changelogs/v2.1.0',
-          },
-          {
-            text: 'v2.0.0',
-            link: '/docs/developer-guide/plugins/changelogs/v2.0.0',
-          },
-
-        ],
-      },
-      {
-        text: 'Reference',
-        link: '/reference/index.html',
-        target: '_blank',
       },
     ],
   },

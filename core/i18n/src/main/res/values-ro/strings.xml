@@ -211,8 +211,6 @@
     <string name="preference_cards_shape">Formă</string>
     <string name="preference_cards_shape_cut">Tăiată</string>
     <string name="preference_cards_shape_rounded">Rotunjită</string>
-    <string name="preference_screen_plugins_summary">Gestionați extensiile instalate</string>
-    <string name="no_plugins_installed">Nu sunt instalate plugin-uri</string>
     <string name="preference_force_themed_icons">Forțați pictogramele tematice</string>
     <string name="preference_category_debug_tools">Instrumente</string>
     <string name="preference_force_themed_icons_summary">Aplicați schema de culori a aplicației la toate pictogramele, inclusiv celor nesuportate (nerecomandat)</string>
@@ -249,7 +247,6 @@
     <string name="preference_debug_dump_heap_in_progress">Se capturează snapshot-ul…</string>
     <string name="preference_debug_cleanup_database_summary">Eliminați intrările defecte şi neutilizate din baza de date a lansatorului</string>
     <string name="preference_debug_reinstall_iconpacks">Reinstalați pachetele de pictograme</string>
-    <string name="preference_screen_plugins">Plugin-uri</string>
     <string name="notes_widget_action_dismiss">Înlăturați</string>
     <string name="edit_favorites_dialog_empty_section">Trageți elemente aici</string>
     <string name="widget_action_replace">Înlocuiți</string>
@@ -278,12 +275,10 @@
     <string name="preference_clock_widget_alignment">Aliniere</string>
     <string name="preference_category_media_apps">Aplicați Media</string>
     <string name="widget_use_theme_colors">Folosește temă colorată</string>
-    <string name="preference_plugin_badges">Plugin \"badges\"</string>
     <string name="preference_blur_wallpaper_radius">Raza de vedere burată</string>
     <string name="preference_enforce_icon_shape_summary">Aplică forme la toate iconițele incluziv cele care in mod normal nu le suportă</string>
     <string name="preference_enforce_icon_shape">Formă forțată</string>
     <string name="preference_clock_widget_show_seconds">Arată secundele</string>
-    <string name="preference_plugin_badges_summary">Indică care plugin la rezultatul căutări va fi creat</string>
     <string name="preference_search_bar_style_hidden">Ascuns</string>
     <string name="preference_search_bar_style_transparent">Transparent</string>
     <string name="preference_search_bar_style_solid">Solid</string>

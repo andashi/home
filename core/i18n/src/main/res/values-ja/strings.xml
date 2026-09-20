@@ -128,7 +128,6 @@
     <string name="preference_screen_clockwidget_summary">時計のスタイルとコンポーネントを設定</string>
     <string name="preference_use_system_default">システムのデフォルトを使用</string>
     <string name="preference_screen_search_summary">検索、タグ、非表示のアイテム</string>
-    <string name="preference_screen_plugins">プラグイン</string>
     <string name="preference_screen_homescreen">ホーム画面</string>
     <string name="preference_screen_homescreen_summary">時計、検索バー、壁紙、システムバー</string>
     <string name="preference_screen_icons">グリッド、アイコン</string>
@@ -153,7 +152,6 @@
     <string name="preference_screen_buildinfo">ビルド情報</string>
     <string name="preference_screen_buildinfo_summary">アプリのビルドに関する詳細情報</string>
     <string name="preference_themed_icons">テーマアイコン</string>
-    <string name="preference_screen_plugins_summary">インストール済みのプラグインを管理</string>
     <string name="preference_screen_integrations">統合</string>
     <string name="preference_category_license">ライセンス</string>
     <string name="preference_about_license">このアプリはフリーソフトウェアです。</string>

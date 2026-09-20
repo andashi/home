@@ -394,16 +394,6 @@
     <string name="shortcut_label_unavailable">Nedostupné</string>
     <string name="shortcut_unavailable_description">Tato zkratka je nedostupná, protože %1$s není nastaven jako výchozí launcher</string>
     <string name="preference_clockwidget_dynamic_zone">Dynamická zóna</string>
-    <string name="preference_screen_plugins">Doplňky</string>
-    <string name="preference_screen_plugins_summary">Spravovat nainstalované doplňky</string>
-    <string name="no_plugins_installed">Nejsou nainstalovány žádné doplňky</string>
-    <string name="preference_plugin_badges">Odznaky doplňků</string>
-    <string name="preference_plugin_badges_summary">Zobrazit, který doplněk vytvořil výsledek vyhledávání</string>
-    <string name="plugin_state_setup_required">Nejprve musíte nastavit tento doplněk</string>
-    <string name="plugin_action_setup">Nastavit</string>
-    <string name="plugin_type_weather">Poskytovatel počasí</string>
-    <string name="plugin_state_error">Tento doplněk nefunguje tak, jak by měl</string>
-    <string name="preference_plugin_enable">Povolit doplněk</string>
     <string name="preference_category_advanced">Pokročilé</string>
     <string name="preference_mdy_color_source">Zdroj dynamických barev</string>
     <string name="preference_mdy_color_source_system">Systém</string>
@@ -514,7 +504,6 @@
     <string name="poi_category_golf">Golfové hřiště</string>
     <string name="poi_category_courthouse">Soud</string>
     <string name="poi_category_townhall">Radnice</string>
-    <string name="plugin_type_locationsearch">Vyhledávání míst</string>
     <string name="poi_category_synagogue">Synagoga</string>
     <string name="poi_category_concert_hall">Koncertní sál</string>
     <string name="poi_category_motorcycle_rental">Půjčovna motocyklů</string>
@@ -569,7 +558,6 @@
     <string name="music_widget_play">Přehrát</string>
     <string name="music_widget_pause">Pozastavit</string>
     <string name="music_widget_open_player">Otevřít přehrávač</string>
-    <string name="plugin_type_calendar">Kalendář</string>
     <string name="profile_work_profile_action_unlock">Zrušit pozastavení</string>
     <string name="hint_drag_and_drop_reorder">Přeskládejte položky jejich podržením a přesunutím</string>
     <string name="app_label_locked_profile">Uzamčeno</string>
@@ -605,7 +593,6 @@
     <string name="preference_grid_list_icons">Zobrazit ikony aplikací v seznamu</string>
     <string name="preference_grid_list_style_summary">Zobrazit aplikace v seznamu namísto mřížky</string>
     <string name="preference_grid_list_icons_summary">Zobrazit ikony v zobrazení seznamu</string>
-    <string name="plugin_type_contacts">Kontakty</string>
     <string name="action_install">Instalovat</string>
     <plurals name="calendar_widget_running_tasks">
         <item quantity="one">+%1$d nedokončený úkol</item>
@@ -674,8 +661,6 @@
     <string name="preference_value_disabled">Zakázaná</string>
     <string name="select_tag">Vybrat štítek</string>
     <string name="widget_name_apps">Aplikace</string>
-    <string name="preference_category_enabled_plugins">Povoleno</string>
-    <string name="preference_category_installed_plugins">Nainstalováno</string>
     <string name="tag_icon_customicon">Ikona</string>
     <string name="tag_icon_emoji">Emodži</string>
     <string name="preference_clockwidget_smartspacer">Spravováno aplikací Smartspacer</string>

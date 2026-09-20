@@ -1,20 +1,16 @@
 package de.mm20.launcher2.ui.settings.search
 
-import android.os.Process
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import de.mm20.launcher2.applications.AppRepository
 import de.mm20.launcher2.permissions.PermissionGroup
 import de.mm20.launcher2.permissions.PermissionsManager
-import de.mm20.launcher2.plugins.PluginService
 import de.mm20.launcher2.preferences.search.ContactSearchSettings
 import de.mm20.launcher2.preferences.search.SearchFilterSettings
 import de.mm20.launcher2.preferences.search.ShortcutSearchSettings
 import de.mm20.launcher2.preferences.ui.SearchUiSettings
 import de.mm20.launcher2.search.SearchFilters
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -25,9 +21,6 @@ class SearchSettingsScreenVM : ViewModel(), KoinComponent {
     private val shortcutSearchSettings: ShortcutSearchSettings by inject()
     private val searchFilterSettings: SearchFilterSettings by inject()
 
-    private val appRepository: AppRepository by inject()
-
-    private val pluginService: PluginService by inject()
     private val permissionsManager: PermissionsManager by inject()
 
     val favorites = searchUiSettings.favorites
@@ -109,10 +102,4 @@ class SearchSettingsScreenVM : ViewModel(), KoinComponent {
         searchFilterSettings.setDefaultFilter(searchFilters)
     }
 
-    val plugins = pluginService.getPluginsWithState(enabled = true)
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), null)
-
-    val isTasksAppInstalled = appRepository.findOne("org.tasks", Process.myUserHandle())
-        .map { it != null }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), null)
 }

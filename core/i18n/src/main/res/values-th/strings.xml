@@ -386,14 +386,9 @@
     <string name="preference_clock_widget_alignment_bottom">ด้านล่าง</string>
     <string name="shortcut_unavailable_description">ไม่สามารถเข้าถึงทางลัดนี้ได้ เนื่องจาก %1$s ไม่ได้ถูกตั้งเป็นลอนเชอร์เริ่มต้น</string>
     <string name="preference_clockwidget_dynamic_zone">ส่วนไดนามิก</string>
-    <string name="preference_screen_plugins">ปลั๊กอิน</string>
-    <string name="preference_screen_plugins_summary">จัดการส่วนเสริมที่ติดตั้งไว้</string>
-    <string name="no_plugins_installed">ยังไม่ได้ติดตั้งปลั๊กอินใด</string>
     <string name="preference_mdy_color_source">ที่มาของสีไดนามิก</string>
     <string name="preference_mdy_color_source_wallpaper">ภาพพื้นหลัง</string>
     <string name="preference_mdy_color_source_system">ระบบ</string>
-    <string name="plugin_state_error">ปลั๊กอินนี้ทำงานไม่ถูกต้อง</string>
-    <string name="preference_plugin_enable">เปิดใช้งานปลั๊กอิน</string>
     <string name="widget_pick_widget">เลือกวิดเจ็ต</string>
     <string name="length_unit">หน่วยวัดความยาว</string>
     <string name="imperial">หน่วยวัดแบบอังกฤษ</string>
@@ -416,14 +411,9 @@
     <string name="widget_config_appwidget_resize">ปรับขนาด</string>
     <string name="preference_category_advanced">ขั้นสูง</string>
     <string name="preference_search_locations_summary">ค้นหาร้านค้าและสถานที่อื่นๆในพื้นที่ใกล้เคียง</string>
-    <string name="plugin_state_setup_required">คุณต้องตั้งค่าปลั๊กอินนี้ก่อน</string>
     <string name="metric">หน่วยวัดแบบเมตริก</string>
-    <string name="plugin_action_setup">ตั้งค่า</string>
-    <string name="plugin_type_weather">ผู้ให้บริการสภาพอากาศ</string>
     <string name="search_action_share">แชร์</string>
     <string name="preference_clock_widget_show_seconds">แสดงวินาที</string>
-    <string name="preference_plugin_badges">ป้ายปลั๊กอิน</string>
-    <string name="preference_plugin_badges_summary">แสดงป้ายบนผลการค้นหาให้เห็นว่ามาจากปลั๊กอินใด</string>
     <plurals name="calendar_search_enabled_lists">
         <item quantity="other">เลือกแล้ว %1$s รายการ</item>
     </plurals>
@@ -509,8 +499,6 @@
     <string name="preference_default_filter">ตัวกรองเริ่มต้น</string>
     <string name="preference_customize_filter_bar_summary">ตั้งค่าสิ่งที่แสดงในแผงตัวกรอง</string>
     <string name="preference_customize_filter_bar">ปรับแต่งแผงตัวกรอง</string>
-    <string name="plugin_type_locationsearch">ค้นหาสถานที่</string>
-    <string name="plugin_type_calendar">ปฏิทิน</string>
     <string name="profile_work_profile_state_locked">แอปในโปรไฟล์งานถูกพักอยู่</string>
     <string name="profile_work_profile_action_unlock">เลิกพัก</string>
     <string name="profile_work_profile_action_lock">พักแอปในโปรไฟล์งาน</string>
@@ -578,7 +566,6 @@
     <plurals name="departure_time_in">
         <item quantity="other">ในอีก %1$d นาที</item>
     </plurals>
-    <string name="plugin_type_contacts">ผู้ติดต่อ</string>
     <string name="preference_grid_list_icons">แสดงไอคอนแอปในรายการ</string>
     <string name="preference_grid_list_style_summary">แสดงแอปแบบเรียงรายการ แทนการแสดงแอปแบบเรียงเป็นตาราง</string>
     <string name="preference_grid_list_icons_summary">แสดงไอคอนในรายการแอป</string>
@@ -639,8 +626,6 @@
     <string name="preference_create_shapes">ชุดรูปร่าง</string>
     <string name="preference_create_typography">ชุดฟอนต์ใหม่</string>
     <string name="preference_create_transparency">ชุดความโปร่งใสใหม่</string>
-    <string name="preference_category_enabled_plugins">เปิดใช้งานแล้ว</string>
-    <string name="preference_category_installed_plugins">ติดตั้งแล้ว</string>
     <string name="preference_clockwidget_smartspacer">จัดการโดย Smartspacer</string>
     <string name="preference_clockwidget_battery_part_always_show">แสดงไว้เสมอ</string>
     <string name="preference_clockwidget_battery_part_show">แสดงเมื่อเหลือน้อยหรือกำลังชาร์จอยู่</string>

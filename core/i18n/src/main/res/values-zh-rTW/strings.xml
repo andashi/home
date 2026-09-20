@@ -386,15 +386,10 @@
     <plurals name="app_info_notifications">
         <item quantity="other">%1$s 個通知</item>
     </plurals>
-    <string name="preference_screen_plugins_summary">管理已安裝的擴充套件</string>
-    <string name="no_plugins_installed">沒有已安裝的外掛程式</string>
     <string name="search_action_websearch">網路搜尋</string>
-    <string name="preference_plugin_enable">啟用外掛程式</string>
     <string name="poi_category_synagogue">猶太教堂</string>
     <string name="poi_category_pizza_restaurant">披薩餐廳</string>
     <string name="widget_pick_widget">選取小工具</string>
-    <string name="preference_plugin_badges">外掛程式標記</string>
-    <string name="preference_plugin_badges_summary">表明搜尋結果是由哪個外掛程式所建立</string>
     <string name="widget_use_theme_colors">使用主題色彩</string>
     <string name="poi_category_car_rental">汽車出租</string>
     <string name="poi_category_car_sharing">共享汽車</string>
@@ -427,7 +422,6 @@
     <string name="action_done">完成</string>
     <string name="action_more_actions">更多動作</string>
     <string name="preference_search_locations_summary">搜尋附近的商店或其他地點</string>
-    <string name="plugin_type_weather">天氣資訊提供者</string>
     <string name="poi_category_bar">酒吧</string>
     <string name="poi_category_cafe">咖啡廳</string>
     <string name="poi_category_fuel">加油站</string>
@@ -447,8 +441,6 @@
     <string name="preference_clockwidget_dynamic_zone">動態區域</string>
     <string name="preference_customize_filter_bar">自訂篩選器列</string>
     <string name="preference_customize_filter_bar_summary">自訂篩選器列上的選項</string>
-    <string name="plugin_type_locationsearch">地點搜尋</string>
-    <string name="plugin_type_calendar">日曆</string>
     <string name="action_import">匯入</string>
     <string name="profile_work_profile_action_unlock">解除暫停</string>
     <string name="profile_work_profile_state_locked">工作應用程式被暫停</string>
@@ -456,10 +448,7 @@
     <string name="preference_restore_default">還原預設</string>
     <string name="shortcut_label_unavailable">無法使用</string>
     <string name="shortcut_unavailable_description">此捷徑無法使用，因為 %1$s 不是預設啟動器</string>
-    <string name="plugin_action_setup">設定</string>
     <string name="imperial">英制</string>
-    <string name="plugin_state_error">此外掛程式未正常運作</string>
-    <string name="plugin_state_setup_required">請先設定此外掛程式</string>
     <string name="clock_style_digital1">粗體</string>
     <string name="clock_style_digital2">簡易</string>
     <string name="clock_style_binary">二進制</string>
@@ -541,7 +530,6 @@
     <string name="preference_mdy_color_source_system">系統</string>
     <string name="preference_mdy_color_source_wallpaper">桌布</string>
     <string name="preference_category_advanced">進階</string>
-    <string name="preference_screen_plugins">外掛程式</string>
     <string name="preference_calendar_hide_completed">隱藏完成的任務</string>
     <string name="preference_clock_widget_alignment_top">頂部</string>
     <string name="preference_clock_widget_alignment">位置</string>
@@ -580,7 +568,6 @@
     <plurals name="departure_time_in">
         <item quantity="other">在 %1$d 分鐘內</item>
     </plurals>
-    <string name="plugin_type_contacts">聯絡人</string>
     <string name="preference_grid_list_icons">在列表中顯示應用程式圖示</string>
     <string name="preference_grid_list_style_summary">以列表而不是網格顯示應用程式</string>
     <string name="preference_grid_list_icons_summary">在列表檢視中顯示圖示</string>
@@ -647,8 +634,6 @@
     <string name="preference_measurement_system_us">美制單位</string>
     <string name="preference_form_of_address_fem">地址格式</string>
     <string name="preference_form_of_address_masc">地址格式</string>
-    <string name="preference_category_enabled_plugins">已啟用</string>
-    <string name="preference_category_installed_plugins">已安裝</string>
     <string name="tag_icon_customicon">圖示</string>
     <string name="tag_icon_emoji">表情符號</string>
     <string name="preference_transliteration_auto">自動</string>

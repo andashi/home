@@ -28,6 +28,7 @@ import de.mm20.launcher2.database.migrations.Migration_30_31
 import de.mm20.launcher2.database.migrations.Migration_31_32
 import de.mm20.launcher2.database.migrations.Migration_32_33
 import de.mm20.launcher2.database.migrations.Migration_33_34
+import de.mm20.launcher2.database.migrations.Migration_34_35
 import de.mm20.launcher2.database.migrations.Migration_6_7
 import de.mm20.launcher2.database.migrations.Migration_7_8
 import de.mm20.launcher2.database.migrations.Migration_8_9
@@ -41,7 +42,7 @@ import org.robolectric.RobolectricTestRunner
 
 /**
  * Template for future migration tests (the Phase 3 grid migration will follow
- * this pattern). Validates the full migration chain 6 -> 34 against the
+ * this pattern). Validates the full migration chain 6 -> 35 against the
  * exported schema JSONs in `schemas/` (wired as test assets).
  */
 @RunWith(RobolectricTestRunner::class)
@@ -86,20 +87,21 @@ class MigrationTest {
         Migration_31_32(),
         Migration_32_33(),
         Migration_33_34(),
+        Migration_34_35(),
     )
 
     @Test
-    fun `migrate 6 to 34`() {
+    fun `migrate 6 to 35`() {
         helper.createDatabase(testDb, 6).close()
 
-        val db = helper.runMigrationsAndValidate(testDb, 34, true, *allMigrations)
+        val db = helper.runMigrationsAndValidate(testDb, 35, true, *allMigrations)
 
         assertTrue(db.isOpen)
         db.close()
     }
 
     @Test
-    fun `search action survives migration 24 to 34`() {
+    fun `search action survives migration 24 to 35`() {
         helper.createDatabase(testDb, 24).apply {
             execSQL(
                 "INSERT INTO `SearchAction` (`position`, `type`, `data`, `label`, `icon`, `color`, `customIcon`, `options`) " +
@@ -108,11 +110,30 @@ class MigrationTest {
             close()
         }
 
-        val db = helper.runMigrationsAndValidate(testDb, 34, true, *allMigrations.copyOfRange(18, 28))
+        val db = helper.runMigrationsAndValidate(testDb, 35, true, *allMigrations.copyOfRange(18, 29))
 
         db.query("SELECT `data` FROM `SearchAction` WHERE `position` = 42").use { cursor ->
             assertTrue(cursor.moveToFirst())
             assertEquals("https://example.com", cursor.getString(0))
+        }
+        db.close()
+    }
+
+    @Test
+    fun `migration 34 to 35 drops the tables of removed features`() {
+        helper.createDatabase(testDb, 34).apply {
+            execSQL("INSERT INTO `Plugins` (`authority`, `label`, `type`, `enabled`, `packageName`, `className`) " +
+                    "VALUES ('com.example.p', 'Example', 'FileSearch', 1, 'com.example', 'P')")
+            close()
+        }
+
+        val db = helper.runMigrationsAndValidate(testDb, 35, true, Migration_34_35())
+
+        for (table in listOf("Plugins", "forecasts", "Currency")) {
+            db.query("SELECT name FROM sqlite_master WHERE type = 'table' AND name = ?", arrayOf(table))
+                .use { cursor ->
+                    assertEquals("table $table should have been dropped", 0, cursor.count)
+                }
         }
         db.close()
     }

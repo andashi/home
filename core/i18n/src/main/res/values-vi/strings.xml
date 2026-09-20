@@ -197,9 +197,6 @@
     <string name="preference_icon_shape_hexagon">Hình lục giác</string>
     <string name="preference_category_searchbar">Thanh tìm kiếm</string>
     <string name="preference_screen_integrations">Tích hợp</string>
-    <string name="preference_screen_plugins">Plugin</string>
-    <string name="preference_screen_plugins_summary">Quản lý các tiện ích mở rộng đã cài đặt</string>
-    <string name="no_plugins_installed">Không có plugin nào được cài đặt</string>
     <string name="preference_theme_system">Theo dõi hệ thống</string>
     <string name="preference_themed_icons">Biểu tượng theo chủ đề</string>
     <string name="preference_themed_icons_summary">Biểu tượng màu theo cách phối màu của ứng dụng</string>
@@ -234,8 +231,6 @@
     <string name="preference_cloud_badges_summary">Hiển thị dấu hiệu cho các tệp được lưu trữ trên đám mây</string>
     <string name="preference_shortcut_badges">Dấu hiệu lối tắt</string>
     <string name="preference_shortcut_badges_summary">Hiển thị dấu hiệu cho biết lối tắt thuộc về ứng dụng nào</string>
-    <string name="preference_plugin_badges">Dấu hiệu plugin</string>
-    <string name="preference_plugin_badges_summary">Cho biết kết quả tìm kiếm được tạo bằng plugin nào</string>
     <string name="preference_about_telegram">Nhóm Telegram</string>
     <string name="preference_about_fdroid">Kho lưu trữ F-Droid</string>
     <string name="preference_enforce_icon_shape">Hình dạng lực</string>
@@ -419,13 +414,8 @@
     <string name="import_theme_error">Không thể đọc được tệp tin đã chọn. Hãy đảm bảo rằng bạn đã chọn tệp chủ đề hợp lệ (*.kvtheme) và tệp đó không bị hỏng.</string>
     <string name="shortcut_label_unavailable">Không có sẵn</string>
     <string name="shortcut_unavailable_description">Lối tắt này không khả dụng vì %1$s không phải là trình khởi chạy mặc định</string>
-    <string name="preference_plugin_enable">Kích hoạt plugin</string>
     <string name="length_unit">Đơn vị độ dài</string>
     <string name="metric">Hệ Mét</string>
-    <string name="plugin_state_error">Plugin này không hoạt động chính xác</string>
-    <string name="plugin_state_setup_required">Bạn cần thiết lập plugin này trước</string>
-    <string name="plugin_action_setup">Thiết lập</string>
-    <string name="plugin_type_weather">Nhà cung cấp thời tiết</string>
     <string name="unavailable_searchable">Mục này không còn tồn tại nữa.</string>
     <string name="clock_style_digital1">Đậm</string>
     <string name="clock_style_digital2">Đơn giản</string>
@@ -439,7 +429,6 @@
     <string name="search_filter_tools">Công cụ</string>
     <string name="search_filter_online">Kết quả trực tuyến</string>
     <string name="search_filter_apps">Ứng dụng</string>
-    <string name="plugin_type_locationsearch">Tìm kiếm địa điểm</string>
     <string name="preference_default_filter">Bộ lọc mặc định</string>
     <string name="preference_default_filter_summary">Tùy chỉnh bộ lọc mặc định cho tìm kiếm</string>
     <string name="preference_filter_bar">Hiển thị thanh bộ lọc</string>

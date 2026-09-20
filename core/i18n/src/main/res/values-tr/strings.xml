@@ -366,9 +366,6 @@
     <string name="preference_icon_shape_hexagon">Altıgen</string>
     <string name="preference_category_searchbar">Arama çubuğu</string>
     <string name="preference_screen_integrations">Entegrasyonlar</string>
-    <string name="preference_screen_plugins">Eklentiler</string>
-    <string name="preference_screen_plugins_summary">Yüklü uzantıları yönet</string>
-    <string name="no_plugins_installed">Yüklü eklenti yok</string>
     <string name="preference_theme_system">Sistemi takip et</string>
     <string name="preference_themed_icons">Temalı simgeler</string>
     <string name="preference_themed_icons_summary">Uygulamanın renk şemasıyla simgeleri renklendir</string>
@@ -404,8 +401,6 @@
     <string name="preference_cloud_badges_summary">Bir bulutta depolanan dosyalar için bir rozet göster</string>
     <string name="preference_shortcut_badges">Kısayol rozetleri</string>
     <string name="preference_shortcut_badges_summary">Bir kısayolun hangi uygulamaya ait olduğunu gösteren bir rozet göster</string>
-    <string name="preference_plugin_badges">Eklenti rozetleri</string>
-    <string name="preference_plugin_badges_summary">Bir arama sonucunun hangi eklenti tarafından oluşturulduğunu belirt</string>
     <string name="preference_about_telegram">Telegram grubu</string>
     <string name="preference_about_fdroid">F-Droid deposu</string>
     <string name="preference_enforce_icon_shape">Şekli zorla</string>
@@ -640,15 +635,9 @@
     <string name="app_label_locked_profile">Kilitli</string>
     <!-- %1$s: app name -->
     <string name="shortcut_unavailable_description">Bu kısayol kullanılamıyor çünkü %1$s varsayılan başlatıcı değil</string>
-    <string name="preference_plugin_enable">Eklentiyi etkinleştir</string>
     <string name="length_unit">Uzunluk birimi</string>
     <string name="imperial">İmparatorluk</string>
     <string name="metric">Metrik</string>
-    <string name="plugin_state_error">Bu eklenti düzgün çalışmıyor</string>
-    <string name="plugin_state_setup_required">Öncelikle bu eklentiyi kurmanız gerekiyor</string>
-    <string name="plugin_action_setup">Kur</string>
-    <string name="plugin_type_contacts">Kişiler</string>
-    <string name="plugin_type_weather">Hava durumu sağlayıcısı</string>
     <string name="unavailable_searchable">Bu öğe artık mevcut değil</string>
     <string name="clock_style_digital1">Kalın</string>
     <string name="clock_style_digital2">Basit</string>
@@ -664,8 +653,6 @@
     <string name="search_filter_tools">Araçlar</string>
     <string name="search_filter_online">Çevrimiçi sonuçlar</string>
     <string name="search_filter_apps">Uygulamalar</string>
-    <string name="plugin_type_locationsearch">Yer arama</string>
-    <string name="plugin_type_calendar">Takvim</string>
     <string name="preference_default_filter">Varsayılan filtre</string>
     <string name="preference_default_filter_summary">Aramalar için varsayılan filtreyi özelleştir</string>
     <string name="preference_filter_bar">Filtre çubuğunu göster</string>
@@ -829,8 +816,6 @@
     <string name="clock_variant_analog_ticks">Çubuklar</string>
     <string name="music_widget_interactive_progress_bar">İnteraktif ilerleme barı</string>
     <string name="widget_name_apps">Uygulamalar</string>
-    <string name="preference_category_enabled_plugins">Etkin</string>
-    <string name="preference_category_installed_plugins">Yüklendi</string>
     <string name="preference_clock_widget_monospaced">Eşaralıklı rakamlar</string>
     <string name="preference_clockwidget_smartspacer">Smartspacer tarafından sağlanır</string>
     <string name="preference_clockwidget_dock_rows">Dok satırları</string>

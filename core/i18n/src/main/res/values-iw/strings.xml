@@ -193,8 +193,6 @@
     <string name="preference_wallpaper_summary">בחירת תמונת רקע</string>
     <string name="preference_shortcut_badges">תגי קיצור דרך</string>
     <string name="preference_shortcut_badges_summary">הצגת תג המציין לאיזה יישום שייך קיצור הדרך</string>
-    <string name="preference_plugin_badges">תגי תוספים</string>
-    <string name="preference_plugin_badges_summary">חיווי התוסף ששימש ליצירת תוצאת החיפוש</string>
     <string name="preference_suspended_badges">יישומים מושעים</string>
     <string name="preference_cloud_badges">תגי ענן</string>
     <string name="preference_cloud_badges_summary">הצגת תג עבור קבצים ששמורים בענן</string>
@@ -277,9 +275,6 @@
     <string name="preference_cards_corner_radius">רדיוס הפינה</string>
     <string name="preference_cards_stroke_width">עובי הקו</string>
     <string name="preference_cards_opacity">אטימות</string>
-    <string name="preference_screen_plugins_summary">ניהול התוספים המותקנים</string>
-    <string name="preference_screen_plugins">תוספים</string>
-    <string name="no_plugins_installed">לא מותקנים תוספים</string>
     <string name="preference_theme_system">כפי שמוגדר במערכת</string>
     <string name="preference_themed_icons_summary">צביעת הסמלים לפי ערכת הצבעים של היישום</string>
     <string name="preference_force_themed_icons">אכיפת סמלים בצבעי ערכת הנושא</string>
@@ -577,7 +572,6 @@
     <string name="search_filter_tools">כלים</string>
     <string name="search_filter_online">תוצאות מקוונות</string>
     <string name="search_filter_apps">יישומים</string>
-    <string name="plugin_type_locationsearch">חיפוש מקומות</string>
     <string name="preference_default_filter_summary">התאמת סינון ברירת המחדל עבור חיפושים</string>
     <string name="preference_filter_bar">הצגת סרגל המסננים</string>
     <string name="poi_category_fuel">תחנת דלק</string>
@@ -593,19 +587,12 @@
     <string name="poi_category_bank">בנק</string>
     <string name="poi_category_tennis">מגרש טניס</string>
     <string name="shortcut_unavailable_description">קיצור הדרך לא זמין משום ש-%1$s אינו מוגדר כלאנצ\'ר ברירת המחדל</string>
-    <string name="preference_plugin_enable">הפעלת התוסף</string>
     <string name="length_unit">יחידת מידה של אורך</string>
-    <string name="plugin_state_error">התוסף אינו פועל כראוי</string>
-    <string name="plugin_state_setup_required">עליך להגדיר תוסף זה תחילה</string>
-    <string name="plugin_action_setup">הגדרה</string>
-    <string name="plugin_type_contacts">אנשי קשר</string>
-    <string name="plugin_type_weather">ספק מזג אוויר</string>
     <string name="unavailable_searchable">פריט זה אינו קיים עוד</string>
     <string name="clock_style_digital1">מודגש</string>
     <string name="clock_style_empty">ללא שעון</string>
     <string name="clock_style_custom">יישומון (Widget) מותאם</string>
     <string name="clock_variant_outlined">קווי מתאר</string>
-    <string name="plugin_type_calendar">לוח שנה</string>
     <string name="preference_default_filter">סינון ברירת-מחדל</string>
     <string name="preference_filter_bar_summary">הצגת סינונים מהירים מעל המקלדת</string>
     <string name="preference_customize_filter_bar">התאמת סרגל המסננים</string>
@@ -674,8 +661,6 @@
     <string name="preference_transliteration">תעתיק מועדף</string>
     <string name="preference_transliteration_auto">תעתיק אוטומטי</string>
     <string name="widget_name_apps">יישומים</string>
-    <string name="preference_category_enabled_plugins">מופעל</string>
-    <string name="preference_category_installed_plugins">מותקנים</string>
     <string name="preference_clockwidget_smartspacer">מנוהל ע\"י Smartspacer</string>
     <string name="preference_smartspacer_integration">Smartspacer</string>
     <string name="preference_smartspacer_integration_description">Smartspacer הוא יישומון קוד-פתוח ללא עלות ל-At a Glance. אם הותקן, הוא יכול להשתלב באזור הדינמי של יישומון השעון</string>
