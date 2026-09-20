@@ -55,8 +55,6 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
 
     implementation(libs.koin.android)
-
-    implementation(project(":data:weather"))
     implementation(project(":data:calendar"))
     implementation(project(":services:music"))
     implementation(project(":core:ktx"))

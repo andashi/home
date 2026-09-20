@@ -13,21 +13,6 @@
     <string name="settings">Configuració</string>
     <string name="help">Ajuda</string>
     <string name="wallpaper">Fons de pantalla</string>
-    <string name="wind_north">Nord</string>
-    <string name="wind_north_east">Nord-est</string>
-    <string name="wind_north_north_east">Nord-est</string>
-    <string name="wind_east_north_east">Nord-est</string>
-    <string name="wind_east">Est</string>
-    <string name="wind_east_south_east">Sud-Est</string>
-    <string name="wind_south_east">Sud-Est</string>
-    <string name="wind_south_south_east">Sud-Est</string>
-    <string name="wind_south">Sud</string>
-    <string name="wind_south_south_west">Sud-oest</string>
-    <string name="wind_west_south_west">Sud-oest</string>
-    <string name="wind_west">Oest</string>
-    <string name="wind_west_north_west">Nord-oest</string>
-    <string name="wind_north_west">Nord-oest</string>
-    <string name="wind_north_north_west">Nord-oest</string>
     <string name="wikipedia_source">Font: Wikipedia</string>
     <string name="file_type_directory">Directori</string>
     <string name="file_type_archive">Nom del fitxer</string>
@@ -57,7 +42,6 @@
     <string name="websearch_dialog_query_encoding_form">application/x-www-form-urlencoded</string>
     <string name="websearch_dialog_query_encoding_none">Rés</string>
     <string name="menu_edit_widgets">Edita els ginys</string>
-    <string name="widget_name_weather">El temps</string>
     <string name="widget_name_calendar">Calendari</string>
     <string name="widget_name_music">Media</string>
     <string name="widget_name_notes">Nota</string>
@@ -103,50 +87,6 @@
     <string name="calendar_widget_next_events">Pròxim esdeveniment</string>
     <string name="calendar_widget_no_events">Sense esdeveniments avui</string>
     <string name="calendar_event_allday">Tot el dia</string>
-    <string name="weather_condition_sleetshowers">Xàfecs de neu</string>
-    <string name="weather_condition_heavysleet">Pedregada</string>
-    <string name="weather_condition_lightrainshowersandthunder">Pluja lleugera i trons</string>
-    <string name="weather_condition_heavyrain">Pluja forta</string>
-    <string name="weather_condition_lightsnowandthunder">Nevada lleugera i trons</string>
-    <string name="weather_condition_lightrain">Pluja lleugera</string>
-    <string name="weather_condition_lightrainshowers">Plugim</string>
-    <string name="weather_condition_lightsnow">Neu lleugera</string>
-    <string name="weather_condition_heavysleetshowersandthunder">Xàfecs intensos i trons</string>
-    <string name="weather_condition_lightsnowshowers">Ruixats de neu lleugers</string>
-    <string name="weather_condition_snowandthunder">Neu i trons</string>
-    <string name="weather_condition_heavysleetshowers">Xàfecs intensos</string>
-    <string name="weather_condition_heavysnow">Neu intensa</string>
-    <string name="weather_condition_cloudy">Ennuvolat</string>
-    <string name="weather_condition_lightrainandthunder">Pluja lleugera i trons</string>
-    <string name="weather_condition_hail">Calamarsa</string>
-    <string name="weather_condition_heavyrainshowers">Pluja intensa</string>
-    <string name="weather_condition_rainshowersandthunder">Ruixats de pluja i trons</string>
-    <string name="weather_condition_clearsky">Cel serè</string>
-    <string name="weather_condition_sleet">Aiguaneu</string>
-    <string name="weather_condition_rain">Pluja</string>
-    <string name="weather_condition_sleetandthunder">Aiguaneu i trons</string>
-    <string name="weather_condition_lightssnowshowersandthunder">Ruixats de neu suaus i trons</string>
-    <string name="weather_condition_fair">Bon temps</string>
-    <string name="weather_condition_fog">Boira</string>
-    <string name="weather_condition_sleetshowersandthunder">Xàfecs i trons</string>
-    <string name="weather_condition_rainandthunder">Pluja i trons</string>
-    <string name="weather_condition_lightsleet">Pluja suau</string>
-    <string name="weather_condition_heavysleetandthunder">Pluja forta i trons</string>
-    <string name="weather_condition_partlycloudy">Parcialment ennuvolat</string>
-    <string name="weather_condition_heavysnowandthunder">Nevada intensa i trons</string>
-    <string name="weather_condition_rainshowers">Ruixats de pluja</string>
-    <string name="weather_condition_lightsleetandthunder">Pluja lleugera i trons</string>
-    <string name="weather_condition_heavysnowshowersandthunder">Ruixats de neu intensos i trons</string>
-    <string name="weather_condition_lightsleetshowers">Xàfecs de pluja lleugera</string>
-    <string name="weather_condition_snowshowersandthunder">Ruixats de neu i trons</string>
-    <string name="weather_condition_snowshowers">Ruixats de neu</string>
-    <string name="weather_condition_heavyrainandthunder">Pluja intensa i trons</string>
-    <string name="weather_condition_wind">Vent</string>
-    <string name="weather_condition_unknown">Desconegut</string>
-    <string name="weather_no_data">Informació del temps no disponible</string>
-    <string name="weather_widget_set_location">Estableix la ubicació</string>
-    <string name="weather_location_search_no_result">Ubicació desconeguda</string>
-    <string name="missing_permission_auto_location">L\'accés a la ubicació és necessari per determinar la ubicació automàticament</string>
     <string name="missing_permission_music_widget">Cal accedir a les notificacions per controlar la reproducció multimèdia</string>
     <string name="missing_permission_contact_search_settings">Cal permís d\'accés als contactes per cercar contactes</string>
     <string name="missing_permission_calendar_search_settings">Cal permís d\'accés al calendari per cercar</string>
@@ -172,9 +112,6 @@
     <string name="open_webpage">Lloc web obert</string>
     <string name="preference_screen_about_summary">Informació sobre l\'aplicació i la llicència</string>
     <string name="preference_screen_appearance_summary">Personalitzeu l\'experiència</string>
-    <string name="preference_weather_provider">Proveïdor</string>
-    <string name="preference_automatic_location">Ubicació automàtica</string>
-    <string name="preference_location">Ubicació</string>
     <string name="preference_imperial_units_summary">Utilitzeu graus Fahrenheit i milles per hora</string>
     <string name="preference_imperial_units">Unitats imperials</string>
     <string name="widget_config_weather_compact">Mode compacte</string>
@@ -247,7 +184,6 @@
     <string name="preference_grid_labels_summary">Mostra el nom de l\'aplicació a sota de la icona</string>
     <string name="preference_screen_debug">Depuració</string>
     <string name="preference_category_widgets">Ginys</string>
-    <string name="preference_screen_weatherwidget">El temps</string>
     <string name="preference_category_media_apps">Aplicacions multimèdia</string>
     <string name="preference_screen_clockwidget">Rellotge</string>
     <string name="preference_screen_clockwidget_summary">Configura l\'estil i els components del rellotge</string>
@@ -407,15 +343,12 @@
     <string name="menu_share">Comparteix</string>
     <string name="wikipedia_url">https://ca.wikipedia.org/</string>
     <string name="nextcloud_server_invalid_url">Aquesta URL no apunta a cap punt d\'instal·lació Nextcloud vàlid</string>
-    <string name="provider_metno">MET Noruega</string>
-    <string name="provider_openweathermap">OpenWeatherMap</string>
     <string name="battery_part_charging">Carregant</string>
     <string name="menu_share_store_link">%1$s enllaç</string>
     <string name="disclaimer_currency_converter">Tipus de canvi publicats un cop al dia pel Banc Central Europeu. Tota la informació es facilita \"tal i com està\" sense cap tipus de garantia. No s\'assumeix cap responsabilitat per aquesta informació.
 \n
 \nÚltima actualització: %1$s</string>
     <string name="menu_share_apk_file">fitxer APK</string>
-    <string name="provider_brightsky">Servei meteorològic alemany (només Alemanya)</string>
     <plurals name="battery_part_remaining_charge_time">
         <item quantity="one">Càrrega completa en %1$s minut</item>
         <item quantity="many">Càrrega completa en %1$s minuts</item>
@@ -430,20 +363,14 @@
     </plurals>
     <string name="file_type_none">Fitxer</string>
     <string name="music_widget_default_title">%1$s està reproduint música</string>
-    <string name="preference_category_location">Ubicació</string>
     <string name="file_type_compressed">Fitxer comprimit</string>
-    <string name="weather_condition_lightssleetshowersandthunder">Xàfecs, llamps i trons</string>
-    <string name="preference_automatic_location_summary">Utilitzeu els serveis de localització per determinar la ubicació automàticament</string>
     <string name="icon_picker_filter_all_packs">Tots els paquets d\'icones</string>
     <string name="menu_remove">Moure</string>
-    <string name="weather_condition_snow">Neu</string>
     <string name="preference_debug_dump_heap_summary">Captura una instantània per analitzar l\'ús de la memòria. L\'aplicació es congelarà fins que finalitzi aquest procés.</string>
     <string name="create_search_action_website_invalid_url">El lloc web indicat no es pot importar automàticament com a cerca web. Podeu provar un lloc web diferent o introduir les dades necessàries manualment al pas següent</string>
     <string name="menu_contacts_open_externally">Visualitza a l\'agenda de contactes</string>
-    <string name="weather_condition_heavysnowshowers">Ruixats de neu intensos</string>
     <string name="menu_calendar_open_externally">Visualitza al calendari</string>
     <string name="default_websearch_3_url">https://play.google.com/store/search\?q=${1}</string>
-    <string name="weather_condition_heavyrainshowersandthunder">Ruixats de pluja intensa i trons</string>
     <string name="preference_themed_icons_summary">Icones de colors amb l\'esquema de colors de l\'aplicació</string>
     <string name="preference_layout_fixed_search_bar">Barra de cerca fixada</string>
     <string name="app_info_version">Versió %1$s</string>
@@ -456,7 +383,6 @@
     </plurals>
     <string name="music_widget_no_data">No s\'ha reproduit cap fitxer multimèdia encara</string>
     <string name="preference_blur_wallpaper">Desenfoca el fons de pantalla</string>
-    <string name="wind_south_west">Sud-oest</string>
     <string name="gesture_action_quick_settings">Obrir la configuració ràpida</string>
     <string name="preference_blur_wallpaper_summary">Utilitzeu un efecte borrós al fons de pantalla</string>
     <string name="gesture_failed_message">Heu fet un gest \"%1$s\". Aquest gest està configurat actualment per activar una acció \"%2$s\". Tanmateix, l\'acció no s\'ha pogut dur a terme pel motiu següent:</string>
@@ -504,8 +430,6 @@
     <string name="plugin_state_setup_required">Primer cal configurar aquest complement</string>
     <string name="plugin_state_error">Aquest connector no funciona correctament</string>
     <string name="preference_category_advanced">Avançat</string>
-    <string name="plugin_weather_provider_enable">Estableix com a proveïdor meteorològic</string>
-    <string name="plugin_weather_provider_enabled">Actualment establert com a proveïdor meteorològic</string>
     <string name="unavailable_searchable">Aquest element ja no existeix</string>
     <string name="plugin_action_setup">Configurar</string>
     <string name="plugin_type_weather">Proveïdor de dades climatològiques</string>
@@ -533,7 +457,6 @@
     <string name="poi_category_kiosk">Quiosc</string>
     <string name="widget_config_appwidget_resize">Canvia la mida</string>
     <string name="search_action_share">Compartir</string>
-    <string name="weather_condition_thunderstorm">Tempesta</string>
     <string name="clock_style_custom">Giny personalitzat</string>
     <string name="preference_default_filter_summary">Personalitzeu el filtre predeterminat per a les cerques</string>
     <string name="poi_category_hospital">Hospital</string>
@@ -583,8 +506,6 @@
     <string name="preference_default_filter">Filtre per defecte</string>
     <string name="preference_customize_filter_bar">Personalitza la barra de filtres</string>
     <string name="preference_customize_filter_bar_summary">Personalitza quins elements s\'inclouen a la barra de filtres</string>
-    <string name="preference_location_managed">Gestionat pel connector</string>
-    <string name="preference_location_managed_summary">La ubicació d\'aquest proveïdor la gestiona l\'aplicació del connector</string>
     <string name="filter_settings_network_warning">El filtre actual activa els resultats en línia de manera predeterminada. Les vostres consultes de cerca poden ser enviades sense voler a serveis web externs. Per motius de privadesa, això no es recomana.</string>
     <string name="customize_item_tags">Etiquetes</string>
     <string name="customize_item_visibility">Mostra a</string>
@@ -667,7 +588,6 @@
         <item quantity="many">d\'aquí a %1$d minuts</item>
         <item quantity="other">d\'aquí a %1$d minuts</item>
     </plurals>
-    <string name="weather_widget_no_provider">No s\'ha seleccionat cap proveïdor meteorològic o el proveïdor seleccionat no està disponible</string>
     <string name="task_due_time">Realitzat a %1$s</string>
     <string name="task_due_date">Realitzat al dia %1$s</string>
     <string name="task_due_today">Realitzat avui</string>
@@ -721,13 +641,6 @@
     <string name="preference_shapes_extra_round">Més arrodonit</string>
     <string name="preference_shapes_base">Forma bàsica</string>
     <string name="confirmation_delete_shapes_scheme">De veritat voleu suprimir l\'esquema de forma %1$s?</string>
-    <string name="weather_condition_thunder">Trons</string>
-    <string name="weather_condition_haze">Enboirat</string>
-    <string name="preference_location_breezy">Gestiona la ubicació a Breezy Weather</string>
-    <string name="provider_breezy">Breezy Weather</string>
-    <string name="preference_breezyweather_integration">Breezy Weather</string>
-    <string name="preference_breezyweather_integration_description">Breezy Weather és una aplicació meteorològica gratuïta i de codi obert. Si està instal·lada, %1$s pot utilitzar Breezy Weather com a font de dades per a les dades meteorològiques.</string>
-    <string name="preference_launch_breezyweather_app">Obre Breezy Weather</string>
     <string name="clock_variant_analog_ticks">Ticks</string>
     <string name="theme_bundle_name">Nom</string>
     <string name="action_install">Instal·la</string>
@@ -756,7 +669,6 @@
     </plurals>
     <string name="preference_screen_typography">Tipografia</string>
     <string name="preference_tasks_integration">Tasques</string>
-    <string name="preference_breezyweather_integration_instructions">Per utilitzar Breezy Weather com a proveïdor meteorològic:\n\n1. Aneu a Breezy Weather &gt; Configuració &gt; Widgets i fons de pantalla animats &gt; Envia dades de Gadgetbridge &gt; Activa %1$s\n\n2. A %1$s, seleccioneu Breezy Weather com a proveïdor meteorològic</string>
     <string name="confirmation_delete_typography_scheme">De veritat voleu suprimir l\'esquema tipogràfic %1$s?</string>
     <string name="confirmation_delete_transparencies_scheme">De veritat voleu suprimir l\'esquema de transparència %1$s?</string>
     <string name="new_theme_name">(sense títol)</string>

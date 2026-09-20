@@ -28,7 +28,6 @@ import de.mm20.launcher2.globalactions.globalActionsModule
 import de.mm20.launcher2.notifications.notificationsModule
 import de.mm20.launcher2.permissions.permissionsModule
 import de.mm20.launcher2.data.plugins.dataPluginsModule
-import de.mm20.launcher2.devicepose.devicePoseModule
 import de.mm20.launcher2.feed.feedModule
 import de.mm20.launcher2.plugins.servicesPluginsModule
 import de.mm20.launcher2.preferences.preferencesModule
@@ -38,7 +37,6 @@ import de.mm20.launcher2.services.favorites.favoritesModule
 import de.mm20.launcher2.services.tags.servicesTagsModule
 import de.mm20.launcher2.services.widgets.widgetsServiceModule
 import de.mm20.launcher2.themes.themesModule
-import de.mm20.launcher2.weather.weatherModule
 import kotlinx.coroutines.*
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
@@ -83,7 +81,6 @@ class LauncherApplication : Application(), CoroutineScope, ImageLoaderFactory {
                     searchActionsModule,
                     themesModule,
                     unitConverterModule,
-                    weatherModule,
                     websitesModule,
                     widgetsModule,
                     wikipediaModule,
@@ -91,7 +88,6 @@ class LauncherApplication : Application(), CoroutineScope, ImageLoaderFactory {
                     widgetsServiceModule,
                     dataPluginsModule,
                     servicesPluginsModule,
-                    devicePoseModule,
                     profilesModule,
                     i18nDataModule,
                     feedModule,

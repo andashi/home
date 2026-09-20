@@ -51,8 +51,6 @@ import de.mm20.launcher2.ui.settings.apps.AppSearchSettingsRoute
 import de.mm20.launcher2.ui.settings.apps.AppSearchSettingsScreen
 import de.mm20.launcher2.ui.settings.appshortcuts.AppShortcutsSettingsRoute
 import de.mm20.launcher2.ui.settings.appshortcuts.AppShortcutsSettingsScreen
-import de.mm20.launcher2.ui.settings.breezyweather.BreezyWeatherSettingsRoute
-import de.mm20.launcher2.ui.settings.breezyweather.BreezyWeatherSettingsScreen
 import de.mm20.launcher2.ui.settings.buildinfo.BuildInfoSettingsRoute
 import de.mm20.launcher2.ui.settings.buildinfo.BuildInfoSettingsScreen
 import de.mm20.launcher2.ui.settings.calendarsearch.CalendarProviderSettingsRoute
@@ -129,8 +127,6 @@ import de.mm20.launcher2.ui.settings.unitconverter.UnitConverterHelpSettingsRout
 import de.mm20.launcher2.ui.settings.unitconverter.UnitConverterHelpSettingsScreen
 import de.mm20.launcher2.ui.settings.unitconverter.UnitConverterSettingsRoute
 import de.mm20.launcher2.ui.settings.unitconverter.UnitConverterSettingsScreen
-import de.mm20.launcher2.ui.settings.weather.WeatherIntegrationSettingsRoute
-import de.mm20.launcher2.ui.settings.weather.WeatherIntegrationSettingsScreen
 import de.mm20.launcher2.ui.settings.wikipedia.WikipediaSettingsRoute
 import de.mm20.launcher2.ui.settings.wikipedia.WikipediaSettingsScreen
 import de.mm20.launcher2.ui.theme.LauncherTheme
@@ -224,9 +220,6 @@ class SettingsActivity : BaseActivity() {
             entry<FilterBarSettingsRoute> {
                 FilterBarSettingsScreen()
             }
-            entry<WeatherIntegrationSettingsRoute> {
-                WeatherIntegrationSettingsScreen()
-            }
             entry<MediaIntegrationSettingsRoute> {
                 MediaIntegrationSettingsScreen()
             }
@@ -244,9 +237,6 @@ class SettingsActivity : BaseActivity() {
             }
             entry<TasksIntegrationSettingsRoute> {
                 TasksIntegrationSettingsScreen()
-            }
-            entry<BreezyWeatherSettingsRoute> {
-                BreezyWeatherSettingsScreen()
             }
             entry<PluginsSettingsRoute> {
                 PluginsSettingsScreen()
@@ -370,7 +360,6 @@ class SettingsActivity : BaseActivity() {
             intent.getStringExtra(EXTRA_ROUTE) ?: return null
         }
         return when(routeName) {
-            ROUTE_WEATHER_INTEGRATION -> WeatherIntegrationSettingsRoute
             ROUTE_MEDIA_INTEGRATION -> MediaIntegrationSettingsRoute
             ROUTE_SEARCH_ACTIONS -> SearchActionsSettingsRoute
             ROUTE_HIDDEN_ITEMS -> HiddenItemsSettingsRoute
@@ -380,7 +369,6 @@ class SettingsActivity : BaseActivity() {
 
     companion object {
         const val EXTRA_ROUTE = "de.mm20.launcher2.settings.ROUTE"
-        const val ROUTE_WEATHER_INTEGRATION = "settings/integrations/weather"
         const val ROUTE_MEDIA_INTEGRATION = "settings/integrations/media"
         const val ROUTE_SEARCH_ACTIONS = "settings/search/searchactions"
         const val ROUTE_HIDDEN_ITEMS = "settings/search/hiddenitems"

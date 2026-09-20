@@ -35,9 +35,9 @@ import de.mm20.launcher2.themes.transparencies.TransparenciesRepository
 import de.mm20.launcher2.widgets.AppWidget
 import de.mm20.launcher2.widgets.AppWidgetConfig
 import de.mm20.launcher2.widgets.CalendarWidget
+import de.mm20.launcher2.widgets.AppsWidget
 import de.mm20.launcher2.widgets.NotesWidget
 import de.mm20.launcher2.widgets.NotesWidgetConfig
-import de.mm20.launcher2.widgets.WeatherWidget
 import de.mm20.launcher2.widgets.Widget
 import de.mm20.launcher2.widgets.WidgetRepository
 import kotlinx.collections.immutable.persistentListOf
@@ -136,7 +136,7 @@ class DefaultConfigStoreTest {
         settings.state = ConfigState(themedIcons = true, dockEnabled = true)
         settings.transparenciesId = theme.id
         widgetRepository.widgets = listOf(
-            WeatherWidget(UUID.randomUUID()),
+            AppsWidget(UUID.randomUUID()),
             NotesWidget(UUID.randomUUID()),
             AppWidget(UUID.randomUUID(), AppWidgetConfig(widgetId = 1, height = 100)),
         )
@@ -152,7 +152,7 @@ class DefaultConfigStoreTest {
         assertEquals(0.5f, state.transparencyBackground)
         assertEquals(0.6f, state.transparencySurface)
         assertEquals(0.7f, state.transparencyElevatedSurface)
-        assertEquals(listOf(BuiltinWidget.Weather, BuiltinWidget.Notes), state.widgets)
+        assertEquals(listOf(BuiltinWidget.Apps, BuiltinWidget.Notes), state.widgets)
         assertEquals(
             listOf(
                 Favorite("com.example.a", ConfigProfile.Personal),
@@ -267,10 +267,10 @@ class DefaultConfigStoreTest {
 
     @Test
     fun `SetWidgets reconciles built-ins and preserves external widgets`() = runTest {
-        val weather = WeatherWidget(UUID.randomUUID())
+        val apps = AppsWidget(UUID.randomUUID())
         val notes = NotesWidget(UUID.randomUUID(), NotesWidgetConfig(storedText = "hello"))
         val external = AppWidget(UUID.randomUUID(), AppWidgetConfig(widgetId = 7, height = 200))
-        widgetRepository.widgets = listOf(weather, notes, external)
+        widgetRepository.widgets = listOf(apps, notes, external)
 
         val diagnostics = store.apply(
             listOf(ConfigMutation.SetWidgets(listOf(BuiltinWidget.Notes, BuiltinWidget.Calendar)))
@@ -292,14 +292,14 @@ class DefaultConfigStoreTest {
     @Test
     fun `SetWidgets removes built-ins missing from the config`() = runTest {
         widgetRepository.widgets = listOf(
-            WeatherWidget(UUID.randomUUID()),
+            AppsWidget(UUID.randomUUID()),
             NotesWidget(UUID.randomUUID()),
         )
 
-        store.apply(listOf(ConfigMutation.SetWidgets(listOf(BuiltinWidget.Weather))))
+        store.apply(listOf(ConfigMutation.SetWidgets(listOf(BuiltinWidget.Apps))))
 
         assertEquals(1, widgetRepository.widgets.size)
-        assertTrue(widgetRepository.widgets[0] is WeatherWidget)
+        assertTrue(widgetRepository.widgets[0] is AppsWidget)
     }
 
     // ----- dock favorites -----

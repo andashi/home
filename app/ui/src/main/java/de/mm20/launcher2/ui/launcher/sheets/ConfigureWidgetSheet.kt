@@ -117,7 +117,6 @@ import de.mm20.launcher2.widgets.AppsWidget
 import de.mm20.launcher2.widgets.CalendarWidget
 import de.mm20.launcher2.widgets.MusicWidget
 import de.mm20.launcher2.widgets.NotesWidget
-import de.mm20.launcher2.widgets.WeatherWidget
 import de.mm20.launcher2.widgets.Widget
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.flow.map
@@ -146,7 +145,6 @@ fun ConfigureWidgetSheet(
                 .verticalScroll(rememberScrollState())
         ) {
             when (widget) {
-                is WeatherWidget -> ConfigureWeatherWidget(widget, onWidgetUpdated)
                 is AppWidget -> ConfigureAppWidget(widget, onWidgetUpdated)
                 is CalendarWidget -> ConfigureCalendarWidget(widget, onWidgetUpdated)
                 is AppsWidget -> ConfigureFavoritesWidget(widget, onWidgetUpdated)
@@ -155,59 +153,6 @@ fun ConfigureWidgetSheet(
             }
         }
 
-    }
-}
-
-@Composable
-fun ColumnScope.ConfigureWeatherWidget(
-    widget: WeatherWidget,
-    onWidgetUpdated: (WeatherWidget) -> Unit,
-) {
-    val context = LocalContext.current
-
-    OutlinedCard {
-        Column(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            SwitchPreference(
-                title = stringResource(R.string.widget_config_weather_compact),
-                iconPadding = false,
-                value = !widget.config.showForecast,
-                onValueChanged = {
-                    onWidgetUpdated(widget.copy(config = widget.config.copy(showForecast = !it)))
-                }
-            )
-        }
-    }
-    TextButton(
-        modifier = Modifier
-            .padding(top = 8.dp)
-            .align(Alignment.End),
-        contentPadding = PaddingValues(
-            end = 16.dp,
-            top = 8.dp,
-            start = 24.dp,
-            bottom = 8.dp,
-        ),
-        onClick = {
-            context.startActivity(
-                Intent(
-                    context,
-                    SettingsActivity::class.java
-                ).apply {
-                    putExtra(
-                        SettingsActivity.EXTRA_ROUTE,
-                        SettingsActivity.ROUTE_WEATHER_INTEGRATION
-                    )
-                })
-        }) {
-        Text(stringResource(R.string.widget_config_weather_integration_settings))
-        Icon(
-            modifier = Modifier
-                .padding(start = ButtonDefaults.IconSpacing)
-                .requiredSize(ButtonDefaults.IconSize),
-            painter = painterResource(R.drawable.open_in_new_20px), contentDescription = null
-        )
     }
 }
 
@@ -683,7 +628,6 @@ fun ColumnScope.ConfigureAppWidget(
                         )
                     )
 
-                    is WeatherWidget -> it.copy(id = widget.id)
                     is MusicWidget -> it.copy(id = widget.id)
                     is CalendarWidget -> it.copy(id = widget.id)
                     is AppsWidget -> it.copy(id = widget.id)

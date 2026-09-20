@@ -33,7 +33,7 @@ class ConfigStateProviderTest {
         themedIcons = true,
         dockEnabled = true,
         widgetsEnabled = true,
-        widgets = listOf(BuiltinWidget.Weather),
+        widgets = listOf(BuiltinWidget.Apps),
     )
 
     private lateinit var store: FakeConfigStore

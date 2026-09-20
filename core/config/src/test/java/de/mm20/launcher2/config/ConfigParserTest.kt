@@ -38,7 +38,7 @@ class ConfigParserTest {
             },
             "widgets": {
               "enabled": true,
-              "widgets": ["weather", "calendar", "music", "apps", "notes"]
+              "widgets": ["calendar", "music", "apps", "notes"]
             },
             "clock": { "style": "orbit", "fillHeight": true }
           }
@@ -71,7 +71,6 @@ class ConfigParserTest {
         )
         assertEquals(
             listOf(
-                BuiltinWidget.Weather,
                 BuiltinWidget.Calendar,
                 BuiltinWidget.Music,
                 BuiltinWidget.Apps,
@@ -355,7 +354,7 @@ class ConfigParserTest {
             {
               "schemaVersion": 1,
               "home": {
-                "widgets": { "widgets": ["weather", "calendar", "weather"] }
+                "widgets": { "widgets": ["apps", "calendar", "apps"] }
               }
             }
         """.trimIndent()

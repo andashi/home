@@ -18,7 +18,7 @@ class ConfigDifferTest {
         dockEnabled = true,
         dockFavorites = listOf(Favorite("com.example.dialer", Profile.Personal)),
         widgetsEnabled = true,
-        widgets = listOf(BuiltinWidget.Weather, BuiltinWidget.Calendar),
+        widgets = listOf(BuiltinWidget.Apps, BuiltinWidget.Calendar),
         clockStyle = ClockStyle.Orbit,
         clockFillHeight = true,
         wallpaperImage = "home.jpg",
@@ -49,7 +49,7 @@ class ConfigDifferTest {
             ),
             widgets = WidgetsConfig(
                 enabled = true,
-                widgets = listOf(BuiltinWidget.Weather, BuiltinWidget.Calendar),
+                widgets = listOf(BuiltinWidget.Apps, BuiltinWidget.Calendar),
             ),
             clock = ClockConfig(style = ClockStyle.Orbit, fillHeight = true),
         ),

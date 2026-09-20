@@ -18,7 +18,6 @@ import de.mm20.launcher2.plugins.PluginService
 import de.mm20.launcher2.plugins.PluginWithState
 import de.mm20.launcher2.preferences.search.CalendarSearchSettings
 import de.mm20.launcher2.preferences.search.ContactSearchSettings
-import de.mm20.launcher2.preferences.weather.WeatherSettings
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -37,7 +36,6 @@ class PluginSettingsScreenVM : ViewModel(), KoinComponent {
     private val calendarRepository by inject<CalendarRepository>()
     private val calendarSearchSettings: CalendarSearchSettings by inject()
     private val contactSearchSettings: ContactSearchSettings by inject()
-    private val weatherSettings: WeatherSettings by inject()
 
     private var pluginPackageName = MutableStateFlow<String?>(null)
 
@@ -83,11 +81,6 @@ class PluginSettingsScreenVM : ViewModel(), KoinComponent {
             it.filter { it.plugin.type == PluginType.ContactSearch }
         }
 
-    val weatherPlugins = states
-        .map {
-            it.filter { it.plugin.type == PluginType.Weather }
-        }
-
 
     fun init(pluginId: String) {
         this.pluginPackageName.value = pluginId
@@ -125,10 +118,6 @@ class PluginSettingsScreenVM : ViewModel(), KoinComponent {
         calendarSearchSettings.setProviderEnabled(authority, enabled)
     }
 
-    val weatherProvider = weatherSettings.providerId
-    fun setWeatherProvider(providerId: String) {
-        weatherSettings.setProvider(providerId)
-    }
 
     fun getCalendarLists(plugin: Plugin): Flow<List<CalendarList>> {
         return calendarRepository.getCalendars(plugin.authority)

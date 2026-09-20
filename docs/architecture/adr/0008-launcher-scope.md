@@ -84,10 +84,17 @@ operator, and it is not compiled into the app.
   so a dropped provider can be cherry-picked back, but the cost of doing so
   grows as the fork diverges. This is a first step taken deliberately, with
   that bill accepted.
-- Config keys for dropped providers leave the public contract (ADR 0002).
-  Because unknown keys are ignored and reported through diagnostics rather
-  than rejected, an older `launcher.json` keeps loading, and #3 shrinks to the
-  surface that is left.
+- Config keys for dropped providers leave the public contract (ADR 0002), and
+  #3 shrinks to the surface that is left. An unknown *key* is ignored and
+  reported as a diagnostic, so that part is safe. An unknown *enum value* is
+  not: `ConfigParser` does not set `coerceInputValues`, so a `launcher.json`
+  naming a dropped value - `"widgets": ["weather"]`, say - fails to decode
+  **as a whole** and takes that zone's entire configuration with it. The
+  parser test `invalid enum value fails decode without throwing` pins exactly
+  that behaviour. The provisioning repo regenerates `launcher.json` from the
+  current schema and names no dropped value, so nothing breaks today, but
+  making the parser tolerate unknown enum values is real work that this ADR
+  does not do.
 - The search UI keeps its filter mechanism even though few categories remain.
   Collapsing that is a separate decision, made once the removals have settled.
 - What the launcher no longer does, something else must: weather, calendar,

@@ -110,9 +110,6 @@ data class WidgetsConfig(
 
 @Serializable
 enum class BuiltinWidget {
-    @SerialName("weather")
-    Weather,
-
     @SerialName("music")
     Music,
 

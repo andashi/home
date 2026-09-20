@@ -8,7 +8,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import de.mm20.launcher2.devicepose.DevicePoseProvider
 import de.mm20.launcher2.ktx.isAtLeastApiLevel
 import de.mm20.launcher2.permissions.PermissionGroup
 import de.mm20.launcher2.permissions.PermissionsManager
@@ -62,7 +61,6 @@ class SearchVM : ViewModel(), KoinComponent {
     private val calendarSearchSettings: CalendarSearchSettings by inject()
     private val shortcutSearchSettings: ShortcutSearchSettings by inject()
     private val searchUiSettings: SearchUiSettings by inject()
-    private val devicePoseProvider: DevicePoseProvider by inject()
     private val searchFilterSettings: SearchFilterSettings by inject()
 
     val launchOnEnter = searchUiSettings.launchOnEnter
