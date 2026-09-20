@@ -159,8 +159,6 @@
     <string name="preference_icon_shape_hexagon">Hexágono</string>
     <string name="preference_category_searchbar">Barra de pesquisa</string>
     <string name="preference_screen_integrations">Integrações</string>
-    <string name="preference_screen_plugins">Plugins</string>
-    <string name="preference_screen_plugins_summary">Gerir extensões instaladas</string>
     <string name="preference_theme_system">Acompanhar sistema</string>
     <string name="preference_themed_icons_summary">Cor dos ícones segue o esquema de cores da aplicação</string>
     <string name="preference_themed_icons">Ícones coloridos</string>
@@ -186,7 +184,6 @@
     <string name="preference_blur_wallpaper_radius">Raio de desfoque</string>
     <string name="preference_wallpaper_summary">Escolher papel de parede</string>
     <string name="missing_permission_notification_badges">Requer acesso às notificações para mostrar os alertas</string>
-    <string name="no_plugins_installed">Nenhum plugin instalado</string>
     <string name="preference_force_themed_icons">Impor ícones coloridos</string>
     <string name="missing_permission_contact_search">Requer acesso aos contactos para pesquisar contactos</string>
     <string name="preference_category_badges">Indicadores</string>
@@ -253,8 +250,6 @@
     <string name="gesture_action_notifications">Abrir barra de notificações</string>
     <string name="gesture_action_lock_screen">Desligar ecrã</string>
     <string name="gesture_action_power_menu">Menu energia</string>
-    <string name="plugin_type_weather">Serviço de meteorologia</string>
-    <string name="plugin_state_setup_required">Tem que configurar o plugin para o utilizar</string>
     <string name="preference_screen_search_actions">Ações rápidas</string>
     <string name="widget_pick_widget">Escolha o widget</string>
     <string name="note_widget_conflict">Conflito</string>
@@ -262,7 +257,6 @@
     <string name="note_widget_conflict_file_version">Conteúdo do ficheiro atual:</string>
     <string name="note_widget_conflict_description">O ficheiro associado não está vazio e o seu conteúdo não coincide com a última versão guardada da nota. Qual a versão que deseja manter?</string>
     <string name="theme_color_scheme_palette_color">Paleta</string>
-    <string name="plugin_action_setup">Configurar</string>
     <string name="preference_hidden_items_reveal_button_summary">Mostrar botão para revelar os resultados ocultos</string>
     <string name="preference_search_bar_style_summary">Personalizar aparência da barra de pesquisa</string>
     <string name="preference_hidden_items_reveal_button">Mostrar botão \"Revelar\"</string>
@@ -333,7 +327,6 @@
     <string name="note_widget_linked_file_summary">Associado a %1$s</string>
     <string name="note_widget_file_read_error_description">Não foi possível ler a nota. Foi reposta a cópia guardada na memória interna desta aplicação. Se editar a nota, é possível que o ficheiro associado seja substituído.</string>
     <string name="note_widget_file_write_error_description">Não foi possível guardar a nota no ficheiro associado. Foi reposta uma cópia guardada na memória interna desta aplicação.</string>
-    <string name="plugin_state_error">Este plugin não está a funcionar corretamente</string>
     <string name="preference_layout_search_results">Disposição dos resultados</string>
     <string name="preference_hidden_items">Resultados ocultos</string>
     <string name="tag_name">Nome da etiqueta</string>
@@ -341,15 +334,11 @@
     <string name="icon_picker_default_icon">Padrão</string>
     <string name="search_action_email">Enviar e-mail</string>
     <string name="preference_search_result_ordering_weight_factor_high">Variável</string>
-    <string name="plugin_type_locationsearch">Pesquisa em locais</string>
-    <string name="plugin_type_calendar">Calendário</string>
     <string name="preference_search_favorites_summary">Mostrar itens afixados e frequentes por cima da grelha de aplicações</string>
     <string name="preference_cloud_badges">Indicadores de cloud</string>
     <string name="preference_cloud_badges_summary">Mostra um indicador para ficheiros que estejam na cloud</string>
     <string name="preference_shortcut_badges">Indicadores de atalhos</string>
     <string name="preference_shortcut_badges_summary">Mostra um indicador para identificar a que aplicação o atalho pertence</string>
-    <string name="preference_plugin_badges">Indicador de plugins</string>
-    <string name="preference_plugin_badges_summary">Indica qual o plugin em que o resultado da pesquisa foi criado</string>
     <string name="preference_favorites_edit_button_summary">Mostrar botão para editar os favoritos</string>
     <string name="preference_search_files_summary">Pesquisar ficheiros locais e na cloud</string>
     <string name="preference_search_contacts">Contactos</string>
@@ -387,7 +376,6 @@
     <string name="search_action_label">Nome</string>
     <string name="search_action_app">Aplicação</string>
     <string name="search_action_websearch_url">Modelo de URL</string>
-    <string name="preference_plugin_enable">Ativar plugin</string>
     <string name="experimental_feature">Experimental</string>
     <string name="tag_exists_error">Já existe uma etiqueta com este nome</string>
     <string name="tag_exists_message">Já existe uma etiqueta com este nome. Se continuar, as etiquetas serão combinadas.</string>
@@ -629,7 +617,6 @@
     <string name="music_widget_interactive_progress_bar">Barra de progresso interativa</string>
     <string name="no_selection">Nada selecionado</string>
     <string name="save_as_file">Guardar como ficheiro</string>
-    <string name="plugin_type_contacts">Contactos</string>
     <string name="confirmation_delete_transparencies_scheme">Tem a certeza de que deseja eliminar o esquema de transparência %1$s?</string>
     <string name="action_install">Instalar</string>
     <plurals name="calendar_widget_running_tasks">
@@ -655,8 +642,6 @@
     <string name="poi_category_hackerspace">Espaço \'hacker\'</string>
     <string name="preference_clockwidget_dock_rows">Linhas da doca</string>
     <string name="widget_name_apps">Aplicações</string>
-    <string name="preference_category_enabled_plugins">Ativo</string>
-    <string name="preference_category_installed_plugins">Instalado</string>
     <string name="preference_search_apps">Aplicações</string>
     <string name="preference_search_apps_summary">Mostrar todas as aplicações se o campo de pesquisa estiver vazio</string>
     <string name="tag_icon_customicon">Ícone</string>

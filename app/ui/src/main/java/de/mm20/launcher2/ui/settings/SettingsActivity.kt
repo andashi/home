@@ -93,10 +93,6 @@ import de.mm20.launcher2.ui.settings.main.MainRoute
 import de.mm20.launcher2.ui.settings.main.MainSettingsScreen
 import de.mm20.launcher2.ui.settings.media.MediaIntegrationSettingsRoute
 import de.mm20.launcher2.ui.settings.media.MediaIntegrationSettingsScreen
-import de.mm20.launcher2.ui.settings.plugins.PluginSettingsRoute
-import de.mm20.launcher2.ui.settings.plugins.PluginSettingsScreen
-import de.mm20.launcher2.ui.settings.plugins.PluginsSettingsRoute
-import de.mm20.launcher2.ui.settings.plugins.PluginsSettingsScreen
 import de.mm20.launcher2.ui.settings.search.SearchSettingsRoute
 import de.mm20.launcher2.ui.settings.search.SearchSettingsScreen
 import de.mm20.launcher2.ui.settings.searchactions.SearchActionsSettingsRoute
@@ -207,12 +203,6 @@ class SettingsActivity : BaseActivity() {
             }
             entry<IntegrationsSettingsRoute> {
                 IntegrationsSettingsScreen()
-            }
-            entry<PluginsSettingsRoute> {
-                PluginsSettingsScreen()
-            }
-            entry<PluginSettingsRoute> {
-                PluginSettingsScreen(it.pluginId)
             }
             entry<AboutSettingsRoute> {
                 AboutSettingsScreen()

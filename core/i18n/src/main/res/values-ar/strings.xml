@@ -108,7 +108,6 @@
         <item quantity="other">+%1$d حدث جاري من الأيام السابقة</item>
     </plurals>
     <string name="file_type_launchertheme">سمة %1$s</string>
-    <string name="plugin_state_setup_required">عليك أن تهيء هذه الاضافة أولا</string>
     <string name="missing_permission_music_widget">أذونات الاشعارات مطلوبة للتحكم بمشغل الوسائط</string>
     <string name="missing_permission_calendar_widget_settings">الويدجيت تطلب اذونات التقويم</string>
     <string name="preference_theme_light">فاتح</string>
@@ -181,8 +180,6 @@
     <string name="preference_icon_shape_teardrop">دمعة</string>
     <string name="preference_icon_shape_pebble">حصاة</string>
     <string name="preference_icon_shape_hexagon">مسدس</string>
-    <string name="preference_screen_plugins_summary">إدارة الملحقات المثبتة</string>
-    <string name="no_plugins_installed">لم يتم تثبيت أي مكونات إضافية</string>
     <string name="preference_theme_system">اتباع النظام</string>
     <string name="preference_force_themed_icons_summary">تطبيق نظام ألوان التطبيق على جميع الرموز، بما في ذلك الرموز غير المدعومة (غير مستحسن)</string>
     <string name="preference_icon_pack">حزمة الرموز</string>
@@ -258,7 +255,6 @@
     <string name="preference_icon_shape_triangle">مثلث رولو</string>
     <string name="preference_category_searchbar">شريط البحث</string>
     <string name="preference_screen_integrations">التكاملات</string>
-    <string name="preference_screen_plugins">المكونات الإضافية</string>
     <string name="preference_themed_icons">رموز ذات سمات</string>
     <string name="preference_themed_icons_summary">تلوين الرموز باستخدام نظام ألوان التطبيق</string>
     <string name="preference_force_themed_icons">فرض الرموز ذات السمات</string>
@@ -322,7 +318,6 @@
     <string name="note_widget_file_read_error_description">تعذر قراءة الملف المرتبط. تم استعادة نسخة منه من وحدة التخزين الداخلية للمشغل. إذا قمت بتعديل الملاحظة، فمن المحتمل أن يتم استبدال الملف المرتبط</string>
     <string name="note_widget_file_write_error">خطأ في حفظ الملاحظة</string>
     <string name="preference_use_system_default">استخدام النظام الافتراضي</string>
-    <string name="plugin_type_weather">مقدم خدمة الطقس</string>
     <string name="clock_style_empty">بدون ساعة</string>
     <string name="clock_style_custom">أداة مخصصة</string>
     <string name="clock_variant_outlined">مخطط</string>
@@ -376,8 +371,6 @@
     <string name="preference_blur_wallpaper_unsupported">غير مدعوم على هذا الجهاز</string>
     <string name="preference_blur_wallpaper_radius">نصف قطر التشويش</string>
     <string name="preference_suspended_badges_summary">إظهار شارة للتطبيقات المعلقة</string>
-    <string name="preference_plugin_badges">شارات المكونات الإضافية</string>
-    <string name="preference_plugin_badges_summary">تشير إلى المكون الإضافي الذي أنشأ نتيجة البحث</string>
     <string name="preference_about_fdroid">مستودع F-Droid</string>
     <string name="preference_enforce_icon_shape">فرض الشكل</string>
     <string name="preference_screen_clockwidget">الساعة</string>
@@ -414,7 +407,6 @@
     <string name="widget_use_theme_colors">استخدام لون السمة</string>
     <string name="music_widget_pause">إيقاف مؤقت</string>
     <string name="widget_config_appwidget_resize">تغيير الحجم</string>
-    <string name="preference_plugin_enable">تمكين المكون الإضافي</string>
     <string name="poi_category_discount_store">متجر خصومات</string>
     <string name="poi_category_pet">متجر حيوانات أليفة</string>
     <string name="preference_dim_wallpaper_summary">في السمات الداكنة، قم بتعتيم خلفية الشاشة</string>
@@ -493,7 +485,6 @@
     <string name="shortcut_unavailable_description">هذا الاختصار غير متوفر لأن %1$s ليس المشغل الافتراضي</string>
     <string name="length_unit">وحدة الطول</string>
     <string name="imperial">إمبراطوري</string>
-    <string name="plugin_state_error">هذا المكون الإضافي لا يعمل بشكل صحيح</string>
     <string name="unavailable_searchable">لم يعد هذا العنصر موجودًا</string>
     <string name="clock_style_orbit">مدار</string>
     <string name="clock_style_binary">ثنائي</string>
@@ -548,9 +539,7 @@
         <item quantity="many"/>
         <item quantity="other"/>
     </plurals>
-    <string name="plugin_action_setup">إعداد</string>
     <string name="poi_category_optician">بصريات</string>
-    <string name="plugin_type_calendar">التقويم</string>
     <string name="poi_category_hotel">فندق</string>
     <string name="poi_category_parking">موقف سيارات</string>
     <string name="poi_category_fuel">محطة وقود</string>
@@ -619,7 +608,6 @@
     </plurals>
     <string name="metric">متري</string>
     <string name="clock_style_digital2">بسيط</string>
-    <string name="plugin_type_locationsearch">البحث عن الأماكن</string>
     <string name="poi_category_fast_food">وجبات سريعة</string>
     <string name="poi_category_bar">بار</string>
     <string name="poi_category_pharmacy">صيدلية</string>
@@ -630,7 +618,6 @@
     <string name="weather_forecast_humidity">رطوبة</string>
     <string name="weather_forecast_wind">رياح</string>
     <string name="weather_forecast_precipitation">هطول الأمطار</string>
-    <string name="plugin_type_contacts">جهات الاتصال</string>
     <string name="preference_grid_list_style">عرض التطبيقات في قائمة</string>
     <string name="preference_grid_list_icons">إظهار أيقونات التطبيقات في القائمة</string>
     <string name="preference_grid_list_style_summary">عرض التطبيقات في قائمة بدلاً من شبكة</string>
@@ -677,9 +664,7 @@
     <string name="poi_category_climbing_gym">صالة تسلق جبال</string>
     <string name="poi_category_hackerspace">مختبر حاسوب</string>
     <string name="poi_category_stationery">محل أدوات مكتبية</string>
-    <string name="preference_category_enabled_plugins">مفعلة</string>
     <string name="preference_category_feed_provider">مصدر الأخبار</string>
-    <string name="preference_category_installed_plugins">مثبتة</string>
     <string name="preference_clock_widget_monospaced">أرقام متساوية المسافة</string>
     <string name="preference_clockwidget_dock_rows">عدد الصفوف</string>
     <string name="preference_clockwidget_smartspacer">مُدار من خلال Smartspacer</string>

@@ -379,13 +379,8 @@
     <string name="confirmation_delete_color_scheme">¿Realmente deseas eliminar el esquema de colores %1$s?</string>
     <string name="import_theme_error">El archivo seleccionado no pudo ser leído. Asegúrate de que has seleccionado un archivo de tema válido (*.kvtheme), y que el archivo no esté dañado.</string>
     <string name="preference_clock_widget_alignment_bottom">Inferior</string>
-    <string name="preference_plugin_badges">Insignias de plugin</string>
-    <string name="preference_plugin_badges_summary">Indica con qué plugin se creó un resultado de búsqueda</string>
     <string name="preference_clock_widget_alignment_center">Centro</string>
     <string name="edit">Editar</string>
-    <string name="preference_screen_plugins">Plugins</string>
-    <string name="preference_screen_plugins_summary">Administrar extensiones instaladas</string>
-    <string name="no_plugins_installed">Sin plugins instalados</string>
     <string name="preference_debug_dump_heap">Instantánea de memoria</string>
     <string name="preference_debug_dump_heap_in_progress">Capturando instantánea…</string>
     <string name="preference_clockwidget_dynamic_zone">Zona dinámica</string>
@@ -402,12 +397,7 @@
     <string name="preference_mdy_color_source_wallpaper">Fondo de pantalla</string>
     <string name="preference_mdy_color_source">Fuente para colores dinámicos</string>
     <string name="preference_mdy_color_source_system">Sistema</string>
-    <string name="plugin_action_setup">Configurar</string>
-    <string name="preference_plugin_enable">Activar plugin</string>
     <string name="preference_category_advanced">Avanzado</string>
-    <string name="plugin_state_error">Este plugin no está funcionando correctamente</string>
-    <string name="plugin_state_setup_required">Primero debe configurar este complemento</string>
-    <string name="plugin_type_weather">Proveedor de clima</string>
     <string name="preference_search_locations_summary">Buscar negocios y otros lugares en el área local</string>
     <string name="clock_style_segment">7 segmentos</string>
     <string name="clock_variant_outlined">Contorneado</string>
@@ -551,7 +541,6 @@
     <string name="poi_category_kebab_restaurant">Restaurante de kebab</string>
     <string name="poi_category_brunch_restaurant">Restaurante de desayuno y almuerzo</string>
     <string name="music_widget_play">Reproducir</string>
-    <string name="plugin_type_locationsearch">Búsqueda de lugares</string>
     <string name="poi_category_pet">Tienda de mascotas</string>
     <string name="poi_category_shopping">Compras</string>
     <string name="poi_category_place_of_worship">Lugar de culto</string>
@@ -596,13 +585,11 @@
     <string name="music_widget_next_track">Pista siguiente</string>
     <string name="bad_configuration_title">¡Felicidades, te has quedado fuera!</string>
     <string name="profile_work_profile_action_unlock">Reanudar</string>
-    <string name="plugin_type_contacts">Contactos</string>
     <string name="poi_category_casino">Casino</string>
     <string name="poi_category_synagogue">Sinagoga</string>
     <string name="poi_category_pizza_restaurant">Pizzería</string>
     <string name="poi_category_stadium">Estadio</string>
     <string name="preference_compact_tags_summary">Ocultar nombres de etiquetas o iconos para reducir el espacio ocupado por las etiquetas</string>
-    <string name="plugin_type_calendar">Calendario</string>
     <string name="menu_show_filters">Mostrar filtros</string>
     <string name="menu_hide_filters">Ocultar filtros</string>
     <string name="poi_category_hindu_temple">Templo hindú</string>
@@ -672,8 +659,6 @@
     <string name="preference_transliteration">Transliteración preferida</string>
     <string name="preference_transliteration_auto">Automática</string>
     <string name="preference_value_disabled">Deshabilitada</string>
-    <string name="preference_category_enabled_plugins">Activado</string>
-    <string name="preference_category_installed_plugins">Instalado</string>
     <string name="widget_name_apps">Aplicaciones</string>
     <string name="preference_clockwidget_smartspacer">Gestionado por Smartspacer</string>
     <string name="preference_smartspacer_integration">Smartspacer</string>

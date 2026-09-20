@@ -22,13 +22,6 @@ class ContactSearchSettings internal constructor(private val dataStore: Launcher
         }
     }
 
-    val enabledPlugins: Flow<Set<String>>
-        get() = dataStore.data.map { it.contactSearchProviders - "local" }
-
-    fun setPluginEnabled(authority: String, enabled: Boolean) {
-        setProviderEnabled(authority, enabled)
-    }
-
     val callOnTap: Flow<Boolean>
         get() = dataStore.data.map { it.contactSearchCallOnTap }.distinctUntilChanged()
 

@@ -20,7 +20,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.NavKey
-import de.mm20.launcher2.plugin.PluginType
 import de.mm20.launcher2.ui.R
 import de.mm20.launcher2.ui.component.DismissableBottomSheet
 import de.mm20.launcher2.ui.component.SmallMessage
@@ -56,10 +55,6 @@ fun SearchSettingsScreen() {
 
     var showFilterEditor by remember { mutableStateOf(false) }
 
-    val plugins by viewModel.plugins.collectAsStateWithLifecycle(null)
-    val hasCalendarPlugins by remember { derivedStateOf { plugins?.any { it.plugin.type == PluginType.Calendar } } }
-    val hasContactPlugins by remember { derivedStateOf { plugins?.any { it.plugin.type == PluginType.ContactSearch } } }
-    val isTasksAppInstalled by viewModel.isTasksAppInstalled.collectAsStateWithLifecycle()
 
     val hasAppShortcutsPermission by viewModel.hasAppShortcutPermission.collectAsStateWithLifecycle(
         null

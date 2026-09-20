@@ -88,8 +88,6 @@ import de.mm20.launcher2.data.customattrs.CustomAttributesRepository
 import de.mm20.launcher2.ktx.isAtLeastApiLevel
 import de.mm20.launcher2.permissions.PermissionGroup
 import de.mm20.launcher2.permissions.PermissionsManager
-import de.mm20.launcher2.plugin.PluginRepository
-import de.mm20.launcher2.plugin.PluginType
 import de.mm20.launcher2.search.Tag
 import de.mm20.launcher2.themes.colors.atTone
 import de.mm20.launcher2.ui.R

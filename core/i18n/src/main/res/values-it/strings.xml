@@ -394,17 +394,7 @@
     <string name="shortcut_label_unavailable">Non disponibile</string>
     <string name="shortcut_unavailable_description">Questa scorciatoia non è disponibile perché %1$s non è il launcher predefinito</string>
     <string name="preference_clockwidget_dynamic_zone">Zona dinamica</string>
-    <string name="preference_screen_plugins">Plugin</string>
-    <string name="preference_screen_plugins_summary">Gestisci estensioni installate</string>
-    <string name="no_plugins_installed">Nessun plugin installato</string>
-    <string name="preference_plugin_badges">Plugin indicatori</string>
-    <string name="preference_plugin_badges_summary">Indica con quale plugin è stato creato un risultato di ricerca</string>
-    <string name="plugin_state_setup_required">Devi prima configurare questo plugin</string>
-    <string name="plugin_action_setup">Imposta</string>
-    <string name="plugin_type_weather">Provider meteo</string>
-    <string name="plugin_state_error">Questo plugin non funziona correttamente</string>
     <string name="preference_category_advanced">Avanzate</string>
-    <string name="preference_plugin_enable">Abilita plugin</string>
     <string name="preference_mdy_color_source">Sorgente colori dinamici</string>
     <string name="preference_mdy_color_source_system">Sistema</string>
     <string name="preference_mdy_color_source_wallpaper">Sfondo</string>
@@ -499,7 +489,6 @@
     <string name="poi_category_volleyball">Campo da pallavolo</string>
     <string name="poi_category_skiing">Sciare</string>
     <string name="poi_category_casino">Casinò</string>
-    <string name="plugin_type_locationsearch">Ricerca luoghi</string>
     <string name="poi_category_buddhist_temple">Tempio buddista</string>
     <string name="poi_category_hindu_temple">Tempio indù</string>
     <string name="poi_category_synagogue">Sinagoga</string>
@@ -569,7 +558,6 @@
     <string name="music_widget_next_track">Titolo successivo</string>
     <string name="music_widget_pause">Pausa</string>
     <string name="music_widget_open_player">Apri lettore</string>
-    <string name="plugin_type_calendar">Calendario</string>
     <plurals name="calendar_search_enabled_lists">
         <item quantity="one">Selezionato %1$s elenco</item>
         <item quantity="many">Selezionati %1$s elenchi</item>
@@ -598,7 +586,6 @@
         <item quantity="many">tra %1$d minuti</item>
         <item quantity="other">tra %1$d minuti</item>
     </plurals>
-    <string name="plugin_type_contacts">Contatti</string>
     <string name="preference_grid_list_style">Mostra le app come lista</string>
     <string name="preference_grid_list_style_summary">Sotituisci la griglia delle app con una lista</string>
     <string name="preference_grid_list_icons">Mostra le icone delle app nella lista</string>
@@ -674,8 +661,6 @@
     <string name="preference_value_disabled">Disabilitata</string>
     <string name="select_tag">Seleziona tag</string>
     <string name="widget_name_apps">App</string>
-    <string name="preference_category_enabled_plugins">Abilitato</string>
-    <string name="preference_category_installed_plugins">Installato</string>
     <string name="tag_icon_customicon">Icona</string>
     <string name="tag_icon_emoji">Emoji</string>
     <string name="preference_clockwidget_smartspacer">Gestito da Smartspacer</string>

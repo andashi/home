@@ -144,7 +144,6 @@ dependencies {
     implementation(project(":core:crashreporter"))
     implementation(project(":data:customattrs"))
     implementation(project(":data:searchable"))
-    implementation(project(":data:plugins"))
     implementation(project(":data:themes"))
     implementation(project(":data:i18n"))
     implementation(project(":core:i18n"))
@@ -164,7 +163,6 @@ dependencies {
     implementation(project(":services:global-actions"))
     implementation(project(":services:widgets"))
     implementation(project(":services:favorites"))
-    implementation(project(":services:plugins"))
     implementation(project(":services:feed"))
 
     // Uncomment this if you want annoying notifications in your debug builds

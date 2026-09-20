@@ -390,11 +390,6 @@
     <string name="preference_restore_default">Restaurar ao padrão</string>
     <string name="import_theme_error">O arquivo selecionado não pode ser lido. Por favor confira se você tem um arquivo de tema válido (*.kvtheme), e que o arquivo não está corrupto.</string>
     <string name="preference_mdy_color_source">Fonte para cores dinâmicas</string>
-    <string name="preference_screen_plugins">Extensões</string>
-    <string name="preference_screen_plugins_summary">Gerenciar extensões instaladas</string>
-    <string name="preference_category_enabled_plugins">Habilitado</string>
-    <string name="preference_category_installed_plugins">Instalado</string>
-    <string name="no_plugins_installed">Nenhuma extensão instalada</string>
     <string name="preference_category_advanced">Avançado</string>
     <string name="theme_color_scheme_custom_color">Personalizado</string>
     <string name="preference_use_system_default">Usar o padrão do sistema</string>
@@ -409,11 +404,9 @@
     <string name="poi_category_climbing_gym">Academia de escalada</string>
     <string name="poi_category_hackerspace">Hackerspace</string>
     <string name="customize_item_label">Etiqueta</string>
-    <string name="plugin_action_setup">Configurar</string>
     <string name="apps_profile_private">Privado</string>
     <string name="preference_compact_tags">Tags compactas</string>
     <string name="preference_compact_tags_summary">Esconde etiquetas ou ícones para reduzir o espaço ocupado pelas tags</string>
-    <string name="plugin_type_locationsearch">Pesquisa de lugares</string>
     <string name="customize_item_tags">Tags</string>
     <string name="widget_pick_widget">Escolher widget</string>
     <string name="clock_style_custom">Widget personalizado</string>
@@ -433,7 +426,6 @@
     <string name="shortcut_label_unavailable">Indisponível</string>
     <string name="length_unit">Unidade de comprimento</string>
     <string name="shortcut_unavailable_description">Esse atalho esta indisponível porque o %1$s não é o launcher padrão</string>
-    <string name="preference_plugin_enable">Habilitar o plugin</string>
     <string name="filter_settings_network_warning">O filtro atual habilita pesquisas online por padrão. Suas pesquisas talvez sejam intencionalmente enviadas para serviços web externos. Por razões de privacidade, isso não é recomendado.</string>
     <string name="poi_category_post_office">Agência de entregas</string>
     <string name="poi_category_pub">Bar</string>
@@ -442,7 +434,6 @@
     <string name="poi_category_dentist">Dentista</string>
     <string name="poi_category_library">Biblioteca</string>
     <string name="widget_config_appwidget_resize">Redimensionar</string>
-    <string name="preference_plugin_badges">Emblemas do Plugin</string>
     <string name="preference_clockwidget_dynamic_zone">Zona dinâmica</string>
     <string name="confirmation_delete_color_scheme">Tem certeza que quer apagar o esquema de cor %1$s?</string>
     <string name="search_action_share">Compartilhar</string>
@@ -450,9 +441,7 @@
     <string name="clock_style_binary">Binário</string>
     <string name="search_filter_tools">Ferramentas</string>
     <string name="preference_customize_filter_bar">Personalizar barra de filtros</string>
-    <string name="plugin_type_calendar">Calendário</string>
     <string name="preference_default_filter_summary">Personalizar o filtro padrão para pesquisas</string>
-    <string name="preference_plugin_badges_summary">Indica por qual plugin uma pesquisa foi criada</string>
     <string name="preference_clock_widget_show_seconds">Mostrar segundos</string>
     <string name="preference_clock_widget_alignment_bottom">Embaixo</string>
     <string name="preference_clock_widget_alignment_top">Em cima</string>
@@ -480,9 +469,6 @@
     <string name="search_filter_apps">Aplicativos</string>
     <string name="poi_category_supermarket">Supermercado</string>
     <string name="metric">Métrico</string>
-    <string name="plugin_state_error">Esse plugin não está funcionando corretamente</string>
-    <string name="plugin_state_setup_required">Você precisa configurar o plugin primeiro</string>
-    <string name="plugin_type_weather">Provedor de clima</string>
     <string name="menu_hide_filters">Esconder filtros</string>
     <string name="action_done">Feito</string>
     <string name="action_more_actions">Mais ações</string>
@@ -505,7 +491,6 @@
         <item quantity="other">em %1$d minutos</item>
     </plurals>
     <string name="item_visibility_search_only">Resultados de busca</string>
-    <string name="plugin_type_contacts">Contatos</string>
     <string name="poi_category_golf">Campo de golfe</string>
     <string name="poi_category_pet">Pet shop</string>
     <string name="poi_category_skiing">Esqui</string>

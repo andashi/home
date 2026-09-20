@@ -5,7 +5,6 @@ import de.mm20.launcher2.badges.providers.AppShortcutBadgeProvider
 import de.mm20.launcher2.badges.providers.BadgeProvider
 import de.mm20.launcher2.badges.providers.HiddenItemBadgeProvider
 import de.mm20.launcher2.badges.providers.NotificationBadgeProvider
-import de.mm20.launcher2.badges.providers.PluginBadgeProvider
 import de.mm20.launcher2.badges.providers.SuspendedAppsBadgeProvider
 import de.mm20.launcher2.badges.providers.ProfileBadgeProvider
 import de.mm20.launcher2.preferences.ui.BadgeSettings
@@ -51,9 +50,6 @@ internal class BadgeServiceImpl(
                 }
                 if (it.suspendedApps) {
                     providers += SuspendedAppsBadgeProvider()
-                }
-                if (it.plugins) {
-                    providers += PluginBadgeProvider(context)
                 }
                 badgeProviders.value = providers
             }

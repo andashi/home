@@ -8,15 +8,11 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import androidx.sqlite.db.SupportSQLiteDatabase
-import de.mm20.launcher2.database.daos.PluginDao
 import de.mm20.launcher2.database.daos.ThemeDao
 import de.mm20.launcher2.database.entities.ColorsEntity
-import de.mm20.launcher2.database.entities.CurrencyEntity
 import de.mm20.launcher2.database.entities.CustomAttributeEntity
-import de.mm20.launcher2.database.entities.ForecastEntity
 import de.mm20.launcher2.database.entities.IconEntity
 import de.mm20.launcher2.database.entities.IconPackEntity
-import de.mm20.launcher2.database.entities.PluginEntity
 import de.mm20.launcher2.database.entities.SavedSearchableEntity
 import de.mm20.launcher2.database.entities.SearchActionEntity
 import de.mm20.launcher2.database.entities.ShapesEntity
@@ -47,6 +43,7 @@ import de.mm20.launcher2.database.migrations.Migration_30_31
 import de.mm20.launcher2.database.migrations.Migration_31_32
 import de.mm20.launcher2.database.migrations.Migration_32_33
 import de.mm20.launcher2.database.migrations.Migration_33_34
+import de.mm20.launcher2.database.migrations.Migration_34_35
 import de.mm20.launcher2.database.migrations.Migration_6_7
 import de.mm20.launcher2.database.migrations.Migration_7_8
 import de.mm20.launcher2.database.migrations.Migration_8_9
@@ -57,38 +54,31 @@ import java.util.UUID
 
 @Database(
     entities = [
-        ForecastEntity::class,
         SavedSearchableEntity::class,
-        CurrencyEntity::class,
         IconEntity::class,
         IconPackEntity::class,
         WidgetEntity::class,
         CustomAttributeEntity::class,
         SearchActionEntity::class,
         ColorsEntity::class,
-        PluginEntity::class,
         ShapesEntity::class,
         TransparenciesEntity::class,
         TypographyEntity::class,
-    ], version = 34, exportSchema = true
+    ], version = 35, exportSchema = true
 )
 @TypeConverters(ComponentNameConverter::class)
 abstract class AppDatabase : RoomDatabase() {
 
-    abstract fun weatherDao(): WeatherDao
     abstract fun iconDao(): IconDao
 
     abstract fun searchableDao(): SearchableDao
     abstract fun widgetDao(): WidgetDao
-    abstract fun currencyDao(): CurrencyDao
     abstract fun backupDao(): BackupRestoreDao
     abstract fun customAttrsDao(): CustomAttrsDao
 
     abstract fun searchActionDao(): SearchActionDao
 
     abstract fun themeDao(): ThemeDao
-
-    abstract fun pluginDao(): PluginDao
 
     companion object {
         private var _instance: AppDatabase? = null
@@ -181,6 +171,7 @@ abstract class AppDatabase : RoomDatabase() {
                         Migration_31_32(),
                         Migration_32_33(),
                         Migration_33_34(),
+                        Migration_34_35(),
                     ).build()
             if (_instance == null) _instance = instance
             return instance

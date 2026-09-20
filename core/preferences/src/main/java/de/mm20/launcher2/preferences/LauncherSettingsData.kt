@@ -102,9 +102,7 @@ data class LauncherSettingsData internal constructor(
 
     val badgesNotifications: Boolean = true,
     val badgesSuspendedApps: Boolean = true,
-    val badgesCloudFiles: Boolean = true,
     val badgesShortcuts: Boolean = true,
-    val badgesPlugins: Boolean = true,
 
     val gridColumnCount: Int = 5,
     val gridIconSize: Int = 48,

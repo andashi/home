@@ -243,8 +243,6 @@
     <string name="widget_use_theme_colors">Gunakan warna tema</string>
     <string name="websearch_dialog_query_encoding_form">application/x-www-form-urlencoded</string>
     <string name="preference_debug_dump_heap_summary">Ambil snapshot untuk menganalisis penggunaan memori. Aplikasi akan berhenti bekerja hingga proses ini selesai.</string>
-    <string name="preference_plugin_badges_summary">Tunjukkan plugin mana yang digunakan untuk membuat hasil pencarian</string>
-    <string name="preference_plugin_badges">Lencana plugin</string>
     <string name="preference_debug_dump_heap">Cuplikan memori</string>
     <string name="preference_debug_dump_heap_in_progress">Mengambil snapshot…</string>
     <string name="preference_icon_shape_triangle">Segitiga Reuleaux</string>
@@ -264,8 +262,5 @@
     <string name="action_more_actions">Lebih banyak tindakan</string>
     <string name="action_clear">Bersihkan</string>
     <string name="owncloud_login_2fa_hint">Jika Anda mengaktifkan autentikasi dua faktor, Anda harus menggunakan kata sandi aplikasi di sini.</string>
-    <string name="preference_screen_plugins">Plugin</string>
-    <string name="preference_screen_plugins_summary">Kelola ekstensi yang terinstal</string>
-    <string name="no_plugins_installed">Tidak ada plugin yang terpasang</string>
     <string name="preference_icon_shape_squircle">Tupai</string>
 </resources>

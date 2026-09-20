@@ -2,7 +2,6 @@ package de.mm20.launcher2.database
 
 import android.content.ComponentName
 import androidx.room.TypeConverter
-import org.json.JSONArray
 
 class ComponentNameConverter {
     @TypeConverter
@@ -16,19 +15,4 @@ class ComponentNameConverter {
         return ComponentName.unflattenFromString(string)
     }
 
-}
-
-class StringListConverter {
-    @TypeConverter
-    fun toString(list: List<String>): String {
-        val json = JSONArray()
-        list.forEach { json.put(it) }
-        return json.toString()
-    }
-
-    @TypeConverter
-    fun toStringList(string: String): List<String> {
-        val json = JSONArray(string)
-        return (0..json.length()).map { json.getString(it) }
-    }
 }

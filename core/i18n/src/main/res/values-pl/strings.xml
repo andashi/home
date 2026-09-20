@@ -395,7 +395,6 @@
     <string name="preference_restore_default">Przywróć domyślne</string>
     <string name="theme_color_scheme_custom_color">Własny</string>
     <string name="import_theme_error">Nie można odczytać wybranego pliku. Upewnij się, że wybrano prawidłowy plik motywu (*.kvtheme) i że nie jest on uszkodzony.</string>
-    <string name="plugin_state_error">Wtyczka nie działa poprawnie</string>
     <string name="preference_blur_wallpaper_radius">Promień rozmycia</string>
     <string name="widget_config_appwidget_background">Tło karty</string>
     <string name="widget_config_appwidget_configure">Konfiguruj widżet</string>
@@ -409,7 +408,6 @@
     <string name="note_widget_file_write_error_description">Notatka nie mogła zostać zapisana w połączonym pliku. Możliwe, że została przeniesiona lub usunięta. Kopia została zapisana w pamięci wewnętrznej programu uruchamiającego.</string>
     <string name="confirmation_delete_color_scheme">Czy naprawdę chcesz usunąć schemat kolorów %1$s?</string>
     <string name="theme_color_scheme_autogenerate">Z koloru podstawowego</string>
-    <string name="preference_plugin_enable">Włącz wtyczkę</string>
     <string name="length_unit">Jednostka długości</string>
     <string name="widget_name_notes">Widżet przechowujący pojedynczą notatkę</string>
     <string name="edit">Edytuj</string>
@@ -437,13 +435,8 @@
     <string name="search_action_share">Udostępnij</string>
     <string name="note_widget_link_file">Ścieżka do pliku</string>
     <string name="note_widget_link_file_summary">Synchronizuje zawartość widżetu z plikiem zewnętrznym</string>
-    <string name="plugin_state_setup_required">Musisz najpierw skonfigurować wtyczkę</string>
-    <string name="plugin_action_setup">Konfiguracja</string>
-    <string name="plugin_type_weather">Dostawca pogody</string>
     <string name="search_filter_tools">Narzędzia</string>
     <string name="preference_debug_dump_heap_in_progress">Przechwytywanie migawki…</string>
-    <string name="preference_plugin_badges_summary">Wskazuje, przez którą wtyczkę został utworzony wynik wyszukiwania</string>
-    <string name="preference_plugin_badges">Identyfikatory wtyczek</string>
     <string name="preference_default_filter">Domyślny filtr</string>
     <string name="preference_default_filter_summary">Dostosuj domyślny filtr wyszukiwania</string>
     <string name="preference_filter_bar">Pokaż pasek filtrów</string>
@@ -454,9 +447,6 @@
     <string name="preference_category_advanced">Zaawansowane</string>
     <string name="widget_config_weather_compact">Tryb kompaktowy</string>
     <string name="preference_debug_dump_heap">Migawka pamięci</string>
-    <string name="preference_screen_plugins">Wtyczki</string>
-    <string name="preference_screen_plugins_summary">Zarządzanie zainstalowanymi rozszerzeniami</string>
-    <string name="no_plugins_installed">Brak zainstalowanych wtyczek</string>
     <string name="search_filter_apps">Aplikacje</string>
     <string name="preference_search_result_ordering_weight_factor">Elastyczność rankingu</string>
     <string name="preference_custom_colors_corepalette">Schemat kolorów</string>
@@ -488,6 +478,5 @@
     <string name="poi_category_museum">Muzea</string>
     <string name="poi_category_fitness_center">Centrum ćwiczeń</string>
     <string name="poi_category_car_rental">Wypożyczalnia aut</string>
-    <string name="plugin_type_locationsearch">Przeszukaj miejsca</string>
     <string name="menu_hide_filters">Ukryj filtry</string>
 </resources>
