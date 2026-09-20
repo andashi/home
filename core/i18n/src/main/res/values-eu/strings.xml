@@ -458,14 +458,12 @@
     <string name="poi_category_synagogue">Sinagoga</string>
     <string name="preference_blur_wallpaper_radius">Lausotze erradioa</string>
     <string name="preference_clock_widget_show_seconds">Segundoak erakutsi</string>
-    <string name="preference_search_locations_show_map">Mapa</string>
     <string name="preference_clock_widget_alignment_bottom">Behean</string>
     <string name="clock_style_empty">Erlojurik ez</string>
     <string name="preference_screen_plugins">Gehigarriak</string>
     <string name="preference_screen_plugins_summary">Instalatutako gehigarriak kudeatu</string>
     <string name="widget_use_theme_colors">Erabili kolore tematikoa</string>
     <string name="preference_clock_widget_alignment_center">Erdian</string>
-    <string name="preference_search_locations_radius">Bilaketa erradioa</string>
     <string name="widget_config_appwidget_resize">Birdimentsionatu</string>
     <string name="poi_category_hotel">Hotela</string>
     <string name="poi_category_supermarket">Supermerkatua</string>
@@ -478,13 +476,8 @@
     <string name="profile_private_profile_state_locked">Eremu pribatua blokeatua dago</string>
     <string name="profile_private_profile_action_unlock">Desblokeatu</string>
     <string name="profile_private_profile_action_lock">Eremu pribatua blokeatu</string>
-    <string name="location_closes">Itxiera-ordua: %1$s</string>
-    <string name="location_closes_other_day">Itxiera-orduak: %1$s, %2$s</string>
-    <string name="location_opens">Irekitze-ordua: %1$s</string>
-    <string name="location_opens_other_day">Irekitze-orduak: %1$s, %2$s</string>
     <string name="search_filter_online">Lineako emaitzak</string>
     <string name="plugin_type_calendar">Egutegia</string>
-    <string name="preference_search_osm_locations">OpenStreetMap</string>
     <string name="poi_category_cafe">Kafetegia</string>
     <string name="poi_category_hospital">Ospitalea</string>
     <string name="search_filter_apps">Aplikazioak</string>
@@ -495,9 +488,6 @@
     <string name="search_action_share">Partekatu</string>
     <string name="widget_pick_widget">Trepeta hautatu</string>
     <string name="imperial">Inperiala</string>
-    <string name="menu_dial">Deitu</string>
-    <string name="menu_navigation">Nabigazioa</string>
-    <string name="location_open_24_7">24/7 irekia</string>
     <string name="plugin_state_error">Gehigarri honek ez du ongi funtzionatzen</string>
     <string name="plugin_type_weather">Eguraldi hornitzailea</string>
     <string name="clock_style_binary">Bitarra</string>
@@ -519,12 +509,8 @@
     <string name="music_widget_previous_track">Aurreko abestia</string>
     <string name="music_widget_next_track">Hurrengo abestia</string>
     <string name="calendar_widget_open_calendar">Egutegi aplikazioa ireki</string>
-    <string name="location_closed">Itxita</string>
-    <string name="location_open">Irekia</string>
-    <string name="menu_map">Mapan ikusi</string>
     <string name="hint_drag_and_drop_reorder">Eutsi eta arrastatu elementuak berrantolatzeko</string>
     <string name="apps_profile_private">Pribatua</string>
-    <string name="preference_search_locations">Lekuak</string>
     <string name="shortcut_label_unavailable">Eskuraezina</string>
     <string name="app_label_locked_profile">Blokeatua</string>
     <string name="preference_plugin_enable">Gehigarria baimendu</string>
@@ -532,7 +518,6 @@
     <string name="metric">Metrikoa</string>
     <string name="preference_calendar_hide_completed">Amaitutako zereginak ezkutatu</string>
     <string name="action_import">Inportatu</string>
-    <string name="missing_permission_location_search">Kokapen-baimena behar da inguruko lekuak bilatzeko</string>
     <string name="preference_mdy_color_source">Kolore dinamikoen jatorria</string>
     <string name="preference_mdy_color_source_system">Sistema</string>
     <string name="preference_mdy_color_source_wallpaper">Horma-papera</string>
@@ -545,7 +530,6 @@
     <string name="icon_picker_search_icon">Ikono paketeetan bilatu</string>
     <string name="search_action_websearch">Web bilaketa</string>
     <string name="import_theme_apply">Gaia ezarri</string>
-    <string name="menu_website">Web gunea ireki</string>
     <string name="preference_location_managed">Gehigarriak kudeatua</string>
     <string name="preference_location_managed_summary">Hornitzaile honen kokapena gehigarriak kudeatzen du</string>
     <string name="preference_search_supportedunits">Onartutako unitateak</string>
@@ -566,7 +550,6 @@
     <string name="preference_grid_list_icons_summary">Erakutsi ikonoak zerrenda-ikuspegian</string>
     <string name="shortcut_unavailable_description">Lasterbide hau ez dago erabilgarri %1$s ez delako abiarazle lehenetsia</string>
     <string name="clock_style_custom">Trepeta pertsonalizatua</string>
-    <string name="preference_search_locations_hide_uncategorized">Ezkutatu kategoriarik gabeko lekuak</string>
     <string name="music_widget_play">Erreproduzitu</string>
     <string name="preference_search_tasks">Zereginak</string>
     <string name="preference_contacts_call_on_tap">Deitzeko sakatu</string>
@@ -640,11 +623,6 @@
     <string name="new_theme_name">(izengabea)</string>
     <string name="import_theme_contents">Edukia</string>
     <string name="import_theme_exists">Gaia dagoeneko existitzen da eta eguneratuko da</string>
-    <string name="preference_search_locations_hide_uncategorized_summary">Kategoria ongi definituak dituzten emaitzak bakarrik erakutsi, hala nola kafetegiak edo jatetxeak</string>
-    <string name="preference_search_locations_show_map_summary">Tokien maparen aurrebista erakutsi</string>
-    <string name="preference_search_locations_theme_map">Maparen gaia</string>
-    <string name="preference_search_locations_theme_map_summary">Abiarazlearen kolore-eskema mapari aplikatu</string>
-    <string name="menu_bugreport">Arazoaren berri eman</string>
     <string name="plugin_state_setup_required">Plugin hau lehenik konfiguratu behar duzu</string>
     <string name="plugin_type_contacts">Kontaktuak</string>
     <string name="plugin_weather_provider_enable">Eguraldi hornitzaile gisa ezarri</string>
@@ -661,7 +639,6 @@
     <string name="preference_customize_filter_bar">Iragazki-barra pertsonalizatu</string>
     <string name="preference_customize_filter_bar_summary">Iragazki-barran ageri diren elementuak pertsonalizatu</string>
     <string name="filter_settings_network_warning">Uneko iragazkiak online emaitzak lehenespenez gaitzen ditu. Baliteke zure bilaketa-kontsultak nahi gabe kanpoko web zerbitzuetara bidaltzea. Pribatutasun arrazoiengatik, ez da gomendagarria.</string>
-    <string name="preference_search_osm_locations_summary">OpenStreetMap-en inguruko dendak eta beste leku batzuk bilatu</string>
     <string name="poi_category_fast_food">Janari azkarra</string>
     <string name="poi_category_bar">Taberna</string>
     <string name="poi_category_school">Eskola</string>
@@ -759,7 +736,6 @@
     <string name="weather_forecast_humidity">Hezetasuna</string>
     <string name="weather_forecast_wind">Haizea</string>
     <string name="weather_forecast_precipitation">Prezipitazioa</string>
-    <string name="departure_time_now">orain</string>
     <plurals name="departure_time_in">
         <item quantity="one">minutu batean</item>
         <item quantity="other">%1$d minututan</item>

@@ -69,7 +69,7 @@ afterthought (see `docs/architecture/adr/0005-testing-strategy.md`):
   `--add-opens` JVM args already wired in the module build files — copy that
   `tasks.withType<Test>` block when adding tests to another module). Modules
   with test wiring so far: `:core:base`, `:core:config`, `:core:preferences`,
-  `:services:config`, `:data:database`, `:data:locations`, `:data:searchable`,
+  `:services:config`, `:data:database`, `:data:searchable`,
   `:data:themes`, `:data:widgets`, `:app:ui`.
 - **L3 screenshot tests**: Roborazzi in `:app:ui`; goldens are committed under
   `app/ui/src/test/roborazzi/`.

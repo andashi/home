@@ -143,7 +143,6 @@ dependencies {
     implementation(project(":core:crashreporter"))
     implementation(project(":data:notifications"))
     implementation(project(":data:contacts"))
-    implementation(project(":data:locations"))
     implementation(project(":core:permissions"))
     implementation(project(":data:websites"))
     implementation(project(":data:unitconverter"))

@@ -497,11 +497,6 @@
     <string name="widget_pick_widget">เลือกวิดเจ็ต</string>
     <string name="length_unit">หน่วยวัดความยาว</string>
     <string name="imperial">หน่วยวัดแบบอังกฤษ</string>
-    <string name="preference_search_location_custom_overpass_url">ลิงก์ Overpass</string>
-    <string name="preference_search_locations_hide_uncategorized">ซ่อนสถานที่ที่ไม่มีหมวดหมู่</string>
-    <string name="preference_search_locations_hide_uncategorized_summary">แสดงเฉพาะสถานที่ที่มีหมวดหมู่ชัดเจน เช่น ร้านกาแฟ หรือ ร้านอาหาร</string>
-    <string name="preference_search_locations_show_map_summary">แสดงตัวอย่างแผนที่สำหรับสถานที่ต่างๆ</string>
-    <string name="menu_dial">โทรศัพท์</string>
     <string name="widget_use_theme_colors">ใช้สีตามธีม</string>
     <string name="poi_category_clothes">ร้านขายเสื้อผ้า</string>
     <string name="poi_category_convenience">ร้านสะดวกซื้อ</string>
@@ -519,38 +514,20 @@
     <string name="poi_category_soccer">สนามฟุตบอล</string>
     <string name="poi_category_bank">ธนาคาร</string>
     <string name="widget_config_appwidget_resize">ปรับขนาด</string>
-    <string name="menu_website">เข้าเว็บไซต์</string>
-    <string name="location_closed">ปิดแล้ว</string>
-    <string name="menu_map">ดูในแผนที่</string>
-    <string name="preference_search_locations_theme_map">ปรับสีของแผนที่</string>
     <string name="preference_category_advanced">ขั้นสูง</string>
-    <string name="location_open">เปิดอยู่</string>
     <string name="preference_location_managed_summary">ตำแหน่งของผู้ให้บริการนี้ถูกควบคุมโดยปลั๊กอิน</string>
-    <string name="preference_search_locations_radius">ขอบเขตการค้นหา</string>
     <string name="preference_search_locations_summary">ค้นหาร้านค้าและสถานที่อื่นๆในพื้นที่ใกล้เคียง</string>
-    <string name="preference_search_locations_show_map">แผนที่</string>
-    <string name="preference_search_locations_theme_map_summary">ปรับสีของแผนที่ตามโทนสีของลอนเชอร์</string>
     <string name="plugin_state_setup_required">คุณต้องตั้งค่าปลั๊กอินนี้ก่อน</string>
     <string name="weather_condition_thunderstorm">พายุฝนฟ้าคะนอง</string>
-    <string name="preference_search_locations">สถานที่</string>
-    <string name="location_open_24_7">เปิด 24 ชั่วโมง</string>
-    <string name="missing_permission_location_search">คุณต้องอนุญาตให้แอปเข้าถึงตำแหน่งเพื่อค้นหาสถานที่ใกล้เคียง</string>
     <string name="metric">หน่วยวัดแบบเมตริก</string>
     <string name="plugin_action_setup">ตั้งค่า</string>
     <string name="plugin_type_weather">ผู้ให้บริการสภาพอากาศ</string>
     <string name="plugin_weather_provider_enable">ตั้งเป็นผู้ให้บริการสภาพอากาศ</string>
     <string name="search_action_share">แชร์</string>
     <string name="preference_clock_widget_show_seconds">แสดงวินาที</string>
-    <string name="location_closes">ปิดเวลา %1$s</string>
-    <string name="location_closes_other_day">ปิด %1$s เวลา %2$s</string>
-    <string name="location_opens">เปิดเวลา %1$s</string>
-    <string name="location_opens_other_day">เปิด %1$s เวลา %2$s</string>
     <string name="preference_location_managed">จัดการโดยปลั๊กอิน</string>
     <string name="preference_plugin_badges">ป้ายปลั๊กอิน</string>
     <string name="preference_plugin_badges_summary">แสดงป้ายบนผลการค้นหาให้เห็นว่ามาจากปลั๊กอินใด</string>
-    <string name="preference_search_location_custom_tile_server_url">ลิงก์ Tileserver</string>
-    <string name="menu_navigation">การนำทาง</string>
-    <string name="menu_bugreport">รายงานปัญหา</string>
     <plurals name="calendar_search_enabled_lists">
         <item quantity="other">เลือกแล้ว %1$s รายการ</item>
     </plurals>
@@ -572,7 +549,6 @@
     <string name="clock_style_custom">วิดเจ็ตแบบกำหนดเอง</string>
     <string name="menu_show_filters">แสดงตัวกรอง</string>
     <string name="menu_hide_filters">ซ่อนตัวกรอง</string>
-    <string name="preference_search_osm_locations_summary">ค้นหาร้านค้าและสถานที่อื่นๆในพื้นที่ใกล้เคียงบน OpenStreetMap</string>
     <string name="poi_category_hospital">โรงพยาบาล</string>
     <string name="poi_category_theater">โรงละคร</string>
     <string name="poi_category_tennis">สนามเทนนิส</string>
@@ -672,7 +648,6 @@
     <string name="clock_style_segment">7-segment</string>
     <string name="clock_variant_outlined">ใช้เส้นรอบนอก</string>
     <string name="preference_filter_bar_summary">แสดงตัวกรองลัดด้านบนแป้นพิมพ์</string>
-    <string name="preference_search_osm_locations">OpenStreetMap</string>
     <string name="poi_category_supermarket">ห้างสรรพสินค้า</string>
     <string name="poi_category_ice_cream">ร้านไอศกรีม</string>
     <string name="poi_category_university">มหาวิทยาลัย</string>
@@ -716,9 +691,7 @@
     <plurals name="departure_time_in">
         <item quantity="other">ในอีก %1$d นาที</item>
     </plurals>
-    <string name="departure_time_now">ตอนนี้</string>
     <string name="preference_search_local_calendar_summary">ค้นหาปฏิทินบนอุปกรณ์นี้</string>
-    <string name="departure_time_departed">เวลาออกเดินทาง</string>
     <string name="plugin_type_contacts">ผู้ติดต่อ</string>
     <string name="preference_grid_list_icons">แสดงไอคอนแอปในรายการ</string>
     <string name="preference_grid_list_style_summary">แสดงแอปแบบเรียงรายการ แทนการแสดงแอปแบบเรียงเป็นตาราง</string>

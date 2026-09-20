@@ -32,8 +32,6 @@
     <string name="file_type_video">Відео файл</string>
     <string name="file_type_none">Файл</string>
     <string name="file_type_music">Аудіо</string>
-    <string name="menu_map">Показати на мапі</string>
-    <string name="menu_website">Відкрити сайт</string>
     <string name="file_type_presentation">Презентація</string>
     <string name="file_type_compressed">Стиснутий файл</string>
     <string name="file_type_text">Текстовий файл</string>
@@ -43,12 +41,6 @@
     <string name="file_type_source_code">Файл вихідного коду</string>
     <string name="file_type_spreadsheet">Таблиця</string>
     <string name="file_type_archive">Архів</string>
-    <string name="location_open">Відкрито</string>
-    <string name="location_closed">Закрито</string>
-    <string name="location_closes">закриється через %1$s</string>
-    <string name="location_closes_other_day">Закриється у %1$s, о %2$s</string>
-    <string name="location_opens">Відкриється о %1$s</string>
-    <string name="location_opens_other_day">Відкриється у %1$s, о %2$s</string>
     <string name="default_websearch_2_name">YouTube</string>
     <string name="websearch_dialog_replace_icon">Замінити значок</string>
     <string name="websearch_dialog_advanced">Розширений</string>
@@ -222,7 +214,6 @@
     <string name="preference_theme_dark">Темна</string>
     <string name="missing_permission_music_widget">Для керування відтворенням медіа потрібен доступ до сповіщень</string>
     <string name="missing_permission_contact_search_settings">Для пошуку контактів потрібен дозвіл</string>
-    <string name="missing_permission_location_search">Для пошуку локацій поряд потрібен дозвіл</string>
     <string name="frequently_used_show_in_favorites">Показувати в улюблених</string>
     <string name="widget_removed">Віджет видалено</string>
     <string name="preference_screen_appearance">Зовнішній вигляд</string>

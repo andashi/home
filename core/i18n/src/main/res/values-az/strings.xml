@@ -1,8 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="location_closes_other_day">bağlanacaq %1$s, %2$s</string>
-    <string name="location_opens">açılır %1$s</string>
-    <string name="location_opens_other_day">açılacaq %1$s, %2$s</string>
     <string name="menu_share">Paylaş</string>
     <string name="menu_share_apk_file">Paket faylı</string>
     <string name="menu_favorites_pin">Favoritlərə sancaqla</string>
@@ -11,8 +8,6 @@
     <string name="menu_app_info">Tətbiq məlumatı</string>
     <string name="menu_launch">İşə sal</string>
     <string name="menu_customize">Fərdiləşdir</string>
-    <string name="menu_map">Xəritədə göstər</string>
-    <string name="menu_website">Vebsaytı aç</string>
     <string name="action_undo">Dəyişikliyi ləğv et</string>
     <string name="action_import">İdxal et</string>
     <string name="menu_delete">Sil</string>
@@ -56,8 +51,6 @@
     <string name="websearch_dialog_advanced">Təkmilləşdirilmiş</string>
     <string name="websearch_dialog_query_encoding_url">Faiz kodlaşdırması</string>
     <string name="websearch_dialog_query_encoding_form">application/x-www-form-urlencoded</string>
-    <string name="location_open">Açıq</string>
-    <string name="location_closed">Bağlı</string>
     <string name="menu_calendar_open_externally">Təqvim tətbiqində aç</string>
     <string name="wind_west_south_west">Qərb cənub-qərb</string>
     <string name="wikipedia_url">https://az.wikipedia.org</string>
@@ -65,7 +58,6 @@
     <string name="alert_delete_shortcut">%1$s qısayolu həmişəlik silinəcək. Davam edilsin?</string>
     <string name="default_websearch_2_url">https://www.youtube.com/results?search_query=${1}</string>
     <string name="websearch_dialog_query_encoding">Sorğunun kodlaşdırılması</string>
-    <string name="location_closes">bağlanır %1$s</string>
     <string name="wind_east_south_east">Şərq cənub-şərq</string>
     <string name="wikipedia_source">Vikipediyadan</string>
     <string name="file_type_none">Fayl</string>

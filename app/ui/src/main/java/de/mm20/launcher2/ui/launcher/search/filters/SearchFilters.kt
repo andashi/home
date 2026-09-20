@@ -162,25 +162,6 @@ fun SearchFilters(
                 label = { Text(stringResource(R.string.preference_search_websites)) }
             )
             FilterChip(
-                modifier = Modifier.padding(end = 16.dp),
-                selected = filters.places && (!allCategoriesEnabled || settings),
-                onClick = {
-                    if (settings) {
-                        onFiltersChange(filters.copy(places = !filters.places))
-                    } else {
-                        onFiltersChange(filters.togglePlaces())
-                    }
-                },
-                leadingIcon = {
-                    Icon(
-                        painter = painterResource(R.drawable.location_on_20px),
-                        contentDescription = null,
-                        modifier = Modifier.size(FilterChipDefaults.IconSize)
-                    )
-                },
-                label = { Text(stringResource(R.string.preference_search_locations)) }
-            )
-            FilterChip(
                 selected = filters.tools && (!allCategoriesEnabled || settings),
                 onClick = {
                     if (settings) {

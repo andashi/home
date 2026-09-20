@@ -237,14 +237,10 @@
     <string name="weather_condition_fair">晴れ</string>
     <string name="weather_condition_heavysleetandthunder">激しいみぞれと雷</string>
     <string name="weather_condition_lightsleetandthunder">弱いみぞれと雷</string>
-    <string name="menu_website">WEBサイトを開く</string>
-    <string name="menu_map">地図で見る</string>
     <string name="action_clear">削除</string>
     <plurals name="calendar_search_enabled_lists">
         <item quantity="other">%1$s個のリストが選択されました</item>
     </plurals>
-    <string name="location_closes">%1$sにクローズした</string>
-    <string name="location_opens">%1$sにオープンした</string>
     <string name="calendar_widget_previous_day">前日</string>
     <string name="music_widget_next_track">次のタイトル</string>
     <string name="music_widget_play">プレイ</string>
@@ -259,8 +255,6 @@
     <string name="profile_work_profile_action_lock">仕事用アプリを停止</string>
     <string name="profile_private_profile_action_lock">プライベートスペースをロック</string>
     <string name="hint_drag_and_drop_reorder">アイテムを押しながらドラッグして並べ替えてください</string>
-    <string name="location_open">オープン</string>
-    <string name="location_closed">クローズド</string>
     <string name="action_done">完了</string>
     <string name="action_install">インストール</string>
     <string name="action_quit">閉じる</string>

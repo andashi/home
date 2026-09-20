@@ -37,7 +37,6 @@
         android:resizeableActivity="true"
         android:supportsRtl="true"
         android:theme="@style/LauncherTheme"
-        android:usesCleartextTraffic="true"
         tools:ignore="GoogleAppIndexingWarning">
 
         <meta-data

@@ -327,14 +327,6 @@
     <string name="file_type_ebook">Buku elektronik</string>
     <string name="file_type_drawing">Gambar</string>
     <string name="action_import">Impor</string>
-    <string name="location_closes_other_day">tutup pada %1$s , %2$s</string>
-    <string name="location_closes">Tutup pada%1$s</string>
-    <string name="location_opens">buka pada %1$s</string>
-    <string name="location_opens_other_day">buka pada %1$s, %2$s</string>
-    <string name="location_open">Buka</string>
-    <string name="location_closed">Tutup</string>
-    <string name="menu_map">Tampillkan pada peta</string>
-    <string name="menu_website">Buka situs</string>
     <string name="preference_mdy_color_source">Sumber warna dinamis</string>
     <string name="preference_mdy_color_source_wallpaper">Walpaper</string>
     <string name="websearch_dialog_query_encoding_url">Pengkodean persen</string>
@@ -365,7 +357,6 @@
     <string name="task_due_today">Jatuh tempo hari ini</string>
     <string name="weather_condition_thunderstorm">Hujan badai</string>
     <string name="weather_condition_heavysnowandthunder">Salju lebat dan guntur</string>
-    <string name="missing_permission_location_search">Berikan izin lokasi untuk mencari lokasi terdekat.</string>
     <string name="preference_mdy_color_source_system">Sistem</string>
     <string name="provider_here">DISINI</string>
     <string name="preference_suspended_badges_summary">Tampilkan lencana untuk aplikasi yang ditangguhkan</string>

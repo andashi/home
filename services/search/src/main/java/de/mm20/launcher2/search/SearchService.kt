@@ -42,7 +42,6 @@ internal class SearchServiceImpl(
     private val calendarRepository: SearchableRepository<CalendarEvent>,
     private val contactRepository: SearchableRepository<Contact>,
     private val articleRepository: SearchableRepository<Article>,
-    private val locationRepository: SearchableRepository<Location>,
     private val unitConverterRepository: UnitConverterRepository,
     private val calculatorRepository: CalculatorRepository,
     private val websiteRepository: SearchableRepository<Website>,
@@ -68,7 +67,6 @@ internal class SearchServiceImpl(
                         unitConverters = if (filters.tools) it.unitConverters else null,
                         websites = if (filters.websites) it.websites else null,
                         wikipedia = if (filters.articles) it.wikipedia else null,
-                        locations = if (filters.places) it.locations else null,
                     )
                 }
                     ?: SearchResults())
@@ -82,7 +80,6 @@ internal class SearchServiceImpl(
                     val unitConverters = mutableListOf<UnitConverter>()
                     val websites = mutableListOf<Website>()
                     val wikipedia = mutableListOf<Article>()
-                    val locations = mutableListOf<Location>()
                     val searchActions = mutableListOf<SearchAction>()
                     for (it in items) {
                         when (it) {
@@ -93,7 +90,6 @@ internal class SearchServiceImpl(
                             is UnitConverter -> if (filters.tools) unitConverters.add(it)
                             is Website -> if (filters.websites) websites.add(it)
                             is Article -> if (filters.articles) wikipedia.add(it)
-                            is Location -> if (filters.places) locations.add(it)
                             is SearchAction -> searchActions.add(it)
                         }
                     }
@@ -105,7 +101,6 @@ internal class SearchServiceImpl(
                         unitConverters = unitConverters,
                         websites = websites,
                         wikipedia = wikipedia,
-                        locations = locations,
                         searchActions = searchActions,
                     )
                 }.shareIn(this, SharingStarted.WhileSubscribed(), 1)
@@ -228,22 +223,6 @@ internal class SearchServiceImpl(
                         }
                 }
             }
-            if (filters.places) {
-                launch {
-                    delay(250)
-                    locationRepository.search(query, filters.allowNetwork)
-                        .combine(customAttrResults) { locations, customAttrs ->
-                            if (customAttrs.locations != null) locations + customAttrs.locations
-                            else locations
-                        }
-                        .withCustomLabels(customAttributesRepository)
-                        .collectLatest { r ->
-                            results.update {
-                                it.copy(locations = r)
-                            }
-                        }
-                }
-            }
             emitAll(results)
         }
     }
@@ -301,7 +280,6 @@ data class SearchResults(
     val unitConverters: List<UnitConverter>? = null,
     val websites: List<Website>? = null,
     val wikipedia: List<Article>? = null,
-    val locations: List<Location>? = null,
     val searchActions: List<SearchAction>? = null,
 )
 

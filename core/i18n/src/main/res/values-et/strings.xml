@@ -1,17 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="location_closed">Suletud</string>
-    <string name="location_closes_other_day">sulgetakse %1$s, %2$s</string>
     <string name="menu_share_store_link">%1$s link</string>
-    <string name="location_opens">avatakse %1$s</string>
-    <string name="location_opens_other_day">avatakse %1$s, %2$s</string>
     <string name="menu_uninstall">Eemalda</string>
     <string name="menu_favorites_pin">Kinnita lemmikutesse</string>
     <string name="menu_back">Tagasi</string>
     <string name="menu_app_info">Rakenduse info</string>
     <string name="menu_customize">Kohanda</string>
-    <string name="menu_map">Vaata kaardil</string>
-    <string name="menu_website">Ava veebisait</string>
     <string name="action_undo">Tühista</string>
     <string name="action_import">Importdi</string>
     <string name="action_done">Valmis</string>
@@ -210,8 +204,6 @@
     <string name="preference_search_currencyconverter">Valuuta konverter</string>
     <string name="preference_search_wikipedia">Wikipedia</string>
     <string name="preference_search_websites">Veebisaidid</string>
-    <string name="preference_search_locations">Asukohad</string>
-    <string name="preference_search_locations_radius">Otsingu raadius</string>
     <string name="preference_search_bar_style">Stiil</string>
     <string name="preference_calendar_calendars">Kalendrid</string>
     <string name="preference_calendar_hide_completed">Peida lõpetatud ülesanded</string>
@@ -306,9 +298,6 @@
     <string name="import_theme_contents">Sisu</string>
     <string name="app_label_locked_profile">Lukustatud</string>
     <string name="preference_plugin_enable">Lülita plugin sisse</string>
-    <string name="menu_navigation">Navigeerimine</string>
-    <string name="menu_bugreport">Veateade</string>
-    <string name="location_open_24_7">Avatud 24/7</string>
     <string name="plugin_state_error">See plugin ei tööta korrektselt</string>
     <string name="plugin_state_setup_required">Pead selle plugina esmalt käivitama</string>
     <string name="plugin_action_setup">Seadista</string>
@@ -407,7 +396,6 @@
     <string name="weather_forecast_humidity">Niiskus</string>
     <string name="weather_forecast_wind">Tuul</string>
     <string name="weather_forecast_precipitation">Sademed</string>
-    <string name="departure_time_now">nüüd</string>
     <string name="theme_import_title">Impordi teema</string>
     <string name="theme_bundle_name">Nimi</string>
     <string name="theme_bundle_author">Autor</string>
@@ -417,7 +405,6 @@
     <string name="font_name_device_body">Seadme teksti font</string>
     <string name="font_category_generic">Üldine</string>
     <string name="preference_clockwidget_battery_part">Aku</string>
-    <string name="location_open">Avatud</string>
     <string name="menu_share_apk_file">Paketifail</string>
     <string name="menu_launch">Käivita</string>
     <string name="websearch_dialog_replace_icon">Asenda ikoon</string>
@@ -494,12 +481,9 @@
     <string name="default_websearch_3_url">https://play.google.com/store/search?q=${1}</string>
     <string name="note_widget_conflict">Konflikt</string>
     <string name="theme_color_scheme_palette_color">Palett</string>
-    <string name="menu_dial">Helista</string>
-    <string name="preference_search_osm_locations">OpenStreetMap</string>
     <string name="poi_category_library">Raamatukogu</string>
     <string name="note_widget_conflict_file_version">Praegune faili sisu:</string>
     <string name="import_theme_apply">Rakenda teema</string>
-    <string name="preference_search_locations_show_map">Kaart</string>
     <string name="plugin_type_locationsearch">Kohtade otsing</string>
     <string name="poi_category_hotel">Hotell</string>
     <string name="poi_category_toilets">WC</string>
@@ -510,7 +494,6 @@
     <string name="poi_category_asian_restaurant">Aasia restoran</string>
     <string name="poi_category_government_building">Valitsuse hoone</string>
     <string name="theme_export_title">Ekspordi teema</string>
-    <string name="location_closes">sulgetakse kell %1$s</string>
     <string name="music_widget_default_title">%1$s esitab meediat</string>
     <string name="preference_suspended_badges">Peatatud rakendused</string>
     <string name="poi_category_furniture">Mööblilpood</string>

@@ -1,15 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools" tools:locale="en">
-    <string name="location_open">Open</string>
-    <string name="location_closed">Closed</string>
     <!-- Time when a place next closes (on the same day). $1%s: time (hh:mm) -->
-    <string name="location_closes">closes at %1$s</string>
     <!-- Time when a place next closes (on a different day). $1%s: day of week, %2$s: time (hh:mm) -->
-    <string name="location_closes_other_day">closes %1$s, %2$s</string>
     <!-- Time when a place next opens (on the same day). $1%s: time (hh:mm) -->
-    <string name="location_opens">opens at %1$s</string>
     <!-- Time when a place next opens (on a different day). $1%s: day of week, %2$s: time (hh:mm) -->
-    <string name="location_opens_other_day">opens %1$s, %2$s</string>
     <!-- Name of the app -->
     <!-- Share something. Can be anything, an app, a website, a file, … -->
     <string name="menu_share">Share</string>
@@ -28,8 +22,6 @@
     <string name="menu_launch">Launch</string>
     <string name="menu_customize">Customize</string>
     <!-- Open a file in the corresponding app -->
-    <string name="menu_map">View on map</string>
-    <string name="menu_website">Open website</string>
     <!-- Shown in a snackbar after an item has been hidden. %1$s: label of the item -->
     <string name="action_undo">Undo</string>
     <string name="action_import">Import</string>
@@ -389,7 +381,6 @@
     <!-- Missing calendar permission, used in calendar search results -->
     <string name="missing_permission_calendar_search">Calendar permission is required to search your calendar</string>
     <!-- Missing location permission, used in location search results -->
-    <string name="missing_permission_location_search">Location permission is required to search nearby locations</string>
     <!-- Missing files permission, used in files search results -->
     <!-- Missing files permission, used in contact search results -->
     <string name="missing_permission_contact_search">Contacts permission is required to search your contacts</string>
@@ -606,8 +597,6 @@
     <string name="preference_search_wikipedia">Wikipedia</string>
     <string name="preference_search_wikipedia_summary">Search the free encyclopedia</string>
     <string name="preference_search_websites">Websites</string>
-    <string name="preference_search_locations">Places</string>
-    <string name="preference_search_locations_radius">Search radius</string>
     <string name="preference_search_websites_summary">Show a preview of a website if the search query is a URL</string>
     <string name="preference_search_locations_summary">Search the local area for shops and other places</string>
     <string name="preference_calendar_calendars">Calendars</string>
@@ -826,18 +815,6 @@
     <string name="length_unit">Unit of length</string>
     <string name="imperial">Imperial</string>
     <string name="metric">Metric</string>
-    <string name="preference_search_location_custom_overpass_url">Overpass URL</string>
-    <string name="preference_search_locations_hide_uncategorized">Hide uncategorized places</string>
-    <string name="preference_search_locations_hide_uncategorized_summary">Only show results with well defined categories, like cafés or restaurants</string>
-    <string name="preference_search_locations_show_map">Map</string>
-    <string name="preference_search_locations_show_map_summary">Show a map preview for places</string>
-    <string name="preference_search_locations_theme_map">Map theming</string>
-    <string name="preference_search_locations_theme_map_summary">Apply the color scheme of the launcher to the map</string>
-    <string name="preference_search_location_custom_tile_server_url">Tileserver URL</string>
-    <string name="menu_dial">Call</string>
-    <string name="menu_navigation">Navigation</string>
-    <string name="menu_bugreport">Bug Report</string>
-    <string name="location_open_24_7">Open 24/7</string>
     <string name="plugin_state_error">This plugin isn\'t working correctly</string>
     <string name="plugin_state_setup_required">You need to set up this plugin first</string>
     <string name="plugin_action_setup">Set up</string>
@@ -870,8 +847,6 @@
     <string name="preference_customize_filter_bar">Customize filter bar</string>
     <string name="preference_customize_filter_bar_summary">Customize which items are included in the filter bar</string>
     <string name="filter_settings_network_warning">The current filter enables online results by default. Your search queries might unintentionally be sent to external web services. For privacy reasons, this is not recommended.</string>
-    <string name="preference_search_osm_locations">OpenStreetMap</string>
-    <string name="preference_search_osm_locations_summary">Search OpenStreetMap for shops and other places in the local area</string>
     <string name="poi_category_restaurant">Restaurant</string>
     <string name="poi_category_fast_food">Fast food</string>
     <string name="poi_category_bar">Bar</string>
@@ -1015,12 +990,10 @@
     <string name="weather_forecast_humidity">Humidity</string>
     <string name="weather_forecast_wind">Wind</string>
     <string name="weather_forecast_precipitation">Precipitation</string>
-    <string name="departure_time_now">now</string>
     <plurals name="departure_time_in">
         <item quantity="one">in one minute</item>
         <item quantity="other">in %1$d minutes</item>
     </plurals>
-    <string name="departure_time_departed">departed</string>
     <string name="bad_configuration_title">Congratulations, you\'ve locked yourself out!</string>
     <string name="bad_configuration_summary">You\'ve discovered a combination of settings that makes both the search and settings inaccessible — effectively locking you out of the launcher</string>
     <string name="theme_export_title">Export theme</string>

@@ -261,10 +261,6 @@
     <string name="preference_force_themed_icons">Impor ícones coloridos</string>
     <string name="missing_permission_calendar_widget">Requer acesso ao calendário para mostrar os eventos e os lembretes</string>
     <string name="weather_condition_lightsnowshowers"/>
-    <string name="location_open">Aberto</string>
-    <string name="location_closed">Fechado</string>
-    <string name="menu_map">Ver no mapa</string>
-    <string name="menu_website">Abrir página web</string>
     <string name="widget_use_theme_colors">Tema colorido</string>
     <string name="missing_permission_contact_search">Requer acesso aos contactos para pesquisar contactos</string>
     <string name="preference_category_badges">Indicadores</string>
@@ -292,7 +288,6 @@
     <string name="preference_grid_column_count">Número de colunas</string>
     <string name="preference_clock_widget_show_seconds">Mostrar segundos</string>
     <string name="weather_condition_thunderstorm">Trovoada</string>
-    <string name="missing_permission_location_search">Requer acesso à localização para pesquisar locais próximos</string>
     <string name="missing_permission_appshortcuts_search">Defina %1$s como a aplicação padrão para pesquisar atalhos de aplicações.</string>
     <string name="preference_notification_badges_summary">Mostra um indicador nas aplicações com notificações por ler</string>
     <string name="preference_suspended_badges">Aplicações suspensas</string>
@@ -338,7 +333,6 @@
     <string name="gesture_action_lock_screen">Desligar ecrã</string>
     <string name="gesture_action_power_menu">Menu energia</string>
     <string name="plugin_type_weather">Serviço de meteorologia</string>
-    <string name="location_closes_other_day">fecha %1$s, às %2$s</string>
     <string name="plugin_state_setup_required">Tem que configurar o plugin para o utilizar</string>
     <string name="preference_screen_search_actions">Ações rápidas</string>
     <string name="widget_pick_widget">Escolha o widget</string>
@@ -425,9 +419,6 @@
     <string name="preference_hidden_items">Resultados ocultos</string>
     <string name="tag_name">Nome da etiqueta</string>
     <string name="open_search_swipe_right">Deslize à direita</string>
-    <string name="location_closes">fecha às %1$s</string>
-    <string name="location_opens">abre às %1$s</string>
-    <string name="location_opens_other_day">abre %1$s, às %2$s</string>
     <string name="icon_picker_default_icon">Padrão</string>
     <string name="search_action_email">Enviar e-mail</string>
     <string name="preference_search_result_ordering_weight_factor_high">Variável</string>
@@ -459,8 +450,6 @@
     <string name="preference_search_wikipedia">Wikipedia</string>
     <string name="preference_search_wikipedia_summary">Pesquisar na enciclopédia livre</string>
     <string name="preference_search_websites">Sites</string>
-    <string name="preference_search_locations">Locais</string>
-    <string name="preference_search_locations_radius">Raio de pesquisa</string>
     <string name="preference_search_locations_summary">Pesquisar lojas e outros locais na área</string>
     <string name="preference_calendar_hide_completed">Ocultar tarefas terminadas</string>
     <string name="preference_screen_buildinfo_summary">Mais informações acerca desta versão</string>
@@ -517,7 +506,6 @@
     <string name="action_more_actions">Mais ações</string>
     <string name="action_clear">Limpar</string>
     <string name="metric">Métrico</string>
-    <string name="preference_search_location_custom_overpass_url">Ignorar URL</string>
     <string name="clock_style_digital2">Simples</string>
     <string name="menu_hide_filters">Ocultar filtros</string>
     <string name="poi_category_university">Universidade</string>
@@ -531,7 +519,6 @@
     <string name="poi_category_place_of_worship">Local de oração</string>
     <string name="poi_category_park">Parque</string>
     <string name="poi_category_monument">Monumento</string>
-    <string name="menu_dial">Ligar</string>
     <string name="poi_category_pub">Pub</string>
     <string name="poi_category_post_office">Correios</string>
     <string name="poi_category_furniture">Loja de mobília</string>
@@ -547,19 +534,11 @@
     <string name="poi_category_charging_station">Estação de carregamento</string>
     <string name="poi_category_townhall">Junta de freguesia</string>
     <string name="poi_category_courthouse">Tribunal</string>
-    <string name="preference_search_locations_show_map_summary">Mostrar antevisão de locais no mapa</string>
-    <string name="preference_search_locations_theme_map">Tema do mapa</string>
-    <string name="preference_search_locations_theme_map_summary">Aplicar esquema de cores da aplicação aos mapas</string>
-    <string name="preference_search_location_custom_tile_server_url">URL Tileserver</string>
-    <string name="menu_navigation">Navegação</string>
-    <string name="menu_bugreport">Relatório de erro</string>
-    <string name="location_open_24_7">Aberto 24 H</string>
     <string name="clock_style_digital1">Negrito</string>
     <string name="clock_style_orbit">Órbita</string>
     <string name="clock_style_binary">Binário</string>
     <string name="clock_style_analog">Ponteiros</string>
     <string name="clock_style_empty">Não usar</string>
-    <string name="preference_search_osm_locations_summary">Procurar lojas e outros locais através de OpenStreetMap</string>
     <string name="poi_category_restaurant">Restaurante</string>
     <string name="poi_category_supermarket">Supermercado</string>
     <string name="poi_category_parking">Estacionamento</string>
@@ -580,8 +559,6 @@
     <string name="poi_category_skiing">Esqui</string>
     <string name="poi_category_cricket">Campo de cricket</string>
     <string name="import_theme_apply">Aplicar tema</string>
-    <string name="preference_search_locations_hide_uncategorized_summary">Mostrar apenas os resultados com categorias definidas como, por exemplo, cafés ou restaurantes</string>
-    <string name="preference_search_locations_hide_uncategorized">Ocultar locais sem categoria</string>
     <string name="shortcut_label_unavailable">Indisponível</string>
     <string name="poi_category_atm">Multibanco</string>
     <string name="poi_category_kiosk">Quiosque</string>
@@ -606,8 +583,6 @@
     <string name="shortcut_unavailable_description">Esta atalho não está disponível porque %1$s não é a aplicação padrão</string>
     <string name="length_unit">Unidade de medida</string>
     <string name="imperial">Imperial</string>
-    <string name="preference_search_locations_show_map">Mapa</string>
-    <string name="preference_search_osm_locations">OpenStreetMap</string>
     <string name="poi_category_fast_food">Comida rápida</string>
     <string name="poi_category_cafe">Café</string>
     <string name="poi_category_dentist">Dentista</string>
@@ -713,8 +688,6 @@
         <item quantity="many">dentro de %1$d minutos</item>
         <item quantity="other">dentro de %1$d minutos</item>
     </plurals>
-    <string name="departure_time_now">agora</string>
-    <string name="departure_time_departed">partida</string>
     <string name="weather_forecast_wind">Vento</string>
     <string name="weather_forecast_humidity">Humidade</string>
     <string name="weather_forecast_precipitation">Precipitação</string>

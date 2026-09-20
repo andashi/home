@@ -461,16 +461,13 @@
     <string name="widget_name_unknown">未知的應用程式小工具</string>
     <string name="preference_custom_colors_corepalette">調色盤</string>
     <string name="customize_item_tags">標籤</string>
-    <string name="location_closes">將在 %1$s 打烊</string>
     <string name="import_theme_apply">應用主題</string>
     <string name="file_type_launchertheme">%1$s 主題</string>
-    <string name="preference_search_locations">地點</string>
     <string name="preference_default_filter_summary">自訂搜尋的預設篩選器</string>
     <string name="theme_color_scheme_autogenerate">從原色開始</string>
     <string name="preference_mdy_color_source">動態色彩來源</string>
     <string name="preference_debug_dump_heap_in_progress">正在擷取快照…</string>
     <string name="poi_category_mobile_phone">手機店</string>
-    <string name="preference_search_locations_radius">搜尋半徑</string>
     <string name="preference_use_system_default">使用系統預設</string>
     <string name="unavailable_searchable">此項目已不存在</string>
     <string name="poi_category_post_office">郵局</string>
@@ -479,13 +476,11 @@
     <string name="filter_settings_network_warning">目前的篩選器設定預設啟用網路結果。您的搜尋字串可能會不經注意傳送到外部網路服務上。由於隱私問題，我們不推薦這樣設定。</string>
     <string name="preference_debug_dump_heap_summary">擷取快照以分析記憶體使用情形。該應用程式將會凍結至處理完成為止。</string>
     <string name="customize_item_label">名稱</string>
-    <string name="missing_permission_location_search">需要位置權限以搜尋附近的地點</string>
     <string name="import_theme_error">無法讀取選取的檔案。請確保您選取了有效的主題檔案（*.kvtheme），並且該檔案未損毀。</string>
     <string name="preference_location_managed">由外掛程式管理</string>
     <string name="contact_info_home">住家</string>
     <string name="contact_info_work">工作</string>
     <string name="length_unit">長度單位</string>
-    <string name="preference_search_location_custom_overpass_url">Overpass URL</string>
     <plurals name="app_info_notifications">
         <item quantity="other">%1$s 個通知</item>
     </plurals>
@@ -532,10 +527,6 @@
     <string name="action_clear">清除</string>
     <string name="action_done">完成</string>
     <string name="action_more_actions">更多動作</string>
-    <string name="location_open">營業中</string>
-    <string name="location_closed">已打烊</string>
-    <string name="menu_map">在地圖上檢視</string>
-    <string name="menu_website">開啟網站</string>
     <string name="preference_search_supportedunits">支援的單位</string>
     <string name="preference_search_locations_summary">搜尋附近的商店或其他地點</string>
     <string name="plugin_type_weather">天氣資訊提供者</string>
@@ -549,9 +540,6 @@
     <string name="poi_category_chinese_restaurant">中餐廳</string>
     <string name="poi_category_japanese_restaurant">日本料理餐廳</string>
     <string name="poi_category_skiing">滑雪場</string>
-    <string name="preference_search_locations_show_map">地圖</string>
-    <string name="preference_search_locations_show_map_summary">為地點顯示地圖預覽</string>
-    <string name="preference_search_locations_hide_uncategorized_summary">僅顯示分類明確的結果，例如咖啡廳或餐廳</string>
     <string name="search_filter_tools">工具</string>
     <string name="search_filter_online">線上結果</string>
     <string name="search_filter_apps">應用程式</string>
@@ -561,12 +549,8 @@
     <string name="preference_clockwidget_dynamic_zone">動態區域</string>
     <string name="preference_customize_filter_bar">自訂篩選器列</string>
     <string name="preference_customize_filter_bar_summary">自訂篩選器列上的選項</string>
-    <string name="preference_search_location_custom_tile_server_url">Tileserver URL</string>
     <string name="plugin_type_locationsearch">地點搜尋</string>
     <string name="plugin_type_calendar">日曆</string>
-    <string name="location_closes_other_day">將在 %1$s, %2$s 打烊</string>
-    <string name="location_opens">將在 %1$s 開始營業</string>
-    <string name="location_opens_other_day">將在 %1$s, %2$s 開始營業</string>
     <string name="action_import">匯入</string>
     <string name="profile_work_profile_action_unlock">解除暫停</string>
     <string name="profile_work_profile_state_locked">工作應用程式被暫停</string>
@@ -576,12 +560,8 @@
     <string name="shortcut_unavailable_description">此捷徑無法使用，因為 %1$s 不是預設啟動器</string>
     <string name="plugin_action_setup">設定</string>
     <string name="imperial">英制</string>
-    <string name="preference_search_locations_hide_uncategorized">隱藏未分類地點</string>
-    <string name="menu_navigation">導航</string>
-    <string name="menu_bugreport">錯誤回報</string>
     <string name="plugin_state_error">此外掛程式未正常運作</string>
     <string name="plugin_state_setup_required">請先設定此外掛程式</string>
-    <string name="location_open_24_7">全年 24 小時營業</string>
     <string name="clock_style_digital1">粗體</string>
     <string name="clock_style_digital2">簡易</string>
     <string name="clock_style_binary">二進制</string>
@@ -595,8 +575,6 @@
     <string name="menu_show_filters">顯示篩選器</string>
     <string name="preference_default_filter">預設篩選器</string>
     <string name="preference_filter_bar_summary">在鍵盤上方顯示快速篩選器</string>
-    <string name="preference_search_osm_locations">OpenStreetMap</string>
-    <string name="preference_search_osm_locations_summary">在 OpenStreetMap 上搜尋當地商店與其它地點</string>
     <string name="poi_category_hotel">旅館</string>
     <string name="poi_category_school">學校</string>
     <string name="poi_category_parking">停車場</string>
@@ -661,9 +639,6 @@
     <string name="item_visibility_hidden">不顯示</string>
     <string name="poi_category_cricket">板球道</string>
     <string name="app_label_locked_profile">已鎖定</string>
-    <string name="preference_search_locations_theme_map">地圖主題</string>
-    <string name="preference_search_locations_theme_map_summary">將啟動器的色彩方案應用至地圖</string>
-    <string name="menu_dial">呼叫</string>
     <string name="poi_category_clothes">服飾店</string>
     <string name="task_due_time">於 %1$s 到期</string>
     <string name="task_due_date">於 %1$s 到期</string>
@@ -713,11 +688,9 @@
     <string name="widget_removed">小工具已移除</string>
     <string name="preference_contacts_call_on_tap">輕觸以撥打</string>
     <string name="preference_contacts_call_on_tap_summary">輕觸電話號碼時不經確認立即撥號</string>
-    <string name="departure_time_now">現在</string>
     <plurals name="departure_time_in">
         <item quantity="other">在 %1$d 分鐘內</item>
     </plurals>
-    <string name="departure_time_departed">已離開</string>
     <string name="plugin_type_contacts">聯絡人</string>
     <string name="preference_grid_list_icons">在列表中顯示應用程式圖示</string>
     <string name="preference_grid_list_style_summary">以列表而不是網格顯示應用程式</string>

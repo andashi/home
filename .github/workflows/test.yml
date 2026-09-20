@@ -30,7 +30,6 @@ jobs:
           :data:widgets:testDebugUnitTest
           :data:themes:testDebugUnitTest
           :core:base:testDebugUnitTest
-          :data:locations:testDebugUnitTest
 
   l3-screenshots:
     runs-on: ubuntu-latest

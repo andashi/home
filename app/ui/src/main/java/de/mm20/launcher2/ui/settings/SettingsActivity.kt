@@ -95,14 +95,10 @@ import de.mm20.launcher2.ui.settings.locale.CurrencySettingsRoute
 import de.mm20.launcher2.ui.settings.locale.CurrencySettingsScreen
 import de.mm20.launcher2.ui.settings.locale.LocaleSettingsRoute
 import de.mm20.launcher2.ui.settings.locale.LocaleSettingsScreen
-import de.mm20.launcher2.ui.settings.locations.LocationsSettingsRoute
-import de.mm20.launcher2.ui.settings.locations.LocationsSettingsScreen
 import de.mm20.launcher2.ui.settings.main.MainRoute
 import de.mm20.launcher2.ui.settings.main.MainSettingsScreen
 import de.mm20.launcher2.ui.settings.media.MediaIntegrationSettingsRoute
 import de.mm20.launcher2.ui.settings.media.MediaIntegrationSettingsScreen
-import de.mm20.launcher2.ui.settings.osm.OsmSettingsRoute
-import de.mm20.launcher2.ui.settings.osm.OsmSettingsScreen
 import de.mm20.launcher2.ui.settings.plugins.PluginSettingsRoute
 import de.mm20.launcher2.ui.settings.plugins.PluginSettingsScreen
 import de.mm20.launcher2.ui.settings.plugins.PluginsSettingsRoute
@@ -209,12 +205,6 @@ class SettingsActivity : BaseActivity() {
             }
             entry<WikipediaSettingsRoute> {
                 WikipediaSettingsScreen()
-            }
-            entry<LocationsSettingsRoute> {
-                LocationsSettingsScreen()
-            }
-            entry<OsmSettingsRoute> {
-                OsmSettingsScreen()
             }
             entry<CalendarSearchSettingsRoute> {
                 CalendarSearchSettingsScreen()

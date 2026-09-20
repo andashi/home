@@ -1,11 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="location_closed">סגור</string>
-    <string name="location_open">פתוח</string>
-    <string name="location_closes">נסגר ב-%1$s</string>
-    <string name="location_closes_other_day">נסגר ב%1$s, %2$s</string>
-    <string name="location_opens">נפתח ב‌‌%1$s</string>
-    <string name="location_opens_other_day">נפתח ב%1$s, %2$s</string>
     <string name="menu_share_store_link">קישור %1$s</string>
     <string name="menu_share_apk_file">קובץ חבילה</string>
     <string name="menu_share">שיתוף</string>
@@ -16,8 +10,6 @@
     <string name="menu_favorites_unpin">הסרת הנעיצה</string>
     <string name="menu_launch">הפעלה</string>
     <string name="menu_customize">התאמה אישית</string>
-    <string name="menu_website">פתיחת האתר</string>
-    <string name="menu_map">הצגה במפה</string>
     <string name="action_undo">ביטול</string>
     <string name="action_import">ייבוא</string>
     <string name="action_done">סיום</string>
@@ -215,7 +207,6 @@
     <string name="missing_permission_appshortcuts_search">הגדרת %1$s כיישום הבית המוגדר כברירת מחדל כדי לחפש קיצורי דרך ליישומים.</string>
     <string name="grant_permission">הענקה</string>
     <string name="missing_permission_calendar_search">דרושה הרשאה ללוח השנה כדי לחפש בלוח השנה שלך</string>
-    <string name="missing_permission_location_search">דרושה הרשאה למיקום כדי לחפש מיקומים קרובים</string>
     <string name="missing_permission_contact_search">דרושה הרשאה לאנשי הקשר כדי לחפש בין אנשי הקשר שלך</string>
     <string name="preference_screen_appearance">מראֶה</string>
     <string name="preference_theme">ערכת נושא</string>
@@ -349,9 +340,7 @@
     <string name="preference_search_currencyconverter_summary">הורדה מעת לעת של שערי חליפין כדי להמיר מטבעות</string>
     <string name="preference_search_supportedunits">יחידות נתמכות</string>
     <string name="preference_search_wikipedia">ויקיפדיה</string>
-    <string name="preference_search_locations">מקומות</string>
     <string name="preference_search_locations_summary">חיפוש באזור המקומי חנויות ומקומות אחרים</string>
-    <string name="preference_search_locations_radius">רדיוס החיפוש</string>
     <string name="preference_search_websites_summary">הצגת תצוגה מקדימה של אתר אינטרנט אם שאילתת החיפוש היא כתובת URL</string>
     <string name="preference_calendar_hide_completed">הסתרת משימות שהושלמו</string>
     <string name="preference_screen_buildinfo">מידע על בניית התוכנה</string>
@@ -639,7 +628,6 @@
         <item quantity="two">נבחרו %1$s רשימות</item>
         <item quantity="other">נבחרו %1$s רשימות</item>
     </plurals>
-    <string name="departure_time_departed">מועד היציאה</string>
     <string name="bad_configuration_summary">גילית שילוב של הגדרות שהופך את החיפוש וגם את ההגדרות לבלתי נגישים — ובכך למעשה נועל אותך מחוץ ללאנצ\'ר</string>
     <string name="theme_export_title">ייצוא ערכת הנושא</string>
     <string name="bad_configuration_title">כל הכבוד, נעלת את עצמך בחוץ!</string>
@@ -679,7 +667,6 @@
     <string name="item_visibility_search_only">תוצאות החיפוש</string>
     <string name="music_widget_play">ניגון</string>
     <string name="music_widget_pause">השהיה</string>
-    <string name="departure_time_now">עכשיו</string>
     <plurals name="departure_time_in">
         <item quantity="one">בעוד דקה</item>
         <item quantity="two">בעוד %1$d דקות</item>
@@ -704,17 +691,8 @@
     <string name="import_theme_contents">תוכן</string>
     <string name="shortcut_label_unavailable">לא זמין</string>
     <string name="app_label_locked_profile">נעול</string>
-    <string name="preference_search_location_custom_overpass_url">כתובת URL של Overpass</string>
     <string name="imperial">אימפריאלי</string>
-    <string name="preference_search_locations_hide_uncategorized">הסתרת מקומות ללא קטגוריה</string>
     <string name="metric">מטרי</string>
-    <string name="preference_search_locations_theme_map">עיצוב המפה</string>
-    <string name="menu_dial">חיוג</string>
-    <string name="preference_search_locations_show_map">מפה</string>
-    <string name="preference_search_locations_show_map_summary">הצגת תצוגה מקדימה של מפה עבור מקומות</string>
-    <string name="preference_search_locations_theme_map_summary">החלת ערכת הצבעים של הלאנצ\'ר על המפה</string>
-    <string name="menu_navigation">ניווט</string>
-    <string name="menu_bugreport">דיווח על תקלות</string>
     <string name="clock_style_analog">מחוגים</string>
     <string name="clock_style_segment">7-מקטעים</string>
     <string name="clock_style_digital2">פשוט</string>
@@ -740,12 +718,9 @@
     <string name="poi_category_laundry">מכבסה</string>
     <string name="poi_category_bank">בנק</string>
     <string name="poi_category_tennis">מגרש טניס</string>
-    <string name="preference_search_location_custom_tile_server_url">כתובת URL של שרת האריחים (Tileserver)</string>
     <string name="shortcut_unavailable_description">קיצור הדרך לא זמין משום ש-%1$s אינו מוגדר כלאנצ\'ר ברירת המחדל</string>
     <string name="preference_plugin_enable">הפעלת התוסף</string>
     <string name="length_unit">יחידת מידה של אורך</string>
-    <string name="preference_search_locations_hide_uncategorized_summary">הצגה רק את התוצאות עם קטגוריות מוגדרות היטב, כמו בתי קפה ומסעדות</string>
-    <string name="location_open_24_7">פתוח 24/7</string>
     <string name="plugin_state_error">התוסף אינו פועל כראוי</string>
     <string name="plugin_state_setup_required">עליך להגדיר תוסף זה תחילה</string>
     <string name="plugin_action_setup">הגדרה</string>
@@ -763,8 +738,6 @@
     <string name="preference_filter_bar_summary">הצגת סינונים מהירים מעל המקלדת</string>
     <string name="preference_customize_filter_bar">התאמת סרגל המסננים</string>
     <string name="preference_customize_filter_bar_summary">התאמה הפריטים שנכללים בסרגל המסננים</string>
-    <string name="preference_search_osm_locations">‪OpenStreetMap‬</string>
-    <string name="preference_search_osm_locations_summary">חיפוש ב-OpenStreetMap של חנויות ומקומות אחרים באזור המקומי</string>
     <string name="poi_category_restaurant">מסעדה</string>
     <string name="poi_category_fast_food">מזון מהיר</string>
     <string name="poi_category_bar">בר</string>

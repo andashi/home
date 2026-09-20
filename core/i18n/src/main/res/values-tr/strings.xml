@@ -1,15 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="location_open">Açık</string>
-    <string name="location_closed">Kapalı</string>
     <!-- Time when a place next closes (on the same day). $1%s: time (hh:mm) -->
-    <string name="location_closes">kapanış %1$s</string>
     <!-- Time when a place next closes (on a different day). $1%s: day of week, %2$s: time (hh:mm) -->
-    <string name="location_closes_other_day">kapanış %1$s, %2$s</string>
     <!-- Time when a place next opens (on the same day). $1%s: time (hh:mm) -->
-    <string name="location_opens">açılış %1$s</string>
     <!-- Time when a place next opens (on a different day). $1%s: day of week, %2$s: time (hh:mm) -->
-    <string name="location_opens_other_day">açılış %1$s, %2$s</string>
     <!-- Name of the app -->
     <!-- Share something. Can be anything, an app, a website, a file, … -->
     <string name="menu_share">Paylaş</string>
@@ -28,8 +22,6 @@
     <string name="menu_launch">Başlat</string>
     <string name="menu_customize">Özelleştir</string>
     <!-- Open a file in the corresponding app -->
-    <string name="menu_map">Haritada görüntüle</string>
-    <string name="menu_website">Web sitesini aç</string>
     <!-- Shown in a snackbar after an item has been hidden. %1$s: label of the item -->
     <string name="action_undo">Geri Al</string>
     <string name="action_import">İçe Aktar</string>
@@ -386,7 +378,6 @@
     <!-- Missing calendar permission, used in calendar search results -->
     <string name="missing_permission_calendar_search">Takviminizde arama yapmak için takvim izni gereklidir</string>
     <!-- Missing location permission, used in location search results -->
-    <string name="missing_permission_location_search">Yakındaki yerleri aramak için konum izni gereklidir</string>
     <!-- Missing files permission, used in files search results -->
     <!-- Missing files permission, used in contact search results -->
     <string name="missing_permission_contact_search">Kişilerinizi aramak için kişiler izni gereklidir</string>
@@ -586,8 +577,6 @@
     <string name="preference_search_wikipedia">Vikipedi</string>
     <string name="preference_search_wikipedia_summary">Özgür ansiklopedide ara</string>
     <string name="preference_search_websites">Web siteleri</string>
-    <string name="preference_search_locations">Yerler</string>
-    <string name="preference_search_locations_radius">Arama yarıçapı</string>
     <string name="preference_search_websites_summary">Arama sorgusu bir URL ise web sitesinin bir önizlemesini göster</string>
     <string name="preference_search_locations_summary">Yerel bölgedeki dükkanları ve diğer yerleri ara</string>
     <string name="preference_calendar_calendars">Takvimler</string>
@@ -778,18 +767,6 @@
     <string name="length_unit">Uzunluk birimi</string>
     <string name="imperial">İmparatorluk</string>
     <string name="metric">Metrik</string>
-    <string name="preference_search_location_custom_overpass_url">Overpass URL\'si</string>
-    <string name="preference_search_locations_hide_uncategorized">Kategorize edilmemiş yerleri gizle</string>
-    <string name="preference_search_locations_hide_uncategorized_summary">Yalnızca kafeler veya restoranlar gibi iyi tanımlanmış kategorilere sahip sonuçları göster</string>
-    <string name="preference_search_locations_show_map">Harita</string>
-    <string name="preference_search_locations_show_map_summary">Yerler için bir harita önizlemesi göster</string>
-    <string name="preference_search_locations_theme_map">Harita teması</string>
-    <string name="preference_search_locations_theme_map_summary">Başlatıcının renk şemasını haritaya uygula</string>
-    <string name="preference_search_location_custom_tile_server_url">Döşeme sunucusu URL\'si</string>
-    <string name="menu_dial">Ara</string>
-    <string name="menu_navigation">Yol tarifi</string>
-    <string name="menu_bugreport">Hata Bildir</string>
-    <string name="location_open_24_7">7/24 Açık</string>
     <string name="plugin_state_error">Bu eklenti düzgün çalışmıyor</string>
     <string name="plugin_state_setup_required">Öncelikle bu eklentiyi kurmanız gerekiyor</string>
     <string name="plugin_action_setup">Kur</string>
@@ -821,8 +798,6 @@
     <string name="preference_customize_filter_bar">Filtre çubuğunu özelleştir</string>
     <string name="preference_customize_filter_bar_summary">Filtre çubuğuna hangi öğelerin dahil edileceğini özelleştir</string>
     <string name="filter_settings_network_warning">Mevcut filtre varsayılan olarak çevrimiçi sonuçları etkinleştirir. Arama sorgularınız istemeden harici web hizmetlerine gönderilebilir. Gizlilik nedenleriyle bu önerilmez.</string>
-    <string name="preference_search_osm_locations">OpenStreetMap</string>
-    <string name="preference_search_osm_locations_summary">Yerel bölgedeki dükkanlar ve diğer yerler için OpenStreetMap\'te arama yapın</string>
     <string name="poi_category_restaurant">Restoran</string>
     <string name="poi_category_fast_food">Fast food</string>
     <string name="poi_category_bar">Bar</string>
@@ -963,12 +938,10 @@
     <string name="weather_forecast_humidity">Nem</string>
     <string name="weather_forecast_wind">Rüzgar</string>
     <string name="weather_forecast_precipitation">Yağış</string>
-    <string name="departure_time_now">şimdi</string>
     <plurals name="departure_time_in">
         <item quantity="one">bir dakika içinde</item>
         <item quantity="other">%1$d dakika içinde</item>
     </plurals>
-    <string name="departure_time_departed">kalktı</string>
     <string name="bad_configuration_title">Tebrikler, kendinizi dışarıda kilitlediniz!</string>
     <string name="bad_configuration_summary">Hem aramayı hem de ayarları erişilemez kılan bir ayar kombinasyonu buldunuz — bu da sizi başlatıcının dışında bırakıyor</string>
     <string name="theme_export_title">Temayı dışa aktar</string>

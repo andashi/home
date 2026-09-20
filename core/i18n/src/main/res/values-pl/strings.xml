@@ -418,8 +418,6 @@
     <string name="missing_permission_accessibility_gesture_settings">Ta czynność wymaga włączenia usługi dostępności launchera.</string>
     <string name="help">Pomoc</string>
     <string name="preference_system_bar_icons_dark">Ciemny</string>
-    <string name="location_open">Otwarte</string>
-    <string name="location_closed">Zamknięte</string>
     <string name="file_type_launchertheme">%1$s temat</string>
     <string name="clock_style_segment">7-segmentów</string>
     <string name="preference_use_system_default">Użyj domyślnych ustawień systemowych</string>
@@ -476,14 +474,9 @@
     <string name="import_theme_apply">Zastosuj motyw</string>
     <string name="shortcut_label_unavailable">Niedostępny</string>
     <string name="widget_config_calendar_no_calendars">Brak kalendarza</string>
-    <string name="missing_permission_location_search">Przyznaj uprawnienia lokalizacji, aby przeszukiwać pobliskie lokalizacje.</string>
     <string name="widget_config_calendar_missing_calendars_hint">Nie możesz znaleźć kalendarza?</string>
     <string name="shortcut_unavailable_description">Ten skrót jest niedostępny, ponieważ %1$s nie jest domyślnym programem uruchamiającym</string>
     <string name="metric">Metryczne</string>
-    <string name="preference_search_location_custom_overpass_url">Obejście URL</string>
-    <string name="preference_search_locations_hide_uncategorized">Ukryj miejsca nieskategoryzowane</string>
-    <string name="menu_bugreport">Raport błędów</string>
-    <string name="location_open_24_7">Otwarte 24/7</string>
     <string name="gesture_action_launch_app">Uruchom aplikację</string>
     <string name="notes_widget_placeholder">Napisz notatkę…</string>
     <string name="notes_widget_action_new">Nowa notatka</string>
@@ -502,7 +495,6 @@
     <string name="theme_color_scheme_custom_color">Własny</string>
     <string name="import_theme_error">Nie można odczytać wybranego pliku. Upewnij się, że wybrano prawidłowy plik motywu (*.kvtheme) i że nie jest on uszkodzony.</string>
     <string name="plugin_state_error">Wtyczka nie działa poprawnie</string>
-    <string name="menu_dial">Zadzwoń</string>
     <string name="preference_blur_wallpaper_radius">Promień rozmycia</string>
     <string name="widget_config_appwidget_background">Tło karty</string>
     <string name="widget_config_appwidget_configure">Konfiguruj widżet</string>
@@ -522,7 +514,6 @@
     <string name="widget_name_notes">Widżet przechowujący pojedynczą notatkę</string>
     <string name="edit">Edytuj</string>
     <string name="preference_debug_dump_heap_summary">Przechwytywanie migawki w celu analizy wykorzystania pamięci. Aplikacja zawiesi się do czasu zakończenia tego procesu.</string>
-    <string name="preference_search_locations">Miejsca</string>
     <string name="preference_screen_homescreen">Ekran domowy</string>
     <string name="preference_screen_homescreen_summary">Zegar, pasek wyszukiwania, tapeta, paski systemowe</string>
     <string name="preference_gesture_home_button">Przycisk strony głównej/gest</string>
@@ -530,7 +521,6 @@
     <string name="note_widget_conflict_action_resolve">Rozwiąż</string>
     <string name="note_widget_conflict_description">Połączony plik nie jest pusty, a jego zawartość nie jest zgodna z ostatnio zapisaną wersją tej notatki. Którą wersję chcesz zachować?</string>
     <string name="theme_color_scheme_palette_color">Paleta</string>
-    <string name="preference_search_locations_theme_map_summary">Zastosuj schemat kolorów programu uruchamiającego do mapy</string>
     <string name="clock_style_digital1">Gruby</string>
     <string name="poi_category_books">Księgarnie</string>
     <string name="preference_debug_reinstall_iconpacks">Ponowna instalacja pakietów ikon</string>
@@ -538,7 +528,6 @@
     <string name="note_widget_file_read_error_description">Nie można odczytać połączonego pliku. Prawdopodobnie został przeniesiony lub usunięty. Kopia została przywrócona z pamięci wewnętrznej programu uruchamiającego. Jeśli edytujesz notatkę, połączony plik może zostać nadpisany.</string>
     <string name="preference_screen_clockwidget_summary">Konfiguracja stylu i komponentów zegara</string>
     <string name="widget_config_weather_integration_settings">Ustawienia integracji z pogodą</string>
-    <string name="preference_search_locations_hide_uncategorized_summary">Wyświetlaj tylko wyniki z dobrze zdefiniowanymi kategoriami, takimi jak kawiarnie lub restauracje</string>
     <string name="preference_screen_icons_summary">Siatka, rozmiar ikon, pakiety ikon, plakietki</string>
     <string name="preference_search_result_ordering_weight_factor_high">Zmienny</string>
     <string name="widget_config_appwidget_borderless">Bez ramki</string>
@@ -548,7 +537,6 @@
     <string name="search_action_share">Udostępnij</string>
     <string name="note_widget_link_file">Ścieżka do pliku</string>
     <string name="note_widget_link_file_summary">Synchronizuje zawartość widżetu z plikiem zewnętrznym</string>
-    <string name="preference_search_location_custom_tile_server_url">Adres URL serwera</string>
     <string name="plugin_state_setup_required">Musisz najpierw skonfigurować wtyczkę</string>
     <string name="plugin_action_setup">Konfiguracja</string>
     <string name="plugin_type_weather">Dostawca pogody</string>
@@ -560,12 +548,6 @@
     <string name="preference_default_filter_summary">Dostosuj domyślny filtr wyszukiwania</string>
     <string name="preference_filter_bar">Pokaż pasek filtrów</string>
     <string name="preference_filter_bar_summary">Pokaż szybkie filtry nad klawiaturą</string>
-    <string name="location_closes">Zamyka się o %1$s</string>
-    <string name="location_closes_other_day">Zamknięcie %1$s, %2$s</string>
-    <string name="location_opens">"Otwarte od  %1$s"</string>
-    <string name="location_opens_other_day">"Otwarte  %1$s, %2$s"</string>
-    <string name="menu_map">Zobacz na mapie</string>
-    <string name="menu_website">Otwórz stronę www</string>
     <string name="action_import">Importuj</string>
     <string name="widget_name_unknown">Nieznany widżet</string>
     <string name="widget_action_replace">Zamień</string>
@@ -585,17 +567,12 @@
     <string name="preference_clock_widget_show_seconds">Pokaż sekundy</string>
     <string name="preference_clock_widget_alignment">Wyrównanie</string>
     <string name="preference_clockwidget_dynamic_zone">Dynamiczna strefa</string>
-    <string name="preference_search_locations_radius">Promień wyszukiwania</string>
     <string name="preference_search_bar_launch_on_enter">Uruchom na starcie</string>
     <string name="preference_search_bar_launch_on_enter_summary">Uruchamianie podświetlonego dopasowania lub szybkiej akcji po dotknięciu przycisku Go</string>
     <string name="preference_hidden_items_reveal_button_summary">Pokaż przycisk, aby ujawnić ukryte wyniki wyszukiwania</string>
     <string name="preference_media_integration">Sterowanie multimediami</string>
     <string name="icon_picker_filter_all_packs">Wszystkie pakiety ikon</string>
     <string name="search_action_websearch">Wyszukiwanie w sieci</string>
-    <string name="preference_search_locations_show_map">Mapa</string>
-    <string name="preference_search_locations_show_map_summary">Pokaż podgląd mapy dla miejsc</string>
-    <string name="preference_search_locations_theme_map">Motyw mapy</string>
-    <string name="menu_navigation">Nawigacja</string>
     <string name="plugin_weather_provider_enable">Ustaw jako dostawcę pogody</string>
     <string name="plugin_weather_provider_enabled">Obecnie ustawiony jako dostawca pogody</string>
     <string name="unavailable_searchable">Ten element już nie istnieje.</string>
@@ -617,6 +594,4 @@
     <string name="poi_category_car_rental">Wypożyczalnia aut</string>
     <string name="plugin_type_locationsearch">Przeszukaj miejsca</string>
     <string name="menu_hide_filters">Ukryj filtry</string>
-    <string name="preference_search_osm_locations">OpenStreetMap</string>
-    <string name="preference_search_osm_locations_summary">Przeszukaj OpenStreetMap w poszukiwaniu sklepów oraz innych obiektów w okolicy</string>
 </resources>

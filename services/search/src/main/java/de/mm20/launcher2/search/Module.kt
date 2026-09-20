@@ -11,7 +11,6 @@ val searchModule = module {
             get(named<CalendarEvent>()),
             get(named<Contact>()),
             get(named<Article>()),
-            get(named<Location>()),
             get(),
             get(),
             get(named<Website>()),

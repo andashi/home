@@ -169,10 +169,6 @@
     <string name="task_due_time">শেষ সময় %1$s</string>
     <string name="task_due_date">শেষ তারিখ %1$s</string>
     <string name="task_due_today">আজকে শেষ সময়</string>
-    <string name="location_closes">%1$s তে বন্ধ হবে</string>
-    <string name="location_closes_other_day">বন্ধ হবে %1$s, %2$s</string>
-    <string name="location_opens_other_day">খোলে %1$s, %2$s</string>
-    <string name="location_opens">%1$s তে খুলবে</string>
     <string name="widget_config_calendar_missing_calendars_hint">আপনার ক্যালেন্ডার খুঁজে পাচ্ছেন না?</string>
     <string name="action_done">হয়েছে</string>
     <string name="action_more_actions">আরো একশন</string>
@@ -194,14 +190,9 @@
     <string name="missing_permission_notification_badges">বিজ্ঞপ্তি ব্যাজ প্রদর্শন করতে নোটিফিকেশন অ্যাক্সেস প্রয়োজন</string>
     <string name="missing_permission_calendar_widget">এখানে আসন্ন অ্যাপয়েন্টমেন্ট এবং ইভেন্টগুলি প্রদর্শন করতে ক্যালেন্ডার অনুমতি প্রদান করুন।</string>
     <string name="missing_permission_calendar_search">আপনার ক্যালেন্ডার অনুসন্ধান করতে ক্যালেন্ডার অনুমতি প্রদান করুন।</string>
-    <string name="missing_permission_location_search">নিকটবর্তী অবস্থান অনুসন্ধান করতে অবস্থান অনুমতি প্রদান করুন।</string>
     <string name="weather_condition_heavyrainandthunder">ভারী বৃষ্টি ও বজ্রপাত</string>
     <string name="weather_widget_set_location">স্থান নির্বাচন</string>
     <string name="weather_no_data">আবহাওয়ার তথ্য পাওয়া যায়নি।</string>
-    <string name="location_open">খোলা আছে</string>
-    <string name="menu_website">ওয়েবসাইট খুলুন</string>
-    <string name="location_closed">বন্ধ আছে</string>
-    <string name="menu_map">ম্যাপে দেখুন</string>
     <string name="preference_debug_dump_heap_summary">মেমোরি ব্যবহারের বিশ্লেষণ করতে একটি স্ন্যাপশট ক্যাপচার করুন। এই প্রক্রিয়া সম্পন্ন হওয়া পর্যন্ত অ্যাপটি থেমে থাকবে।</string>
     <string name="preference_force_themed_icons">থিমযুক্ত আইকন প্রয়োগ করুন</string>
     <string name="preference_debug_reinstall_iconpacks">আইকন প্যাক পুনরায় ইনস্টল করুন</string>

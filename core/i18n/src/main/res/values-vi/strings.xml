@@ -2,7 +2,6 @@
 <resources>
     <string name="websearch_dialog_replace_icon">Thay thế biểu tượng</string>
     <string name="preference_custom_colors_corepalette">Bảng màu</string>
-    <string name="location_closed">Đã đóng</string>
     <string name="websearch_dialog_custom_icon">Tùy chỉnh biểu tượng</string>
     <string name="websearch_dialog_advanced">Nâng cao</string>
     <string name="websearch_dialog_query_encoding">Mã hóa truy vấn</string>
@@ -17,7 +16,6 @@
     <string name="preference_colors_bw">Đen và Trắng</string>
     <string name="preference_mdy_color_source_system">Hệ thống</string>
     <string name="preference_mdy_color_source_wallpaper">Hình nền</string>
-    <string name="location_open">Mở</string>
     <string name="search_bar_placeholder">Tìm kiếm</string>
     <string name="websearch_dialog_query_encoding_none">Không có</string>
     <string name="preference_mdy_color_source">Nguồn cho màu động</string>
@@ -90,10 +88,6 @@
     <plurals name="app_info_notifications">
         <item quantity="other">%1$s thông báo</item>
     </plurals>
-    <string name="location_closes">đóng lúc %1$s</string>
-    <string name="location_closes_other_day">đóng %1$s, %2$s</string>
-    <string name="location_opens">mở lúc %1$s</string>
-    <string name="location_opens_other_day">mở %1$s, %2$s</string>
     <string name="menu_share">Chia sẻ</string>
     <string name="menu_share_store_link">%1$s liên kết</string>
     <string name="menu_share_apk_file">Tệp gói</string>
@@ -104,8 +98,6 @@
     <string name="menu_app_info">Thông tin ứng dụng</string>
     <string name="menu_launch">Khởi chạy</string>
     <string name="menu_customize">Tùy chỉnh</string>
-    <string name="menu_map">Xem trên bản đồ</string>
-    <string name="menu_website">Mở trang web</string>
     <string name="action_undo">Hoàn tác</string>
     <string name="action_import">Nhập</string>
     <string name="menu_delete">Xóa</string>
@@ -247,7 +239,6 @@
     <string name="missing_permission_notification_badges">Cần có quyền truy cập thông báo để hiển thị dấu hiệu thông báo</string>
     <string name="missing_permission_calendar_widget">Cấp quyền cho lịch hiển thị các cuộc hẹn và sự kiện sắp tới tại đây.</string>
     <string name="missing_permission_calendar_search">Cấp quyền cho lịch để tìm kiếm lịch của bạn.</string>
-    <string name="missing_permission_location_search">Cấp quyền vị trí để tìm kiếm các vị trí lân cận.</string>
     <string name="missing_permission_contact_search">Cấp quyền danh bạ để tìm kiếm liên hệ của bạn.</string>
     <string name="missing_permission_appshortcuts_search">Đặt %1$s làm ứng dụng trang chủ mặc định để tìm kiếm các lối tắt ứng dụng.</string>
     <string name="preference_version">Phiên bản</string>
@@ -393,8 +384,6 @@
     <string name="preference_search_wikipedia">Wikipedia</string>
     <string name="preference_search_wikipedia_summary">Tìm kiếm bách khoa toàn thư miễn phí</string>
     <string name="preference_search_websites">Trang web</string>
-    <string name="preference_search_locations">Địa điểm</string>
-    <string name="preference_search_locations_radius">Bán kính tìm kiếm</string>
     <string name="preference_search_websites_summary">Hiển thị bản xem trước của trang web nếu truy vấn tìm kiếm là URL</string>
     <string name="preference_search_locations_summary">Tìm kiếm các cửa hàng và địa điểm khác trong khu vực địa phương</string>
     <string name="preference_calendar_calendars">Lịch</string>
@@ -535,18 +524,6 @@
     <string name="preference_plugin_enable">Kích hoạt plugin</string>
     <string name="length_unit">Đơn vị độ dài</string>
     <string name="metric">Hệ Mét</string>
-    <string name="preference_search_location_custom_overpass_url">URL vượt quá</string>
-    <string name="preference_search_locations_hide_uncategorized">Ẩn các địa điểm chưa được phân loại</string>
-    <string name="preference_search_locations_hide_uncategorized_summary">Chỉ hiển thị kết quả với các danh mục được xác định rõ ràng, như quán cà phê hoặc nhà hàng</string>
-    <string name="preference_search_locations_show_map">Bản đồ</string>
-    <string name="preference_search_locations_show_map_summary">Hiển thị bản xem trước bản đồ cho các địa điểm</string>
-    <string name="preference_search_locations_theme_map">Chủ đề bản đồ</string>
-    <string name="preference_search_locations_theme_map_summary">Áp dụng bảng màu của trình khởi chạy cho bản đồ</string>
-    <string name="preference_search_location_custom_tile_server_url">URL Tileserver</string>
-    <string name="menu_dial">Gọi</string>
-    <string name="menu_navigation">Điều hướng</string>
-    <string name="menu_bugreport">Báo cáo lỗi</string>
-    <string name="location_open_24_7">Mở cửa 24/7</string>
     <string name="plugin_state_error">Plugin này không hoạt động chính xác</string>
     <string name="plugin_state_setup_required">Bạn cần thiết lập plugin này trước</string>
     <string name="plugin_action_setup">Thiết lập</string>
@@ -574,8 +551,6 @@
     <string name="preference_customize_filter_bar">Tùy chỉnh thanh bộ lọc</string>
     <string name="preference_customize_filter_bar_summary">Tùy chỉnh các mục được đưa vào thanh bộ lọc</string>
     <string name="filter_settings_network_warning">Bộ lọc hiện tại cho phép kết quả trực tuyến theo mặc định. Truy vấn tìm kiếm của bạn có thể vô tình được gửi đến các dịch vụ web bên ngoài. Vì lý do riêng tư, điều này không được khuyến khích.</string>
-    <string name="preference_search_osm_locations">OpenStreetMap</string>
-    <string name="preference_search_osm_locations_summary">Tìm kiếm OpenStreetMap cho các cửa hàng và địa điểm khác trong khu vực địa phương</string>
     <string name="poi_category_restaurant">Nhà hàng</string>
     <string name="poi_category_fast_food">Thức ăn nhanh</string>
     <string name="poi_category_bar">Thanh</string>

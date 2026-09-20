@@ -7,7 +7,6 @@ fun SearchFilters.withAllCategories(): SearchFilters {
         apps = true,
         websites = true,
         articles = true,
-        places = true,
         shortcuts = true,
         contacts = true,
         events = true,
@@ -19,7 +18,6 @@ fun SearchFilters.withOnlyCategory(
     apps: Boolean = false,
     websites: Boolean = false,
     articles: Boolean = false,
-    places: Boolean = false,
     shortcuts: Boolean = false,
     contacts: Boolean = false,
     events: Boolean = false,
@@ -29,7 +27,6 @@ fun SearchFilters.withOnlyCategory(
         apps = apps,
         websites = websites,
         articles = articles,
-        places = places,
         shortcuts = shortcuts,
         contacts = contacts,
         events = events,
@@ -74,17 +71,6 @@ fun SearchFilters.toggleArticles(): SearchFilters {
     }
 
     return copy(articles = !articles)
-}
-
-fun SearchFilters.togglePlaces(): SearchFilters {
-    if (allCategoriesEnabled) {
-        return withOnlyCategory(places = true)
-    }
-    if (places && enabledCategories == 1) {
-        return withAllCategories()
-    }
-
-    return copy(places = !places)
 }
 
 fun SearchFilters.toggleShortcuts(): SearchFilters {

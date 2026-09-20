@@ -1,9 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="location_closed">بسته</string>
-    <string name="location_closes_other_day">بسته شده %1$s، %2$s</string>
-    <string name="location_opens">بازشده در %1$s</string>
-    <string name="location_opens_other_day">باز شده %1$s، %2$s</string>
     <string name="menu_share">هم‌رسانی</string>
     <string name="menu_share_store_link">%1$s پیوند</string>
     <string name="menu_share_apk_file">پرونده این بسته</string>
@@ -13,8 +9,6 @@
     <string name="menu_back">بازگشت</string>
     <string name="menu_launch">اجرا</string>
     <string name="menu_customize">شخصی‌سازی</string>
-    <string name="menu_map">مشاهده در نقشه</string>
-    <string name="menu_website">بازکردن وبگاه</string>
     <string name="action_undo">واگرد</string>
     <string name="action_import">وارد کردن</string>
     <string name="menu_delete">پاک‌کردن</string>
@@ -115,11 +109,9 @@
     <string name="widget_config_calendar_missing_calendars_hint">تقویم تان را نمی‌یابید؟</string>
     <string name="missing_permission_notification_badges">دسترسی به آگاه‌سازها برای نمایش نشان آگاهساز لازم است</string>
     <string name="missing_permission_calendar_search">دسترسی تقویم را برای جستجو در تقویم بدهید.</string>
-    <string name="location_open">باز</string>
     <string name="edit_favorites_dialog_unpinned">سنجاق نشده - بیشتر به‌کار گرفته شده‌ها</string>
     <string name="edit_favorites_dialog_tags">برچسب‌ها</string>
     <string name="weather_condition_clearsky">آسمان صاف</string>
-    <string name="location_closes">بسته شده در %1$s</string>
     <string name="menu_app_info">درباره برنامه</string>
     <string name="menu_contacts_open_externally">بازکردن در برنامه مخاطبین</string>
     <string name="edit">ویرایش</string>
@@ -186,7 +178,6 @@
     <string name="preference_category_searchbar">نوار جستجو</string>
     <string name="preference_screen_integrations">یکپارچه‌سازی‌ها</string>
     <string name="preference_force_themed_icons">اجباری کردن نماد‌های پوسته‌دار</string>
-    <string name="departure_time_now">اینک</string>
     <string name="preference_force_themed_icons_summary">به‌کارگیری طرح رنگی برنامه برای کل نماد‌ها، شامل آن‌هایی که پشتیبانی نمی‌شوند (توصیه نمی‌شود)</string>
     <string name="preference_search_bar_auto_focus">بازکردن صفحه‌کلید</string>
     <string name="icon_picker_search_icon">جستجو در بسته‌های نماد</string>
@@ -263,10 +254,8 @@
     <string name="widget_config_appwidget_borderless">بدون حاشیه</string>
     <string name="widget_config_appwidget_background">کارت دارای پس‌زمینه</string>
     <string name="app_label_locked_profile">قفل شده</string>
-    <string name="preference_search_locations_theme_map">پوسته نقشه</string>
     <string name="plugin_weather_provider_enable">تنظیم به عنوان ارائه‌دهنده آب و هوا</string>
     <string name="plugin_weather_provider_enabled">در حال حاضر به عنوان ارائه‌دهنده آب و هوا تنظیم شده است</string>
-    <string name="location_open_24_7">باز ۲۴/۷</string>
     <string name="clock_style_binary">دودویی</string>
     <string name="clock_style_analog">عقربه‌ای</string>
     <string name="poi_category_car_rental">اجاره ماشین</string>
@@ -308,16 +297,6 @@
     <string name="theme_color_scheme_autogenerate">از رنگ اصلی</string>
     <string name="theme_color_scheme_palette_color">پالت</string>
     <string name="imperial">امپراتوری</string>
-    <string name="preference_search_location_custom_overpass_url">نشانی Overpass</string>
-    <string name="preference_search_locations_hide_uncategorized">پنهان‌کردن مکان‌های طبقه‌بندی نشده</string>
-    <string name="preference_search_locations_hide_uncategorized_summary">تنها یافته‌های در دسته‌بندی انتخابی را نمایش دهید، مانند کافه‌ها یا رستوران‌ها</string>
-    <string name="preference_search_locations_show_map">نقشه</string>
-    <string name="preference_search_locations_show_map_summary">نمایش پیش‌نمایش نقشه برای مکان‌ها</string>
-    <string name="preference_search_locations_theme_map_summary">اعمال طرح رنگی برنامه راه‌انداز به نقشه</string>
-    <string name="preference_search_location_custom_tile_server_url">URL سرور کاشی</string>
-    <string name="menu_dial">تماس</string>
-    <string name="menu_navigation">مسیریابی</string>
-    <string name="menu_bugreport">گزارش ایراد</string>
     <string name="plugin_action_setup">راه‌اندازی</string>
     <string name="poi_category_convenience">فروشگاه خواروبار</string>
     <string name="clock_style_custom">ابزارک سفارشی</string>
@@ -458,7 +437,6 @@
     <string name="poi_category_parking">پارکینگ</string>
     <string name="poi_category_fuel">پمپ بنزین</string>
     <string name="filter_settings_network_warning">پالایش کنونی به شیوه پیش‌گزیده یافته‌های برخط را روشن می‌کند. جستجوی شما شاید ناخواسته به خدمات وب خارجی فرستاده شوند. به دلایل حریم خصوصی، این کار توصیه نمی‌شود.</string>
-    <string name="preference_search_osm_locations_summary">جستجوی اوپن‌استریت‌مپ برای فروشگاه‌ها و مکان‌های دیگر در ناحیه بومی</string>
     <string name="calendar_widget_open_calendar">بازکردن برنامه تقویم</string>
     <string name="profile_work_profile_state_locked">برنامه‌های کاری متوقف شده‌اند.</string>
     <string name="profile_work_profile_action_unlock">بازگشایی</string>
@@ -514,7 +492,6 @@
     <string name="weather_condition_heavysnowshowers">بارش سنگین برف</string>
     <string name="weather_condition_snowshowersandthunder">بارش برف و رعد</string>
     <string name="weather_condition_lightsleetshowers">بارش دوره‌ای سبک باران و برف</string>
-    <string name="missing_permission_location_search">دسترسی موقعیت را برای جستجوی مکان‌های نزدیک بدهید.</string>
     <string name="preference_icon_pack">بسته نماد</string>
     <string name="preference_search_appshortcuts">میانبرهای برنامه</string>
     <string name="preference_search_calculator">ماشین‌حساب</string>
@@ -606,8 +583,6 @@
     <string name="preference_search_currencyconverter_summary">به شیوه دوره‌ای نرخ ارزها را برای تبدیل واحد پولی دریافت کنید</string>
     <string name="preference_search_wikipedia_summary">جستجوی دانشنامه آزاد</string>
     <string name="preference_search_websites">وبگاه‌ها</string>
-    <string name="preference_search_locations">مکان‌ها</string>
-    <string name="preference_search_locations_radius">شعاع جستجو</string>
     <string name="preference_search_websites_summary">اگر متن جستجو شده بک آدرس وب باشد، پیش‌نمایشی از وبگاه نمایش دهید</string>
     <string name="preference_search_locations_summary">جستجوی منطقه محلی برای فروشگاه‌ها و سایر مکان‌ها</string>
     <string name="preference_calendar_calendars">تقویم‌ها</string>
@@ -670,7 +645,6 @@
     <string name="poi_category_clinic">کلینیک</string>
     <string name="poi_category_books">کتاب‌فروشی</string>
     <string name="preference_customize_filter_bar_summary">سفارشی‌سازی موارد موجود در نوار پالایش</string>
-    <string name="preference_search_osm_locations">اوپن‌استریت‌مپ (OpenStreetMap)</string>
     <string name="poi_category_pub">بار</string>
     <string name="poi_category_doctors">پزشکان</string>
     <string name="poi_category_soccer">زمین فوتبال</string>
@@ -729,5 +703,4 @@
     <string name="missing_permission_appshortcuts_search">برای جستجوی میانبرهای برنامه، %1$s را به‌عنوان برنامه پیش‌گزیده خانگی تنظیم کنید.</string>
     <string name="missing_permission_appshortcuts_create">برای ایجاد میانبرها، %1$s را به‌عنوان برنامه پیش‌گزیده خانگی تنظیم کنید.</string>
     <string name="preference_theme">پوسته</string>
-    <string name="departure_time_departed">جدا شده</string>
 </resources>

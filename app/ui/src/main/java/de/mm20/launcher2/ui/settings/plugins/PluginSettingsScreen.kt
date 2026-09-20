@@ -78,10 +78,6 @@ fun PluginSettingsScreen(pluginId: String) {
         minActiveState = Lifecycle.State.RESUMED
     )
 
-    val locationPlugins by viewModel.locationPlugins.collectAsStateWithLifecycle(
-        emptyList(),
-        minActiveState = Lifecycle.State.RESUMED
-    )
 
     val calendarPlugins by viewModel.calendarPlugins.collectAsStateWithLifecycle(
         emptyList(),
@@ -106,10 +102,6 @@ fun PluginSettingsScreen(pluginId: String) {
         }
 
     val enabledContactPlugins by viewModel.enabledContactPlugins.collectAsStateWithLifecycle(
-        null
-    )
-
-    val enabledLocationSearchPlugins by viewModel.enabledLocationSearchPlugins.collectAsStateWithLifecycle(
         null
     )
 
@@ -320,60 +312,6 @@ fun PluginSettingsScreen(pluginId: String) {
                                             value = enabledContactPlugins?.contains(plugin.plugin.authority) == true && state is PluginState.Ready,
                                             onValueChanged = {
                                                 viewModel.setContactPluginEnabled(
-                                                    plugin.plugin.authority,
-                                                    it
-                                                )
-                                            },
-                                            iconPadding = false,
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                        if (locationPlugins.isNotEmpty()) {
-                            PreferenceCategory(
-                                stringResource(R.string.plugin_type_locationsearch),
-                                iconPadding = false,
-                            ) {
-                                for (plugin in locationPlugins) {
-                                    val state = plugin.state
-                                    GuardedPreference(
-                                        locked = state is PluginState.Error || state is PluginState.SetupRequired,
-                                        icon = if (state is PluginState.Error) R.drawable.error_24px else R.drawable.info_24px,
-                                        description = when (state) {
-                                            is PluginState.Error -> {
-                                                stringResource(R.string.plugin_state_error)
-                                            }
-
-                                            is PluginState.SetupRequired -> {
-                                                state.message
-                                                    ?: stringResource(R.string.plugin_state_setup_required)
-                                            }
-
-                                            else -> ""
-                                        },
-                                        onUnlock = if (state is PluginState.SetupRequired) {
-                                            {
-
-                                                try {
-                                                    state.setupActivity.sendWithBackgroundPermission(
-                                                        context
-                                                    )
-                                                } catch (e: PendingIntent.CanceledException) {
-                                                    CrashReporter.logException(e)
-                                                }
-                                            }
-                                        } else null
-                                    ) {
-                                        SwitchPreference(
-                                            title = plugin.plugin.label,
-                                            enabled = enabledLocationSearchPlugins != null && state is PluginState.Ready,
-                                            summary = (state as? PluginState.Ready)?.text
-                                                ?: (state as? PluginState.SetupRequired)?.message
-                                                ?: plugin.plugin.description,
-                                            value = enabledLocationSearchPlugins?.contains(plugin.plugin.authority) == true && state is PluginState.Ready,
-                                            onValueChanged = {
-                                                viewModel.setLocationSearchPluginEnabled(
                                                     plugin.plugin.authority,
                                                     it
                                                 )

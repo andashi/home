@@ -331,19 +331,11 @@
         <item quantity="one">Fjernet %1$d oppføring.</item>
         <item quantity="other">Fjernet %1$d oppføringer.</item>
     </plurals>
-    <string name="location_open">Åpent</string>
-    <string name="location_closed">Stengt</string>
-    <string name="menu_map">Se på kart</string>
-    <string name="menu_website">Åpne nettside</string>
     <string name="weather_condition_sleetshowersandthunder">Sluddbyger og tordenvær</string>
     <string name="weather_condition_lightsleet">Lett sludd</string>
     <string name="weather_condition_heavysleetandthunder">Kraftig sludd og tordenvær</string>
     <string name="weather_condition_snowshowers">Snøbyger</string>
     <string name="weather_condition_heavyrainandthunder">Kraftig regn og tordenvær</string>
-    <string name="location_closes">stenger %1$s</string>
-    <string name="location_closes_other_day">stenger %1$s, %2$s</string>
-    <string name="location_opens">åpner %1$s</string>
-    <string name="location_opens_other_day">åpner %1$s, %2$s</string>
     <string name="weather_condition_lightssnowshowersandthunder">Lette snøbyger og tordenvær</string>
     <string name="weather_location_search_no_result">Fant ikke plassering</string>
     <string name="weather_condition_thunderstorm">Tordenvær</string>
@@ -400,7 +392,6 @@
         <item quantity="one">%1$s liste valgt</item>
         <item quantity="other">%1$s lister valgt</item>
     </plurals>
-    <string name="preference_search_osm_locations_summary">Søk i OpenStreetMap etter butikker og andre steder i nærmiljøet</string>
     <string name="preference_search_currencyconverter_summary">Periodisk nedlasting av valutakurser for valutakonvertering</string>
     <string name="preference_screen_gestures">Bevegelser</string>
     <string name="preference_notification_badges">Varselprikker</string>
@@ -421,7 +412,6 @@
     <string name="poi_category_mosque">Moské</string>
     <string name="preference_screen_tags">Etiketter</string>
     <string name="preference_search_wikipedia">Wikipedia</string>
-    <string name="preference_search_locations_radius">Søkeradius</string>
     <string name="preference_search_locations_summary">Søk i nærområdet etter butikker og andre steder</string>
     <string name="preference_search_bar_color">Farge</string>
     <string name="preference_hidden_items">Skjulte søkeresultater</string>
@@ -445,7 +435,6 @@
     <string name="note_widget_conflict_file_version">Nåværende filinnhold:</string>
     <string name="preference_restore_default">Gjenopprett standard</string>
     <string name="theme_color_scheme_custom_color">Tilpasset</string>
-    <string name="preference_search_osm_locations">OpenStreetMap</string>
     <string name="poi_category_restaurant">Restaurant</string>
     <string name="poi_category_fast_food">Hurtigmat</string>
     <string name="poi_category_bar">Bar</string>
@@ -523,9 +512,7 @@
     <string name="poi_category_museum">Museum</string>
     <string name="poi_category_fitness_center">Treningssenter</string>
     <string name="preference_search_websites">Nettsider</string>
-    <string name="preference_search_locations">Steder</string>
     <string name="preference_search_wikipedia_summary">Søk i den frie encyklopedi</string>
-    <string name="preference_search_locations_show_map_summary">Vis et kartutsnitt for steder</string>
     <string name="search_filter_tools">Verktøy</string>
     <string name="search_filter_apps">Apper</string>
     <string name="confirmation_delete_color_scheme">Er du sikker på at du vil slette fargeskjemaet %1$s?</string>
@@ -579,7 +566,6 @@
     <string name="poi_category_dentist">Tannlege</string>
     <string name="poi_category_cinema">Kino</string>
     <string name="poi_category_nightclub">Nattklubb</string>
-    <string name="preference_search_locations_hide_uncategorized">Skjul ukategoriserte steder</string>
     <string name="music_widget_next_track">Neste tittel</string>
     <string name="music_widget_pause">Pause</string>
     <string name="music_widget_open_player">Åpne spiller</string>
@@ -624,11 +610,6 @@
     <string name="shortcut_label_unavailable">Utilgjengelig</string>
     <string name="imperial">Britisk-amerikansk</string>
     <string name="metric">Metrisk</string>
-    <string name="preference_search_locations_show_map">Kart</string>
-    <string name="menu_dial">Ring</string>
-    <string name="menu_navigation">Navigasjon</string>
-    <string name="menu_bugreport">Feilrapport</string>
-    <string name="location_open_24_7">Åpen 24/7</string>
     <string name="plugin_state_error">Dette programtillegget fungerer ikke som det skal</string>
     <string name="unavailable_searchable">Denne oppføringen eksisterer ikke lengre.</string>
     <string name="clock_style_digital2">Enkel</string>
@@ -637,7 +618,6 @@
     <string name="menu_show_filters">Vis filtre</string>
     <string name="menu_hide_filters">Skjul filtre</string>
     <string name="plugin_state_setup_required">Du må konfigurere dette programtillegget først</string>
-    <string name="preference_search_locations_hide_uncategorized_summary">Vis kun resultater med veldefinerte kategorier, som kaféer eller restauranter</string>
     <string name="music_widget_play">Spill av</string>
     <string name="poi_category_church">Kirke</string>
     <string name="action_install">Installer</string>
@@ -703,7 +683,6 @@
     <string name="import_theme_contents">Innhold</string>
     <string name="import_theme_exists">Temaet eksisterer allerede og vil bli oppdatert</string>
     <string name="shortcut_unavailable_description">Snarveien er utilgjengelig siden %1$s ikke er satt som startapp</string>
-    <string name="preference_search_location_custom_tile_server_url">URL for tileserver</string>
     <string name="plugin_action_setup">Konfigurer</string>
     <string name="plugin_type_contacts">Kontakter</string>
     <string name="clock_style_orbit">Bane</string>

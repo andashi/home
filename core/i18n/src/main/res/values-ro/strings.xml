@@ -288,15 +288,7 @@
     <string name="menu_remove">Înlătură</string>
     <string name="menu_customize">Personalizează</string>
     <string name="help">Ajutor</string>
-    <string name="location_open">Deschis</string>
-    <string name="location_closed">Închis</string>
-    <string name="menu_map">Vezi pe hartă</string>
-    <string name="menu_website">Deschide site web</string>
     <string name="preference_category_advanced">Avansat</string>
-    <string name="location_closes_other_day">se închide la %1$s, %2$s</string>
-    <string name="location_closes">se închide la %1$s</string>
-    <string name="location_opens">se deschide la %1$s</string>
-    <string name="location_opens_other_day">se deschide la %1$s, %2$s</string>
     <string name="action_import">Importă</string>
     <string name="file_type_launchertheme">Temă %1$s</string>
     <string name="websearch_dialog_query_encoding_url">Codificare URL</string>
@@ -353,7 +345,6 @@
     <string name="notes_widget_dismissed">Notă înlăturată.</string>
     <string name="skip">Săriți</string>
     <string name="notes_widget_export_filename">Notiță_%1$s</string>
-    <string name="missing_permission_location_search">Acordați permisiunea la locație pentru a căuta locații în apropiere.</string>
     <string name="websearch_dialog_query_encoding">Interogați codificarea</string>
     <string name="websearch_dialog_query_encoding_none">Niciuna</string>
     <string name="weather_condition_thunderstorm">Furtună</string>
@@ -444,7 +435,6 @@
     <string name="widget_removed">Widget eliminat</string>
     <string name="no_selection">Nicio selecție</string>
     <string name="music_widget_interactive_progress_bar">Bară de progres interactivă</string>
-    <string name="preference_search_locations_radius">Raza de căutare</string>
     <string name="preference_search_locations_summary">Căutați magazine și alte locuri în zona locală</string>
     <string name="search_action_timer">Start cronometru</string>
     <string name="search_results_order_top_down">De sus în jos</string>
@@ -452,7 +442,6 @@
     <string name="search_action_email">Email</string>
     <string name="preference_favorites_edit_button_summary">Afișează buton pentru rearanjarea favoritelor</string>
     <string name="action_install">Instalează</string>
-    <string name="preference_search_locations">Locuri</string>
     <string name="preference_screen_tags_summary">Gestionați etichetele și elementele etichetate</string>
     <string name="preference_category_favorites_frequently_used">Utilizat frecvent</string>
     <string name="search_action_contact">Contact nou</string>

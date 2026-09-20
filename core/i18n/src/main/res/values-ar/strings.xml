@@ -180,14 +180,8 @@
     <string name="weather_condition_wind">ريح</string>
     <string name="weather_condition_unknown">مجهول</string>
     <string name="weather_condition_snowshowersandthunder">زخات ثلجية ورعد</string>
-    <string name="location_closes">الإغلاق عند %1$s</string>
-    <string name="location_closes_other_day">يغلق %1$s, %2$s</string>
-    <string name="location_opens">يفتح عند %1$s</string>
-    <string name="location_opens_other_day">يفتح %1$s, %2$s</string>
     <string name="weather_condition_sleetshowers">زخات من المطر</string>
     <string name="weather_condition_heavysleet">ثلج كثيف</string>
-    <string name="location_open">مفتوح</string>
-    <string name="location_closed">مغلق</string>
     <string name="plugin_state_setup_required">عليك أن تهيء هذه الاضافة أولا</string>
     <string name="task_due_time">الموعد على %1$s</string>
     <string name="task_due_date">الموعد في %1$s</string>
@@ -207,8 +201,6 @@
     <string name="preference_category_links">الروابط</string>
     <string name="preference_version">الاصدار</string>
     <string name="provider_here">هنا</string>
-    <string name="menu_map">عرض على الخريطة</string>
-    <string name="menu_website">فتح الموقع</string>
     <string name="missing_permission_notification_badges">الوصول الى الاشعارات مطلوب لعرض شارات الاشعارات</string>
     <string name="missing_permission_contact_search_settings">أذونات جهات الاتصال مطلوبة للبحث في قائمة الاتصالات</string>
     <string name="missing_permission_calendar_widget">منح اذن الوصول الى التقويم لعرض المواعيد و الأحداث القادمة</string>
@@ -226,7 +218,6 @@
     <string name="weather_location_search_no_result">لم يتم العثور على الموقع</string>
     <string name="missing_permission_auto_location">أذونات الموقع مطلوبة للتحديد التلقائي لموقعك</string>
     <string name="widget_config_calendar_missing_calendars_hint">لا يمكنك ايجاد تقويماتك؟</string>
-    <string name="missing_permission_location_search">يلزم الحصول على إذن الموقع للبحث عن المواقع القريبة</string>
     <string name="preference_theme_dark">مظلم</string>
     <string name="preference_category_licenses">رخص مفتوحة المصدر</string>
     <string name="missing_permission_calendar_search_settings">اذونات التقويم مطلوبة للبحث بالتقويم</string>
@@ -341,8 +332,6 @@
     <string name="note_widget_conflict_file_version">المحتوى الحالي للملف:</string>
     <string name="search_filter_tools">أدوات</string>
     <string name="search_filter_online">النتائج عبر الإنترنت</string>
-    <string name="preference_search_osm_locations">OpenStreetMap</string>
-    <string name="preference_search_osm_locations_summary">ابحث في OpenStreetMap عن المتاجر والأماكن الأخرى في المنطقة المحلية</string>
     <string name="poi_category_hospital">مستشفى</string>
     <string name="poi_category_post_office">مكتب بريد</string>
     <string name="poi_category_police">شرطة</string>
@@ -550,7 +539,6 @@
     <string name="preference_search_files_summary">البحث في الملفات المحلية وملفات السحابة</string>
     <string name="preference_search_currencyconverter">محول العملات</string>
     <string name="preference_search_wikipedia_summary">البحث في الموسوعة الحرة</string>
-    <string name="preference_search_locations">الأماكن</string>
     <string name="preference_screen_buildinfo">معلومات الإصدار</string>
     <string name="preference_search_bar_style_summary">تخصيص مظهر شريط البحث</string>
     <string name="preference_search_bar_color">اللون</string>
@@ -575,11 +563,9 @@
     <string name="preference_gesture_home_button">زر/إيماءة الصفحة الرئيسية</string>
     <string name="note_widget_action_relink_file">إعادة الربط</string>
     <string name="note_widget_conflict_local_version">الإصدار الأخير المحفوظ:</string>
-    <string name="preference_search_locations_show_map_summary">إظهار معاينة للخريطة للأماكن</string>
     <string name="preference_suspended_badges">تطبيقات معلقة</string>
     <string name="preference_cloud_badges_summary">إظهار شارة للملفات المخزنة في سحابة</string>
     <string name="preference_clockwidget_alarm_part_summary">إظهار التنبيهات التي سترن في غضون 8 ساعات القادمة</string>
-    <string name="preference_search_locations_radius">نصف قطر البحث</string>
     <string name="preference_search_locations_summary">البحث في المنطقة المحلية عن المتاجر والأماكن الأخرى</string>
     <string name="preference_search_bar_auto_focus_summary">إظهار لوحة المفاتيح تلقائيًا عند فتح درج التطبيقات</string>
     <string name="preference_category_favorites_frequently_used">مستخدم بشكل متكرر</string>
@@ -615,11 +601,6 @@
     <string name="shortcut_unavailable_description">هذا الاختصار غير متوفر لأن %1$s ليس المشغل الافتراضي</string>
     <string name="length_unit">وحدة الطول</string>
     <string name="imperial">إمبراطوري</string>
-    <string name="preference_search_locations_theme_map">تلوين الخريطة</string>
-    <string name="preference_search_locations_theme_map_summary">تطبيق نظام ألوان المشغل على الخريطة</string>
-    <string name="preference_search_location_custom_tile_server_url">عنوان URL لخادم التجانب</string>
-    <string name="menu_navigation">التنقل</string>
-    <string name="menu_bugreport">تقرير الأخطاء</string>
     <string name="plugin_state_error">هذا المكون الإضافي لا يعمل بشكل صحيح</string>
     <string name="unavailable_searchable">لم يعد هذا العنصر موجودًا</string>
     <string name="clock_style_orbit">مدار</string>
@@ -678,7 +659,6 @@
         <item quantity="many"/>
         <item quantity="other"/>
     </plurals>
-    <string name="menu_dial">اتصال</string>
     <string name="plugin_action_setup">إعداد</string>
     <string name="poi_category_optician">بصريات</string>
     <string name="plugin_type_calendar">التقويم</string>
@@ -710,7 +690,6 @@
     <string name="preference_search_result_ordering_weight_factor_low">مستقر</string>
     <string name="preference_search_result_ordering_weight_factor_high">متغير</string>
     <string name="widget_config_appwidget_borderless">بدون حدود</string>
-    <string name="location_open_24_7">مفتوح 24/7</string>
     <string name="plugin_weather_provider_enabled">تم تعيينه حاليًا كموفر للطقس</string>
     <string name="clock_style_segment">7-قطع</string>
     <string name="poi_category_laundry">مغسلة</string>
@@ -742,7 +721,6 @@
     <string name="poi_category_chinese_restaurant">مطعم صيني</string>
     <string name="poi_category_japanese_restaurant">مطعم ياباني</string>
     <string name="poi_category_kebab_restaurant">مطعم كباب</string>
-    <string name="preference_search_location_custom_overpass_url">عنوان URL لـ Overpass</string>
     <string name="app_label_locked_profile">مقفل</string>
     <plurals name="battery_part_remaining_charge_time">
         <item quantity="zero">مكتمل في %1$s دقيقة</item>
@@ -752,10 +730,7 @@
         <item quantity="many">%1$sدقائق</item>
         <item quantity="other"/>
     </plurals>
-    <string name="preference_search_locations_hide_uncategorized">إخفاء الأماكن غير المصنفة</string>
     <string name="metric">متري</string>
-    <string name="preference_search_locations_hide_uncategorized_summary">إظهار النتائج ذات الفئات المحددة جيدًا فقط، مثل المقاهي أو المطاعم</string>
-    <string name="preference_search_locations_show_map">الخريطة</string>
     <string name="clock_style_digital2">بسيط</string>
     <string name="plugin_type_locationsearch">البحث عن الأماكن</string>
     <string name="poi_category_fast_food">وجبات سريعة</string>
@@ -769,7 +744,6 @@
     <string name="weather_forecast_wind">رياح</string>
     <string name="weather_forecast_precipitation">هطول الأمطار</string>
     <string name="plugin_type_contacts">جهات الاتصال</string>
-    <string name="departure_time_now">الآن</string>
     <string name="preference_search_local_calendar_summary">البحث في التقويمات على هذا الجهاز</string>
     <string name="preference_grid_list_style">عرض التطبيقات في قائمة</string>
     <string name="preference_grid_list_icons">إظهار أيقونات التطبيقات في القائمة</string>
@@ -784,7 +758,6 @@
         <item quantity="many">خلال %1$d دقيقة</item>
         <item quantity="other">خلال %1$d دقيقة</item>
     </plurals>
-    <string name="departure_time_departed">مضت</string>
     <string name="widget_removed">تمت إزالة عنصر واجهة المستخدم</string>
     <string name="preference_clock_widget_time_format">تنسيق الوقت</string>
     <string name="preference_clock_widget_time_format_24h">24-ساعة</string>

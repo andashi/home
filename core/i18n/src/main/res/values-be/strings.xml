@@ -1,11 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="location_opens_other_day">адкрываецца ў %1$s, а %2$s</string>
-    <string name="location_open">Адкрыта</string>
-    <string name="location_closed">Закрыта</string>
-    <string name="location_closes">закрываецца а %1$s</string>
-    <string name="location_closes_other_day">закрываецца ў %1$s, а %2$s</string>
-    <string name="location_opens">адкрываецца а %1$s</string>
     <string name="menu_share">Абагуліць</string>
     <string name="menu_share_store_link">Спасылка на старонку ў %1$s</string>
     <string name="menu_share_apk_file">Файл пакета</string>
@@ -16,8 +10,6 @@
     <string name="menu_back">Назад</string>
     <string name="menu_launch">Запусціць</string>
     <string name="menu_customize">Дапасаваць</string>
-    <string name="menu_map">Праглядзець на карце</string>
-    <string name="menu_website">Адкрыць вэб-сайт</string>
     <string name="action_undo">Адрабіць</string>
     <string name="menu_delete">Выдаліць</string>
     <string name="menu_favorites_unpin">Адмацаваць</string>
@@ -198,7 +190,6 @@
     <string name="missing_permission_notification_badges">Для адлюстравання бэйджаў апавяшчэнняў на значках патрэбны доступ да апавяшчэнняў</string>
     <string name="missing_permission_calendar_widget">Для паказу будучых падзей тут патрэбны доступ да календара</string>
     <string name="missing_permission_calendar_search">Для пошуку праз ваш каляндар патрэбны доступ да календара</string>
-    <string name="missing_permission_location_search">Для пошуку бліжэйшых месцаў патрэбны доступ да месцазнаходжання</string>
     <string name="missing_permission_contact_search">Для пошуку праз вашы кантакты патрэбны доступ да кантактнай кнігі</string>
     <string name="missing_permission_appshortcuts_search">Зрабіце %1$s стандартным дамашнім экранам, каб шукаць праграмы.</string>
     <string name="missing_permission_appshortcuts_create">Зрабіце %1$s стандартным дамашнім экранам, каб ствараць ярлыкі праграм.</string>
@@ -370,8 +361,6 @@
     <string name="preference_search_wikipedia">Вікіпедыя</string>
     <string name="preference_search_wikipedia_summary">Пошук у свабоднай энцыклапедыі</string>
     <string name="preference_search_websites">Вэб-сайты</string>
-    <string name="preference_search_locations">Месцы</string>
-    <string name="preference_search_locations_radius">Радыус пошука</string>
     <string name="preference_search_websites_summary">Паказваць перадпрагляд вэб-сайта, калі ў поле пошуку ўводзіцца спасылка</string>
     <string name="preference_calendar_calendars">Календары</string>
     <string name="preference_search_bar_launch_on_enter">Запускаць пры пацвярджэнні</string>
@@ -539,26 +528,14 @@
     <string name="theme_color_scheme_palette_color">Палітра</string>
     <string name="preference_restore_default">Скінуць</string>
     <string name="metric">Метрычныя</string>
-    <string name="preference_search_location_custom_overpass_url">Пераход па спасылцы</string>
-    <string name="preference_search_locations_hide_uncategorized">Схаваць месцы без катэгорыі</string>
-    <string name="preference_search_locations_hide_uncategorized_summary">Адлюстроўваць рэзультаты толькі з пэўнымі катэгорыямі, як кафэ і рэстараны</string>
-    <string name="preference_search_locations_show_map">Карта</string>
     <string name="imperial">Імперскія</string>
-    <string name="preference_search_locations_show_map_summary">Адлюстроўваць перадпрагляд карты для месц</string>
-    <string name="preference_search_locations_theme_map_summary">Прымяніць колеравую схему праграмы запуску для карты</string>
-    <string name="preference_search_locations_theme_map">Тэма для карты</string>
     <string name="plugin_action_setup">Наладзіць</string>
     <string name="unavailable_searchable">Гэты элемент болей не існуе</string>
-    <string name="location_open_24_7">Кругласутачна</string>
     <string name="plugin_state_error">Гэтая ўбудова працуе некарэктна</string>
     <string name="plugin_state_setup_required">Спачатку вам трэба наладзіць гэту ўбудову</string>
     <string name="plugin_type_weather">Правайдар надвор\'я</string>
     <string name="plugin_weather_provider_enable">Задаць правайдарам надвор\'я</string>
     <string name="plugin_weather_provider_enabled">Бягучы правайдар надвор\'я</string>
-    <string name="menu_dial">Выклік</string>
-    <string name="preference_search_location_custom_tile_server_url">Спасылка на Tileserver</string>
-    <string name="menu_navigation">Навігацыя</string>
-    <string name="menu_bugreport">Справаздача аб памылцы</string>
     <string name="clock_style_digital1">Тоўсты</string>
     <string name="clock_style_digital2">Просты</string>
     <string name="clock_style_orbit">Арбітальны</string>
@@ -595,7 +572,6 @@
     <string name="poi_category_dentist">Стаматалогія</string>
     <string name="poi_category_nightclub">Начны клуб</string>
     <string name="poi_category_clinic">Клініка</string>
-    <string name="preference_search_osm_locations">OpenStreetMap</string>
     <string name="poi_category_cafe">Кафэ</string>
     <string name="poi_category_hotel">Гатэль</string>
     <string name="poi_category_supermarket">Супермаркет</string>
@@ -603,7 +579,6 @@
     <string name="poi_category_theater">Тэатр</string>
     <string name="poi_category_university">Універсітэт</string>
     <string name="poi_category_clothes">Крама адзення</string>
-    <string name="preference_search_osm_locations_summary">Шукаць крамы і іншыя месцы паблізу праз OpenStreetMap</string>
     <string name="poi_category_restaurant">Рэстаран</string>
     <string name="poi_category_fast_food">Фаст-фуд</string>
     <string name="poi_category_bar">Бар</string>
@@ -766,7 +741,6 @@
     <string name="preference_grid_list_style_summary">Паказваць праграмы спісам замест сеткі</string>
     <string name="preference_grid_list_icons_summary">Паказваць значкі пры праглядзе спісам</string>
     <string name="missing_permission_call_contacts_settings">Для выканання выклікаў патрэбны доступ да тэлефону</string>
-    <string name="departure_time_now">зараз</string>
     <string name="import_theme_contents">Змесціва</string>
     <string name="preference_launch_breezyweather_app">Адкрыць Breezy Weather</string>
     <string name="preference_launch_tasks_app">Адкрыць Tasks</string>
@@ -783,7 +757,6 @@
     <string name="preference_tasks_integration_ready">Інтэграцыя з Tasks поўнасцю наладжаная і гатовая да выкарыстання.</string>
     <string name="preference_search_tasks_summary">Шукаць задачы ў праграме «Tasks»</string>
     <string name="clock_variant_analog_ticks">Цікі</string>
-    <string name="departure_time_departed">адправіўся</string>
     <string name="preference_search_local_calendar_summary">Пошук праз календары на гэтай прыладзе</string>
     <string name="preference_contacts_call_on_tap_summary">Выклікаць без папярэджання адразу пасля націскання на нумар</string>
     <string name="confirmation_delete_transparencies_scheme">Вы сапраўды хочаце выдаліць схему празрыстасці «%1$s»?</string>

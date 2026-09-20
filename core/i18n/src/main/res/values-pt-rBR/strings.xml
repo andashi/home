@@ -488,8 +488,6 @@
     <string name="preference_restore_default">Restaurar ao padrão</string>
     <string name="import_theme_error">O arquivo selecionado não pode ser lido. Por favor confira se você tem um arquivo de tema válido (*.kvtheme), e que o arquivo não está corrupto.</string>
     <string name="preference_mdy_color_source">Fonte para cores dinâmicas</string>
-    <string name="location_open">Aberto</string>
-    <string name="location_closed">Fechado</string>
     <string name="preference_screen_plugins">Extensões</string>
     <string name="preference_screen_plugins_summary">Gerenciar extensões instaladas</string>
     <string name="preference_category_enabled_plugins">Habilitado</string>
@@ -500,13 +498,9 @@
     <string name="preference_use_system_default">Usar o padrão do sistema</string>
     <string name="theme_color_scheme_palette_color">Palheta</string>
     <string name="action_import">Importar</string>
-    <string name="location_closes">Fecha às %1$s</string>
-    <string name="menu_map">Ver no mapa</string>
-    <string name="menu_website">Abrir site</string>
     <string name="edit">Editar</string>
     <string name="import_theme_apply">Aplicar tema</string>
     <string name="weather_condition_thunderstorm">Tempestade de trovões</string>
-    <string name="missing_permission_location_search">Conceda permissão de localização para que se possa pesquisar ao redor.</string>
     <string name="preference_blur_wallpaper_radius">Raio de desfoque</string>
     <string name="preference_mdy_color_source_system">Sistema</string>
     <string name="preference_mdy_color_source_wallpaper">Papel de parede</string>
@@ -521,7 +515,6 @@
     <string name="preference_compact_tags">Tags compactas</string>
     <string name="preference_compact_tags_summary">Esconde etiquetas ou ícones para reduzir o espaço ocupado pelas tags</string>
     <string name="plugin_type_locationsearch">Pesquisa de lugares</string>
-    <string name="preference_search_osm_locations_summary">Pesquise no OpenStreetMap por lojas e outros lugares na área</string>
     <string name="customize_item_tags">Tags</string>
     <string name="widget_pick_widget">Escolher widget</string>
     <string name="clock_style_custom">Widget personalizado</string>
@@ -555,14 +548,10 @@
     <string name="preference_clockwidget_dynamic_zone">Zona dinâmica</string>
     <string name="confirmation_delete_color_scheme">Tem certeza que quer apagar o esquema de cor %1$s?</string>
     <string name="search_action_share">Compartilhar</string>
-    <string name="preference_search_location_custom_overpass_url">URL do Overpass</string>
     <string name="preference_filter_bar_summary">Mostrar filtros rápidos sobre o teclado</string>
     <string name="clock_style_binary">Binário</string>
     <string name="search_filter_tools">Ferramentas</string>
     <string name="preference_customize_filter_bar">Personalizar barra de filtros</string>
-    <string name="location_closes_other_day">Fecha %1$s, %2$s</string>
-    <string name="location_opens">Abre às %1$s</string>
-    <string name="location_opens_other_day">Abre %1$s, %2$s</string>
     <string name="plugin_type_calendar">Calendário</string>
     <string name="preference_default_filter_summary">Personalizar o filtro padrão para pesquisas</string>
     <string name="task_due_time">Vence às %1$s</string>
@@ -573,8 +562,6 @@
     <string name="preference_clock_widget_alignment_bottom">Embaixo</string>
     <string name="preference_clock_widget_alignment_top">Em cima</string>
     <string name="preference_clock_widget_alignment_center">No meio</string>
-    <string name="preference_search_locations">Lugares</string>
-    <string name="preference_search_locations_radius">Raio de pesquisa</string>
     <string name="preference_search_locations_summary">Pesquisa na sua área por lojas e outros lugates</string>
     <string name="preference_calendar_hide_completed">Esconder tarefas completas</string>
     <string name="preference_customize_filter_bar_summary">Personalizar quais itens serão inclusos na barra de filtro</string>
@@ -582,7 +569,6 @@
     <string name="search_filter_online">Resultados online</string>
     <string name="preference_default_filter">Filtro padrão</string>
     <string name="preference_filter_bar">Mostrar barra de filtros</string>
-    <string name="preference_search_osm_locations">OpenStreetMap</string>
     <string name="poi_category_bar">Barra</string>
     <string name="poi_category_parking">Estacionamento</string>
     <string name="poi_category_fuel">Posto de gasolina</string>
@@ -607,17 +593,6 @@
     <string name="action_more_actions">Mais ações</string>
     <string name="action_clear">Limpar</string>
     <string name="file_type_launchertheme">Tema do %1$s</string>
-    <string name="preference_search_locations_hide_uncategorized">Esconder lugares não-categorizados</string>
-    <string name="preference_search_locations_hide_uncategorized_summary">Mostrar apenas resultados com categorias bem definidas, como lanchonetes e restaurantes</string>
-    <string name="preference_search_locations_show_map">Mapa</string>
-    <string name="preference_search_locations_show_map_summary">Mostrar uma pré-visualização do mapa para lugares</string>
-    <string name="preference_search_locations_theme_map">Temas do mapa</string>
-    <string name="preference_search_locations_theme_map_summary">Aplicar o esquema de cor do launcher para o mapa</string>
-    <string name="preference_search_location_custom_tile_server_url">URL do Tileserver</string>
-    <string name="menu_dial">Ligar</string>
-    <string name="menu_navigation">Navegação</string>
-    <string name="menu_bugreport">Reportar bugs</string>
-    <string name="location_open_24_7">Aberto 24/7</string>
     <string name="plugin_weather_provider_enable">Definir como provedor de clima</string>
     <string name="plugin_weather_provider_enabled">Definido como o provedor de clima</string>
     <string name="unavailable_searchable">Esse item não existe mais.</string>
@@ -762,7 +737,6 @@
     <string name="poi_category_kiosk">Quiosque</string>
     <string name="profile_private_profile_action_lock">Bloquear Espaço Privado</string>
     <string name="preference_widgets_on_home_screen">Widgets na tela inicial</string>
-    <string name="departure_time_now">agora</string>
     <string name="bad_configuration_title">Parabéns, você se bloqueou!</string>
     <string name="bad_configuration_summary">Voce descobriu uma combinação de configurações que faz tanto a busca quanto as configurações inacessíveis — efetivamente o bloqueando do launcher.</string>
     <string name="preference_widgets_on_home_screen_summary">Exibir widgets na tela inicial em vez de uma página extra</string>
@@ -793,7 +767,6 @@
         <item quantity="many">%1$s notificações</item>
         <item quantity="other">%1$s notificações</item>
     </plurals>
-    <string name="departure_time_departed">partiu</string>
     <string name="theme_import_title">Importar tema</string>
     <plurals name="contact_postal_addresses">
         <item quantity="one">%1$s endereço postal</item>

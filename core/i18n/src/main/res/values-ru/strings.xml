@@ -513,16 +513,8 @@
     <string name="preference_mdy_color_source">Источник динамических цветов</string>
     <string name="preference_plugin_enable">Включить плагин</string>
     <string name="preference_category_advanced">Прочее</string>
-    <string name="missing_permission_location_search">Для поиска мест поблизости требуется разрешение на доступ к местоположению</string>
-    <string name="menu_map">Показать на карте</string>
-    <string name="preference_search_locations">Места</string>
-    <string name="preference_search_locations_radius">Радиус поиска</string>
-    <string name="location_open">Открыто</string>
-    <string name="location_closed">Закрыто</string>
     <string name="search_filter_online">Онлайн-поиск</string>
     <string name="widget_pick_widget">Выбрать виджет</string>
-    <string name="menu_bugreport">Сообщить об ошибке</string>
-    <string name="menu_dial">Позвонить</string>
     <string name="widget_use_theme_colors">Использовать цвет темы</string>
     <string name="poi_category_restaurant">Ресторан</string>
     <string name="poi_category_fast_food">Фастфуд</string>
@@ -540,9 +532,6 @@
     <string name="poi_category_atm">Банкомат</string>
     <string name="poi_category_fitness_center">Фитнес-центр</string>
     <string name="widget_config_appwidget_resize">Изменить размер</string>
-    <string name="preference_search_locations_hide_uncategorized">Скрыть места без категории</string>
-    <string name="preference_search_locations_hide_uncategorized_summary">Показывать только результаты с чётко определённой категорией, как кафе или рестораны</string>
-    <string name="location_open_24_7">Открыто 24/7</string>
     <string name="clock_style_digital2">Простые</string>
     <string name="poi_category_supermarket">Супермаркет</string>
     <string name="clock_style_orbit">Орбита</string>
@@ -582,10 +571,8 @@
     <string name="unavailable_searchable">Этого предмета больше не существует.</string>
     <string name="weather_condition_thunderstorm">Гроза</string>
     <string name="length_unit">Единица измерения длины</string>
-    <string name="preference_search_locations_show_map_summary">Показывать предпросмотр мест на карте</string>
     <string name="poi_category_toilets">Туалет</string>
     <string name="search_action_share">Поделиться</string>
-    <string name="preference_search_locations_show_map">Карта</string>
     <string name="preference_clock_widget_show_seconds">Показать секунды</string>
     <string name="search_filter_tools">Инструменты</string>
     <string name="clock_style_digital1">Полужирные</string>
@@ -596,18 +583,8 @@
     <string name="preference_default_filter">Фильтр по умолчанию</string>
     <string name="preference_customize_filter_bar">Настроить строку фильтров</string>
     <string name="preference_customize_filter_bar_summary">Настроить, какие элементы включать в строку фильтров</string>
-    <string name="location_closes">закроется через %1$s</string>
-    <string name="location_closes_other_day">закрыто %1$s, %2$s</string>
-    <string name="location_opens">откроется в %1$s</string>
-    <string name="location_opens_other_day">откроется %1$s, %2$s</string>
-    <string name="menu_website">Открыть веб-сайт</string>
     <string name="preference_search_locations_summary">Поиск магазинов и других мест поблизости</string>
     <string name="metric">Метрическая система измерения</string>
-    <string name="preference_search_location_custom_overpass_url">Переход по ссылке</string>
-    <string name="preference_search_locations_theme_map">Изменить внешний вид карты</string>
-    <string name="preference_search_locations_theme_map_summary">Применить цветовую схему лаунчера к карте</string>
-    <string name="menu_navigation">Навигация</string>
-    <string name="preference_search_location_custom_tile_server_url">URL-адрес сервера плитки</string>
     <string name="preference_location_managed_summary">Местоположение этого провайдера управляется приложением плагина</string>
     <string name="customize_item_visibility">Показывать</string>
     <string name="item_visibility_hidden">Нигде</string>
@@ -665,8 +642,6 @@
     <string name="poi_category_volleyball">Волейбольная площадка</string>
     <string name="poi_category_skiing">Катание на лыжах</string>
     <string name="poi_category_townhall">Ратуша</string>
-    <string name="preference_search_osm_locations">OpenStreetMap</string>
-    <string name="preference_search_osm_locations_summary">Поиск в OpenStreetMap магазинов и других мест поблизости</string>
     <string name="poi_category_mosque">Мечеть</string>
     <string name="poi_category_buddhist_temple">Пагода</string>
     <string name="poi_category_hindu_temple">Мандир</string>
@@ -722,7 +697,6 @@
     <string name="calendar_widget_open_calendar">Открыть приложение календаря</string>
     <string name="preference_contacts_call_on_tap">Нажмите, чтобы позвонить</string>
     <string name="preference_contacts_call_on_tap_summary">Совершить вызов при нажатии на номер телефона</string>
-    <string name="departure_time_departed">ушел</string>
     <string name="plugin_type_contacts">Контакты</string>
     <string name="profile_private_profile_state_locked">Личное пространство закрыто.</string>
     <string name="profile_private_profile_action_unlock">Разблокировать</string>
@@ -732,7 +706,6 @@
         <item quantity="many">%1$s списка выбрано</item>
         <item quantity="other">%1$s списка выбрано</item>
     </plurals>
-    <string name="departure_time_now">сейчас</string>
     <plurals name="departure_time_in">
         <item quantity="one">через %1$d минуту</item>
         <item quantity="few">через %1$d минуты</item>

@@ -505,20 +505,11 @@
     <string name="default_websearch_3_url">https://play.google.com/store/search?q=${1}</string>
     <string name="shortcut_unavailable_description">Denne genvej er utilgængelig, fordi %1$s ikke er din standard launcher</string>
     <string name="default_websearch_2_url">https://www.youtube.com/results?search_query=${1}</string>
-    <string name="location_open">Åben</string>
-    <string name="location_closed">Lukket</string>
-    <string name="menu_map">Se på kort</string>
-    <string name="menu_website">Åbn hjemmeside</string>
-    <string name="missing_permission_location_search">Giv tilladelse til lokation for at søge i nærheden.</string>
     <string name="preference_clock_widget_show_seconds">Vis sekunder</string>
     <string name="widget_use_theme_colors">Brug temafarve</string>
-    <string name="preference_search_locations">Steder</string>
-    <string name="preference_search_locations_radius">Søgeradius</string>
     <string name="preference_search_locations_summary">Søg i det lokale område efter butikker og andre steder</string>
     <string name="length_unit">Længdeenhed</string>
     <string name="imperial"/>
-    <string name="preference_search_locations_hide_uncategorized">Skjul ikke-kategoriserede steder</string>
-    <string name="preference_search_locations_hide_uncategorized_summary">Vis kun resultater med veldefinerede kategorier, som caféer eller restauranter</string>
     <string name="clock_style_digital1">Fed</string>
     <string name="clock_style_digital2">Enkel</string>
     <string name="clock_style_orbit">Orbit</string>
@@ -527,21 +518,10 @@
     <string name="clock_style_segment">7-segment</string>
     <string name="clock_style_empty">Intet ur</string>
     <string name="clock_variant_outlined">Omridset</string>
-    <string name="preference_search_locations_show_map">Kort</string>
-    <string name="menu_dial">Ring</string>
-    <string name="menu_bugreport">Fejlrapport</string>
     <string name="unavailable_searchable">Dette element findes ikke længere.</string>
-    <string name="location_open_24_7">Åben 24/7</string>
     <string name="widget_pick_widget">Vælg widget</string>
     <string name="widget_config_appwidget_resize">Ændr størrelse</string>
-    <string name="location_closes_other_day">lukker %1$s, %2$s</string>
-    <string name="location_closes">lukker %1$s</string>
-    <string name="location_opens">åbner %1$s</string>
-    <string name="location_opens_other_day">åbner %1$s, %2$s</string>
     <string name="search_action_share">Del</string>
-    <string name="menu_navigation">Navigation</string>
-    <string name="preference_search_locations_show_map_summary">Vis en forhåndsvisning af kort for steder</string>
-    <string name="preference_search_locations_theme_map_summary">Anvend farveskemaet for launcheren på kortet</string>
     <string name="preference_location_managed">Håndteret af udvidelse</string>
     <string name="preference_location_managed_summary">Lokaliteten for denne udbyder håndteres af udvidelsesappen</string>
     <string name="poi_category_restaurant">Restaurant</string>
@@ -586,7 +566,6 @@
         <item quantity="one">%1$s liste valgt</item>
         <item quantity="other">%1$s lister valgt</item>
     </plurals>
-    <string name="departure_time_now">nu</string>
     <string name="customize_item_label">Mærkat</string>
     <string name="preference_search_supportedunits">Understøttede enheder</string>
     <string name="item_visibility_hidden">Aldrig</string>
@@ -700,12 +679,9 @@
     <string name="preference_compact_tags">Kompakte tags</string>
     <string name="preference_compact_tags_summary">Skjul tag-mærkater eller -ikoner for at spare plads</string>
     <string name="apps_profile_private">Privat</string>
-    <string name="preference_search_location_custom_tile_server_url">Tileserver-URL</string>
     <string name="preference_default_filter">Standardfilter</string>
     <string name="preference_default_filter_summary">Tilpas standardfilteret for søgninger</string>
     <string name="preference_filter_bar_summary">Vis hurtige filtre over tastaturet</string>
-    <string name="preference_search_osm_locations">OpenStreetMap</string>
-    <string name="preference_search_osm_locations_summary">Søg på OpenStreetMap efter butikker og andre steder i lokalområdet</string>
     <string name="poi_category_university">Universitet</string>
     <string name="poi_category_basketball">Basketballbane</string>
     <string name="poi_category_hindu_temple">Hinduistisk tempel</string>

@@ -18,7 +18,6 @@ import de.mm20.launcher2.permissions.PermissionGroup
 import de.mm20.launcher2.permissions.PermissionsManager
 import de.mm20.launcher2.preferences.MeasurementSystem
 import de.mm20.launcher2.preferences.search.ContactSearchSettings
-import de.mm20.launcher2.preferences.search.LocationSearchSettings
 import de.mm20.launcher2.search.AppShortcut
 import de.mm20.launcher2.search.Application
 import de.mm20.launcher2.search.SavableSearchable
@@ -53,7 +52,6 @@ class SearchableItemVM : ListItemViewModel(), KoinComponent {
     private val appRepository: AppRepository by inject()
     private val appShortcutRepository: AppShortcutRepository by inject()
     private val permissionsManager: PermissionsManager by inject()
-    private val locationSearchSettings: LocationSearchSettings by inject()
     private val contactSearchSettings: ContactSearchSettings by inject()
 
     val isUpToDate = MutableStateFlow(true)
@@ -230,19 +228,6 @@ class SearchableItemVM : ListItemViewModel(), KoinComponent {
     fun requestShortcutPermission(activity: AppCompatActivity) {
         permissionsManager.requestPermission(activity, PermissionGroup.AppShortcuts)
     }
-
-    val measurementSystem = locationSearchSettings.measurementSystem
-        .stateIn(viewModelScope, SharingStarted.Lazily, MeasurementSystem.Metric)
-
-    val showMap = locationSearchSettings.showMap
-        .stateIn(viewModelScope, SharingStarted.Lazily, false)
-
-    val applyMapTheming = locationSearchSettings.themeMap
-        .stateIn(viewModelScope, SharingStarted.Lazily, false)
-
-    val mapTileServerUrl = locationSearchSettings.tileServer
-        .map { it ?: LocationSearchSettings.DefaultTileServerUrl }
-        .stateIn(viewModelScope, SharingStarted.Lazily, "")
 
     val callOnTap = contactSearchSettings.callOnTap
         .stateIn(viewModelScope, SharingStarted.Lazily, false)
