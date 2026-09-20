@@ -20,27 +20,9 @@
     <string name="settings">Tetapan</string>
     <string name="help">Bantuan</string>
     <string name="wallpaper">Kertas Dinding</string>
-    <string name="file_type_directory">Direktori</string>
-    <string name="file_type_android">Fail pakej android</string>
-    <string name="file_type_source_code">Sumber fail kod</string>
-    <string name="file_type_document">Dokumen</string>
-    <string name="file_type_spreadsheet">Lampiran</string>
-    <string name="file_type_music">Fail muzik</string>
-    <string name="file_type_image">Gambar</string>
-    <string name="file_type_presentation">Persembahan</string>
-    <string name="file_type_compressed">Fail termampat</string>
-    <string name="file_type_ebook">E-buku</string>
-    <string name="file_type_drawing">Lukisan</string>
-    <string name="file_type_form">Borang</string>
-    <string name="file_type_launchertheme">%1$s tema</string>
-    <string name="file_type_generic">%1$s fail</string>
     <string name="default_websearch_2_name">YouTube</string>
     <string name="default_websearch_2_url">https://www.youtube.com/results?search_query=${1}</string>
     <string name="default_websearch_3_name">Google Play</string>
     <string name="alert_delete_shortcut">Pintasan %1$s akan dibuang secara kekal. Teruskan?</string>
-    <string name="file_type_video">Video</string>
-    <string name="file_type_text">Fail teks</string>
-    <string name="file_type_archive">Fail arkib</string>
-    <string name="file_type_none">Fail</string>
     <string name="default_websearch_3_url">https://play.google.com/store/search?q=${1}</string>
 </resources>

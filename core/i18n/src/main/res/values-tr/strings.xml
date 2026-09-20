@@ -82,42 +82,24 @@
     <!-- File meta, min SDK version (=lowest Android version this APK file is compatible with) of APK files -->
     <!-- File meta, owner (for files that are stored in a cloud) -->
     <!-- File meta, location (e.g. location where a photo has been taken) -->
-    <string name="file_type_directory">Dizin</string>
     <!-- ZIP, TAR, … archive files  -->
-    <string name="file_type_archive">Arşiv dosyası</string>
     <!-- APK file  -->
-    <string name="file_type_android">Android paket dosyası</string>
     <!-- Code file (source code in a programming language) -->
-    <string name="file_type_source_code">Kaynak kod dosyası</string>
     <!-- Word document -->
-    <string name="file_type_document">Belge</string>
     <!-- Excel spreadsheet -->
-    <string name="file_type_spreadsheet">Hesap tablosu</string>
     <!-- Audio file -->
-    <string name="file_type_music">Ses dosyası</string>
     <!-- Video file -->
-    <string name="file_type_video">Video</string>
     <!-- Picture file -->
-    <string name="file_type_image">Görsel</string>
     <!-- Generic file without file extension -->
-    <string name="file_type_none">Dosya</string>
     <!-- Powerpoint presentation -->
-    <string name="file_type_presentation">Sunum</string>
     <!-- BZIP, GZIP, … compressed file -->
-    <string name="file_type_compressed">Sıkıştırılmış dosya</string>
     <!-- Plain text (TXT) file -->
-    <string name="file_type_text">Metin dosyası</string>
     <!-- E-book file -->
-    <string name="file_type_ebook">E-kitap</string>
     <!-- Google Drawings file -->
-    <string name="file_type_drawing">Çizim</string>
     <!-- Google Forms file -->
-    <string name="file_type_form">Form</string>
     <!-- Launcher backup, %1$s: app name -->
     <!-- Launcher theme, %1$s: app name -->
-    <string name="file_type_launchertheme">%1$s teması</string>
     <!-- Generic file , %1$s is the file extension -->
-    <string name="file_type_generic">%1$s dosyası</string>
     <!-- Warning message that is shown when a user attempts to delete a directory -->
     <!-- Warning message that is shown when a user attempts to delete a file -->
     <!-- Warning message that is shown when a user attempts to delete a pinned shortcut -->
@@ -176,7 +158,6 @@
     <string name="menu_edit_widgets">Araçları düzenle</string>
     <string name="widget_name_music">Medya</string>
     <string name="widget_name_notes">Not</string>
-    <string name="widget_name_unknown">Bilinmeyen</string>
     <string name="widget_add_widget">Araç ekle</string>
     <string name="widget_removed">Araç kaldırıldı</string>
     <!-- Add a third party widget (=a standard Android app widget) -->
@@ -197,7 +178,6 @@
     <string name="save_as_file">Dosya olarak kaydet</string>
     <string name="duplicate">Kopyasını oluştur</string>
     <string name="edit">Düzenle</string>
-    <string name="skip">Atla</string>
     <string name="action_next">Sonraki</string>
     <!-- Turn something off / disable a functionality of the launcher -->
     <string name="turn_off">Kapat</string>
@@ -215,28 +195,18 @@
     <string name="edit_favorites_dialog_tag_section_empty">Sabitlenmiş etiketler burada görünecek</string>
     <string name="edit_favorites_dialog_new_tag">Etiket oluştur</string>
     <!-- Nextcloud login flow, URL-->
-    <string name="nextcloud_server_url">Nextcloud sunucu URL\'si</string>
     <!-- Nextcloud/Owncloud login flow, empty URL-->
     <!-- Nextcloud login flow, error invalid URL-->
-    <string name="nextcloud_server_invalid_url">Bu URL geçerli bir Nextcloud kurulumuna işaret etmiyor</string>
     <!-- Owncloud login flow, UR-->
-    <string name="owncloud_server_url">Owncloud sunucu URL\'si</string>
     <!-- Owncloud login flow, error invalid URL-->
-    <string name="owncloud_server_invalid_url">Bu URL geçerli bir Owncloud kurulumuna işaret etmiyor</string>
     <!-- Owncloud login flow, password-->
-    <string name="owncloud_password">Parola</string>
     <!-- Owncloud login flow, user name-->
-    <string name="owncloud_username">Kullanıcı adı</string>
     <!-- Owncloud login flow -->
-    <string name="owncloud_login_2fa_hint">İki faktörlü kimlik doğrulama etkinse, burada bir uygulama parolası kullanmalısınız.</string>
     <!-- Owncloud login flow, login failed -->
-    <string name="owncloud_login_failed">Giriş başarısız: kullanıcı adı veya parola yanlış.</string>
     <!-- Owncloud login flow, error: username empty -->
     <!-- Owncloud login flow, error: password empty -->
     <!-- Nextcloud/Owncloud login flow, continue button -->
-    <string name="login_flow_continue">Devam</string>
     <!-- Nextcloud/Owncloud login flow, login button -->
-    <string name="login_flow_login">Giriş yap</string>
     <!-- Info and disclaimer for currency conversions. %1$s: formatted date of last currency data update  -->
     <string name="show_all">Tümünü göster</string>
     <!-- Used in calendar widget date selector. -->
@@ -249,14 +219,6 @@
         Instead, the following text will be shown, %1$d being the total number of
         running events that neither started nor will end on the selected day.
         -->
-    <plurals name="calendar_widget_running_events">
-        <item quantity="one">Geçmiş günlerden +%1$d devam eden etkinlik</item>
-        <item quantity="other">Geçmiş günlerden +%1$d devam eden etkinlik</item>
-    </plurals>
-    <plurals name="calendar_widget_running_tasks">
-        <item quantity="one">+%1$d tamamlanmamış görev</item>
-        <item quantity="other">+%1$d tamamlanmamış görev</item>
-    </plurals>
     <!-- Calendar events that last the entire day -->
     <!-- Default title that is shown in the music widget if the app that is playing media did not publish a title -->
     <string name="music_widget_default_title">%1$s medya oynatıyor</string>
@@ -275,8 +237,6 @@
     <string name="missing_permission_call_contacts_settings">Arama başlatmak için çağrı izni gereklidir</string>
     <!-- Missing calendar permission in search settings screen -->
     <!-- Missing calendar permission in calendar widget settings screen -->
-    <string name="missing_permission_calendar_widget_settings">Bu araç takvim izni gerektirir</string>
-    <string name="widget_config_calendar_missing_calendars_hint">Takvimlerinizi bulamıyor musunuz?</string>
     <!-- Missing permission app shortcuts permission in search settings screen. %1$s: app name -->
     <string name="missing_permission_appshortcuts_search_settings">Uygulama kısayollarını aramak için %1$s varsayılan ana ekran uygulaması olarak ayarlanmalıdır</string>
     <!-- Missing file permission in search settings screen -->
@@ -319,7 +279,6 @@
     <string name="preference_screen_transparencies">Şeffaflık</string>
     <string name="preference_transparencies_default">Varsayılan</string>
     <string name="preference_transparencies_semi_transparent">Yarı şeffaf</string>
-    <string name="preference_font">Yazı Tipi</string>
     <string name="preference_screen_about">Hakkında</string>
     <string name="preference_version">Sürüm</string>
     <string name="preference_category_links">Bağlantılar</string>
@@ -329,10 +288,6 @@
     <string name="open_webpage">Web sitesini aç</string>
     <string name="preference_screen_about_summary">Uygulama ve lisans bilgileri</string>
     <string name="preference_screen_appearance_summary">Görünümü ve hissi özelleştirin</string>
-    <string name="provider_here">HERE</string>
-    <string name="preference_imperial_units_summary">Fahrenheit ve mil/saat kullan</string>
-    <string name="preference_imperial_units">İmparatorluk birimleri</string>
-    <string name="widget_config_weather_compact">Kompakt mod</string>
     <string name="preference_category_debug">Hata Ayıklama</string>
     <string name="preference_category_debug_tools">Araçlar</string>
     <string name="preference_debug_dump_heap">Bellek anlık görüntüsü</string>
@@ -347,12 +302,6 @@
         <item quantity="other">%1$d giriş kaldırıldı</item>
     </plurals>
     <string name="preference_category_icons">Simgeler</string>
-    <string name="preference_cards">Kartlar</string>
-    <string name="preference_cards_summary">Kart görünümünü özelleştir</string>
-    <string name="preference_cards_corner_radius">Köşe yarıçapı</string>
-    <string name="preference_cards_stroke_width">Kontur genişliği</string>
-    <string name="preference_cards_opacity">Opaklık</string>
-    <string name="preference_cards_shape">Şekil</string>
     <string name="preference_cards_shape_rounded">Yuvarlak</string>
     <string name="preference_cards_shape_cut">Kesik</string>
     <string name="preference_icon_shape">Şekil</string>
@@ -397,8 +346,6 @@
     <string name="preference_notification_badges_summary">Okunmamış bildirimi olan uygulamalar için bir rozet göster</string>
     <string name="preference_suspended_badges_summary">Askıya alınmış uygulamalar için bir rozet göster</string>
     <string name="preference_suspended_badges">Askıya alınmış uygulamalar</string>
-    <string name="preference_cloud_badges">Bulut rozetleri</string>
-    <string name="preference_cloud_badges_summary">Bir bulutta depolanan dosyalar için bir rozet göster</string>
     <string name="preference_shortcut_badges">Kısayol rozetleri</string>
     <string name="preference_shortcut_badges_summary">Bir kısayolun hangi uygulamaya ait olduğunu gösteren bir rozet göster</string>
     <string name="preference_about_telegram">Telegram grubu</string>
@@ -420,7 +367,6 @@
     <string name="preference_screen_debug">Hata Ayıklama</string>
     <string name="preference_screen_debug_summary">Sorun giderme araçları</string>
     <string name="preference_category_widgets">Widgetlar</string>
-    <string name="preference_category_media_apps">Medya uygulamaları</string>
     <string name="preference_screen_clockwidget">Saat</string>
     <string name="preference_screen_clockwidget_summary">Saat stilini ve bileşenleri yapılandır</string>
     <string name="preference_clockwidget_layout_vertical">Varsayılan</string>
@@ -448,25 +394,14 @@
     <string name="preference_screen_search">Arama</string>
     <string name="preference_screen_search_summary">Arama, etiketler, hariç tutulan sonuçlar</string>
     <string name="preference_search_favorites">Favoriler</string>
-    <string name="preference_search_favorites_summary">Sabitlenmiş ve sık kullanılan öğeleri uygulama ızgarasının üzerinde göster</string>
-    <string name="preference_search_files_summary">Yerel dosyaları ve bulut dosyalarını ara</string>
     <string name="preference_search_contacts">Kişiler</string>
     <string name="preference_search_contacts_summary">Bu cihazdaki kişileri ara</string>
-    <string name="preference_search_calendar_summary">Yaklaşan randevuları ve etkinlikleri ara</string>
     <string name="preference_search_appshortcuts">Uygulama kısayolları</string>
     <string name="preference_search_appshortcuts_summary">Uygulama kısayollarını ara</string>
-    <string name="preference_search_calculator">Hesap makinesi</string>
-    <string name="preference_search_calculator_summary">Matematiksel terimleri değerlendir</string>
-    <string name="preference_search_websites">Web siteleri</string>
-    <string name="preference_search_websites_summary">Arama sorgusu bir URL ise web sitesinin bir önizlemesini göster</string>
-    <string name="preference_search_locations_summary">Yerel bölgedeki dükkanları ve diğer yerleri ara</string>
-    <string name="preference_calendar_calendars">Takvimler</string>
-    <string name="preference_calendar_hide_completed">Tamamlanan görevleri gizle</string>
     <string name="preference_screen_buildinfo">Yapı bilgisi</string>
     <string name="preference_screen_buildinfo_summary">Bu uygulamanın bu yapısı hakkında daha fazla bilgi</string>
     <string name="preference_search_bar_style">Stil</string>
     <string name="preference_search_bar_style_summary">Arama çubuğu görünümünü özelleştir</string>
-    <string name="preference_search_bar_color">Renk</string>
     <string name="preference_search_bar_auto_focus">Klavyeyi aç</string>
     <string name="preference_search_bar_auto_focus_summary">Uygulama çekmecesini açarken klavyeyi otomatik olarak göster</string>
     <string name="preference_search_bar_launch_on_enter">Enter ile başlat</string>
@@ -491,7 +426,6 @@
     <string name="preference_screen_homescreen_summary">Saat, arama çubuğu, duvar kağıdı, sistem çubukları</string>
     <string name="preference_screen_icons">Izgara ve simgeler</string>
     <string name="preference_screen_icons_summary">Izgara boyutu, simgeler, rozetler</string>
-    <string name="preference_weather_integration">Hava Durumu</string>
     <string name="preference_media_integration">Medya kontrolü</string>
     <!-- %1$s: app name (Kvaesitso) -->
     <string name="preference_contacts_call_on_tap">Aramak için dokun</string>
@@ -537,8 +471,6 @@
     <string name="create_search_action_type_app">Bir uygulamada ara</string>
     <string name="create_search_action_type_intent">Özel intent</string>
     <string name="create_search_action_pick_app">Aranacak bir uygulama seçin:</string>
-    <string name="create_search_action_website_url">Web sitesinin adresini girin:</string>
-    <string name="create_search_action_website_invalid_url">Verilen web sitesi otomatik olarak bir web araması olarak içe aktarılamaz. Farklı bir web sitesi deneyebilir veya sonraki adımda gerekli verileri manuel olarak girebilirsiniz</string>
     <string name="search_action_label">Ad</string>
     <string name="search_action_app">Uygulama</string>
     <string name="search_action_websearch_url">URL şablonu</string>
@@ -547,17 +479,12 @@
     <string name="experimental_feature">Deneysel</string>
     <string name="tag_exists_error">Bu ada sahip bir etiket zaten var</string>
     <string name="tag_exists_message">Bu ada sahip bir etiket zaten var. Devam ederseniz, iki etiket birleştirilecektir</string>
-    <string name="tag_no_items_message">Bu etikete atanmış öğe yok. Devam ederseniz, etiket silinecektir</string>
     <string name="tag_select_items">Öğeleri seçin</string>
     <string name="tag_name">Etiket adı</string>
     <plurals name="tag_selected_items">
         <item quantity="one">%1$d öğe seçildi</item>
         <item quantity="other">%1$d öğe seçildi</item>
     </plurals>
-    <string name="preference_layout_open_search">Arama ve uygulama çekmecesi</string>
-    <string name="open_search_pull_down">Aşağı kaydır</string>
-    <string name="open_search_swipe_left">Sola kaydır</string>
-    <string name="open_search_swipe_right">Sağa kaydır</string>
     <string name="preference_layout_search_bar_position">Arama çubuğu konumu</string>
     <string name="search_bar_position_top">Üst</string>
     <string name="search_bar_position_bottom">Alt</string>
@@ -597,8 +524,6 @@
     <string name="widget_config_appwidget_background">Arka plan kartı</string>
     <string name="widget_config_appwidget_configure">Aracı yapılandır</string>
     <string name="widget_config_appwidget_resize">Yeniden boyutlandır</string>
-    <string name="widget_config_weather_integration_settings">Hava durumu entegrasyonu ayarları</string>
-    <string name="widget_config_calendar_no_calendars">Takvim bulunamadı</string>
     <string name="widget_pick_widget">Araç seç</string>
     <string name="app_widget_loading_failed">Uygulama widget\'ı yüklenemedi</string>
     <string name="widget_config_music_integration_settings">Medya kontrolü entegrasyonu ayarları</string>
@@ -619,7 +544,6 @@
     <string name="note_widget_file_write_error_description">Not, bağlantılı dosyaya yazılamadı. Başlatıcının dahili depolamasına bir kopya kaydedildi</string>
     <string name="confirmation_delete_color_scheme">%1$s renk şemasını gerçekten silmek istiyor musunuz?</string>
     <string name="confirmation_delete_shapes_scheme">%1$s şekil şemasını gerçekten silmek istiyor musunuz?</string>
-    <string name="confirmation_delete_typography_scheme">%1$s tipografi şemasını gerçekten silmek istiyor musunuz?</string>
     <string name="confirmation_delete_transparencies_scheme">%1$s şeffaflık şemasını gerçekten silmek istiyor musunuz?</string>
     <string name="new_theme_name">(isimsiz)</string>
     <string name="preference_use_system_default">Sistem varsayılanını kullan</string>
@@ -635,9 +559,6 @@
     <string name="app_label_locked_profile">Kilitli</string>
     <!-- %1$s: app name -->
     <string name="shortcut_unavailable_description">Bu kısayol kullanılamıyor çünkü %1$s varsayılan başlatıcı değil</string>
-    <string name="length_unit">Uzunluk birimi</string>
-    <string name="imperial">İmparatorluk</string>
-    <string name="metric">Metrik</string>
     <string name="unavailable_searchable">Bu öğe artık mevcut değil</string>
     <string name="clock_style_digital1">Kalın</string>
     <string name="clock_style_digital2">Basit</string>
@@ -650,7 +571,6 @@
     <string name="clock_variant_outlined">Dış çizgili</string>
     <string name="menu_show_filters">Filtreleri göster</string>
     <string name="menu_hide_filters">Filtreleri gizle</string>
-    <string name="search_filter_tools">Araçlar</string>
     <string name="search_filter_online">Çevrimiçi sonuçlar</string>
     <string name="search_filter_apps">Uygulamalar</string>
     <string name="preference_default_filter">Varsayılan filtre</string>
@@ -660,96 +580,6 @@
     <string name="preference_customize_filter_bar">Filtre çubuğunu özelleştir</string>
     <string name="preference_customize_filter_bar_summary">Filtre çubuğuna hangi öğelerin dahil edileceğini özelleştir</string>
     <string name="filter_settings_network_warning">Mevcut filtre varsayılan olarak çevrimiçi sonuçları etkinleştirir. Arama sorgularınız istemeden harici web hizmetlerine gönderilebilir. Gizlilik nedenleriyle bu önerilmez.</string>
-    <string name="poi_category_restaurant">Restoran</string>
-    <string name="poi_category_fast_food">Fast food</string>
-    <string name="poi_category_bar">Bar</string>
-    <string name="poi_category_cafe">Kafe</string>
-    <string name="poi_category_hotel">Otel</string>
-    <string name="poi_category_supermarket">Süpermarket</string>
-    <string name="poi_category_school">Okul</string>
-    <string name="poi_category_parking">Otopark</string>
-    <string name="poi_category_fuel">Benzin istasyonu</string>
-    <string name="poi_category_toilets">Tuvalet</string>
-    <string name="poi_category_pharmacy">Eczane</string>
-    <string name="poi_category_hospital">Hastane</string>
-    <string name="poi_category_post_office">Postane</string>
-    <string name="poi_category_pub">Pub</string>
-    <string name="poi_category_doctors">Doktorlar</string>
-    <string name="poi_category_police">Polis</string>
-    <string name="poi_category_dentist">Dişçi</string>
-    <string name="poi_category_library">Kütüphane</string>
-    <string name="poi_category_ice_cream">Dondurmacı</string>
-    <string name="poi_category_theater">Tiyatro</string>
-    <string name="poi_category_cinema">Sinema</string>
-    <string name="poi_category_nightclub">Gece kulübü</string>
-    <string name="poi_category_clinic">Klinik</string>
-    <string name="poi_category_university">Üniversite</string>
-    <string name="poi_category_clothes">Giyim mağazası</string>
-    <string name="poi_category_convenience">Bakkal</string>
-    <string name="poi_category_hairdresser">Kuaför</string>
-    <string name="poi_category_books">Kitapçı</string>
-    <string name="poi_category_bakery">Fırın</string>
-    <string name="poi_category_car_rental">Araç kiralama</string>
-    <string name="poi_category_car_sharing">Araç paylaşımı</string>
-    <string name="poi_category_mobile_phone">Cep telefonu mağazası</string>
-    <string name="poi_category_furniture">Mobilya mağazası</string>
-    <string name="poi_category_alcohol">İçki dükkanı</string>
-    <string name="poi_category_florist">Çiçekçi</string>
-    <string name="poi_category_mall">Alışveriş merkezi</string>
-    <string name="poi_category_optician">Gözlükçü</string>
-    <string name="poi_category_jewelry">Kuyumcu</string>
-    <string name="poi_category_laundry">Çamaşırhane</string>
-    <string name="poi_category_bank">Banka</string>
-    <string name="poi_category_soccer">Futbol sahası</string>
-    <string name="poi_category_basketball">Basketbol sahası</string>
-    <string name="poi_category_tennis">Tenis kortu</string>
-    <string name="poi_category_atm">ATM</string>
-    <string name="poi_category_kiosk">Büfe</string>
-    <string name="poi_category_museum">Müze</string>
-    <string name="poi_category_fitness_center">Spor salonu</string>
-    <string name="poi_category_church">Kilise</string>
-    <string name="poi_category_mosque">Cami</string>
-    <string name="poi_category_buddhist_temple">Budist tapınağı</string>
-    <string name="poi_category_hindu_temple">Hindu tapınağı</string>
-    <string name="poi_category_synagogue">Sinagog</string>
-    <string name="poi_category_pizza_restaurant">Pizzacı</string>
-    <string name="poi_category_burger_restaurant">Burgerci</string>
-    <string name="poi_category_place_of_worship">İbadethane</string>
-    <string name="poi_category_chinese_restaurant">Çin restoranı</string>
-    <string name="poi_category_japanese_restaurant">Japon restoranı</string>
-    <string name="poi_category_kebab_restaurant">Kebapçı</string>
-    <string name="poi_category_asian_restaurant">Asya restoranı</string>
-    <string name="poi_category_ramen_restaurant">Ramen restoranı</string>
-    <string name="poi_category_soup_restaurant">Çorbacı</string>
-    <string name="poi_category_brunch_restaurant">Brunch restoranı</string>
-    <string name="poi_category_car_wash">Oto yıkama</string>
-    <string name="poi_category_charging_station">Şarj istasyonu</string>
-    <string name="poi_category_motorcycle_rental">Motosiklet kiralama</string>
-    <string name="poi_category_gallery">Galeri</string>
-    <string name="poi_category_amusement_park">Eğlence parkı</string>
-    <string name="poi_category_concert_hall">Konser salonu</string>
-    <string name="poi_category_stadium">Stadyum</string>
-    <string name="poi_category_casino">Kumarhane</string>
-    <string name="poi_category_discount_store">İndirim mağazası</string>
-    <string name="poi_category_pet">Evcil hayvan mağazası</string>
-    <string name="poi_category_shopping">Alışveriş</string>
-    <string name="poi_category_swimming">Yüzme havuzu</string>
-    <string name="poi_category_martial_arts">Dövüş sanatları</string>
-    <string name="poi_category_golf">Golf sahası</string>
-    <string name="poi_category_gymnastics">Jimnastik</string>
-    <string name="poi_category_ice_hockey">Buz hokeyi pisti</string>
-    <string name="poi_category_baseball">Beyzbol sahası</string>
-    <string name="poi_category_american_football">Amerikan futbolu sahası</string>
-    <string name="poi_category_handball">Hentbol sahası</string>
-    <string name="poi_category_volleyball">Voleybol sahası</string>
-    <string name="poi_category_skiing">Kayak</string>
-    <string name="poi_category_cricket">Kriket sahası</string>
-    <string name="poi_category_park">Park</string>
-    <string name="poi_category_monument">Anıt</string>
-    <string name="poi_category_government_building">Hükümet binası</string>
-    <string name="poi_category_fire_station">İtfaiye</string>
-    <string name="poi_category_courthouse">Adliye</string>
-    <string name="poi_category_townhall">Belediye binası</string>
     <string name="customize_item_label">Etiket</string>
     <string name="customize_item_tags">Etiketler</string>
     <string name="customize_item_visibility">Gösterim yeri</string>
@@ -788,17 +618,6 @@
     <string name="profile_private_profile_action_unlock">Kilidi aç</string>
     <string name="profile_private_profile_action_lock">Özel alanı kilitle</string>
     <string name="hint_drag_and_drop_reorder">Yeniden düzenlemek için öğeleri basılı tutun ve sürükleyin</string>
-    <plurals name="calendar_search_enabled_lists">
-        <item quantity="one">%1$s liste seçildi</item>
-        <item quantity="other">%1$s liste seçildi</item>
-    </plurals>
-    <string name="weather_forecast_humidity">Nem</string>
-    <string name="weather_forecast_wind">Rüzgar</string>
-    <string name="weather_forecast_precipitation">Yağış</string>
-    <plurals name="departure_time_in">
-        <item quantity="one">bir dakika içinde</item>
-        <item quantity="other">%1$d dakika içinde</item>
-    </plurals>
     <string name="bad_configuration_title">Tebrikler, kendinizi dışarıda kilitlediniz!</string>
     <string name="bad_configuration_summary">Hem aramayı hem de ayarları erişilemez kılan bir ayar kombinasyonu buldunuz — bu da sizi başlatıcının dışında bırakıyor</string>
     <string name="theme_export_title">Temayı dışa aktar</string>
@@ -832,9 +651,6 @@
     <string name="tag_icon_customicon">Simge</string>
     <string name="tag_icon_emoji">Emoji</string>
     <string name="gesture_action_feed">Akış</string>
-    <string name="poi_category_stationery">Kırtasiye</string>
-    <string name="poi_category_climbing_gym">Tırmanma spor salonu</string>
-    <string name="poi_category_hackerspace">Hackerspace</string>
     <string name="preference_screen_locale">Dil ve bölge</string>
     <string name="preference_screen_locale_summary">Dil, birimler, zaman formatı</string>
     <string name="preference_language">Dil</string>
@@ -880,7 +696,6 @@
     <string name="gesture_action_category_launcher">Başlatıcı sayfaları</string>
     <string name="gesture_action_category_system">Sistem eylemleri</string>
     <string name="gesture_action_category_apps">Uygulamalar ve kısayollar</string>
-    <string name="gesture_action_widgets_new">Yeni widget sayfası</string>
     <string name="gesture_action_widgets_empty">Boş</string>
     <string name="gesture_action_launch_select_app">Uygulama veya kısayol seç</string>
 </resources>
