@@ -9,7 +9,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.NavKey
-import de.mm20.launcher2.ktx.isAtLeastApiLevel
 import de.mm20.launcher2.preferences.ColorScheme
 import de.mm20.launcher2.ui.R
 import de.mm20.launcher2.ui.component.preferences.ListPreference
@@ -119,21 +118,19 @@ fun AppearanceSettingsScreen() {
             }
         }
 
-        if (isAtLeastApiLevel(31)) {
-            item {
-                PreferenceCategory(stringResource(R.string.preference_category_advanced)) {
-                    ListPreference(
-                        title = stringResource(R.string.preference_mdy_color_source),
-                        items = listOf(
-                            stringResource(R.string.preference_mdy_color_source_system) to false,
-                            stringResource(R.string.preference_mdy_color_source_wallpaper) to true,
-                        ),
-                        value = compatModeColors,
-                        onValueChanged = {
-                            viewModel.setCompatModeColors(it)
-                        }
-                    )
-                }
+        item {
+            PreferenceCategory(stringResource(R.string.preference_category_advanced)) {
+                ListPreference(
+                    title = stringResource(R.string.preference_mdy_color_source),
+                    items = listOf(
+                        stringResource(R.string.preference_mdy_color_source_system) to false,
+                        stringResource(R.string.preference_mdy_color_source_wallpaper) to true,
+                    ),
+                    value = compatModeColors,
+                    onValueChanged = {
+                        viewModel.setCompatModeColors(it)
+                    }
+                )
             }
         }
     }

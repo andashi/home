@@ -48,31 +48,19 @@ data class LauncherSettingsData internal constructor(
     val searchAllApps: Boolean = true,
     val appsShowDetails: Boolean = true,
 
-    val fileSearchProviders: Set<String> = setOf("local"),
 
     @Deprecated("Use contactSearchProviders `local` instead")
     val contactSearchEnabled: Boolean = true,
     val contactSearchProviders: Set<String> = setOf("local"),
     val contactSearchCallOnTap: Boolean = false,
 
-    @Deprecated("Use calendarSearchProviders `local` instead")
-    val calendarSearchEnabled: Boolean = true,
-    val calendarSearchProviders: Set<String> = setOf("local"),
-    val calendarSearchExcludedCalendars: Set<String> = setOf(),
 
     val shortcutSearchEnabled: Boolean = true,
     val shortcutSearchBlocklist: Set<String> = setOf(),
 
-    val calculatorEnabled: Boolean = true,
 
-    val unitConverterEnabled: Boolean = true,
-    val unitConverterCurrencies: Boolean = true,
 
-    val wikipediaSearchEnabled: Boolean = true,
-    val wikipediaSearchImages: Boolean = true,
-    val wikipediaCustomUrl: String? = null,
 
-    val websiteSearchEnabled: Boolean = true,
 
     val badgesNotifications: Boolean = true,
     val badgesSuspendedApps: Boolean = true,
@@ -114,14 +102,9 @@ data class LauncherSettingsData internal constructor(
     val systemBarsNavColors: SystemBarColors = SystemBarColors.Auto,
 
     val surfacesOpacity: Float = 1f,
-    @Deprecated("Replaces with shape schemes")
-    val surfacesRadius: Int = 24,
     val surfacesBorderWidth: Int = 0,
-    @Deprecated("Replaces with shape schemes")
-    val surfacesShape: SurfaceShape = SurfaceShape.Rounded,
 
     val widgetsEditButton: Boolean = true,
-    val widgetScreenCount: Int = 1,
 
     val gesturesSwipeDown: GestureAction = GestureAction.Search,
     val gesturesSwipeLeft: GestureAction = GestureAction.NoAction,
@@ -133,24 +116,7 @@ data class LauncherSettingsData internal constructor(
 
     val stateTagsMultiline: Boolean = false,
 
-    val weatherProvider: String = "metno",
-    val weatherAutoLocation: Boolean = true,
-    val weatherLocation: LatLon? = null,
-    val weatherLocationName: String? = null,
-    val weatherLastLocation: LatLon? = null,
-    val weatherLastUpdate: Long = 0L,
-    val weatherProviderSettings: Map<String, ProviderSettings> = emptyMap(),
 
-    @Deprecated("Use locationSearchProviders instead")
-    val locationSearchEnabled: Boolean = false,
-    val locationSearchProviders: Set<String> = setOf("openstreetmaps"),
-    val locationSearchRadius: Int = 1500,
-    val locationSearchHideUncategorized: Boolean = true,
-    val locationSearchOverpassUrl: String? = null,
-    val locationSearchTileServer: String? = null,
-    val locationSearchShowMap: Boolean = true,
-    val locationSearchShowPositionOnMap: Boolean = false,
-    val locationSearchThemeMap: Boolean = true,
 
     val searchFilter: SearchFilters = SearchFilters(),
     val searchFilterBar: Boolean = true,
@@ -318,18 +284,7 @@ enum class WeightFactor {
     High,
 }
 
-@Serializable
-data class LatLon(
-    val lat: Double,
-    val lon: Double,
-)
 
-@Serializable
-data class ProviderSettings(
-    val locationId: String? = null,
-    val locationName: String? = null,
-    val managedLocation: Boolean = false,
-)
 
 @Serializable
 enum class KeyboardFilterBarItem {

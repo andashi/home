@@ -13,7 +13,6 @@ import de.mm20.launcher2.icons.ColorLayer
 import de.mm20.launcher2.icons.LauncherIcon
 import de.mm20.launcher2.icons.StaticLauncherIcon
 import de.mm20.launcher2.icons.VectorLayer
-import de.mm20.launcher2.ktx.isAtLeastApiLevel
 import de.mm20.launcher2.search.Application
 import de.mm20.launcher2.search.SavableSearchable
 import de.mm20.launcher2.search.SearchableSerializer
@@ -50,8 +49,6 @@ internal data class LockedPrivateProfileApp(
     }
 
     override fun launch(context: Context, options: Bundle?): Boolean {
-        if (!isAtLeastApiLevel(35)) return false
-
         val userManager = context.getSystemService<UserManager>() ?: return false
 
         if (userManager.isQuietModeEnabled(user)) {
@@ -61,9 +58,7 @@ internal data class LockedPrivateProfileApp(
 
         val launcherApps = context.getSystemService<LauncherApps>() ?: return false
 
-        if (isAtLeastApiLevel(31)) {
-            options?.putInt("android.activity.splashScreenStyle", 1)
-        }
+        options?.putInt("android.activity.splashScreenStyle", 1)
 
         try {
             launcherApps.startMainActivity(

@@ -8,7 +8,6 @@ import de.mm20.launcher2.applications.AppRepository
 import de.mm20.launcher2.searchable.SavableSearchableRepository
 import de.mm20.launcher2.icons.IconService
 import de.mm20.launcher2.icons.LauncherIcon
-import de.mm20.launcher2.ktx.isAtLeastApiLevel
 import de.mm20.launcher2.preferences.ui.SearchUiSettings
 import de.mm20.launcher2.search.SavableSearchable
 import de.mm20.launcher2.search.Application
@@ -56,9 +55,7 @@ class HiddenItemsSettingsScreenVM : ViewModel(), KoinComponent {
 
     fun launch(context: Context, searchable: SavableSearchable) {
         val bundle = Bundle()
-        if (isAtLeastApiLevel(31)) {
-            bundle.putInt("android.activity.splashScreenStyle", 1)
-        }
+        bundle.putInt("android.activity.splashScreenStyle", 1)
         searchable.launch(context, bundle)
     }
 

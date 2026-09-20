@@ -9,7 +9,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ListView
 import android.widget.ScrollView
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.ColorScheme
@@ -22,7 +21,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.view.iterator
 import androidx.core.view.setPadding
-import de.mm20.launcher2.ktx.isAtLeastApiLevel
 import de.mm20.launcher2.ui.base.LocalAppWidgetHost
 import de.mm20.launcher2.ui.ktx.toPixels
 import palettes.TonalPalette
@@ -57,31 +55,17 @@ fun AppWidgetHost(
                     return@AndroidView view
                 },
                 update = {
-                    if (isAtLeastApiLevel(29)) {
-                        it.setOnLightBackground(onLightBackground)
-                    }
-                    if (isAtLeastApiLevel(31)) {
-                        if (useThemeColors) {
-                            val colorMapping = getColorMapping(colorScheme)
-                            it.setColorResources(colorMapping)
-                        } else {
-                            it.resetColorResources()
-                        }
-                        it.updateAppWidgetSize(
-                            Bundle(),
-                            arrayListOf(SizeF(maxWidth.value, maxHeight.value))
-                        )
+                    it.setOnLightBackground(onLightBackground)
+                    if (useThemeColors) {
+                        val colorMapping = getColorMapping(colorScheme)
+                        it.setColorResources(colorMapping)
                     } else {
-                        it.updateAppWidgetSize(
-                            null,
-                            maxWidth.value.roundToInt(),
-                            maxHeight.value.roundToInt(),
-                            maxWidth.value.roundToInt(),
-                            maxHeight.value.roundToInt(),
-                        )
-                        // Workaround to force update of the widget view
-                        it.updateAppWidgetOptions(Bundle())
+                        it.resetColorResources()
                     }
+                    it.updateAppWidgetSize(
+                        Bundle(),
+                        arrayListOf(SizeF(maxWidth.value, maxHeight.value))
+                    )
                     it.setPadding(padding)
                 }
             )
@@ -98,7 +82,6 @@ private fun enableNestedScroll(view: View) {
     if (view is ListView || view is ScrollView) view.isNestedScrollingEnabled = true
 }
 
-@RequiresApi(Build.VERSION_CODES.S)
 private fun getColorMapping(colorScheme: ColorScheme): SparseIntArray {
     val p = TonalPalette.fromInt(colorScheme.primary.toArgb())
     val s = TonalPalette.fromInt(colorScheme.secondary.toArgb())

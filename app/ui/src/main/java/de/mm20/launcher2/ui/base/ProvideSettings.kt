@@ -11,7 +11,6 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
-import de.mm20.launcher2.ktx.isAtLeastApiLevel
 import de.mm20.launcher2.preferences.IconShape
 import de.mm20.launcher2.preferences.MeasurementSystem
 import de.mm20.launcher2.preferences.TimeFormat
@@ -78,15 +77,11 @@ fun ProvideSettings(
     val measurementSystem by remember {
         localeSettings.measurementSystem.map { ms ->
             if (ms == MeasurementSystem.System) {
-                return@map if (isAtLeastApiLevel(28)) {
-                    val systemMs = LocaleData.getMeasurementSystem(ULocale.getDefault())
-                    when (systemMs) {
-                        LocaleData.MeasurementSystem.UK -> MeasurementSystem.UnitedKingdom
-                        LocaleData.MeasurementSystem.US -> MeasurementSystem.UnitedStates
-                        else -> MeasurementSystem.Metric
-                    }
-                } else {
-                    MeasurementSystem.Metric
+                val systemMs = LocaleData.getMeasurementSystem(ULocale.getDefault())
+                return@map when (systemMs) {
+                    LocaleData.MeasurementSystem.UK -> MeasurementSystem.UnitedKingdom
+                    LocaleData.MeasurementSystem.US -> MeasurementSystem.UnitedStates
+                    else -> MeasurementSystem.Metric
                 }
             }
             return@map ms

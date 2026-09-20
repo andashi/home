@@ -30,13 +30,9 @@ class WidgetsService(
             widgets.addAll(appWidgetManager.getInstalledProvidersForProfile(profile))
         }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            // Ignore widgets that the launcher is not supposed to access
-            widgets.filter {
-                it.widgetFeatures and AppWidgetProviderInfo.WIDGET_FEATURE_HIDE_FROM_PICKER == 0
-            }
-        } else {
-            widgets
+        // Ignore widgets that the launcher is not supposed to access
+        widgets.filter {
+            it.widgetFeatures and AppWidgetProviderInfo.WIDGET_FEATURE_HIDE_FROM_PICKER == 0
         }
     }
 

@@ -36,7 +36,6 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.flowWithLifecycle
-import de.mm20.launcher2.ktx.isAtLeastApiLevel
 import de.mm20.launcher2.preferences.GestureAction
 import de.mm20.launcher2.preferences.SearchBarColors
 import de.mm20.launcher2.preferences.SearchBarStyle
@@ -90,10 +89,8 @@ abstract class SharedLauncherActivity(
 
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
-        if (isAtLeastApiLevel(29)) {
-            window.isNavigationBarContrastEnforced = false
-            window.isStatusBarContrastEnforced = false
-        }
+        window.isNavigationBarContrastEnforced = false
+        window.isStatusBarContrastEnforced = false
         super.onCreate(savedInstanceState)
 
         if (savedInstanceState != null) {

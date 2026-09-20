@@ -3,7 +3,6 @@ package de.mm20.launcher2.data
 import android.content.Context
 import android.icu.text.Transliterator
 import android.icu.util.ULocale
-import androidx.annotation.RequiresApi
 import de.mm20.launcher2.crashreporter.CrashReporter
 import de.mm20.launcher2.preferences.ui.LocaleSettings
 import de.mm20.launcher2.search.StringNormalizer
@@ -16,7 +15,6 @@ import kotlinx.coroutines.flow.stateIn
 import org.apache.commons.lang3.StringUtils
 import java.util.Locale
 
-@RequiresApi(29)
 internal class IcuStringNormalizer(
     private val context: Context,
     localeSettings: LocaleSettings,

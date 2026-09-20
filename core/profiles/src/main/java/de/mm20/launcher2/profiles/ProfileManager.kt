@@ -10,9 +10,7 @@ import android.os.Process
 import android.os.UserHandle
 import android.os.UserManager
 import android.util.Log
-import androidx.annotation.RequiresApi
 import androidx.core.content.getSystemService
-import de.mm20.launcher2.ktx.isAtLeastApiLevel
 import de.mm20.launcher2.permissions.PermissionGroup
 import de.mm20.launcher2.permissions.PermissionsManager
 import kotlinx.coroutines.CoroutineScope
@@ -85,23 +83,15 @@ class ProfileManager(
                 addAction(Intent.ACTION_MANAGED_PROFILE_AVAILABLE)
                 addAction(Intent.ACTION_MANAGED_PROFILE_UNAVAILABLE)
                 addAction(Intent.ACTION_MANAGED_PROFILE_UNLOCKED)
-                if (isAtLeastApiLevel(34)) {
-                    addAction(Intent.ACTION_PROFILE_ADDED)
-                    addAction(Intent.ACTION_PROFILE_REMOVED)
-                }
-                if (isAtLeastApiLevel(31)) {
-                    addAction(Intent.ACTION_PROFILE_ACCESSIBLE)
-                    addAction(Intent.ACTION_PROFILE_INACCESSIBLE)
-                }
+                addAction(Intent.ACTION_PROFILE_ADDED)
+                addAction(Intent.ACTION_PROFILE_REMOVED)
+                addAction(Intent.ACTION_PROFILE_ACCESSIBLE)
+                addAction(Intent.ACTION_PROFILE_INACCESSIBLE)
 
             }
         )
         scope.launch {
-            if (isAtLeastApiLevel(35)) {
-                permissionsManager.hasPermission(PermissionGroup.ManageProfiles).collectLatest {
-                    refreshProfiles()
-                }
-            } else {
+            permissionsManager.hasPermission(PermissionGroup.ManageProfiles).collectLatest {
                 refreshProfiles()
             }
         }
@@ -168,7 +158,6 @@ class ProfileManager(
     /**
      * Tries to unlock the given profile. Silently fails when there is an error.
      */
-    @RequiresApi(28)
     fun unlockProfile(profile: Profile) {
         try {
             userManager.requestQuietModeEnabled(false, profile.userHandle)
@@ -180,7 +169,6 @@ class ProfileManager(
     /**
      * Tries to lock the given profile. Silently fails when there is an error.
      */
-    @RequiresApi(28)
     fun lockProfile(profile: Profile) {
         try {
             userManager.requestQuietModeEnabled(true, profile.userHandle)
@@ -190,21 +178,17 @@ class ProfileManager(
     }
 
     private fun getProfileType(userHandle: UserHandle): Profile.Type {
-        if (isAtLeastApiLevel(35)) {
-            val launcherUserInfo = launcherApps.getLauncherUserInfo(userHandle)
-            return when (launcherUserInfo?.userType) {
-                UserManager.USER_TYPE_PROFILE_PRIVATE -> Profile.Type.Private
-                UserManager.USER_TYPE_PROFILE_MANAGED -> Profile.Type.Work
-                else -> Profile.Type.Personal
-
-            }
+        val launcherUserInfo = launcherApps.getLauncherUserInfo(userHandle)
+        return when (launcherUserInfo?.userType) {
+            UserManager.USER_TYPE_PROFILE_PRIVATE -> Profile.Type.Private
+            UserManager.USER_TYPE_PROFILE_MANAGED -> Profile.Type.Work
+            else -> Profile.Type.Personal
         }
-        return if (userHandle == Process.myUserHandle()) Profile.Type.Personal else Profile.Type.Work
     }
 
     private fun getProfileStateByUserHandle(userHandle: UserHandle): Profile.State {
         val locked = !userManager.isUserUnlocked(userHandle)
-        val hidden = if (isAtLeastApiLevel(36) && locked) {
+        val hidden = if (locked) {
             launcherApps.getLauncherUserInfo(userHandle)
                 ?.userConfig
                 ?.getBoolean(LauncherUserInfo.PRIVATE_SPACE_ENTRYPOINT_HIDDEN, false)

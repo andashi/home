@@ -28,18 +28,12 @@ fun BuildInfoSettingsScreen() {
                 Preference(title = "Build type", summary = BuildConfig.BUILD_TYPE)
                 var buildSignature by remember { mutableStateOf<String?>(null) }
                 LaunchedEffect(null) {
-                    val signature = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                    val signature = run {
                         val pi = context.packageManager.getPackageInfo(
                             context.packageName,
                             PackageManager.GET_SIGNING_CERTIFICATES
                         )
                         pi.signingInfo?.apkContentsSigners?.firstOrNull()
-                    } else {
-                        val pi = context.packageManager.getPackageInfo(
-                            context.packageName,
-                            PackageManager.GET_SIGNATURES
-                        )
-                        pi.signatures?.firstOrNull()
                     }
                     val signatureHash = if (signature != null) {
                         val digest = MessageDigest.getInstance("SHA")

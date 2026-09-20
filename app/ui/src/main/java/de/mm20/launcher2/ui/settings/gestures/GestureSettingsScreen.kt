@@ -31,7 +31,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.NavKey
 import de.mm20.launcher2.FeatureFlags
 import de.mm20.launcher2.icons.LauncherIcon
-import de.mm20.launcher2.ktx.isAtLeastApiLevel
 import de.mm20.launcher2.preferences.GestureAction
 import de.mm20.launcher2.preferences.WidgetScreenTarget
 import de.mm20.launcher2.search.SavableSearchable
@@ -58,7 +57,7 @@ fun GestureSettingsScreen() {
         add(GestureAction.NoAction::class)
         add(GestureAction.Notifications::class)
         add(GestureAction.QuickSettings::class)
-        if (isAtLeastApiLevel(28)) add(GestureAction.ScreenLock::class)
+        add(GestureAction.ScreenLock::class)
         add(GestureAction.Recents::class)
         add(GestureAction.PowerMenu::class)
         add(GestureAction.Search::class)
