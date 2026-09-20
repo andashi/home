@@ -83,42 +83,24 @@
     <!-- File metadata, minimum SDK version of APK files -->
     <!-- File metadata, owner (for cloud files) -->
     <!-- File metadata, location -->
-    <string name="file_type_directory">Directory</string>
     <!-- Archive file  -->
-    <string name="file_type_archive">Archive file</string>
     <!-- Android package file  -->
-    <string name="file_type_android">Android package file</string>
     <!-- Source code file -->
-    <string name="file_type_source_code">Source code file</string>
     <!-- Document -->
-    <string name="file_type_document">Document</string>
     <!-- Spreadsheet -->
-    <string name="file_type_spreadsheet">Spreadsheet</string>
     <!-- Audio file -->
-    <string name="file_type_music">Audio</string>
     <!-- Video file -->
-    <string name="file_type_video">Video</string>
     <!-- Image file -->
-    <string name="file_type_image">Image</string>
     <!-- Generic file without file extension -->
-    <string name="file_type_none">File</string>
     <!-- Presentation -->
-    <string name="file_type_presentation">Presentation</string>
     <!-- Compressed file -->
-    <string name="file_type_compressed">Compressed file</string>
     <!-- Plain text file -->
-    <string name="file_type_text">Text file</string>
     <!-- E-book file -->
-    <string name="file_type_ebook">E-book</string>
     <!-- Drawing file -->
-    <string name="file_type_drawing">Drawing</string>
     <!-- Form file -->
-    <string name="file_type_form">Form</string>
     <!-- Launcher backup, %1$s: app name -->
     <!-- Launcher theme, %1$s: app name -->
-    <string name="file_type_launchertheme">%1$s theme</string>
     <!-- Generic file , %1$s is the file extension -->
-    <string name="file_type_generic">%1$s file</string>
     <!-- Warning message that is shown when a user attempts to delete a directory -->
     <!-- Warning message that is shown when a user attempts to delete a file -->
     <!-- Warning message that is shown when a user attempts to delete a pinned shortcut -->
@@ -178,7 +160,6 @@
     <string name="widget_name_music">Media</string>
     <string name="widget_name_apps">Apps</string>
     <string name="widget_name_notes">Note</string>
-    <string name="widget_name_unknown">Unknown</string>
     <string name="widget_add_widget">Add widget</string>
     <string name="widget_removed">Widget removed</string>
     <string name="notes_widget_placeholder">Write a note</string>
@@ -198,7 +179,6 @@
     <string name="save_as_file">Save as file</string>
     <string name="duplicate">Duplicate</string>
     <string name="edit">Edit</string>
-    <string name="skip">Skip</string>
     <string name="action_next">Next</string>
     <!-- Turn something off / disable a functionality of the launcher -->
     <string name="turn_off">Turn off</string>
@@ -216,28 +196,18 @@
     <string name="edit_favorites_dialog_tag_section_empty">Pinned tags will appear here</string>
     <string name="edit_favorites_dialog_new_tag">Create tag</string>
     <!-- Nextcloud login flow, URL-->
-    <string name="nextcloud_server_url">Nextcloud server URL</string>
     <!-- Nextcloud/Owncloud login flow, empty URL-->
     <!-- Nextcloud login flow, error invalid URL-->
-    <string name="nextcloud_server_invalid_url">This URL does not point to a valid Nextcloud installation</string>
     <!-- Owncloud login flow, UR-->
-    <string name="owncloud_server_url">Owncloud server URL</string>
     <!-- Owncloud login flow, error invalid URL-->
-    <string name="owncloud_server_invalid_url">This URL does not point to a valid Owncloud installation</string>
     <!-- Owncloud login flow, password-->
-    <string name="owncloud_password">Password</string>
     <!-- Owncloud login flow, user name-->
-    <string name="owncloud_username">User name</string>
     <!-- Owncloud login flow -->
-    <string name="owncloud_login_2fa_hint">If you have two factor authentication enabled, you must use an app password here.</string>
     <!-- Owncloud login flow, login failed -->
-    <string name="owncloud_login_failed">Login failed: incorrect username or password.</string>
     <!-- Owncloud login flow, error: username empty -->
     <!-- Owncloud login flow, error: password empty -->
     <!-- Nextcloud/Owncloud login flow, continue button -->
-    <string name="login_flow_continue">Continue</string>
     <!-- Nextcloud/Owncloud login flow, login button -->
-    <string name="login_flow_login">Log in</string>
     <!-- Info and disclaimer for currency conversions. %1$s: formatted date of last currency data update  -->
     <string name="show_all">Show all</string>
     <!-- Used in calendar widget date selector. -->
@@ -250,14 +220,6 @@
         Instead, the following text will be shown, %1$d being the total number of
         running events that neither started nor will end on the selected day.
         -->
-    <plurals name="calendar_widget_running_events">
-        <item quantity="one">+%1$d running event from past days</item>
-        <item quantity="other">+%1$d running events from past days</item>
-    </plurals>
-    <plurals name="calendar_widget_running_tasks">
-        <item quantity="one">+%1$d unfinished task</item>
-        <item quantity="other">+%1$d unfinished tasks</item>
-    </plurals>
     <!-- Calendar events that last the entire day -->
     <!-- Default title that is shown in the music widget if the app that is playing media did not publish a title -->
     <string name="music_widget_default_title">%1$s is playing media</string>
@@ -277,8 +239,6 @@
     <string name="missing_permission_call_contacts_settings">Phone permission is required to start calls</string>
     <!-- Missing calendar permission in search settings screen -->
     <!-- Missing calendar permission in calendar widget settings screen -->
-    <string name="missing_permission_calendar_widget_settings">This widget requires the calendar permission</string>
-    <string name="widget_config_calendar_missing_calendars_hint">Can\'t find your calendars?</string>
     <!-- Missing permission app shortcuts permission in search settings screen. %1$s: app name -->
     <string name="missing_permission_appshortcuts_search_settings">%1$s must be set as default home app to search app shortcuts</string>
     <!-- Missing file permission in search settings screen -->
@@ -325,7 +285,6 @@
     <string name="preference_create_transparency">New transparency scheme</string>
     <string name="preference_transparencies_default">Default</string>
     <string name="preference_transparencies_semi_transparent">Semi-transparent</string>
-    <string name="preference_font">Font</string>
     <string name="preference_screen_about">About</string>
     <string name="preference_version">Version</string>
     <string name="preference_category_links">Links</string>
@@ -335,10 +294,6 @@
     <string name="open_webpage">Open website</string>
     <string name="preference_screen_about_summary">App and license information</string>
     <string name="preference_screen_appearance_summary">Customize the look and feel</string>
-    <string name="provider_here">HERE</string>
-    <string name="preference_imperial_units_summary">Use degrees Fahrenheit and miles per hour</string>
-    <string name="preference_imperial_units">Imperial units</string>
-    <string name="widget_config_weather_compact">Compact mode</string>
     <string name="preference_category_debug">Debug</string>
     <string name="preference_category_debug_tools">Tools</string>
     <string name="preference_debug_dump_heap">Memory snapshot</string>
@@ -353,12 +308,6 @@
         <item quantity="other">%1$d entries have been removed</item>
     </plurals>
     <string name="preference_category_icons">Icons</string>
-    <string name="preference_cards">Cards</string>
-    <string name="preference_cards_summary">Customize card appearance</string>
-    <string name="preference_cards_corner_radius">Corner radius</string>
-    <string name="preference_cards_stroke_width">Stroke width</string>
-    <string name="preference_cards_opacity">Opacity</string>
-    <string name="preference_cards_shape">Shape</string>
     <string name="preference_cards_shape_rounded">Rounded</string>
     <string name="preference_cards_shape_cut">Cut</string>
     <string name="preference_icon_shape">Shape</string>
@@ -403,8 +352,6 @@
     <string name="preference_notification_badges_summary">Show a badge for applications with unread notifications</string>
     <string name="preference_suspended_badges_summary">Show a badge for suspended applications</string>
     <string name="preference_suspended_badges">Suspended apps</string>
-    <string name="preference_cloud_badges">Cloud badges</string>
-    <string name="preference_cloud_badges_summary">Show a badge for files that are stored in a cloud</string>
     <string name="preference_shortcut_badges">Shortcut badges</string>
     <string name="preference_shortcut_badges_summary">Show a badge which indicates to which app a shortcut belongs</string>
     <string name="preference_about_telegram">Telegram group</string>
@@ -426,7 +373,6 @@
     <string name="preference_screen_debug">Debug</string>
     <string name="preference_screen_debug_summary">Troubleshooting tools</string>
     <string name="preference_category_widgets">Widgets</string>
-    <string name="preference_category_media_apps">Media apps</string>
     <string name="preference_screen_clockwidget">Clock</string>
     <string name="preference_screen_clockwidget_summary">Configure clock style and components</string>
     <string name="preference_clockwidget_layout_vertical">Default</string>
@@ -460,24 +406,14 @@
     <string name="preference_screen_search">Search</string>
     <string name="preference_screen_search_summary">Search, tags, excluded results</string>
     <string name="preference_search_favorites">Favorites</string>
-    <string name="preference_search_favorites_summary">Show pinned and frequently used items above app grid</string>
     <string name="preference_search_apps">Apps</string>
     <string name="preference_search_apps_summary">Show all apps when the search field is empty</string>
     <string name="preference_search_apps_show_details">Show app information</string>
     <string name="preference_search_apps_show_details_summary">Display version and package name of an app in its context menu</string>
-    <string name="preference_search_files_summary">Search local files and cloud files</string>
     <string name="preference_search_contacts">Contacts</string>
     <string name="preference_search_contacts_summary">Search contacts on this device</string>
-    <string name="preference_search_calendar_summary">Search upcoming appointments and events</string>
     <string name="preference_search_appshortcuts">App shortcuts</string>
     <string name="preference_search_appshortcuts_summary">Search app shortcuts</string>
-    <string name="preference_search_calculator">Calculator</string>
-    <string name="preference_search_calculator_summary">Evaluate mathematical terms</string>
-    <string name="preference_search_websites">Websites</string>
-    <string name="preference_search_websites_summary">Show a preview of a website if the search query is a URL</string>
-    <string name="preference_search_locations_summary">Search the local area for shops and other places</string>
-    <string name="preference_calendar_calendars">Calendars</string>
-    <string name="preference_calendar_hide_completed">Hide completed tasks</string>
     <string name="preference_screen_buildinfo">Build information</string>
     <string name="preference_screen_buildinfo_summary">More information about this build of this app</string>
     <string name="preference_search_bar_style">Style</string>
@@ -485,7 +421,6 @@
     <string name="preference_search_bar_style_transparent">Transparent</string>
     <string name="preference_search_bar_style_solid">Solid</string>
     <string name="preference_search_bar_style_hidden">Hidden</string>
-    <string name="preference_search_bar_color">Color</string>
     <string name="preference_search_bar_auto_focus">Open keyboard</string>
     <string name="preference_search_bar_auto_focus_summary">Automatically show the keyboard when opening the app drawer</string>
     <string name="preference_search_bar_launch_on_enter">Launch on enter</string>
@@ -510,7 +445,6 @@
     <string name="preference_screen_homescreen_summary">Clock, search bar, wallpaper, system bars</string>
     <string name="preference_screen_icons">Grid and icons</string>
     <string name="preference_screen_icons_summary">Grid size, icons, badges</string>
-    <string name="preference_weather_integration">Weather</string>
     <string name="preference_media_integration">Media control</string>
     <!-- %1$s: app name (Kvaesitso) -->
     <string name="preference_smartspacer_integration">Smartspacer</string>
@@ -570,8 +504,6 @@
     <string name="create_search_action_type_app">Search in an app</string>
     <string name="create_search_action_type_intent">Custom intent</string>
     <string name="create_search_action_pick_app">Pick an app to search:</string>
-    <string name="create_search_action_website_url">Enter the address of the website:</string>
-    <string name="create_search_action_website_invalid_url">The given website cannot automatically be imported as a web search. You can try a different website or enter the required data manually in the next step</string>
     <string name="search_action_label">Name</string>
     <string name="search_action_app">App</string>
     <string name="search_action_websearch_url">URL template</string>
@@ -581,7 +513,6 @@
     <string name="tag_exists_error">A tag with this name already exists</string>
     <string name="tag_name_empty_error">Name cannot be empty</string>
     <string name="tag_exists_message">A tag with this name already exists. If you continue, the two tags will be merged</string>
-    <string name="tag_no_items_message">No items are assigned to this tag. If you continue, the tag will be deleted</string>
     <string name="tag_select_items">Select items</string>
     <string name="tag_name">Tag name</string>
     <string name="tag_icon_customicon">Icon</string>
@@ -590,10 +521,6 @@
         <item quantity="one">%1$d item selected</item>
         <item quantity="other">%1$d items selected</item>
     </plurals>
-    <string name="preference_layout_open_search">Search and app drawer</string>
-    <string name="open_search_pull_down">Swipe down</string>
-    <string name="open_search_swipe_left">Swipe left</string>
-    <string name="open_search_swipe_right">Swipe right</string>
     <string name="preference_layout_search_bar_position">Search bar position</string>
     <string name="search_bar_position_top">Top</string>
     <string name="search_bar_position_bottom">Bottom</string>
@@ -619,7 +546,6 @@
     <string name="gesture_action_category_apps">Apps and shortcuts</string>
     <string name="gesture_action_open_search">Search / app drawer</string>
     <string name="gesture_action_widgets">Widgets</string>
-    <string name="gesture_action_widgets_new">New widgets page</string>
     <string name="gesture_action_widgets_empty">Empty</string>
     <string name="gesture_action_widgets_indexed">Widgets (%1$d)</string>
     <string name="gesture_action_launch_app">Launch app</string>
@@ -641,8 +567,6 @@
     <string name="widget_config_appwidget_background">Background card</string>
     <string name="widget_config_appwidget_configure">Configure widget</string>
     <string name="widget_config_appwidget_resize">Resize</string>
-    <string name="widget_config_weather_integration_settings">Weather integration settings</string>
-    <string name="widget_config_calendar_no_calendars">No calendars found</string>
     <string name="widget_pick_widget">Pick widget</string>
     <string name="app_widget_loading_failed">App widget failed to load</string>
     <string name="widget_config_music_integration_settings">Media control integration settings</string>
@@ -663,7 +587,6 @@
     <string name="note_widget_file_write_error_description">The note could not be written to the linked file. A copy has been saved to the launcher\'s internal storage</string>
     <string name="confirmation_delete_color_scheme">Do you really want to delete the color scheme %1$s\?</string>
     <string name="confirmation_delete_shapes_scheme">Do you really want to delete the shape scheme %1$s?</string>
-    <string name="confirmation_delete_typography_scheme">Do you really want to delete the typography scheme %1$s?</string>
     <string name="confirmation_delete_transparencies_scheme">Do you really want to delete the transparency scheme %1$s?</string>
     <string name="new_theme_name">(untitled)</string>
     <string name="preference_use_system_default">Use system default</string>
@@ -679,9 +602,6 @@
     <string name="app_label_locked_profile">Locked</string>
     <!-- %1$s: app name -->
     <string name="shortcut_unavailable_description">This shortcut is unavailable because %1$s isn\'t the default launcher</string>
-    <string name="length_unit">Unit of length</string>
-    <string name="imperial">Imperial</string>
-    <string name="metric">Metric</string>
     <string name="unavailable_searchable">This item does not exist anymore</string>
     <string name="clock_style_digital1">Bold</string>
     <string name="clock_style_digital2">Simple</string>
@@ -695,7 +615,6 @@
     <string name="clock_variant_analog_ticks">Ticks</string>
     <string name="menu_show_filters">Show filters</string>
     <string name="menu_hide_filters">Hide filters</string>
-    <string name="search_filter_tools">Tools</string>
     <string name="search_filter_online">Online results</string>
     <string name="search_filter_apps">Apps</string>
     <string name="preference_default_filter">Default filter</string>
@@ -705,99 +624,6 @@
     <string name="preference_customize_filter_bar">Customize filter bar</string>
     <string name="preference_customize_filter_bar_summary">Customize which items are included in the filter bar</string>
     <string name="filter_settings_network_warning">The current filter enables online results by default. Your search queries might unintentionally be sent to external web services. For privacy reasons, this is not recommended.</string>
-    <string name="poi_category_restaurant">Restaurant</string>
-    <string name="poi_category_fast_food">Fast food</string>
-    <string name="poi_category_bar">Bar</string>
-    <string name="poi_category_cafe">Cafe</string>
-    <string name="poi_category_hotel">Hotel</string>
-    <string name="poi_category_supermarket">Supermarket</string>
-    <string name="poi_category_school">School</string>
-    <string name="poi_category_parking">Parking</string>
-    <string name="poi_category_fuel">Gas station</string>
-    <string name="poi_category_toilets">Restroom</string>
-    <string name="poi_category_pharmacy">Pharmacy</string>
-    <string name="poi_category_hospital">Hospital</string>
-    <string name="poi_category_post_office">Post office</string>
-    <string name="poi_category_pub">Pub</string>
-    <string name="poi_category_doctors">Doctors</string>
-    <string name="poi_category_police">Police</string>
-    <string name="poi_category_dentist">Dentist</string>
-    <string name="poi_category_library">Library</string>
-    <string name="poi_category_ice_cream">Ice cream parlor</string>
-    <string name="poi_category_theater">Theater</string>
-    <string name="poi_category_cinema">Movie theater</string>
-    <string name="poi_category_nightclub">Nightclub</string>
-    <string name="poi_category_clinic">Clinic</string>
-    <string name="poi_category_university">University</string>
-    <string name="poi_category_clothes">Apparel store</string>
-    <string name="poi_category_convenience">Convenience store</string>
-    <string name="poi_category_hairdresser">Hairdresser</string>
-    <string name="poi_category_books">Bookstore</string>
-    <string name="poi_category_bakery">Bakery</string>
-    <string name="poi_category_car_rental">Car rental</string>
-    <string name="poi_category_car_sharing">Car sharing</string>
-    <string name="poi_category_mobile_phone">Cell phone store</string>
-    <string name="poi_category_furniture">Furniture store</string>
-    <string name="poi_category_alcohol">Liquor store</string>
-    <string name="poi_category_florist">Flower shop</string>
-    <string name="poi_category_mall">Mall</string>
-    <string name="poi_category_optician">Optician</string>
-    <string name="poi_category_jewelry">Jewelry store</string>
-    <string name="poi_category_laundry">Laundry</string>
-    <string name="poi_category_bank">Bank</string>
-    <string name="poi_category_soccer">Soccer field</string>
-    <string name="poi_category_basketball">Basketball court</string>
-    <string name="poi_category_tennis">Tennis court</string>
-    <string name="poi_category_atm">ATM</string>
-    <string name="poi_category_kiosk">Kiosk</string>
-    <string name="poi_category_museum">Museum</string>
-    <string name="poi_category_fitness_center">Fitness center</string>
-    <string name="poi_category_church">Church</string>
-    <string name="poi_category_mosque">Mosque</string>
-    <string name="poi_category_buddhist_temple">Buddhist temple</string>
-    <string name="poi_category_hindu_temple">Hindu temple</string>
-    <string name="poi_category_synagogue">Synagogue</string>
-    <string name="poi_category_pizza_restaurant">Pizza restaurant</string>
-    <string name="poi_category_burger_restaurant">Burger restaurant</string>
-    <string name="poi_category_place_of_worship">Place of worship</string>
-    <string name="poi_category_chinese_restaurant">Chinese restaurant</string>
-    <string name="poi_category_japanese_restaurant">Japanese restaurant</string>
-    <string name="poi_category_kebab_restaurant">Kebab restaurant</string>
-    <string name="poi_category_asian_restaurant">Asian restaurant</string>
-    <string name="poi_category_ramen_restaurant">Ramen restaurant</string>
-    <string name="poi_category_soup_restaurant">Soup restaurant</string>
-    <string name="poi_category_brunch_restaurant">Brunch restaurant</string>
-    <string name="poi_category_car_wash">Car wash</string>
-    <string name="poi_category_charging_station">Charging station</string>
-    <string name="poi_category_motorcycle_rental">Motorcycle rental</string>
-    <string name="poi_category_gallery">Gallery</string>
-    <string name="poi_category_amusement_park">Amusement park</string>
-    <string name="poi_category_concert_hall">Concert hall</string>
-    <string name="poi_category_stadium">Stadium</string>
-    <string name="poi_category_casino">Casino</string>
-    <string name="poi_category_discount_store">Discount store</string>
-    <string name="poi_category_pet">Pet store</string>
-    <string name="poi_category_shopping">Shopping</string>
-    <string name="poi_category_swimming">Swimming pool</string>
-    <string name="poi_category_martial_arts">Martial arts</string>
-    <string name="poi_category_golf">Golf course</string>
-    <string name="poi_category_gymnastics">Gymnastics</string>
-    <string name="poi_category_ice_hockey">Ice hockey rink</string>
-    <string name="poi_category_baseball">Baseball field</string>
-    <string name="poi_category_american_football">American football field</string>
-    <string name="poi_category_handball">Handball court</string>
-    <string name="poi_category_volleyball">Volleyball court</string>
-    <string name="poi_category_skiing">Skiing</string>
-    <string name="poi_category_cricket">Cricket pitch</string>
-    <string name="poi_category_park">Park</string>
-    <string name="poi_category_monument">Monument</string>
-    <string name="poi_category_government_building">Government building</string>
-    <string name="poi_category_fire_station">Fire station</string>
-    <string name="poi_category_courthouse">Courthouse</string>
-    <string name="poi_category_townhall">Townhall</string>
-    <string name="poi_category_stationery">Stationery</string>
-    <string name="poi_category_climbing_gym">Climbing gym</string>
-    <string name="poi_category_hackerspace">Hackerspace</string>
     <string name="customize_item_label">Label</string>
     <string name="customize_item_tags">Tags</string>
     <string name="customize_item_visibility">Show in</string>
@@ -836,17 +662,6 @@
     <string name="profile_private_profile_action_unlock">Unlock</string>
     <string name="profile_private_profile_action_lock">Lock private space</string>
     <string name="hint_drag_and_drop_reorder">Hold and drag items to rearrange them</string>
-    <plurals name="calendar_search_enabled_lists">
-        <item quantity="one">%1$s list selected</item>
-        <item quantity="other">%1$s lists selected</item>
-    </plurals>
-    <string name="weather_forecast_humidity">Humidity</string>
-    <string name="weather_forecast_wind">Wind</string>
-    <string name="weather_forecast_precipitation">Precipitation</string>
-    <plurals name="departure_time_in">
-        <item quantity="one">in one minute</item>
-        <item quantity="other">in %1$d minutes</item>
-    </plurals>
     <string name="bad_configuration_title">Congratulations, you\'ve locked yourself out!</string>
     <string name="bad_configuration_summary">You\'ve discovered a combination of settings that makes both the search and settings inaccessible — effectively locking you out of the launcher</string>
     <string name="theme_export_title">Export theme</string>

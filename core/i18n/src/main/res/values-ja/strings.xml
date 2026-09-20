@@ -18,14 +18,10 @@
     <string name="menu_remove">削除</string>
     <string name="app_info_version">バージョン %1$s</string>
     <string name="default_websearch_2_name">YouTube</string>
-    <string name="login_flow_login">ログイン</string>
     <string name="preference_screen_appearance">外観</string>
     <string name="preference_colors_bw">黒と白</string>
-    <string name="preference_font">フォント</string>
     <string name="preference_category_links">リンク</string>
-    <string name="provider_here">HERE</string>
     <string name="preference_category_icons">アイコン</string>
-    <string name="preference_cards_shape">形状</string>
     <string name="preference_icon_shape_teardrop">ティアドロップ</string>
     <string name="preference_icon_shape_triangle">ルーローの三角形</string>
     <string name="preference_grid_labels">ラベルの表示</string>
@@ -35,7 +31,6 @@
     <string name="search_bar_placeholder">検索</string>
     <string name="default_websearch_3_url">https://play.google.com/store/search\?q=${1}</string>
     <string name="default_websearch_3_name">Play ストア</string>
-    <string name="login_flow_continue">続行</string>
     <string name="preference_icon_shape">形</string>
     <string name="preference_icon_shape_squircle">スクワークル</string>
     <string name="preference_category_wallpaper">壁紙</string>
@@ -46,28 +41,11 @@
     <string name="preference_icon_shape_rounded_square">角丸</string>
     <string name="preference_icon_shape_square">スクエア</string>
     <string name="preference_clockwidget_alarm_part">アラーム</string>
-    <string name="file_type_directory">ディレクトリ</string>
-    <string name="file_type_source_code">ソースコードファイル</string>
-    <string name="file_type_document">文書ファイル</string>
-    <string name="file_type_music">音楽</string>
-    <string name="file_type_spreadsheet">表計算ファイル</string>
-    <string name="file_type_video">動画</string>
-    <string name="file_type_compressed">圧縮ファイル</string>
-    <string name="file_type_text">テキストファイル</string>
-    <string name="file_type_image">画像</string>
-    <string name="file_type_none">ファイル</string>
-    <string name="file_type_presentation">プレゼンテーション</string>
     <string name="alert_delete_shortcut">ショートカット %1$s は永久に削除されます。続行しますか？</string>
     <string name="widget_add_widget">ウィジェットを追加</string>
-    <string name="owncloud_username">ユーザー名</string>
-    <string name="owncloud_login_2fa_hint">2要素認証を有効にしている場合は、ここでアプリパスワードを使用する必要があります。</string>
-    <string name="owncloud_login_failed">ログイン失敗: ユーザー名またはパスワードが正しくありません。</string>
     <string name="show_all">すべて表示</string>
     <string name="music_widget_default_title">%1$s がメディアを再生しています</string>
     <string name="music_widget_no_data">メディアは再生されていません</string>
-    <plurals name="calendar_widget_running_events">
-        <item quantity="other">%1$d 件の継続しているイベント</item>
-    </plurals>
     <string name="duplicate">複製</string>
     <string name="action_next">次へ</string>
     <string name="menu_item_edit_favs">お気に入りを編集</string>
@@ -78,16 +56,6 @@
     <string name="edit_favorites_dialog_tags">タグ</string>
     <string name="edit_favorites_dialog_tag_section_empty">ピン留めしたタグはここに表示されます</string>
     <string name="edit_favorites_dialog_new_tag">タグを作成…</string>
-    <string name="nextcloud_server_url">Nextcloud サーバーの URL</string>
-    <string name="owncloud_server_invalid_url">この URL は、有効な ownCloud のインストールを指定していません</string>
-    <string name="owncloud_password">パスワード</string>
-    <string name="file_type_archive">アーカイブファイル</string>
-    <string name="file_type_android">Android パッケージファイル</string>
-    <string name="file_type_ebook">電子ブック</string>
-    <string name="file_type_drawing">図形描画</string>
-    <string name="file_type_form">フォーム</string>
-    <string name="file_type_generic">%1$s ファイル</string>
-    <string name="nextcloud_server_invalid_url">この URL は、有効な Nextcloud のインストールを指定していません</string>
     <string name="websearch_dialog_url_error">この URL にはプレースホルダー「${1}」がありません。</string>
     <string name="websearch_dialog_delete_icon">アイコンを削除</string>
     <string name="websearch_dialog_replace_icon">アイコンを置き換え</string>
@@ -102,11 +70,8 @@
     <string name="shortcut_summary">%1$s から</string>
     <string name="close">閉じる</string>
     <string name="save">保存</string>
-    <string name="skip">スキップ</string>
     <string name="turn_off">オフ</string>
     <string name="widget_action_remove">削除</string>
-    <string name="owncloud_server_url">ownCloud サーバーの URL</string>
-    <string name="file_type_launchertheme">%1$s テーマ</string>
     <string name="widget_name_notes">メモ</string>
     <string name="notes_widget_placeholder">メモを書く…</string>
     <string name="notes_widget_action_new">新しいメモ</string>
@@ -114,13 +79,11 @@
     <string name="notes_widget_export_filename">メモ_%1$s</string>
     <string name="edit">編集</string>
     <string name="action_import">インポート</string>
-    <string name="widget_name_unknown">不明なアプリウィジェット</string>
     <string name="notes_widget_action_dismiss">閉じる</string>
     <string name="notes_widget_dismissed">メモは閉じられました。</string>
     <string name="widget_action_replace">置き換え</string>
     <string name="preference_screen_clockwidget">時計</string>
     <string name="preference_screen_appearance_summary">外観のカスタマイズ</string>
-    <string name="preference_cards_opacity">透明度</string>
     <string name="preference_screen_tags">タグ</string>
     <string name="preference_theme_system">システムに従う</string>
     <string name="preference_screen_integrations_summary">接続されたアカウントとサービスを管理</string>
@@ -146,9 +109,6 @@
     <string name="preference_screen_gestures">ジェスチャー</string>
     <string name="preference_about_telegram">Telegram グループ</string>
     <string name="icon_picker_default_icon">デフォルト</string>
-    <string name="preference_cards">カード</string>
-    <string name="preference_cards_summary">カードの外観をカスタマイズ</string>
-    <string name="preference_cards_corner_radius">角の丸み</string>
     <string name="preference_screen_buildinfo">ビルド情報</string>
     <string name="preference_screen_buildinfo_summary">アプリのビルドに関する詳細情報</string>
     <string name="preference_themed_icons">テーマアイコン</string>
@@ -161,9 +121,6 @@
     <string name="preference_screen_about">このアプリについて</string>
     <string name="preference_version">バージョン</string>
     <string name="action_clear">削除</string>
-    <plurals name="calendar_search_enabled_lists">
-        <item quantity="other">%1$s個のリストが選択されました</item>
-    </plurals>
     <string name="music_widget_next_track">次のタイトル</string>
     <string name="music_widget_play">プレイ</string>
     <string name="music_widget_pause">ポーズ</string>
