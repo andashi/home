@@ -116,10 +116,6 @@ class IconsSettingsScreenVM(
         badgeSettings.setSuspendedApps(suspendedApps)
     }
 
-    val pluginBadges = badgeSettings.plugins
-    fun setPluginBadges(plugins: Boolean) {
-        badgeSettings.setPlugins(plugins)
-    }
 
     private val previewItems = grid.flatMapLatest { grid ->
         favoritesService.getFavorites(

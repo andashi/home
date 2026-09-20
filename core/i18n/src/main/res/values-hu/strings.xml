@@ -167,9 +167,6 @@
     <string name="preference_icon_shape_circle">Kör</string>
     <string name="preference_icon_shape_teardrop">Könnycsepp</string>
     <string name="preference_icon_shape_pebble">Kavics</string>
-    <string name="preference_screen_plugins">Bővítmények</string>
-    <string name="preference_screen_plugins_summary">Telepített bővítmények kezelése</string>
-    <string name="no_plugins_installed">Nincsenek telepített bővítmények</string>
     <string name="preference_theme_system">Rendszer beállításainak követése</string>
     <string name="preference_themed_icons">Témának megfelelő ikonok</string>
     <string name="preference_icon_pack">Ikoncsomag</string>
@@ -191,9 +188,6 @@
     <string name="preference_hidden_items">Kizárt keresési eredmények</string>
     <string name="icon_picker_filter_all_packs">Minden ikoncsomag</string>
     <string name="search_action_websearch">Internetes keresés</string>
-    <string name="plugin_state_setup_required">Először be kell állítani ezt a bővítményt</string>
-    <string name="plugin_action_setup">Beállítás</string>
-    <string name="plugin_type_weather">Időjáráselőrejelzési szolgáltató</string>
     <string name="preference_clock_widget_alignment_bottom">Alulra</string>
     <string name="preference_clockwidget_alarm_part_summary">Azon riasztások megjelenítése, amelyek a következő 8 órán belül megszólalnak</string>
     <string name="preference_screen_buildinfo_summary">További tudnivalók az alkalmazás ezen verziójáról</string>
@@ -249,7 +243,6 @@
     <string name="preference_edit_favorites_summary">Kitűzött elemek sorrendjének módosítása</string>
     <string name="preference_widgets_edit_button_summary">Egy gomb megjelenítése a modulok hozzáadásához, eltávolításához és átrendezéséhez</string>
     <string name="note_widget_file_read_error_description">A hivatkozott fájlt nem lehetett beolvasni. A másolat visszaállításra került az indító alkalmazás belső tárolójából. Ha szerkeszti a jegyzetet, a hivatkozott fájl valószínűleg felülírásra kerül</string>
-    <string name="plugin_state_error">Ez a bővítmény nem működik megfelelően</string>
     <string name="preference_screen_search_summary">Keresés, címkék, kizárt eredmények</string>
     <string name="preference_search_files_summary">Keresés helyi- és felhőfájlok között</string>
     <string name="preference_favorites_frequently_used_summary">Gyakran használt elemek megjelenítése a kedvencek között</string>
@@ -287,8 +280,6 @@
     <string name="search_action_app">Alkalmazás</string>
     <string name="search_action_websearch_url">Webcím sablon</string>
     <string name="experimental_feature">Kísérleti</string>
-    <string name="preference_plugin_badges">Bővítményjelvények</string>
-    <string name="preference_plugin_badges_summary">Jelezze, hogy a keresési eredményt melyik bővítmény hozta létre</string>
     <string name="preference_about_telegram">Telegram csoport</string>
     <string name="preference_about_fdroid">F-Droid tároló</string>
     <string name="preference_enforce_icon_shape">Kényszerített alakzat</string>
@@ -403,7 +394,6 @@
     <string name="preference_mdy_color_source">Dinamikus színek forrása</string>
     <string name="preference_mdy_color_source_wallpaper">Háttérkép</string>
     <string name="preference_category_advanced">Haladó</string>
-    <string name="preference_plugin_enable">Bővítmény engedélyezése</string>
     <string name="preference_search_locations_summary">Közelben lévő üzletek és egyéb helyek keresése</string>
     <string name="length_unit">Hosszúság mértékegysége</string>
     <string name="imperial">Birodalmi</string>
@@ -523,7 +513,6 @@
     <string name="poi_category_baseball">Baseballpálya</string>
     <string name="poi_category_swimming">Úszómedence</string>
     <string name="poi_category_townhall">Városháza</string>
-    <string name="plugin_type_locationsearch">Helyek keresése</string>
     <string name="customize_item_label">Név szerkesztése</string>
     <string name="customize_item_tags">Címkék</string>
     <string name="item_visibility_search_only">Keresési találatok</string>
@@ -561,7 +550,6 @@
     <string name="music_widget_play">Lejátszás</string>
     <string name="music_widget_pause">Szünet</string>
     <string name="music_widget_open_player">Lejátszó megnyitása</string>
-    <string name="plugin_type_calendar">Naptár</string>
     <string name="profile_work_profile_state_locked">A munka-alkalmazások szünetelnek</string>
     <string name="profile_work_profile_action_unlock">Szüneteltetés feloldása</string>
     <string name="profile_work_profile_action_lock">Munkaalkalmazások szüneteltetése</string>
@@ -595,7 +583,6 @@
     <string name="preference_contacts_call_on_tap">Koppintson a híváshoz</string>
     <string name="preference_contacts_call_on_tap_summary">Hívás azonnali indítása megerősítés kérése nélkül egy telefonszámra való koppintáskor</string>
     <string name="missing_permission_call_contacts_settings">A hívások indításához hívásengedély szükséges</string>
-    <string name="plugin_type_contacts">Névjegyek</string>
     <string name="action_install">Telepítés</string>
     <plurals name="calendar_widget_running_tasks">
         <item quantity="one">+%1$d befejezetlen feladat</item>
@@ -663,8 +650,6 @@
     <string name="preference_value_disabled">Letiltva</string>
     <string name="select_tag">Címke kiválasztása</string>
     <string name="widget_name_apps">Alkalmazások</string>
-    <string name="preference_category_enabled_plugins">Engedélyezve</string>
-    <string name="preference_category_installed_plugins">Telepítve</string>
     <string name="tag_icon_customicon">Ikon</string>
     <string name="tag_icon_emoji">Emodzsi</string>
     <string name="preference_clockwidget_smartspacer">Kezelés ezzel: Smartspacer</string>

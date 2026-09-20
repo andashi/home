@@ -339,7 +339,6 @@
     <string name="poi_category_post_office">우체국</string>
     <string name="poi_category_pub">펍</string>
     <string name="search_filter_online">온라인 검색 결과</string>
-    <string name="plugin_type_locationsearch">장소 검색</string>
     <string name="preference_default_filter">기본 필터</string>
     <string name="poi_category_fuel">주유소</string>
     <string name="poi_category_doctors">의원</string>

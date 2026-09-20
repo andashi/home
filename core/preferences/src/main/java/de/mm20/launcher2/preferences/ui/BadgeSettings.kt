@@ -8,7 +8,6 @@ data class BadgeSettingsData(
     val notifications: Boolean = true,
     val suspendedApps: Boolean = true,
     val shortcuts: Boolean = true,
-    val plugins: Boolean = true,
 )
 
 class BadgeSettings internal constructor(
@@ -18,7 +17,6 @@ class BadgeSettings internal constructor(
         notifications = it.badgesNotifications,
         suspendedApps = it.badgesSuspendedApps,
         shortcuts = it.badgesShortcuts,
-        plugins = it.badgesPlugins,
     )
 }) {
 
@@ -46,15 +44,6 @@ class BadgeSettings internal constructor(
     fun setShortcuts(shortcuts: Boolean) {
         launcherDataStore.update {
             it.copy(badgesShortcuts = shortcuts)
-        }
-    }
-
-    val plugins
-        get() = launcherDataStore.data.map { it.badgesPlugins }
-
-    fun setPlugins(plugins: Boolean) {
-        launcherDataStore.update {
-            it.copy(badgesPlugins = plugins)
         }
     }
 }

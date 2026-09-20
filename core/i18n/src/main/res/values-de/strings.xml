@@ -390,17 +390,7 @@
     <string name="preference_clock_widget_alignment_bottom">Unten</string>
     <string name="shortcut_label_unavailable">Nicht verfügbar</string>
     <string name="shortcut_unavailable_description">Diese Verknüpfung ist nicht verfügbar, weil %1$s nicht die Standard-Start-App ist</string>
-    <string name="preference_screen_plugins">Plugins</string>
-    <string name="preference_screen_plugins_summary">Installierte Erweiterungen verwalten</string>
-    <string name="no_plugins_installed">Keine Plugins installiert</string>
     <string name="preference_clockwidget_dynamic_zone">Dynamische Zone</string>
-    <string name="preference_plugin_badges">Plugin-Plaketten</string>
-    <string name="preference_plugin_badges_summary">Anzeigen, von welchem Plugin ein Suchergebnis stammt</string>
-    <string name="plugin_action_setup">Einrichten</string>
-    <string name="plugin_type_weather">Wetterdienst</string>
-    <string name="plugin_state_error">Dieses Plugin funktioniert nicht wie erwartet</string>
-    <string name="plugin_state_setup_required">Sie müssen das Plugin zuerst einrichten</string>
-    <string name="preference_plugin_enable">Plugin aktivieren</string>
     <string name="preference_mdy_color_source_system">System</string>
     <string name="preference_mdy_color_source_wallpaper">Hintergrundbild</string>
     <string name="preference_category_advanced">Erweitert</string>
@@ -479,7 +469,6 @@
     <string name="poi_category_parking">Parkplatz</string>
     <string name="poi_category_university">Universität</string>
     <string name="poi_category_basketball">Basketballfeld</string>
-    <string name="plugin_type_locationsearch">Ortssuche</string>
     <string name="poi_category_car_rental">Autovermietung</string>
     <string name="poi_category_car_sharing">Carsharing</string>
     <string name="poi_category_church">Kirche</string>
@@ -569,7 +558,6 @@
     <string name="profile_private_profile_state_locked">Der private Bereich ist gesperrt</string>
     <string name="profile_private_profile_action_unlock">Entsperren</string>
     <string name="profile_private_profile_action_lock">Privaten Bereich sperren</string>
-    <string name="plugin_type_calendar">Kalender</string>
     <string name="profile_work_profile_state_locked">Geschäftliche Apps sind pausiert</string>
     <string name="hint_drag_and_drop_reorder">Zum Anordnen Elemente halten und ziehen</string>
     <string name="app_label_locked_profile">Gesperrt</string>
@@ -599,7 +587,6 @@
     <string name="widget_removed">Widget entfernt</string>
     <string name="missing_permission_call_contacts_settings">Telefonberechtigung wird benötigt, um Anrufe zu starten</string>
     <string name="action_install">Installieren</string>
-    <string name="plugin_type_contacts">Kontakte</string>
     <plurals name="calendar_widget_running_tasks">
         <item quantity="one">+%1$d unerledigte Aufgabe</item>
         <item quantity="other">+%1$d unerledigte Aufgaben</item>
@@ -661,8 +648,6 @@
     <string name="preference_transliteration">Bevorzugte Transliteration</string>
     <string name="preference_transliteration_auto">Automatisch</string>
     <string name="preference_value_disabled">Deaktiviert</string>
-    <string name="preference_category_enabled_plugins">Aktiviert</string>
-    <string name="preference_category_installed_plugins">Installiert</string>
     <string name="tag_icon_customicon">Icon</string>
     <string name="tag_icon_emoji">Emoji</string>
     <string name="select_tag">Tag auswählen</string>

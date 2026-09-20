@@ -177,10 +177,6 @@
     <string name="preference_icon_shape_circle">Круги</string>
     <string name="preference_icon_shape_hexagon">Шестикутник</string>
     <string name="preference_category_searchbar">Рядок пошуку</string>
-    <string name="preference_category_enabled_plugins">Увімкнено</string>
-    <string name="preference_screen_plugins">Плагіни</string>
-    <string name="no_plugins_installed">Не встановлено жодних плагінів</string>
-    <string name="preference_category_installed_plugins">Заватнажено</string>
     <string name="preference_system_bar_icons_auto">Авто</string>
     <string name="preference_system_bar_icons_dark">Темний</string>
     <string name="preference_icon_shape_pentagon">Пʼятикутник</string>

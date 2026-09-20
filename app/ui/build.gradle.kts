@@ -140,7 +140,6 @@ dependencies {
     implementation(project(":data:notifications"))
     implementation(project(":data:contacts"))
     implementation(project(":core:permissions"))
-    implementation(project(":services:plugins"))
     implementation(project(":data:search-actions"))
     implementation(project(":services:global-actions"))
     implementation(project(":services:widgets"))

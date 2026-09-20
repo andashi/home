@@ -390,11 +390,6 @@
     <string name="shortcut_label_unavailable">Niet beschikbaar</string>
     <string name="shortcut_unavailable_description">Deze snelkoppeling is niet beschikbaar omdat %1$s niet het standaardstartscherm is</string>
     <string name="preference_clockwidget_dynamic_zone">Dynamische zone</string>
-    <string name="preference_screen_plugins_summary">Geïnstalleerde uitbreidingen beheren</string>
-    <string name="no_plugins_installed">Geen plug-ins geïnstalleerd</string>
-    <string name="preference_screen_plugins">Plug-ins</string>
-    <string name="preference_plugin_badges">Pluginbadges</string>
-    <string name="preference_plugin_badges_summary">Aangeven welke plugin een zoekresultaat heeft teruggegeven</string>
     <string name="clock_style_digital1">Vet</string>
     <string name="poi_category_fast_food">Fast food</string>
     <string name="poi_category_bar">Kroeg</string>
@@ -451,10 +446,6 @@
     <string name="clock_style_orbit">Omloopbaan</string>
     <string name="search_filter_tools">Hulpmiddelen</string>
     <string name="search_filter_online">Onlineresultaten</string>
-    <string name="plugin_state_error">Deze plug-in werkt niet correct</string>
-    <string name="plugin_state_setup_required">Je moet eerst deze plug-in instellen</string>
-    <string name="plugin_action_setup">Instellen</string>
-    <string name="plugin_type_weather">Aanbieder van weergegevens</string>
     <string name="clock_style_digital2">Eenvoudig</string>
     <string name="clock_style_binary">Binair</string>
     <string name="clock_style_analog">Wijzers</string>
@@ -470,7 +461,6 @@
     <string name="filter_settings_network_warning">De huidige filters staan onlineresultaten toe. Je zoektermen kunnen per ongeluk naar externe webdiensten gestuurd worden. Dit is niet aanbevolen voor jouw privacy.</string>
     <string name="preference_customize_filter_bar">Filterbalk aanpassen</string>
     <string name="preference_customize_filter_bar_summary">Aanpassen welke items getoond worden in de filterbalk</string>
-    <string name="preference_plugin_enable">Plug-in activeren</string>
     <string name="widget_pick_widget">Widget kiezen</string>
     <string name="length_unit">Eenheid van lengte</string>
     <string name="preference_search_locations_summary">Zoek in de omgeving naar winkels en andere plaatsen</string>
@@ -478,7 +468,6 @@
     <string name="search_action_share">Delen</string>
     <string name="imperial">Brits-Amerikaans</string>
     <string name="metric">Metrisch</string>
-    <string name="plugin_type_locationsearch">Plaatsen zoeken</string>
     <string name="poi_category_mosque">Moskee</string>
     <string name="poi_category_buddhist_temple">Boeddhistische tempel</string>
     <string name="poi_category_hindu_temple">Hindoetempel</string>
@@ -550,7 +539,6 @@
         <item quantity="one">%1$s melding</item>
         <item quantity="other">%1$s meldingen</item>
     </plurals>
-    <string name="plugin_type_calendar">Kalender</string>
     <string name="music_widget_previous_track">Vorige titel</string>
     <string name="music_widget_next_track">Volgende titel</string>
     <string name="music_widget_play">Afspelen</string>
@@ -588,7 +576,6 @@
         <item quantity="one">in een minuut</item>
         <item quantity="other">in %1$d minuten</item>
     </plurals>
-    <string name="plugin_type_contacts">Contactpersonen</string>
     <string name="preference_grid_list_style">Apps in een lijst weergeven</string>
     <string name="preference_grid_list_icons">App-pictogrammen in lijst weergeven</string>
     <string name="preference_grid_list_style_summary">Apps weergeven in een lijst in plaats van in een raster</string>
@@ -663,8 +650,6 @@
     <string name="preference_transliteration_auto">Automatisch</string>
     <string name="select_tag">Label selecteren</string>
     <string name="widget_name_apps">Applicaties</string>
-    <string name="preference_category_enabled_plugins">Aangezet</string>
-    <string name="preference_category_installed_plugins">Geïnstalleerd</string>
     <string name="tag_icon_customicon">Pictogram</string>
     <string name="tag_icon_emoji">Emoji</string>
     <string name="preference_clockwidget_smartspacer">Beheerd door Smartspacer</string>

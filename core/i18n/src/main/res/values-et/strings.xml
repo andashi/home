@@ -111,8 +111,6 @@
     <string name="preference_icon_shape_hexagon">Kuusnurk</string>
     <string name="preference_category_searchbar">Otsinguriba</string>
     <string name="preference_screen_integrations">Integreerimised</string>
-    <string name="preference_screen_plugins">Pluginad</string>
-    <string name="no_plugins_installed">Ühtegi pluginat pole paigaldatud</string>
     <string name="preference_theme_system">Jälgi süsteemi</string>
     <string name="preference_icon_pack">Ikoonipakk</string>
     <string name="preference_icon_pack_summary_empty">Ühtegi ikoonipakki pole paigaldatud</string>
@@ -251,12 +249,6 @@
     <string name="preference_restore_default">Taasta vaikeväärtus</string>
     <string name="import_theme_contents">Sisu</string>
     <string name="app_label_locked_profile">Lukustatud</string>
-    <string name="preference_plugin_enable">Lülita plugin sisse</string>
-    <string name="plugin_state_error">See plugin ei tööta korrektselt</string>
-    <string name="plugin_state_setup_required">Pead selle plugina esmalt käivitama</string>
-    <string name="plugin_action_setup">Seadista</string>
-    <string name="plugin_type_contacts">Kontaktid</string>
-    <string name="plugin_type_weather">Ilmateenuse pakkuja</string>
     <string name="clock_style_digital1">Rasvane</string>
     <string name="clock_style_digital2">Lihtne</string>
     <string name="clock_style_orbit">Orbiit</string>
@@ -269,7 +261,6 @@
     <string name="menu_hide_filters">Peida filtreid</string>
     <string name="search_filter_tools">Tööriistad</string>
     <string name="search_filter_apps">Rakendused</string>
-    <string name="plugin_type_calendar">Kalender</string>
     <string name="preference_default_filter">Vaikimisi filter</string>
     <string name="preference_filter_bar">Näita filtrite riba</string>
     <string name="poi_category_restaurant">Restoran</string>
@@ -363,7 +354,6 @@
     <string name="show_all">Näita kõiki</string>
     <string name="preference_screen_typography">Tüpograafia</string>
     <string name="widget_config_weather_compact">Kompaktne režiim</string>
-    <string name="preference_screen_plugins_summary">Halda paigaldatud pluginaid</string>
     <string name="preference_grid_list_style_summary">Näita rakendusi võrgustiku asemel nimekirjana</string>
     <string name="preference_screen_clockwidget">Kell</string>
     <string name="preference_search_calendar_summary">Otsi tulevasi kokkuleppeid ja sündmusi</string>
@@ -421,7 +411,6 @@
     <string name="poi_category_library">Raamatukogu</string>
     <string name="note_widget_conflict_file_version">Praegune faili sisu:</string>
     <string name="import_theme_apply">Rakenda teema</string>
-    <string name="plugin_type_locationsearch">Kohtade otsing</string>
     <string name="poi_category_hotel">Hotell</string>
     <string name="poi_category_toilets">WC</string>
     <string name="poi_category_hairdresser">Juuksur</string>

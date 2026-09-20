@@ -420,19 +420,9 @@
     <string name="shortcut_unavailable_description">Ce raccourci n\'est pas disponible car %1$s n\'est pas le lanceur par défaut</string>
     <string name="action_import">Importer</string>
     <string name="file_type_launchertheme">Thème %1$s</string>
-    <string name="preference_screen_plugins">Plugins</string>
-    <string name="preference_screen_plugins_summary">Gérer les extensions installées</string>
-    <string name="no_plugins_installed">Aucun plugin installé</string>
     <string name="preference_clockwidget_dynamic_zone">Zone dynamique</string>
     <string name="preference_blur_wallpaper_radius">Rayon de floutage</string>
-    <string name="plugin_state_setup_required">Vous devez d\'abord configurer ce plugin</string>
-    <string name="plugin_action_setup">Configuration</string>
-    <string name="plugin_type_weather">Fournisseur de services météo</string>
-    <string name="plugin_state_error">Ce plugin ne fonctionne pas correctement</string>
-    <string name="preference_plugin_badges">Badges de plugin</string>
-    <string name="preference_plugin_badges_summary">Indique par quel plugin un résultat de recherche a été créé</string>
     <string name="preference_mdy_color_source_system">Utiliser les couleurs Material You suggérées par le système</string>
-    <string name="preference_plugin_enable">Activer le plugin</string>
     <string name="preference_category_advanced">Avancé</string>
     <string name="preference_mdy_color_source_wallpaper">Extraire les couleurs Material You à partir du fond d\'écran actuel. Ceci est le choix par défaut pour Android 11 et plus ancien, mais est aussi disponible avec Android 12+ pour des raisons de compatibilité</string>
     <string name="preference_mdy_color_source">Source pour les couleurs dynamiques</string>
@@ -549,7 +539,6 @@
     <string name="poi_category_soup_restaurant">Soupes</string>
     <string name="poi_category_brunch_restaurant">Brunch</string>
     <string name="poi_category_car_wash">Lavage de voiture</string>
-    <string name="plugin_type_locationsearch">Rechercher des emplacements</string>
     <string name="poi_category_church">Église</string>
     <string name="poi_category_mosque">Mosquée</string>
     <string name="poi_category_buddhist_temple">Temple boudiste</string>
@@ -587,7 +576,6 @@
     </plurals>
     <string name="item_visibility_calendar_default">Widget calendrier et résultats de recherche</string>
     <string name="contact_info_work">Bureau</string>
-    <string name="plugin_type_calendar">Calendrier</string>
     <string name="music_widget_play">Jouer</string>
     <string name="hint_drag_and_drop_reorder">Maintenir et faire glisser les éléments pour les réorganiser</string>
     <string name="profile_work_profile_action_unlock">Désactiver la pause</string>
@@ -625,7 +613,6 @@
         <item quantity="many">dans %1$d minutes</item>
         <item quantity="other">dans %1$d minutes</item>
     </plurals>
-    <string name="plugin_type_contacts">Contacts</string>
     <string name="preference_clock_widget_time_format">Format de l\'heure</string>
     <string name="preference_grid_list_icons_summary">Afficher les icônes pour l\'affichage en liste</string>
     <string name="preference_grid_list_style">Afficher les applications en tant que liste</string>
@@ -669,8 +656,6 @@
     <string name="widget_name_apps">Applications</string>
     <string name="music_widget_interactive_progress_bar">Barre de progression interactive</string>
     <string name="preference_screen_typography">Typographie</string>
-    <string name="preference_category_enabled_plugins">Activé</string>
-    <string name="preference_category_installed_plugins">Installé</string>
     <string name="preference_clockwidget_smartspacer">Géré par Smartspacer</string>
     <string name="preference_clockwidget_dock_rows">Lignes du dock</string>
     <string name="preference_search_apps">Applications</string>

@@ -7,6 +7,5 @@ plugins {
 }
 
 dependencies {
-    dokka(project(":plugins:sdk"))
     dokka(project(":core:shared"))
 }

@@ -111,7 +111,6 @@
     <string name="preference_icon_shape_square">مربع</string>
     <string name="preference_icon_shape">شکل</string>
     <string name="preference_icon_shape_squircle">squircle</string>
-    <string name="preference_screen_plugins">افزونه‌ها</string>
     <string name="missing_permission_call_contacts_settings">دسترسی تماس برای شروع تماس‌ها لازم است</string>
     <string name="preference_version">نگارش</string>
     <string name="preference_category_links">پیوندها</string>
@@ -247,7 +246,6 @@
     <string name="theme_color_scheme_autogenerate">از رنگ اصلی</string>
     <string name="theme_color_scheme_palette_color">پالت</string>
     <string name="imperial">امپراتوری</string>
-    <string name="plugin_action_setup">راه‌اندازی</string>
     <string name="poi_category_convenience">فروشگاه خواروبار</string>
     <string name="clock_style_custom">ابزارک سفارشی</string>
     <string name="clock_style_orbit">مدار</string>
@@ -327,8 +325,6 @@
     <string name="preference_cloud_badges">نشان‌های ابری</string>
     <string name="preference_shortcut_badges">نشان‌های میانبر</string>
     <string name="preference_shortcut_badges_summary">نمایش نشان برای میانبرها</string>
-    <string name="preference_plugin_badges">نشان‌های افزونه</string>
-    <string name="preference_plugin_badges_summary">نشان دادن اینکه یک نتیجه جستجو توسط کدام افزونه ایجاد شده است</string>
     <string name="preference_screen_debug">اشکال‌زدایی</string>
     <string name="preference_screen_debug_summary">ابزارهای عیب‌یابی</string>
     <string name="preference_category_widgets">ابزارک‌ها</string>
@@ -360,7 +356,6 @@
     <string name="gesture_action_open_search">بازکردن جستجو</string>
     <string name="gesture_action_launch_app">اجرای برنامه</string>
     <string name="gesture_action_notifications">بازکردن بخش آگاه‌سازی</string>
-    <string name="plugin_type_weather">ارائه‌دهنده آب و هوا</string>
     <string name="preference_default_filter_summary">سفارشی کردن پالایش پیش‌گزیده برای جستجوها</string>
     <string name="widget_config_weather_integration_settings">تنظیمات یکپارچگی آب و هوا</string>
     <string name="widget_config_calendar_no_calendars">هیچ تقویمی پیدا نشد</string>
@@ -376,11 +371,8 @@
     <string name="preference_restore_default">بازگردانی به پیش‌گزیده</string>
     <string name="import_theme_apply">اعمال پوسته</string>
     <string name="import_theme_error">پرونده انتخاب‌شده قابل خواندن نیست. لطفاً مطمئن شوید که یک پرونده پوسته معتبر (*.kvtheme) انتخاب کرده‌اید و پرونده خراب نیست.</string>
-    <string name="preference_plugin_enable">روشن‌کردن پلاگین</string>
     <string name="length_unit">واحد طول</string>
     <string name="metric">متریک</string>
-    <string name="plugin_state_error">این افزونه به‌درستی کار نمی‌کند</string>
-    <string name="plugin_state_setup_required">در آغاز باید این افزونه را تنظیم کنید</string>
     <string name="unavailable_searchable">این مورد دیگر وجود ندارد.</string>
     <string name="clock_style_digital1">برجسته</string>
     <string name="clock_style_digital2">ساده</string>
@@ -405,7 +397,6 @@
     <string name="item_visibility_search_only">یافته‌های جستجو</string>
     <string name="customize_item_tags">برچسب‌ها</string>
     <string name="item_visibility_app_default">شبکه برنامه‌ها و نتایج جستجو</string>
-    <string name="plugin_type_calendar">تقویم</string>
     <string name="poi_category_bar">کاباره</string>
     <plurals name="battery_part_remaining_charge_time">
         <item quantity="one">در %1$s دقیقه کامل میشود</item>
@@ -450,8 +441,6 @@
     <string name="preference_mdy_color_source">منبع برای رنگ‌های پویا</string>
     <string name="preference_mdy_color_source_system">سامانه</string>
     <string name="preference_mdy_color_source_wallpaper">تصویر زمینه</string>
-    <string name="preference_screen_plugins_summary">مدیریت افزونه‌های نصب‌شده</string>
-    <string name="no_plugins_installed">هیچ افزونه‌ای نصب نشده است</string>
     <string name="preference_theme_system">دنبال کردن سامانه</string>
     <string name="preference_themed_icons">نمادهای پوسته‌دار</string>
     <string name="preference_themed_icons_summary">رنگ‌آمیزی نمادها با طرح رنگی برنامه</string>
@@ -534,7 +523,6 @@
     <string name="search_results_order_bottom_up">از پایین به بالا</string>
     <string name="preference_gesture_double_tap">دوبار زدن</string>
     <string name="missing_permission_accessibility_gesture_settings">این کار نیازمند روشن بودن خدمات دسترسی برنامه راه‌انداز است.</string>
-    <string name="plugin_type_locationsearch">جستجوی مکان‌ها</string>
     <string name="preference_default_filter">پالایش پیش‌گزیده</string>
     <string name="preference_filter_bar">نمایش نوار پالایش</string>
     <string name="preference_customize_filter_bar">سفارشی کردن نوار پالایش</string>

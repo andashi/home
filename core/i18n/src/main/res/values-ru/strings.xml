@@ -376,8 +376,6 @@
     <string name="note_widget_file_write_error_description">Заметка не может быть записана в привязанный файл. Возможно, он был перемещён или удалён. Копия была сохранена во внутреннем хранилище лаунчера.</string>
     <string name="file_type_launchertheme">Тема %1$s</string>
     <string name="preference_debug_dump_heap_summary">Сделать снимок для анализа использования памяти. Приложение нельзя будет использовать до завершения процесса.</string>
-    <string name="preference_plugin_badges">Значки плагина</string>
-    <string name="preference_plugin_badges_summary">Указывать, каким плагином был создан результат поиска</string>
     <string name="preference_clock_widget_alignment">Расположить</string>
     <string name="search_action_websearch">Веб-поиск</string>
     <string name="preference_use_system_default">Системный цвет</string>
@@ -385,23 +383,16 @@
     <string name="theme_color_scheme_palette_color">Палитра</string>
     <string name="theme_color_scheme_custom_color">Выбор</string>
     <string name="shortcut_unavailable_description">Этот ярлык недоступен, потому что %1$s не является главным экраном по умолчанию</string>
-    <string name="plugin_type_weather">Провайдер погоды</string>
-    <string name="plugin_state_setup_required">Сначала вам нужно настроить этот плагин</string>
-    <string name="plugin_action_setup">Настроить</string>
     <string name="preference_clock_widget_alignment_top">Вверху</string>
     <string name="preference_clock_widget_alignment_center">По центру</string>
     <string name="import_theme_error">Не удалось прочитать выбранный файл. Убедитесь, что вы выбрали корректный файл темы (*.kvtheme) и что он не повреждён.</string>
     <string name="preference_restore_default">Вернуть умолчание</string>
-    <string name="plugin_state_error">Этот плагин работает неправильно</string>
     <string name="action_import">Импорт</string>
     <string name="confirmation_delete_color_scheme">Вы действительно хотите удалить цветовую схему «%1$s»?</string>
     <string name="preference_debug_dump_heap">Снимок памяти</string>
     <string name="preference_debug_dump_heap_in_progress">Создание снимка…</string>
     <string name="edit">Изменить</string>
     <string name="preference_custom_colors_corepalette">Цветовая палитра</string>
-    <string name="preference_screen_plugins">Плагины</string>
-    <string name="preference_screen_plugins_summary">Управление установленными дополнениями</string>
-    <string name="no_plugins_installed">Установленных плагинов нет</string>
     <string name="preference_blur_wallpaper_radius">Радиус размытия</string>
     <string name="preference_clock_widget_alignment_bottom">Внизу</string>
     <string name="preference_clockwidget_dynamic_zone">Динамическая зона</string>
@@ -410,7 +401,6 @@
     <string name="preference_mdy_color_source_wallpaper">Обои</string>
     <string name="preference_mdy_color_source_system">Система</string>
     <string name="preference_mdy_color_source">Источник динамических цветов</string>
-    <string name="preference_plugin_enable">Включить плагин</string>
     <string name="preference_category_advanced">Прочее</string>
     <string name="search_filter_online">Онлайн-поиск</string>
     <string name="widget_pick_widget">Выбрать виджет</string>
@@ -547,7 +537,6 @@
     <string name="poi_category_church">Церковь</string>
     <string name="poi_category_synagogue">Синагога</string>
     <string name="poi_category_shopping">Торговый магазин</string>
-    <string name="plugin_type_locationsearch">Поиск мест</string>
     <string name="poi_category_pet">Зоомагазин</string>
     <string name="item_visibility_app_default">В списке приложений и результатах поиска</string>
     <string name="item_visibility_calendar_default">В календарном виджете и результатах поиска</string>
@@ -575,7 +564,6 @@
     <string name="menu_hide_filters">Скрыть фильтры</string>
     <string name="music_widget_next_track">Следующий трек</string>
     <string name="music_widget_open_player">Открыть плеер</string>
-    <string name="plugin_type_calendar">Календарь</string>
     <string name="profile_work_profile_state_locked">Рабочие приложения были приостановлены.</string>
     <string name="profile_work_profile_action_lock">Остановить рабочие приложения</string>
     <string name="preference_calendar_hide_completed">Скрыть выполненные задачи</string>
@@ -584,7 +572,6 @@
     <string name="app_label_locked_profile">Заблокировано</string>
     <string name="preference_contacts_call_on_tap">Нажмите, чтобы позвонить</string>
     <string name="preference_contacts_call_on_tap_summary">Совершить вызов при нажатии на номер телефона</string>
-    <string name="plugin_type_contacts">Контакты</string>
     <string name="profile_private_profile_state_locked">Личное пространство закрыто.</string>
     <string name="profile_private_profile_action_unlock">Разблокировать</string>
     <plurals name="calendar_search_enabled_lists">
@@ -654,8 +641,6 @@
     <string name="no_selection">Не выбрано</string>
     <string name="preference_create_colors">Новая цветовая схема</string>
     <string name="preference_create_transparency">Новая схема прозрачности</string>
-    <string name="preference_category_enabled_plugins">Включить</string>
-    <string name="preference_category_installed_plugins">Установлен</string>
     <string name="preference_clockwidget_smartspacer">Управляется Smartspacer\'ом</string>
     <string name="preference_clockwidget_battery_part_always_show">Всегда показывать</string>
     <string name="preference_search_bar_style_hidden">Скрытый</string>

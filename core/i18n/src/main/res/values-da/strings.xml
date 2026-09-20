@@ -148,9 +148,6 @@
     <string name="preference_cards_shape">Form</string>
     <string name="preference_icon_shape_rounded_square">Afrundet firkant</string>
     <string name="preference_category_searchbar">Søgefelt</string>
-    <string name="preference_screen_plugins">Udvidelser</string>
-    <string name="preference_screen_plugins_summary">Administrér installerede udvidelser</string>
-    <string name="no_plugins_installed">Ingen udvidelser installeret</string>
     <string name="preference_force_themed_icons">Tving temaikoner</string>
     <string name="preference_icon_pack">Ikonpakke</string>
     <string name="preference_icon_pack_summary_empty">Ingen ikonpakker installeret</string>
@@ -167,7 +164,6 @@
     <string name="preference_cloud_badges_summary">Vis et badge for filer, der er gemt i en sky</string>
     <string name="preference_shortcut_badges">Genvejs-badges</string>
     <string name="preference_shortcut_badges_summary">Vis et badge, der viser, hvilken app en genvej tilhører</string>
-    <string name="preference_plugin_badges">Udvidelses-badges</string>
     <string name="preference_category_grid">Gitter</string>
     <string name="preference_screen_debug">Fejlretning</string>
     <string name="preference_screen_debug_summary">Fejlfindingsværktøjer</string>
@@ -261,7 +257,6 @@
     <string name="preference_version">Version</string>
     <string name="preference_imperial_units_summary">Brug Fahrenheit-grader og miles i timen</string>
     <string name="preference_blur_wallpaper_unsupported">Understøttes ikke på denne enhed</string>
-    <string name="preference_plugin_badges_summary">Vis hvilken udvidelse et søgeresultat blev oprettet af</string>
     <string name="preference_about_fdroid">F-Droid repository</string>
     <string name="preference_icon_shape_triangle">Reuleaux-trekant</string>
     <string name="preference_status_bar_icons">Statuslinje-ikoner</string>
@@ -362,11 +357,6 @@
     <string name="theme_color_scheme_autogenerate">Fra primær farve</string>
     <string name="theme_color_scheme_palette_color">Palet</string>
     <string name="theme_color_scheme_custom_color">Tilpasset</string>
-    <string name="preference_plugin_enable">Aktivér udvidelse</string>
-    <string name="plugin_state_error">Denne udvidelse fungerer ikke korrekt</string>
-    <string name="plugin_state_setup_required">Du skal opsætte denne udvidelse først</string>
-    <string name="plugin_action_setup">Opsæt</string>
-    <string name="plugin_type_weather">Vejr-udbyder</string>
     <string name="search_action_open_url">Se hjemmeside</string>
     <string name="search_action_websearch">Websøgning</string>
     <string name="icon_picker_search_icon">Søg i ikonpakker</string>
@@ -533,7 +523,6 @@
     <string name="clock_style_custom">Brugerdefineret widget</string>
     <string name="menu_show_filters">Vis filtre</string>
     <string name="menu_hide_filters">Skjul filtre</string>
-    <string name="plugin_type_calendar">Kalender</string>
     <string name="poi_category_swimming">Swimmingpool</string>
     <string name="poi_category_martial_arts">Kampsport</string>
     <string name="poi_category_ice_hockey">Ishockeybane</string>

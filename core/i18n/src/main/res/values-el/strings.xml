@@ -272,15 +272,10 @@
     <string name="search_action_app">Εφαρμογή</string>
     <string name="create_search_action_website_url">Εισαγάγετε τη διεύθυνση του ιστότοπου:</string>
     <string name="search_action_websearch_url_hint">Το πρότυπο URL που χρησιμοποιείται για τη δημιουργία της διεύθυνσης URL αναζήτησης ιστού. Χρησιμοποιήστε το \"${1}\" ως σύμβολο κράτησης θέσης για τον πραγματικό όρο αναζήτησης, π.χ. https://google.com/search?q=${1}.</string>
-    <string name="preference_plugin_badges">Σήματα προσθηκών</string>
-    <string name="preference_plugin_badges_summary">Υποδείξτε με ποια προσθήκη δημιουργήθηκε ένα αποτέλεσμα αναζήτησης</string>
     <string name="preference_screen_tags_summary">Διαχείριση ετικετών και στοιχείων με ετικέτα</string>
     <string name="edit">Επεξεργασία</string>
     <string name="widget_config_weather_compact">Συμπαγής λειτουργία</string>
     <string name="preference_debug_reinstall_iconpacks">Επανεγκατάσταση πακέτων εικονιδίων</string>
-    <string name="preference_screen_plugins">Πρόσθετα</string>
-    <string name="preference_screen_plugins_summary">Διαχείριση εγκατεστημένων επεκτάσεων</string>
-    <string name="no_plugins_installed">Δεν έχουν εγκατασταθεί πρόσθετα</string>
     <string name="preference_blur_wallpaper_radius">Ακτίνα θολώματος</string>
     <string name="preference_clockwidget_dynamic_zone">Μέρος του γραφικού στοιχείου ρολογιού που εμφανίζει δυναμικές πληροφορίες (ημερομηνία, αναπαραγωγήςμουσικής, μπαταρία,…)</string>
     <string name="preference_screen_integrations">Ενσωματώσεις</string>

@@ -393,23 +393,13 @@
     <string name="file_type_launchertheme">%1$s tema</string>
     <string name="import_theme_apply">Aplica el tema</string>
     <string name="preference_blur_wallpaper_radius">Radi desenfocat</string>
-    <string name="preference_plugin_badges">Insígnies de connectors</string>
     <string name="preference_clockwidget_dynamic_zone">Zona dinàmica</string>
-    <string name="preference_screen_plugins">Connectors</string>
-    <string name="preference_screen_plugins_summary">Gestioneu les extensions instal·lades</string>
-    <string name="no_plugins_installed">No hi ha connectors instal·lats</string>
-    <string name="preference_plugin_badges_summary">Indiqueu amb quin connector s\'ha creat un resultat de cerca</string>
     <string name="preference_mdy_color_source_wallpaper">Colors del Fons de Pantalla</string>
     <string name="preference_mdy_color_source">Font de Colors dinàmics</string>
     <string name="preference_mdy_color_source_system">Colors del Sistema</string>
-    <string name="plugin_state_setup_required">Primer cal configurar aquest complement</string>
-    <string name="plugin_state_error">Aquest connector no funciona correctament</string>
     <string name="preference_category_advanced">Avançat</string>
     <string name="unavailable_searchable">Aquest element ja no existeix</string>
-    <string name="plugin_action_setup">Configurar</string>
-    <string name="plugin_type_weather">Proveïdor de dades climatològiques</string>
     <string name="preference_search_locations_summary">Busqueu botigues i altres llocs a l\'entorn local</string>
-    <string name="preference_plugin_enable">Activa el connector</string>
     <string name="length_unit">Unitat de longitud</string>
     <string name="imperial">Imperial</string>
     <string name="metric">Mètric</string>
@@ -506,7 +496,6 @@
         <item quantity="other">%1$s números de telèfon</item>
     </plurals>
     <string name="contact_info_mobile">Telèfon mòbil</string>
-    <string name="plugin_type_locationsearch">Cerca de llocs</string>
     <string name="customize_item_label">Etiqueta</string>
     <string name="poi_category_cricket">Camp de cricket</string>
     <string name="poi_category_car_rental">Lloguer de cotxes</string>
@@ -575,7 +564,6 @@
     <string name="action_clear">Borra el camp</string>
     <string name="preference_compact_tags_summary">Amaga les etiquetes o icones d\'etiquetes per reduir l\'espai que ocupen les etiquetes</string>
     <string name="preference_compact_tags">Etiquetes compactes</string>
-    <string name="plugin_type_calendar">Calendari</string>
     <string name="hint_drag_and_drop_reorder">Manteniu premut i arrossegueu els elements per reordenar-los</string>
     <string name="preference_clock_widget_time_format_24h">24h</string>
     <string name="preference_clock_widget_time_format_12h">12h</string>
@@ -636,7 +624,6 @@
     <string name="font_name_device_body">Font del text del dispositiu</string>
     <string name="font_name_device_headline">Font predeterminada del títol</string>
     <string name="preference_clock_widget_monospaced">Dígits monoespaiats</string>
-    <string name="plugin_type_contacts">Contactes</string>
     <string name="font_category_device_default">Dispositiu per defecte</string>
     <string name="font_category_generic">Genèric</string>
     <string name="missing_permission_call_contacts_settings">Cal permís d\'accés al telèfon per iniciar trucades</string>
