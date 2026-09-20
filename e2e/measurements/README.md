@@ -19,9 +19,20 @@ hash; the diet series uses speaking names instead (`baseline`, `no-backup`,
 
 ```bash
 ./gradlew :app:app:assembleDefaultDebug
-e2e/measure-footprint.sh --label no-backup           # static + runtime
-e2e/measure-footprint.sh --label no-backup --static  # host only, seconds
+e2e/measure-footprint.sh --label no-backup --static   # host only, seconds
+e2e/measure-footprint.sh --label no-backup            # + one runtime cycle
+e2e/measure-footprint.sh --label no-backup --runs 3   # + three, with spreads
 ```
+
+`--runs N` repeats the whole runtime cycle — snapshot load, install, measure —
+N times and reports the median of each metric plus a `<metric>.spread` line
+giving the range as a percentage of that median. Each cycle reboots rather
+than relaunching, because the variance that matters sits between boots;
+repeating inside one boot would report a spread narrower than the truth.
+
+Use `--runs 3` (or more) whenever a runtime figure will be quoted. A single
+cycle is enough only for effects far larger than the spreads in the table
+below.
 
 The static half needs nothing but the APK and `apkanalyzer`. The runtime half
 boots the GrapheneOS test instance, takes its device lock and measures the
@@ -59,6 +70,7 @@ requested at all.
 | `cpu.home_screen_charging` | the same window with the battery plugged back in, which is where the charging animation's cost lives |
 | `battery.status` | the battery state the run was taken in (3 = discharging); before/after comparisons must share it |
 | `threads` | threads in the launcher process; modules that spawn workers show up here |
+| `<metric>.spread` | with `--runs N`: the range across cycles, as a percentage of the median. A delta smaller than this is not a result |
 | `profiles.non_managed` | non-managed profiles in the provisioning config — how often the launcher exists on the real device |
 | `mem.pss.all_profiles_est` | `mem.pss.total × profiles.non_managed`. **An extrapolation, not a measurement**: the emulator keeps at most three users running and evicts the rest, so a device-wide total cannot be measured there |
 
@@ -125,25 +137,28 @@ The static metrics are deterministic: the same source produces the same APK
 size, dex method references, permission list and module count every time. A
 change there is a change.
 
-The runtime metrics are not. Two runs measured on 2026-09-20 from the same
-snapshot, on builds differing by a single unused vector drawable (~1 KB),
-came out like this:
+The runtime metrics are not, and the spread differs enormously between them.
+Three cycles of the same build, measured 2026-09-20 with `--runs 3`:
 
-| Metric | run 1 | run 2 | spread |
-|---|---|---|---|
-| `mem.pss.total` | 186896 KB | 198402 KB | 6.2% |
-| `mem.code` | 85640 KB | 93300 KB | 8.9% |
-| `cpu.startup` | 12.73 s | 10.91 s | 14.3% |
-| `cpu.home_screen` | 2.40% | 1.90% | 20.8% |
-| `cpu.home_screen_charging` | 3.10% | 2.70% | 12.9% |
-| `start.cold.min` | 2621 ms | 1927 ms | 26.5% |
+| Metric | spread across 3 cycles | useful for |
+|---|---|---|
+| `mem.java_heap` | 0.2% | even small effects |
+| `mem.rss.total` | 2.1% | effects above ~3% |
+| `mem.pss.total` | 3.0% | effects above ~5% |
+| `mem.code` | 5.8% | effects above ~10% |
+| `threads` | 12.3% | coarse effects |
+| `cpu.startup` | 13.4% | coarse effects |
+| `start.cold.median` | 26.5% | large effects only |
+| `cpu.home_screen_charging` | 87.1% | large effects only |
+| `cpu.home_screen` | 247.1% | almost nothing |
 
-So a single run cannot support a claim like "this removal saved 5% of the
-launcher's memory". Treat a one-run runtime delta below roughly 10% for
-memory, 20% for CPU and 25% for cold start as noise, and repeat the
-measurement before concluding anything inside those bands. Earlier two runs
-of this harness happened to agree on PSS to 0.003%, which was luck rather
-than precision — the table above is the honest picture.
+`cpu.home_screen` varied by a factor of 2.5 between cycles: a reported median
+of 1.70% of a core could have come out anywhere from roughly 0.7 to 4.9. Do
+not quote it for anything but an effect of the size the charging animation
+had.
+
+Memory is the opposite: the heap figures barely move, and PSS is steady to
+3%, so a removal that frees real memory will show.
 
 What the runtime half is good for is catching the large, unambiguous effects:
 the charging animation showed up as 99.20% versus 1.60% of a core, which no

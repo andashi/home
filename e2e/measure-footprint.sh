@@ -2,7 +2,7 @@
 # Footprint measurement for the module diet (#20): what the launcher costs
 # before a removal and what it costs after.
 #
-#   e2e/measure-footprint.sh [--static] [--label NAME] [--out FILE] [APK]
+#   e2e/measure-footprint.sh [--static] [--runs N] [--label NAME] [--out FILE] [APK]
 #   e2e/measure-footprint.sh --compare BEFORE.tsv AFTER.tsv
 #
 # Two halves, because they have very different costs:
@@ -11,9 +11,14 @@
 #            permissions, Gradle module count. Host only - no emulator, no
 #            device lock, a few seconds. This is the half that belongs in
 #            every removal PR, and the half that CI could run.
-#   runtime  cold start, PSS/RSS and idle CPU of the launcher process on the
-#            GrapheneOS test instance. Needs the emulator and its lock, so it
-#            costs a boot cycle (minutes).
+#   runtime  cold start, PSS/RSS, CPU and threads of the launcher process on
+#            the GrapheneOS test instance. Needs the emulator and its lock, so
+#            it costs a boot cycle (minutes) per run.
+#
+# `--runs N` repeats the whole runtime cycle N times and reports the median
+# plus a `<metric>.spread` line, the range as a percentage of that median. One
+# run shows a large effect; anything smaller needs N >= 3, because these
+# figures spread ~6% on memory and ~20% on CPU between boots of the same build.
 #
 # `--static` stops after the first half. Without it both run.
 #
@@ -60,8 +65,13 @@ SNAPSHOT="${SNAPSHOT:-clean}"
 PKG="${PKG:-org.andashi.home.debug}"
 PROFILES_JSON="$GOS_REPO/config/profiles.json"
 
-# Cold start is noisy: the first launch after install pays for dexopt and a
-# cold page cache, so one run is discarded before the measured ones, and the
+# Full measurement cycles (boot, install, measure). One is enough to see a
+# large effect; quoting a small one needs at least three, because runtime
+# figures spread ~6% on memory and ~20% on CPU between boots of the same
+# build (measured 2026-09-20, table in e2e/measurements/README.md).
+RUNS="${RUNS:-1}"
+# Cold start is noisy within a cycle too: the first launch after install pays
+# for dexopt and a cold page cache, so warm-up runs are discarded and the
 # median of the rest is reported rather than the mean.
 WARMUP_RUNS="${WARMUP_RUNS:-2}"
 START_RUNS="${START_RUNS:-5}"
@@ -87,7 +97,7 @@ log(){ c '1;34' ":: $*"; }; ok(){ c '1;32' " + $*"; }; warn(){ c '1;33' " ! $*";
 die(){ c '1;31' " x $*" >&2; exit 1; }
 
 usage() {
-  sed -n '2,31p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
+  sed -n '2,36p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
   exit "${1:-0}"
 }
 
@@ -104,6 +114,9 @@ while [ $# -gt 0 ]; do
     --static|--static-only) STATIC_ONLY=1; shift ;;
     --label) LABEL="${2:-}"; [ -n "$LABEL" ] || die "--label needs a name"; shift 2 ;;
     --out) OUT="${2:-}"; [ -n "$OUT" ] || die "--out needs a path"; shift 2 ;;
+    --runs) RUNS="${2:-}"; shift 2
+            case "$RUNS" in ''|*[!0-9]*) die "--runs needs a positive integer" ;; esac
+            [ "$RUNS" -ge 1 ] || die "--runs needs a positive integer" ;;
     --compare) COMPARE=1; shift ;;
     -h|--help) usage 0 ;;
     -*) die "unknown option: $1 (--help)" ;;
@@ -266,172 +279,200 @@ trap cleanup EXIT
 (cd "$GOS_REPO" && emulator/device-lock.sh acquire "$LOCK_OWNER" "$SERIAL")
 HAVE_LOCK=1
 
-log "booting $SERIAL from snapshot '$SNAPSHOT' (overlays: $OVERLAY_DIR)"
-(cd "$GOS_REPO" && SNAPSHOT="$SNAPSHOT" emulator/run.sh start)
-
-log "installing $(basename "$APK")"
-install_out="$(adb -s "$SERIAL" install -r "$APK" 2>&1)" || { printf '%s\n' "$install_out" >&2; die "adb install failed"; }
-grep -q '^Success' <<<"$install_out" || { printf '%s\n' "$install_out" >&2; die "adb install failed"; }
-
-# No grep -q on an adb pipeline: under pipefail, -q exits after the first
-# match and the SIGPIPE to adb makes the pipeline fail despite the match.
-activity="$(adb -s "$SERIAL" shell cmd package resolve-activity -a android.intent.action.MAIN -c android.intent.category.HOME "$PKG" | tr -d '\r' | grep -oP 'name=\K\S+' | head -1 || true)"
-[ -n "$activity" ] || die "no HOME activity for $PKG"
-component="$PKG/$activity"
-
-# The launcher is measured as the home app, not as an app that happens to be
-# open: holding the HOME role changes what it does at startup (widget host,
-# shortcut queries) and therefore what it costs.
-adb -s "$SERIAL" shell cmd role add-role-holder --user 0 android.app.role.HOME "$PKG" >/dev/null 2>&1 || true
-holder="$(adb -s "$SERIAL" shell cmd role get-role-holders --user 0 android.app.role.HOME 2>/dev/null | tr -d '\r')"
-case "$holder" in
-  *"$PKG"*) ok "HOME role held by $PKG" ;;
-  *) warn "HOME role is '$holder', not $PKG - figures are for a non-default launcher" ;;
-esac
-
-# The battery is unplugged before anything is measured, and this is not a
-# detail. NavBarEffects (app/ui, drawn full-screen over the nav bar area)
-# runs `while (isActive) { withInfiniteAnimationFrameMillis {} ... }` for as
-# long as the battery status is CHARGING *or FULL*, reallocating its bubble
-# array and invalidating a full-screen Canvas on every frame. The emulator is
-# permanently on AC and reports 100%, so on a plugged-in instance that loop
-# never stops: measured 2026-09-20, the launcher held ~110% of one core and
-# rendered ~30 fps on an otherwise idle home screen, split between
-# RenderThread (56%) and the main thread (46%).
+# One full cycle: snapshot load, install, measure. It is a function because
+# the runtime figures have to be repeated to mean anything - see --runs below
+# and "How much of a delta is real" in e2e/measurements/README.md. Each cycle
+# reboots from the snapshot rather than just relaunching the app, because the
+# variance that matters sits between boots (ART compilation state moves the
+# Code figure by ~9%), and repeating inside one boot would report a spread
+# that is narrower than the truth.
 #
-# That is a real cost on a charging phone, but it is a constant here and it
-# has nothing to do with how many modules the build contains, so leaving it
-# on would drown the signal this series is looking for. Unplugged, the home
-# screen is genuinely static and cpu.home_screen measures what is left.
-log "unplugging the battery (see the NavBarEffects note above)"
-adb -s "$SERIAL" shell dumpsys battery unplug >/dev/null 2>&1 || true
-adb -s "$SERIAL" shell dumpsys battery set status 3 >/dev/null 2>&1 || true
-battery_status="$(adb -s "$SERIAL" shell dumpsys battery 2>/dev/null | tr -d '\r' | awk -F': *' '/^ *status:/ { print $2; exit }')"
-[ "$battery_status" = "3" ] \
-  || warn "battery status is '$battery_status', expected 3 (discharging) - the charging animation may still be running"
+# Writes `metric<TAB>value<TAB>unit` to stdout; the caller aggregates.
+run_cycle() { # $1 = run number
+  local n="$1"
+  log "run $n/$RUNS: booting $SERIAL from snapshot '$SNAPSHOT'" >&2
+  (cd "$GOS_REPO" && SNAPSHOT="$SNAPSHOT" emulator/run.sh start) >&2
 
-# Cold start: force-stop empties the process, `am start -W` waits for the
-# first frame and reports TotalTime. WaitTime would include the time the
-# system spent tearing down the previous activity, which is not ours.
-cold_start() {
-  adb -s "$SERIAL" shell am force-stop "$PKG" >/dev/null 2>&1 || true
-  sleep 1
-  adb -s "$SERIAL" shell am start -W -n "$component" 2>/dev/null | tr -d '\r' \
-    | awk -F': *' '/^TotalTime/ { print $2; exit }'
-}
+  local install_out
+  install_out="$(adb -s "$SERIAL" install -r "$APK" 2>&1)" || { printf '%s\n' "$install_out" >&2; die "adb install failed"; }
+  grep -q '^Success' <<<"$install_out" || { printf '%s\n' "$install_out" >&2; die "adb install failed"; }
 
-log "cold start: $WARMUP_RUNS warm-up + $START_RUNS measured runs"
-for _ in $(seq "$WARMUP_RUNS"); do cold_start >/dev/null || true; done
-times=()
-for i in $(seq "$START_RUNS"); do
-  t="$(cold_start || true)"
-  [ -n "$t" ] || die "am start -W reported no TotalTime (run $i)"
-  times+=("$t")
-  printf '   run %s: %s ms\n' "$i" "$t"
-done
-median="$(printf '%s\n' "${times[@]}" | sort -n | awk '{v[NR] = $1} END {print (NR % 2) ? v[(NR+1)/2] : int((v[NR/2] + v[NR/2+1]) / 2)}')"
-emit battery.status "${battery_status:-unknown}" enum
-emit start.cold.median "$median" ms
-emit start.cold.min "$(printf '%s\n' "${times[@]}" | sort -n | head -1)" ms
-emit start.cold.max "$(printf '%s\n' "${times[@]}" | sort -n | tail -1)" ms
-ok "cold start median: ${median} ms"
+  # No grep -q on an adb pipeline: under pipefail, -q exits after the first
+  # match and the SIGPIPE to adb makes the pipeline fail despite the match.
+  local activity component
+  activity="$(adb -s "$SERIAL" shell cmd package resolve-activity -a android.intent.action.MAIN -c android.intent.category.HOME "$PKG" | tr -d '\r' | grep -oP 'name=\K\S+' | head -1 || true)"
+  [ -n "$activity" ] || die "no HOME activity for $PKG"
+  component="$PKG/$activity"
 
-log "settling ${SETTLE}s before measuring"
-sleep "$SETTLE"
+  # The launcher is measured as the home app, not as an app that happens to be
+  # open: holding the HOME role changes what it does at startup (widget host,
+  # shortcut queries) and therefore what it costs.
+  adb -s "$SERIAL" shell cmd role add-role-holder --user 0 android.app.role.HOME "$PKG" >/dev/null 2>&1 || true
+  local holder
+  holder="$(adb -s "$SERIAL" shell cmd role get-role-holders --user 0 android.app.role.HOME 2>/dev/null | tr -d '\r')"
+  case "$holder" in
+    *"$PKG"*) ;;
+    *) warn "HOME role is '$holder', not $PKG - figures are for a non-default launcher" >&2 ;;
+  esac
 
-# CPU first, memory after: `dumpsys meminfo` makes the target process do work,
-# which would land inside the CPU window and inflate it.
-#
-# Two figures, because they answer different questions. `cpu.startup` is the
-# CPU time the process has burned from launch through the settle window - the
-# cost of starting up and reaching steady state, which is where a removed
-# module's initialisation shows. `cpu.home_screen` is the rate it keeps
-# burning afterwards while nothing is happening.
-#
-# Deliberately not called "idle": measured 2026-09-20 on the test instance,
-# the baseline build sits at ~110% of one core on the home screen across three
-# consecutive 20 s windows (109.85 / 110.75 / 110.45) with 39 threads, so the
-# launcher is demonstrably not idle there. Debug build, and the emulator has
-# no GPU (Graphics PSS is 0, so rendering is software), which inflates
-# anything that animates - the absolute number does not transfer to a Pixel.
-# It is stable to under 1% between windows, which is what makes it usable as a
-# before/after comparison.
-pid="$(adb -s "$SERIAL" shell pidof "$PKG" 2>/dev/null | tr -d '\r' | awk '{print $1}')"
-if [ -n "$pid" ]; then
-  # utime + stime, summed over all threads, from /proc/<pid>/stat. Fields 14
-  # and 15 are only at those positions because the comm field (2) holds a
-  # process name, which never contains a space.
-  read_ticks() { adb -s "$SERIAL" shell cat "/proc/$pid/stat" 2>/dev/null | tr -d '\r' | awk '{print $14 + $15}'; }
-  hz="$(adb -s "$SERIAL" shell getconf CLK_TCK 2>/dev/null | tr -d '\r')"
-  hz="${hz:-100}"
-  t0="$(read_ticks || true)"
-  if [ -n "$t0" ]; then
-    emit cpu.startup "$(awk -v t="$t0" -v hz="$hz" 'BEGIN { printf "%.2f", t / hz }')" s
-    emit threads "$(adb -s "$SERIAL" shell "ls /proc/$pid/task | wc -l" 2>/dev/null | tr -d '\r')" count
-    sleep "$CPU_WINDOW"
-    t1="$(read_ticks || true)"
-    [ -n "$t1" ] || die "/proc/$pid/stat became unreadable during the CPU window"
-    emit cpu.home_screen "$(awk -v a="$t0" -v b="$t1" -v w="$CPU_WINDOW" -v hz="$hz" 'BEGIN { printf "%.2f", (b - a) * 100.0 / (hz * w) }')" pct_core
-  else
-    warn "/proc/$pid/stat not readable - CPU figures skipped"
-  fi
-else
-  warn "launcher process not running after settle - CPU figures skipped"
-fi
-
-# The same window again, this time plugged in. NavBarEffects animates for as
-# long as the battery reads CHARGING or FULL, so this figure carries the cost
-# of that animation while cpu.home_screen stays clean. Keeping both means a
-# removal that takes the animation out is visible as a number rather than as
-# an assertion, and a regression that starts animating something else is too.
-if [ -n "${pid:-}" ] && [ -n "${t0:-}" ]; then
-  adb -s "$SERIAL" shell dumpsys battery set ac 1 >/dev/null 2>&1 || true
-  adb -s "$SERIAL" shell dumpsys battery set status 2 >/dev/null 2>&1 || true
-  # The animation starts from a battery broadcast, not immediately.
-  sleep 3
-  tc0="$(read_ticks || true)"
-  if [ -n "$tc0" ]; then
-    sleep "$CPU_WINDOW"
-    tc1="$(read_ticks || true)"
-    [ -n "$tc1" ] || die "/proc/$pid/stat became unreadable during the charging CPU window"
-    emit cpu.home_screen_charging "$(awk -v a="$tc0" -v b="$tc1" -v w="$CPU_WINDOW" -v hz="$hz" 'BEGIN { printf "%.2f", (b - a) * 100.0 / (hz * w) }')" pct_core
-  fi
-  # Back to discharging, so memory below is read in the same state as the
-  # cold starts and cpu.home_screen were.
+  # The battery is unplugged before anything is measured, and this is not a
+  # detail. NavBarEffects (removed in this series, but the point stands for
+  # anything that animates) ran an infinite per-frame loop for as long as the
+  # battery read CHARGING or FULL, and an emulator is permanently on AC: that
+  # took the same build from 1.70% to ~110% of a core on an idle home screen.
   adb -s "$SERIAL" shell dumpsys battery unplug >/dev/null 2>&1 || true
   adb -s "$SERIAL" shell dumpsys battery set status 3 >/dev/null 2>&1 || true
-  sleep 3
-fi
+  local battery_status
+  battery_status="$(adb -s "$SERIAL" shell dumpsys battery 2>/dev/null | tr -d '\r' | awk -F': *' '/^ *status:/ { print $2; exit }')"
+  [ "$battery_status" = "3" ] \
+    || warn "battery status is '$battery_status', expected 3 (discharging) - an animation may still be running" >&2
+  printf 'battery.status\t%s\tenum\n' "${battery_status:-unknown}"
 
-# `Native Heap: 0` in the App Summary is what this device reports, in both
-# the Pss and the Rss column (verified against the raw dumpsys output on
-# 2026-09-20) - it is not a parse failure, and it should not be "fixed".
-#
-# App Summary rather than the per-heap table: PSS is the figure that answers
-# "what does this process cost the device", RSS the one that answers "how
-# much is resident". Both are reported because a removal can move one
-# without the other (shared framework pages vs. our own dex).
-meminfo="$(adb -s "$SERIAL" shell dumpsys meminfo "$PKG" 2>/dev/null | tr -d '\r')"
-[ -n "$meminfo" ] || die "dumpsys meminfo returned nothing for $PKG"
-mem_field() { # $1 = row label in the App Summary block
-  printf '%s\n' "$meminfo" | awk -v want="$1" '
-    /App Summary/ { in_sum = 1 }
-    in_sum {
-      line = $0
-      sub(/^[ \t]+/, "", line)
-      if (index(line, want ":") == 1) {
-        rest = substr(line, length(want) + 2)
-        n = split(rest, f, /[ \t]+/)
-        for (i = 1; i <= n; i++) if (f[i] ~ /^[0-9]+$/) { print f[i]; exit }
-      }
-    }'
+  # Cold start: force-stop empties the process, `am start -W` waits for the
+  # first frame and reports TotalTime. WaitTime would include the time the
+  # system spent tearing down the previous activity, which is not ours.
+  cold_start() {
+    adb -s "$SERIAL" shell am force-stop "$PKG" >/dev/null 2>&1 || true
+    sleep 1
+    adb -s "$SERIAL" shell am start -W -n "$component" 2>/dev/null | tr -d '\r' \
+      | awk -F': *' '/^TotalTime/ { print $2; exit }'
+  }
+
+  local _ i t
+  for _ in $(seq "$WARMUP_RUNS"); do cold_start >/dev/null || true; done
+  local times=()
+  for i in $(seq "$START_RUNS"); do
+    t="$(cold_start || true)"
+    [ -n "$t" ] || die "am start -W reported no TotalTime (run $n, start $i)"
+    times+=("$t")
+  done
+  local median
+  median="$(printf '%s\n' "${times[@]}" | sort -n | awk '{v[NR] = $1} END {print (NR % 2) ? v[(NR+1)/2] : int((v[NR/2] + v[NR/2+1]) / 2)}')"
+  printf 'start.cold.median\t%s\tms\n' "$median"
+  log "run $n/$RUNS: cold start median ${median} ms" >&2
+
+  sleep "$SETTLE"
+
+  # CPU first, memory after: `dumpsys meminfo` makes the target process do
+  # work, which would land inside the CPU window and inflate it.
+  #
+  # cpu.startup is the CPU time burned from launch through the settle window -
+  # where a removed module's initialisation shows. cpu.home_screen is the rate
+  # it keeps burning afterwards. Deliberately not called "idle": the launcher
+  # is not necessarily idle, and the name should not claim it is.
+  local pid hz t0 t1
+  pid="$(adb -s "$SERIAL" shell pidof "$PKG" 2>/dev/null | tr -d '\r' | awk '{print $1}')"
+  if [ -n "$pid" ]; then
+    # utime + stime, summed over all threads, from /proc/<pid>/stat. Fields 14
+    # and 15 are only at those positions because the comm field (2) holds a
+    # process name, which never contains a space.
+    read_ticks() { adb -s "$SERIAL" shell cat "/proc/$pid/stat" 2>/dev/null | tr -d '\r' | awk '{print $14 + $15}'; }
+    hz="$(adb -s "$SERIAL" shell getconf CLK_TCK 2>/dev/null | tr -d '\r')"; hz="${hz:-100}"
+    t0="$(read_ticks || true)"
+    if [ -n "$t0" ]; then
+      printf 'cpu.startup\t%s\ts\n' "$(awk -v t="$t0" -v hz="$hz" 'BEGIN { printf "%.2f", t / hz }')"
+      printf 'threads\t%s\tcount\n' "$(adb -s "$SERIAL" shell "ls /proc/$pid/task | wc -l" 2>/dev/null | tr -d '\r')"
+      sleep "$CPU_WINDOW"
+      t1="$(read_ticks || true)"
+      [ -n "$t1" ] || die "/proc/$pid/stat became unreadable during the CPU window"
+      printf 'cpu.home_screen\t%s\tpct_core\n' "$(awk -v a="$t0" -v b="$t1" -v w="$CPU_WINDOW" -v hz="$hz" 'BEGIN { printf "%.2f", (b - a) * 100.0 / (hz * w) }')"
+
+      # The same window plugged in, which is where the cost of anything that
+      # animates while charging lives. Keeping both means such a cost stays
+      # visible instead of being measured away by the unplug above.
+      local tc0 tc1
+      adb -s "$SERIAL" shell dumpsys battery set ac 1 >/dev/null 2>&1 || true
+      adb -s "$SERIAL" shell dumpsys battery set status 2 >/dev/null 2>&1 || true
+      sleep 3   # the animation starts from a battery broadcast, not immediately
+      tc0="$(read_ticks || true)"
+      if [ -n "$tc0" ]; then
+        sleep "$CPU_WINDOW"
+        tc1="$(read_ticks || true)"
+        [ -n "$tc1" ] || die "/proc/$pid/stat became unreadable during the charging CPU window"
+        printf 'cpu.home_screen_charging\t%s\tpct_core\n' "$(awk -v a="$tc0" -v b="$tc1" -v w="$CPU_WINDOW" -v hz="$hz" 'BEGIN { printf "%.2f", (b - a) * 100.0 / (hz * w) }')"
+      fi
+      # back to discharging, so memory is read in the same state as the rest
+      adb -s "$SERIAL" shell dumpsys battery unplug >/dev/null 2>&1 || true
+      adb -s "$SERIAL" shell dumpsys battery set status 3 >/dev/null 2>&1 || true
+      sleep 3
+    else
+      warn "/proc/$pid/stat not readable - CPU figures skipped" >&2
+    fi
+  else
+    warn "launcher process not running after settle - CPU figures skipped" >&2
+  fi
+
+  # `Native Heap: 0` in the App Summary is what this device reports, in both
+  # the Pss and the Rss column (verified against the raw dumpsys output on
+  # 2026-09-20) - it is not a parse failure, and it should not be "fixed".
+  #
+  # App Summary rather than the per-heap table: PSS answers "what does this
+  # process cost the device", RSS "how much is resident". Both, because a
+  # removal can move one without the other.
+  local meminfo
+  meminfo="$(adb -s "$SERIAL" shell dumpsys meminfo "$PKG" 2>/dev/null | tr -d '\r')"
+  [ -n "$meminfo" ] || die "dumpsys meminfo returned nothing for $PKG"
+  mem_field() { # $1 = row label in the App Summary block
+    printf '%s\n' "$meminfo" | awk -v want="$1" '
+      /App Summary/ { in_sum = 1 }
+      in_sum {
+        line = $0
+        sub(/^[ \t]+/, "", line)
+        if (index(line, want ":") == 1) {
+          rest = substr(line, length(want) + 2)
+          n = split(rest, f, /[ \t]+/)
+          for (i = 1; i <= n; i++) if (f[i] ~ /^[0-9]+$/) { print f[i]; exit }
+        }
+      }'
+  }
+  printf 'mem.pss.total\t%s\tKB\n' "$(printf '%s\n' "$meminfo" | awk '/TOTAL PSS:/ { for (i = 1; i <= NF; i++) if ($i == "PSS:") { print $(i+1); exit } }')"
+  printf 'mem.rss.total\t%s\tKB\n' "$(printf '%s\n' "$meminfo" | awk '/TOTAL RSS:/ { for (i = 1; i <= NF; i++) if ($i == "RSS:") { print $(i+1); exit } }')"
+  printf 'mem.java_heap\t%s\tKB\n' "$(mem_field 'Java Heap')"
+  printf 'mem.native_heap\t%s\tKB\n' "$(mem_field 'Native Heap')"
+  printf 'mem.code\t%s\tKB\n' "$(mem_field 'Code')"
+  printf 'mem.graphics\t%s\tKB\n' "$(mem_field 'Graphics')"
+
+  (cd "$GOS_REPO" && SERIAL="$SERIAL" emulator/run.sh stop) >/dev/null 2>&1 || true
 }
-emit mem.pss.total "$(printf '%s\n' "$meminfo" | awk '/TOTAL PSS:/ { for (i = 1; i <= NF; i++) if ($i == "PSS:") { print $(i+1); exit } }')" KB
-emit mem.rss.total "$(printf '%s\n' "$meminfo" | awk '/TOTAL RSS:/ { for (i = 1; i <= NF; i++) if ($i == "RSS:") { print $(i+1); exit } }')" KB
-emit mem.java_heap "$(mem_field 'Java Heap')" KB
-emit mem.native_heap "$(mem_field 'Native Heap')" KB
-emit mem.code "$(mem_field 'Code')" KB
-emit mem.graphics "$(mem_field 'Graphics')" KB
+
+# Only well-formed `metric<TAB>value<TAB>unit` lines are data. Anything else
+# reaching this file would be aggregated as if it were a measurement, so it
+# is dropped here rather than trusted not to happen.
+RAW="$(mktemp)"
+trap 'rm -f "$RAW"; cleanup' EXIT
+for run in $(seq "$RUNS"); do
+  run_cycle "$run" | grep -P '^[a-z][a-z0-9_.]*\t[^\t]+\t[A-Za-z_]*$' >> "$RAW"
+done
+
+# Median across runs, plus the spread, because a delta smaller than the spread
+# is not a result. Non-numeric metrics (battery.status) are passed through.
+emit_aggregated() {
+  awk -F'\t' -v runs="$RUNS" '
+    { if (!($1 in seen)) { order[++n] = $1; seen[$1] = 1; unit[$1] = $3 }
+      vals[$1] = vals[$1] " " $2 }
+    END {
+      for (i = 1; i <= n; i++) {
+        m = order[i]
+        c = split(vals[m], v, " ")
+        numeric = 1
+        for (j = 1; j <= c; j++) if (v[j] + 0 != v[j] && v[j] != "0") numeric = 0
+        if (!numeric || c == 0) { printf "%s\t%s\t%s\n", m, v[1], unit[m]; continue }
+        # insertion sort: c is at most a handful of runs
+        for (j = 2; j <= c; j++) { key = v[j] + 0; k = j - 1
+          while (k >= 1 && v[k] + 0 > key) { v[k+1] = v[k]; k-- }
+          v[k+1] = key }
+        med = (c % 2) ? v[(c+1)/2] + 0 : (v[c/2] + v[c/2+1]) / 2.0
+        printf "%s\t%s\t%s\n", m, (med == int(med) ? sprintf("%d", med) : sprintf("%.2f", med)), unit[m]
+        if (c > 1 && unit[m] != "enum") {
+          lo = v[1] + 0; hi = v[c] + 0
+          printf "%s.spread\t%.1f\tpct\n", m, (med != 0 ? (hi - lo) * 100.0 / med : 0)
+        }
+      }
+    }' "$RAW"
+}
+emit_aggregated >> "$OUT"
+note "runtime runs: $RUNS"
+
 
 # Extrapolation, deliberately separate from the measured lines: the launcher
 # runs once per non-managed profile, but the emulator keeps at most three

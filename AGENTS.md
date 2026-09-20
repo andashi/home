@@ -71,7 +71,8 @@ afterthought (see `docs/architecture/adr/0005-testing-strategy.md`):
 - **Footprint**: `e2e/measure-footprint.sh` — APK size, dex method references,
   declared permissions and Gradle module count on the host (`--static`,
   seconds), plus cold start, PSS/RSS and CPU on the test instance, unplugged
-  and charging (a boot cycle). Results are committed under `e2e/measurements/`; `--compare
+  and charging (a boot cycle per run; `--runs N` repeats the cycle and adds a
+  `<metric>.spread` line, which is what makes a small runtime delta quotable). Results are committed under `e2e/measurements/`; `--compare
   <before>.tsv <after>.tsv` prints the deltas and names the permissions that
   appeared or disappeared. Every module-diet PR (#20) carries a before/after
   from it.
