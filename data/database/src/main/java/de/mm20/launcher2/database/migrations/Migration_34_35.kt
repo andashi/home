@@ -29,5 +29,9 @@ class Migration_34_35 : Migration(34, 35) {
             "DELETE FROM `Widget` WHERE `type` IN " +
                     "('weather', 'music', 'calendar', 'notes', 'clock')"
         )
+        // Unreleased, but a build from this branch seeded the favorites widget
+        // as 'apps', which Widget.fromDatabaseEntity does not know. Rewriting
+        // it costs nothing and spares anyone who installed one an invisible row.
+        db.execSQL("UPDATE `Widget` SET `type` = 'favorites' WHERE `type` = 'apps'")
     }
 }

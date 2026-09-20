@@ -34,11 +34,14 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import androidx.compose.runtime.collectAsState
 import de.mm20.launcher2.preferences.WidgetScreenTarget
+import de.mm20.launcher2.preferences.ui.UiSettings
 import de.mm20.launcher2.ui.R
 import de.mm20.launcher2.ui.launcher.scaffold.LauncherScaffoldState
 import de.mm20.launcher2.ui.launcher.widgets.WidgetColumn
 import kotlinx.coroutines.launch
+import org.koin.compose.koinInject
 
 /**
  * The home surface: a scrollable column of widgets, and nothing else.
@@ -48,6 +51,12 @@ import kotlinx.coroutines.launch
  * built-in widgets (ADR 0008), so a home screen with no widgets configured is
  * deliberately empty: wallpaper, dock and search bar. ADR 0001's HomeGrid
  * replaces this component.
+ *
+ * `home.widgets.enabled` still decides whether widgets appear here at all. It
+ * used to do that by choosing between this component and the clock-only one;
+ * with the clock gone there is nothing to choose between, so the flag is read
+ * here instead. Dropping it would silently ignore a key of the public config
+ * contract (ADR 0002).
  */
 internal object WidgetsHomeComponent : ScaffoldComponent() {
     private var editMode by mutableStateOf(false)
@@ -70,6 +79,10 @@ internal object WidgetsHomeComponent : ScaffoldComponent() {
         state: LauncherScaffoldState
     ) {
         val scope = rememberCoroutineScope()
+
+        val uiSettings: UiSettings = koinInject()
+        val widgetsOnHomeScreen by uiSettings.homeScreenWidgets.collectAsState(null)
+        if (widgetsOnHomeScreen != true) return
 
         val topPadding by animateDpAsState(if (editMode) 80.dp else 0.dp)
         val previousScroll = remember { mutableIntStateOf(scrollState.value) }

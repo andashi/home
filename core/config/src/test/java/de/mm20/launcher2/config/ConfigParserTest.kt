@@ -474,4 +474,27 @@ class ConfigParserTest {
         assertNull(result.config)
         assertTrue(result.diagnostics.any { it.code == "decode-failed" })
     }
+
+    @Test
+    fun `a leftover clock block is reported, not silently accepted`() {
+        // home.clock left the contract with the clock widget (ADR 0008). A
+        // config written before that still carries it, and the promise made
+        // there is that an unknown *key* is ignored *with a diagnostic* - which
+        // only holds if knownKeys stops listing it.
+        val input = """
+            {
+              "schemaVersion": 1,
+              "home": { "clock": { "style": "orbit", "fillHeight": true } }
+            }
+        """.trimIndent()
+
+        val result = ConfigParser.parse(input)
+
+        assertTrue(result.isSuccess)
+        val unknown = result.diagnostics.filter { it.code == "unknown-key" }
+        assertTrue(
+            "expected a diagnostic for home.clock, got ${result.diagnostics.map { it.path }}",
+            unknown.any { it.path == "home.clock" },
+        )
+    }
 }

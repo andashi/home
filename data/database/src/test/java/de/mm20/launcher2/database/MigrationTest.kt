@@ -147,7 +147,8 @@ class MigrationTest {
                         "('weather', 0, X'00000000000000000000000000000001', NULL)," +
                         "('music', 1, X'00000000000000000000000000000002', NULL)," +
                         "('calendar', 2, X'00000000000000000000000000000003', NULL)," +
-                        "('apps', 3, X'00000000000000000000000000000004', NULL)"
+                        "('apps', 3, X'00000000000000000000000000000004', NULL)," +
+                        "('favorites', 4, X'00000000000000000000000000000005', NULL)"
             )
             close()
         }
@@ -158,7 +159,9 @@ class MigrationTest {
             val types = buildList {
                 while (cursor.moveToNext()) add(cursor.getString(0))
             }
-            assertEquals(listOf("apps"), types)
+            // 'apps' is rewritten, not kept: Widget.fromDatabaseEntity only
+            // knows AppsWidget.Type, which is "favorites"
+            assertEquals(listOf("favorites", "favorites"), types)
         }
         db.close()
     }
