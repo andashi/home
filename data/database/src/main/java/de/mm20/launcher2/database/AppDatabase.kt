@@ -127,15 +127,15 @@ abstract class AppDatabase : RoomDatabase() {
 
                             val defaultParentId = WidgetScreenTarget.Default.id
                             db.execSQL(
+                                // `apps` (the favorites widget) is the only
+                                // built-in widget left, see ADR 0008. Seeding a
+                                // type that Widget.fromDatabaseEntity no longer
+                                // knows would leave a row that is silently
+                                // dropped on read, and a home screen that is
+                                // empty for no visible reason.
                                 "INSERT INTO Widget (`type`, `position`, `id`, `parentId`) VALUES " +
-                                        "('weather', 0, ?, ?)," +
-                                        "('music', 1, ?, ?)," +
-                                        "('calendar', 2, ?, ?);",
+                                        "('apps', 0, ?, ?);",
                                 arrayOf(
-                                    UUID.randomUUID().toBytes(),
-                                    defaultParentId.toBytes(),
-                                    UUID.randomUUID().toBytes(),
-                                    defaultParentId.toBytes(),
                                     UUID.randomUUID().toBytes(),
                                     defaultParentId.toBytes()
                                 )
