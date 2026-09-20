@@ -63,7 +63,6 @@
     <string name="file_type_ebook">كتاب الكتروني</string>
     <string name="file_type_drawing">ملف رسم غوغل</string>
     <string name="file_type_form">استمارة</string>
-    <string name="file_type_launcherbackup">نسخة %1$s احتياطية</string>
     <string name="alert_delete_file">سوف يتم مسح الملف %1$s نهائيا. هل تريد المتابعة؟</string>
     <string name="alert_delete_shortcut">سوف يتم ازالة اختصار %1$s نهائيا. هل تريد المتابعة؟</string>
     <string name="default_websearch_2_url">https://www.youtube.com/results\?search_query=${1}</string>
@@ -413,10 +412,6 @@
     <string name="preference_clock_widget_alignment">المحاذاة</string>
     <string name="preference_clockwidget_dynamic_zone">منطقة ديناميكية</string>
     <string name="preference_clockwidget_date_part">التاريخ</string>
-    <string name="preference_screen_backup">النسخ الاحتياطي والاستعادة</string>
-    <string name="preference_screen_backup_summary">تصدير واستيراد بيانات المشغل</string>
-    <string name="preference_backup">نسخ احتياطي</string>
-    <string name="preference_backup_summary">تصدير التفضيلات وبيانات المشغل</string>
     <string name="preference_crash_reporter">مُبلّغ الأعطال</string>
     <string name="preference_crash_reporter_summary">تقارير الأخطاء والأعطال</string>
     <string name="preference_logs_summary">عرض وتصدير سجلات التطبيقات</string>
@@ -436,10 +431,6 @@
     <string name="no_account_owncloud">لم تقم بتوصيل حساب Owncloud حتى الآن</string>
     <string name="connect_account">توصيل الحساب</string>
     <string name="battery_part_charging">جاري الشحن</string>
-    <string name="backup_complete">اكتمل النسخ الاحتياطي.</string>
-    <string name="restore_invalid_file">لا يبدو أن الملف المحدد نسخة احتياطية. هل أنت متأكد من أنك حددت الملف الصحيح؟</string>
-    <string name="restore_incompatible_file">تم إنشاء هذه النسخة الاحتياطية بإصدار مختلف من %1$s ولا يمكن استعادتها بهذا الإصدار.</string>
-    <string name="restore_meta">تم الإنشاء في %1$s على %2$s باستخدام %3$s.</string>
     <string name="icon_picker_default_icon">افتراضي</string>
     <string name="icon_picker_suggestions">اقتراحات</string>
     <string name="icon_picker_filter_all_packs">جميع حزم الرموز</string>
@@ -538,8 +529,6 @@
     <string name="preference_clock_widget_show_seconds">إظهار الثواني</string>
     <string name="preference_clockwidget_date_part_summary">إظهار التاريخ الحالي</string>
     <string name="preference_clockwidget_favorites_part">قاعدة التثبيت</string>
-    <string name="preference_restore">استعادة</string>
-    <string name="preference_restore_summary">استيراد نسخة احتياطية تم إنشاؤها مسبقًا</string>
     <string name="preference_logs">السجلات</string>
     <string name="preference_search_calculator_summary">تقييم المصطلحات الرياضية</string>
     <string name="preference_search_unitconverter">محول الوحدات</string>
@@ -753,8 +742,6 @@
     <string name="search_filter_apps">التطبيقات</string>
     <string name="preference_default_filter">المرشح الافتراضي</string>
     <string name="preference_grid_column_count">عدد الأعمدة</string>
-    <string name="restore_different_minor_version">تم إنشاء هذه النسخة الاحتياطية بإصدار مختلف من %1$s. قد لا يتم استعادة بعض البيانات بشكل صحيح.</string>
-    <string name="restore_complete">تمت استعادة النسخة الاحتياطية.</string>
     <string name="poi_category_supermarket">سوبر ماركت</string>
     <string name="poi_category_school">مدرسة</string>
     <string name="poi_category_books">مكتبة لبيع الكتب</string>

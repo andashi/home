@@ -28,7 +28,6 @@
     <string name="file_type_image">Imagine</string>
     <string name="file_type_none">File</string>
     <string name="file_type_form">Formulario</string>
-    <string name="file_type_launcherbackup">Copia de securitate %1$s</string>
     <string name="file_type_launchertheme">Thema de %1$s</string>
     <string name="file_type_generic">File %1$s</string>
     <string name="search_action_message">Message</string>

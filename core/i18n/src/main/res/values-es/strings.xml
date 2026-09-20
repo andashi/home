@@ -215,8 +215,6 @@
     <string name="preference_category_system_bars">Barras de sistema</string>
     <string name="preference_icon_shape_pentagon">Pentágono</string>
     <string name="preference_clockwidget_layout_horizontal">Compacto</string>
-    <string name="preference_backup">Copia de seguridad</string>
-    <string name="restore_complete">La copia de seguridad ha sido restaurada.</string>
     <string name="preference_clockwidget_date_part">Fecha</string>
     <string name="preference_clockwidget_battery_part">Batería</string>
     <string name="preference_dim_wallpaper">Oscurecer el fondo de pantalla</string>
@@ -300,10 +298,6 @@
     <string name="preference_wikipedia_customurl">URL de Wikipedia</string>
     <string name="no_account_nextcloud">Aún no has vinculado ninguna cuenta de Nextcloud</string>
     <string name="connect_account">Vincular cuenta</string>
-    <string name="backup_complete">La copia de seguridad ha sido completada.</string>
-    <string name="restore_invalid_file">El archivo seleccionado no es una copia de seguridad. ¿Estás seguro de que has seleccionado el archivo correcto\?</string>
-    <string name="restore_different_minor_version">Esta copia de seguridad se ha creado con una diferente versión de %1$s. Puede que algunos datos no se restauren correctamente.</string>
-    <string name="restore_meta">Creado %1$s en %2$s con %3$s.</string>
     <string name="icon_picker_default_icon">Por defecto</string>
     <string name="icon_picker_search_icon">Buscar en paquetes de iconos</string>
     <string name="apps_profile_main">Personal</string>
@@ -345,7 +339,6 @@
     <string name="preference_about_license">Esta aplicación es software libre.</string>
     <string name="preference_screen_debug_summary">Herramientas de solución de problemas</string>
     <string name="preference_clockwidget_layout_vertical">Por defecto</string>
-    <string name="restore_incompatible_file">Esta copia de seguridad se ha creado con una diferente versión de %1$s y no se puede restaurar con esta versión.</string>
     <string name="preference_clock_widget_fill_height">Rellenar altura de pantalla</string>
     <plurals name="battery_part_remaining_charge_time">
         <item quantity="one">Carga completa en %1$s minuto</item>
@@ -372,7 +365,6 @@
     <string name="missing_permission_accessibility_gesture_settings">Esta acción requiere que el servicio de accesibilidad del lanzador esté activado.</string>
     <string name="search_action_label">Nombre</string>
     <string name="preference_clockwidget_date_part_summary">Mostrar la fecha actual</string>
-    <string name="preference_screen_backup">Copia de seguridad y restauración</string>
     <string name="search_action_websearch_url">Plantilla de URL</string>
     <string name="preference_clockwidget_alarm_part">Alarmas</string>
     <string name="preference_layout_search_bar_position">Posición de la barra de búsqueda</string>
@@ -382,10 +374,6 @@
     <string name="preference_screen_gestures_summary">Gestos y acciones de gestos</string>
     <string name="preference_screen_search_summary">Búsqueda, etiquetas, elementos excluidos</string>
     <string name="preference_search_calculator_summary">Evaluar términos matemáticos</string>
-    <string name="preference_screen_backup_summary">Exportar e importar datos del lanzador</string>
-    <string name="preference_backup_summary">Exportar preferencias y datos del lanzador</string>
-    <string name="preference_restore">Restaurar</string>
-    <string name="preference_restore_summary">Importar copia de seguridad</string>
     <string name="preference_crash_reporter">Informe de fallos</string>
     <string name="preference_search_appshortcuts">Accesos directos de aplicaciones</string>
     <string name="preference_search_currencyconverter_summary">Descargar periódicamente tasas de conversión actualizadas para convertir divisas</string>
@@ -401,7 +389,6 @@
     <string name="save">Guardar</string>
     <string name="weather_condition_snowshowers">Chubascos de nieve</string>
     <string name="action_undo">Deshacer</string>
-    <string name="file_type_launcherbackup">Copia de seguridad de %1$s</string>
     <string name="preference_icon_shape_square">Cuadrado</string>
     <string name="preference_icon_shape_rounded_square">Cuadrado redondeado</string>
     <plurals name="debug_cleanup_database_result">

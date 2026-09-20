@@ -10,7 +10,6 @@ import de.mm20.launcher2.ui.component.preferences.PreferenceScreen
 import de.mm20.launcher2.ui.locals.LocalBackStack
 import de.mm20.launcher2.ui.settings.about.AboutSettingsRoute
 import de.mm20.launcher2.ui.settings.appearance.AppearanceSettingsRoute
-import de.mm20.launcher2.ui.settings.backup.BackupSettingsRoute
 import de.mm20.launcher2.ui.settings.debug.DebugSettingsRoute
 import de.mm20.launcher2.ui.settings.gestures.GesturesSettingsRoute
 import de.mm20.launcher2.ui.settings.homescreen.HomescreenSettingsRoute
@@ -94,14 +93,6 @@ fun MainSettingsScreen() {
                     summary = stringResource(id = R.string.preference_screen_locale_summary),
                     onClick = {
                         backStack.add(LocaleSettingsRoute)
-                    }
-                )
-                Preference(
-                    icon = R.drawable.settings_backup_restore_24px,
-                    title = stringResource(id = R.string.preference_screen_backup),
-                    summary = stringResource(id = R.string.preference_screen_backup_summary),
-                    onClick = {
-                        backStack.add(BackupSettingsRoute)
                     }
                 )
                 Preference(

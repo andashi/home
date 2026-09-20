@@ -52,8 +52,9 @@ afterthought (see `docs/architecture/adr/0005-testing-strategy.md`):
 - **L1 unit tests**: JUnit4 + Robolectric 4.17 (SDK 36/37 supported; needs the
   `--add-opens` JVM args already wired in the module build files — copy that
   `tasks.withType<Test>` block when adding tests to another module). Modules
-  with test wiring so far: `:core:preferences`, `:services:backup`,
-  `:data:database`, `:app:ui`.
+  with test wiring so far: `:core:base`, `:core:config`, `:core:preferences`,
+  `:services:config`, `:data:database`, `:data:locations`, `:data:searchable`,
+  `:data:themes`, `:data:widgets`, `:app:ui`.
 - **L3 screenshot tests**: Roborazzi in `:app:ui`; goldens are committed under
   `app/ui/src/test/roborazzi/`.
   - record: `./gradlew :app:ui:recordRoborazziDebug`
@@ -69,8 +70,8 @@ afterthought (see `docs/architecture/adr/0005-testing-strategy.md`):
   below.
 - **Footprint**: `e2e/measure-footprint.sh` — APK size, dex method references,
   declared permissions and Gradle module count on the host (`--static`,
-  seconds), plus cold start, PSS/RSS and idle CPU on the test instance (a boot
-  cycle). Results are committed under `e2e/measurements/`; `--compare
+  seconds), plus cold start, PSS/RSS and CPU on the test instance, unplugged
+  and charging (a boot cycle). Results are committed under `e2e/measurements/`; `--compare
   <before>.tsv <after>.tsv` prints the deltas and names the permissions that
   appeared or disappeared. Every module-diet PR (#20) carries a before/after
   from it.

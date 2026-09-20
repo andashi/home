@@ -54,7 +54,6 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
-import java.io.File
 import java.util.UUID
 import de.mm20.launcher2.config.Profile as ConfigProfile
 
@@ -457,8 +456,6 @@ class DefaultConfigStoreTest {
         override fun set(widgets: List<Widget>, parentId: UUID?) = throw NotImplementedError()
         override fun exists(type: String): Flow<Boolean> = throw NotImplementedError()
         override fun count(type: String): Flow<Int> = throw NotImplementedError()
-        override suspend fun backup(toDir: File) = throw NotImplementedError()
-        override suspend fun restore(fromDir: File) = throw NotImplementedError()
     }
 
     private class FakeSavableSearchableRepository : SavableSearchableRepository {
@@ -549,8 +546,6 @@ class DefaultConfigStoreTest {
             throw NotImplementedError()
 
         override suspend fun cleanupDatabase(): Int = throw NotImplementedError()
-        override suspend fun backup(toDir: File) = throw NotImplementedError()
-        override suspend fun restore(fromDir: File) = throw NotImplementedError()
     }
 
     private class FakeWallpaperStore : WallpaperStore {

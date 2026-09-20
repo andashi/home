@@ -296,8 +296,6 @@
     </plurals>
     <string name="no_account_nextcloud">Non hai ancora collegato un account Nextcloud</string>
     <string name="no_account_owncloud">Non hai ancora collegato un account Owncloud</string>
-    <string name="preference_restore_summary">Importa un backup creato in precedenza</string>
-    <string name="restore_meta">Creato il %1$s alle %2$s con %3$s.</string>
     <string name="preference_enforce_icon_shape">Applica forma</string>
     <string name="weather_condition_lightssleetshowersandthunder">Deboli rovesci di nevischio e tuoni</string>
     <string name="weather_condition_lightsnowshowers">Deboli rovesci di neve</string>
@@ -309,14 +307,12 @@
     <string name="preference_cards_shape_cut">Tagliata</string>
     <string name="preference_force_themed_icons">Applica icone a tema</string>
     <string name="preference_force_themed_icons_summary">Applica la combinazione di colori dell\'applicazione a tutte le icone, comprese quelle non supportate (non consigliato)</string>
-    <string name="preference_restore">Ripristino</string>
     <string name="preference_search_appshortcuts">Scorciatoie app</string>
     <string name="preference_search_appshortcuts_summary">Cerca scorciatoie app</string>
     <string name="preference_grid_icon_size">Dimensione icona</string>
     <string name="preference_search_currencyconverter">Convertitore di valuta</string>
     <string name="preference_hidden_items">Risultati ricerca esclusi</string>
     <string name="preference_hidden_items_summary">Gestisci app escluse e risultati di ricerca</string>
-    <string name="restore_incompatible_file">Questo backup è stato creato con una versione diversa di %1$s e non può essere ripristinato con questa versione.</string>
     <string name="icon_picker_default_icon">Predefinito</string>
     <string name="icon_picker_suggestions">Suggerimenti</string>
     <string name="icon_picker_search_icon">Cerca nei pacchetti icone</string>
@@ -324,22 +320,13 @@
     <string name="preference_crash_reporter">Riporta crash</string>
     <string name="preference_blur_wallpaper">Sfoca lo sfondo</string>
     <string name="preference_blur_wallpaper_summary">Usa un effetto sfocato sullo sfondo</string>
-    <string name="file_type_launcherbackup">%1$s backup</string>
     <string name="weather_condition_lightrainshowers">Pioggia leggera debole</string>
-    <string name="backup_complete">Il backup è stato completato.</string>
-    <string name="restore_invalid_file">Il file selezionato non sembra essere un backup. Sei sicuro di aver selezionato il file giusto\?</string>
     <string name="preference_blur_wallpaper_unsupported">Non supportato su questo dispositivo</string>
-    <string name="restore_different_minor_version">Questo backup è stato creato con una versione diversa di %1$s. Alcuni dati potrebbero non essere ripristinati correttamente.</string>
-    <string name="preference_screen_backup_summary">Esporta e importa i dati del launcher</string>
-    <string name="preference_backup">Backup</string>
-    <string name="preference_screen_backup">Backup e ripristino</string>
     <string name="action_undo">Annulla</string>
     <string name="weather_location_search_no_result">Posizione non trovata</string>
     <string name="preference_font">Carattere</string>
-    <string name="restore_complete">Il backup è stato ripristinato.</string>
     <string name="preference_clockwidget_favorites_part">Dock</string>
     <string name="preference_clockwidget_favorites_part_summary">Mostra elementi appuntati nel dock</string>
-    <string name="preference_backup_summary">Esporta preferenze e dati del launcher</string>
     <string name="preference_search_currencyconverter_summary">Scarica periodicamente i tassi di cambio per convertire le valute</string>
     <string name="menu_customize">Personalizza</string>
     <string name="calendar_widget_next_events">Evento successivo</string>

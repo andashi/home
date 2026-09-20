@@ -2,7 +2,6 @@ package de.mm20.launcher2.searchable
 
 import android.util.Log
 import androidx.room.withTransaction
-import de.mm20.launcher2.backup.Backupable
 import de.mm20.launcher2.crashreporter.CrashReporter
 import de.mm20.launcher2.database.AppDatabase
 import de.mm20.launcher2.database.entities.SavedSearchableEntity
@@ -25,16 +24,13 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.json.JSONArray
-import org.json.JSONException
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
 import org.koin.core.error.InstanceCreationException
 import org.koin.core.error.NoDefinitionFoundException
 import org.koin.core.qualifier.named
-import java.io.File
 
-interface SavableSearchableRepository : Backupable {
+interface SavableSearchableRepository {
 
     fun insert(
         searchable: SavableSearchable,
@@ -495,68 +491,6 @@ internal class SavableSearchableRepositoryImpl(
         }
         return dao.getByKeys(keys)
             .map { it.mapNotNull { fromDatabaseEntity(it).searchable } }
-    }
-
-    override suspend fun backup(toDir: File) = withContext(Dispatchers.IO) {
-        val dao = database.backupDao()
-        var page = 0
-        do {
-            val favorites = dao.exportFavorites(limit = 100, offset = page * 100)
-            val jsonArray = JSONArray()
-            for (fav in favorites) {
-                jsonArray.put(
-                    jsonObjectOf(
-                        "key" to fav.key,
-                        "type" to fav.type,
-                        "visibility" to fav.visibility,
-                        "launchCount" to fav.launchCount,
-                        "pinPosition" to fav.pinPosition,
-                        "searchable" to fav.serializedSearchable,
-                        "weight" to fav.weight,
-                    )
-                )
-            }
-
-            val file = File(toDir, "favorites.${page.toString().padStart(4, '0')}")
-            file.bufferedWriter().use {
-                it.write(jsonArray.toString())
-            }
-            page++
-        } while (favorites.size == 100)
-    }
-
-    override suspend fun restore(fromDir: File) = withContext(Dispatchers.IO) {
-        val dao = database.backupDao()
-        dao.wipeFavorites()
-
-        val files =
-            fromDir.listFiles { _, name -> name.startsWith("favorites.") } ?: return@withContext
-
-        for (file in files) {
-            val favorites = mutableListOf<SavedSearchableEntity>()
-            try {
-                val jsonArray = JSONArray(file.inputStream().reader().readText())
-
-                for (i in 0 until jsonArray.length()) {
-                    val json = jsonArray.getJSONObject(i)
-                    val entity = SavedSearchableEntity(
-                        key = json.getString("key"),
-                        type = json.optString("type").takeIf { it.isNotEmpty() } ?: continue,
-                        serializedSearchable = json.getString("searchable"),
-                        launchCount = json.getInt("launchCount"),
-                        visibility = json.optInt("visibility", 0),
-                        pinPosition = json.getInt("pinPosition"),
-                        weight = json.optDouble("weight").takeIf { !it.isNaN() } ?: 0.0
-                    )
-                    favorites.add(entity)
-                }
-
-                dao.importFavorites(favorites)
-
-            } catch (e: JSONException) {
-                CrashReporter.logException(e)
-            }
-        }
     }
 
     override suspend fun cleanupDatabase(): Int {

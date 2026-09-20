@@ -74,7 +74,6 @@
     <string name="file_meta_duration">Müddət: %1$s</string>
     <string name="file_meta_owner">Sahibi: %1$s</string>
     <string name="file_type_form">Forma</string>
-    <string name="file_type_launcherbackup">%1$s ehtiyat nüsxəsi</string>
     <string name="alert_delete_shortcut">%1$s qısayolu həmişəlik silinəcək. Davam edilsin?</string>
     <string name="default_websearch_2_url">https://www.youtube.com/results?search_query=${1}</string>
     <string name="websearch_dialog_query_encoding">Sorğunun kodlaşdırılması</string>

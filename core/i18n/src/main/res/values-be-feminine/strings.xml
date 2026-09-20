@@ -9,7 +9,6 @@
     <string name="preference_owncloud_signin_summary">Увайдзі, каб выконваць пошук праз твой сервер Owncloud</string>
     <string name="no_account_nextcloud">Ты яшчэ не далучыла ўліковы запіс Nextcloud</string>
     <string name="no_account_owncloud">Ты яшчэ не далучыла ўліковы запіс Owncloud</string>
-    <string name="restore_invalid_file">Здаецца, выбраны файл не з\'яўляецца рэзервовай копіяй. Ты ўпэўненая, што выбрала правільны файл?</string>
     <string name="create_search_action_type">Якое дзеянне ты жадаеш стварыць?</string>
     <string name="create_search_action_website_invalid_url">Дадзены вэб-сайт не можа быць аўтаматычна імпартаваны як сродак пошуку. Ты можаш паспрабаваць іншы сайт або ўвесці ўсе патрэбныя дадзеныя ў наступным кроку</string>
     <string name="tag_exists_message">Тэг з такой назвай ужо існуе. Калі ты працягнеш, гэтыя два цэтліка будуць аб\'яднаныя</string>

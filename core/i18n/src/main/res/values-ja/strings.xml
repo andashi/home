@@ -65,7 +65,6 @@
     <string name="preference_icon_shape_squircle">スクワークル</string>
     <string name="preference_category_wallpaper">壁紙</string>
     <string name="preference_icon_shape_pentagon">五角形</string>
-    <string name="preference_backup">バックアップ</string>
     <string name="preference_clockwidget_battery_part">電池</string>
     <string name="help">ヘルプ</string>
     <string name="default_websearch_2_url">https://www.youtube.com/results\?search_query=${1}</string>
@@ -143,7 +142,6 @@
     <string name="file_type_ebook">電子ブック</string>
     <string name="file_type_drawing">図形描画</string>
     <string name="file_type_form">フォーム</string>
-    <string name="file_type_launcherbackup">%1$s バックアップ</string>
     <string name="file_type_generic">%1$s ファイル</string>
     <string name="nextcloud_server_invalid_url">この URL は、有効な Nextcloud のインストールを指定していません</string>
     <string name="websearch_dialog_url_error">この URL にはプレースホルダー「${1}」がありません。</string>
@@ -189,7 +187,6 @@
     <string name="weather_condition_sleet">みぞれ</string>
     <string name="weather_condition_clearsky">快晴</string>
     <string name="weather_condition_hail">雹</string>
-    <string name="preference_backup_summary">設定とランチャーのデータをエクスポートします</string>
     <string name="preference_screen_clockwidget">時計</string>
     <string name="preference_screen_appearance_summary">外観のカスタマイズ</string>
     <string name="preference_cards_opacity">透明度</string>
@@ -202,7 +199,6 @@
     <string name="preference_screen_search_summary">検索、タグ、非表示のアイテム</string>
     <string name="preference_screen_plugins">プラグイン</string>
     <string name="preference_screen_homescreen">ホーム画面</string>
-    <string name="preference_restore_summary">以前に作成されたバックアップをインポートします</string>
     <string name="preference_screen_homescreen_summary">時計、検索バー、壁紙、システムバー</string>
     <string name="preference_screen_icons">グリッド、アイコン</string>
     <string name="preference_screen_about_summary">アプリ情報、ライセンス情報</string>
@@ -220,7 +216,6 @@
     <string name="preference_screen_gestures">ジェスチャー</string>
     <string name="preference_about_telegram">Telegram グループ</string>
     <string name="icon_picker_default_icon">デフォルト</string>
-    <string name="restore_complete">バックアップが復元されました。</string>
     <string name="preference_cards">カード</string>
     <string name="preference_cards_summary">カードの外観をカスタマイズ</string>
     <string name="preference_cards_corner_radius">角の丸み</string>
@@ -229,13 +224,10 @@
     <string name="preference_themed_icons">テーマアイコン</string>
     <string name="preference_screen_plugins_summary">インストール済みのプラグインを管理</string>
     <string name="preference_screen_integrations">統合</string>
-    <string name="preference_screen_backup">バックアップと復元</string>
-    <string name="preference_screen_backup_summary">ランチャーのデータをインポート/エクスポート</string>
     <string name="preference_screen_weatherwidget">天気</string>
     <string name="preference_category_license">ライセンス</string>
     <string name="preference_about_license">このアプリはフリーソフトウェアです。</string>
     <string name="preference_about_license_summary">GNU 一般公衆ライセンス 3.0 のもとでライセンスされています</string>
-    <string name="backup_complete">バックアップが完了しました。</string>
     <string name="preference_screen_search_actions">クイックアクション</string>
     <string name="preference_restore_default">デフォルトに復元</string>
     <string name="preference_screen_about">このアプリについて</string>

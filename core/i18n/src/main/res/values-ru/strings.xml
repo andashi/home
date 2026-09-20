@@ -268,7 +268,6 @@
     <string name="action_undo">Отменить</string>
     <string name="preference_icon_pack">Набор иконок</string>
     <string name="preference_icon_pack_summary_empty">Наборы иконок не установлены</string>
-    <string name="file_type_launcherbackup">Резервная копия %1$s</string>
     <string name="preference_category_system_bars">Системные панели</string>
     <string name="websearch_dialog_query_encoding">Кодировка запроса</string>
     <string name="alert_delete_shortcut">Ярлык %1$s будет удален навсегда. Продолжить\?</string>
@@ -386,12 +385,6 @@
     <string name="preference_owncloud_signin">Войти в Owncloud</string>
     <string name="preference_owncloud_signin_summary">Войдите для поиска на сервере Owncloud</string>
     <string name="preference_clockwidget_favorites_part">Быстрый доступ</string>
-    <string name="preference_screen_backup">Резервное копирование</string>
-    <string name="preference_screen_backup_summary">Экспортируйте и импортируйте данные лаунчера</string>
-    <string name="preference_backup">Создать резервную копию</string>
-    <string name="preference_backup_summary">Экспортировать настройки и данные лаунчера</string>
-    <string name="preference_restore">Восстановить из копии</string>
-    <string name="preference_restore_summary">Импортировать ранее созданную резевную копию</string>
     <string name="preference_crash_reporter">Отчёты об ошибках</string>
     <string name="preference_logs">Журналы</string>
     <string name="preference_logs_summary">Просмотр и экспорт журналов приложения</string>
@@ -403,11 +396,6 @@
     <string name="preference_favorites_edit_button_summary">Показывать кнопку для редактирования избранных</string>
     <string name="preference_widgets_edit_button_summary">Показывать кнопку для добавления, удаления и редактирования виджетов</string>
     <string name="no_account_nextcloud">Вы ещё не подключили учётную запись Nextcloud</string>
-    <string name="restore_meta">Создано %1$s на %2$s в %3$s.</string>
-    <string name="backup_complete">Резервная копия создана.</string>
-    <string name="restore_invalid_file">Не похоже, что выбранный файл является резервной копией. Вы уверены, что выбрали верный файл?</string>
-    <string name="restore_incompatible_file">Резервная копия была создана на другой версии %1$s и не может быть восстановлена на текущей.</string>
-    <string name="restore_different_minor_version">Резервная копия была создана на другой версии %1$s. Некоторые данные могут быть восстановлены неправильно.</string>
     <string name="preference_hidden_items">Скрытые результаты поиска</string>
     <string name="preference_hidden_items_summary">Управление скрытыми приложениями и результатами поиска</string>
     <string name="preference_screen_tags">Теги</string>
@@ -416,7 +404,6 @@
     <string name="preference_favorites_frequently_used_summary">Показывать часто используемые в избранном</string>
     <string name="preference_edit_button">Кнопка для редактирования</string>
     <string name="no_account_owncloud">Вы ещё не подключили учётную запись Owncloud</string>
-    <string name="restore_complete">Резервная копия восстановлена.</string>
     <string name="favorites">Избранные</string>
     <string name="favorites_empty">Закрепленные и часто используемые элементы будут находиться здесь</string>
     <string name="widget_config_weather_compact">Компактный вид</string>

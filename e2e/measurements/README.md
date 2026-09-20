@@ -116,12 +116,38 @@ The animation is a real cost on a charging phone, and it is on by default
 (`animationsCharging = true`, `LauncherSettingsData.kt`), but it is a constant
 that has nothing to do with how many modules the build contains.
 
-Unplugged, PSS came out ~6% higher (186 MB → 198 MB) with five more threads,
-although two runs of the *plugged* protocol had agreed to 0.003%. The likely
-reason is that the animation was starving the launcher's own start-up work, so
-less of it finished inside the settle window — a hypothesis, not a measured
-fact. Either way, before/after comparisons must be taken under the same
-protocol, which `battery.status` in each file makes checkable.
+Before/after comparisons must be taken under the same protocol, which
+`battery.status` in each file makes checkable.
+
+## How much of a delta is real
+
+The static metrics are deterministic: the same source produces the same APK
+size, dex method references, permission list and module count every time. A
+change there is a change.
+
+The runtime metrics are not. Two runs measured on 2026-09-20 from the same
+snapshot, on builds differing by a single unused vector drawable (~1 KB),
+came out like this:
+
+| Metric | run 1 | run 2 | spread |
+|---|---|---|---|
+| `mem.pss.total` | 186896 KB | 198402 KB | 6.2% |
+| `mem.code` | 85640 KB | 93300 KB | 8.9% |
+| `cpu.startup` | 12.73 s | 10.91 s | 14.3% |
+| `cpu.home_screen` | 2.40% | 1.90% | 20.8% |
+| `cpu.home_screen_charging` | 3.10% | 2.70% | 12.9% |
+| `start.cold.min` | 2621 ms | 1927 ms | 26.5% |
+
+So a single run cannot support a claim like "this removal saved 5% of the
+launcher's memory". Treat a one-run runtime delta below roughly 10% for
+memory, 20% for CPU and 25% for cold start as noise, and repeat the
+measurement before concluding anything inside those bands. Earlier two runs
+of this harness happened to agree on PSS to 0.003%, which was luck rather
+than precision — the table above is the honest picture.
+
+What the runtime half is good for is catching the large, unambiguous effects:
+the charging animation showed up as 99.20% versus 1.60% of a core, which no
+amount of this noise can manufacture.
 
 ## Caveats that apply to every number here
 

@@ -5,7 +5,6 @@ import androidx.core.content.ContextCompat
 import de.mm20.launcher2.base.R
 import de.mm20.launcher2.icons.ColorLayer
 import de.mm20.launcher2.icons.StaticLauncherIcon
-import de.mm20.launcher2.icons.TintedIconLayer
 import de.mm20.launcher2.icons.VectorLayer
 import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.serialization.SerialName
@@ -50,7 +49,6 @@ interface File : SavableSearchable {
                 "application/vnd.android.package-archive" -> R.drawable.android_24px to R.color.lightgreen
                 "application/vnd.google-apps.form" -> R.drawable.ballot_24px to R.color.deeppurple
                 "application/vnd.google-apps.drawing" -> R.drawable.shape_line_24px to R.color.teal
-                "application/vnd.de.mm20.launcher2.backup" -> R.drawable.settings_24px to R.color.brown
                 "application/vnd.de.mm20.launcher2.theme" -> R.drawable.palette_24px to R.color.amber
                 else -> R.drawable.draft_24px to R.color.bluegrey
             }
@@ -66,12 +64,6 @@ interface File : SavableSearchable {
 
     fun getFileType(context: Context): String {
         if (isDirectory) return context.getString(R.string.file_type_directory)
-        if (mimeType == "application/vnd.de.mm20.launcher2.backup") {
-            return context.getString(
-                R.string.file_type_launcherbackup,
-                context.getString(R.string.app_name)
-            )
-        }
         if (mimeType == "application/vnd.de.mm20.launcher2.theme") {
             return context.getString(
                 R.string.file_type_launchertheme,

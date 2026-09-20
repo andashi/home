@@ -360,7 +360,6 @@
     <string name="file_type_source_code">Dokumen kode sumber</string>
     <string name="file_type_spreadsheet">Lembar kerja</string>
     <string name="file_type_ebook">Buku elektronik</string>
-    <string name="file_type_launcherbackup">%1$s cadangan</string>
     <string name="file_type_drawing">Gambar</string>
     <string name="action_import">Impor</string>
     <string name="location_closes_other_day">tutup pada %1$s , %2$s</string>
@@ -387,7 +386,6 @@
     <string name="preference_debug_dump_heap_summary">Ambil snapshot untuk menganalisis penggunaan memori. Aplikasi akan berhenti bekerja hingga proses ini selesai.</string>
     <string name="preference_plugin_badges_summary">Tunjukkan plugin mana yang digunakan untuk membuat hasil pencarian</string>
     <string name="preference_location_managed_summary">Lokasi untuk penyedia ini dikelola oleh aplikasi plugin</string>
-    <string name="restore_incompatible_file">Cadangan ini dibuat dengan versi %1$s yang berbeda dan tidak dapat dipulihkan dengan versi ini.</string>
     <string name="preference_plugin_badges">Lencana plugin</string>
     <string name="preference_debug_dump_heap">Cuplikan memori</string>
     <string name="preference_debug_dump_heap_in_progress">Mengambil snapshot…</string>
@@ -411,9 +409,6 @@
     <string name="preference_about_license_summary">Dilisensikan di bawah Lisensi Publik Umum GNU 3.0</string>
     <string name="preference_screen_debug">DEBUG</string>
     <string name="preference_clock_widget_show_seconds">Tampilkan detik</string>
-    <string name="restore_complete">Cadangan telah dipulihkan.</string>
-    <string name="restore_different_minor_version">Cadangan ini dibuat dengan versi %1$s yang berbeda. Beberapa data mungkin tidak dapat dipulihkan dengan benar.</string>
-    <string name="restore_meta">Dibuat %1$s pada %2$s dengan %3$s.</string>
     <string name="action_done">Selesai</string>
     <string name="action_more_actions">Lebih banyak tindakan</string>
     <string name="action_clear">Bersihkan</string>

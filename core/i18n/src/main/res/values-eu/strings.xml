@@ -102,7 +102,6 @@
     <string name="menu_app_info">Aplikazioaren informazioa</string>
     <string name="menu_share_store_link">%1$s esteka</string>
     <string name="wikipedia_source">Wikipediatik</string>
-    <string name="file_type_launcherbackup">%1$s-(r)en segurtasun kopia</string>
     <string name="default_websearch_2_url">https://www.youtube.es/results\?search_query=${1}</string>
     <string name="websearch_dialog_url_error">\'${1}\' leku-marka falta da URL honetan</string>
     <string name="widget_name_notes">Oharrak</string>
@@ -251,12 +250,6 @@
     <string name="preference_clockwidget_battery_part">Bateria</string>
     <string name="preference_clockwidget_alarm_part">Alarmak</string>
     <string name="preference_clockwidget_alarm_part_summary">Erakutsi hurrengo 8 orduetan joko duten alarmak</string>
-    <string name="preference_screen_backup">Babeskopia eta berreskuratzea</string>
-    <string name="preference_screen_backup_summary">Esportatu eta inportatu abiarazlearen datuak</string>
-    <string name="preference_backup">Babeskopia</string>
-    <string name="preference_backup_summary">Esportatu ezarpenak eta abiarazlearen datuak</string>
-    <string name="preference_restore">Berreskuratu</string>
-    <string name="preference_restore_summary">Inportatu aurreko babeskopia</string>
     <string name="preference_search_favorites">Gogokoak</string>
     <string name="preference_search_files">Fitxategiak</string>
     <string name="preference_search_contacts">Kontaktuak</string>
@@ -373,10 +366,6 @@
         <item quantity="one">Kargatua minutu %1$sean</item>
         <item quantity="other">Kargatua %1$s minutuan</item>
     </plurals>
-    <string name="backup_complete">Babeskopia osatu da.</string>
-    <string name="restore_incompatible_file">Babeskopia hau %1$s-(r)en beste bertsio batekin sortu da eta ezin da bertsio honetan leheneratu.</string>
-    <string name="restore_meta">%1$s-an sortua %2$s gailuan %3$s-(r)ekin.</string>
-    <string name="restore_complete">Babeskopia leheneratu da.</string>
     <string name="icon_picker_default_icon">Lehenetsia</string>
     <string name="icon_picker_filter_all_packs">Ikono pakete guztiak</string>
     <string name="favorites">Gogokoak</string>
@@ -402,8 +391,6 @@
     <string name="search_action_app">Aplikazioa</string>
     <string name="search_action_websearch_url">URL txantiloia</string>
     <string name="connect_account">Kontua konektatu</string>
-    <string name="restore_invalid_file">Hautatutako fitxategia ez dirudi babeskopia denik. Ziur fitxategi egokia hautatu duzula\?</string>
-    <string name="restore_different_minor_version">Babeskopia hau %1$s-(r)en beste bertsio batekin sortu da. Baliteke datu batzuk behar bezala ez leheneratzea.</string>
     <string name="preference_screen_search_actions">Ekintza bizkorrak</string>
     <string name="preference_search_search_actions_summary">Ekintza bizkorrak eta bilaketa-lasterbideak konfiguratu</string>
     <string name="gesture_action_recents">Azkeneko aplikazioak ireki</string>

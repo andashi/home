@@ -86,7 +86,6 @@
     <string name="file_meta_app_pkgname">Назва пакета: %1$s</string>
     <string name="alert_delete_directory">Каталог %1$s і ўсе яго змесціва будзе назаўжды выдалена. Працягнуць?</string>
     <string name="file_meta_type">Тып: %1$s</string>
-    <string name="file_type_launcherbackup">Рэзервовая копія %1$s</string>
     <string name="file_type_source_code">Файл з зыходным кодам</string>
     <string name="default_websearch_2_name">YouTube</string>
     <string name="action_done">Гатова</string>
@@ -380,14 +379,8 @@
     <string name="preference_about_fdroid">Рэпазіторый F-Droid</string>
     <string name="preference_category_license">Ліцэнзія</string>
     <string name="preference_clockwidget_music_part_summary">Адлюстроўвае кнопкі кіравання мультымедыя, калі ёсць актыўны сеанс медыя</string>
-    <string name="preference_screen_backup">Рэзервовае капіраванне і аднаўленне</string>
-    <string name="preference_screen_backup_summary">Экспарт і імпарт даных праграмы запуску</string>
     <string name="preference_clockwidget_alarm_part_summary">Адлюстроўвае будзільнікі, якія празвоняць менш чым праз 8 гадзін</string>
     <string name="preference_clockwidget_battery_part">Батарэя</string>
-    <string name="preference_backup_summary">Экспартаваць налады і дадзеныя праграмы запуску</string>
-    <string name="preference_restore">Аднаўленне</string>
-    <string name="preference_restore_summary">Аднавіць з дапамогай раней створанай рэзервовай копіі</string>
-    <string name="preference_backup">Рэзервовае капіраванне</string>
     <string name="preference_clockwidget_alarm_part">Будзільнікі</string>
     <string name="preference_logs_summary">Праглядвайце і экспартуйце запісы з журнала праграмы</string>
     <string name="preference_screen_search">Пошук</string>
@@ -456,23 +449,17 @@
     <string name="battery_part_charging">Зараджаецца</string>
     <string name="preference_favorites_frequently_used_summary">Паказваць нядаўна выкарыстаныя ярлыкі ў панэлі абранага</string>
     <string name="no_account_owncloud">Вы яшчэ не далучылі ўліковы запіс Owncloud</string>
-    <string name="backup_complete">Рэзервовае капіяванне скончана.</string>
-    <string name="restore_invalid_file">Здаецца, выбраны файл не з\'яўляецца рэзервовай копіяй. Вы ўпэўнены, што выбралі правільны файл?</string>
     <string name="preference_favorites_edit_button_summary">Паказваць кнопку рэдагавання абраных</string>
-    <string name="restore_different_minor_version">Гэта рэзервовая копія была створана з іншай версіі %1$s. Некаторыя дадзеныя могуць не аднавіцца пэўна.</string>
     <plurals name="battery_part_remaining_charge_time">
         <item quantity="one">Зарадзіцца поўнасцю праз %1$s хвіліну</item>
         <item quantity="few">Зарадзіцца поўнасцю праз %1$s хвіліны</item>
         <item quantity="many">Зарадзіцца поўнасцю праз %1$s хвілін</item>
         <item quantity="other">Зарадзіцца поўнасцю праз %1$s хвілін</item>
     </plurals>
-    <string name="restore_incompatible_file">Гэта рэзервовая копія была створана з іншай версіяй %1$s і не можа быць адноўлены з гэтай версіяй.</string>
     <string name="preference_edit_button">Кнопка рэдагавання</string>
-    <string name="restore_complete">Рэзервовая копія адноўлена.</string>
     <string name="icon_picker_suggestions">Прапановы</string>
     <string name="icon_picker_search_icon">Пошук у пакетах значкоў</string>
     <string name="icon_picker_default_icon">Прадвызначаны</string>
-    <string name="restore_meta">Створана %1$s на %2$s з %3$s.</string>
     <string name="icon_picker_filter_all_packs">Усе пакеты значкоў</string>
     <string name="preference_screen_search_actions">Хуткія дзеянні</string>
     <string name="preference_search_search_actions_summary">Кіраванне хуткімі дзеяннямі і ярлыкамі пошуку</string>

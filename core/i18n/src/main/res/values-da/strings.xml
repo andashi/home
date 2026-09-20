@@ -114,7 +114,6 @@
     <string name="preference_search_favorites">Favoritter</string>
     <string name="preference_search_contacts_summary">Søg i kontakter på denne enhed</string>
     <string name="preference_search_calculator">Lommeregner</string>
-    <string name="preference_restore">Gendan</string>
     <string name="edit_favorites_dialog_pinned_sorted">Fastgjort – sorteret manuelt</string>
     <string name="edit_favorites_dialog_empty_section">Træk elementer hertil</string>
     <string name="edit_favorites_dialog_tags">Tags</string>
@@ -210,7 +209,6 @@
     <string name="missing_permission_calendar_search_settings">Kalendertilladelse er påkrævet for at søge i kalenderen</string>
     <string name="menu_contacts_open_externally">Åbn i kontakter-app</string>
     <string name="file_meta_type">Type: %1$s</string>
-    <string name="file_type_launcherbackup">%1$s-sikkerhedskopi</string>
     <string name="edit_favorites_dialog_unpinned">Ikke fastgjort – bruges ofte</string>
     <string name="edit_favorites_dialog_tag_section_empty">Fastgjorte tags vises her</string>
     <string name="nextcloud_server_invalid_url">Denne URL henviser ikke til en gyldig Nextcloud-installation</string>
@@ -296,8 +294,6 @@
     <string name="preference_clockwidget_music_part">Medier</string>
     <string name="preference_clockwidget_music_part_summary">Vis mediekontrol, når der er en aktiv mediesession</string>
     <string name="preference_clockwidget_alarm_part">Alarmer</string>
-    <string name="preference_screen_backup_summary">Eksportér og importér launcher-data</string>
-    <string name="preference_backup">Sikkerhedskopiér</string>
     <string name="preference_crash_reporter_summary">Fejl- og nedbrudsrapporter</string>
     <string name="preference_crash_reporter">Nedbrudsrapport</string>
     <string name="preference_logs">Logfiler</string>
@@ -385,14 +381,12 @@
     <string name="preference_blur_wallpaper_radius">Sløringsradius</string>
     <string name="preference_custom_colors_corepalette">Farvepalet</string>
     <string name="preference_font">Skrifttype</string>
-    <string name="preference_backup_summary">Eksportér præferencer og launcher-data</string>
     <string name="preference_owncloud_signin">Log ind på Owncloud</string>
     <string name="preference_about_license">Denne app er fri software.</string>
     <string name="preference_grid_column_count">Antal kolonner</string>
     <string name="preference_blur_wallpaper">Slør baggrund</string>
     <string name="preference_screen_clockwidget">Ur</string>
     <string name="preference_clock_widget_alignment_top">Top</string>
-    <string name="preference_screen_backup">Sikkerhedskopiér &amp; Gendan</string>
     <string name="preference_mdy_color_source_system">System</string>
     <string name="widget_config_weather_compact">Kompakt tilstand</string>
     <string name="preference_clockwidget_favorites_part_summary">Vis den første række af fastgjorte elementer</string>
@@ -402,7 +396,6 @@
     <string name="preference_plugin_badges_summary">Vis hvilken udvidelse et søgeresultat blev oprettet af</string>
     <string name="preference_nextcloud_signin">Log ind på Nextcloud</string>
     <string name="preference_about_fdroid">F-Droid repository</string>
-    <string name="preference_restore_summary">Importér en tidligere oprettet sikkerhedskopi</string>
     <string name="preference_icon_shape_triangle">Reuleaux-trekant</string>
     <string name="preference_status_bar_icons">Statuslinje-ikoner</string>
     <string name="preference_notification_badges_summary">Vis et badge for applikationer med ulæste notifikationer</string>
@@ -429,10 +422,6 @@
         <item quantity="other">+%1$d igangværende begivenheder fra de sidste dage</item>
     </plurals>
     <string name="preference_icon_shape_squircle">Afrundet firkant</string>
-    <string name="backup_complete">Sikkerhedskopieringen blev fuldført.</string>
-    <string name="restore_invalid_file">Den valgte fil ser ikke ud til at være en sikkerhedskopi. Er du sikker på, at du har valgt den rigtige fil?</string>
-    <string name="restore_incompatible_file">Denne sikkerhedskopi blev oprettet med en anden version af %1$s og kan ikke gendannes med denne version.</string>
-    <string name="restore_meta">Oprettet %1$s på %2$s med %3$s.</string>
     <string name="icon_picker_suggestions">Forslag</string>
     <string name="icon_picker_filter_all_packs">Alle ikonpakker</string>
     <string name="apps_profile_main">Personlig</string>
@@ -520,12 +509,10 @@
     <string name="search_action_open_url">Se hjemmeside</string>
     <string name="search_action_websearch">Websøgning</string>
     <string name="icon_picker_search_icon">Søg i ikonpakker</string>
-    <string name="restore_complete">Sikkerhedskopien blev gendannet.</string>
     <string name="websearch_dialog_query_encoding">Indkoder søgning</string>
     <string name="websearch_dialog_query_encoding_url">Procent-indkodning</string>
     <string name="gesture_action_notifications">Åbn notifikationsskuffe</string>
     <string name="missing_permission_accessibility_gesture_settings">Denne handling kræver, at launcherens tilgængelighedstjeneste er aktiveret.</string>
-    <string name="restore_different_minor_version">Denne sikkerhedskopi blev oprettet med en anden version af %1$s. Nogle data gendannes muligvis ikke korrekt.</string>
     <string name="favorites_empty">Fastgjorte og ofte brugte elementer vises her</string>
     <string name="preference_screen_search_actions">Hurtige handlinger</string>
     <string name="search_action_event">Planlæg begivenhed</string>

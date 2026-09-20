@@ -363,7 +363,6 @@
     <string name="no_plugins_installed">Nu sunt instalate plugin-uri</string>
     <string name="preference_force_themed_icons">Forțați pictogramele tematice</string>
     <string name="preference_category_debug_tools">Instrumente</string>
-    <string name="file_type_launcherbackup">Backup %1$s</string>
     <string name="weather_location_search_no_result">Locație negăsită.</string>
     <string name="preference_force_themed_icons_summary">Aplicați schema de culori a aplicației la toate pictogramele, inclusiv celor nesuportate (nerecomandat)</string>
     <string name="preference_nav_bar_icons">Pictograme din bara de navigare</string>
@@ -408,7 +407,6 @@
     <string name="widget_action_replace">Înlocuiți</string>
     <string name="edit_favorites_dialog_tags">Etichete</string>
     <string name="edit_favorites_dialog_tag_section_empty">Etichetele fixate vor apărea aici</string>
-    <string name="preference_screen_backup">Backup &amp; Restaurare</string>
     <string name="preference_screen_clockwidget_summary">Configurează stilul ceasului și componentele</string>
     <string name="search_bar_position_top">Sus</string>
     <string name="search_bar_position_bottom">Jos</string>
@@ -423,7 +421,6 @@
     <string name="preference_layout_fixed_search_bar_summary">Nu derula bara de căutare din vedere</string>
     <string name="preference_screen_icons">Grilă &amp; iconițe</string>
     <string name="preference_screen_icons_summary">Grilă, dimensiune pictograme, pachete de iconițe, insigne</string>
-    <string name="preference_screen_backup_summary">Exportă și importă informații despre lansator</string>
     <string name="preference_blur_wallpaper">Încețoșează fundalul</string>
     <string name="preference_blur_wallpaper_summary">Folosește un efect de ceață asupra fundalului</string>
     <string name="preference_blur_wallpaper_unsupported">Nesuportat de acest dispozitiv</string>

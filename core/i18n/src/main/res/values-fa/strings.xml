@@ -62,7 +62,6 @@
     <string name="file_type_ebook">رایاکتاب</string>
     <string name="file_type_drawing">طراحی</string>
     <string name="file_type_form">فرم</string>
-    <string name="file_type_launcherbackup">%1$s پشتیبان</string>
     <string name="file_type_launchertheme">%1$s پوسته</string>
     <string name="file_type_generic">%1$s پرونده</string>
     <string name="alert_delete_directory">پوشه %1$s و تمام محتوای آن برای همیشه پاک می‌شود. ادامه دهید؟</string>
@@ -242,7 +241,6 @@
     <string name="preference_hidden_items">یافته‌های جستجوی مخفی</string>
     <string name="preference_hidden_items_summary">مدیریت برنامه‌ها و یافته‌های جستجوی مخفی</string>
     <string name="preference_screen_homescreen_summary">ساعت، نوار جستجو، تصویر زمینه، نوارهای سامانه</string>
-    <string name="restore_invalid_file">گمان میرود پرونده انتخاب‌شده یک پشتیبان نباشد. آیا باور دارید پرونده درست را انتخاب کرده‌اید؟</string>
     <string name="note_widget_file_read_error_description">پرونده پیوند داده‌شده را نمی‌توان خواند. گمان میرود جابجا یا پاک‌شده است. یک نگارش از حافظه داخلی برنامه راه‌انداز بازیابی شده است. اگر یادداشت را ویرایش کنید، پرونده پیوند داده‌شده احتمالاً بازنویسی خواهد شد.</string>
     <string name="theme_color_scheme_custom_color">سفارشی</string>
     <string name="shortcut_unavailable_description">این میانبر به دلیل اینکه %1$s در جانگاه راه‌انداز پیش‌گزیده انتخاب نشده غیرفعال است</string>
@@ -310,8 +308,6 @@
     <string name="preference_search_bar_auto_focus_summary">به شیوه خودکار هنگام بازکردن کشوی برنامه‌ها، صفحه‌کلید نمایش داده شود</string>
     <string name="preference_screen_icons">شبکه و نمادها</string>
     <string name="preference_screen_icons_summary">شبکه، اندازه نماد، بسته‌های نماد، نشان‌ها</string>
-    <string name="restore_different_minor_version">این پشتیبان با نسخه متفاوتی از %1$s ایجاد شده است. ممکن است برخی از داده‌ها به درستی بازیابی نشوند.</string>
-    <string name="restore_incompatible_file">این پشتیبان با نگارشی ناهمسان با %1$s ساخته شده و نمی‌تواند با این نگارش بازیابی شود.</string>
     <string name="search_action_label">نام</string>
     <string name="search_action_app">برنامه</string>
     <string name="icon_picker_suggestions">پیشنهادات</string>
@@ -458,17 +454,12 @@
     <string name="preference_category_widgets">ابزارک‌ها</string>
     <string name="preference_grid_labels">نمایش برچسب‌ها</string>
     <string name="preference_grid_labels_summary">نمایش نام برنامه زیر نماد</string>
-    <string name="preference_screen_backup">پشتیبان‌گیری و بازیابی</string>
-    <string name="preference_screen_backup_summary">صادرات و واردات داده‌های راه‌انداز</string>
-    <string name="preference_backup">پشتیبان‌گیری</string>
-    <string name="preference_restore">بازیابی</string>
     <string name="preference_clockwidget_alarm_part_summary">نمایش آلارم‌هایی که در ۸ ساعت آینده به صدا درمی‌آیند</string>
     <string name="preference_crash_reporter_summary">گزارش‌های خطا و خرابی</string>
     <string name="preference_logs">گزارش‌ها</string>
     <string name="preference_logs_summary">مشاهده و صدور گزارش‌های برنامه</string>
     <string name="preference_calendar_hide_completed">پنهان کردن وظیفه‌های انجام‌شده</string>
     <string name="preference_search_bar_style_summary">سفارشی کردن ظاهر نوار جستجو</string>
-    <string name="restore_meta">ساخته شده %1$s در %2$s با %3$s.</string>
     <string name="open_search_swipe_right">کشیدن به راست</string>
     <string name="tag_name">نام برچسب</string>
     <string name="preference_layout_open_search">جستجو / کشوی برنامه‌ها</string>
@@ -564,9 +555,7 @@
     <string name="preference_compact_tags">برچسب‌های فشرده</string>
     <string name="preference_compact_tags_summary">مخفی کردن برچسب‌ها یا نمادها برای کاهش فضای اشغال‌شده توسط برچسب‌ها</string>
     <string name="preference_screen_homescreen">صفحه خانگی</string>
-    <string name="backup_complete">پشتیبان‌گیری تکمیل شد.</string>
     <string name="icon_picker_default_icon">پیش‌گزیده</string>
-    <string name="restore_complete">پشتیبان بازیابی شد.</string>
     <string name="apps_profile_work">کار</string>
     <string name="icon_picker_filter_all_packs">همه بسته‌های نماد</string>
     <string name="apps_profile_main">شخصی</string>
@@ -654,8 +643,6 @@
     <string name="preference_clockwidget_date_part_summary">نمایش تاریخ کنونی</string>
     <string name="preference_clockwidget_favorites_part">نوار ابزار</string>
     <string name="preference_clockwidget_favorites_part_summary">نمایش اولین ردیف موارد دلخواه</string>
-    <string name="preference_restore_summary">وارد کردن یک پشتیبان ایجاد شده قبلی</string>
-    <string name="preference_backup_summary">صادرات تنظیمات و داده‌های راه‌انداز</string>
     <string name="preference_search_currencyconverter_summary">به شیوه دوره‌ای نرخ ارزها را برای تبدیل واحد پولی دریافت کنید</string>
     <string name="preference_search_wikipedia_summary">جستجوی دانشنامه آزاد</string>
     <string name="preference_search_websites">وبگاه‌ها</string>

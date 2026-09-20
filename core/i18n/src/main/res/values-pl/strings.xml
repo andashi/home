@@ -284,7 +284,6 @@
     </plurals>
     <string name="save">Zapisz</string>
     <string name="missing_permission_calendar_widget_settings">Ten widżet potrzebuje uprawnień dostępu do kalendarza</string>
-    <string name="file_type_launcherbackup">Kopia zapasowa %1$s</string>
     <string name="wind_south_south_west">Południowy południowy zachód</string>
     <string name="wind_north_north_west">Północny północny zachód</string>
     <string name="calendar_widget_next_events">Następne wydarzenie</string>
@@ -305,7 +304,6 @@
     <string name="preference_enforce_icon_shape">Wymuś kształt</string>
     <string name="preference_enforce_icon_shape_summary">Zastosuj kształt do wszystkich ikon, również do tych, które normalnie by go nie obsługiwały</string>
     <string name="preference_grid_labels">Pokaż etykiety</string>
-    <string name="preference_restore_summary">Importuj wcześniej utworzoną kopię zapasową</string>
     <string name="duplicate">Duplikuj</string>
     <string name="missing_permission_file_search_settings_android10">Uprawnienie \"Zarządzaj wszystkimi plikami\" jest wymagane do przeszukiwania plików lokalnych</string>
     <string name="missing_permission_calendar_widget">Nadaj kalendarzowi uprawnienia do wyświetlania tutaj nadchodzących terminów i wydarzeń.</string>
@@ -314,7 +312,6 @@
     <string name="preference_grid_labels_summary">Pokaż nazwę aplikacji pod ikoną</string>
     <string name="create_search_action_type_intent">Niestandardowy intent</string>
     <string name="create_search_action_type_app">Wyszukiwanie w aplikacji</string>
-    <string name="preference_restore">Przywróć</string>
     <string name="tag_exists_error">Tag o tej nazwie już istnieje.</string>
     <string name="tag_exists_message">Tag o tej nazwie już istnieje. Jeśli będziesz kontynuować, oba tagi zostaną połączone.</string>
     <string name="tag_no_items_message">Do tego tagu nie są przypisane żadne elementy. Jeśli będziesz kontynuować, tag zostanie usunięty.</string>
@@ -337,7 +334,6 @@
     <string name="preference_force_themed_icons">Wymuś ikony tematyczne</string>
     <string name="preference_force_themed_icons_summary">Zastosuj schemat kolorów aplikacji do wszystkich ikon, również tych nieobsługiwanych (niezalecane)</string>
     <string name="preference_blur_wallpaper">Rozmywaj tapetę</string>
-    <string name="preference_screen_backup">Kopia zapasowa i przywracanie</string>
     <string name="preference_status_bar_icons">Ikony paska stanu</string>
     <string name="preference_nav_bar_icons">Ikony paska nawigacyjnego</string>
     <string name="preference_system_bar_icons_auto">Automatycznie</string>
@@ -347,10 +343,7 @@
     <string name="preference_clockwidget_music_part_summary">Pokaż elementy sterujące mediów, gdy jest aktywna sesja multimedialna</string>
     <string name="preference_search_appshortcuts">Skróty aplikacji</string>
     <string name="edit_favorites_dialog_empty_section">Przeciągnij elementy tutaj</string>
-    <string name="restore_invalid_file">Wybrany plik nie wydaje się być kopią zapasową. Czy jesteś pewien, że wybrałeś właściwy plik\?</string>
-    <string name="restore_incompatible_file">Ta kopia zapasowa została utworzona przy użyciu innej wersji %1$s i nie może być przywrócona przy użyciu tej wersji.</string>
     <string name="preference_notification_badges">Plakietki powiadomień</string>
-    <string name="preference_screen_backup_summary">Eksport i import danych launchera</string>
     <string name="preference_font">Czcionka</string>
     <string name="preference_logs">Dzienniki zdarzeń</string>
     <string name="preference_logs_summary">Wyświetlanie i eksportowanie dzienników zdarzeń aplikacji</string>
@@ -380,15 +373,10 @@
     <string name="preference_blur_wallpaper_unsupported">Nieobsługiwane na tym urządzeniu</string>
     <string name="icon_picker_search_icon">Wyszukiwanie w pakietach ikon</string>
     <string name="preference_icon_shape_teardrop">Łza</string>
-    <string name="backup_complete">Tworzenie kopii zapasowej zostało zakończone.</string>
     <string name="edit_favorites_dialog_tags">Tagi</string>
     <string name="edit_favorites_dialog_tag_section_empty">Przypięte tagi pojawią się tutaj</string>
-    <string name="restore_complete">Kopia zapasowa została przywrócona.</string>
     <string name="preference_screen_tags">Tagi</string>
     <string name="preference_screen_tags_summary">Zarządzaj tagami i oznaczonymi elementami</string>
-    <string name="restore_different_minor_version">Ta kopia zapasowa została utworzona przy użyciu innej wersji programu %1$s. Niektóre dane mogą nie zostać przywrócone prawidłowo.</string>
-    <string name="preference_backup">Kopia zapasowa</string>
-    <string name="preference_backup_summary">Eksportowanie preferencji i danych launchera</string>
     <string name="websearch_dialog_advanced">Zaawansowane</string>
     <string name="preference_cards_corner_radius">Promień narożnika</string>
     <string name="websearch_dialog_query_encoding">Kodowanie zapytania</string>
@@ -432,7 +420,6 @@
     <string name="preference_favorites_frequently_used_summary">Pokaż często używane elementy w ulubionych</string>
     <string name="preference_edit_button">Przycisk \"Edytuj\"</string>
     <string name="preference_favorites_edit_button_summary">Pokaż przycisk, aby zmienić układ ulubionych</string>
-    <string name="restore_meta">Utworzono %1$s na %2$s przez %3$s.</string>
     <string name="icon_picker_suggestions">Sugestie</string>
     <string name="apps_profile_work">Praca</string>
     <string name="favorites">Ulubione</string>

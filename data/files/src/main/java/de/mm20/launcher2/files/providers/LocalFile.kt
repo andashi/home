@@ -235,7 +235,6 @@ internal data class LocalFile(
                 "ogg" -> "audio/ogg"
                 "wav" -> "audio/wav"
                 "mp4" -> "video/mp4"
-                "kvaesitso" -> "application/vnd.de.mm20.launcher2.backup"
                 "kvtheme" -> "application/vnd.de.mm20.launcher2.theme"
                 else -> "application/octet-stream"
             }

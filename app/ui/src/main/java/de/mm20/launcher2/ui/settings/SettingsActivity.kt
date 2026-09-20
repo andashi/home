@@ -2,7 +2,6 @@ package de.mm20.launcher2.ui.settings
 
 import android.content.Intent
 import android.os.Bundle
-import androidx.activity.SystemBarStyle
 import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -25,9 +24,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalView
-import androidx.core.app.GrammaticalInflectionManagerCompat
 import androidx.core.view.WindowCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -54,8 +51,6 @@ import de.mm20.launcher2.ui.settings.apps.AppSearchSettingsRoute
 import de.mm20.launcher2.ui.settings.apps.AppSearchSettingsScreen
 import de.mm20.launcher2.ui.settings.appshortcuts.AppShortcutsSettingsRoute
 import de.mm20.launcher2.ui.settings.appshortcuts.AppShortcutsSettingsScreen
-import de.mm20.launcher2.ui.settings.backup.BackupSettingsRoute
-import de.mm20.launcher2.ui.settings.backup.BackupSettingsScreen
 import de.mm20.launcher2.ui.settings.breezyweather.BreezyWeatherSettingsRoute
 import de.mm20.launcher2.ui.settings.breezyweather.BreezyWeatherSettingsScreen
 import de.mm20.launcher2.ui.settings.buildinfo.BuildInfoSettingsRoute
@@ -313,9 +308,6 @@ class SettingsActivity : BaseActivity() {
             }
             entry<CurrencySettingsRoute> {
                 CurrencySettingsScreen()
-            }
-            entry<BackupSettingsRoute> {
-                BackupSettingsScreen()
             }
             entry<CrashReporterRoute> {
                 CrashReporterScreen()

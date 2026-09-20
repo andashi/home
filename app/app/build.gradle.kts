@@ -139,7 +139,6 @@ dependencies {
     implementation(project(":services:accounts"))
     implementation(project(":data:applications"))
     implementation(project(":data:appshortcuts"))
-    implementation(project(":services:backup"))
     implementation(project(":services:badges"))
     implementation(project(":core:base"))
     implementation(project(":data:calculator"))

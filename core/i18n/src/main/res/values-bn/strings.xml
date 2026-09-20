@@ -74,7 +74,6 @@
     <string name="file_type_text">প্লেইন টেক্সট ফাইল</string>
     <string name="file_type_ebook">ইলেকট্রনিক বই</string>
     <string name="file_type_form">ফরম</string>
-    <string name="file_type_launcherbackup">%1$s ব্যাকআপ</string>
     <string name="file_type_launchertheme">%1$s থীম</string>
     <string name="file_type_generic">%1$s ফাইল</string>
     <string name="file_type_music">সঙ্গীত ফাইল</string>
