@@ -11,7 +11,6 @@ val KeyboardFilterBarItem.iconMedium
         KeyboardFilterBarItem.Contacts -> R.drawable.person_24px
         KeyboardFilterBarItem.Shortcuts -> R.drawable.mobile_arrow_up_right_24px
         KeyboardFilterBarItem.HiddenResults -> R.drawable.visibility_off_24px
-        KeyboardFilterBarItem.OnlineResults -> R.drawable.language_24px
     }
 
 val KeyboardFilterBarItem.iconSmall
@@ -20,7 +19,6 @@ val KeyboardFilterBarItem.iconSmall
         KeyboardFilterBarItem.Contacts -> R.drawable.person_20px
         KeyboardFilterBarItem.Shortcuts -> R.drawable.mobile_arrow_up_right_20px
         KeyboardFilterBarItem.HiddenResults -> R.drawable.visibility_off_20px
-        KeyboardFilterBarItem.OnlineResults -> R.drawable.language_20px
     }
 
 fun KeyboardFilterBarItem.getLabel(context: Context): String {
@@ -29,13 +27,12 @@ fun KeyboardFilterBarItem.getLabel(context: Context): String {
         KeyboardFilterBarItem.Contacts -> context.getString(R.string.preference_search_contacts)
         KeyboardFilterBarItem.Shortcuts -> context.getString(R.string.preference_search_appshortcuts)
         KeyboardFilterBarItem.HiddenResults -> context.getString(R.string.preference_hidden_items)
-        KeyboardFilterBarItem.OnlineResults -> context.getString(R.string.search_filter_online)
     }
 }
 
 val KeyboardFilterBarItem.isCategory
     get() = when (this) {
-        KeyboardFilterBarItem.OnlineResults, KeyboardFilterBarItem.HiddenResults -> false
+        KeyboardFilterBarItem.HiddenResults -> false
         else -> true
     }
 
@@ -46,7 +43,6 @@ fun SearchFilters.isSelected(item: KeyboardFilterBarItem): Boolean {
         KeyboardFilterBarItem.Contacts -> contacts
         KeyboardFilterBarItem.Shortcuts -> shortcuts
         KeyboardFilterBarItem.HiddenResults -> hiddenItems
-        KeyboardFilterBarItem.OnlineResults -> allowNetwork
     }
 }
 
@@ -56,6 +52,5 @@ fun SearchFilters.toggle(item: KeyboardFilterBarItem): SearchFilters {
         KeyboardFilterBarItem.Contacts -> return toggleContacts()
         KeyboardFilterBarItem.Shortcuts -> return toggleShortcuts()
         KeyboardFilterBarItem.HiddenResults -> return copy(hiddenItems = !hiddenItems)
-        KeyboardFilterBarItem.OnlineResults -> return copy(allowNetwork = !allowNetwork)
     }
 }

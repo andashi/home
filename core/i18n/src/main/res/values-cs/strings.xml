@@ -108,6 +108,7 @@
     <string name="preference_screen_search_summary">Vyhledávání, štítky, vyloučené výsledky</string>
     <string name="preference_screen_search">Hledání</string>
     <string name="preference_search_favorites">Oblíbené</string>
+    <string name="preference_search_favorites_summary">Zobrazit připnuté a často používané položky nad mřízkou s aplikacemi</string>
     <string name="preference_search_contacts">Kontakty</string>
     <string name="preference_search_contacts_summary">Prohledávat kontakty na tomto zařízení</string>
     <string name="preference_search_appshortcuts">Záložky aplikací</string>
@@ -239,7 +240,7 @@
     <string name="preference_search_result_ordering_weight_factor_high">Různé</string>
     <string name="preference_search_result_ordering_weight_factor">Flexibilita hodnocení</string>
     <string name="preference_screen_homescreen">Domovská obrazovka</string>
-    <string name="preference_screen_homescreen_summary">Hodiny, vyhledávací lišta, pozadí, systémové lišty</string>
+    <string name="preference_screen_homescreen_summary">Vyhledávací lišta, pozadí, systémové lišty</string>
     <string name="preference_screen_icons">Mřížka a ikony</string>
     <string name="preference_screen_icons_summary">Velikost mřížky, ikony, odznaky</string>
     <string name="widget_action_replace">Nahradit</string>
@@ -278,13 +279,11 @@
     <string name="widget_use_theme_colors">Použít barvu motivu</string>
     <string name="widget_pick_widget">Vyberte widget</string>
     <string name="search_action_share">Sdílet</string>
-    <string name="search_filter_online">Online výsledky</string>
     <string name="search_filter_apps">Aplikace</string>
     <string name="preference_default_filter">Výchozí filtr</string>
     <string name="preference_default_filter_summary">Přizpůsobit výchozí filtr pro vyhledávání</string>
     <string name="preference_filter_bar_summary">Zobrazit rychlé filtry nad klávesnicí</string>
     <string name="preference_filter_bar">Zobrazit lištu s filtry</string>
-    <string name="filter_settings_network_warning">Aktuální filtr má ve výchozím nastavení povolené online výsledky. Vaše dotazy mohou být neúmyslně odesílány na externí webové služby. Z důvodu ochrany soukromí toto není doporučeno.</string>
     <string name="preference_customize_filter_bar">Přizpůsobit lištu filtrů</string>
     <string name="preference_customize_filter_bar_summary">Přizpůsobte si, které položky mají být zahrnuty na liště filtrů</string>
     <string name="customize_item_tags">Štítky</string>
@@ -383,17 +382,13 @@
     <string name="preference_search_apps">Aplikace</string>
     <string name="preference_search_apps_summary">Zobrazit všechny aplikace, když je pole vyhledávání prázdné</string>
     <string name="preference_screen_locale">Jazyk a oblast</string>
-    <string name="preference_screen_locale_summary">Jazyk, jednotky, formát čaasu</string>
+    <string name="preference_screen_locale_summary">Jazyk, formát čaasu</string>
     <string name="preference_language">Jazyk</string>
     <string name="preference_value_system_default">Podle systému</string>
     <string name="preference_form_of_address">Oslovení</string>
     <string name="preference_form_of_address_neutral">Neutrální</string>
     <string name="preference_form_of_address_fem">Ženské</string>
     <string name="preference_form_of_address_masc">Mužské</string>
-    <string name="preference_measurement_system">Měrná soustava</string>
-    <string name="preference_measurement_system_metric">Metrická</string>
-    <string name="preference_measurement_system_uk">Spojené království</string>
-    <string name="preference_measurement_system_us">Spojené státy</string>
     <string name="preference_transliteration">Preferovaná transkripce</string>
     <string name="preference_transliteration_auto">Automatická</string>
     <string name="preference_value_disabled">Zakázaná</string>
@@ -440,7 +435,5 @@
     <string name="search_query_private_space">Soukromý prostor</string>
     <string name="search_action_private_space_lock">Zamknout soukromý prostor</string>
     <string name="search_action_private_space_unlock">Odemknout soukromý prostor</string>
-    <string name="preference_currencies">Měna</string>
-    <string name="preference_add_currency">Přidat měnu</string>
     <string name="favorites_skip_rows">Přeskočit řádky</string>
 </resources>

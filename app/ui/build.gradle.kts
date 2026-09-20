@@ -22,7 +22,6 @@ android {
         minSdk = libs.versions.minSdk.get().toInt()
         
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        consumerProguardFiles("consumer-rules.pro")
         signingConfig = signingConfigs.getByName("debug")
     }
 
@@ -118,7 +117,6 @@ dependencies {
 
     implementation(project(":core:base"))
     implementation(project(":core:i18n"))
-    implementation(project(":core:compat"))
     implementation(project(":core:ktx"))
     implementation(project(":core:profiles"))
     implementation(project(":services:icons"))

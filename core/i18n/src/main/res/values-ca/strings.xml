@@ -126,6 +126,7 @@
     <string name="preference_screen_search">Cerca</string>
     <string name="preference_screen_search_summary">Cerca, etiquetes, elements ocults</string>
     <string name="preference_search_favorites">Preferits</string>
+    <string name="preference_search_favorites_summary">Mostra els elements fixats i utilitzats freqüentment a sobre de la graella de les aplicacions</string>
     <string name="preference_search_contacts">Contactes</string>
     <string name="preference_search_contacts_summary">Cerca contactes en aquest dispositiu</string>
     <string name="preference_search_appshortcuts">Dreceres d\'aplicacions</string>
@@ -148,7 +149,7 @@
     <string name="preference_edit_button">Botó \"Edita\"</string>
     <string name="preference_favorites_edit_button_summary">Mostra un botó per reorganitzar els preferits</string>
     <string name="preference_screen_homescreen">Pantalla inicial</string>
-    <string name="preference_screen_homescreen_summary">Rellotge, barra de cerca, fons de pantalla, barres del sistema</string>
+    <string name="preference_screen_homescreen_summary">Barra de cerca, fons de pantalla, barres del sistema</string>
     <string name="preference_screen_icons">Quadrícula i icones</string>
     <string name="preference_screen_icons_summary">Quadrícula, mida d\'icones, paquets d\'icones, insígnies</string>
     <string name="icon_picker_default_icon">Per defecte</string>
@@ -279,14 +280,12 @@
     <string name="widget_pick_widget">Trieu el giny</string>
     <string name="search_action_share">Compartir</string>
     <string name="preference_default_filter_summary">Personalitzeu el filtre predeterminat per a les cerques</string>
-    <string name="search_filter_online">Resultats en línia</string>
     <string name="preference_filter_bar">Mostra la barra de filtres</string>
     <string name="preference_filter_bar_summary">Mostra els filtres ràpids a sobre del teclat</string>
     <string name="search_filter_apps">Aplicacions</string>
     <string name="preference_default_filter">Filtre per defecte</string>
     <string name="preference_customize_filter_bar">Personalitza la barra de filtres</string>
     <string name="preference_customize_filter_bar_summary">Personalitza quins elements s\'inclouen a la barra de filtres</string>
-    <string name="filter_settings_network_warning">El filtre actual activa els resultats en línia de manera predeterminada. Les vostres consultes de cerca poden ser enviades sense voler a serveis web externs. Per motius de privadesa, això no es recomana.</string>
     <string name="customize_item_tags">Etiquetes</string>
     <string name="customize_item_visibility">Mostra a</string>
     <string name="item_visibility_app_default">Quadrícula d\'aplicacions i resultats de cerca</string>

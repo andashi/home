@@ -367,6 +367,7 @@
     <string name="preference_screen_search">Search</string>
     <string name="preference_screen_search_summary">Search, tags, excluded results</string>
     <string name="preference_search_favorites">Favorites</string>
+    <string name="preference_search_favorites_summary">Show pinned and frequently used items above app grid</string>
     <string name="preference_search_apps">Apps</string>
     <string name="preference_search_apps_summary">Show all apps when the search field is empty</string>
     <string name="preference_search_apps_show_details">Show app information</string>
@@ -403,7 +404,7 @@
     <string name="preference_widgets_on_home_screen">Widgets on home screen</string>
     <string name="preference_widgets_on_home_screen_summary">Show widgets on the home screen instead of a separate page</string>
     <string name="preference_screen_homescreen">Home screen</string>
-    <string name="preference_screen_homescreen_summary">Clock, search bar, wallpaper, system bars</string>
+    <string name="preference_screen_homescreen_summary">Search bar, wallpaper, system bars</string>
     <string name="preference_screen_icons">Grid and icons</string>
     <string name="preference_screen_icons_summary">Grid size, icons, badges</string>
     <!-- %1$s: app name (Kvaesitso) -->
@@ -539,7 +540,6 @@
     <string name="unavailable_searchable">This item does not exist anymore</string>
     <string name="menu_show_filters">Show filters</string>
     <string name="menu_hide_filters">Hide filters</string>
-    <string name="search_filter_online">Online results</string>
     <string name="search_filter_apps">Apps</string>
     <string name="preference_default_filter">Default filter</string>
     <string name="preference_default_filter_summary">Customize the default filter for searches</string>
@@ -547,7 +547,6 @@
     <string name="preference_filter_bar_summary">Show quick filters above the keyboard</string>
     <string name="preference_customize_filter_bar">Customize filter bar</string>
     <string name="preference_customize_filter_bar_summary">Customize which items are included in the filter bar</string>
-    <string name="filter_settings_network_warning">The current filter enables online results by default. Your search queries might unintentionally be sent to external web services. For privacy reasons, this is not recommended.</string>
     <string name="customize_item_label">Label</string>
     <string name="customize_item_tags">Tags</string>
     <string name="customize_item_visibility">Show in</string>
@@ -595,7 +594,7 @@
     <string name="font_name_device_body">Device text font</string>
     <string name="font_category_generic">Generic</string>
     <string name="preference_screen_locale">Language and region</string>
-    <string name="preference_screen_locale_summary">Language, units, time format</string>
+    <string name="preference_screen_locale_summary">Language, time format</string>
     <string name="preference_language">Language</string>
     <string name="preference_value_system_default">System default</string>
     <string name="preference_value_disabled">Disabled</string>
@@ -603,17 +602,11 @@
     <string name="preference_form_of_address_neutral">Neutral</string>
     <string name="preference_form_of_address_fem">Feminine</string>
     <string name="preference_form_of_address_masc">Masculine</string>
-    <string name="preference_measurement_system">Measurement system</string>
-    <string name="preference_measurement_system_metric">Metric</string>
-    <string name="preference_measurement_system_uk">United Kingdom</string>
-    <string name="preference_measurement_system_us">United States</string>
     <string name="preference_transliteration">Preferred transliteration</string>
     <string name="preference_transliteration_auto">Automatic</string>
     <string name="preference_calendar_system">Calendar system</string>
     <string name="preference_calendar_system_primary">Primary calendar</string>
     <string name="preference_calendar_system_secondary">Secondary calendar</string>
-    <string name="preference_currencies">Currency</string>
-    <string name="preference_add_currency">Add currency</string>
     <string name="select_tag">Select tag</string>
     <string name="create_tag_title">New tag</string>
     <string name="edit_tag_title">Edit tag</string>

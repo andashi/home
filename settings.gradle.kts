@@ -18,7 +18,6 @@ include(":app:ui")
 
 include(":core:base")
 include(":core:crashreporter")
-include(":core:compat")
 include(":core:config")
 include(":core:preferences")
 include(":core:ktx")

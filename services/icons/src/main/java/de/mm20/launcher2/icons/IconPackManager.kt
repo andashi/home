@@ -23,7 +23,6 @@ import de.mm20.launcher2.icons.compat.AdaptiveIconDrawableCompat
 import de.mm20.launcher2.icons.compat.toLauncherIcon
 import de.mm20.launcher2.icons.loaders.AppFilterIconPackInstaller
 import de.mm20.launcher2.icons.loaders.GrayscaleMapIconPackInstaller
-import de.mm20.launcher2.ktx.isAtLeastApiLevel
 import de.mm20.launcher2.ktx.randomElementOrNull
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -283,7 +282,7 @@ class IconPackManager(
         val themed = icon.themed && allowThemed
         return when {
             themed && drawable is AdaptiveIconDrawable -> {
-                if (isAtLeastApiLevel(33) && drawable.monochrome != null) {
+                if (drawable.monochrome != null) {
                     return StaticLauncherIcon(
                         foregroundLayer = TintedIconLayer(
                             icon = drawable.monochrome!!,

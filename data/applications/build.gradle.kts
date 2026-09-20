@@ -53,7 +53,6 @@ dependencies {
 
     implementation(project(":core:base"))
     implementation(project(":core:ktx"))
-    implementation(project(":core:compat"))
     implementation(project(":core:profiles"))
 
 }

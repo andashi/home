@@ -8,7 +8,6 @@
     <string name="confirmation_delete_shapes_scheme">Ты сапраўды хочаш выдаліць схему фігур «%1$s»?</string>
     <string name="confirmation_delete_transparencies_scheme">Ты сапраўды хочаш выдаліць схему празрыстасці «%1$s»?</string>
     <string name="import_theme_error">Выбраны файл не можа быць прачытаны. Упэўніся, што ты выбрала правільны файл тэмы (*.kvtheme) і што ён не пашкоджаны.</string>
-    <string name="filter_settings_network_warning">Бягучы фільтр прадвызначана ўключае рэзультаты з сетцы. Твае пошукавыя запыты могуць выпадкова быць дасланыя да знешніх вэб-сэрвісаў. Дзеля прыватнасці, гэты фільтр не рэкамендуецца.</string>
     <string name="bad_configuration_title">Віншую, ты закрыла сама сябе!</string>
     <string name="bad_configuration_summary">Ты знайшла канфігурацыю, пры якой нельга адкрыць ні пошук, ні налады, тым самым зрабіўшы праграму непрыгоднай для выкарыстання</string>
     <string name="edit_favorites_dialog_empty_section">Перацягні ярлыкі сюды</string>

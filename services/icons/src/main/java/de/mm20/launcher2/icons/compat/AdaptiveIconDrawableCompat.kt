@@ -20,7 +20,6 @@ import de.mm20.launcher2.icons.StaticIconLayer
 import de.mm20.launcher2.icons.StaticLauncherIcon
 import de.mm20.launcher2.icons.TintedClockLayer
 import de.mm20.launcher2.icons.TintedIconLayer
-import de.mm20.launcher2.ktx.isAtLeastApiLevel
 import de.mm20.launcher2.ktx.skipToNextTag
 import org.xmlpull.v1.XmlPullParserException
 import java.io.IOException
@@ -37,97 +36,15 @@ data class AdaptiveIconDrawableCompat(
             return AdaptiveIconDrawableCompat(
                 background = adaptiveIconDrawable.background,
                 foreground = adaptiveIconDrawable.foreground,
-                monochrome = if (isAtLeastApiLevel(33)) adaptiveIconDrawable.monochrome else null,
+                monochrome = adaptiveIconDrawable.monochrome,
             )
         }
 
         fun from(resources: Resources, resId: Int): AdaptiveIconDrawableCompat? {
-            if (isAtLeastApiLevel(33)) {
-                return try {
-                    val drawable = ResourcesCompat.getDrawable(resources, resId, null)
-                    if (drawable is AdaptiveIconDrawable) {
-                        from(drawable)
-                    } else {
-                        null
-                    }
-                } catch (e: Resources.NotFoundException) {
-                    null
-                }
-            }
-
-            var xmlParser: XmlResourceParser? = null
-
-            try {
-                xmlParser = resources.getXml(resId)
-                val attrs = Xml.asAttributeSet(xmlParser)
-                if (!xmlParser.skipToNextTag()) return null
-
-                if (xmlParser.name != "adaptive-icon") {
-                    return null
-                }
-
-                var background: Drawable? = null
-                var foreground: Drawable? = null
-                var monochrome: Drawable? = null
-
-                while (xmlParser.skipToNextTag()) {
-                    when (xmlParser.name) {
-                        "monochrome" -> {
-                            monochrome = parseLayer(resources, xmlParser, attrs)
-                        }
-
-                        "background" -> {
-                            background = parseLayer(resources, xmlParser, attrs)
-                        }
-
-                        "foreground" -> {
-                            foreground = parseLayer(resources, xmlParser, attrs)
-                        }
-                    }
-                }
-                if (foreground != null && background != null) {
-                    return AdaptiveIconDrawableCompat(
-                        background = background,
-                        foreground = foreground,
-                        monochrome = monochrome,
-                    )
-                }
-            } catch (e: Resources.NotFoundException) {
-                return null
-            } catch (e: IOException) {
-                return null
-            } catch (e: XmlPullParserException) {
-                return null
-            } finally {
-                xmlParser?.close()
-            }
-            return null
-        }
-
-        @Throws(
-            XmlPullParserException::class,
-            IOException::class,
-            Resources.NotFoundException::class
-        )
-        private fun parseLayer(
-            resources: Resources,
-            parser: XmlResourceParser,
-            attrs: AttributeSet
-        ): Drawable? {
-            val drawableId = parser.getAttributeResourceValue(
-                "http://schemas.android.com/apk/res/android",
-                "drawable",
-                0
-            )
-
-            if (drawableId != 0) {
-                return ResourcesCompat.getDrawable(resources, drawableId, null)
-            }
-            if (!parser.skipToNextTag()) return null
             return try {
-                Drawable.createFromXmlInner(resources, parser, attrs)
-            } catch (e: InflateException) {
-                CrashReporter.logException(e)
+                val drawable = ResourcesCompat.getDrawable(resources, resId, null)
+                if (drawable is AdaptiveIconDrawable) from(drawable) else null
+            } catch (e: Resources.NotFoundException) {
                 null
             }
         }

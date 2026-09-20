@@ -233,6 +233,7 @@
     <string name="preference_clockwidget_favorites_part">Dokk</string>
     <string name="preference_clockwidget_favorites_part_summary">Kitűzött elemek megjelenítése a dokkon</string>
     <string name="preference_search_favorites">Kedvencek</string>
+    <string name="preference_search_favorites_summary">Kitűzött és gyakran használt elemek megjelenítése az alkalmazásrács felett</string>
     <string name="preference_search_appshortcuts">Telepített alkalmazások</string>
     <string name="preference_search_appshortcuts_summary">Keresés a telepített alkalmazások között</string>
     <string name="preference_search_bar_style">Stílus</string>
@@ -241,7 +242,7 @@
     <string name="preference_screen_tags_summary">Címkék és címkézett elemek kezelése</string>
     <string name="preference_category_favorites_frequently_used">Gyakran használt</string>
     <string name="preference_screen_homescreen">Kezdőképernyő</string>
-    <string name="preference_screen_homescreen_summary">Óra, keresősáv, háttérkép, rendszersávok</string>
+    <string name="preference_screen_homescreen_summary">Keresősáv, háttérkép, rendszersávok</string>
     <string name="icon_picker_default_icon">Alapértelmezés</string>
     <string name="icon_picker_suggestions">Javaslatok</string>
     <string name="favorites">Kedvencek</string>
@@ -276,13 +277,11 @@
     <string name="widget_use_theme_colors">Téma színének használata</string>
     <string name="widget_pick_widget">Modul kiválasztása</string>
     <string name="search_action_share">Megosztás</string>
-    <string name="search_filter_online">Internetes keresési találat</string>
     <string name="search_filter_apps">Alkalmazások</string>
     <string name="preference_filter_bar">Szűrősáv megjelenítése</string>
     <string name="preference_filter_bar_summary">Gyorsszűrők megjelenítése a billentyűzet felett</string>
     <string name="preference_default_filter">Alapértelmezett szűrő</string>
     <string name="preference_default_filter_summary">Keresések alapértelmezett szűrőjének testreszabása</string>
-    <string name="filter_settings_network_warning">A jelenlegi szűrő alapértelmezés szerint lehetővé teszi az internetes keresési találatokat. A keresési lekérdezések véletlenül külső webes szolgáltatásokra kerülhetnek. Adatvédelmi okokból ez nem ajánlott.</string>
     <string name="preference_customize_filter_bar_summary">Adja meg, hogy mely elemek szerepeljenek a szűrősávon</string>
     <string name="preference_customize_filter_bar">Szűrősáv testreszabása</string>
     <string name="customize_item_label">Név szerkesztése</string>
@@ -384,10 +383,6 @@
     <string name="preference_form_of_address_fem">Nőnemű</string>
     <string name="preference_form_of_address_masc">Férfinemű</string>
     <string name="preference_form_of_address">Megszólítás</string>
-    <string name="preference_measurement_system">Mértékegységrendszer</string>
-    <string name="preference_measurement_system_metric">Metrikus</string>
-    <string name="preference_measurement_system_uk">Egyesült Királyság</string>
-    <string name="preference_measurement_system_us">Egyesült Államok</string>
     <string name="preference_transliteration">Előnyben részesített átírás</string>
     <string name="preference_transliteration_auto">Automatikus</string>
     <string name="preference_value_disabled">Letiltva</string>
@@ -431,8 +426,6 @@
     <string name="gesture_action_launch_select_app">Alkalmazás vagy parancsikon kiválasztása</string>
     <string name="preference_search_apps_show_details">Alkalmazás adatainak megjelenítése</string>
     <string name="preference_search_apps_show_details_summary">Az alkalmazás verziójának és csomagjának megjelenítése a helyi menüben</string>
-    <string name="preference_currencies">Pénznem</string>
-    <string name="preference_add_currency">Pénznem hozzáadása</string>
     <string name="search_query_private_space">Privát tér</string>
     <string name="search_action_private_space_lock">Privát tér zárolása</string>
     <string name="search_action_private_space_unlock">Privát tér feloldása</string>

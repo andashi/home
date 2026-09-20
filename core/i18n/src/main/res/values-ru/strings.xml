@@ -186,6 +186,7 @@
     <string name="create_search_action_pick_app">Выберите приложение для поиска:</string>
     <string name="preference_clockwidget_favorites_part">Быстрый доступ</string>
     <string name="preference_search_favorites">Избранные</string>
+    <string name="preference_search_favorites_summary">Отображать закрепленные и часто используемые над списком приложений</string>
     <string name="preference_search_bar_style_summary">Настроить внешний вид строки поиска</string>
     <string name="preference_favorites_edit_button_summary">Показывать кнопку для редактирования избранных</string>
     <string name="preference_widgets_edit_button_summary">Показывать кнопку для добавления, удаления и редактирования виджетов</string>
@@ -244,7 +245,7 @@
     <string name="preference_search_appshortcuts_summary">Искать ярлыки приложений</string>
     <string name="preference_edit_favorites_summary">Изменить порядок закрепленных приложений</string>
     <string name="preference_shortcut_badges_summary">Показывать значок, указывающий, какому приложению принадлежит ярлык</string>
-    <string name="preference_screen_homescreen_summary">Часы, панель поиска, обои, системные карточки</string>
+    <string name="preference_screen_homescreen_summary">Панель поиска, обои, системные карточки</string>
     <string name="icon_picker_suggestions">Предложения</string>
     <string name="widget_config_appwidget_borderless">Без рамок</string>
     <string name="widget_config_appwidget_configure">Настроить виджет</string>
@@ -276,10 +277,8 @@
     <string name="preference_mdy_color_source_system">Система</string>
     <string name="preference_mdy_color_source">Источник динамических цветов</string>
     <string name="preference_category_advanced">Прочее</string>
-    <string name="search_filter_online">Онлайн-поиск</string>
     <string name="widget_pick_widget">Выбрать виджет</string>
     <string name="widget_use_theme_colors">Использовать цвет темы</string>
-    <string name="filter_settings_network_warning">Текущий фильтр включает онлайн-результаты. Ваши поисковые запросы могут быть непреднамеренно отправлены внешним веб-службам. Из соображений конфиденциальности это не рекомендуется.</string>
     <string name="unavailable_searchable">Этого предмета больше не существует.</string>
     <string name="search_action_share">Поделиться</string>
     <string name="search_filter_apps">Приложения</string>
@@ -408,7 +407,7 @@
     <string name="import_theme_exists">Тема уже существует и будет обновлена</string>
     <string name="bad_configuration_summary">Вы обнаружили комбинацию настроек, которая делает недоступными и поиск, и настройки одновременно, успешно блокируя вам доступ к лаунчеру.</string>
     <string name="preference_screen_locale">Язык и регион</string>
-    <string name="preference_screen_locale_summary">Язык, единицы измерения, формат времени</string>
+    <string name="preference_screen_locale_summary">Язык, формат времени</string>
     <string name="preference_language">Язык</string>
     <string name="preference_value_system_default">Как в системе</string>
 </resources>

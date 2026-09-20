@@ -68,6 +68,7 @@
     <string name="search_bar_placeholder">Szukaj</string>
     <string name="preference_screen_search">Wyszukiwanie</string>
     <string name="preference_search_favorites">Ulubione</string>
+    <string name="preference_search_favorites_summary">Pokazuje przypięte oraz często używane rzeczy nad listą aplikacji</string>
     <string name="default_websearch_2_name">YouTube</string>
     <string name="preference_category_license">Licencja</string>
     <string name="default_websearch_3_url">https://play.google.com/store/search\?q=${1}</string>
@@ -257,7 +258,7 @@
     <string name="edit">Edytuj</string>
     <string name="preference_debug_dump_heap_summary">Przechwytywanie migawki w celu analizy wykorzystania pamięci. Aplikacja zawiesi się do czasu zakończenia tego procesu.</string>
     <string name="preference_screen_homescreen">Ekran domowy</string>
-    <string name="preference_screen_homescreen_summary">Zegar, pasek wyszukiwania, tapeta, paski systemowe</string>
+    <string name="preference_screen_homescreen_summary">Pasek wyszukiwania, tapeta, paski systemowe</string>
     <string name="preference_gesture_home_button">Przycisk strony głównej/gest</string>
     <string name="preference_search_result_ordering_weight_factor_low">Stabilny</string>
     <string name="theme_color_scheme_palette_color">Paleta</string>
@@ -266,8 +267,6 @@
     <string name="preference_search_result_ordering_weight_factor_high">Zmienny</string>
     <string name="widget_config_appwidget_borderless">Bez ramki</string>
     <string name="preference_customize_filter_bar_summary">Dostosuj elementy uwzględnione na pasku filtrów</string>
-    <string name="filter_settings_network_warning">Dostosowywanie elementów uwzględnianych na pasku filtrów.
-\nBieżący filtr domyślnie włącza wyniki online. Zapytania wyszukiwania mogą być nieumyślnie wysyłane do zewnętrznych usług internetowych. Ze względu na ochronę prywatności nie jest to zalecane.</string>
     <string name="search_action_share">Udostępnij</string>
     <string name="preference_debug_dump_heap_in_progress">Przechwytywanie migawki…</string>
     <string name="preference_default_filter">Domyślny filtr</string>
@@ -288,7 +287,6 @@
     <string name="icon_picker_filter_all_packs">Wszystkie pakiety ikon</string>
     <string name="search_action_websearch">Wyszukiwanie w sieci</string>
     <string name="unavailable_searchable">Ten element już nie istnieje.</string>
-    <string name="search_filter_online">Wyniki online</string>
     <string name="preference_customize_filter_bar">Dostosuj pasek filtrów</string>
     <string name="menu_hide_filters">Ukryj filtry</string>
 </resources>

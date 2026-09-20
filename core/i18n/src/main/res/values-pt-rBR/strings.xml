@@ -46,6 +46,7 @@
     <string name="preference_screen_search">Pesquisar</string>
     <string name="preference_screen_search_summary">Pesquisa, tags, items escondidos</string>
     <string name="preference_search_favorites">Favoritos</string>
+    <string name="preference_search_favorites_summary">Mostra itens fixados e usados com frequência acima da grade do aplicativo</string>
     <string name="preference_search_apps_summary">Mostrar todos os aplicativos quando o campo de pesquisa estiver vazio</string>
     <string name="preference_search_contacts">Contatos</string>
     <string name="preference_search_appshortcuts">Atalhos de aplicativos</string>
@@ -248,7 +249,7 @@
     <string name="preference_search_result_ordering_weight_factor_default">Balanceada</string>
     <string name="app_widget_loading_failed">Falha no carregamento do widget da aplicação.</string>
     <string name="preference_screen_homescreen">Tela inicial</string>
-    <string name="preference_screen_homescreen_summary">Relógio, barra de pesquisa, papel de parede,barras de sistema</string>
+    <string name="preference_screen_homescreen_summary">Barra de pesquisa, papel de parede,barras de sistema</string>
     <string name="preference_hidden_items_reveal_button">Mostrar bootão de revelação</string>
     <string name="preference_hidden_items_reveal_button_summary">Mostre um botão para revelar os resultados escondidos de pesquisa</string>
     <string name="widget_config_appwidget_background">Cartão de fundo</string>
@@ -289,14 +290,12 @@
     <string name="widget_use_theme_colors">Use a cor do tema</string>
     <string name="shortcut_label_unavailable">Indisponível</string>
     <string name="shortcut_unavailable_description">Esse atalho esta indisponível porque o %1$s não é o launcher padrão</string>
-    <string name="filter_settings_network_warning">O filtro atual habilita pesquisas online por padrão. Suas pesquisas talvez sejam intencionalmente enviadas para serviços web externos. Por razões de privacidade, isso não é recomendado.</string>
     <string name="confirmation_delete_color_scheme">Tem certeza que quer apagar o esquema de cor %1$s?</string>
     <string name="search_action_share">Compartilhar</string>
     <string name="preference_filter_bar_summary">Mostrar filtros rápidos sobre o teclado</string>
     <string name="preference_customize_filter_bar">Personalizar barra de filtros</string>
     <string name="preference_default_filter_summary">Personalizar o filtro padrão para pesquisas</string>
     <string name="preference_customize_filter_bar_summary">Personalizar quais itens serão inclusos na barra de filtro</string>
-    <string name="search_filter_online">Resultados online</string>
     <string name="preference_default_filter">Filtro padrão</string>
     <string name="preference_filter_bar">Mostrar barra de filtros</string>
     <string name="app_label_locked_profile">Trancado</string>
@@ -396,7 +395,7 @@
     <string name="preference_search_bar_style_solid">Sólido</string>
     <string name="tag_icon_customicon">Ícone</string>
     <string name="preference_screen_locale">Idioma e região</string>
-    <string name="preference_screen_locale_summary">Idioma, unidades, formato de horário</string>
+    <string name="preference_screen_locale_summary">Idioma, formato de horário</string>
     <string name="preference_language">Idioma</string>
     <string name="preference_value_system_default">Padrão do sistema</string>
     <string name="preference_value_disabled">Desabilitado</string>
@@ -404,10 +403,6 @@
     <string name="preference_form_of_address_neutral">Neutro</string>
     <string name="preference_form_of_address_fem">Feminino</string>
     <string name="preference_form_of_address_masc">Masculino</string>
-    <string name="preference_measurement_system">Sistema de medida</string>
-    <string name="preference_measurement_system_metric">Métrico</string>
-    <string name="preference_measurement_system_uk">Reino Unido</string>
-    <string name="preference_measurement_system_us">Estados Unidos</string>
     <string name="preference_transliteration_auto">Automático</string>
     <string name="preference_calendar_system">Sistema de calendário</string>
     <string name="preference_calendar_system_primary">Calendário principal</string>

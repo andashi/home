@@ -23,10 +23,7 @@ import kotlinx.coroutines.withContext
 internal class AndroidContactProvider(
     private val context: Context,
 ) : ContactProvider {
-    override suspend fun search(
-        query: String,
-        allowNetwork: Boolean
-    ): List<Contact> {
+    override suspend fun search(query: String): List<Contact> {
         val results = withContext(Dispatchers.IO) {
             val proj = arrayOf(
                 ContactsContract.RawContacts.CONTACT_ID,
@@ -182,11 +179,7 @@ internal class AndroidContactProvider(
                             ?: return@map it
                     it.copy(number = formattedNumber)
                 }.distinctByEquality { a, b ->
-                    if (Build.VERSION.SDK_INT < 31) {
-                        PhoneNumberUtils.compare(context, a.number, b.number)
-                    } else {
-                        PhoneNumberUtils.areSamePhoneNumber(a.number, b.number, defaultCountryIso)
-                    }
+                    PhoneNumberUtils.areSamePhoneNumber(a.number, b.number, defaultCountryIso)
                 },
                 emailAddresses = emailAddresses.distinct(),
                 postalAddresses = postalAddresses.distinct(),

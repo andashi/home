@@ -162,6 +162,7 @@
     <string name="preference_screen_search">Пошук</string>
     <string name="preference_search_contacts_summary">Пошук кантактаў на гэтай прыладзе</string>
     <string name="preference_search_favorites">Абраныя</string>
+    <string name="preference_search_favorites_summary">Адлюстроўваць замацаваныя праграмы і праграмы, якія часта выкарыстоўваюцца, уверсе меню</string>
     <string name="preference_search_appshortcuts_summary">Пошук ярлыкоў праграм</string>
     <string name="preference_screen_search_summary">Пошук, цэтлікі, выключаныя вынікі</string>
     <string name="preference_search_contacts">Кантакты</string>
@@ -290,14 +291,12 @@
     <string name="preference_customize_filter_bar_summary">Дапасуйце элементы ў панэлі фільтраў</string>
     <string name="menu_show_filters">Паказаць фільтры</string>
     <string name="menu_hide_filters">Схаваць фільтры</string>
-    <string name="search_filter_online">Сеткавыя рэзультаты</string>
     <string name="search_filter_apps">Праграмы</string>
     <string name="preference_filter_bar_summary">Адлюстроўваць хуткія фільтры над клавіятурай</string>
     <string name="preference_customize_filter_bar">Дапасаваць панэль фільтраў</string>
     <string name="preference_default_filter">Прадвызначаны фільтр</string>
     <string name="preference_default_filter_summary">Дапасаваць прадвызначаны фільтр для пошуку</string>
     <string name="preference_filter_bar">Адлюстроўваць панэль фільтраў</string>
-    <string name="filter_settings_network_warning">Бягучы фільтр прадвызначана ўключае рэзультаты з сетцы. Вашы пошукавыя запыты могуць выпадкова быць дасланыя да знешніх вэб-сэрвісаў. Дзеля прыватнасці, гэты фільтр не рэкамендуецца.</string>
     <string name="customize_item_label">Подпіс</string>
     <string name="customize_item_tags">Цэтлікі</string>
     <string name="contact_info_home">Хатні</string>
@@ -421,10 +420,6 @@
     <string name="preference_form_of_address_neutral">Нейтральны</string>
     <string name="preference_form_of_address_fem">Жаночы</string>
     <string name="preference_form_of_address_masc">Мужчынскі</string>
-    <string name="preference_measurement_system">Сістэма адзінак вымярэння</string>
-    <string name="preference_measurement_system_metric">Метрычная</string>
-    <string name="preference_measurement_system_uk">Вялікабрытанская</string>
-    <string name="preference_measurement_system_us">Амерыканская</string>
     <string name="preference_transliteration">Прыярытэтная сістэма транслітарацыі</string>
     <string name="preference_transliteration_auto">Аўтаматчна</string>
     <string name="preference_calendar_system">Каляндарная сістэма</string>
@@ -446,6 +441,4 @@
     <string name="search_query_private_space">Прыватная прастора</string>
     <string name="search_action_private_space_lock">Заблакіраваць прыватную прастору</string>
     <string name="search_action_private_space_unlock">Разблакіраваць прыватную прастору</string>
-    <string name="preference_currencies">Валюта</string>
-    <string name="preference_add_currency">Дадаць валюту</string>
 </resources>

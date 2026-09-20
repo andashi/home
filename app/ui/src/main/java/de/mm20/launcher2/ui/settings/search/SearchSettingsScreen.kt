@@ -75,8 +75,80 @@ fun SearchSettingsScreen() {
     PreferenceScreen(title = stringResource(R.string.preference_screen_search)) {
         item {
             PreferenceCategory {
-
-
+                PreferenceWithSwitch(
+                    title = stringResource(R.string.preference_search_favorites),
+                    summary = stringResource(R.string.preference_search_favorites_summary),
+                    icon = R.drawable.star_24px,
+                    switchValue = favorites == true,
+                    onSwitchChanged = {
+                        viewModel.setFavorites(it)
+                    },
+                    onClick = {
+                        backStack.add(FavoritesSettingsRoute)
+                    }
+                )
+                PreferenceWithSwitch(
+                    title = stringResource(R.string.preference_search_apps),
+                    summary = stringResource(R.string.preference_search_apps_summary),
+                    icon = R.drawable.apps_24px,
+                    switchValue = allApps == true,
+                    onSwitchChanged = {
+                        viewModel.setAllApps(it)
+                    },
+                    onClick = {
+                        backStack.add(AppSearchSettingsRoute)
+                    }
+                )
+                GuardedPreference(
+                    locked = hasAppShortcutsPermission == false,
+                    onUnlock = {
+                        viewModel.requestAppShortcutsPermission(context as AppCompatActivity)
+                    },
+                    description = stringResource(R.string.missing_permission_appshortcuts_search_settings),
+                ) {
+                    PreferenceWithSwitch(
+                        title = stringResource(R.string.preference_search_appshortcuts),
+                        summary = stringResource(R.string.preference_search_appshortcuts_summary),
+                        icon = R.drawable.mobile_arrow_up_right_24px,
+                        switchValue = appShortcuts == true && hasAppShortcutsPermission == true,
+                        onSwitchChanged = {
+                            viewModel.setAppShortcuts(it)
+                        },
+                        // GuardedPreference only shows a banner; without this
+                        // the switch stays live while the permission is denied,
+                        // so the setter persists "enabled" for a source that
+                        // cannot be read and the UI shows it off.
+                        enabled = hasAppShortcutsPermission == true,
+                        onClick = {
+                            backStack.add(AppShortcutsSettingsRoute)
+                        }
+                    )
+                }
+                GuardedPreference(
+                    locked = hasContactsPermission == false,
+                    onUnlock = {
+                        viewModel.requestContactsPermission(context as AppCompatActivity)
+                    },
+                    description = stringResource(R.string.missing_permission_contact_search_settings),
+                ) {
+                    PreferenceWithSwitch(
+                        title = stringResource(R.string.preference_search_contacts),
+                        summary = stringResource(R.string.preference_search_contacts_summary),
+                        icon = R.drawable.person_24px,
+                        switchValue = contacts == true && hasContactsPermission == true,
+                        onSwitchChanged = {
+                            viewModel.setContacts(it)
+                        },
+                        enabled = hasContactsPermission == true,
+                        onClick = {
+                            backStack.add(ContactsSettingsRoute)
+                        }
+                    )
+                }
+            }
+        }
+        item {
+            PreferenceCategory {
                 Preference(
                     title = stringResource(R.string.preference_screen_search_actions),
                     summary = stringResource(R.string.preference_search_search_actions_summary),
@@ -188,13 +260,6 @@ fun SearchSettingsScreen() {
                 .padding(16.dp)
                 .navigationBarsPadding()
         ) {
-            AnimatedVisibility(filters.allowNetwork) {
-                SmallMessage(
-                    modifier = Modifier.padding(bottom = 16.dp),
-                    icon = R.drawable.warning_24px,
-                    text = stringResource(R.string.filter_settings_network_warning)
-                )
-            }
             SearchFilters(
                 filters = filters,
                 onFiltersChange = {

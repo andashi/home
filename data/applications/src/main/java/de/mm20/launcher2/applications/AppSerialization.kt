@@ -8,7 +8,6 @@ import android.os.Process
 import android.os.UserManager
 import android.util.Log
 import androidx.core.content.getSystemService
-import de.mm20.launcher2.ktx.isAtLeastApiLevel
 import de.mm20.launcher2.search.SavableSearchable
 import de.mm20.launcher2.search.SearchableDeserializer
 import de.mm20.launcher2.search.SearchableSerializer
@@ -57,19 +56,17 @@ class LauncherAppDeserializer(val context: Context) : SearchableDeserializer {
 
             val componentName = ComponentName(pkg, activity)
 
-            if (isAtLeastApiLevel(35)) {
-                val launcherUser = launcherApps.getLauncherUserInfo(user) ?: return null
-                if (launcherUser.userType == UserManager.USER_TYPE_PROFILE_PRIVATE && userManager.isQuietModeEnabled(
-                        user
-                    )
-                ) {
-                    return LockedPrivateProfileApp(
-                        label = context.getString(R.string.app_label_locked_profile),
-                        componentName = componentName,
-                        user = user,
-                        userSerialNumber = userSerial
-                    )
-                }
+            val launcherUser = launcherApps.getLauncherUserInfo(user) ?: return null
+            if (launcherUser.userType == UserManager.USER_TYPE_PROFILE_PRIVATE && userManager.isQuietModeEnabled(
+                    user
+                )
+            ) {
+                return LockedPrivateProfileApp(
+                    label = context.getString(R.string.app_label_locked_profile),
+                    componentName = componentName,
+                    user = user,
+                    userSerialNumber = userSerial
+                )
             }
 
             val intent = Intent().also {

@@ -102,6 +102,7 @@
     <string name="preference_clockwidget_favorites_part_summary">Näita kinnitatud rakenduste esimest rida</string>
     <string name="preference_screen_search">Otsi</string>
     <string name="preference_search_favorites">Lemmikud</string>
+    <string name="preference_search_favorites_summary">Näita kinnitatud ja sageli kasutatud rakendusi rakenduste võrgustiku kohal</string>
     <string name="preference_screen_search_summary">Otsing, sildid, peidetud kirjed</string>
     <string name="preference_search_contacts">Kontaktid</string>
     <string name="preference_search_contacts_summary">Otsi selle seadme kontaktidest</string>

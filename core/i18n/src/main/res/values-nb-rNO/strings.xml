@@ -123,6 +123,7 @@
     <string name="preference_screen_debug_summary">Feilsøkingsverktøy</string>
     <string name="preference_category_widgets">Widgets</string>
     <string name="preference_search_favorites">Favoritter</string>
+    <string name="preference_search_favorites_summary">Vis festede og ofte brukte oppføringer over app-rutenettet</string>
     <string name="preference_screen_buildinfo">Bygg-informasjon</string>
     <string name="preference_screen_buildinfo_summary">Mer informasjon on dette bygget av denne appen</string>
     <string name="preference_search_bar_style">Stil</string>
@@ -168,7 +169,7 @@
     <string name="search_action_contact">Ny kontakt</string>
     <string name="tag_exists_message">En merkelapp med dette navnet eksisterer allerede. Om du fortsetter vil merkelappene flettes sammen</string>
     <string name="preference_blur_wallpaper">Tilslør bakgrunn</string>
-    <string name="preference_screen_homescreen_summary">Klokke, søkefelt, bakgrunn, systemlinjer</string>
+    <string name="preference_screen_homescreen_summary">Søkefelt, bakgrunn, systemlinjer</string>
     <string name="preference_widgets_edit_button_summary">Vis en knapp for å legge til, fjerne og omrokkere widgeter</string>
     <plurals name="debug_cleanup_database_result">
         <item quantity="one">Fjernet %1$d oppføring.</item>
@@ -267,7 +268,6 @@
     <string name="preference_use_system_default">Bruk systemstandard</string>
     <string name="theme_color_scheme_palette_color">Palett</string>
     <string name="import_theme_apply">Bruk tema</string>
-    <string name="search_filter_online">Nettresultater</string>
     <string name="profile_work_profile_action_unlock">Slå av pause</string>
     <string name="profile_work_profile_action_lock">Sett jobb-apper på pause</string>
     <string name="profile_private_profile_action_unlock">Lås opp</string>

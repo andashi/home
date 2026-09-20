@@ -11,7 +11,6 @@ import android.util.Log
 import de.mm20.launcher2.crashreporter.CrashReporter
 import de.mm20.launcher2.icons.*
 import de.mm20.launcher2.ktx.getDrawableOrNull
-import de.mm20.launcher2.ktx.isAtLeastApiLevel
 import de.mm20.launcher2.ktx.tryStartActivity
 import de.mm20.launcher2.search.AppShortcut
 import de.mm20.launcher2.search.SearchableSerializer
@@ -55,7 +54,7 @@ internal data class LegacyShortcut(
         if (drawableId == 0) return null
         val icon = resources.getDrawableOrNull(drawableId) ?: return null
         if (icon is AdaptiveIconDrawable) {
-            if (themed && isAtLeastApiLevel(33) && icon.monochrome != null) {
+            if (themed && icon.monochrome != null) {
                 return StaticLauncherIcon(
                     foregroundLayer = TintedIconLayer(
                         scale = 1f,

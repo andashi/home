@@ -8,7 +8,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import de.mm20.launcher2.ktx.isAtLeastApiLevel
 import de.mm20.launcher2.permissions.PermissionGroup
 import de.mm20.launcher2.permissions.PermissionsManager
 import de.mm20.launcher2.preferences.search.ContactSearchSettings
@@ -72,7 +71,7 @@ class SearchVM : ViewModel(), KoinComponent {
     val hasProfilesPermission = permissionsManager.hasPermission(PermissionGroup.ManageProfiles)
 
     fun setProfileLock(profile: Profile?, locked: Boolean) {
-        if (isAtLeastApiLevel(28) && profile != null) {
+        if (profile != null) {
             if (locked) {
                 profileManager.lockProfile(profile)
             } else {

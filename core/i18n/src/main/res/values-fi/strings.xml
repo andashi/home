@@ -88,6 +88,7 @@
     <string name="preference_screen_search">Haku</string>
     <string name="preference_screen_search_summary">Haku, avainsanat, piilotetut kohteet</string>
     <string name="preference_search_favorites">Suosikit</string>
+    <string name="preference_search_favorites_summary">Näytä kiinnitetyt ja usein käytetyt kohteet sovellusruudukon yläpuolella</string>
     <string name="preference_edit_favorites_summary">Vaihda kiinnitettyjen kohteiden järjestystä</string>
     <string name="icon_picker_default_icon">Oletus</string>
     <string name="preference_search_contacts">Yhteystiedot</string>
@@ -194,7 +195,7 @@
     <string name="preference_edit_button">Muokkauspainike</string>
     <string name="preference_favorites_edit_button_summary">Näytä painike suosikkien järjestelemiseksi</string>
     <string name="preference_screen_homescreen">Kotinäyttö</string>
-    <string name="preference_screen_homescreen_summary">Kello, hakupalkki, taustakuva, järjestelmän palkit</string>
+    <string name="preference_screen_homescreen_summary">Hakupalkki, taustakuva, järjestelmän palkit</string>
     <string name="preference_screen_icons">Ruudukko ja kuvakkeet</string>
     <string name="preference_screen_icons_summary">Ruudukko, kuvakkeiden koko, kuvakepaketit, pistemerkit</string>
     <string name="icon_picker_suggestions">Ehdotukset</string>

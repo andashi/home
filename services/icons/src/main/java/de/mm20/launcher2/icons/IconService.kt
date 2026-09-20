@@ -18,7 +18,6 @@ import de.mm20.launcher2.data.customattrs.DefaultPlaceholderIcon
 import de.mm20.launcher2.data.customattrs.ForceThemedIcon
 import de.mm20.launcher2.data.customattrs.UnmodifiedSystemDefaultIcon
 import de.mm20.launcher2.icons.providers.CalendarIconProvider
-import de.mm20.launcher2.icons.providers.CompatIconProvider
 import de.mm20.launcher2.icons.providers.CustomIconPackIconProvider
 import de.mm20.launcher2.icons.providers.CustomTextIconProvider
 import de.mm20.launcher2.icons.providers.LegacyCustomIconPackIconProvider
@@ -34,7 +33,6 @@ import de.mm20.launcher2.icons.transformations.ForceThemedIconTransformation
 import de.mm20.launcher2.icons.transformations.LauncherIconTransformation
 import de.mm20.launcher2.icons.transformations.LegacyToAdaptiveTransformation
 import de.mm20.launcher2.icons.transformations.transform
-import de.mm20.launcher2.ktx.isAtLeastApiLevel
 import de.mm20.launcher2.preferences.ui.IconSettings
 import de.mm20.launcher2.search.Application
 import de.mm20.launcher2.search.SavableSearchable
@@ -126,9 +124,6 @@ class IconService(
                     }
                     providers.add(DynamicClockIconProvider(context, settings.themedIcons))
                     providers.add(CalendarIconProvider(context, settings.themedIcons))
-                    if (!isAtLeastApiLevel(33)) {
-                        providers.add(CompatIconProvider(context, settings.themedIcons))
-                    }
                     providers.add(SystemIconProvider(context, settings.themedIcons))
                     providers.add(fallbackProvider)
                     cache.evictAll()

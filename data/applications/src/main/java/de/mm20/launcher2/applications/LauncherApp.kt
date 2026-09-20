@@ -17,7 +17,6 @@ import android.os.UserHandle
 import android.util.Log
 import androidx.core.content.FileProvider
 import androidx.core.content.getSystemService
-import de.mm20.launcher2.compat.PackageManagerCompat
 import de.mm20.launcher2.icons.ColorLayer
 import de.mm20.launcher2.icons.LauncherIcon
 import de.mm20.launcher2.icons.StaticIconLayer
@@ -25,7 +24,6 @@ import de.mm20.launcher2.icons.StaticLauncherIcon
 import de.mm20.launcher2.icons.TintedIconLayer
 import de.mm20.launcher2.icons.TransparentLayer
 import de.mm20.launcher2.ktx.getSerialNumber
-import de.mm20.launcher2.ktx.isAtLeastApiLevel
 import de.mm20.launcher2.search.Application
 import de.mm20.launcher2.search.ResultScore
 import de.mm20.launcher2.search.SearchableSerializer
@@ -107,7 +105,7 @@ internal data class LauncherApp(
 
                 } ?: return null
             if (icon is AdaptiveIconDrawable) {
-                if (themed && isAtLeastApiLevel(33) && icon.monochrome != null) {
+                if (themed && icon.monochrome != null) {
                     return StaticLauncherIcon(
                         foregroundLayer = TintedIconLayer(
                             scale = 1.5f,
@@ -146,9 +144,7 @@ internal data class LauncherApp(
 
     override fun launch(context: Context, options: Bundle?): Boolean {
         val launcherApps = context.getSystemService<LauncherApps>()!!
-        if (isAtLeastApiLevel(31)) {
-            options?.putInt("android.activity.splashScreenStyle", 1)
-        }
+        options?.putInt("android.activity.splashScreenStyle", 1)
         try {
             launcherApps.startMainActivity(
                 componentName,
@@ -169,8 +165,7 @@ internal data class LauncherApp(
     override fun getStoreDetails(context: Context): StoreLink? {
         val pm = context.packageManager
         return try {
-            val installSourceInfo =
-                PackageManagerCompat.getInstallSource(pm, componentName.packageName)
+            val installSourceInfo = pm.getInstallSourceInfo(componentName.packageName)
             getStoreLinkForInstaller(
                 installSourceInfo.initiatingPackageName,
                 componentName.packageName
@@ -234,10 +229,7 @@ internal data class LauncherApp(
     }
 
     override fun getActivityInfo(context: Context): ActivityInfo? {
-        if (isAtLeastApiLevel(31)) {
-            return launcherActivityInfo.activityInfo
-        }
-        return super.getActivityInfo(context)
+        return launcherActivityInfo.activityInfo
     }
 
     companion object {

@@ -21,10 +21,6 @@ fun jsonObjectOf(vararg pairs: Pair<String, Any?>): JSONObject {
 }
 
 @ChecksSdkIntAtLeast(parameter = 0)
-fun isAtLeastApiLevel(apiLevel: Int): Boolean {
-    return Build.VERSION.SDK_INT >= apiLevel
-}
-
 inline fun <reified T> Any?.castTo(): T {
     @Suppress("UNCHECKED_CAST")
     return this as T

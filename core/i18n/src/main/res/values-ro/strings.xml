@@ -91,6 +91,7 @@
     <string name="preference_clockwidget_favorites_part_summary">Afișează primul rând de elemente fixate</string>
     <string name="preference_screen_search">Caută</string>
     <string name="preference_search_favorites">Favorite</string>
+    <string name="preference_search_favorites_summary">Afișarea elementelor fixate și utilizate frecvent deasupra grilei de aplicații</string>
     <string name="preference_search_contacts">Contacte</string>
     <string name="preference_search_appshortcuts">Scurtături aplicație</string>
     <string name="preference_search_appshortcuts_summary">Caută scurtături aplicație</string>
@@ -180,7 +181,7 @@
     <string name="preference_blur_wallpaper">Încețoșează fundalul</string>
     <string name="preference_blur_wallpaper_summary">Folosește un efect de ceață asupra fundalului</string>
     <string name="preference_blur_wallpaper_unsupported">Nesuportat de acest dispozitiv</string>
-    <string name="preference_screen_homescreen_summary">Ceas, bară de căutare, fundal, bare de sistem</string>
+    <string name="preference_screen_homescreen_summary">Bară de căutare, fundal, bare de sistem</string>
     <string name="preference_layout_search_bar_position">Poziția barei de căutare</string>
     <string name="widget_use_theme_colors">Folosește temă colorată</string>
     <string name="preference_blur_wallpaper_radius">Raza de vedere burată</string>

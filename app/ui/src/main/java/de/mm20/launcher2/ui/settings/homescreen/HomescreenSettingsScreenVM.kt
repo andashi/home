@@ -12,7 +12,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
-import de.mm20.launcher2.ktx.isAtLeastApiLevel
 import de.mm20.launcher2.preferences.GestureAction
 import de.mm20.launcher2.preferences.ScreenOrientation
 import de.mm20.launcher2.preferences.SearchBarColors
@@ -60,7 +59,6 @@ class HomescreenSettingsScreenVM(
     }
 
     fun isBlurAvailable(context: Context): Boolean {
-        if (!isAtLeastApiLevel(31)) return false
         return context.getSystemService<WindowManager>()?.isCrossWindowBlurEnabled == true
     }
 

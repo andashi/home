@@ -17,9 +17,7 @@ import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.NavKey
-import de.mm20.launcher2.ktx.isAtLeastApiLevel
 import de.mm20.launcher2.ktx.tryStartActivity
-import de.mm20.launcher2.preferences.MeasurementSystem
 import de.mm20.launcher2.preferences.TimeFormat
 import de.mm20.launcher2.ui.R
 import de.mm20.launcher2.ui.component.preferences.ListPreference
@@ -41,10 +39,8 @@ fun LocaleSettingsScreen() {
     val backstack = LocalBackStack.current
 
     val timeFormat by viewModel.timeFormat.collectAsStateWithLifecycle(null)
-    val measurementSystem by viewModel.measurementSystem.collectAsStateWithLifecycle(null)
     val transliterator by viewModel.transliterator.collectAsStateWithLifecycle(null)
     val calendars by viewModel.calendars.collectAsStateWithLifecycle(emptyList())
-    val currencies by viewModel.currencies.collectAsStateWithLifecycle(null)
 
     // The language that has been selected by the user, or null to use the system language
     val selectedLocale = remember {
@@ -57,8 +53,6 @@ fun LocaleSettingsScreen() {
     val currentLocale = locales?.get(0)
 
     val transliterators: List<Pair<String, String?>> = remember(locales) {
-        if (!isAtLeastApiLevel(29)) return@remember listOf()
-
         if (locales?.isEmpty == true) return@remember listOf(resources.getString(R.string.preference_value_disabled) to null)
 
         val scripts = mutableSetOf<String>()
@@ -129,7 +123,6 @@ fun LocaleSettingsScreen() {
                         selectedLocale.getDisplayName(selectedLocale)
                             .replaceFirstChar { it.uppercase(selectedLocale) }
                     },
-                    enabled = isAtLeastApiLevel(33),
                     onClick = {
                         context.tryStartActivity(
                             Intent(android.provider.Settings.ACTION_APP_LOCALE_SETTINGS).apply {
@@ -157,7 +150,6 @@ fun LocaleSettingsScreen() {
                                 it
                             )
                         },
-                        enabled = isAtLeastApiLevel(34),
                         items = listOf(
                             stringResource(R.string.preference_form_of_address_neutral) to GrammaticalInflectionManagerCompat.GRAMMATICAL_GENDER_NEUTRAL,
                             stringResource(R.string.preference_form_of_address_fem) to GrammaticalInflectionManagerCompat.GRAMMATICAL_GENDER_FEMININE,
@@ -165,7 +157,7 @@ fun LocaleSettingsScreen() {
                         )
                     )
                 }
-                if (isAtLeastApiLevel(29) && transliterators.size > 2) {
+                if (transliterators.size > 2) {
                     ListPreference(
                         icon = R.drawable.translate_24px,
                         title = stringResource(R.string.preference_transliteration),
@@ -191,20 +183,6 @@ fun LocaleSettingsScreen() {
                         stringResource(R.string.preference_value_system_default) to TimeFormat.System,
                         stringResource(R.string.preference_clock_widget_time_format_12h) to TimeFormat.TwelveHour,
                         stringResource(R.string.preference_clock_widget_time_format_24h) to TimeFormat.TwentyFourHour,
-                    )
-                )
-                ListPreference(
-                    icon = R.drawable.measuring_tape_24px,
-                    title = stringResource(R.string.preference_measurement_system),
-                    value = measurementSystem,
-                    onValueChanged = {
-                        if (it != null) viewModel.setMeasurementSystem(it)
-                    },
-                    items = listOf(
-                        stringResource(R.string.preference_value_system_default) to MeasurementSystem.System,
-                        stringResource(R.string.preference_measurement_system_metric) to MeasurementSystem.Metric,
-                        stringResource(R.string.preference_measurement_system_uk) to MeasurementSystem.UnitedKingdom,
-                        stringResource(R.string.preference_measurement_system_us) to MeasurementSystem.UnitedStates,
                     )
                 )
                 Preference(
@@ -235,28 +213,6 @@ fun LocaleSettingsScreen() {
                             listOfNotNull(primaryName, secondaryName)
                         )
                     }
-                )
-                Preference(
-                    title = stringResource(R.string.preference_currencies),
-                    summary = currencies?.let {
-                        if (it.isEmpty()) {
-                            return@let stringResource(R.string.preference_value_system_default)
-                        }
-
-                        val names = it.map {
-                            try {
-                                Currency.getInstance(it).displayName
-                            } catch (e: IllegalArgumentException) {
-                                it
-                            }
-                        }
-
-                        ListFormatter.getInstance().format(names)
-                    },
-                    icon = R.drawable.toll_24px,
-                    onClick = {
-                        backstack += CurrencySettingsRoute
-                    },
                 )
             }
         }

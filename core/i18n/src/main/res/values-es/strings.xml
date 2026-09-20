@@ -119,6 +119,7 @@
     <string name="preference_clockwidget_favorites_part_summary">Mostrar elementos fijados en la barra de inicio</string>
     <string name="preference_search_bar_auto_focus">Abrir teclado</string>
     <string name="preference_search_favorites">Favoritos</string>
+    <string name="preference_search_favorites_summary">Mostrar elementos fijados y frecuentemente usados encima de la cuadrícula de aplicaciones</string>
     <string name="preference_search_contacts_summary">Buscar contactos en este dispositivo</string>
     <string name="preference_search_appshortcuts_summary">Buscar accesos directos de aplicaciones</string>
     <string name="preference_screen_buildinfo">Información de versión de aplicación</string>
@@ -245,7 +246,7 @@
     <string name="app_widget_loading_failed">El widget de la aplicación ha fallado en cargar</string>
     <string name="widget_config_appwidget_borderless">Sin bordes</string>
     <string name="preference_screen_homescreen">Pantalla de inicio</string>
-    <string name="preference_screen_homescreen_summary">Reloj, barra de búsqueda, fondo de pantalla, barras del sistema</string>
+    <string name="preference_screen_homescreen_summary">Barra de búsqueda, fondo de pantalla, barras del sistema</string>
     <string name="preference_screen_icons">Cuadrícula e ícono</string>
     <string name="preference_screen_icons_summary">Tamaño de cuadrícula, íconos, insignias</string>
     <string name="gesture_action_launch_app">Iniciar aplicación</string>
@@ -278,13 +279,11 @@
     <string name="unavailable_searchable">Este elemento ya no existe</string>
     <string name="widget_pick_widget">Elegir widget</string>
     <string name="search_action_share">Compartir</string>
-    <string name="search_filter_online">Buscar en línea</string>
     <string name="search_filter_apps">Aplicaciones</string>
     <string name="preference_default_filter">Filtro por defecto</string>
     <string name="preference_default_filter_summary">Personalizar el filtro por defecto para las búsquedas</string>
     <string name="preference_filter_bar">Mostrar barra de filtros</string>
     <string name="preference_filter_bar_summary">Mostrar filtros rápidos sobre el teclado</string>
-    <string name="filter_settings_network_warning">El filtro actual activa los resultados en línea por defecto. Tus búsquedas realizadas pueden ser enviadas sin querer a servicios web externos. Por razones de privacidad, esto no es recomendado.</string>
     <string name="preference_customize_filter_bar">Personalizar barra de filtro</string>
     <string name="preference_customize_filter_bar_summary">Personalizar que elementos son incluidos en la barra de filtro</string>
     <string name="preference_grid_list_style">Mostrar aplicaciones en una lista</string>
@@ -383,17 +382,13 @@
     <string name="preference_search_apps">Aplicaciones</string>
     <string name="preference_search_apps_summary">Mostrar todas las aplicaciones cuando el campo de búsqueda esté vacío</string>
     <string name="preference_screen_locale">Idioma y región</string>
-    <string name="preference_screen_locale_summary">Idioma, unidades y formato de hora</string>
+    <string name="preference_screen_locale_summary">Idioma y formato de hora</string>
     <string name="preference_language">Idioma</string>
     <string name="preference_value_system_default">Predeterminado del sistema</string>
     <string name="preference_form_of_address">Tratamiento</string>
     <string name="preference_form_of_address_neutral">Neutro</string>
     <string name="preference_form_of_address_fem">Femenino</string>
     <string name="preference_form_of_address_masc">Masculino</string>
-    <string name="preference_measurement_system">Sistema de unidades</string>
-    <string name="preference_measurement_system_metric">Métrico</string>
-    <string name="preference_measurement_system_uk">Reino Unido</string>
-    <string name="preference_measurement_system_us">Estados Unidos</string>
     <string name="preference_transliteration">Transliteración preferida</string>
     <string name="preference_transliteration_auto">Automática</string>
     <string name="preference_value_disabled">Deshabilitada</string>
@@ -437,9 +432,7 @@
     <string name="preference_category_donate">Apoya el desarrollo</string>
     <string name="preference_search_apps_show_details">Mostrar información de la aplicación</string>
     <string name="preference_search_apps_show_details_summary">Mostrar versión y nombre del paquete de la aplicación en su menú contextual</string>
-    <string name="preference_add_currency">Añadir divisa</string>
     <string name="search_query_private_space">Espacio privado</string>
     <string name="search_action_private_space_lock">Bloquear espacio privado</string>
     <string name="search_action_private_space_unlock">Desbloquear espacio privado</string>
-    <string name="preference_currencies">Divisa</string>
 </resources>

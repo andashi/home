@@ -5,7 +5,6 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class SearchFilters(
-    val allowNetwork: Boolean = false,
     val hiddenItems: Boolean = false,
     val apps: Boolean = true,
     val shortcuts: Boolean = true,

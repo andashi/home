@@ -93,7 +93,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import de.mm20.launcher2.ktx.isAtLeastApiLevel
 import de.mm20.launcher2.preferences.SearchBarStyle
 import de.mm20.launcher2.searchactions.actions.SearchAction
 import de.mm20.launcher2.ui.component.SearchBarLevel
@@ -990,7 +989,7 @@ internal fun LauncherScaffold(
     val filterBarItems by searchVM.filterBarItems.collectAsState(emptyList())
     val launchOnEnter by searchVM.launchOnEnter.collectAsState(false)
 
-    val hazeState = rememberHazeState(blurEnabled = isAtLeastApiLevel(33))
+    val hazeState = rememberHazeState(blurEnabled = true)
 
     BoxWithConstraints(
         modifier = modifier,

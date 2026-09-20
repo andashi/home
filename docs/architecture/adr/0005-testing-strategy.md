@@ -38,6 +38,21 @@ Run on emulator/device (and partially via Robolectric):
 
 - fixed test wallpaper, fixed clock, golden images of the home grid in the glass
   style; catches Compose/rendering regressions that L1/L2 cannot see (ADR 0004).
+- **goldens of the settings screens.** The module diet (ADR 0008) repeatedly
+  took entries out of a `PreferenceCategory` that a removed feature shared with
+  a surviving one. The values behind the lost entries were still collected from
+  the view model, so the code compiled and no test noticed: it happened to the
+  media and feed entries, and again to favourites, apps, app shortcuts and
+  contacts, where it stood for three commits and was found by hand. A golden
+  asserts a whole screen without anyone having to name each entry, which is
+  exactly the property that class of defect defeats.
+- Goldens run under Robolectric on every push, so they are the cheapest layer
+  that sees the composition at all. They are deterministic by construction:
+  fixed device qualifiers, a fresh settings file, and a fake
+  `PermissionsManager` (see `SettingsScreenTestHarness`). A screen whose view
+  model reaches past the settings into the icon pipeline or the app index is
+  deliberately *not* a golden — it would need most of the Koin graph and its
+  output would depend on what is installed. That belongs in L2 or L4.
 
 ### L4 — End-to-end, in `e2e/` of this repo
 
