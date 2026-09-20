@@ -38,6 +38,16 @@ reload, and integrated into a GrapheneOS multi-profile setup.
 | [0006](adr/0006-grapheneos-integration.md) | GrapheneOS-specific integration and constraints |
 | [0007](adr/0007-fork-strategy.md) | Fork strategy: hard fork, upstream as a source for cherry-picks |
 
+## Measurements
+
+Findings measured on a device rather than derived, kept where the code they explain
+lives. They exist because the behaviour has no test yet; each one names what it does
+not cover.
+
+| | Finding |
+|---|---|
+| [clock-dock-layout](clock-dock-layout.md) | Why exactly one pinned favorite clipped the clock, with the before/after dumps |
+
 ## Implementation order
 
 1. **Test infrastructure** (ADR 0005) — before any feature work, including a
