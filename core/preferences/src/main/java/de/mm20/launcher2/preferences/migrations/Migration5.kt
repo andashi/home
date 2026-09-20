@@ -16,7 +16,6 @@ class Migration5  : DataMigration<LauncherSettingsData>  {
             gesturesSwipeLeft = if (currentData.uiBaseLayout == BaseLayout.Pager) GestureAction.Search else currentData.gesturesSwipeLeft,
             gesturesSwipeRight = if (currentData.uiBaseLayout == BaseLayout.PagerReversed) GestureAction.Search else currentData.gesturesSwipeRight,
             gesturesSwipeUp = GestureAction.Widgets(),
-            homeScreenWidgets = !currentData.clockWidgetFillHeight,
         )
     }
 

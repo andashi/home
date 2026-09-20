@@ -14,13 +14,6 @@ data class ConfigState(
     val widgetsEnabled: Boolean = false,
     val widgets: List<BuiltinWidget> = emptyList(),
     /**
-     * Null when the launcher shows a clock the config format cannot express
-     * (a custom app-widget clock). Any configured style then differs from it,
-     * so convergence replaces the custom clock instead of assuming a match.
-     */
-    val clockStyle: ClockStyle? = ClockStyle.Digital1,
-    val clockFillHeight: Boolean = false,
-    /**
      * The wallpaper image (by upload name) and target currently in effect:
      * applied by a config reload, still the system's current wallpaper and
      * the file unchanged since. Null when no config-managed wallpaper is in
@@ -86,13 +79,6 @@ sealed class ConfigMutation {
         val widgets: List<BuiltinWidget>,
     ) : ConfigMutation() {
         override val section = "home.widgets.widgets"
-    }
-
-    data class SetClock(
-        val style: ClockStyle? = null,
-        val fillHeight: Boolean? = null,
-    ) : ConfigMutation() {
-        override val section = "home.clock"
     }
 }
 
@@ -164,14 +150,6 @@ object ConfigDiffer {
                 if (list != current.widgets) {
                     mutations += ConfigMutation.SetWidgets(list)
                 }
-            }
-        }
-
-        desired.home?.clock?.let { clock ->
-            val style = clock.style?.takeIf { it != current.clockStyle }
-            val fillHeight = clock.fillHeight?.takeIf { it != current.clockFillHeight }
-            if (style != null || fillHeight != null) {
-                mutations += ConfigMutation.SetClock(style = style, fillHeight = fillHeight)
             }
         }
 

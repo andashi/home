@@ -23,13 +23,7 @@
     <string name="websearch_dialog_query_encoding">Codificação da pesquisa</string>
     <string name="websearch_dialog_query_encoding_none">Nenhuma</string>
     <string name="menu_edit_widgets">Editar widgets</string>
-    <string name="widget_name_music">Multimédia</string>
-    <string name="widget_name_notes">Nota</string>
     <string name="widget_add_widget">Adicionar widget</string>
-    <string name="notes_widget_placeholder">Escrever uma nota</string>
-    <string name="notes_widget_export_filename">Nota_%1$s</string>
-    <string name="notes_widget_action_dismiss">Rejeitar</string>
-    <string name="notes_widget_dismissed">Nota rejeitada</string>
     <string name="close">Fechar</string>
     <string name="save">Guardar</string>
     <string name="duplicate">Duplicar</string>
@@ -55,16 +49,11 @@
     <string name="default_websearch_2_url">https://www.youtube.com/results?search_query=${1}</string>
     <string name="default_websearch_3_url">https://play.google.com/store/search?q=${1}</string>
     <string name="default_websearch_2_name">YouTube</string>
-    <string name="notes_widget_action_new">Nova nota</string>
     <string name="alert_delete_shortcut">O atalho %1$s será eliminado permanentemente. Continuar?</string>
-    <string name="notes_widget_action_save">Guardar</string>
     <string name="websearch_dialog_query_encoding_form">application/x-www-form-urlencoded</string>
     <string name="edit_favorites_dialog_unpinned">Não afixados - usados frequentemente</string>
     <string name="edit_favorites_dialog_pinned_sorted">Afixados - ordenados manualmente</string>
     <string name="show_all">Mostrar tudo</string>
-    <string name="music_widget_default_title">%1$s está a reproduzir</string>
-    <string name="music_widget_no_data">Ainda nada foi reproduzido</string>
-    <string name="missing_permission_music_widget">Requer acesso às notificações para controlar a reprodução</string>
     <string name="missing_permission_contact_search_settings">Requer acesso aos contactos para poder pesquisar</string>
     <string name="grant_permission">Conceder</string>
     <string name="preference_screen_appearance">Aparência</string>
@@ -86,7 +75,6 @@
     <string name="open_webpage">Visitar site</string>
     <string name="preference_screen_about_summary">Informações da aplicação e licença</string>
     <string name="preference_screen_appearance_summary">Personalizar aspeto</string>
-    <string name="preference_category_debug">Depuração</string>
     <string name="preference_category_debug_tools">Ferramentas</string>
     <string name="preference_debug_dump_heap">Captura de memória</string>
     <string name="preference_debug_dump_heap_summary">Obter imagem para analisar a utilização de memória. A aplicação será parada até que o processo seja terminado.</string>
@@ -110,7 +98,6 @@
     <string name="preference_icon_shape_teardrop">Gota</string>
     <string name="preference_icon_shape_hexagon">Hexágono</string>
     <string name="preference_category_searchbar">Barra de pesquisa</string>
-    <string name="preference_screen_integrations">Integrações</string>
     <string name="preference_theme_system">Acompanhar sistema</string>
     <string name="preference_themed_icons_summary">Cor dos ícones segue o esquema de cores da aplicação</string>
     <string name="preference_themed_icons">Ícones coloridos</string>
@@ -125,7 +112,6 @@
     <string name="preference_system_bar_icons_dark">Escuro</string>
     <string name="preference_hide_status_bar">Ocultar barra de estado</string>
     <string name="preference_hide_nav_bar">Ocultar barra de navegação</string>
-    <string name="preference_screen_integrations_summary">Gerir contas e serviços conectados</string>
     <string name="preference_icon_shape_pentagon">Pentágono</string>
     <string name="preference_category_wallpaper">Papel de parede</string>
     <string name="preference_dim_wallpaper">Escurecer papel de parede</string>
@@ -140,24 +126,13 @@
     <string name="missing_permission_contact_search">Requer acesso aos contactos para pesquisar contactos</string>
     <string name="preference_category_badges">Indicadores</string>
     <string name="preference_screen_debug">Depuração</string>
-    <string name="preference_screen_clockwidget">Relógio</string>
-    <string name="preference_screen_clockwidget_summary">Configurar estilo e componentes do relógio</string>
-    <string name="preference_clock_widget_fill_height">Preencher ecrã</string>
-    <string name="preference_clockwidget_date_part">Data</string>
-    <string name="preference_clockwidget_date_part_summary">Mostrar data atual</string>
-    <string name="preference_clock_widget_alignment_bottom">Baixo</string>
-    <string name="preference_clockwidget_dynamic_zone">Área dinâmica</string>
     <string name="preference_clockwidget_favorites_part">Doca</string>
-    <string name="preference_clockwidget_music_part">Multimédia</string>
-    <string name="preference_clockwidget_alarm_part">Alarmes</string>
     <string name="preference_about_license_summary">Licenciada nos termos da GNU General Public License 3.0</string>
-    <string name="preference_clockwidget_battery_part">Bateria</string>
     <string name="preference_suspended_badges_summary">Mostra um indicador nas aplicações suspensas</string>
     <string name="missing_permission_appshortcuts_create">Defina %1$s como a aplicação padrão para criar atalhos.</string>
     <string name="missing_permission_appshortcuts_search_settings">Tem que definir %1$s como a aplicação padrão para pesquisar por atalhos de aplicações</string>
     <string name="preference_notification_badges">Indicadores de notificação</string>
     <string name="preference_grid_column_count">Número de colunas</string>
-    <string name="preference_clock_widget_show_seconds">Mostrar segundos</string>
     <string name="missing_permission_appshortcuts_search">Defina %1$s como a aplicação padrão para pesquisar atalhos de aplicações.</string>
     <string name="preference_notification_badges_summary">Mostra um indicador nas aplicações com notificações por ler</string>
     <string name="preference_suspended_badges">Aplicações suspensas</string>
@@ -173,14 +148,7 @@
     <string name="preference_grid_labels_summary">Mostrar nome da aplicação por baixo do ícone</string>
     <string name="preference_screen_debug_summary">Resolução de problemas</string>
     <string name="preference_category_widgets">Widgets</string>
-    <string name="preference_clockwidget_layout_vertical">Padrão</string>
-    <string name="preference_clockwidget_layout_horizontal">Compacto</string>
-    <string name="preference_clock_widget_alignment">Alinhamento</string>
-    <string name="preference_clock_widget_alignment_top">Cima</string>
-    <string name="preference_clock_widget_alignment_center">Centro</string>
     <string name="preference_clockwidget_favorites_part_summary">Mostrar, na doca, os itens afixados</string>
-    <string name="preference_clockwidget_music_part_summary">Mostrar controlos multimédia se existir uma sessão ativa</string>
-    <string name="preference_clockwidget_alarm_part_summary">Mostrar alarmes que serão ativados nas próximas 8 horas</string>
     <string name="preference_screen_search">Pesquisar</string>
     <string name="preference_screen_search_summary">Pesquisas, etiquetas, itens ocultos</string>
     <string name="preference_search_favorites">Favoritos</string>
@@ -203,10 +171,6 @@
     <string name="gesture_action_power_menu">Menu energia</string>
     <string name="preference_screen_search_actions">Ações rápidas</string>
     <string name="widget_pick_widget">Escolha o widget</string>
-    <string name="note_widget_conflict">Conflito</string>
-    <string name="note_widget_conflict_action_resolve">Resolver</string>
-    <string name="note_widget_conflict_file_version">Conteúdo do ficheiro atual:</string>
-    <string name="note_widget_conflict_description">O ficheiro associado não está vazio e o seu conteúdo não coincide com a última versão guardada da nota. Qual a versão que deseja manter?</string>
     <string name="theme_color_scheme_palette_color">Paleta</string>
     <string name="preference_hidden_items_reveal_button_summary">Mostrar botão para revelar os resultados ocultos</string>
     <string name="preference_search_bar_style_summary">Personalizar aparência da barra de pesquisa</string>
@@ -214,7 +178,6 @@
     <string name="preference_edit_favorites_summary">Alterar ordem dos itens afixados</string>
     <string name="preference_category_favorites_frequently_used">Frequentes</string>
     <string name="preference_edit_button">Botão Editar</string>
-    <string name="battery_part_charging">Carregamento</string>
     <string name="apps_profile_main">Pessoal</string>
     <string name="apps_profile_work">Profissional</string>
     <string name="search_action_call">Ligar</string>
@@ -227,7 +190,6 @@
     <string name="preference_icon_shape_triangle">Triângulo de Reuleaux</string>
     <string name="preference_icon_shape_pebble">Pedra</string>
     <string name="preference_use_system_default">Predefinição do sistema</string>
-    <string name="widget_config_appwidget_resize">Redimensionar</string>
     <string name="preference_search_bar_launch_on_enter">Abrir ao entrar</string>
     <string name="preference_search_bar_auto_focus_summary">Mostrar teclado ao abrir o menu de aplicações</string>
     <string name="more_information">Mais informação</string>
@@ -235,7 +197,6 @@
     <string name="search_bar_position_top">Cima</string>
     <string name="search_bar_position_bottom">Baixo</string>
     <string name="gesture_action_recents">Abrir aplicações recentes</string>
-    <string name="note_widget_link_file_summary">Sincronizar conteúdo deste widget com um ficheiro externo</string>
     <string name="search_action_share">Partilhar</string>
     <string name="search_action_websearch">Pesquisa na web</string>
     <string name="create_search_action_type_app">Pesquisar na aplicação</string>
@@ -245,7 +206,6 @@
     <string name="preference_gesture_double_tap">Dois toques</string>
     <string name="gesture_action_quick_settings">Definições rápidas</string>
     <string name="preference_search_result_ordering_weight_factor">Precisão da avaliação</string>
-    <string name="note_widget_file_write_error">Erro ao guardar</string>
     <string name="tag_select_items">Selecionar itens:</string>
     <string name="preference_search_appshortcuts_summary">Pesquisar atalhos de aplicações</string>
     <string name="preference_screen_buildinfo">Informação de compilação</string>
@@ -265,11 +225,6 @@
     <string name="widget_config_appwidget_borderless">Sem limites</string>
     <string name="widget_config_appwidget_background">Fundo do cartão</string>
     <string name="app_widget_loading_failed">Não foi possível carregar o widget</string>
-    <string name="note_widget_link_file">Ligação ao ficheiro</string>
-    <string name="widget_config_music_integration_settings">Definições de integração multimédia</string>
-    <string name="note_widget_linked_file_summary">Associado a %1$s</string>
-    <string name="note_widget_file_read_error_description">Não foi possível ler a nota. Foi reposta a cópia guardada na memória interna desta aplicação. Se editar a nota, é possível que o ficheiro associado seja substituído.</string>
-    <string name="note_widget_file_write_error_description">Não foi possível guardar a nota no ficheiro associado. Foi reposta uma cópia guardada na memória interna desta aplicação.</string>
     <string name="preference_layout_search_results">Disposição dos resultados</string>
     <string name="preference_hidden_items">Resultados ocultos</string>
     <string name="tag_name">Nome da etiqueta</string>
@@ -292,12 +247,6 @@
     <string name="preference_screen_homescreen_summary">Relógio, barra de pesquisa, papel de parede e barras</string>
     <string name="preference_screen_icons">Grelha e ícones</string>
     <string name="preference_screen_icons_summary">Grelha, ícones e indicadores</string>
-    <string name="preference_media_integration">Controlo multimédia</string>
-    <plurals name="battery_part_remaining_charge_time">
-        <item quantity="one">Totalmente carregado dentro de %1$s minuto</item>
-        <item quantity="many">Totalmente carregado dentro de %1$s minutos</item>
-        <item quantity="other">Totalmente carregado dentro de %1$s minutos</item>
-    </plurals>
     <string name="icon_picker_suggestions">Sugestões</string>
     <string name="preference_search_search_actions_summary">Configurar ações rápidas e atalhos de pesquisa</string>
     <string name="create_search_action_type_web">Pesquisar nos sites</string>
@@ -313,11 +262,6 @@
     <string name="missing_permission_accessibility_gesture_failed">Tem que ativar o serviço de acessibilidade para poder executar esta ação.</string>
     <string name="missing_permission_accessibility_gesture_settings">Esta ação necessita que o serviço de acessibilidade esteja ativado.</string>
     <string name="widget_config_appwidget_configure">Configurar widget</string>
-    <string name="note_widget_action_unlink_file">Dissociar</string>
-    <string name="note_widget_action_relink_file">Associar novamente</string>
-    <string name="note_widget_conflict_keep_selected">Manter seleção</string>
-    <string name="note_widget_conflict_local_version">Última versão guardada:</string>
-    <string name="note_widget_file_read_error">Erro ao ler a nota</string>
     <string name="confirmation_delete_color_scheme">Tem a certeza de que pretende eliminar o esquema %1$s?</string>
     <string name="theme_color_scheme_autogenerate">Da cor primária</string>
     <string name="theme_color_scheme_custom_color">Personalizada</string>
@@ -330,14 +274,8 @@
     <string name="action_done">Feito</string>
     <string name="action_more_actions">Mais ações</string>
     <string name="action_clear">Limpar</string>
-    <string name="clock_style_digital2">Simples</string>
     <string name="menu_hide_filters">Ocultar filtros</string>
     <string name="menu_show_filters">Mostrar filtros</string>
-    <string name="clock_style_digital1">Negrito</string>
-    <string name="clock_style_orbit">Órbita</string>
-    <string name="clock_style_binary">Binário</string>
-    <string name="clock_style_analog">Ponteiros</string>
-    <string name="clock_style_empty">Não usar</string>
     <string name="import_theme_apply">Aplicar tema</string>
     <string name="shortcut_label_unavailable">Indisponível</string>
     <string name="import_theme_error">Não foi possível ler o ficheiro indicado. Certifique-se de que é um ficheiro de tema válido (*.kvtheme) e que não está danificado.</string>
@@ -354,9 +292,6 @@
     <string name="shortcut_unavailable_description">Esta atalho não está disponível porque %1$s não é a aplicação padrão</string>
     <string name="app_label_locked_profile">Bloqueada</string>
     <string name="unavailable_searchable">Este item já não existe</string>
-    <string name="clock_style_segment">7 segmentos</string>
-    <string name="clock_style_custom">Widget personalizado</string>
-    <string name="clock_variant_outlined">Sublinhado</string>
     <string name="search_filter_online">Resultados online</string>
     <string name="customize_item_label">Texto</string>
     <string name="contact_info_home">Casa</string>
@@ -379,8 +314,6 @@
         <item quantity="many">%1$s números de telefone</item>
         <item quantity="other">%1$s números de telefone</item>
     </plurals>
-    <string name="music_widget_previous_track">Título anterior</string>
-    <string name="music_widget_pause">Pausa</string>
     <plurals name="contact_email_addresses">
         <item quantity="one">%1$s endereço de e-mail</item>
         <item quantity="many">%1$s endereços de e-mail</item>
@@ -391,9 +324,6 @@
     <string name="item_visibility_search_only">Pesquisas</string>
     <string name="item_visibility_hidden">Nunca</string>
     <string name="contact_info_work">Trabalho</string>
-    <string name="music_widget_next_track">Título seguinte</string>
-    <string name="music_widget_play">Reproduzir</string>
-    <string name="music_widget_open_player">Abrir reprodutor</string>
     <string name="profile_work_profile_state_locked">Aplicações profissionais em pausa</string>
     <string name="profile_work_profile_action_unlock">Cancelar pausa</string>
     <string name="profile_work_profile_action_lock">Pausa nas aplicações profissionais</string>
@@ -419,7 +349,6 @@
     <string name="preference_search_bar_style_solid">Sólida</string>
     <string name="preference_search_bar_style_hidden">Oculta</string>
     <string name="import_theme_contents">Conteúdo</string>
-    <string name="clock_variant_analog_ticks">Ponteiros 2</string>
     <string name="theme_export_title">Exportar tema</string>
     <string name="preference_colors_high_contrast">Alto contraste</string>
     <string name="theme_bundle_name">Nome</string>
@@ -435,11 +364,9 @@
     <string name="preference_transparencies_default">Padrão</string>
     <string name="preference_transparencies_semi_transparent">Semi-transparente</string>
     <string name="new_theme_name">(sem nome)</string>
-    <string name="music_widget_interactive_progress_bar">Barra de progresso interativa</string>
     <string name="no_selection">Nada selecionado</string>
     <string name="save_as_file">Guardar como ficheiro</string>
     <string name="confirmation_delete_transparencies_scheme">Tem a certeza de que deseja eliminar o esquema de transparência %1$s?</string>
-    <string name="action_install">Instalar</string>
     <string name="preference_screen_typography">Tipografia</string>
     <string name="preference_typography_fonts">Tipo de letra</string>
     <string name="font_category_device_default">Definições do dispositivo</string>
@@ -451,7 +378,6 @@
     <string name="preference_widgets_on_home_screen_summary">Mostrar widgets no ecrã principal e não em página distinta</string>
     <string name="gesture_action_widgets">Widgets</string>
     <string name="bad_configuration_summary">Você conseguir encontrar uma combinação de definições em não é possível aceder às pesquisas e às definições - Acabou de se bloquear!</string>
-    <string name="preference_clock_widget_monospaced">Dígitos mono-espaçados</string>
     <string name="preference_clockwidget_dock_rows">Linhas da doca</string>
     <string name="widget_name_apps">Aplicações</string>
     <string name="preference_search_apps">Aplicações</string>

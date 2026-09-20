@@ -24,9 +24,7 @@ class ConfigStateMapperTest {
                 Favorite("com.example.work", Profile.Work),
             ),
             widgetsEnabled = true,
-            widgets = listOf(BuiltinWidget.Apps, BuiltinWidget.Notes),
-            clockStyle = ClockStyle.Binary,
-            clockFillHeight = true,
+            widgets = listOf(BuiltinWidget.Apps),
         )
 
         val config = state.toLauncherConfig()
@@ -42,8 +40,6 @@ class ConfigStateMapperTest {
         assertEquals(state.dockFavorites, config.home?.dock?.favorites)
         assertEquals(true, config.home?.widgets?.enabled)
         assertEquals(state.widgets, config.home?.widgets?.widgets)
-        assertEquals(ClockStyle.Binary, config.home?.clock?.style)
-        assertEquals(true, config.home?.clock?.fillHeight)
     }
 
     @Test
@@ -65,7 +61,6 @@ class ConfigStateMapperTest {
         assertNotNull(config.home?.searchBar)
         assertNotNull(config.home?.dock)
         assertNotNull(config.home?.widgets)
-        assertNotNull(config.home?.clock)
     }
 
     @Test
@@ -78,9 +73,7 @@ class ConfigStateMapperTest {
             dockEnabled = true,
             dockFavorites = listOf(Favorite("com.example.app")),
             widgetsEnabled = true,
-            widgets = listOf(BuiltinWidget.Music),
-            clockStyle = ClockStyle.Orbit,
-            clockFillHeight = true,
+            widgets = listOf(BuiltinWidget.Apps),
         )
 
         val serialized = ConfigParser.json.encodeToString(

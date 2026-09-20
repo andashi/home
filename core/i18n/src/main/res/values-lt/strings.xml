@@ -20,12 +20,6 @@
     <string name="websearch_dialog_custom_icon">Tinkinta ikona</string>
     <string name="websearch_dialog_query_encoding_none">Nėvienas</string>
     <string name="menu_edit_widgets">Keisti valdiklius</string>
-    <string name="widget_name_music">Muzika</string>
-    <string name="widget_name_notes">Ūžrašo knygelė</string>
-    <string name="notes_widget_placeholder">Parašyti ūžrašą…</string>
-    <string name="notes_widget_action_new">Naujas ūžrašas</string>
-    <string name="notes_widget_export_filename">Ūžrašas_%1$s</string>
-    <string name="notes_widget_action_dismiss">Ignoruoti</string>
     <string name="shortcut_summary">Iš %1$s</string>
     <string name="close">Uždaryti</string>
     <string name="duplicate">Duplikuoti</string>
@@ -39,8 +33,6 @@
     <string name="edit_favorites_dialog_tag_section_empty">Prisegtos žymos bus čia</string>
     <string name="edit_favorites_dialog_new_tag">Sukurti žymą…</string>
     <string name="show_all">Rodyti visus</string>
-    <string name="music_widget_default_title">%1$s groja</string>
-    <string name="music_widget_no_data">Nebuvo paleista medija</string>
     <string name="missing_permission_appshortcuts_search_settings">%1$s turi būti nustatytas kaip namų programa ,kad ieškoti programos nuoradas</string>
     <string name="missing_permission_notification_badges">Pranešimų teisė yra reikalinga ,kad rodyti programėlės pranešimų kiekį burbule</string>
     <string name="missing_permission_contact_search">Leiskite kontaktų teisę ,kad ieškoti kontaktus.</string>
@@ -57,7 +49,6 @@
     <string name="preference_category_licenses">Atviro šaltinio licensijos</string>
     <string name="open_webpage">Atidaryti puslapį</string>
     <string name="preference_screen_about_summary">Programėlės ir licensijos informacija</string>
-    <string name="preference_category_debug">Taisymas (Debug)</string>
     <string name="preference_category_debug_tools">Įrankiai</string>
     <string name="preference_debug_dump_heap">Atminties momentinė nuotrauka (snapshot)</string>
     <string name="preference_debug_cleanup_database">Valyti databazę</string>
@@ -83,7 +74,6 @@
     <string name="preference_status_bar_icons">Pranešimų juostos ikonos</string>
     <string name="preference_nav_bar_icons">Navigacinio lauko ikonos</string>
     <string name="preference_hide_nav_bar">Slėpti navigacinę juosta</string>
-    <string name="preference_screen_integrations_summary">Tvarkyti prijungtas paskyras ir paslaugas</string>
     <string name="preference_icon_shape_pentagon">Penkiakampis</string>
     <string name="preference_category_wallpaper">Fonas</string>
     <string name="preference_dim_wallpaper_summary">Tamsiuose temose ,patamsinti foną</string>
@@ -108,30 +98,16 @@
     <string name="preference_grid_labels">Rodyti ūžrašus</string>
     <string name="preference_grid_labels_summary">Rodyti programos pavadinimą žemiau ikonos</string>
     <string name="preference_category_widgets">Valdikliai</string>
-    <string name="preference_screen_clockwidget">Laikrodis</string>
-    <string name="preference_screen_clockwidget_summary">Tinkinti laikrodžio stilių ir komponentus</string>
-    <string name="preference_clockwidget_layout_horizontal">Kompaktiškas</string>
-    <string name="preference_clock_widget_fill_height">Užpildyti ekrano aukštį</string>
-    <string name="preference_clock_widget_alignment">Lygiavimas</string>
-    <string name="preference_clock_widget_alignment_center">Centras</string>
-    <string name="preference_clock_widget_alignment_bottom">Apačia</string>
-    <string name="preference_clockwidget_dynamic_zone">Dinaminė zona</string>
-    <string name="preference_clockwidget_date_part_summary">Rodyti dabartinę data</string>
     <string name="preference_clockwidget_favorites_part">Užduočių juosta</string>
     <string name="preference_clockwidget_favorites_part_summary">Rodyti pirmą eilę prisegtų daiktų</string>
-    <string name="preference_clockwidget_music_part">Medija</string>
-    <string name="preference_clockwidget_battery_part">Baterija</string>
-    <string name="preference_clockwidget_alarm_part_summary">Rodyti žadintuvua kuris skambės per sekančias 15 minučių</string>
     <string name="menu_share">Dalintis</string>
     <string name="menu_share_apk_file">APK failas</string>
     <string name="menu_uninstall">Ištrinti</string>
     <string name="menu_back">Atgal</string>
     <string name="websearch_dialog_query_encoding">Query užkodavimas</string>
     <string name="websearch_dialog_query_encoding_url">Procentų-kodavimas</string>
-    <string name="notes_widget_action_save">Išsaugoti</string>
     <string name="menu_launch">Paleisti</string>
     <string name="websearch_dialog_query_encoding_form">application/x-www-form-urlencoded</string>
-    <string name="notes_widget_dismissed">Išmestas ūžrašas.</string>
     <string name="widget_add_widget">Pridėti valdiklį</string>
     <string name="save">Išsaugoti</string>
     <string name="turn_off">Išjungti</string>
@@ -142,7 +118,6 @@
     <string name="app_info_version">Versija %1$s</string>
     <string name="edit_favorites_dialog_empty_section">Tempti daiktus čia</string>
     <string name="default_websearch_2_name">YouTube</string>
-    <string name="missing_permission_music_widget">Pranešimų teisė reikalinga ,kad kontroliuoti medijos grojima</string>
     <string name="missing_permission_appshortcuts_search">Nustatykite %1$s kaip numatyta namų programa ,kad ieškoti programų nuoradas.</string>
     <string name="default_websearch_2_url">https://www.youtube.com/results\?search_query=${1}</string>
     <string name="missing_permission_contact_search_settings">Kontaktų teisė yra reikalinga rasti kontaktus</string>
@@ -153,12 +128,9 @@
     <string name="preference_screen_about">Apie</string>
     <string name="preference_icon_shape_triangle">Reuleaux trikampis</string>
     <string name="preference_icon_shape_pebble">Akmenėlis</string>
-    <string name="preference_screen_integrations">Integracijos</string>
-    <string name="preference_clockwidget_music_part_summary">Rodyti medijos kontrolę kai yra aktyvi medijos sesija</string>
     <string name="preference_screen_appearance_summary">Tinkinti išvaizda ir jausma</string>
     <string name="preference_theme_system">Sekti sistemą</string>
     <string name="preference_themed_icons">Temuotos ikonos</string>
-    <string name="preference_clockwidget_alarm_part">Žadintuvas</string>
     <string name="preference_themed_icons_summary">Spalvotos ikonos su programos spalvų schema</string>
     <string name="preference_force_themed_icons">Priversti temuotas ikonas</string>
     <string name="preference_debug_dump_heap_summary">Naudoti nuotrauką ,kad analizuoti atminties naudojama. Programa užstriks kol procesas nebus baigtas.</string>
@@ -178,16 +150,10 @@
     <string name="preference_enforce_icon_shape_summary">Nustatyti formą visom ikonom įskaitant tas kurios įprastai nepalaikytų</string>
     <string name="preference_screen_debug">Taisymas (Debug)</string>
     <string name="preference_screen_debug_summary">Taisymo įrankiai</string>
-    <string name="preference_clockwidget_layout_vertical">Numatytas</string>
-    <string name="preference_clock_widget_alignment_top">Viršus</string>
-    <string name="preference_clockwidget_date_part">Data</string>
     <string name="search_action_websearch_url_hint">Šis URL pavizdys yra naudojamas ,kad sukurti paieškos URL. Naudokite \'${1}\' kaip vieta paieškos terminui pvz. https://google.com/search?q=${1}.</string>
     <string name="preference_gesture_home_button">Namų mygtukas / gestas</string>
     <string name="gesture_action_lock_screen">Išjungti ekraną</string>
     <string name="gesture_failed_message">Jūs %1$s gestą. Šis gestas nustatytas padaryti %2$s veiksmą. Bet jis negali būti įvykdįtas dėl šios priežasties:</string>
-    <string name="note_widget_link_file_summary">Sinchronizuoti šiuo valdiklio turinį su išoriniu failu</string>
-    <string name="note_widget_conflict_description">Failas į kurį rodo nuoroda nėra tuščias ir jo turinys neatitinka išsaugotai versijai. Kurią norite išsaugoti\?</string>
-    <string name="note_widget_file_read_error_description">Failas į kurį rodo nuoroda neperskaitomas. Galimai buvo perkeltas ar ištrintas. Kokia buvo atstatyta iš paleidėjo atminties. Jei modifikuosite ūžraša ,failas galimai bus perrašytas.</string>
     <string name="preference_screen_search">Paieška</string>
     <string name="preference_screen_search_summary">Ieška ,žymos ,paslėptos programos</string>
     <string name="preference_search_favorites">Mėgstamiausi</string>
@@ -207,11 +173,6 @@
     <string name="preference_widgets_edit_button_summary">Rodyti mygtuką pridėti ,pašalinti ir perstatyti valdiklius</string>
     <string name="preference_screen_homescreen">Namų ekranas</string>
     <string name="preference_screen_homescreen_summary">Laikrodis ,paieškos juosta ,fonas ,sistemos juostos</string>
-    <plurals name="battery_part_remaining_charge_time">
-        <item quantity="one">Pilnas po %1$s minutės</item>
-        <item quantity="few">Pilnas po %1$s minučių</item>
-        <item quantity="other">Pilnas po %1$s minučių</item>
-    </plurals>
     <string name="favorites">Mėgstami</string>
     <string name="favorites_empty">Prisegtos ir dažnai naudojamos programos bus čia</string>
     <string name="favorites_empty_tag">Čia nėra programų su šia žyma</string>
@@ -239,8 +200,6 @@
     <string name="preference_search_result_ordering_weight_factor_default">Balancuotas</string>
     <string name="preference_search_result_ordering_weight_factor_high">Silpnas</string>
     <string name="app_widget_loading_failed">Programos valdiklius nebuvo užkrautas.</string>
-    <string name="note_widget_conflict_keep_selected">Keep pasirinkta</string>
-    <string name="note_widget_conflict_local_version">Paskutinė išsaugota versija:</string>
     <string name="preference_restore_default">Atstatyti numatytus</string>
     <string name="theme_color_scheme_autogenerate">Iš pagrindinės spalvos</string>
     <string name="theme_color_scheme_palette_color">Paletė</string>
@@ -259,8 +218,6 @@
     <string name="preference_screen_tags_summary">Tvarkyti žymas ir pažymėtus daiktus</string>
     <string name="preference_screen_icons">Išdėstymas ir ikonos</string>
     <string name="preference_screen_icons_summary">Išdėstymas ,ikonų dydis , ikonų paketai , ženkleliai</string>
-    <string name="preference_media_integration">Medijos kontrolė</string>
-    <string name="battery_part_charging">Įkraunama</string>
     <string name="icon_picker_default_icon">Numatyta</string>
     <string name="icon_picker_suggestions">Pasiūlymai</string>
     <string name="icon_picker_search_icon">Ieškoti ikonų paketuose</string>
@@ -309,17 +266,6 @@
     <string name="widget_config_appwidget_borderless">Be kraštis</string>
     <string name="widget_config_appwidget_background">Fono kortelė</string>
     <string name="widget_config_appwidget_configure">Tinkinti valdiklį</string>
-    <string name="widget_config_music_integration_settings">Medijos kontrolės integracijos nustatymai</string>
-    <string name="note_widget_link_file">Nuoroda į failą</string>
-    <string name="note_widget_linked_file_summary">Nuoroda į %1$s</string>
-    <string name="note_widget_action_unlink_file">Pašalinti nuoroda</string>
-    <string name="note_widget_action_relink_file">Sutvarkyti nuoroda</string>
-    <string name="note_widget_conflict">Konfliktas</string>
-    <string name="note_widget_conflict_action_resolve">Sutvarkyti</string>
-    <string name="note_widget_conflict_file_version">Dabartinis failo turinys:</string>
-    <string name="note_widget_file_read_error">Nepavyko perskaityti ūžrašo</string>
-    <string name="note_widget_file_write_error">Nepavyko išsaugoti ūžrašo</string>
-    <string name="note_widget_file_write_error_description">Ūžrašas buvo neįrašytas į nuorodos failą. Galimai perkeltas at ištrintas. Kopija yra išsaugota į paleidėjo atmintį.</string>
     <string name="confirmation_delete_color_scheme">Ar tikrai norite ištrinti spalvų schema %1$s\?</string>
     <string name="preference_use_system_default">Naudokite sistemos numatyta spalva</string>
     <string name="shortcut_label_unavailable">Nepasiekemas</string>

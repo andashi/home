@@ -11,7 +11,6 @@ import androidx.test.core.app.ApplicationProvider
 import de.mm20.launcher2.applications.AppRepository
 import de.mm20.launcher2.config.BuiltinWidget
 import de.mm20.launcher2.config.WallpaperTarget
-import de.mm20.launcher2.config.ClockStyle
 import de.mm20.launcher2.config.ConfigMutation
 import de.mm20.launcher2.config.ConfigState
 import de.mm20.launcher2.config.Diagnostic
@@ -35,9 +34,6 @@ import de.mm20.launcher2.themes.transparencies.TransparenciesRepository
 import de.mm20.launcher2.widgets.AppWidget
 import de.mm20.launcher2.widgets.AppWidgetConfig
 import de.mm20.launcher2.widgets.AppsWidget
-import de.mm20.launcher2.widgets.MusicWidget
-import de.mm20.launcher2.widgets.NotesWidget
-import de.mm20.launcher2.widgets.NotesWidgetConfig
 import de.mm20.launcher2.widgets.Widget
 import de.mm20.launcher2.widgets.WidgetRepository
 import kotlinx.collections.immutable.persistentListOf
@@ -137,7 +133,6 @@ class DefaultConfigStoreTest {
         settings.transparenciesId = theme.id
         widgetRepository.widgets = listOf(
             AppsWidget(UUID.randomUUID()),
-            NotesWidget(UUID.randomUUID()),
             AppWidget(UUID.randomUUID(), AppWidgetConfig(widgetId = 1, height = 100)),
         )
         val appA = app("com.example.a", personalHandle)
@@ -152,7 +147,7 @@ class DefaultConfigStoreTest {
         assertEquals(0.5f, state.transparencyBackground)
         assertEquals(0.6f, state.transparencySurface)
         assertEquals(0.7f, state.transparencyElevatedSurface)
-        assertEquals(listOf(BuiltinWidget.Apps, BuiltinWidget.Notes), state.widgets)
+        assertEquals(listOf(BuiltinWidget.Apps), state.widgets)
         assertEquals(
             listOf(
                 Favorite("com.example.a", ConfigProfile.Personal),
@@ -268,32 +263,39 @@ class DefaultConfigStoreTest {
     @Test
     fun `SetWidgets reconciles built-ins and preserves external widgets`() = runTest {
         val apps = AppsWidget(UUID.randomUUID())
-        val notes = NotesWidget(UUID.randomUUID(), NotesWidgetConfig(storedText = "hello"))
         val external = AppWidget(UUID.randomUUID(), AppWidgetConfig(widgetId = 7, height = 200))
-        widgetRepository.widgets = listOf(apps, notes, external)
+        widgetRepository.widgets = listOf(apps, external)
 
         val diagnostics = store.apply(
-            listOf(ConfigMutation.SetWidgets(listOf(BuiltinWidget.Notes, BuiltinWidget.Music)))
+            listOf(ConfigMutation.SetWidgets(listOf(BuiltinWidget.Apps)))
         )
 
         val result = widgetRepository.widgets
-        assertEquals(3, result.size)
-        // Notes keeps ID and content.
-        assertEquals(notes, result[0])
-        // Music is new.
-        assertTrue(result[1] is MusicWidget)
+        assertEquals(2, result.size)
+        // The built-in keeps its ID.
+        assertEquals(apps, result[0])
         // The external app widget is preserved, not deleted.
-        assertEquals(external, result[2])
+        assertEquals(external, result[1])
         assertEquals(1, diagnostics.size)
         assertEquals(Severity.Warning, diagnostics[0].severity)
         assertEquals("unsupported-widget", diagnostics[0].code)
     }
 
     @Test
+    fun `SetWidgets creates a built-in that is not there yet`() = runTest {
+        widgetRepository.widgets = emptyList()
+
+        store.apply(listOf(ConfigMutation.SetWidgets(listOf(BuiltinWidget.Apps))))
+
+        assertEquals(1, widgetRepository.widgets.size)
+        assertTrue(widgetRepository.widgets[0] is AppsWidget)
+    }
+
+    @Test
     fun `SetWidgets removes built-ins missing from the config`() = runTest {
         widgetRepository.widgets = listOf(
             AppsWidget(UUID.randomUUID()),
-            NotesWidget(UUID.randomUUID()),
+            AppsWidget(UUID.randomUUID()),
         )
 
         store.apply(listOf(ConfigMutation.SetWidgets(listOf(BuiltinWidget.Apps))))
@@ -379,7 +381,7 @@ class DefaultConfigStoreTest {
             listOf(
                 ConfigMutation.SetIcons(themed = true),
                 ConfigMutation.SetDockEnabled(true),
-                ConfigMutation.SetClock(style = ClockStyle.Segment),
+                ConfigMutation.SetWidgetsEnabled(true),
                 ConfigMutation.SetWidgets(emptyList()),
             )
         )
@@ -388,7 +390,7 @@ class DefaultConfigStoreTest {
         assertEquals(3, settings.applyCalls[0].size)
         assertTrue(settings.state.themedIcons)
         assertTrue(settings.state.dockEnabled)
-        assertEquals(ClockStyle.Segment, settings.state.clockStyle)
+        assertTrue(settings.state.widgetsEnabled)
     }
 
     // ----- fakes -----
@@ -421,11 +423,6 @@ class DefaultConfigStoreTest {
 
                     is ConfigMutation.SetWidgetsEnabled ->
                         state = state.copy(widgetsEnabled = mutation.enabled)
-
-                    is ConfigMutation.SetClock -> state = state.copy(
-                        clockStyle = mutation.style ?: state.clockStyle,
-                        clockFillHeight = mutation.fillHeight ?: state.clockFillHeight,
-                    )
 
                     else -> Unit
                 }

@@ -18,8 +18,6 @@ import de.mm20.launcher2.themes.transparencies.Transparencies
 import de.mm20.launcher2.themes.transparencies.TransparenciesRepository
 import de.mm20.launcher2.widgets.AppWidget
 import de.mm20.launcher2.widgets.AppsWidget
-import de.mm20.launcher2.widgets.MusicWidget
-import de.mm20.launcher2.widgets.NotesWidget
 import de.mm20.launcher2.widgets.Widget
 import de.mm20.launcher2.widgets.WidgetRepository
 import kotlinx.coroutines.flow.first
@@ -180,8 +178,8 @@ class DefaultConfigStore(
 
     /**
      * Reconciles the root widget list against the configured built-ins.
-     * Unchanged built-ins keep their IDs and configs (in particular
-     * [NotesWidget] content), removed built-ins are deleted, and external
+     * Unchanged built-ins keep their IDs and configs, removed built-ins are
+     * deleted, and external
      * [AppWidget]s are kept (appended in their previous relative order) with
      * a warning instead of being deleted.
      */
@@ -288,16 +286,12 @@ class DefaultConfigStore(
     }
 
     private fun Widget.toBuiltinWidget(): BuiltinWidget? = when (this) {
-        is MusicWidget -> BuiltinWidget.Music
         is AppsWidget -> BuiltinWidget.Apps
-        is NotesWidget -> BuiltinWidget.Notes
         else -> null
     }
 
     private fun BuiltinWidget.newWidget(): Widget = when (this) {
-        BuiltinWidget.Music -> MusicWidget(UUID.randomUUID())
         BuiltinWidget.Apps -> AppsWidget(UUID.randomUUID())
-        BuiltinWidget.Notes -> NotesWidget(UUID.randomUUID())
     }
 
     private fun ConfigMutation.applyFailed(cause: Exception): Diagnostic {
@@ -324,7 +318,6 @@ private val ConfigMutation.isSettingsBacked: Boolean
         is ConfigMutation.SetSearchBarPosition,
         is ConfigMutation.SetDockEnabled,
         is ConfigMutation.SetWidgetsEnabled,
-        is ConfigMutation.SetClock,
         -> true
 
         is ConfigMutation.SetTransparency,

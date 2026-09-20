@@ -28,7 +28,6 @@
     <string name="action_done">Bitti</string>
     <string name="action_more_actions">Diğer eylemler</string>
     <string name="action_clear">Temizle</string>
-    <string name="action_install">Yükle</string>
     <!-- Delete something (a file or a web search shortcut) -->
     <string name="menu_delete">Sil</string>
     <string name="menu_remove">Kaldır</string>
@@ -156,19 +155,11 @@
     <string name="websearch_dialog_query_encoding_form">application/x-www-form-urlencoded</string>
     <string name="websearch_dialog_query_encoding_none">Hiçbiri</string>
     <string name="menu_edit_widgets">Araçları düzenle</string>
-    <string name="widget_name_music">Medya</string>
-    <string name="widget_name_notes">Not</string>
     <string name="widget_add_widget">Araç ekle</string>
     <string name="widget_removed">Araç kaldırıldı</string>
     <!-- Add a third party widget (=a standard Android app widget) -->
-    <string name="notes_widget_placeholder">Bir not yazın</string>
-    <string name="notes_widget_action_new">Yeni not</string>
     <!-- Save / export the current note content as markdown file -->
-    <string name="notes_widget_action_save">Kaydet</string>
     <!-- Default filename for exported files. %1$s: the current date and time. File extension is appended automatically. -->
-    <string name="notes_widget_export_filename">Not_%1$s</string>
-    <string name="notes_widget_action_dismiss">Kapat</string>
-    <string name="notes_widget_dismissed">Not kapatıldı</string>
     <!-- Indicates to which app a shortcuts belongs. %1$s: the name of the app -->
     <string name="shortcut_summary">%1$s tarafından</string>
     <!-- Close a dialog -->
@@ -221,8 +212,6 @@
         -->
     <!-- Calendar events that last the entire day -->
     <!-- Default title that is shown in the music widget if the app that is playing media did not publish a title -->
-    <string name="music_widget_default_title">%1$s medya oynatıyor</string>
-    <string name="music_widget_no_data">Henüz medya oynatılmadı</string>
     <!-- Humidity details, %1$s: formatted humidity value -->
     <!-- Wind details, %1$s: formatted wind values -->
     <!-- Precipitation details, %1$s: formatted precipitation values -->
@@ -230,7 +219,6 @@
         alternative to granting the permission -->
     <!-- Missing location permission in weather widget and weather widget settings settings -->
     <!-- Missing notification permission in music widget settings -->
-    <string name="missing_permission_music_widget">Medya oynatmayı kontrol etmek için bildirim erişimi gereklidir</string>
     <!-- Missing contact permission in search settings screen -->
     <string name="missing_permission_contact_search_settings">Kişileri aramak için kişiler izni gereklidir</string>
     <!-- Missing call permission in contacts settings screen -->
@@ -288,7 +276,6 @@
     <string name="open_webpage">Web sitesini aç</string>
     <string name="preference_screen_about_summary">Uygulama ve lisans bilgileri</string>
     <string name="preference_screen_appearance_summary">Görünümü ve hissi özelleştirin</string>
-    <string name="preference_category_debug">Hata Ayıklama</string>
     <string name="preference_category_debug_tools">Araçlar</string>
     <string name="preference_debug_dump_heap">Bellek anlık görüntüsü</string>
     <string name="preference_debug_dump_heap_summary">Bellek kullanımını analiz etmek için bir anlık görüntü yakalayın. Bu işlem tamamlanana kadar uygulama donacaktır.</string>
@@ -314,7 +301,6 @@
     <string name="preference_icon_shape_pebble">Çakıl taşı</string>
     <string name="preference_icon_shape_hexagon">Altıgen</string>
     <string name="preference_category_searchbar">Arama çubuğu</string>
-    <string name="preference_screen_integrations">Entegrasyonlar</string>
     <string name="preference_theme_system">Sistemi takip et</string>
     <string name="preference_themed_icons">Temalı simgeler</string>
     <string name="preference_themed_icons_summary">Uygulamanın renk şemasıyla simgeleri renklendir</string>
@@ -331,7 +317,6 @@
     <string name="preference_system_bar_icons_dark">Koyu</string>
     <string name="preference_hide_status_bar">Durum çubuğunu gizle</string>
     <string name="preference_hide_nav_bar">Gezinme çubuğunu gizle</string>
-    <string name="preference_screen_integrations_summary">Bağlı hesapları ve hizmetleri yönet</string>
     <string name="preference_icon_shape_pentagon">Beşgen</string>
     <string name="preference_category_wallpaper">Duvar Kağıdı</string>
     <string name="preference_dim_wallpaper">Duvar kağıdını karart</string>
@@ -367,30 +352,12 @@
     <string name="preference_screen_debug">Hata Ayıklama</string>
     <string name="preference_screen_debug_summary">Sorun giderme araçları</string>
     <string name="preference_category_widgets">Widgetlar</string>
-    <string name="preference_screen_clockwidget">Saat</string>
-    <string name="preference_screen_clockwidget_summary">Saat stilini ve bileşenleri yapılandır</string>
-    <string name="preference_clockwidget_layout_vertical">Varsayılan</string>
-    <string name="preference_clockwidget_layout_horizontal">Kompakt</string>
-    <string name="preference_clock_widget_show_seconds">Saniyeleri göster</string>
     <string name="preference_clock_widget_time_format">Saat biçimi</string>
     <string name="preference_clock_widget_time_format_24h">24 saat</string>
     <string name="preference_clock_widget_time_format_12h">12 saat</string>
     <string name="widget_use_theme_colors">Tema rengini kullan</string>
-    <string name="preference_clock_widget_fill_height">Ekran yüksekliğini doldur</string>
-    <string name="preference_clock_widget_alignment">Hizalama</string>
-    <string name="preference_clock_widget_alignment_top">Üst</string>
-    <string name="preference_clock_widget_alignment_center">Orta</string>
-    <string name="preference_clock_widget_alignment_bottom">Alt</string>
-    <string name="preference_clockwidget_dynamic_zone">Dinamik bölge</string>
-    <string name="preference_clockwidget_date_part">Tarih</string>
-    <string name="preference_clockwidget_date_part_summary">Geçerli tarihi göster</string>
     <string name="preference_clockwidget_favorites_part">Dok</string>
     <string name="preference_clockwidget_favorites_part_summary">Sabitlenmiş öğelerin dokta göster</string>
-    <string name="preference_clockwidget_music_part">Medya</string>
-    <string name="preference_clockwidget_music_part_summary">Aktif bir medya oturumu olduğunda medya kontrollerini göster</string>
-    <string name="preference_clockwidget_battery_part">Pil</string>
-    <string name="preference_clockwidget_alarm_part">Alarmlar</string>
-    <string name="preference_clockwidget_alarm_part_summary">Sonraki 8 saat içinde çalacak alarmları göster</string>
     <string name="preference_screen_search">Arama</string>
     <string name="preference_screen_search_summary">Arama, etiketler, hariç tutulan sonuçlar</string>
     <string name="preference_search_favorites">Favoriler</string>
@@ -426,7 +393,6 @@
     <string name="preference_screen_homescreen_summary">Saat, arama çubuğu, duvar kağıdı, sistem çubukları</string>
     <string name="preference_screen_icons">Izgara ve simgeler</string>
     <string name="preference_screen_icons_summary">Izgara boyutu, simgeler, rozetler</string>
-    <string name="preference_media_integration">Medya kontrolü</string>
     <!-- %1$s: app name (Kvaesitso) -->
     <string name="preference_contacts_call_on_tap">Aramak için dokun</string>
     <string name="preference_contacts_call_on_tap_summary">Bir telefon numarasına dokunduğunuzda onay vermeden bir arama başlatın</string>
@@ -434,11 +400,6 @@
     <!-- Used in an info banner if a specific feature requires an Owncloud account -->
     <!-- Used in an info banner if a specific feature requires a Google account -->
     <!-- Used in info banners that indicate that an account is required to enable a certain feature -->
-    <string name="battery_part_charging">Şarj oluyor</string>
-    <plurals name="battery_part_remaining_charge_time">
-        <item quantity="one">%1$s dakika içinde dolacak</item>
-        <item quantity="other">%1$s dakika içinde dolacak</item>
-    </plurals>
     <!-- %1$s: app name -->
     <!-- %1$s: app name -->
     <!-- %1$s: date and time of backup creation, %s$s: name of the device this backup has been created on, %s$s app name and version of creating app-->
@@ -523,25 +484,8 @@
     <string name="widget_config_appwidget_borderless">Kenarlıksız</string>
     <string name="widget_config_appwidget_background">Arka plan kartı</string>
     <string name="widget_config_appwidget_configure">Aracı yapılandır</string>
-    <string name="widget_config_appwidget_resize">Yeniden boyutlandır</string>
     <string name="widget_pick_widget">Araç seç</string>
     <string name="app_widget_loading_failed">Uygulama widget\'ı yüklenemedi</string>
-    <string name="widget_config_music_integration_settings">Medya kontrolü entegrasyonu ayarları</string>
-    <string name="note_widget_link_file">Dosyaya bağla</string>
-    <string name="note_widget_link_file_summary">Bu aracın içeriğini harici bir dosyayla senkronize et</string>
-    <string name="note_widget_linked_file_summary">%1$s ile bağlantılı</string>
-    <string name="note_widget_action_unlink_file">Bağlantıyı kaldır</string>
-    <string name="note_widget_action_relink_file">Yeniden bağla</string>
-    <string name="note_widget_conflict">Çakışma</string>
-    <string name="note_widget_conflict_action_resolve">Çöz</string>
-    <string name="note_widget_conflict_keep_selected">Seçileni koru</string>
-    <string name="note_widget_conflict_description">Bağlantılı dosya boş değil ve içeriği bu notun son kaydedilen sürümüyle eşleşmiyor. Hangi sürümü tutmak istersiniz?</string>
-    <string name="note_widget_conflict_local_version">Son kaydedilen sürüm:</string>
-    <string name="note_widget_conflict_file_version">Mevcut dosya içeriği:</string>
-    <string name="note_widget_file_read_error">Not okunurken hata oluştu</string>
-    <string name="note_widget_file_read_error_description">Bağlantılı dosya okunamadı. Başlatıcının dahili depolamasından bir kopya geri yüklendi. Notu düzenlerseniz, bağlantılı dosya muhtemelen üzerine yazılacaktır</string>
-    <string name="note_widget_file_write_error">Not kaydedilirken hata oluştu</string>
-    <string name="note_widget_file_write_error_description">Not, bağlantılı dosyaya yazılamadı. Başlatıcının dahili depolamasına bir kopya kaydedildi</string>
     <string name="confirmation_delete_color_scheme">%1$s renk şemasını gerçekten silmek istiyor musunuz?</string>
     <string name="confirmation_delete_shapes_scheme">%1$s şekil şemasını gerçekten silmek istiyor musunuz?</string>
     <string name="confirmation_delete_transparencies_scheme">%1$s şeffaflık şemasını gerçekten silmek istiyor musunuz?</string>
@@ -560,15 +504,6 @@
     <!-- %1$s: app name -->
     <string name="shortcut_unavailable_description">Bu kısayol kullanılamıyor çünkü %1$s varsayılan başlatıcı değil</string>
     <string name="unavailable_searchable">Bu öğe artık mevcut değil</string>
-    <string name="clock_style_digital1">Kalın</string>
-    <string name="clock_style_digital2">Basit</string>
-    <string name="clock_style_orbit">Yörünge</string>
-    <string name="clock_style_binary">İkili</string>
-    <string name="clock_style_analog">Akrep-Yelkovan</string>
-    <string name="clock_style_segment">7 segment</string>
-    <string name="clock_style_empty">Saat yok</string>
-    <string name="clock_style_custom">Özel araç</string>
-    <string name="clock_variant_outlined">Dış çizgili</string>
     <string name="menu_show_filters">Filtreleri göster</string>
     <string name="menu_hide_filters">Filtreleri gizle</string>
     <string name="search_filter_online">Çevrimiçi sonuçlar</string>
@@ -606,11 +541,6 @@
         <item quantity="one">%1$s bildirim</item>
         <item quantity="other">%1$s bildirim</item>
     </plurals>
-    <string name="music_widget_previous_track">Önceki parça</string>
-    <string name="music_widget_next_track">Sonraki parça</string>
-    <string name="music_widget_play">Oynat</string>
-    <string name="music_widget_pause">Duraklat</string>
-    <string name="music_widget_open_player">Oynatıcıyı aç</string>
     <string name="profile_work_profile_state_locked">İş uygulamaları duraklatıldı</string>
     <string name="profile_work_profile_action_unlock">Devam ettir</string>
     <string name="profile_work_profile_action_lock">İş uygulamalarını duraklat</string>
@@ -632,18 +562,10 @@
     <string name="preference_search_bar_style_transparent">Şeffaf</string>
     <string name="preference_search_bar_style_solid">Koyu</string>
     <string name="preference_search_bar_style_hidden">Gizli</string>
-    <string name="clock_variant_analog_ticks">Çubuklar</string>
-    <string name="music_widget_interactive_progress_bar">İnteraktif ilerleme barı</string>
     <string name="widget_name_apps">Uygulamalar</string>
-    <string name="preference_clock_widget_monospaced">Eşaralıklı rakamlar</string>
-    <string name="preference_clockwidget_smartspacer">Smartspacer tarafından sağlanır</string>
     <string name="preference_clockwidget_dock_rows">Dok satırları</string>
     <string name="preference_search_apps">Uygulamalar</string>
     <string name="preference_search_apps_summary">Arama kutusu boşken tüm uygulamaları göster</string>
-    <string name="preference_smartspacer_integration">Smartspacer</string>
-    <string name="preference_smartspacer_integration_description">Smartspacer ücretsiz ve açık kaynaklı bir \"Bir Bakışta\" widget\'ıdır, saat widget\'ının dinamik alanına eklenebilir</string>
-    <string name="preference_smartspacer_enable">Smartspacer entegrasyonunu etkinleştir</string>
-    <string name="preference_launch_smartspacer_app">Smartspacer\'ı aç</string>
     <string name="preference_feed_integration">Akış</string>
     <string name="preference_category_feed_provider">Akış sağlayıcısı</string>
     <string name="preference_feed_enable_summary">Akışı açmak için ana ekranda sağa kaydırın</string>

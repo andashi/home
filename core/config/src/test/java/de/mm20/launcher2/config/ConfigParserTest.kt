@@ -38,9 +38,8 @@ class ConfigParserTest {
             },
             "widgets": {
               "enabled": true,
-              "widgets": ["music", "apps", "notes"]
-            },
-            "clock": { "style": "orbit", "fillHeight": true }
+              "widgets": ["apps"]
+            }
           }
         }
     """.trimIndent()
@@ -70,15 +69,9 @@ class ConfigParserTest {
             config.home?.dock?.favorites,
         )
         assertEquals(
-            listOf(
-                BuiltinWidget.Music,
-                BuiltinWidget.Apps,
-                BuiltinWidget.Notes,
-            ),
+            listOf(BuiltinWidget.Apps),
             config.home?.widgets?.widgets,
         )
-        assertEquals(ClockStyle.Orbit, config.home?.clock?.style)
-        assertEquals(true, config.home?.clock?.fillHeight)
     }
 
     @Test
@@ -353,7 +346,7 @@ class ConfigParserTest {
             {
               "schemaVersion": 1,
               "home": {
-                "widgets": { "widgets": ["apps", "music", "apps"] }
+                "widgets": { "widgets": ["apps", "apps"] }
               }
             }
         """.trimIndent()
@@ -362,7 +355,7 @@ class ConfigParserTest {
 
         val duplicates = result.diagnostics.filter { it.code == "duplicate-widget" }
         assertEquals(1, duplicates.size)
-        assertEquals("home.widgets.widgets[2]", duplicates.single().path)
+        assertEquals("home.widgets.widgets[1]", duplicates.single().path)
     }
 
     @Test
@@ -385,18 +378,18 @@ class ConfigParserTest {
     }
 
     @Test
-    fun `clock style serial names are stable and lowercase`() {
+    fun `enum serial names are stable and lowercase`() {
         val input = """
             {
               "schemaVersion": 1,
-              "home": { "clock": { "style": "binary" } }
+              "home": { "searchBar": { "position": "bottom" } }
             }
         """.trimIndent()
 
         val result = ConfigParser.parse(input)
 
         assertTrue(result.isSuccess)
-        assertEquals(ClockStyle.Binary, result.config?.home?.clock?.style)
+        assertEquals(SearchBarPosition.Bottom, result.config?.home?.searchBar?.position)
     }
 
     @Test
@@ -404,7 +397,7 @@ class ConfigParserTest {
         val input = """
             {
               "schemaVersion": 1,
-              "home": { "clock": { "style": "holographic" } }
+              "home": { "searchBar": { "position": "sideways" } }
             }
         """.trimIndent()
 

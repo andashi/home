@@ -27,8 +27,6 @@ import de.mm20.launcher2.ui.locals.LocalDarkTheme
 import de.mm20.launcher2.ui.locals.LocalPreferDarkContentOverWallpaper
 import de.mm20.launcher2.widgets.AppWidget
 import de.mm20.launcher2.widgets.AppsWidget
-import de.mm20.launcher2.widgets.MusicWidget
-import de.mm20.launcher2.widgets.NotesWidget
 import de.mm20.launcher2.widgets.Widget
 
 @Composable
@@ -76,9 +74,7 @@ fun AppWidget(
                         )
                     )
 
-                    is MusicWidget -> it.copy(id = widget.id)
                     is AppsWidget -> it.copy(id = widget.id)
-                    is NotesWidget -> it.copy(id = widget.id)
                 }
                 onWidgetUpdate(updatedWidget)
                 replaceWidget = false

@@ -10,7 +10,6 @@
     <string name="menu_app_info">অ্যাপের তথ্য</string>
     <string name="menu_launch">চালু করুন</string>
     <string name="menu_customize">কাস্টোমাইজ করুন</string>
-    <string name="widget_name_notes">নোট</string>
     <string name="edit_favorites_dialog_unpinned">পিন করা নয় কিন্তু প্রায়শই ব্যবহৃত</string>
     <string name="action_import">ইমপোর্ট করুন</string>
     <string name="menu_remove">সরান</string>
@@ -34,12 +33,6 @@
     <string name="websearch_dialog_query_encoding_form">application/x-www-form-urlencoded</string>
     <string name="websearch_dialog_query_encoding_none">কোনোটিই নয়</string>
     <string name="menu_edit_widgets">উইজেট সম্পাদনা করুন</string>
-    <string name="widget_name_music">সঙ্গীত</string>
-    <string name="notes_widget_placeholder">একটি নোট লিখুন…</string>
-    <string name="notes_widget_action_new">নতুন নোট</string>
-    <string name="notes_widget_export_filename">নোট_%1$s</string>
-    <string name="notes_widget_action_dismiss">বাদ দিন</string>
-    <string name="notes_widget_dismissed">নোটটি বাদ দেয়া হয়েছে।</string>
     <string name="shortcut_summary">%1$s এর শর্টকাট</string>
     <string name="save">সংরক্ষণ করুন</string>
     <string name="duplicate">অনুলিপি তৈরি</string>
@@ -55,11 +48,8 @@
     <string name="edit_favorites_dialog_tags">ট্যাগগুলো</string>
     <string name="edit_favorites_dialog_new_tag">ট্যাগ তৈরি করুন…</string>
     <string name="show_all">সব দেখুন</string>
-    <string name="music_widget_default_title">%1$s মিডিয়া চালাচ্ছে</string>
-    <string name="music_widget_no_data">কোনো মিডিয়া চলছে না</string>
     <string name="action_undo">আগের অবস্থায় ফিরুন</string>
     <string name="alert_delete_shortcut">%1$s শর্টকাটটি স্থায়ীভাবে মুছে ফেলা হবে৷ আপনি নিশ্চিত?</string>
-    <string name="notes_widget_action_save">সংরক্ষণ করুন</string>
     <string name="turn_off">বন্ধ করুন</string>
     <string name="menu_delete">মুছুন</string>
     <string name="widget_add_widget">উইজেট যোগ করুন</string>
@@ -67,7 +57,6 @@
     <string name="action_done">হয়েছে</string>
     <string name="action_more_actions">আরো একশন</string>
     <string name="action_clear">মুছে ফেলুন</string>
-    <string name="missing_permission_music_widget">মিডিয়া প্লেব্যাক নিয়ন্ত্রণ করতে নোটিফিকেশন অ্যাক্সেস প্রয়োজন</string>
     <string name="missing_permission_contact_search_settings">কন্টাক্ট অনুসন্ধান করতে কন্টাক্ট অনুমতির প্রয়োজন</string>
     <string name="missing_permission_appshortcuts_search_settings">অ্যাপ শর্টকাট অনুসন্ধান করার জন্য %1$s-কে ডিফল্ট হোম অ্যাপ হিসেবে সেট করা আবশ্যক</string>
     <string name="missing_permission_notification_badges">বিজ্ঞপ্তি ব্যাজ প্রদর্শন করতে নোটিফিকেশন অ্যাক্সেস প্রয়োজন</string>
@@ -85,11 +74,9 @@
     <string name="preference_theme_light">হালকা</string>
     <string name="preference_theme_dark">গাঢ়</string>
     <string name="preference_screen_colors">রঙের বিন্যাস</string>
-    <string name="preference_category_debug">ত্রুটি সংশোধন</string>
     <string name="preference_category_debug_tools">সরঞ্জাম</string>
     <string name="preference_debug_dump_heap">মেমোরির চিত্রনির্মাণ</string>
     <string name="preference_debug_dump_heap_in_progress">চিত্রনির্মান ক্যাপচার করা হচ্ছে…</string>
-    <string name="preference_screen_integrations">একত্রীকরণ</string>
     <string name="preference_theme_system">সিস্টেম অনুসরণ করে</string>
     <string name="preference_themed_icons">থিমযুক্ত আইকন</string>
     <string name="preference_themed_icons_summary">অ্যাপ্লিকেশনের রঙের স্কিম অনুসারে আইকন রঙিন করুন</string>

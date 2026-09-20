@@ -28,11 +28,6 @@
     <string name="websearch_dialog_query_encoding">Haun koodaus</string>
     <string name="websearch_dialog_query_encoding_none">Ei mitään</string>
     <string name="menu_edit_widgets">Muokkaa pienoisohjelmia</string>
-    <string name="widget_name_music">Musiikki</string>
-    <string name="widget_name_notes">Muistiinpano</string>
-    <string name="notes_widget_action_save">Tallenna</string>
-    <string name="notes_widget_action_dismiss">Hylkää</string>
-    <string name="notes_widget_dismissed">Muistiinpano hylätty.</string>
     <string name="shortcut_summary">sovelluksesta %1$s</string>
     <string name="close">Sulje</string>
     <string name="action_import">Tuo</string>
@@ -48,9 +43,6 @@
     <string name="websearch_dialog_query_encoding_url">Prosenttikoodaus</string>
     <string name="websearch_dialog_query_encoding_form">application/x-www-form-urlencoded</string>
     <string name="widget_add_widget">Lisää pienoisohjelma</string>
-    <string name="notes_widget_placeholder">Kirjoita muistiinpano…</string>
-    <string name="notes_widget_action_new">Uusi muistiinpano</string>
-    <string name="notes_widget_export_filename">Muistiinpano_%1$s</string>
     <string name="save">Tallenna</string>
     <string name="duplicate">Monista</string>
     <string name="edit">Muokkaa</string>
@@ -73,7 +65,6 @@
         <item quantity="other">%1$d tapahtumaa on poistettu.</item>
     </plurals>
     <string name="preference_enforce_icon_shape_summary">Käytä muotoa kaikkiin kuvakkeisiin, myös niihin, jotka eivät tue sitä</string>
-    <string name="preference_clockwidget_layout_horizontal">Tiivis</string>
     <string name="preference_search_search_actions_summary">Säädä pikatoimintoja ja hakuoikoteitä</string>
     <string name="search_action_websearch_url_hint">URL-pohja, jota käytetään verkkohaun osoitteena. Käytä \'${1}\' osoittamaan varsinaisen hakutermin paikkaa osoitteessa, esimerkiksi https://google.com/search?q=${1}.</string>
     <string name="preference_layout_search_bar_position">Hakupalkin sijainti</string>
@@ -93,17 +84,7 @@
     <string name="preference_grid_icon_size">Kuvakkeen koko</string>
     <string name="preference_grid_column_count">Sarakkeiden määrä</string>
     <string name="preference_category_widgets">Pienoisohjelmat</string>
-    <string name="preference_clockwidget_date_part">Päiväys</string>
-    <string name="preference_clock_widget_alignment">Kohdistus</string>
-    <string name="preference_clock_widget_alignment_top">Ylhäällä</string>
-    <string name="preference_clock_widget_alignment_center">Keskellä</string>
-    <string name="preference_clock_widget_alignment_bottom">Alhaalla</string>
-    <string name="preference_clockwidget_date_part_summary">Näytä päiväys</string>
     <string name="preference_clockwidget_favorites_part">Telakka</string>
-    <string name="preference_clockwidget_music_part">Media</string>
-    <string name="preference_clockwidget_battery_part">Akku</string>
-    <string name="preference_clockwidget_alarm_part">Hälytykset</string>
-    <string name="preference_clockwidget_alarm_part_summary">Näytä seuraavan 15 minuutin hälytykset</string>
     <string name="preference_screen_search">Haku</string>
     <string name="preference_screen_search_summary">Haku, avainsanat, piilotetut kohteet</string>
     <string name="preference_search_favorites">Suosikit</string>
@@ -122,8 +103,6 @@
     <string name="preference_hidden_items_reveal_button">Näytä \"paljasta\"-painike</string>
     <string name="preference_hidden_items_reveal_button_summary">Näytä painike piilotettujen hakutulosten paljastamiseksi</string>
     <string name="preference_screen_tags">Avainsanat</string>
-    <string name="preference_media_integration">Mediasäätimet</string>
-    <string name="battery_part_charging">Ladataan</string>
     <string name="icon_picker_search_icon">Hae kuvakepaketeista</string>
     <string name="icon_picker_filter_all_packs">Kaikki kuvakepaketit</string>
     <string name="apps_profile_main">Henkilökohtainen</string>
@@ -140,12 +119,9 @@
         <item quantity="other">%1$d kohdetta valittu</item>
     </plurals>
     <string name="show_all">Näytä kaikki</string>
-    <string name="music_widget_no_data">Mediaa ei ole soitettu vielä</string>
-    <string name="missing_permission_music_widget">Pääsy ilmoituksiin vaaditaan mediatoiston hallintaan</string>
     <string name="missing_permission_contact_search_settings">Yhteystietojen käyttöoikeus tarvitaan yhteystietojen hakuun</string>
     <string name="missing_permission_appshortcuts_search_settings">%1$s on asetettava aloitusnäyttösovellukseksi sovellusoikoteiden hakua varten</string>
     <string name="preference_screen_appearance">Ulkoasu</string>
-    <string name="preference_category_debug">Testaus</string>
     <string name="preference_category_debug_tools">Työkalut</string>
     <string name="preference_debug_dump_heap">Muistivedos</string>
     <string name="preference_debug_dump_heap_in_progress">Tallennetaan vedosta…</string>
@@ -155,7 +131,6 @@
     <string name="preference_debug_reinstall_iconpacks_summary">Tyhjennä ja luo uudelleen kuvakepaketin välimuisti</string>
     <string name="preference_category_icons">Kuvakkeet</string>
     <string name="preference_category_searchbar">Hakupalkki</string>
-    <string name="preference_screen_integrations">Integraatiot</string>
     <string name="preference_theme_system">Seuraa järjestelmän asetusta</string>
     <string name="preference_category_favorites_frequently_used">Usein käytetty</string>
     <string name="preference_favorites_frequently_used_summary">Näytä usein käytetyt kohteet suosikeissa</string>
@@ -195,7 +170,6 @@
     <string name="preference_system_bar_icons_dark">Tumma</string>
     <string name="preference_hide_status_bar">Piilota tilapalkki</string>
     <string name="preference_hide_nav_bar">Piilota ohjauspalkki</string>
-    <string name="preference_screen_integrations_summary">Hallitse liitettyjä tilejä ja palveluja</string>
     <string name="preference_icon_shape_hexagon">Kuusikulmio</string>
     <string name="preference_blur_wallpaper_unsupported">Ei tueta tällä laitteella</string>
     <string name="preference_blur_wallpaper_radius">Sumennuksen säde</string>
@@ -213,13 +187,7 @@
     <string name="preference_grid_labels_summary">Näytä sovelluksen nimi kuvakkeen alla</string>
     <string name="preference_screen_debug">Testaus</string>
     <string name="preference_screen_debug_summary">Ongelmanratkaisutyökalut</string>
-    <string name="preference_screen_clockwidget">Kello</string>
-    <string name="preference_screen_clockwidget_summary">Säädä kellon osia ja tyyliä</string>
-    <string name="preference_clockwidget_layout_vertical">Oletus</string>
-    <string name="preference_clock_widget_fill_height">Täytä näytön korkeus</string>
-    <string name="preference_clockwidget_dynamic_zone">Muuttuva alue</string>
     <string name="preference_clockwidget_favorites_part_summary">Näytä ensimmäinen rivi kiinnitettyjä kohteita</string>
-    <string name="preference_clockwidget_music_part_summary">Näytä mediaohjaimet, kun mediaa on aktiivisena</string>
     <string name="preference_screen_buildinfo_summary">Lisätietoja sovelluksen tästä koontiversiosta</string>
     <string name="preference_search_bar_auto_focus">Avaa näppäimistö</string>
     <string name="preference_screen_tags_summary">Hallitse avainsanoja ja merkittyjä kohteita</string>
@@ -229,10 +197,6 @@
     <string name="preference_screen_homescreen_summary">Kello, hakupalkki, taustakuva, järjestelmän palkit</string>
     <string name="preference_screen_icons">Ruudukko ja kuvakkeet</string>
     <string name="preference_screen_icons_summary">Ruudukko, kuvakkeiden koko, kuvakepaketit, pistemerkit</string>
-    <plurals name="battery_part_remaining_charge_time">
-        <item quantity="one">Täynnä %1$s minuutissa</item>
-        <item quantity="other">Täynnä %1$s minuutissa</item>
-    </plurals>
     <string name="icon_picker_suggestions">Ehdotukset</string>
     <string name="apps_profile_work">Työ</string>
     <string name="favorites">Suosikit</string>
@@ -258,7 +222,6 @@
     <string name="frequently_used_rows">Rivien määrä</string>
     <string name="search_action_message">Viesti</string>
     <string name="search_action_app">Sovellus</string>
-    <string name="music_widget_default_title">%1$s toistaa mediaa</string>
     <string name="preference_theme_light">Vaalea</string>
     <string name="preference_theme_dark">Tumma</string>
     <string name="missing_permission_notification_badges">Pääsy ilmoituksiin tarvitaan ilmoitusten pistemerkkien näyttämiseen</string>
@@ -268,8 +231,6 @@
     <string name="grant_permission">Salli</string>
     <string name="preference_theme">Teema</string>
     <string name="import_theme_error">Valittua tiedostoa ei voitu lukea. Varmista, että valitsit kelvollisen teematiedoston (*.kvtheme) ja että tiedosto ei ole vioittunut.</string>
-    <string name="note_widget_conflict_description">Yhdistetty tiedosto ei ole tyhjä ja sen sisältö ei vastaa muistiinpanon viimeistä tallennettua versiota. Kumman version haluat säilyttää\?</string>
-    <string name="note_widget_file_read_error_description">Yhdistettyä tiedostoa ei voitu lukea. Se on voitu siirtää tai poitaa. Kopio on palautettu käynnistyssovelluksen omasta tallennustilasta. Jos muokkaat muistiinpanoa, yhdistetyn tiedoston sisältö saatetaan päällekirjoittaa.</string>
     <string name="gesture_action_notifications">Avaa ilmoitusalue</string>
     <string name="gesture_action_lock_screen">Sammuta näyttö</string>
     <string name="gesture_action_quick_settings">Avaa pika-asetukset</string>
@@ -278,12 +239,7 @@
     <string name="shortcut_label_unavailable">Ei saatavilla</string>
     <string name="shortcut_unavailable_description">Tämä oikotie ei ole saatavilla, koska %1$s ei ole aloitusnäyttösovellus</string>
     <string name="preference_screen_gestures">Eleet</string>
-    <string name="note_widget_conflict_action_resolve">Ratkaise</string>
-    <string name="note_widget_conflict_file_version">Tiedoston nykyinen sisältö:</string>
-    <string name="note_widget_file_write_error_description">Muistiinpanoa ei voitu kirjoittaa yhdistettyyn tiedostoon. Se on saatettu siirtää tai poistaa. Kopio on tallennettu käynnistyssovelluksen omaan tallennustilaan.</string>
     <string name="confirmation_delete_color_scheme">Haluatko varmasti poistaa värikaavion %1$s\?</string>
-    <string name="widget_config_music_integration_settings">Mediaohjaimen integraatioiden asetukset</string>
-    <string name="note_widget_conflict_local_version">Viimeisin tallennettu versio:</string>
     <string name="preference_use_system_default">Käytä järjestelmän oletusta</string>
     <string name="theme_color_scheme_autogenerate">Luo pääväristä</string>
     <string name="theme_color_scheme_palette_color">Paletti</string>
@@ -294,15 +250,6 @@
     <string name="preference_search_result_ordering_weight_factor_default">Tasapainoinen</string>
     <string name="preference_search_result_ordering_weight_factor_high">Muuttuva</string>
     <string name="widget_config_appwidget_configure">Säädä pienoisohjelmaa</string>
-    <string name="note_widget_link_file">Yhdistä tiedostoon</string>
-    <string name="note_widget_link_file_summary">Synkronoi pienoisohjelman sisältö ulkoisen tiedoston kanssa</string>
-    <string name="note_widget_linked_file_summary">Yhdistetty tiedostoon %1$s</string>
-    <string name="note_widget_action_unlink_file">Irrota</string>
-    <string name="note_widget_action_relink_file">Yhdistä uudelleen</string>
-    <string name="note_widget_conflict">Ristiriita</string>
-    <string name="note_widget_conflict_keep_selected">Pidä valittu</string>
-    <string name="note_widget_file_read_error">Virhe luettaessa muistiinpanoa</string>
-    <string name="note_widget_file_write_error">Virhe tallennettaessa muistiinpanoa</string>
     <string name="preference_layout_fixed_rotation_summary">Lukitse näyttö pystyasentoon</string>
     <string name="preference_screen_gestures_summary">Eleet ja eletoiminnot</string>
     <string name="preference_gesture_swipe_down">Alas pyyhkäisy</string>

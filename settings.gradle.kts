@@ -42,7 +42,6 @@ include(":services:tags")
 include(":services:search")
 include(":services:badges")
 include(":services:icons")
-include(":services:music")
 
 include(":libs:material-color-utilities")
 include(":libs:address-formatter")
