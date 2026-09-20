@@ -138,31 +138,42 @@ size, dex method references, permission list and module count every time. A
 change there is a change.
 
 The runtime metrics are not, and the spread differs enormously between them.
-Three cycles of the same build, measured 2026-09-20 with `--runs 3`:
+Both `--runs 3` measurements taken on 2026-09-20, on the baseline build and
+on the build three removals later:
 
-| Metric | spread across 3 cycles | useful for |
+| Metric | spread, baseline | spread, no-backup |
 |---|---|---|
-| `mem.java_heap` | 0.2% | even small effects |
-| `mem.rss.total` | 2.1% | effects above ~3% |
-| `mem.pss.total` | 3.0% | effects above ~5% |
-| `mem.code` | 5.8% | effects above ~10% |
-| `threads` | 12.3% | coarse effects |
-| `cpu.startup` | 13.4% | coarse effects |
-| `start.cold.median` | 26.5% | large effects only |
-| `cpu.home_screen_charging` | 87.1% | large effects only |
-| `cpu.home_screen` | 247.1% | almost nothing |
+| `mem.java_heap` | 1.5% | 0.2% |
+| `mem.rss.total` | 5.5% | 2.1% |
+| `mem.pss.total` | 6.9% | 3.0% |
+| `mem.code` | 7.7% | 5.8% |
+| `threads` | 9.1% | 12.3% |
+| `cpu.startup` | 14.3% | 13.4% |
+| `cpu.home_screen_charging` | 18.4% | 87.1% |
+| `start.cold.median` | 29.1% | 26.5% |
+| `cpu.home_screen` | 71.1% | 247.1% |
 
-`cpu.home_screen` varied by a factor of 2.5 between cycles: a reported median
-of 1.70% of a core could have come out anywhere from roughly 0.7 to 4.9. Do
-not quote it for anything but an effect of the size the charging animation
-had.
+`cpu.home_screen` varied by a factor of 2.5 between cycles in one of those
+measurements: a reported median of 1.70% of a core could have come out
+anywhere from roughly 0.7 to 4.9. Do not quote it for anything but an effect
+of the size the charging animation had.
 
-Memory is the opposite: the heap figures barely move, and PSS is steady to
-3%, so a removal that frees real memory will show.
+**The spread is a lower bound, and it is not itself stable.** The same metric
+reported 6.9% and 3.0% in the two measurements above. Consecutive cycles
+share whatever state the host and the emulator are in at that moment, so they
+agree with each other more than measurements taken minutes apart: two runs
+separated by a rebuild spread 6.2% on PSS where three back-to-back cycles
+spread 3.0%. Read a printed spread as "at least this much", and measure the
+before and the after in the same sitting whenever a delta sits anywhere near
+it.
 
-What the runtime half is good for is catching the large, unambiguous effects:
-the charging animation showed up as 99.20% versus 1.60% of a core, which no
-amount of this noise can manufacture.
+What the runtime half is good for is catching the large, unambiguous effects.
+The charging animation showed up as 89.20% against 3.10% of a core, which no
+amount of this noise can manufacture. What it could not see is equally worth
+knowing: after removing an entire module and an always-on animation,
+`mem.pss.total` came out 5.2% *higher* than the baseline, inside both
+spreads. This series has not yet freed measurable memory, and the harness
+says so rather than letting a single flattering cycle claim otherwise.
 
 ## Caveats that apply to every number here
 
@@ -170,5 +181,6 @@ amount of this noise can manufacture.
   the *deltas* are what this series is about, not the absolute values.
 - The emulator is a self-built GrapheneOS `sdk_phone64_x86_64` with test-keys.
   Timings are emulator timings and do not transfer to a Pixel.
-- Cold start on an emulator is noisy even with warm-up runs; treat a change
-  under roughly 10% as noise unless it repeats.
+- Cold start on an emulator is noisy even with warm-up runs and repeated
+  cycles: it spread 26-29% across cycles of one build, so only a very large
+  change means anything.
