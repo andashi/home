@@ -245,7 +245,7 @@
     <string name="preference_search_appshortcuts_summary">Искать ярлыки приложений</string>
     <string name="preference_edit_favorites_summary">Изменить порядок закрепленных приложений</string>
     <string name="preference_shortcut_badges_summary">Показывать значок, указывающий, какому приложению принадлежит ярлык</string>
-    <string name="preference_screen_homescreen_summary">Панель поиска, обои, системные карточки</string>
+    <string name="preference_screen_homescreen_summary">Панель поиска, обои, системные панели</string>
     <string name="icon_picker_suggestions">Предложения</string>
     <string name="widget_config_appwidget_borderless">Без рамок</string>
     <string name="widget_config_appwidget_configure">Настроить виджет</string>
@@ -407,7 +407,7 @@
     <string name="import_theme_exists">Тема уже существует и будет обновлена</string>
     <string name="bad_configuration_summary">Вы обнаружили комбинацию настроек, которая делает недоступными и поиск, и настройки одновременно, успешно блокируя вам доступ к лаунчеру.</string>
     <string name="preference_screen_locale">Язык и регион</string>
-    <string name="preference_screen_locale_summary">Язык измерения, формат времени</string>
+    <string name="preference_screen_locale_summary">Язык, формат времени</string>
     <string name="preference_language">Язык</string>
     <string name="preference_value_system_default">Как в системе</string>
 </resources>

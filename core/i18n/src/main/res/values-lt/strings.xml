@@ -157,7 +157,7 @@
     <string name="preference_screen_search">Paieška</string>
     <string name="preference_screen_search_summary">Ieška ,žymos ,paslėptos programos</string>
     <string name="preference_search_favorites">Mėgstamiausi</string>
-    <string name="preference_search_favorites_summary">Rodyti prisegtus ir dažnai naudojamus rodyti virš programų lauko</string>
+    <string name="preference_search_favorites_summary">Rodyti prisegtus ir dažnai naudojamus virš programų lauko</string>
     <string name="preference_screen_buildinfo">Build informacija</string>
     <string name="preference_search_bar_style">Stilius</string>
     <string name="preference_search_bar_style_summary">Tinkinti paieškos lauko įšvaizda</string>
