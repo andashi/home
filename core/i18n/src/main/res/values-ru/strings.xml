@@ -385,9 +385,6 @@
     <string name="preference_owncloud_signin">Войти в Owncloud</string>
     <string name="preference_owncloud_signin_summary">Войдите для поиска на сервере Owncloud</string>
     <string name="preference_clockwidget_favorites_part">Быстрый доступ</string>
-    <string name="preference_crash_reporter">Отчёты об ошибках</string>
-    <string name="preference_logs">Журналы</string>
-    <string name="preference_logs_summary">Просмотр и экспорт журналов приложения</string>
     <string name="preference_search_favorites">Избранные</string>
     <string name="preference_search_favorites_summary">Отображать закрепленные и часто используемые над списком приложений</string>
     <string name="preference_search_nextcloud">Nextcloud</string>
@@ -409,7 +406,6 @@
     <string name="widget_config_weather_compact">Компактный вид</string>
     <string name="preference_clock_widget_fill_height">Заполнить по высоте</string>
     <string name="preference_clockwidget_favorites_part_summary">Показывать первую строку избранных</string>
-    <string name="preference_crash_reporter_summary">Отчёты об ошибках и вылетах</string>
     <string name="search_action_call">Позвонить</string>
     <string name="open_search_pull_down">Свайп вниз</string>
     <string name="frequently_used_rows">Количество строк</string>

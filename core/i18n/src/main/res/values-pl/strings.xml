@@ -345,8 +345,6 @@
     <string name="edit_favorites_dialog_empty_section">Przeciągnij elementy tutaj</string>
     <string name="preference_notification_badges">Plakietki powiadomień</string>
     <string name="preference_font">Czcionka</string>
-    <string name="preference_logs">Dzienniki zdarzeń</string>
-    <string name="preference_logs_summary">Wyświetlanie i eksportowanie dzienników zdarzeń aplikacji</string>
     <string name="preference_widgets_edit_button_summary">Pokaż przycisk do dodawania, usuwania i zmiany układu widżetów</string>
     <string name="preference_search_search_actions_summary">Skonfiguruj szybkie akcje i skróty wyszukiwania</string>
     <string name="search_action_call">Zadzwoń</string>
@@ -409,8 +407,6 @@
     <string name="preference_layout_search_results">Układ wyników wyszukiwania</string>
     <string name="search_results_order_top_down">Z góry na dół</string>
     <string name="search_results_order_bottom_up">Z dołu do góry</string>
-    <string name="preference_crash_reporter">Reporter błędów</string>
-    <string name="preference_crash_reporter_summary">Raporty o błędach i awariach</string>
     <string name="preference_search_appshortcuts_summary">Przeszukuj skróty aplikacji</string>
     <string name="preference_screen_buildinfo">Informacje o wersji</string>
     <string name="preference_screen_buildinfo_summary">Więcej informacji o tej wersji aplikacji</string>

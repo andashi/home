@@ -65,10 +65,6 @@ import de.mm20.launcher2.ui.settings.colorscheme.ColorSchemesSettingsRoute
 import de.mm20.launcher2.ui.settings.colorscheme.ColorSchemesSettingsScreen
 import de.mm20.launcher2.ui.settings.contacts.ContactsSettingsRoute
 import de.mm20.launcher2.ui.settings.contacts.ContactsSettingsScreen
-import de.mm20.launcher2.ui.settings.crashreporter.CrashReportRoute
-import de.mm20.launcher2.ui.settings.crashreporter.CrashReportScreen
-import de.mm20.launcher2.ui.settings.crashreporter.CrashReporterRoute
-import de.mm20.launcher2.ui.settings.crashreporter.CrashReporterScreen
 import de.mm20.launcher2.ui.settings.debug.DebugSettingsRoute
 import de.mm20.launcher2.ui.settings.debug.DebugSettingsScreen
 import de.mm20.launcher2.ui.settings.debug.StringNormalizerTestRoute
@@ -103,8 +99,6 @@ import de.mm20.launcher2.ui.settings.locale.LocaleSettingsRoute
 import de.mm20.launcher2.ui.settings.locale.LocaleSettingsScreen
 import de.mm20.launcher2.ui.settings.locations.LocationsSettingsRoute
 import de.mm20.launcher2.ui.settings.locations.LocationsSettingsScreen
-import de.mm20.launcher2.ui.settings.log.LogRoute
-import de.mm20.launcher2.ui.settings.log.LogScreen
 import de.mm20.launcher2.ui.settings.main.MainRoute
 import de.mm20.launcher2.ui.settings.main.MainSettingsScreen
 import de.mm20.launcher2.ui.settings.media.MediaIntegrationSettingsRoute
@@ -309,15 +303,6 @@ class SettingsActivity : BaseActivity() {
             entry<CurrencySettingsRoute> {
                 CurrencySettingsScreen()
             }
-            entry<CrashReporterRoute> {
-                CrashReporterScreen()
-            }
-            entry<LogRoute> {
-                LogScreen()
-            }
-            entry<CrashReportRoute> {
-                CrashReportScreen(it.fileName)
-            }
             entry<LicenseRoute> {
                 LicenseScreen(it.libraryName)
             }
@@ -414,9 +399,6 @@ class SettingsActivity : BaseActivity() {
             ROUTE_MEDIA_INTEGRATION -> MediaIntegrationSettingsRoute
             ROUTE_SEARCH_ACTIONS -> SearchActionsSettingsRoute
             ROUTE_HIDDEN_ITEMS -> HiddenItemsSettingsRoute
-            ROUTE_CRASH_REPORT if (intent.hasExtra(EXTRA_CRASH_REPORT_PATH)) -> {
-                CrashReportRoute(intent.getStringExtra(EXTRA_CRASH_REPORT_PATH)!!)
-            }
             else -> null
         }
     }
@@ -427,7 +409,5 @@ class SettingsActivity : BaseActivity() {
         const val ROUTE_MEDIA_INTEGRATION = "settings/integrations/media"
         const val ROUTE_SEARCH_ACTIONS = "settings/search/searchactions"
         const val ROUTE_HIDDEN_ITEMS = "settings/search/hiddenitems"
-        const val ROUTE_CRASH_REPORT = "settings/debug/crashreport"
-        const val EXTRA_CRASH_REPORT_PATH = "crash_report_path"
     }
 }

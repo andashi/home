@@ -1,6 +1,6 @@
 package de.mm20.launcher2.webdav
 
-import com.balsikandar.crashreporter.CrashReporter
+import de.mm20.launcher2.crashreporter.CrashReporter
 import de.mm20.launcher2.ktx.decodeUrl
 import io.ktor.client.HttpClient
 import io.ktor.client.request.request

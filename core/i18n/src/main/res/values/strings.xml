@@ -607,10 +607,6 @@
     <string name="preference_clockwidget_battery_part_hide">Off</string>
     <string name="preference_clockwidget_alarm_part">Alarms</string>
     <string name="preference_clockwidget_alarm_part_summary">Show alarms that will ring within the next 8 hours</string>
-    <string name="preference_crash_reporter">Crash reporter</string>
-    <string name="preference_crash_reporter_summary">Error and crash reports</string>
-    <string name="preference_logs">Logs</string>
-    <string name="preference_logs_summary">View and export application logs</string>
     <string name="preference_screen_search">Search</string>
     <string name="preference_screen_search_summary">Search, tags, excluded results</string>
     <string name="preference_search_favorites">Favorites</string>

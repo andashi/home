@@ -233,9 +233,6 @@
     <string name="preference_clockwidget_music_part">Medija</string>
     <string name="preference_clockwidget_battery_part">Baterija</string>
     <string name="preference_clockwidget_alarm_part_summary">Rodyti žadintuvua kuris skambės per sekančias 15 minučių</string>
-    <string name="preference_crash_reporter">Užlūžimo pranešėjas</string>
-    <string name="preference_crash_reporter_summary">Klaidų ir ūžlužimo pranešimas</string>
-    <string name="preference_logs">Logs</string>
     <string name="menu_share">Dalintis</string>
     <string name="menu_share_apk_file">APK failas</string>
     <string name="menu_uninstall">Ištrinti</string>
@@ -330,7 +327,6 @@
     <string name="preference_themed_icons_summary">Spalvotos ikonos su programos spalvų schema</string>
     <string name="preference_automatic_location_summary">Naudoti GPS ir vietovės paslaugas ,kad rasti vietovę automatiškai</string>
     <string name="preference_force_themed_icons">Priversti temuotas ikonas</string>
-    <string name="preference_logs_summary">Žiurėti ir eksportuoti programos logs</string>
     <string name="preference_debug_dump_heap_summary">Naudoti nuotrauką ,kad analizuoti atminties naudojama. Programa užstriks kol procesas nebus baigtas.</string>
     <string name="preference_icon_pack">Ikonų paketas</string>
     <string name="preference_debug_dump_heap_in_progress">Gaunama nuotrauka (snapshot)…</string>

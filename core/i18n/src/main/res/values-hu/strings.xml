@@ -309,8 +309,6 @@
     <string name="plugin_weather_provider_enable">Beállítás időjáráselőrejelzési szolgáltatónak</string>
     <string name="preference_clock_widget_alignment_bottom">Alulra</string>
     <string name="preference_clockwidget_alarm_part_summary">Azon riasztások megjelenítése, amelyek a következő 8 órán belül megszólalnak</string>
-    <string name="preference_logs">Naplók</string>
-    <string name="preference_logs_summary">Alkalmazásnaplók megtekintése és exportálása</string>
     <string name="preference_screen_buildinfo_summary">További tudnivalók az alkalmazás ezen verziójáról</string>
     <string name="preference_search_bar_launch_on_enter">Keresés enterrel</string>
     <string name="preference_hidden_items_summary">Kizárt alkalmazások és keresési eredmények kezelése</string>
@@ -360,7 +358,6 @@
     <string name="preference_category_widgets">Modulok</string>
     <string name="preference_clockwidget_music_part_summary">Médiavezérlők megjelenítése, ha aktív médiamunkamenet van</string>
     <string name="plugin_type_filesearch">Fájlok</string>
-    <string name="preference_crash_reporter_summary">Hiba- és összeomlási jelentések</string>
     <string name="preference_search_result_ordering_weight_factor_high">Változtatható</string>
     <string name="preference_search_currencyconverter">Valutaváltó</string>
     <string name="preference_search_bar_auto_focus_summary">Billentyűzet automatikus megjelenítése az alkalmazásfiók megnyitásakor</string>
@@ -479,7 +476,6 @@
     <string name="preference_clockwidget_music_part">Média</string>
     <string name="preference_clockwidget_battery_part">Akkumulátor</string>
     <string name="preference_clockwidget_alarm_part">Riasztások</string>
-    <string name="preference_crash_reporter">Összeomlásjelentő</string>
     <string name="preference_search_favorites">Kedvencek</string>
     <string name="preference_search_favorites_summary">Kitűzött és gyakran használt elemek megjelenítése az alkalmazásrács felett</string>
     <string name="preference_search_files">Fájlok</string>

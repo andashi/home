@@ -304,8 +304,6 @@
     <string name="preference_clockwidget_music_part_summary">Bedieningselementen voor media tonen als er media wordt afgespeeld</string>
     <string name="preference_clockwidget_battery_part">Batterij</string>
     <string name="preference_clockwidget_alarm_part">Alarmen</string>
-    <string name="preference_crash_reporter">Crashrapportage</string>
-    <string name="preference_crash_reporter_summary">Fout- en crashrapporten</string>
     <string name="preference_screen_search">Zoeken</string>
     <string name="edit_favorites_dialog_tags">Labels</string>
     <string name="edit_favorites_dialog_tag_section_empty">Vastgezette labels zullen hier getoond worden</string>
@@ -381,8 +379,6 @@
     <string name="preference_system_bar_icons_light">Licht</string>
     <string name="preference_system_bar_icons_dark">Donker</string>
     <string name="preference_search_bar_color">Kleur</string>
-    <string name="preference_logs">Logberichten</string>
-    <string name="preference_logs_summary">Applicatielogs bekijken en exporteren</string>
     <string name="preference_screen_search_actions">Snelle acties</string>
     <string name="preference_search_search_actions_summary">Snelle acties en zoeksnelkoppelingen configureren</string>
     <string name="search_action_call">Oproep</string>

@@ -244,8 +244,6 @@
     <string name="preference_clockwidget_battery_part">Baterie</string>
     <string name="preference_clockwidget_alarm_part">Alarme</string>
     <string name="preference_clockwidget_alarm_part_summary">Afișează alarme care vor suna în următoarele 15 minute</string>
-    <string name="preference_crash_reporter_summary">Rapoarte de eroare și de cădere</string>
-    <string name="preference_crash_reporter">Reporter de cădere</string>
     <string name="preference_screen_search">Caută</string>
     <string name="preference_search_favorites">Favorite</string>
     <string name="preference_search_files">Fișiere</string>

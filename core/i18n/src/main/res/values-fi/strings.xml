@@ -163,7 +163,6 @@
     <string name="preference_search_search_actions_summary">Säädä pikatoimintoja ja hakuoikoteitä</string>
     <string name="search_action_websearch_url_hint">URL-pohja, jota käytetään verkkohaun osoitteena. Käytä \'${1}\' osoittamaan varsinaisen hakutermin paikkaa osoitteessa, esimerkiksi https://google.com/search?q=${1}.</string>
     <string name="open_search_swipe_left">Vasemmalle pyyhkäisy</string>
-    <string name="preference_logs_summary">Näytä tai vie sovelluksen lokit</string>
     <string name="open_search_pull_down">Alas pyyhkäisy</string>
     <string name="preference_layout_search_bar_position">Hakupalkin sijainti</string>
     <string name="search_bar_position_top">Ylhäällä</string>
@@ -193,7 +192,6 @@
     <string name="preference_clockwidget_battery_part">Akku</string>
     <string name="preference_clockwidget_alarm_part">Hälytykset</string>
     <string name="preference_clockwidget_alarm_part_summary">Näytä seuraavan 15 minuutin hälytykset</string>
-    <string name="preference_crash_reporter">Kaatumisraportti</string>
     <string name="preference_search_favorites_summary">Näytä kiinnitetyt ja usein käytetyt kohteet sovellusruudukon yläpuolella</string>
     <string name="preference_screen_search">Haku</string>
     <string name="preference_screen_search_summary">Haku, avainsanat, piilotetut kohteet</string>
@@ -384,8 +382,6 @@
     <string name="preference_clockwidget_dynamic_zone">Muuttuva alue</string>
     <string name="preference_clockwidget_favorites_part_summary">Näytä ensimmäinen rivi kiinnitettyjä kohteita</string>
     <string name="preference_clockwidget_music_part_summary">Näytä mediaohjaimet, kun mediaa on aktiivisena</string>
-    <string name="preference_crash_reporter_summary">Virhe- ja kaatumisraportit</string>
-    <string name="preference_logs">Lokit</string>
     <string name="preference_search_calculator">Laskin</string>
     <string name="preference_search_cloud_summary">Hae %1$s:n tiedostoja</string>
     <string name="preference_screen_buildinfo_summary">Lisätietoja sovelluksen tästä koontiversiosta</string>

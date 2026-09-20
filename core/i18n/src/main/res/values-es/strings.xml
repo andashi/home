@@ -199,7 +199,6 @@
     <string name="preference_icon_pack">Paquete de iconos</string>
     <string name="preference_category_badges">Insignias</string>
     <string name="preference_nextcloud_signin">Iniciar sesión en NextCloud</string>
-    <string name="preference_logs_summary">Visualizar y exportar registros de aplicación</string>
     <string name="preference_search_files_summary">Buscar archivos locales y archivos en la nube</string>
     <string name="preference_search_calendar">Calendario</string>
     <string name="preference_blur_wallpaper">Desenfocar fondo de pantalla</string>
@@ -368,13 +367,10 @@
     <string name="search_action_websearch_url">Plantilla de URL</string>
     <string name="preference_clockwidget_alarm_part">Alarmas</string>
     <string name="preference_layout_search_bar_position">Posición de la barra de búsqueda</string>
-    <string name="preference_crash_reporter_summary">Reportes de errores y fallos</string>
-    <string name="preference_logs">Registros</string>
     <string name="preference_screen_search">Buscar</string>
     <string name="preference_screen_gestures_summary">Gestos y acciones de gestos</string>
     <string name="preference_screen_search_summary">Búsqueda, etiquetas, elementos excluidos</string>
     <string name="preference_search_calculator_summary">Evaluar términos matemáticos</string>
-    <string name="preference_crash_reporter">Informe de fallos</string>
     <string name="preference_search_appshortcuts">Accesos directos de aplicaciones</string>
     <string name="preference_search_currencyconverter_summary">Descargar periódicamente tasas de conversión actualizadas para convertir divisas</string>
     <string name="preference_search_websites">Páginas web</string>

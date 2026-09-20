@@ -318,8 +318,6 @@
     <string name="preference_screen_clockwidget_summary">Ordulariaren estiloa eta osagaiak konfiguratu</string>
     <string name="preference_clockwidget_music_part">Multimedia</string>
     <string name="preference_clockwidget_music_part_summary">Multimedia-kontrolak erakutsi multimedia-saio aktibo bat dagoenean</string>
-    <string name="preference_logs">Erregistroak</string>
-    <string name="preference_logs_summary">Aplikazioaren erregistroak ikusi eta esportatu</string>
     <string name="preference_screen_search_summary">Bilaketa, etiketak, elementu ezkutuak</string>
     <string name="preference_search_favorites_summary">Ainguratutako eta maiz erabiltzen diren elementuak aplikazioen saretaren gainean erakutsi</string>
     <string name="preference_search_appshortcuts">Aplikazio-lasterbideak</string>
@@ -419,8 +417,6 @@
     <string name="shortcut_summary">%1$s-(r)ena</string>
     <string name="calendar_event_allday">Egun osoan</string>
     <string name="provider_here">HERE</string>
-    <string name="preference_crash_reporter">Akatsen txostena</string>
-    <string name="preference_crash_reporter_summary">Errore eta akatsen txostenak</string>
     <string name="preference_search_currencyconverter_summary">Aldian-aldian deskargatu truke-tasak dibisak bihurtzeko</string>
     <string name="preference_search_bar_launch_on_enter_summary">Nabarmendutako bat-etortze edo ekintza azkarra abiarazi enter sakatzean</string>
     <string name="more_information">Informazio gehiago</string>

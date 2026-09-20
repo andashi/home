@@ -296,8 +296,6 @@
     <string name="preference_clockwidget_battery_part">Baterie</string>
     <string name="preference_clockwidget_alarm_part">Budíky</string>
     <string name="preference_clockwidget_alarm_part_summary">Zobrazit budíky, které zazvoní v následujících 8 hodinách</string>
-    <string name="preference_crash_reporter">Hlášení pádů</string>
-    <string name="preference_crash_reporter_summary">Hlášení chyb a pádů</string>
     <string name="preference_screen_search_summary">Vyhledávání, štítky, vyloučené výsledky</string>
     <string name="preference_screen_search">Hledání</string>
     <string name="preference_search_favorites">Oblíbené</string>
@@ -343,8 +341,6 @@
     <string name="preference_status_bar_icons">Ikony ve stavové liště</string>
     <string name="preference_nav_bar_icons">Ikony v navigační liště</string>
     <string name="preference_system_bar_icons_auto">Automaticky</string>
-    <string name="preference_logs_summary">Zobrazit a exportovat protokoly aplikace</string>
-    <string name="preference_logs">Protokoly</string>
     <string name="menu_remove">Odebrat</string>
     <string name="preference_edit_button">Tlačítko k upravení</string>
     <string name="preference_widgets_edit_button_summary">Zobrazit tlačítko k přidání, odebrání a uspořádání widgetů</string>

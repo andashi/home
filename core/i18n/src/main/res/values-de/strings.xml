@@ -255,8 +255,6 @@
     <string name="preference_screen_clockwidget">Uhr</string>
     <string name="preference_clockwidget_layout_vertical">Standard</string>
     <string name="preference_clockwidget_layout_horizontal">Kompakt</string>
-    <string name="preference_crash_reporter">Crash-Reporter</string>
-    <string name="preference_crash_reporter_summary">Fehler- und Absturzberichte</string>
     <string name="preference_calendar_calendars">Kalender</string>
     <string name="preference_screen_search">Suche</string>
     <string name="preference_screen_search_summary">Suche, Tags, ausgeblendete Suchergebnisse</string>
@@ -412,8 +410,6 @@
     <string name="search_action_websearch_url">URL-Vorlage</string>
     <string name="more_information">Mehr Informationen</string>
     <string name="experimental_feature">Experimentell</string>
-    <string name="preference_logs">Logs</string>
-    <string name="preference_logs_summary">Anwendungslogs ansehen und exportieren</string>
     <string name="preference_screen_tags">Tags</string>
     <string name="preference_screen_tags_summary">Tags und getaggte Elemente verwalten</string>
     <string name="duplicate">Duplizieren</string>

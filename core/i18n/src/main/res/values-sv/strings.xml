@@ -243,8 +243,6 @@
     <string name="preference_clockwidget_battery_part">Batteri</string>
     <string name="preference_clockwidget_alarm_part">Alarm</string>
     <string name="preference_clockwidget_alarm_part_summary">Visa alarm som ringer inom de närmsta 15 minuterna</string>
-    <string name="preference_crash_reporter">Kraschrapportering</string>
-    <string name="preference_crash_reporter_summary">Error- och kraschrapporter</string>
     <string name="preference_screen_search">Sök</string>
     <string name="preference_screen_search_summary">Konfigurera sökningen</string>
     <string name="preference_search_favorites">Favoriter</string>

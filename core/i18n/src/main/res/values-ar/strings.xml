@@ -412,9 +412,6 @@
     <string name="preference_clock_widget_alignment">المحاذاة</string>
     <string name="preference_clockwidget_dynamic_zone">منطقة ديناميكية</string>
     <string name="preference_clockwidget_date_part">التاريخ</string>
-    <string name="preference_crash_reporter">مُبلّغ الأعطال</string>
-    <string name="preference_crash_reporter_summary">تقارير الأخطاء والأعطال</string>
-    <string name="preference_logs_summary">عرض وتصدير سجلات التطبيقات</string>
     <string name="preference_search_contacts">جهات الاتصال</string>
     <string name="preference_search_appshortcuts_summary">البحث عن اختصارات التطبيقات</string>
     <string name="preference_search_supportedunits">الوحدات المدعومة</string>
@@ -529,7 +526,6 @@
     <string name="preference_clock_widget_show_seconds">إظهار الثواني</string>
     <string name="preference_clockwidget_date_part_summary">إظهار التاريخ الحالي</string>
     <string name="preference_clockwidget_favorites_part">قاعدة التثبيت</string>
-    <string name="preference_logs">السجلات</string>
     <string name="preference_search_calculator_summary">تقييم المصطلحات الرياضية</string>
     <string name="preference_search_unitconverter">محول الوحدات</string>
     <string name="preference_search_unitconverter_summary">الاستخدام: 1.5 كجم أو 4 سم &gt;&gt; بوصة</string>

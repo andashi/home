@@ -281,10 +281,6 @@
     <string name="preference_clockwidget_battery_part">Bateria</string>
     <string name="preference_clockwidget_alarm_part">Alarmes</string>
     <string name="preference_clockwidget_alarm_part_summary">Mostra les alarmes que sonaran en les properes 8 hores</string>
-    <string name="preference_crash_reporter">Informa de problemes</string>
-    <string name="preference_crash_reporter_summary">Informes d\'errors i problemes</string>
-    <string name="preference_logs">Registres</string>
-    <string name="preference_logs_summary">Veure i exportar els registres d\'aplicacions</string>
     <string name="preference_screen_search">Cerca</string>
     <string name="preference_screen_search_summary">Cerca, etiquetes, elements ocults</string>
     <string name="preference_search_favorites">Preferits</string>

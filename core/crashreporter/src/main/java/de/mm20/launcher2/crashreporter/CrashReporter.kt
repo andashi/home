@@ -1,40 +1,29 @@
 package de.mm20.launcher2.crashreporter
 
-import android.content.Context
-import android.content.Intent
 import android.util.Log
-import com.balsikandar.crashreporter.CrashReporter
-import com.balsikandar.crashreporter.utils.AppUtils
-import com.balsikandar.crashreporter.utils.CrashUtil
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import java.io.File
 
+/**
+ * Records an exception that was caught and handled, so that a caller does not
+ * have to choose between swallowing it and crashing.
+ *
+ * This used to hand the exception to a vendored copy of the
+ * com.balsikandar.crashreporter library as well, which persisted reports to
+ * external storage and surfaced them in a debug screen. That went with the
+ * module diet (#20): the persisted copy covered nothing that `adb logcat` and
+ * the platform's own crash records do not, and it carried an arbitrary file
+ * read through SettingsActivity (#6) and a database dump to external storage
+ * (#12) along with it.
+ *
+ * The facade stays rather than being inlined at its ~77 call sites, so that
+ * removing the library did not have to touch any of them.
+ *
+ * Behaviour is unchanged: the library call was already skipped for
+ * CancellationException while this log line ran for every exception, and it
+ * still does. Whether cancellation deserves an error log at all is a separate
+ * question from removing the reporter.
+ */
 object CrashReporter {
     fun logException(e: Exception) {
-        if (e !is CancellationException) {
-            CrashReporter.logException(e)
-        }
         Log.e("MM20", Log.getStackTraceString(e))
-    }
-
-    suspend fun getCrashReports(): List<CrashReport> {
-        val files = withContext(Dispatchers.IO) {
-            val now = System.currentTimeMillis()
-            val path = CrashReporter.getCrashReportPath()?.takeIf { it.isEmpty() } ?: CrashUtil.getDefaultPath()
-            File(path).listFiles { f ->
-                f.lastModified() > now - 7 * 24 * 60 * 60 * 1000L
-            }?.sortedByDescending { it.lastModified() }
-        }
-        return files?.map { CrashReport.fromFile(it, false) } ?: emptyList()
-    }
-
-    suspend fun getCrashReport(filePath: String): CrashReport {
-        return CrashReport.fromFile(File(filePath), true)
-    }
-
-    fun getDeviceInformation(context: Context): String {
-        return AppUtils.getDeviceDetails(context)
     }
 }

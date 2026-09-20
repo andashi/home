@@ -294,10 +294,6 @@
     <string name="preference_clockwidget_music_part">Medier</string>
     <string name="preference_clockwidget_music_part_summary">Vis mediekontrol, når der er en aktiv mediesession</string>
     <string name="preference_clockwidget_alarm_part">Alarmer</string>
-    <string name="preference_crash_reporter_summary">Fejl- og nedbrudsrapporter</string>
-    <string name="preference_crash_reporter">Nedbrudsrapport</string>
-    <string name="preference_logs">Logfiler</string>
-    <string name="preference_logs_summary">Se og eksportér applikationslogfiler</string>
     <string name="preference_search_files_summary">Søg i lokale filer og cloud-filer</string>
     <string name="preference_search_appshortcuts_summary">Søg i app-genveje</string>
     <string name="preference_search_calculator_summary">Evaluér matematiske termer</string>

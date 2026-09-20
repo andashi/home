@@ -592,10 +592,6 @@
     <string name="preference_clockwidget_battery_part">Pil</string>
     <string name="preference_clockwidget_alarm_part">Alarmlar</string>
     <string name="preference_clockwidget_alarm_part_summary">Sonraki 8 saat içinde çalacak alarmları göster</string>
-    <string name="preference_crash_reporter">Çökme raporlayıcı</string>
-    <string name="preference_crash_reporter_summary">Hata ve çökme raporları</string>
-    <string name="preference_logs">Günlükler</string>
-    <string name="preference_logs_summary">Uygulama günlüklerini görüntüle ve dışa aktar</string>
     <string name="preference_screen_search">Arama</string>
     <string name="preference_screen_search_summary">Arama, etiketler, hariç tutulan sonuçlar</string>
     <string name="preference_search_favorites">Favoriler</string>

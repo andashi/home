@@ -206,9 +206,7 @@
     <string name="preference_clockwidget_battery_part">แบตเตอรี่</string>
     <string name="preference_clockwidget_alarm_part">การตั้งปลุก</string>
     <string name="preference_clockwidget_alarm_part_summary">แสดงการตั้งปลุกที่กำลังจะปลุกในอีก 8 ชั่วโมงข้างหน้า</string>
-    <string name="preference_crash_reporter_summary">ดูข้อผิดพลาดและรายงานแอปล่ม</string>
     <string name="preference_screen_search">ค้นหา</string>
-    <string name="preference_logs">ไฟล์เก็บข้อมูลกิจกรรมแอป</string>
     <string name="preference_search_favorites">รายการโปรด</string>
     <string name="preference_screen_search_summary">การค้นหา แท็ก ผลการค้นหาที่ถูกตัดออก</string>
     <string name="preference_search_files">ไฟล์</string>
@@ -440,9 +438,7 @@
     <string name="weather_no_data">ไม่มีข้อมูลสภาพอากาศ</string>
     <string name="weather_widget_set_location">กำหนดตำแหน่ง</string>
     <string name="missing_permission_auto_location">คุณต้องอนุญาตให้แอปเข้าถึงตำแหน่งเพื่อการกำหนดตำแหน่งแบบอัตโนมัติ</string>
-    <string name="preference_crash_reporter">ตัวรายงานแอปล่ม</string>
     <string name="missing_permission_contact_search_settings">คุณต้องอนุญาตให้แอปเข้าถึงรายชื่อผู้ติดต่อเพื่อค้นหาผู้ติดต่อ</string>
-    <string name="preference_logs_summary">ดูและส่งออกไฟล์เก็บข้อมูลกิจกรรมแอป</string>
     <string name="missing_permission_calendar_search_settings">คุณต้องอนุญาตให้แอปเข้าถึงปฏิทินเพื่อค้นหาปฏิทิน</string>
     <string name="missing_permission_appshortcuts_search_settings">คุณต้องกำหนดให้แอป %1$s เป็นลอนเชอร์เริ่มต้นจึงจะค้นหาทางลัดแอปได้</string>
     <string name="preference_search_favorites_summary">แสดงสิ่งที่ถูกปักหมุดและสิ่งที่ถูกใช้งานบ่อยข้างบนลิ้นชักแอป</string>

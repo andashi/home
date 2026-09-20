@@ -355,8 +355,6 @@
     <string name="preference_clockwidget_favorites_part_summary">הצגת הפריטים הנעוצים בעגינה</string>
     <string name="preference_clockwidget_alarm_part">שעונים מעוררים</string>
     <string name="preference_clockwidget_alarm_part_summary">הצגת שעונים מעוררים שיצלצלו ב-8 השעות הקרובות</string>
-    <string name="preference_crash_reporter">מדווח הקריסות</string>
-    <string name="preference_crash_reporter_summary">דיווחי שגיאות וקריסות</string>
     <string name="preference_screen_search">חיפוש</string>
     <string name="preference_screen_search_summary">חיפוש, תגיות, תוצאות מוחרגות</string>
     <string name="preference_search_favorites_summary">הצגת פריטים נעוצים ובשימוש נפוץ מעל רשת היישומים</string>
@@ -481,8 +479,6 @@
     <string name="preference_clock_widget_fill_height">מילוי גובה המסך</string>
     <string name="preference_clock_widget_alignment">יישור</string>
     <string name="preference_clockwidget_battery_part">סוללה</string>
-    <string name="preference_logs">לוגים</string>
-    <string name="preference_logs_summary">הצגה וייצוא לוגים של היישום</string>
     <string name="preference_search_files_summary">חיפוש בקבצים מקומיים ובקבצים בענן</string>
     <string name="preference_search_contacts">אנשי קשר</string>
     <string name="preference_search_unitconverter">ממיר יחידות</string>

@@ -206,10 +206,8 @@
     <string name="preference_clockwidget_music_part">Πολυμέσα</string>
     <string name="preference_clockwidget_battery_part">Μπαταρία</string>
     <string name="preference_clockwidget_alarm_part">Ξυπνητήρια</string>
-    <string name="preference_crash_reporter">Αποστολή σφαλμάτων</string>
     <string name="preference_screen_search">Αναζήτηση</string>
     <string name="preference_search_favorites">Αγαπημένα</string>
-    <string name="preference_crash_reporter_summary">Σφάλματα και αποστολή σφαλμάτων</string>
     <string name="preference_search_calendar">Ημερολόγιο</string>
     <string name="preference_search_calendar_summary">Αναζητήστε επερχόμενων ραντεβού και εκδηλώσεων</string>
     <string name="preference_search_appshortcuts">Συντομεύσεις εφαρμογών</string>
@@ -382,8 +380,6 @@
     <string name="preference_search_bar_style_summary">Παραμετροποίηση εμφάνισης γραμμής αναζήτησης</string>
     <string name="action_next">Επόμενο</string>
     <string name="duplicate">Διπλότυπο</string>
-    <string name="preference_logs">Αρχεία καταγραφής</string>
-    <string name="preference_logs_summary">Προβολή και εξαγωγή αρχείων καταγραφής</string>
     <string name="help">Βοήθεια</string>
     <string name="skip">Παράλειψη</string>
     <string name="preference_hidden_items_reveal_button">Εμφάνιση κουμπιού αποκάλυψης</string>

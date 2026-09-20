@@ -280,8 +280,6 @@
     <string name="preference_screen_clockwidget">Horloge</string>
     <string name="preference_clockwidget_layout_vertical">Défaut</string>
     <string name="preference_clockwidget_layout_horizontal">Compacte</string>
-    <string name="preference_crash_reporter">Signaler un plantage</string>
-    <string name="preference_crash_reporter_summary">Signaler une erreur ou un plantage</string>
     <string name="preference_screen_search">Rechercher</string>
     <string name="preference_screen_search_summary">Recherche, étiquettes, résultats exclus</string>
     <string name="preference_search_favorites">Favoris</string>
@@ -413,8 +411,6 @@
     <string name="preference_icon_shape_pebble">Galet</string>
     <string name="preference_search_bar_color">Couleur</string>
     <string name="skip">Passer</string>
-    <string name="preference_logs">Journaux</string>
-    <string name="preference_logs_summary">Afficher et exporter les journaux de l\'application</string>
     <string name="help">Aide</string>
     <string name="preference_screen_search_actions">Actions rapides</string>
     <string name="search_action_message">Message</string>

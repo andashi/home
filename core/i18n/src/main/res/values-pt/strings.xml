@@ -303,11 +303,8 @@
     <string name="preference_clockwidget_favorites_part">Doca</string>
     <string name="preference_clockwidget_music_part">Multimédia</string>
     <string name="preference_clockwidget_alarm_part">Alarmes</string>
-    <string name="preference_crash_reporter_summary">Relatórios de erros e de problemas</string>
-    <string name="preference_crash_reporter">Relatório de erros</string>
     <string name="preference_about_license_summary">Licenciada nos termos da GNU General Public License 3.0</string>
     <string name="preference_clockwidget_battery_part">Bateria</string>
-    <string name="preference_logs">Registos</string>
     <string name="preference_suspended_badges_summary">Mostra um indicador nas aplicações suspensas</string>
     <string name="preference_owncloud_signin_summary">Inicie sessão para pesquisar no servidor Owncloud</string>
     <string name="missing_permission_appshortcuts_create">Defina %1$s como a aplicação padrão para criar atalhos.</string>
@@ -346,7 +343,6 @@
     <string name="preference_clockwidget_favorites_part_summary">Mostrar, na doca, os itens afixados</string>
     <string name="preference_clockwidget_music_part_summary">Mostrar controlos multimédia se existir uma sessão ativa</string>
     <string name="preference_clockwidget_alarm_part_summary">Mostrar alarmes que serão ativados nas próximas 8 horas</string>
-    <string name="preference_logs_summary">Ver e exportar registos da aplicação</string>
     <string name="preference_screen_search">Pesquisar</string>
     <string name="preference_screen_search_summary">Pesquisas, etiquetas, itens ocultos</string>
     <string name="preference_search_favorites">Favoritos</string>

@@ -134,8 +134,6 @@
     <string name="preference_clockwidget_battery_part">Bateria</string>
     <string name="preference_clockwidget_battery_part_hide">Desabilitado</string>
     <string name="preference_clockwidget_alarm_part">Alarmes</string>
-    <string name="preference_crash_reporter_summary">Relatórios de erros e falhas</string>
-    <string name="preference_crash_reporter">Reportar falha</string>
     <string name="preference_screen_search">Pesquisar</string>
     <string name="preference_screen_search_summary">Pesquisa, tags, items escondidos</string>
     <string name="preference_search_favorites">Favoritos</string>
@@ -335,7 +333,6 @@
     <string name="preference_clockwidget_favorites_part_summary">Mostra a primeira linha de itens fixados</string>
     <string name="preference_clockwidget_music_part_summary">Mostra controles de mídia quando houver uma sessão de mídia ativa</string>
     <string name="preference_clockwidget_alarm_part_summary">Mostra alarmes que tocarão nas próximas 8 horas</string>
-    <string name="preference_logs_summary">Exibir e exportar logs do aplicativo</string>
     <string name="preference_search_favorites_summary">Mostra itens fixados e usados com frequência acima da grade do aplicativo</string>
     <string name="preference_search_files_summary">Pesquisa arquivos locais e arquivos na nuvem</string>
     <string name="preference_search_contacts_summary">Pesquisa contatos neste dispositivo</string>
@@ -378,7 +375,6 @@
         <item quantity="many">%1$d entradas foram removidas.</item>
         <item quantity="other">%1$d entradas foram removidas.</item>
     </plurals>
-    <string name="preference_logs">Logs</string>
     <string name="search_action_event">Agendar evento</string>
     <string name="create_search_action_website_invalid_url">O site fornecido não pode ser importado automaticamente como uma pesquisa na web. Você pode tentar um site diferente ou inserir os dados necessários manualmente na próxima etapa.</string>
     <string name="tag_name_empty_error">Nome não pode ser vazio</string>

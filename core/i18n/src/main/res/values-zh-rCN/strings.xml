@@ -4,8 +4,6 @@
     <string name="preference_nextcloud">Nextcloud</string>
     <string name="preference_owncloud_signin">登陆到Owncloud</string>
     <string name="preference_about_license">此应用是自由软件。</string>
-    <string name="preference_crash_reporter">崩溃报告程序</string>
-    <string name="preference_crash_reporter_summary">错误和崩溃报告</string>
     <string name="preference_search_files_summary">搜索本地文件和云服务器文件</string>
     <string name="preference_search_unitconverter_summary">用法: 1.5 kg 或者 4 cm &gt;&gt; in</string>
     <string name="preference_search_localfiles_summary">搜索储存在此设备上的文档、照片和其它文件</string>
@@ -386,8 +384,6 @@
     <string name="search_action_alarm">设置闹钟</string>
     <string name="search_action_timer">启动定时器</string>
     <string name="search_action_contact">新建联系人</string>
-    <string name="preference_logs">日志</string>
-    <string name="preference_logs_summary">查看和导出应用日志</string>
     <string name="search_action_open_url">浏览网站</string>
     <string name="help">帮助</string>
     <string name="search_action_event">日程事件</string>

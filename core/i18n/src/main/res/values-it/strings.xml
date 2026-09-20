@@ -281,7 +281,6 @@
     <string name="preference_search_owncloud">Owncloud</string>
     <string name="preference_search_favorites_summary">Mostra elementi appuntati e usati frequentemente sopra la griglia delle app</string>
     <string name="preference_search_calculator_summary">Calcola i termini matematici</string>
-    <string name="preference_crash_reporter_summary">Segnalazioni di errori e arresti anomali</string>
     <string name="preference_calendar_calendars">Calendari</string>
     <string name="preference_screen_buildinfo">Informazioni build</string>
     <string name="preference_search_bar_style">Stile</string>
@@ -317,7 +316,6 @@
     <string name="icon_picker_suggestions">Suggerimenti</string>
     <string name="icon_picker_search_icon">Cerca nei pacchetti icone</string>
     <string name="weather_condition_sleetshowersandthunder">Rovesci di nevischio e tuoni</string>
-    <string name="preference_crash_reporter">Riporta crash</string>
     <string name="preference_blur_wallpaper">Sfoca lo sfondo</string>
     <string name="preference_blur_wallpaper_summary">Usa un effetto sfocato sullo sfondo</string>
     <string name="weather_condition_lightrainshowers">Pioggia leggera debole</string>
@@ -384,8 +382,6 @@
     <string name="preference_system_bar_icons_light">Chiaro</string>
     <string name="preference_system_bar_icons_dark">Scuro</string>
     <string name="preference_search_bar_color">Colore</string>
-    <string name="preference_logs">Log</string>
-    <string name="preference_logs_summary">Visualizza ed esporta i log dell\'applicazione</string>
     <string name="preference_screen_search_actions">Azioni rapide</string>
     <string name="preference_search_search_actions_summary">Configura azioni rapide e scorciatoie di ricerca</string>
     <string name="search_action_call">Chiamata</string>

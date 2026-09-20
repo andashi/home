@@ -32,6 +32,22 @@ module being touched, never a full build:
 
 Example module paths: `:core:preferences`, `:data:widgets`, `:app:ui`.
 
+## Diagnosing a crash
+
+The launcher has no in-app crash reporter; it was removed with the module
+diet (#20) because it duplicated what the platform already keeps. Caught
+exceptions go to logcat under the `MM20` tag via
+`CrashReporter.logException`. Uncaught ones land in the platform's DropBox,
+which survives a reboot:
+
+```bash
+adb -s "$SERIAL" shell dumpsys dropbox --print | grep -A40 '<package>'
+```
+
+Verified on the GrapheneOS test instance 2026-09-20: a forced crash
+(`am crash <pkg>`) went from zero DropBox entries to two carrying `Process:`
+and `Package:`, and they were still there after a reboot.
+
 ## Test policy
 
 This fork is developed AI-assisted, so tests are the safety net, not an

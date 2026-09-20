@@ -195,7 +195,6 @@
     <string name="preference_grid_icon_size">아이콘 크기</string>
     <string name="preference_clockwidget_date_part_summary">오늘 날짜 표시</string>
     <string name="preference_clockwidget_favorites_part">즐겨찾기</string>
-    <string name="preference_logs">로그</string>
     <string name="preference_system_bar_icons_light">밝게</string>
     <string name="preference_hide_status_bar">상태 표시줄 숨기기</string>
     <string name="preference_hide_nav_bar">내비게이션 바 숨기기</string>
@@ -242,8 +241,6 @@
     <string name="search_action_alarm">알람 설정</string>
     <string name="preference_search_calendar_summary">다가올 약속 및 일정 검색</string>
     <string name="preference_search_calendar">캘린더</string>
-    <string name="preference_crash_reporter_summary">오류 및 충돌 보고서</string>
-    <string name="preference_logs_summary">애플리케이션 로그 보기 및 내보내기</string>
     <string name="preference_search_files">파일</string>
     <string name="preference_search_files_summary">로컬 및 클라우드 파일 검색</string>
     <string name="preference_search_favorites_summary">앱 격자 위에 고정한 항목 및 자주 사용한 항목 표시</string>
@@ -291,7 +288,6 @@
     <string name="frequently_used_rows">줄 수</string>
     <string name="search_action_event">일정 추가</string>
     <string name="search_action_open_url">웹사이트 보기</string>
-    <string name="preference_crash_reporter">충돌 보고 도구</string>
     <string name="preference_search_calculator">계산기</string>
     <string name="preference_search_nextcloud">Nextcloud</string>
     <string name="preference_search_cloud_summary">%1$s의 파일 검색</string>
