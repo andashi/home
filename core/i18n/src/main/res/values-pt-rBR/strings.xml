@@ -249,7 +249,7 @@
     <string name="preference_search_result_ordering_weight_factor_default">Balanceada</string>
     <string name="app_widget_loading_failed">Falha no carregamento do widget da aplicação.</string>
     <string name="preference_screen_homescreen">Tela inicial</string>
-    <string name="preference_screen_homescreen_summary">Barra de pesquisa, papel de parede, barras do sistema</string>
+    <string name="preference_screen_homescreen_summary">Barra de pesquisa, papel de parede,barras de sistema</string>
     <string name="preference_hidden_items_reveal_button">Mostrar bootão de revelação</string>
     <string name="preference_hidden_items_reveal_button_summary">Mostre um botão para revelar os resultados escondidos de pesquisa</string>
     <string name="widget_config_appwidget_background">Cartão de fundo</string>
