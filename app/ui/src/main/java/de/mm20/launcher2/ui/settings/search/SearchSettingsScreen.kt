@@ -109,11 +109,16 @@ fun SearchSettingsScreen() {
                     PreferenceWithSwitch(
                         title = stringResource(R.string.preference_search_appshortcuts),
                         summary = stringResource(R.string.preference_search_appshortcuts_summary),
-                        icon = R.drawable.arrow_outward_24px,
+                        icon = R.drawable.mobile_arrow_up_right_24px,
                         switchValue = appShortcuts == true && hasAppShortcutsPermission == true,
                         onSwitchChanged = {
                             viewModel.setAppShortcuts(it)
                         },
+                        // GuardedPreference only shows a banner; without this
+                        // the switch stays live while the permission is denied,
+                        // so the setter persists "enabled" for a source that
+                        // cannot be read and the UI shows it off.
+                        enabled = hasAppShortcutsPermission == true,
                         onClick = {
                             backStack.add(AppShortcutsSettingsRoute)
                         }
@@ -134,6 +139,7 @@ fun SearchSettingsScreen() {
                         onSwitchChanged = {
                             viewModel.setContacts(it)
                         },
+                        enabled = hasContactsPermission == true,
                         onClick = {
                             backStack.add(ContactsSettingsRoute)
                         }
