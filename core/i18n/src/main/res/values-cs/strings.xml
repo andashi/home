@@ -279,13 +279,11 @@
     <string name="widget_use_theme_colors">Použít barvu motivu</string>
     <string name="widget_pick_widget">Vyberte widget</string>
     <string name="search_action_share">Sdílet</string>
-    <string name="search_filter_online">Online výsledky</string>
     <string name="search_filter_apps">Aplikace</string>
     <string name="preference_default_filter">Výchozí filtr</string>
     <string name="preference_default_filter_summary">Přizpůsobit výchozí filtr pro vyhledávání</string>
     <string name="preference_filter_bar_summary">Zobrazit rychlé filtry nad klávesnicí</string>
     <string name="preference_filter_bar">Zobrazit lištu s filtry</string>
-    <string name="filter_settings_network_warning">Aktuální filtr má ve výchozím nastavení povolené online výsledky. Vaše dotazy mohou být neúmyslně odesílány na externí webové služby. Z důvodu ochrany soukromí toto není doporučeno.</string>
     <string name="preference_customize_filter_bar">Přizpůsobit lištu filtrů</string>
     <string name="preference_customize_filter_bar_summary">Přizpůsobte si, které položky mají být zahrnuty na liště filtrů</string>
     <string name="customize_item_tags">Štítky</string>

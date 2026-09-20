@@ -217,7 +217,6 @@
     <string name="gesture_action_notifications">بازکردن بخش آگاه‌سازی</string>
     <string name="preference_default_filter_summary">سفارشی کردن پالایش پیش‌گزیده برای جستجوها</string>
     <string name="widget_pick_widget">انتخاب ابزارک</string>
-    <string name="filter_settings_network_warning">پالایش کنونی به شیوه پیش‌گزیده یافته‌های برخط را روشن می‌کند. جستجوی شما شاید ناخواسته به خدمات وب خارجی فرستاده شوند. به دلایل حریم خصوصی، این کار توصیه نمی‌شود.</string>
     <string name="profile_work_profile_state_locked">برنامه‌های کاری متوقف شده‌اند.</string>
     <string name="profile_work_profile_action_unlock">بازگشایی</string>
     <string name="profile_work_profile_action_lock">متوقف کردن برنامه‌های کاری</string>
@@ -319,7 +318,6 @@
     <string name="preference_customize_filter_bar">سفارشی کردن نوار پالایش</string>
     <string name="menu_show_filters">نمایش پالایشها</string>
     <string name="menu_hide_filters">مخفی کردن پالایشها</string>
-    <string name="search_filter_online">یافته‌های برخط</string>
     <string name="search_filter_apps">برنامه‌ها</string>
     <string name="preference_customize_filter_bar_summary">سفارشی‌سازی موارد موجود در نوار پالایش</string>
     <string name="widget_removed">ابزارک پاک شد</string>

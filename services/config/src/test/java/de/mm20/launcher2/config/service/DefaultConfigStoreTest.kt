@@ -565,7 +565,7 @@ class DefaultConfigStoreTest {
         }
 
         override fun findMany() = flowOf(persistentListOf<Application>())
-        override fun search(query: String, allowNetwork: Boolean): Flow<List<Application>> {
+        override fun search(query: String): Flow<List<Application>> {
             return flowOf(emptyList())
         }
     }

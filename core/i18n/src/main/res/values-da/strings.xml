@@ -277,7 +277,6 @@
     <string name="unavailable_searchable">Dette element findes ikke længere.</string>
     <string name="widget_pick_widget">Vælg widget</string>
     <string name="search_action_share">Del</string>
-    <string name="filter_settings_network_warning">Det nuværende filter aktiverer online resultater som standard. Dine søgninger kan utilsigtet sendes til eksterne webtjenester. Af privatlivsmæssige årsager anbefales dette ikke.</string>
     <string name="customize_item_label">Mærkat</string>
     <string name="item_visibility_hidden">Aldrig</string>
     <string name="contact_info_work">Arbejde</string>
@@ -293,7 +292,6 @@
     <string name="action_done">Færdig</string>
     <string name="action_more_actions">Flere handlinger</string>
     <string name="action_clear">Ryd</string>
-    <string name="search_filter_online">Online resultater</string>
     <string name="search_filter_apps">Apps</string>
     <string name="customize_item_tags">Tags</string>
     <string name="customize_item_visibility">Vis i</string>

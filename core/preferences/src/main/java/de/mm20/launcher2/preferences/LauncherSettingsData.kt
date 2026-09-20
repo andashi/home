@@ -120,8 +120,8 @@ data class LauncherSettingsData internal constructor(
 
     val searchFilter: SearchFilters = SearchFilters(),
     val searchFilterBar: Boolean = true,
+    @Serializable(with = KeyboardFilterBarItemListSerializer::class)
     val searchFilterBarItems: List<KeyboardFilterBarItem> = listOf(
-        KeyboardFilterBarItem.OnlineResults,
         KeyboardFilterBarItem.Apps,
         KeyboardFilterBarItem.Shortcuts,
         KeyboardFilterBarItem.Contacts,
@@ -281,7 +281,6 @@ enum class WeightFactor {
 
 @Serializable
 enum class KeyboardFilterBarItem {
-    @SerialName("online") OnlineResults,
     @SerialName("apps") Apps,
     @SerialName("shortcuts") Shortcuts,
     @SerialName("contacts") Contacts,

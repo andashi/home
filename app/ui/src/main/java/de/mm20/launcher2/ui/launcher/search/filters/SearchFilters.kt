@@ -32,24 +32,6 @@ fun SearchFilters(
             .padding(horizontal = 4.dp),
     ) {
         FilterChip(
-            selected = filters.allowNetwork,
-            onClick = {
-                onFiltersChange(filters.copy(allowNetwork = !filters.allowNetwork))
-            },
-            leadingIcon = {
-                Icon(
-                    painter = painterResource(R.drawable.language_20px),
-                    contentDescription = null,
-                    modifier = Modifier.size(FilterChipDefaults.IconSize)
-                )
-            },
-            label = { Text(stringResource(R.string.search_filter_online)) }
-        )
-        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-        FlowRow {
-        }
-        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
-        FilterChip(
             selected = filters.hiddenItems,
             onClick = {
                 onFiltersChange(filters.copy(hiddenItems = !filters.hiddenItems))

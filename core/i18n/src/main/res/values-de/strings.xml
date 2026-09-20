@@ -278,13 +278,11 @@
     <string name="widget_use_theme_colors">Design-Farbe verwenden</string>
     <string name="widget_pick_widget">Widget auswählen</string>
     <string name="search_action_share">Teilen</string>
-    <string name="search_filter_online">Web-Ergebnisse</string>
     <string name="search_filter_apps">Apps</string>
     <string name="preference_default_filter_summary">Standardfilter für Suchen anpassen</string>
     <string name="preference_filter_bar">Filterleiste anzeigen</string>
     <string name="preference_default_filter">Standardfilter</string>
     <string name="preference_filter_bar_summary">Schnellfilter über der Tastatur anzeigen</string>
-    <string name="filter_settings_network_warning">Mit dem aktuellen Filter sind Online-Suchen standardmäßig aktiviert. Ihre Suchanfragen könnten unbeabsichtigt an externe Webdienste gesendet werden. Aus Datenschutzgründen ist dies nicht empfohlen.</string>
     <string name="preference_customize_filter_bar">Filterleiste anpassen</string>
     <string name="preference_customize_filter_bar_summary">Die in der Filterleiste enthaltenen Elemente anpassen</string>
     <string name="customize_item_label">Beschriftung</string>

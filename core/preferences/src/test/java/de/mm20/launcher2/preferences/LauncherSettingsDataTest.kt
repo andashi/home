@@ -76,4 +76,25 @@ class LauncherSettingsDataTest {
         val decoded = serializer.readFrom(ByteArrayInputStream(json.toByteArray()))
         assertEquals(TimeFormat.TwentyFourHour, decoded.localeTimeFormat)
     }
+
+    @Test
+    fun `an enum value this build no longer knows is skipped, not fatal`() = runTest {
+        // Removing a feature removes its filter-bar value (ADR 0008). A settings
+        // file written before that still names it, and an unknown value inside a
+        // list is not covered by ignoreUnknownKeys or coerceInputValues: without
+        // the tolerant list serializer this throws and the corruption handler
+        // replaces every setting the user has.
+        val json = """
+            {"schemaVersion":6,"searchFilterBarItems":["apps","weather","contacts"],"gridColumnCount":7}
+        """.trimIndent()
+
+        val decoded = serializer.readFrom(ByteArrayInputStream(json.toByteArray()))
+
+        assertEquals(
+            listOf(KeyboardFilterBarItem.Apps, KeyboardFilterBarItem.Contacts),
+            decoded.searchFilterBarItems,
+        )
+        // the rest of the document survives
+        assertEquals(7, decoded.gridColumnCount)
+    }
 }

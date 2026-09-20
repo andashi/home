@@ -277,10 +277,8 @@
     <string name="preference_mdy_color_source_system">Система</string>
     <string name="preference_mdy_color_source">Источник динамических цветов</string>
     <string name="preference_category_advanced">Прочее</string>
-    <string name="search_filter_online">Онлайн-поиск</string>
     <string name="widget_pick_widget">Выбрать виджет</string>
     <string name="widget_use_theme_colors">Использовать цвет темы</string>
-    <string name="filter_settings_network_warning">Текущий фильтр включает онлайн-результаты. Ваши поисковые запросы могут быть непреднамеренно отправлены внешним веб-службам. Из соображений конфиденциальности это не рекомендуется.</string>
     <string name="unavailable_searchable">Этого предмета больше не существует.</string>
     <string name="search_action_share">Поделиться</string>
     <string name="search_filter_apps">Приложения</string>

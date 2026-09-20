@@ -258,7 +258,6 @@
     <string name="preference_debug_dump_heap_in_progress">正在擷取快照…</string>
     <string name="preference_use_system_default">使用系統預設</string>
     <string name="unavailable_searchable">此項目已不存在</string>
-    <string name="filter_settings_network_warning">目前的篩選器設定預設啟用網路結果。您的搜尋字串可能會不經注意傳送到外部網路服務上。由於隱私問題，我們不推薦這樣設定。</string>
     <string name="preference_debug_dump_heap_summary">擷取快照以分析記憶體使用情形。該應用程式將會凍結至處理完成為止。</string>
     <string name="customize_item_label">名稱</string>
     <string name="import_theme_error">無法讀取選取的檔案。請確保您選取了有效的主題檔案（*.kvtheme），並且該檔案未損毀。</string>
@@ -279,7 +278,6 @@
     <string name="action_clear">清除</string>
     <string name="action_done">完成</string>
     <string name="action_more_actions">更多動作</string>
-    <string name="search_filter_online">線上結果</string>
     <string name="search_filter_apps">應用程式</string>
     <string name="preference_customize_filter_bar">自訂篩選器列</string>
     <string name="preference_customize_filter_bar_summary">自訂篩選器列上的選項</string>

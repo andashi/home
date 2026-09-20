@@ -291,14 +291,12 @@
     <string name="preference_customize_filter_bar_summary">Дапасуйце элементы ў панэлі фільтраў</string>
     <string name="menu_show_filters">Паказаць фільтры</string>
     <string name="menu_hide_filters">Схаваць фільтры</string>
-    <string name="search_filter_online">Сеткавыя рэзультаты</string>
     <string name="search_filter_apps">Праграмы</string>
     <string name="preference_filter_bar_summary">Адлюстроўваць хуткія фільтры над клавіятурай</string>
     <string name="preference_customize_filter_bar">Дапасаваць панэль фільтраў</string>
     <string name="preference_default_filter">Прадвызначаны фільтр</string>
     <string name="preference_default_filter_summary">Дапасаваць прадвызначаны фільтр для пошуку</string>
     <string name="preference_filter_bar">Адлюстроўваць панэль фільтраў</string>
-    <string name="filter_settings_network_warning">Бягучы фільтр прадвызначана ўключае рэзультаты з сетцы. Вашы пошукавыя запыты могуць выпадкова быць дасланыя да знешніх вэб-сэрвісаў. Дзеля прыватнасці, гэты фільтр не рэкамендуецца.</string>
     <string name="customize_item_label">Подпіс</string>
     <string name="customize_item_tags">Цэтлікі</string>
     <string name="contact_info_home">Хатні</string>

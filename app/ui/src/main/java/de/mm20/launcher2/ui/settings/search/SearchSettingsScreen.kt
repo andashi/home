@@ -254,13 +254,6 @@ fun SearchSettingsScreen() {
                 .padding(16.dp)
                 .navigationBarsPadding()
         ) {
-            AnimatedVisibility(filters.allowNetwork) {
-                SmallMessage(
-                    modifier = Modifier.padding(bottom = 16.dp),
-                    icon = R.drawable.warning_24px,
-                    text = stringResource(R.string.filter_settings_network_warning)
-                )
-            }
             SearchFilters(
                 filters = filters,
                 onFiltersChange = {

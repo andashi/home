@@ -310,9 +310,7 @@
     <string name="preference_filter_bar">Afficher la barre de filtres</string>
     <string name="preference_default_filter_summary">Personnaliser les filtres de recherche par défaut</string>
     <string name="preference_filter_bar_summary">Afficher les filtres rapides au-dessus du clavier</string>
-    <string name="filter_settings_network_warning">Le filtre actuel active les résultats web par défaut. Vos recherches pourraient être involontairement envoyées à des services web externes. Pour des raisons de vie privée, ceci n\'est pas recommandé.</string>
     <string name="unavailable_searchable">Cet élément n\'existe plus</string>
-    <string name="search_filter_online">Résultat web</string>
     <string name="preference_customize_filter_bar">Personnaliser la barre de filtres</string>
     <string name="search_filter_apps">Applications</string>
     <string name="preference_customize_filter_bar_summary">Personnaliser les éléments inclus dans la barre de filtres</string>

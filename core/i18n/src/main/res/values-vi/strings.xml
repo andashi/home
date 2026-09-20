@@ -288,7 +288,6 @@
     <string name="shortcut_label_unavailable">Không có sẵn</string>
     <string name="shortcut_unavailable_description">Lối tắt này không khả dụng vì %1$s không phải là trình khởi chạy mặc định</string>
     <string name="unavailable_searchable">Mục này không còn tồn tại nữa.</string>
-    <string name="search_filter_online">Kết quả trực tuyến</string>
     <string name="search_filter_apps">Ứng dụng</string>
     <string name="preference_default_filter">Bộ lọc mặc định</string>
     <string name="preference_default_filter_summary">Tùy chỉnh bộ lọc mặc định cho tìm kiếm</string>
@@ -296,7 +295,6 @@
     <string name="preference_filter_bar_summary">Hiển thị các bộ lọc nhanh phía trên bàn phím</string>
     <string name="preference_customize_filter_bar">Tùy chỉnh thanh bộ lọc</string>
     <string name="preference_customize_filter_bar_summary">Tùy chỉnh các mục được đưa vào thanh bộ lọc</string>
-    <string name="filter_settings_network_warning">Bộ lọc hiện tại cho phép kết quả trực tuyến theo mặc định. Truy vấn tìm kiếm của bạn có thể vô tình được gửi đến các dịch vụ web bên ngoài. Vì lý do riêng tư, điều này không được khuyến khích.</string>
     <string name="customize_item_label">Nhãn</string>
     <string name="customize_item_tags">Thẻ</string>
     <string name="customize_item_visibility">Hiển thị trong</string>

@@ -215,7 +215,6 @@
     <string name="preference_icon_shape_pentagon">오각형</string>
     <string name="edit">편집</string>
     <string name="action_import">가져오기</string>
-    <string name="search_filter_online">온라인 검색 결과</string>
     <string name="preference_default_filter">기본 필터</string>
     <string name="search_filter_apps">앱</string>
     <string name="preference_hidden_items_summary">숨긴 앱 및 검색 결과 관리</string>

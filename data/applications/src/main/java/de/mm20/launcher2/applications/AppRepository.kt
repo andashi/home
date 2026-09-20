@@ -238,7 +238,7 @@ internal class AppRepositoryImpl(
         return installedApps.map { it.toImmutableList() }
     }
 
-    override fun search(query: String, allowNetwork: Boolean): Flow<ImmutableList<LauncherApp>> {
+    override fun search(query: String): Flow<ImmutableList<LauncherApp>> {
         val normalizedQuery = stringNormalizer.normalize(query)
 
         return installedApps.map { apps ->
