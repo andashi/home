@@ -60,7 +60,7 @@ class WidgetRepositoryTest {
     @Test
     fun `setAwaited after a pending set wins and its result is visible on return`() = runBlocking {
         val a = AppsWidget(UUID.randomUUID())
-        val b = MusicWidget(UUID.randomUUID())
+        val b = AppsWidget(UUID.randomUUID())
         repeat(20) {
             repository.set(listOf(a))
             repository.setAwaited(listOf(b))
@@ -86,13 +86,13 @@ class WidgetRepositoryTest {
     fun set_replacesRootWidgetsButKeepsChildrenOfOtherParents() = runBlocking {
         val oldRoot = AppsWidget(UUID.randomUUID())
         val parent = UUID.randomUUID()
-        val child = MusicWidget(UUID.randomUUID())
+        val child = AppsWidget(UUID.randomUUID())
         repository.create(oldRoot, position = 0)
         repository.create(child, position = 0, parentId = parent)
         awaitValue { rootIds().firstOrNull()?.firstOrNull { it.id == oldRoot.id } }
         awaitValue { childIds(parent).firstOrNull()?.firstOrNull { it.id == child.id } }
 
-        val newRoot = NotesWidget(UUID.randomUUID())
+        val newRoot = AppsWidget(UUID.randomUUID())
         repository.set(listOf(newRoot))
         val roots = awaitValue {
             rootIds().firstOrNull()?.takeIf { it.size == 1 && it[0].id == newRoot.id }
@@ -126,8 +126,8 @@ class WidgetRepositoryTest {
     @Test
     fun setAwaited_writesAreVisibleImmediatelyAfterReturn() = runBlocking {
         val a = AppsWidget(UUID.randomUUID())
-        val b = MusicWidget(UUID.randomUUID())
-        val c = NotesWidget(UUID.randomUUID())
+        val b = AppsWidget(UUID.randomUUID())
+        val c = AppsWidget(UUID.randomUUID())
         repository.setAwaited(listOf(a, b, c))
         // No polling: the transaction must have committed when the call returns.
         val roots = rootIds().first()
@@ -139,7 +139,7 @@ class WidgetRepositoryTest {
     fun setAwaited_replacesPreviousSet() = runBlocking {
         val old = AppsWidget(UUID.randomUUID())
         repository.setAwaited(listOf(old))
-        val new = MusicWidget(UUID.randomUUID())
+        val new = AppsWidget(UUID.randomUUID())
         repository.setAwaited(listOf(new))
         assertEquals(listOf(new.id), rootIds().first().map { it.id })
     }
@@ -148,11 +148,11 @@ class WidgetRepositoryTest {
     fun setAwaited_withParentOnlyReplacesThatParentsChildren() = runBlocking {
         val root = AppsWidget(UUID.randomUUID())
         val parent = UUID.randomUUID()
-        val oldChild = MusicWidget(UUID.randomUUID())
+        val oldChild = AppsWidget(UUID.randomUUID())
         repository.setAwaited(listOf(root))
         repository.setAwaited(listOf(oldChild), parentId = parent)
 
-        val newChild = NotesWidget(UUID.randomUUID())
+        val newChild = AppsWidget(UUID.randomUUID())
         repository.setAwaited(listOf(newChild), parentId = parent)
 
         assertEquals(listOf(root.id), rootIds().first().map { it.id })

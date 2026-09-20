@@ -17,11 +17,6 @@
     <string name="default_websearch_3_name">Google Play</string>
     <string name="websearch_dialog_replace_icon">Ganti ikon</string>
     <string name="websearch_dialog_delete_icon">Hapus ikon</string>
-    <string name="widget_name_music">Musik</string>
-    <string name="widget_name_notes">Catatan</string>
-    <string name="notes_widget_action_new">Catatan baru</string>
-    <string name="notes_widget_action_save">Simpan</string>
-    <string name="notes_widget_export_filename">Catatan_%1$s</string>
     <string name="shortcut_summary">Oleh %1$s</string>
     <string name="close">Tutup</string>
     <string name="save">Simpan</string>
@@ -38,8 +33,6 @@
     <string name="search_bar_placeholder">Cari</string>
     <string name="wallpaper">Wallpaper</string>
     <string name="show_all">Tampilkan semua</string>
-    <string name="music_widget_no_data">Belum ada media yang diputar</string>
-    <string name="music_widget_default_title">%1$s sedang memutar media</string>
     <string name="alert_delete_shortcut">Pintasan %1$s akan dihapus secara permanen. Lanjut\?</string>
     <string name="preference_themed_icons_summary">Warnai ikon dengan skema warna dari aplikasi</string>
     <string name="websearch_dialog_custom_icon">Ikon kustom</string>
@@ -47,9 +40,6 @@
     <string name="websearch_dialog_query_encoding_none">Tidak ada</string>
     <string name="menu_edit_widgets">Sunting widget</string>
     <string name="widget_add_widget">Tambahkan widget</string>
-    <string name="notes_widget_action_dismiss">Buang</string>
-    <string name="notes_widget_placeholder">Tulis catatan…</string>
-    <string name="notes_widget_dismissed">Catatan dibuang.</string>
     <string name="duplicate">Duplikat</string>
     <string name="widget_action_remove">Hapus</string>
     <string name="menu_item_edit_favs">Sunting favorit</string>
@@ -57,7 +47,6 @@
     <string name="edit_favorites_dialog_pinned_unsorted">Disematkan – diurutkan otomatis</string>
     <string name="edit_favorites_dialog_tags">Label</string>
     <string name="edit_favorites_dialog_new_tag">Buat label…</string>
-    <string name="missing_permission_music_widget">Akses notifikasi diperlukan untuk mengontrol pemutaran media</string>
     <string name="missing_permission_contact_search_settings">Izin kontak diperlukan untuk mencari daftar kontak</string>
     <plurals name="debug_cleanup_database_result">
         <item quantity="other">Entri %1$d telah dibersihkan.</item>
@@ -88,7 +77,6 @@
     <string name="preference_icon_shape_circle">Lingkaran</string>
     <string name="preference_icon_shape_teardrop">Tetes air</string>
     <string name="preference_icon_shape_hexagon">Segi enam</string>
-    <string name="preference_screen_integrations">Integrasi</string>
     <string name="preference_icon_shape_pebble">Kerikil</string>
     <string name="preference_category_searchbar">Bar pencarian</string>
     <string name="preference_theme_system">Ikuti sistem</string>
@@ -104,7 +92,6 @@
     <string name="preference_system_bar_icons_light">Cerah</string>
     <string name="preference_system_bar_icons_dark">Gelap</string>
     <string name="preference_hide_status_bar">Sembunyikan status bar</string>
-    <string name="preference_screen_integrations_summary">Mengelola akun dan layanan yang tesambung</string>
     <string name="preference_icon_shape_pentagon">Segi lima</string>
     <string name="preference_blur_wallpaper">Buramkan wallpaper</string>
     <string name="preference_category_wallpaper">Wallpaper</string>
@@ -128,20 +115,8 @@
     <string name="preference_grid_labels">Tampilkan label</string>
     <string name="preference_grid_labels_summary">Tampilkan nama aplikasi di bawah ikon</string>
     <string name="preference_screen_debug_summary">Alat penyelesaian masalah</string>
-    <string name="preference_screen_clockwidget">Jam</string>
-    <string name="preference_clockwidget_layout_horizontal">Padat</string>
-    <string name="preference_screen_clockwidget_summary">Atur gaya jam dan bagian-bagiannya</string>
-    <string name="preference_clockwidget_layout_vertical">Default</string>
-    <string name="preference_clock_widget_fill_height">Isi ketinggian layar</string>
-    <string name="preference_clockwidget_date_part">Tanggal</string>
     <string name="preference_clockwidget_favorites_part">Favorit</string>
-    <string name="preference_clockwidget_date_part_summary">Tampilkan tanggal saat ini</string>
     <string name="preference_clockwidget_favorites_part_summary">Tampilkan baris pertama item yang tersemat</string>
-    <string name="preference_clockwidget_music_part">Media</string>
-    <string name="preference_clockwidget_battery_part">Baterai</string>
-    <string name="preference_clockwidget_alarm_part">Alarm</string>
-    <string name="preference_clockwidget_music_part_summary">Tampilkan kontrol media ketika ada sesi media yang aktif</string>
-    <string name="preference_clockwidget_alarm_part_summary">Tampilkan alarm yang akan berdering sekitar 15 menit mendatang</string>
     <string name="preference_screen_search">Pencarian</string>
     <string name="preference_search_favorites">Favorit</string>
     <string name="preference_search_contacts">Kontak</string>
@@ -183,7 +158,6 @@
     <string name="preference_mdy_color_source_wallpaper">Walpaper</string>
     <string name="websearch_dialog_query_encoding_url">Pengkodean persen</string>
     <string name="websearch_dialog_query_encoding">Pengkodean kueri</string>
-    <string name="preference_category_debug">DEBUG</string>
     <string name="widget_use_theme_colors">Gunakan warna tema</string>
     <string name="websearch_dialog_query_encoding_form">application/x-www-form-urlencoded</string>
     <string name="preference_debug_dump_heap_summary">Ambil snapshot untuk menganalisis penggunaan memori. Aplikasi akan berhenti bekerja hingga proses ini selesai.</string>
@@ -200,7 +174,6 @@
     <string name="preference_suspended_badges">Aplikasi yang ditangguhkan</string>
     <string name="preference_about_license_summary">Dilisensikan di bawah Lisensi Publik Umum GNU 3.0</string>
     <string name="preference_screen_debug">DEBUG</string>
-    <string name="preference_clock_widget_show_seconds">Tampilkan detik</string>
     <string name="action_done">Selesai</string>
     <string name="action_more_actions">Lebih banyak tindakan</string>
     <string name="action_clear">Bersihkan</string>

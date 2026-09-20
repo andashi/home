@@ -32,7 +32,6 @@
     <string name="default_websearch_3_url">https://play.google.com/store/search?q=${1}</string>
     <string name="websearch_dialog_url_error">В цьому URL відсутній заповнювач \'${1}\'</string>
     <string name="action_clear">Стерти</string>
-    <string name="action_install">Встановити</string>
     <string name="shortcut_summary">Від %1$s</string>
     <string name="close">Закрити</string>
     <string name="save">Зберегти</string>
@@ -41,7 +40,6 @@
     <string name="menu_item_edit_favs">Редагувати улюблені</string>
     <string name="edit_favorites_dialog_empty_section">Перетягуйте значки сюди</string>
     <string name="edit_favorites_dialog_new_tag">Створити тег</string>
-    <string name="music_widget_default_title">%1$s відтворює медіа</string>
     <string name="edit">Редагувати</string>
     <string name="widget_action_remove">Прибрати</string>
     <string name="turn_off">Вимкнути</string>
@@ -49,17 +47,12 @@
     <string name="save_as_file">Зберегти як файл</string>
     <string name="edit_favorites_dialog_tags">Теги</string>
     <string name="preference_system_bar_icons_light">Світлий</string>
-    <string name="music_widget_interactive_progress_bar">Інтерактивний індикатор виконання</string>
     <string name="show_all">Показати все</string>
-    <string name="notes_widget_export_filename">Нотатка_%1$s</string>
     <string name="edit_favorites_dialog_pinned_sorted">Закріплені – відсортовані вручну</string>
-    <string name="notes_widget_action_dismiss">Відхилити</string>
-    <string name="notes_widget_dismissed">Нотатку відхилено</string>
     <string name="widget_action_replace">Замінити</string>
     <string name="edit_favorites_dialog_unpinned">Не закріплені – часто використовуються</string>
     <string name="edit_favorites_dialog_pinned_unsorted">Закріплені – відсортовані автоматично</string>
     <string name="edit_favorites_dialog_tag_section_empty">Закріплені теги з’являться тут</string>
-    <string name="music_widget_no_data">Поки не відтворено жодного медіа</string>
     <string name="preference_theme_light">Світла</string>
     <string name="alert_delete_shortcut">Ярлик %1$s буде видалено назавжди. Продовжити?</string>
     <string name="preference_mdy_color_source_wallpaper">Шпалери</string>
@@ -73,10 +66,8 @@
     <string name="preference_shapes_extra_round">Більш скруглені</string>
     <string name="preference_shapes_base">Основна фігура</string>
     <string name="favorites_empty">Закріплені та часто використовувані елементи з’являться тут</string>
-    <string name="widget_name_notes">Нотатка</string>
     <string name="preference_shapes_rect">Прямокутні</string>
     <string name="missing_permission_notification_badges">Для відображення значків сповіщень потрібен доступ до сповіщень</string>
-    <string name="widget_name_music">Медіа</string>
     <string name="widget_add_widget">Додати віджет</string>
     <string name="missing_permission_contact_search">Для пошуку контактів потрібен дозвіл</string>
     <string name="favorites_empty_tag">Немає значків з цим тегом</string>
@@ -85,11 +76,7 @@
     <string name="websearch_dialog_query_encoding">Кодування запиту</string>
     <string name="websearch_dialog_query_encoding_none">Нема</string>
     <string name="menu_edit_widgets">Налаштувати віджети</string>
-    <string name="notes_widget_placeholder">Напишіть нотатку...</string>
-    <string name="notes_widget_action_new">Нова нотатка</string>
-    <string name="notes_widget_action_save">Зберегти</string>
     <string name="preference_theme_dark">Темна</string>
-    <string name="missing_permission_music_widget">Для керування відтворенням медіа потрібен доступ до сповіщень</string>
     <string name="missing_permission_contact_search_settings">Для пошуку контактів потрібен дозвіл</string>
     <string name="frequently_used_show_in_favorites">Показувати в улюблених</string>
     <string name="widget_removed">Віджет видалено</string>
@@ -142,13 +129,4 @@
     <string name="preference_grid_labels">Показувати підписи</string>
     <string name="preference_grid_labels_summary">Показувати знизу назву застосунку</string>
     <string name="preference_category_widgets">Віджети</string>
-    <string name="preference_clockwidget_layout_vertical">За замовчуванням</string>
-    <string name="preference_clockwidget_layout_horizontal">Компактний</string>
-    <string name="preference_clock_widget_show_seconds">Показувати секунди</string>
-    <string name="preference_clock_widget_alignment_top">Верх</string>
-    <string name="preference_clock_widget_alignment_center">Середина</string>
-    <string name="preference_clock_widget_alignment_bottom">Низ</string>
-    <string name="preference_clockwidget_dynamic_zone">Динамічна зона</string>
-    <string name="preference_clockwidget_music_part">Медія</string>
-    <string name="preference_clockwidget_battery_part_always_show">Завжди показувати</string>
 </resources>

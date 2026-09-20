@@ -42,10 +42,6 @@ export const UserGuideSidebar: DefaultTheme.SidebarItem[] = [
   {
     text: 'Integrations',
     items: [
-      {
-        text: 'Media Control',
-        link: '/docs/user-guide/integrations/mediacontrol',
-      },
     ],
   },
   {
@@ -69,28 +65,8 @@ export const UserGuideSidebar: DefaultTheme.SidebarItem[] = [
     text: 'Widgets',
     items: [
       {
-        text: 'Calendar Widget',
-        link: '/docs/user-guide/widgets/calendar-widget',
-      },
-      {
-        text: 'Clock Widget',
-        link: '/docs/user-guide/widgets/clock',
-      },
-      {
         text: 'Favorites Widget',
         link: '/docs/user-guide/widgets/favorites-widget',
-      },
-      {
-        text: 'Music Widget',
-        link: '/docs/user-guide/widgets/music-widget',
-      },
-      {
-        text: 'Notes Widget',
-        link: '/docs/user-guide/widgets/notes-widget',
-      },
-      {
-        text: 'Weather Widget',
-        link: '/docs/user-guide/widgets/weather-widget',
       },
     ],
   },

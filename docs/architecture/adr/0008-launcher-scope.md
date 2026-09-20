@@ -69,6 +69,17 @@ which is the dock. The clock, weather, calendar, music and notes widgets are
 dropped; standard Android widgets cover them, and the clock in particular
 duplicated what the lock screen and the status bar already show.
 
+Dropping the clock leaves the home screen empty until ADR 0001's `HomeGrid`
+lands, because every provisioned zone runs with `home.widgets.enabled: false`
+and the full-screen clock *was* the home surface there. That gap is accepted
+deliberately: the implementation order in `docs/architecture/README.md` puts
+scope reduction before the grid, and a bare wallpaper with a dock and a search
+bar is closer to the target design than the clock it replaces.
+
+The media-control service (`:services:music`) goes with the music widget. Once
+no widget displays a media session, the service and its settings screen exist
+only to configure each other.
+
 **The plugin SDK** (`plugins/sdk`) is withdrawn. It exists to be published for
 third-party plugin authors, which is not a goal of a hard fork with one
 operator, and it is not compiled into the app.
@@ -84,6 +95,13 @@ operator, and it is not compiled into the app.
   so a dropped provider can be cherry-picked back, but the cost of doing so
   grows as the fork diverges. This is a first step taken deliberately, with
   that bill accepted.
+- `home.clock` leaves the public contract entirely, together with the
+  `ClockStyle` enum, and `BuiltinWidget` shrinks to a single value, `apps`.
+  Removing the whole `clock` object is the safe direction: an unknown *key* is
+  ignored with a diagnostic, so the `launcher.json` files that provisioning
+  generates today keep parsing while the generator catches up. Had the clock
+  survived as a key with fewer styles, a configured `"style": "orbit"` would
+  have failed the decode outright.
 - Config keys for dropped providers leave the public contract (ADR 0002), and
   #3 shrinks to the surface that is left. An unknown *key* is ignored and
   reported as a diagnostic, so that part is safe. An unknown *enum value* was

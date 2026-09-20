@@ -136,7 +136,6 @@ roborazzi-compose = { group = "io.github.takahirom.roborazzi", name = "roborazzi
 
 osmopeninghours = { group = "de.westnordost", name = "osm-opening-hours", version.ref = "osmOpeningHours" }
 
-smartspacer = { group = "com.kieronquinn.smartspacer", name = "sdk-client", version = "1.2" }
 
 [bundles]
 kotlin = ["kotlin-stdlib", "kotlinx-coroutines-core", "kotlinx-coroutines-android", "kotlinx-collections-immutable", "kotlinx-serialization-json"]

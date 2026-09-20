@@ -55,7 +55,6 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
 
     implementation(libs.koin.android)
-    implementation(project(":services:music"))
     implementation(project(":core:ktx"))
     implementation(project(":core:base"))
     implementation(project(":core:preferences"))

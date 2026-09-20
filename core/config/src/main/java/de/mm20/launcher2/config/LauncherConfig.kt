@@ -60,7 +60,6 @@ data class HomeConfig(
     val searchBar: SearchBarConfig? = null,
     val dock: DockConfig? = null,
     val widgets: WidgetsConfig? = null,
-    val clock: ClockConfig? = null,
 )
 
 @Serializable
@@ -110,42 +109,7 @@ data class WidgetsConfig(
 
 @Serializable
 enum class BuiltinWidget {
-    @SerialName("music")
-    Music,
-
     @SerialName("apps")
     Apps,
-
-    @SerialName("notes")
-    Notes,
 }
 
-@Serializable
-data class ClockConfig(
-    val style: ClockStyle? = null,
-    val fillHeight: Boolean? = null,
-)
-
-@Serializable
-enum class ClockStyle {
-    @SerialName("digital1")
-    Digital1,
-
-    @SerialName("digital2")
-    Digital2,
-
-    @SerialName("orbit")
-    Orbit,
-
-    @SerialName("analog")
-    Analog,
-
-    @SerialName("binary")
-    Binary,
-
-    @SerialName("segment")
-    Segment,
-
-    @SerialName("empty")
-    Empty,
-}

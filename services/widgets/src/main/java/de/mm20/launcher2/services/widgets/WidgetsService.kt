@@ -7,8 +7,6 @@ import android.content.pm.LauncherApps
 import android.os.Build
 import androidx.core.content.getSystemService
 import de.mm20.launcher2.widgets.AppsWidget
-import de.mm20.launcher2.widgets.MusicWidget
-import de.mm20.launcher2.widgets.NotesWidget
 import de.mm20.launcher2.widgets.Widget
 import de.mm20.launcher2.widgets.WidgetRepository
 import kotlinx.coroutines.Dispatchers
@@ -49,16 +47,8 @@ class WidgetsService(
     fun getBuiltInWidgets(): List<BuiltInWidgetInfo> {
         return listOf(
             BuiltInWidgetInfo(
-                type = MusicWidget.Type,
-                label = context.getString(R.string.widget_name_music),
-            ),
-            BuiltInWidgetInfo(
                 type = AppsWidget.Type,
                 label = context.getString(R.string.widget_name_apps),
-            ),
-            BuiltInWidgetInfo(
-                type = NotesWidget.Type,
-                label = context.getString(R.string.widget_name_notes),
             ),
         )
     }

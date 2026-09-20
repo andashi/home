@@ -37,7 +37,6 @@ fun ConfigState.toLauncherConfig(): LauncherConfig {
             searchBar = SearchBarConfig(position = searchBarPosition),
             dock = DockConfig(enabled = dockEnabled, favorites = dockFavorites),
             widgets = WidgetsConfig(enabled = widgetsEnabled, widgets = widgets),
-            clock = ClockConfig(style = clockStyle, fillHeight = clockFillHeight),
         ),
     )
 }

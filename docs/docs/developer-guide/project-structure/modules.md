@@ -20,7 +20,6 @@ The project consists of multiple Gradle modules. This is the current structure:
       notification drawer
     - `:icons`: Used to retrieve icons for items. Handles icon packs, themed icons and also custom
       icons (on a higher level)
-    - `:music`: Manage media sessions and extract metadata
     - `:search`: Search service
     - `:tags`: Edit, copy and delete tags
     - `:widgets`: High-level APIs to manage widgets

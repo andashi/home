@@ -5,7 +5,7 @@ For Kvaesitso, this affects the notification access permission and the accessibi
 
 ## Notification Access
 
-The notification access permission is used to display notification badges, and to control music playback.
+The notification access permission is used to display notification badges.
 
 1. Try to grant the notification access permission as you would normally do. If you sideloaded the APK, all the controls are disabled:
 
