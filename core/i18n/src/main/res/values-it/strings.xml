@@ -384,17 +384,13 @@
     <string name="preference_search_apps">App</string>
     <string name="preference_search_apps_summary">Mostra tutte le app quando il campo di ricerca è vuoto</string>
     <string name="preference_screen_locale">Lingua e regione</string>
-    <string name="preference_screen_locale_summary">Lingua, unità, formato ora</string>
+    <string name="preference_screen_locale_summary">Lingua, formato ora</string>
     <string name="preference_language">Lingua</string>
     <string name="preference_value_system_default">Predefinito del sistema</string>
     <string name="preference_form_of_address_neutral">Neutro</string>
     <string name="preference_form_of_address_fem">Femminile</string>
     <string name="preference_form_of_address_masc">Maschile</string>
     <string name="preference_form_of_address">Appellativo</string>
-    <string name="preference_measurement_system_us">Stati Uniti</string>
-    <string name="preference_measurement_system">Sistema di misurazione</string>
-    <string name="preference_measurement_system_metric">Metrico</string>
-    <string name="preference_measurement_system_uk">Regno Unito</string>
     <string name="preference_transliteration">Traslitterazione preferita</string>
     <string name="preference_transliteration_auto">Automatica</string>
     <string name="preference_value_disabled">Disabilitata</string>
@@ -438,8 +434,6 @@
     <string name="gesture_action_launch_select_app">Seleziona app o scorciatoia</string>
     <string name="preference_search_apps_show_details_summary">Visualizza la versione e il nome del pacchetto di un\'app nel suo menu contestuale</string>
     <string name="preference_search_apps_show_details">Mostra informazioni app</string>
-    <string name="preference_add_currency">Aggiungi valuta</string>
-    <string name="preference_currencies">Valuta</string>
     <string name="search_query_private_space">Spazio privato</string>
     <string name="search_action_private_space_lock">Blocca spazio privato</string>
     <string name="search_action_private_space_unlock">Sblocca spazio privato</string>

@@ -424,17 +424,13 @@
     <string name="font_name_device_body">Police de texte de l’appareil</string>
     <string name="font_category_generic">Générique</string>
     <string name="preference_screen_locale">Langue et région</string>
-    <string name="preference_screen_locale_summary">Langue, unités, format de l’heure</string>
+    <string name="preference_screen_locale_summary">Langue, format de l’heure</string>
     <string name="preference_language">Langue</string>
     <string name="preference_value_system_default">Valeur par défaut du système</string>
     <string name="preference_form_of_address">Choisissez comment on s’adresse à vous</string>
     <string name="preference_form_of_address_neutral">Neutre</string>
     <string name="preference_form_of_address_fem">Féminin</string>
     <string name="preference_form_of_address_masc">Masculin</string>
-    <string name="preference_measurement_system">Système de mesure</string>
-    <string name="preference_measurement_system_metric">Métrique</string>
-    <string name="preference_measurement_system_uk">Royaume-Uni</string>
-    <string name="preference_measurement_system_us">États-Unis</string>
     <string name="dialog_discard_unsaved">Quitter sans sauvegarder ?</string>
     <string name="typo_preview_long">Dès Noël, où un zéphyr haï me vêt de glaçons würmiens,\nje dîne d’exquis rôtis de bœuf au kir, à l’aÿ d’âge mûr, &amp;cætera. 1234790</string>
     <string name="typo_preview_medium2">Prévisual.</string>
@@ -468,7 +464,5 @@
     <string name="search_query_private_space">Espace privé</string>
     <string name="search_action_private_space_lock">Verrouiller l\'espace privé</string>
     <string name="search_action_private_space_unlock">Déverrouiller l\'espace privé</string>
-    <string name="preference_currencies">Devise</string>
-    <string name="preference_add_currency">Ajouter une devise</string>
     <string name="preference_search_apps_show_details_summary">Afficher la version et le nom de paquet de l\'application dans son menu de contexte</string>
 </resources>

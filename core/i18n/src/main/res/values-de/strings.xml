@@ -378,17 +378,13 @@
     <string name="preference_search_apps">Apps</string>
     <string name="preference_search_apps_summary">Alle Apps anzeigen, wenn das Suchfeld leer ist</string>
     <string name="preference_screen_locale">Sprache und Region</string>
-    <string name="preference_screen_locale_summary">Sprache, Einheiten, Zeitformat</string>
+    <string name="preference_screen_locale_summary">Sprache, Zeitformat</string>
     <string name="preference_language">Sprache</string>
     <string name="preference_value_system_default">Systemstandard</string>
     <string name="preference_form_of_address">Anredeform</string>
     <string name="preference_form_of_address_neutral">Neutral</string>
     <string name="preference_form_of_address_fem">Feminin</string>
     <string name="preference_form_of_address_masc">Maskulin</string>
-    <string name="preference_measurement_system">Einheitensystem</string>
-    <string name="preference_measurement_system_metric">Metrisch</string>
-    <string name="preference_measurement_system_uk">Vereinigtes Königreich</string>
-    <string name="preference_measurement_system_us">Vereinigte Staaten</string>
     <string name="preference_transliteration">Bevorzugte Transliteration</string>
     <string name="preference_transliteration_auto">Automatisch</string>
     <string name="preference_value_disabled">Deaktiviert</string>
@@ -432,8 +428,6 @@
     <string name="gesture_action_launch_select_app">App oder Shortcut auswählen</string>
     <string name="preference_search_apps_show_details">App-Informationen anzeigen</string>
     <string name="preference_search_apps_show_details_summary">Version und Paketnamen einer App in ihrem Kontext-Menü anzeigen</string>
-    <string name="preference_currencies">Währung</string>
-    <string name="preference_add_currency">Währung hinzufügen</string>
     <string name="search_query_private_space">Vertrauliches Profil</string>
     <string name="search_action_private_space_lock">Vertrauliches Profil sperren</string>
     <string name="search_action_private_space_unlock">Vertrauliches Profil entsperren</string>

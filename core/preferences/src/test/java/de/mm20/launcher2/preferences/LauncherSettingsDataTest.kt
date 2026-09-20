@@ -42,7 +42,6 @@ class LauncherSettingsDataTest {
             gesturesLongPress = GestureAction.Launch("app://de.mm20.launcher2"),
             searchBarStyle = SearchBarStyle.Solid,
             iconsPack = "com.example.iconpack",
-            localeCurrencies = listOf("EUR", "USD"),
         )
         val out = ByteArrayOutputStream()
         serializer.writeTo(data, out)

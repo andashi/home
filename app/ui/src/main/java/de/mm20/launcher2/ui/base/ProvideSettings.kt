@@ -12,7 +12,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import de.mm20.launcher2.preferences.IconShape
-import de.mm20.launcher2.preferences.MeasurementSystem
 import de.mm20.launcher2.preferences.TimeFormat
 import de.mm20.launcher2.preferences.ui.GridSettings
 import de.mm20.launcher2.preferences.ui.LocaleSettings
@@ -24,7 +23,6 @@ import de.mm20.launcher2.ui.locals.LocalCalendarSystems
 import de.mm20.launcher2.ui.locals.LocalFavoritesEnabled
 import de.mm20.launcher2.ui.locals.LocalShowAppDetails
 import de.mm20.launcher2.ui.locals.LocalGridSettings
-import de.mm20.launcher2.ui.locals.LocalMeasurementSystem
 import de.mm20.launcher2.ui.locals.LocalTimeFormat
 import de.mm20.launcher2.widgets.AppsWidget
 import de.mm20.launcher2.widgets.WidgetRepository
@@ -74,20 +72,6 @@ fun ProvideSettings(
             }.distinctUntilChanged()
     }.collectAsState(null)
 
-    val measurementSystem by remember {
-        localeSettings.measurementSystem.map { ms ->
-            if (ms == MeasurementSystem.System) {
-                val systemMs = LocaleData.getMeasurementSystem(ULocale.getDefault())
-                return@map when (systemMs) {
-                    LocaleData.MeasurementSystem.UK -> MeasurementSystem.UnitedKingdom
-                    LocaleData.MeasurementSystem.US -> MeasurementSystem.UnitedStates
-                    else -> MeasurementSystem.Metric
-                }
-            }
-            return@map ms
-        }.distinctUntilChanged()
-    }.collectAsState(null)
-
     val calendarIds by remember {
         localeSettings.primaryCalendar.combine(localeSettings.secondaryCalendar) { p, s ->
             listOf(p, s)
@@ -114,14 +98,13 @@ fun ProvideSettings(
         }
     }
 
-    if (timeFormat == null || measurementSystem == null) return
+    if (timeFormat == null) return
 
     CompositionLocalProvider(
         LocalFavoritesEnabled provides favoritesEnabled,
         LocalShowAppDetails provides showAppDetails,
         LocalGridSettings provides gridSettings,
         LocalTimeFormat provides timeFormat!!,
-        LocalMeasurementSystem provides measurementSystem!!,
         LocalCalendarSystems provides calendars,
         LocalCalendarSystemIds provides calendarIds,
     ) {

@@ -378,17 +378,13 @@
     <string name="preference_search_apps_summary">Alle apps tonen als het zoekveld leeg is</string>
     <string name="preference_search_apps">Apps</string>
     <string name="preference_screen_locale">Taal en regio</string>
-    <string name="preference_screen_locale_summary">Taal, eenheden, tijdformaat</string>
+    <string name="preference_screen_locale_summary">Taal, tijdformaat</string>
     <string name="preference_language">Taal</string>
     <string name="preference_value_system_default">Systeemstandaard</string>
     <string name="preference_form_of_address">Aanspreking</string>
     <string name="preference_form_of_address_neutral">Neutraal</string>
     <string name="preference_form_of_address_fem">Vrouwelijk</string>
     <string name="preference_form_of_address_masc">Mannelijk</string>
-    <string name="preference_measurement_system">Eenheden</string>
-    <string name="preference_measurement_system_metric">Metrisch</string>
-    <string name="preference_measurement_system_uk">Verenigd Koninkrijk</string>
-    <string name="preference_measurement_system_us">Verenigde Staten</string>
     <string name="preference_value_disabled">Uitgeschakeld</string>
     <string name="preference_transliteration">Voorkeurstransliteratie</string>
     <string name="preference_transliteration_auto">Automatisch</string>
@@ -432,8 +428,6 @@
     <string name="gesture_action_launch_select_app">Applicatie of snelkoppeling kiezen</string>
     <string name="preference_search_apps_show_details_summary">Versie-informatie en pakketnaam van een applicatie tonen in het contextmenu</string>
     <string name="preference_search_apps_show_details">Applicatie-informatie tonen</string>
-    <string name="preference_add_currency">Munteenheid toevoegen</string>
-    <string name="preference_currencies">Munteenheid</string>
     <string name="search_query_private_space">Privégedeelte</string>
     <string name="search_action_private_space_lock">Privégedeelte sluiten</string>
     <string name="search_action_private_space_unlock">Privégedeelte openen</string>

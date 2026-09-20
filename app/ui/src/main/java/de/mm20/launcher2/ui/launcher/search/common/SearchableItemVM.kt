@@ -15,7 +15,6 @@ import de.mm20.launcher2.notifications.Notification
 import de.mm20.launcher2.notifications.NotificationRepository
 import de.mm20.launcher2.permissions.PermissionGroup
 import de.mm20.launcher2.permissions.PermissionsManager
-import de.mm20.launcher2.preferences.MeasurementSystem
 import de.mm20.launcher2.preferences.search.ContactSearchSettings
 import de.mm20.launcher2.search.AppShortcut
 import de.mm20.launcher2.search.Application
