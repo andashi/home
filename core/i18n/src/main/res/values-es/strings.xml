@@ -279,13 +279,11 @@
     <string name="unavailable_searchable">Este elemento ya no existe</string>
     <string name="widget_pick_widget">Elegir widget</string>
     <string name="search_action_share">Compartir</string>
-    <string name="search_filter_online">Buscar en línea</string>
     <string name="search_filter_apps">Aplicaciones</string>
     <string name="preference_default_filter">Filtro por defecto</string>
     <string name="preference_default_filter_summary">Personalizar el filtro por defecto para las búsquedas</string>
     <string name="preference_filter_bar">Mostrar barra de filtros</string>
     <string name="preference_filter_bar_summary">Mostrar filtros rápidos sobre el teclado</string>
-    <string name="filter_settings_network_warning">El filtro actual activa los resultados en línea por defecto. Tus búsquedas realizadas pueden ser enviadas sin querer a servicios web externos. Por razones de privacidad, esto no es recomendado.</string>
     <string name="preference_customize_filter_bar">Personalizar barra de filtro</string>
     <string name="preference_customize_filter_bar_summary">Personalizar que elementos son incluidos en la barra de filtro</string>
     <string name="preference_grid_list_style">Mostrar aplicaciones en una lista</string>

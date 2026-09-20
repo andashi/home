@@ -267,8 +267,6 @@
     <string name="preference_search_result_ordering_weight_factor_high">Zmienny</string>
     <string name="widget_config_appwidget_borderless">Bez ramki</string>
     <string name="preference_customize_filter_bar_summary">Dostosuj elementy uwzględnione na pasku filtrów</string>
-    <string name="filter_settings_network_warning">Dostosowywanie elementów uwzględnianych na pasku filtrów.
-\nBieżący filtr domyślnie włącza wyniki online. Zapytania wyszukiwania mogą być nieumyślnie wysyłane do zewnętrznych usług internetowych. Ze względu na ochronę prywatności nie jest to zalecane.</string>
     <string name="search_action_share">Udostępnij</string>
     <string name="preference_debug_dump_heap_in_progress">Przechwytywanie migawki…</string>
     <string name="preference_default_filter">Domyślny filtr</string>
@@ -289,7 +287,6 @@
     <string name="icon_picker_filter_all_packs">Wszystkie pakiety ikon</string>
     <string name="search_action_websearch">Wyszukiwanie w sieci</string>
     <string name="unavailable_searchable">Ten element już nie istnieje.</string>
-    <string name="search_filter_online">Wyniki online</string>
     <string name="preference_customize_filter_bar">Dostosuj pasek filtrów</string>
     <string name="menu_hide_filters">Ukryj filtry</string>
 </resources>

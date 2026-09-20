@@ -507,7 +507,6 @@
     <string name="unavailable_searchable">Bu öğe artık mevcut değil</string>
     <string name="menu_show_filters">Filtreleri göster</string>
     <string name="menu_hide_filters">Filtreleri gizle</string>
-    <string name="search_filter_online">Çevrimiçi sonuçlar</string>
     <string name="search_filter_apps">Uygulamalar</string>
     <string name="preference_default_filter">Varsayılan filtre</string>
     <string name="preference_default_filter_summary">Aramalar için varsayılan filtreyi özelleştir</string>
@@ -515,7 +514,6 @@
     <string name="preference_filter_bar_summary">Klavyenin üzerinde hızlı filtreleri göster</string>
     <string name="preference_customize_filter_bar">Filtre çubuğunu özelleştir</string>
     <string name="preference_customize_filter_bar_summary">Filtre çubuğuna hangi öğelerin dahil edileceğini özelleştir</string>
-    <string name="filter_settings_network_warning">Mevcut filtre varsayılan olarak çevrimiçi sonuçları etkinleştirir. Arama sorgularınız istemeden harici web hizmetlerine gönderilebilir. Gizlilik nedenleriyle bu önerilmez.</string>
     <string name="customize_item_label">Etiket</string>
     <string name="customize_item_tags">Etiketler</string>
     <string name="customize_item_visibility">Gösterim yeri</string>

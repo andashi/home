@@ -366,7 +366,6 @@
     <string name="app_label_locked_profile">נעול</string>
     <string name="menu_show_filters">הצגת מסננים</string>
     <string name="menu_hide_filters">הסתרת המסננים</string>
-    <string name="search_filter_online">תוצאות מקוונות</string>
     <string name="search_filter_apps">יישומים</string>
     <string name="preference_default_filter_summary">התאמת סינון ברירת המחדל עבור חיפושים</string>
     <string name="preference_filter_bar">הצגת סרגל המסננים</string>
@@ -376,7 +375,6 @@
     <string name="preference_filter_bar_summary">הצגת סינונים מהירים מעל המקלדת</string>
     <string name="preference_customize_filter_bar">התאמת סרגל המסננים</string>
     <string name="preference_customize_filter_bar_summary">התאמה הפריטים שנכללים בסרגל המסננים</string>
-    <string name="filter_settings_network_warning">הסינון הנוכחי מאפשר תוצאות מקוונות כברירת מחדל. שאילתות החיפוש שלך עשויות להישלח שלא במתכוון לשירותי אינטרנט חיצוניים. מסיבות של פרטיות, זה לא מומלץ.</string>
     <string name="preference_search_bar_style_solid">מוצק</string>
     <string name="preference_search_bar_style_hidden">מוסתר</string>
     <string name="preference_search_bar_style_transparent">שקוף</string>

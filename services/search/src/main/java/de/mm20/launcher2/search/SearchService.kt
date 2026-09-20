@@ -89,7 +89,7 @@ internal class SearchServiceImpl(
             }
             if (filters.apps) {
                 launch {
-                    appRepository.search(query, filters.allowNetwork)
+                    appRepository.search(query)
                         .combine(customAttrResults) { apps, customAttrs ->
                             if (customAttrs.apps != null) apps + customAttrs.apps
                             else apps
@@ -104,7 +104,7 @@ internal class SearchServiceImpl(
             }
             if (filters.shortcuts) {
                 launch {
-                    appShortcutRepository.search(query, filters.allowNetwork)
+                    appShortcutRepository.search(query)
                         .combine(customAttrResults) { shortcuts, customAttrs ->
                             if (customAttrs.shortcuts != null) shortcuts + customAttrs.shortcuts
                             else shortcuts
@@ -119,7 +119,7 @@ internal class SearchServiceImpl(
             }
             if (filters.contacts) {
                 launch {
-                    contactRepository.search(query, filters.allowNetwork)
+                    contactRepository.search(query)
                         .combine(customAttrResults) { contacts, customAttrs ->
                             if (customAttrs.contacts != null) contacts + customAttrs.contacts
                             else contacts
@@ -141,7 +141,7 @@ internal class SearchServiceImpl(
             val standardProfile = profiles.find { it.type == Profile.Type.Personal }
             val workProfile = profiles.find { it.type == Profile.Type.Work }
             val privateSpace = profiles.find { it.type == Profile.Type.Private }
-            appRepository.search("", false)
+            appRepository.search("")
                 .withCustomLabels(customAttributesRepository)
                 .map { apps ->
                     val standardProfileApps = mutableListOf<Application>()

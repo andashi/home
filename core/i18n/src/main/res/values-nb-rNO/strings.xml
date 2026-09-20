@@ -268,7 +268,6 @@
     <string name="preference_use_system_default">Bruk systemstandard</string>
     <string name="theme_color_scheme_palette_color">Palett</string>
     <string name="import_theme_apply">Bruk tema</string>
-    <string name="search_filter_online">Nettresultater</string>
     <string name="profile_work_profile_action_unlock">Slå av pause</string>
     <string name="profile_work_profile_action_lock">Sett jobb-apper på pause</string>
     <string name="profile_private_profile_action_unlock">Lås opp</string>

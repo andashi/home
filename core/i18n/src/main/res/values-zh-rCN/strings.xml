@@ -275,11 +275,9 @@
     <string name="menu_hide_filters">隐藏过滤器</string>
     <string name="confirmation_delete_color_scheme">您确实要删除颜色方案 %1$s 吗？</string>
     <string name="shortcut_label_unavailable">不可用</string>
-    <string name="filter_settings_network_warning">当前过滤器默认启用在线结果。您的搜索查询可能会被无意发送到外部网络服务。出于隐私原因，不建议这样做。</string>
     <string name="theme_color_scheme_autogenerate">从原色开始</string>
     <string name="import_theme_error">无法读取所选文件。请确保您选择的是有效的主题文件 (*.kvtheme)，并且该文件未损坏。</string>
     <string name="unavailable_searchable">此项目已不存在</string>
-    <string name="search_filter_online">在线答案</string>
     <string name="search_filter_apps">应用</string>
     <string name="preference_default_filter">默认过滤器</string>
     <string name="preference_filter_bar">显示过滤栏</string>

@@ -279,13 +279,11 @@
     <string name="unavailable_searchable">Questo elemento non esiste più</string>
     <string name="widget_pick_widget">Scegli widget</string>
     <string name="search_action_share">Condividi</string>
-    <string name="search_filter_online">Risultati in linea</string>
     <string name="search_filter_apps">App</string>
     <string name="preference_filter_bar">Mostra barra filtri</string>
     <string name="preference_filter_bar_summary">Mostra filtri rapidi sopra la tastiera</string>
     <string name="preference_default_filter_summary">Personalizza filtro predefinito per ricerche</string>
     <string name="preference_default_filter">Filtro predefinito</string>
-    <string name="filter_settings_network_warning">Il filtro attuale abilita i risultati in linea per impostazione predefinita. Le tue query di ricerca potrebbero essere inviate involontariamente a servizi web esterni. Per motivi di privacy, questo non è raccomandato.</string>
     <string name="preference_customize_filter_bar">Personalizza barra dei filtri</string>
     <string name="preference_customize_filter_bar_summary">Personalizza quali elementi includere nella barra dei filtri</string>
     <string name="item_visibility_calendar_default">Widget calendario e risultati ricerca</string>

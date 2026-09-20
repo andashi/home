@@ -262,7 +262,6 @@
     <string name="profile_private_profile_state_locked">Eremu pribatua blokeatua dago</string>
     <string name="profile_private_profile_action_unlock">Desblokeatu</string>
     <string name="profile_private_profile_action_lock">Eremu pribatua blokeatu</string>
-    <string name="search_filter_online">Lineako emaitzak</string>
     <string name="search_filter_apps">Aplikazioak</string>
     <string name="action_more_actions">Ekintza gehiago</string>
     <string name="action_clear">Garbitu</string>
@@ -344,7 +343,6 @@
     <string name="preference_filter_bar_summary">Iragazki azkarrak teklatuaren gainean erakutsi</string>
     <string name="preference_customize_filter_bar">Iragazki-barra pertsonalizatu</string>
     <string name="preference_customize_filter_bar_summary">Iragazki-barran ageri diren elementuak pertsonalizatu</string>
-    <string name="filter_settings_network_warning">Uneko iragazkiak online emaitzak lehenespenez gaitzen ditu. Baliteke zure bilaketa-kontsultak nahi gabe kanpoko web zerbitzuetara bidaltzea. Pribatutasun arrazoiengatik, ez da gomendagarria.</string>
     <string name="item_visibility_app_default">Aplikazioen sareta eta bilaketaren emaitzak</string>
     <string name="item_visibility_calendar_default">Egutegiaren trepeta eta bilaketa-emaitzak</string>
     <plurals name="contact_phone_numbers">
