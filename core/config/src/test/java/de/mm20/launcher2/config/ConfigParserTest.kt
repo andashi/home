@@ -434,4 +434,51 @@ class ConfigParserTest {
 
         assertEquals(config, decoded.config)
     }
+
+    @Test
+    fun `a widget this build no longer has is dropped, not fatal`() {
+        // A launcher.json written before weather was removed still names it.
+        // Without this the decode fails and the zone loses its wallpaper, dock
+        // and icons too - everything, because of one stale list entry.
+        val input = """
+            {
+              "schemaVersion": 1,
+              "icons": { "themed": true },
+              "home": {
+                "dock": { "enabled": true },
+                "widgets": { "enabled": true, "widgets": ["weather", "apps", "calendar"] }
+              }
+            }
+        """.trimIndent()
+
+        val result = ConfigParser.parse(input)
+
+        assertTrue(result.isSuccess)
+        assertEquals(listOf(BuiltinWidget.Apps), result.config?.home?.widgets?.widgets)
+        // the rest of the document survives
+        assertEquals(true, result.config?.icons?.themed)
+        assertEquals(true, result.config?.home?.dock?.enabled)
+
+        val dropped = result.diagnostics.filter { it.code == "unknown-widget" }
+        assertEquals(2, dropped.size)
+        assertEquals("home.widgets.widgets[0]", dropped[0].path)
+        assertEquals("home.widgets.widgets[2]", dropped[1].path)
+        assertTrue(dropped.all { it.severity == Severity.Warning })
+    }
+
+    @Test
+    fun `a bad scalar enum still fails the document`() {
+        // Deliberate asymmetry: a typo in a scalar has no sensible fallback.
+        val input = """
+            {
+              "schemaVersion": 1,
+              "home": { "searchBar": { "position": "sideways" } }
+            }
+        """.trimIndent()
+
+        val result = ConfigParser.parse(input)
+
+        assertNull(result.config)
+        assertTrue(result.diagnostics.any { it.code == "decode-failed" })
+    }
 }

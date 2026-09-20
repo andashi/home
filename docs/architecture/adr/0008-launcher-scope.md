@@ -86,15 +86,23 @@ operator, and it is not compiled into the app.
   that bill accepted.
 - Config keys for dropped providers leave the public contract (ADR 0002), and
   #3 shrinks to the surface that is left. An unknown *key* is ignored and
-  reported as a diagnostic, so that part is safe. An unknown *enum value* is
-  not: `ConfigParser` does not set `coerceInputValues`, so a `launcher.json`
-  naming a dropped value - `"widgets": ["weather"]`, say - fails to decode
-  **as a whole** and takes that zone's entire configuration with it. The
-  parser test `invalid enum value fails decode without throwing` pins exactly
-  that behaviour. The provisioning repo regenerates `launcher.json` from the
-  current schema and names no dropped value, so nothing breaks today, but
-  making the parser tolerate unknown enum values is real work that this ADR
-  does not do.
+  reported as a diagnostic, so that part is safe. An unknown *enum value* was
+  not: `ConfigParser` deliberately does not set `coerceInputValues`, so a
+  `launcher.json` naming a dropped value - `"widgets": ["weather"]`, say -
+  failed to decode **as a whole** and took that zone's entire configuration
+  with it, wallpaper and dock and icons included.
+
+  Removing a value from a public contract must not do that, so the parser now
+  drops unknown entries of `home.widgets.widgets` and reports each one as an
+  `unknown-widget` warning, keeping the rest of the document. Scalar enums stay
+  strict on purpose: a bad `searchBar.position` is a typo with no sensible
+  fallback, and objects that held removed scalars (`home.clock`) leave the
+  contract whole, which makes them unknown *keys* and therefore already
+  tolerated.
+
+  The provisioning repo regenerates `launcher.json` from the current schema and
+  names no dropped value, so nothing was broken in practice - but a
+  hand-written or older checked-in config would have been.
 - The search UI keeps its filter mechanism even though few categories remain.
   Collapsing that is a separate decision, made once the removals have settled.
 - What the launcher no longer does, something else must: weather, calendar,
