@@ -385,10 +385,6 @@
     <string name="preference_form_of_address_fem">Nőnemű</string>
     <string name="preference_form_of_address_masc">Férfinemű</string>
     <string name="preference_form_of_address">Megszólítás</string>
-    <string name="preference_measurement_system">Mértékegységrendszer</string>
-    <string name="preference_measurement_system_metric">Metrikus</string>
-    <string name="preference_measurement_system_uk">Egyesült Királyság</string>
-    <string name="preference_measurement_system_us">Egyesült Államok</string>
     <string name="preference_transliteration">Előnyben részesített átírás</string>
     <string name="preference_transliteration_auto">Automatikus</string>
     <string name="preference_value_disabled">Letiltva</string>
@@ -432,8 +428,6 @@
     <string name="gesture_action_launch_select_app">Alkalmazás vagy parancsikon kiválasztása</string>
     <string name="preference_search_apps_show_details">Alkalmazás adatainak megjelenítése</string>
     <string name="preference_search_apps_show_details_summary">Az alkalmazás verziójának és csomagjának megjelenítése a helyi menüben</string>
-    <string name="preference_currencies">Pénznem</string>
-    <string name="preference_add_currency">Pénznem hozzáadása</string>
     <string name="search_query_private_space">Privát tér</string>
     <string name="search_action_private_space_lock">Privát tér zárolása</string>
     <string name="search_action_private_space_unlock">Privát tér feloldása</string>

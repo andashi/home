@@ -397,7 +397,7 @@
     <string name="preference_search_bar_style_solid">Sólido</string>
     <string name="tag_icon_customicon">Ícone</string>
     <string name="preference_screen_locale">Idioma e região</string>
-    <string name="preference_screen_locale_summary">Idioma, unidades, formato de horário</string>
+    <string name="preference_screen_locale_summary">Idioma, formato de horário</string>
     <string name="preference_language">Idioma</string>
     <string name="preference_value_system_default">Padrão do sistema</string>
     <string name="preference_value_disabled">Desabilitado</string>
@@ -405,10 +405,6 @@
     <string name="preference_form_of_address_neutral">Neutro</string>
     <string name="preference_form_of_address_fem">Feminino</string>
     <string name="preference_form_of_address_masc">Masculino</string>
-    <string name="preference_measurement_system">Sistema de medida</string>
-    <string name="preference_measurement_system_metric">Métrico</string>
-    <string name="preference_measurement_system_uk">Reino Unido</string>
-    <string name="preference_measurement_system_us">Estados Unidos</string>
     <string name="preference_transliteration_auto">Automático</string>
     <string name="preference_calendar_system">Sistema de calendário</string>
     <string name="preference_calendar_system_primary">Calendário principal</string>

@@ -422,10 +422,6 @@
     <string name="preference_form_of_address_neutral">Нейтральны</string>
     <string name="preference_form_of_address_fem">Жаночы</string>
     <string name="preference_form_of_address_masc">Мужчынскі</string>
-    <string name="preference_measurement_system">Сістэма адзінак вымярэння</string>
-    <string name="preference_measurement_system_metric">Метрычная</string>
-    <string name="preference_measurement_system_uk">Вялікабрытанская</string>
-    <string name="preference_measurement_system_us">Амерыканская</string>
     <string name="preference_transliteration">Прыярытэтная сістэма транслітарацыі</string>
     <string name="preference_transliteration_auto">Аўтаматчна</string>
     <string name="preference_calendar_system">Каляндарная сістэма</string>
@@ -447,6 +443,4 @@
     <string name="search_query_private_space">Прыватная прастора</string>
     <string name="search_action_private_space_lock">Заблакіраваць прыватную прастору</string>
     <string name="search_action_private_space_unlock">Разблакіраваць прыватную прастору</string>
-    <string name="preference_currencies">Валюта</string>
-    <string name="preference_add_currency">Дадаць валюту</string>
 </resources>

@@ -384,17 +384,13 @@
     <string name="preference_search_apps">Aplicaciones</string>
     <string name="preference_search_apps_summary">Mostrar todas las aplicaciones cuando el campo de búsqueda esté vacío</string>
     <string name="preference_screen_locale">Idioma y región</string>
-    <string name="preference_screen_locale_summary">Idioma, unidades y formato de hora</string>
+    <string name="preference_screen_locale_summary">Idioma y formato de hora</string>
     <string name="preference_language">Idioma</string>
     <string name="preference_value_system_default">Predeterminado del sistema</string>
     <string name="preference_form_of_address">Tratamiento</string>
     <string name="preference_form_of_address_neutral">Neutro</string>
     <string name="preference_form_of_address_fem">Femenino</string>
     <string name="preference_form_of_address_masc">Masculino</string>
-    <string name="preference_measurement_system">Sistema de unidades</string>
-    <string name="preference_measurement_system_metric">Métrico</string>
-    <string name="preference_measurement_system_uk">Reino Unido</string>
-    <string name="preference_measurement_system_us">Estados Unidos</string>
     <string name="preference_transliteration">Transliteración preferida</string>
     <string name="preference_transliteration_auto">Automática</string>
     <string name="preference_value_disabled">Deshabilitada</string>
@@ -438,9 +434,7 @@
     <string name="preference_category_donate">Apoya el desarrollo</string>
     <string name="preference_search_apps_show_details">Mostrar información de la aplicación</string>
     <string name="preference_search_apps_show_details_summary">Mostrar versión y nombre del paquete de la aplicación en su menú contextual</string>
-    <string name="preference_add_currency">Añadir divisa</string>
     <string name="search_query_private_space">Espacio privado</string>
     <string name="search_action_private_space_lock">Bloquear espacio privado</string>
     <string name="search_action_private_space_unlock">Desbloquear espacio privado</string>
-    <string name="preference_currencies">Divisa</string>
 </resources>

@@ -407,10 +407,6 @@
     <string name="preference_form_of_address_neutral">محايد</string>
     <string name="preference_gesture_swipe_up">تمرير لأعلى</string>
     <string name="preference_language">لغة التطبيق</string>
-    <string name="preference_measurement_system">وحدات القياس</string>
-    <string name="preference_measurement_system_metric">كيلومتر وكيلوجرام</string>
-    <string name="preference_measurement_system_uk">النظام البريطاني</string>
-    <string name="preference_measurement_system_us">النظام الأمريكي</string>
     <string name="preference_screen_locale">اللغة والتنسيق</string>
     <string name="preference_screen_locale_summary">اللغة، الوحدات، وتنسيق الوقت</string>
     <string name="preference_search_apps">تطبيقات</string>

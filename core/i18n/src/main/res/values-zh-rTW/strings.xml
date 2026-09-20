@@ -377,10 +377,6 @@
     <string name="preference_value_system_default">系統預設</string>
     <string name="preference_form_of_address">地址格式</string>
     <string name="preference_form_of_address_neutral">地址格式</string>
-    <string name="preference_measurement_system">度量衡系統</string>
-    <string name="preference_measurement_system_metric">公制</string>
-    <string name="preference_measurement_system_uk">英制單位</string>
-    <string name="preference_measurement_system_us">美制單位</string>
     <string name="preference_form_of_address_fem">地址格式</string>
     <string name="preference_form_of_address_masc">地址格式</string>
     <string name="tag_icon_customicon">圖示</string>
@@ -425,6 +421,4 @@
     <string name="search_query_private_space">私人空間</string>
     <string name="search_action_private_space_lock">鎖定私人空間</string>
     <string name="search_action_private_space_unlock">解鎖私人空間</string>
-    <string name="preference_currencies">貨幣</string>
-    <string name="preference_add_currency">新增貨幣</string>
 </resources>

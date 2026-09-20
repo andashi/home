@@ -575,17 +575,13 @@
     <string name="tag_icon_emoji">Emoji</string>
     <string name="gesture_action_feed">Akış</string>
     <string name="preference_screen_locale">Dil ve bölge</string>
-    <string name="preference_screen_locale_summary">Dil, birimler, zaman formatı</string>
+    <string name="preference_screen_locale_summary">Dil, zaman formatı</string>
     <string name="preference_language">Dil</string>
     <string name="preference_value_system_default">Sistem varsayılanı</string>
     <string name="preference_form_of_address">Hitap şekli</string>
     <string name="preference_form_of_address_neutral">Nötr</string>
     <string name="preference_form_of_address_fem">Kadın</string>
     <string name="preference_form_of_address_masc">Erkek</string>
-    <string name="preference_measurement_system">Ölçü sistemi</string>
-    <string name="preference_measurement_system_metric">Metrik</string>
-    <string name="preference_measurement_system_uk">Birleşik Krallık</string>
-    <string name="preference_measurement_system_us">Amerika Birleşik Devletleri</string>
     <string name="preference_transliteration">Tercih edilen tercüme</string>
     <string name="preference_transliteration_auto">Otomatik</string>
     <string name="preference_value_disabled">Devre dışı</string>
@@ -613,8 +609,6 @@
     <string name="preference_calendar_system">Takvim sistemi</string>
     <string name="preference_calendar_system_primary">Birincil takvim</string>
     <string name="preference_calendar_system_secondary">İkincil takvim</string>
-    <string name="preference_currencies">Para birimi</string>
-    <string name="preference_add_currency">Para birimi ekle</string>
     <string name="preference_category_donate">Geliştirmeyi destekle</string>
     <string name="gesture_action_category_launcher">Başlatıcı sayfaları</string>
     <string name="gesture_action_category_system">Sistem eylemleri</string>
