@@ -93,7 +93,6 @@ androidx-palette = { group = "androidx.palette", name = "palette", version.ref =
 haze = {group = "dev.chrisbanes.haze", name = "haze", version.ref = "haze" }
 
 androidx-exifinterface = { group = "androidx.exifinterface", name = "exifinterface", version = "1.4.2" }
-androidx-securitycrypto = { group = "androidx.security", name = "security-crypto", version = "1.1.0" }
 androidx-datastore = { group = "androidx.datastore", name = "datastore", version = "1.2.1" }
 androidx-emojipicker = { group = "androidx.emoji2", name = "emoji2-emojipicker", version.ref = "androidx-emojipicker" }
 
