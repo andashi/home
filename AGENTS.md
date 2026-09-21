@@ -154,7 +154,10 @@ candidates instead:
 ```bash
 set -euo pipefail
 prev=$(git describe --tags --abbrev=0 HEAD^)
-refs=$(git log "$prev..HEAD" --format='%B' | grep -oE '#[0-9]+' | tr -d '#' | sort -un)
+# grep exits 1 when a range references no issue at all, which is a valid
+# release, not a failure. Accept that one status and no other.
+refs=$(git log "$prev..HEAD" --format='%B' |
+         { grep -oE '#[0-9]+' || [ $? -eq 1 ]; } | tr -d '#' | sort -un)
 gh issue list --state all --label security --limit 200 --json number,title \
   --jq '.[] | "\(.number)\t\(.title)"' |
 while IFS=$'\t' read -r n t; do
@@ -164,7 +167,10 @@ done
 
 One API call, and it fails closed: a broken lookup aborts with a non-zero exit
 rather than dropping a candidate. That matters more than it looks - a list that
-silently loses an entry fails in exactly the way the original defect did.
+silently loses an entry fails in exactly the way the original defect did. The
+guard around `grep` is what keeps "fails closed" from swallowing the empty
+case: without it a release whose commits reference no issue exits 1 with no
+output, which reads exactly like a broken run. A real grep error still aborts.
 
 The result is a **superset to strike down**, never a list to paste. Two rules
 remove the false positives, both mechanical:
