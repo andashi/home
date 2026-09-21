@@ -123,13 +123,16 @@ jobs:
           #   Security-Fixes: #7, #8, #12, #13
           # or "none". Absent means nobody said, which is not the same as none,
           # so it reports "unspecified" rather than claiming safety.
-          sec="$(printf '%s\n' "$body" | grep -m1 -E '^Security-Fixes:' || true)"
-          [ -n "$sec" ] || sec="Security-Fixes: unspecified"
-
+          # The annotation is where the trailer belongs, so in the normal case
+          # the body already carries it and appending the extracted copy would
+          # print it twice - which is what v0.3.1 published. Append only when
+          # the annotation said nothing, and then say so explicitly.
           {
             printf '%s\n' "$body"
             printf '\n---\n\n'
-            printf '%s\n\n' "$sec"
+            if ! printf '%s\n' "$body" | grep -qE '^Security-Fixes:'; then
+              printf 'Security-Fixes: unspecified\n\n'
+            fi
             printf 'Signed release build. Verify with SHA256SUMS; signer certificate in CERTS.txt.\n'
           } > "$RUNNER_TEMP/notes.md"
 
