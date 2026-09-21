@@ -497,4 +497,72 @@ class ConfigParserTest {
             unknown.any { it.path == "home.clock" },
         )
     }
+
+    @Test
+    fun `a favorite may be a bare package name`() {
+        // provisioning/#1: the config generator emits favorites as strings while
+        // the contract declared objects. Without the lenient form one bare
+        // string fails the decode and the zone loses wallpaper, dock and icons
+        // with it. Never triggered only because every zone ships an empty list.
+        val input = """
+            {
+              "schemaVersion": 1,
+              "icons": { "themed": true },
+              "home": {
+                "dock": {
+                  "enabled": true,
+                  "favorites": [
+                    "com.example.dialer",
+                    { "packageName": "com.example.mail", "profile": "work" }
+                  ]
+                }
+              }
+            }
+        """.trimIndent()
+
+        val result = ConfigParser.parse(input)
+
+        assertTrue(result.isSuccess)
+        assertEquals(
+            listOf(
+                Favorite("com.example.dialer", Profile.Personal),
+                Favorite("com.example.mail", Profile.Work),
+            ),
+            result.config?.home?.dock?.favorites,
+        )
+        assertEquals(true, result.config?.icons?.themed)
+    }
+
+    @Test
+    fun `a favorite that is neither a name nor an object fails`() {
+        val input = """
+            {
+              "schemaVersion": 1,
+              "home": { "dock": { "favorites": [42] } }
+            }
+        """.trimIndent()
+
+        val result = ConfigParser.parse(input)
+
+        assertNull(result.config)
+        assertTrue(result.diagnostics.any { it.code == "decode-failed" })
+    }
+
+    @Test
+    fun `writing a favorite always uses the object form`() {
+        val config = LauncherConfig(
+            schemaVersion = 1,
+            home = HomeConfig(
+                dock = DockConfig(favorites = listOf(Favorite("com.example.dialer"))),
+            ),
+        )
+
+        val serialized = ConfigParser.json.encodeToString(LauncherConfig.serializer(), config)
+
+        assertTrue(
+            "a round trip should normalise to the object form, got: $serialized",
+            serialized.contains("\"packageName\""),
+        )
+        assertEquals(config.home?.dock?.favorites, ConfigParser.parse(serialized).config?.home?.dock?.favorites)
+    }
 }
