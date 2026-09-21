@@ -95,25 +95,74 @@ internal data class LegacyShortcut(
 
         const val Domain = "legacyshortcut"
 
-        fun fromPinRequestIntent(context: Context, data: Intent): LegacyShortcut? {
+        /**
+         * Flags that make an Intent carry a URI grant. A shortcut handed over
+         * by another app's config activity has no reason to hold one, and the
+         * launcher is the process that would issue the grant when it starts
+         * the Intent - against its own providers, with its own permissions.
+         * They are dropped on the way in rather than at launch time, so a
+         * favorite that is already stored cannot carry them either.
+         */
+        private const val UriGrantFlags = Intent.FLAG_GRANT_READ_URI_PERMISSION or
+                Intent.FLAG_GRANT_WRITE_URI_PERMISSION or
+                Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION or
+                Intent.FLAG_GRANT_PREFIX_URI_PERMISSION
+
+        /**
+         * Make [intent] safe to persist as a favorite and to start later from
+         * the launcher process, or return null if it cannot be.
+         *
+         * Two rules, both aimed at the confused deputy in andashi/home#5:
+         *
+         * - an Intent that names this launcher is rejected outright. Starting
+         *   it would reach components that are not exported precisely because
+         *   no other app is meant to reach them, and a shortcut produced by
+         *   another app's config activity never legitimately points back here.
+         * - URI grant flags are cleared, see [UriGrantFlags].
+         */
+        internal fun sanitize(context: Context, intent: Intent): Intent? {
+            val ownPackage = context.packageName
+            if (intent.`package` == ownPackage || intent.component?.packageName == ownPackage) {
+                Log.w("MM20", "Refusing a shortcut intent that targets the launcher itself")
+                return null
+            }
+            return Intent(intent).apply {
+                flags = intent.flags and UriGrantFlags.inv()
+            }
+        }
+
+        /**
+         * Read the pre-O shortcut shape out of a config activity's result.
+         *
+         * Only reachable from the favorites editor, where the user picked the
+         * activity that answered. It must never be fed a pin request: that
+         * path is exported and unauthenticated, which is what made these
+         * extras a redirection primitive in the first place.
+         */
+        fun fromConfigActivityResult(context: Context, data: Intent): LegacyShortcut? {
             val intent: Intent? = data.extras?.getParcelable(Intent.EXTRA_SHORTCUT_INTENT)
             val name: String? = data.extras?.getString(Intent.EXTRA_SHORTCUT_NAME)
             val iconResource: ShortcutIconResource? =
                 data.extras?.getParcelable(Intent.EXTRA_SHORTCUT_ICON_RESOURCE)
 
             if (intent == null || name == null) {
-                Log.w("MM20", "Pin request intent is missing required extras: intent=$intent, name=$name")
+                Log.w("MM20", "Shortcut result is missing required extras: intent=$intent, name=$name")
                 return null
             }
 
-            val packageName = intent.`package` ?: intent.component?.packageName
+            val safeIntent = sanitize(context, intent) ?: return null
+
+            val packageName = safeIntent.`package` ?: safeIntent.component?.packageName
 
             return LegacyShortcut(
-                intent = intent,
+                intent = safeIntent,
                 appName = packageName?.let {
-                    context.packageManager.getApplicationInfo(
-                        it, 0
-                    ).loadLabel(context.packageManager).toString()
+                    try {
+                        context.packageManager.getApplicationInfo(it, 0)
+                            .loadLabel(context.packageManager).toString()
+                    } catch (e: PackageManager.NameNotFoundException) {
+                        null
+                    }
                 },
                 label = name,
                 iconResource = iconResource
