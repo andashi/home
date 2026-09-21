@@ -5,20 +5,25 @@ name: Release
 # there (apks/fetch.sh), verifies the signer certificate and pins the hash.
 #
 # The release body is the tag annotation, so `git tag -a` is where a release is
-# described. End the annotation with a trailer naming what it closes:
+# described - a lightweight tag fails the build. End the annotation with a
+# trailer naming what the release closes. Exactly three forms are valid:
 #
-#     Security-Fixes: #7, #8, #12, #13
-#     Security-Fixes: none
+#     Security-Fixes: #7, #8, #12, #13   issues closed, against andashi/home
+#     Security-Fixes: none               someone checked, nothing security-relevant
+#     Security-Fixes: unspecified        nobody said - the default when absent
 #
 # It is a contract with the provisioning host, which parses `.body` from the
 # releases API and has to tell a routine update from one that closes
-# vulnerabilities. A missing trailer publishes as "unspecified" rather than
-# "none": nobody having said is not the same as there being nothing, and a
-# release process must not imply safety it was never told about.
+# vulnerabilities. `none` and `unspecified` are deliberately distinct: nobody
+# having said is not the same as there being nothing, and a release process
+# must not imply safety it was never told about. The host treats `unspecified`
+# as unknown, therefore urgent.
 #
-# Never mark a stable release as a prerelease. `latest` is what the host
-# resolves when a tag is not pinned, and a fork whose `latest` points at
-# something old is a fork whose security updates do not arrive.
+# A tag with a SemVer pre-release suffix (v1.4.0-rc.1) publishes as a
+# prerelease and never as `latest`. `latest` is what the host resolves when a
+# zone pins no tag, so a release candidate landing there would install itself
+# everywhere - and a fork whose `latest` points at something old is a fork
+# whose security updates do not arrive.
 #
 # Signing needs four repository secrets: KEYSTORE_BASE64 (the .jks, base64),
 # KEYSTORE_PASSWORD, SIGNING_KEY_ALIAS, SIGNING_KEY_PASSWORD.
@@ -92,6 +97,17 @@ jobs:
           # The annotation is where a release is actually described; the old
           # fixed sentence meant a carefully written tag message reached nobody.
           git fetch --force origin "refs/tags/$tag:refs/tags/$tag"
+
+          # A lightweight tag has no annotation, and %(contents) then quietly
+          # falls back to the commit message: the release would be described by
+          # whatever the last commit happened to say, and the trailer below
+          # would report "unspecified" for it. Refuse instead of publishing
+          # that.
+          if [ "$(git cat-file -t "$tag")" != "tag" ]; then
+            echo "::error::$tag is a lightweight tag. Create releases with 'git tag -a' - the annotation is the release body." >&2
+            exit 1
+          fi
+
           body="$(git tag -l --format='%(contents)' "$tag")"
 
           # Machine-readable, because the andashi provisioning host has to tell
@@ -116,10 +132,22 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "${GITHUB_REF#refs/tags/}" \
+          set -euo pipefail
+          tag="${GITHUB_REF#refs/tags/}"
+
+          # SemVer marks a pre-release with a hyphen after the patch version
+          # (v1.4.0-rc.1). The v* trigger accepts those, and publishing one as
+          # Latest would hand the provisioning host a release candidate as the
+          # version to install when a zone pins no tag.
+          case "$tag" in
+            *-*) release_flags=(--prerelease --latest=false) ;;
+            *)   release_flags=(--latest) ;;
+          esac
+
+          gh release create "$tag" \
             --title "Andashi Home ${VERSION_NAME_OVERRIDE}" \
             --notes-file "$RUNNER_TEMP/notes.md" \
-            --latest \
+            "${release_flags[@]}" \
             "$APK_PATH" "$SUMS_PATH" "$CERTS_PATH"
 
       - name: Upload build artifact (manual runs)
