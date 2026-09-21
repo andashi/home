@@ -19,6 +19,11 @@ name: Release
 # must not imply safety it was never told about. The host treats `unspecified`
 # as unknown, therefore urgent.
 #
+# The trailer is only meaningful from v0.3.0 on. v0.1.0 to v0.2.1 predate the
+# convention and carry none at all, and v0.3.0's body was written by hand after
+# the fact, so it is the one release whose body and tag annotation differ. From
+# v0.4.0 they are identical by construction.
+#
 # A tag with a SemVer pre-release suffix (v1.4.0-rc.1) publishes as a
 # prerelease and never as `latest`. `latest` is what the host resolves when a
 # zone pins no tag, so a release candidate landing there would install itself
