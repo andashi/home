@@ -109,6 +109,14 @@ internal data class LegacyShortcut(
                 Intent.FLAG_GRANT_PREFIX_URI_PERMISSION
 
         /**
+         * How far a selector chain is followed before the Intent is refused
+         * for being unreviewable. Nothing legitimate nests this deep; the cap
+         * exists so a crafted chain cannot cost unbounded work or slip past
+         * the walk below.
+         */
+        private const val MaxSelectorDepth = 8
+
+        /**
          * Make [intent] safe to persist as a favorite and to start later from
          * the launcher process, or return null if it cannot be.
          *
@@ -119,13 +127,31 @@ internal data class LegacyShortcut(
          *   no other app is meant to reach them, and a shortcut produced by
          *   another app's config activity never legitimately points back here.
          * - URI grant flags are cleared, see [UriGrantFlags].
+         *
+         * "Names this launcher" covers the selector chain, not just the
+         * Intent's own package and component. When an Intent has no explicit
+         * component, PackageManager resolves it through `getSelector()` and
+         * takes the component from there, so a selector is a second, quieter
+         * way to name a target - and `Intent.parseUri` reconstructs one, which
+         * puts it on the deserialisation path as well.
          */
         internal fun sanitize(context: Context, intent: Intent): Intent? {
             val ownPackage = context.packageName
-            if (intent.`package` == ownPackage || intent.component?.packageName == ownPackage) {
-                Log.w("MM20", "Refusing a shortcut intent that targets the launcher itself")
-                return null
+            var link: Intent? = intent
+            var depth = 0
+            while (link != null) {
+                if (depth++ > MaxSelectorDepth) {
+                    Log.w("MM20", "Refusing a shortcut intent with an unreasonably nested selector")
+                    return null
+                }
+                if (link.`package` == ownPackage || link.component?.packageName == ownPackage) {
+                    Log.w("MM20", "Refusing a shortcut intent that targets the launcher itself")
+                    return null
+                }
+                link = link.selector
             }
+            // The copy constructor deep-copies the selector chain, so clearing
+            // the flags below cannot reach back into the caller's Intent.
             return Intent(intent).apply {
                 flags = intent.flags and UriGrantFlags.inv()
             }

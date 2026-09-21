@@ -8,6 +8,7 @@ import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -123,6 +124,45 @@ class PinRequestIntentRedirectionTest {
             0,
             restored.intent.flags and Intent.FLAG_GRANT_READ_URI_PERMISSION
         )
+    }
+
+    /**
+     * The quieter way to name a target: with no explicit component,
+     * PackageManager resolves an Intent through its selector and takes the
+     * component from there, so a selector reaches the same non-exported
+     * activity that a component would.
+     */
+    @Test
+    fun `a selector naming the launcher is refused`() {
+        val viaSelector = Intent(Intent.ACTION_MAIN).apply {
+            selector = Intent().setComponent(
+                ComponentName(context.packageName, "${context.packageName}.SomeInternalActivity")
+            )
+        }
+        assertNull(appShortcutFromConfigActivityResult(context, forgedPinRequest(target = viaSelector)))
+        assertNull(appShortcutFromPinRequest(context, forgedPinRequest(target = viaSelector)))
+    }
+
+    @Test
+    fun `a selector naming the launcher is refused on the way out`() = runBlocking {
+        val viaSelector = Intent(Intent.ACTION_MAIN).apply {
+            selector = Intent().setPackage(context.packageName)
+        }
+        val uri = viaSelector.toUri(0)
+        assertTrue("the selector must survive the round trip, or this asserts nothing",
+            Intent.parseUri(uri, 0).selector?.`package` == context.packageName)
+
+        assertNull(LegacyShortcutDeserializer(context).deserialize(serialized(viaSelector)))
+    }
+
+    @Test
+    fun `a shortcut into another app keeps its selector`() {
+        val elsewhere = Intent(Intent.ACTION_MAIN).apply {
+            selector = Intent().setPackage("com.example.other")
+        }
+        val shortcut = appShortcutFromConfigActivityResult(context, forgedPinRequest(target = elsewhere))
+                as LegacyShortcut
+        assertEquals("com.example.other", shortcut.intent.selector?.`package`)
     }
 
     private fun serialized(intent: Intent): String =
