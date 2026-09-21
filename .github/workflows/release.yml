@@ -4,6 +4,22 @@ name: Release
 # release with a SHA256SUMS file. The andashi provisioning repo fetches it from
 # there (apks/fetch.sh), verifies the signer certificate and pins the hash.
 #
+# The release body is the tag annotation, so `git tag -a` is where a release is
+# described. End the annotation with a trailer naming what it closes:
+#
+#     Security-Fixes: #7, #8, #12, #13
+#     Security-Fixes: none
+#
+# It is a contract with the provisioning host, which parses `.body` from the
+# releases API and has to tell a routine update from one that closes
+# vulnerabilities. A missing trailer publishes as "unspecified" rather than
+# "none": nobody having said is not the same as there being nothing, and a
+# release process must not imply safety it was never told about.
+#
+# Never mark a stable release as a prerelease. `latest` is what the host
+# resolves when a tag is not pinned, and a fork whose `latest` points at
+# something old is a fork whose security updates do not arrive.
+#
 # Signing needs four repository secrets: KEYSTORE_BASE64 (the .jks, base64),
 # KEYSTORE_PASSWORD, SIGNING_KEY_ALIAS, SIGNING_KEY_PASSWORD.
 
@@ -68,6 +84,33 @@ jobs:
           echo "SUMS_PATH=$out/SHA256SUMS" >> "$GITHUB_ENV"
           echo "CERTS_PATH=$out/CERTS.txt" >> "$GITHUB_ENV"
 
+      - name: Compose release notes
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          set -euo pipefail
+          tag="${GITHUB_REF#refs/tags/}"
+          # The annotation is where a release is actually described; the old
+          # fixed sentence meant a carefully written tag message reached nobody.
+          git fetch --force origin "refs/tags/$tag:refs/tags/$tag"
+          body="$(git tag -l --format='%(contents)' "$tag")"
+
+          # Machine-readable, because the andashi provisioning host has to tell
+          # "there is a new version" from "there is a new version that closes
+          # four HIGH/MEDIUM issues" - the first gets dismissed, the second
+          # puts someone at a cable. Written in the tag annotation as
+          #   Security-Fixes: #7, #8, #12, #13
+          # or "none". Absent means nobody said, which is not the same as none,
+          # so it reports "unspecified" rather than claiming safety.
+          sec="$(printf '%s\n' "$body" | grep -m1 -E '^Security-Fixes:' || true)"
+          [ -n "$sec" ] || sec="Security-Fixes: unspecified"
+
+          {
+            printf '%s\n' "$body"
+            printf '\n---\n\n'
+            printf '%s\n\n' "$sec"
+            printf 'Signed release build. Verify with SHA256SUMS; signer certificate in CERTS.txt.\n'
+          } > "$RUNNER_TEMP/notes.md"
+
       - name: Publish GitHub release
         if: startsWith(github.ref, 'refs/tags/v')
         env:
@@ -75,7 +118,8 @@ jobs:
         run: |
           gh release create "${GITHUB_REF#refs/tags/}" \
             --title "Andashi Home ${VERSION_NAME_OVERRIDE}" \
-            --notes "Signed release build. Verify with SHA256SUMS; signer certificate in CERTS.txt." \
+            --notes-file "$RUNNER_TEMP/notes.md" \
+            --latest \
             "$APK_PATH" "$SUMS_PATH" "$CERTS_PATH"
 
       - name: Upload build artifact (manual runs)
