@@ -2,6 +2,7 @@ package de.mm20.launcher2.config.service
 
 import android.app.WallpaperManager
 import android.content.Context
+import android.os.SystemClock
 import de.mm20.launcher2.config.ConfigParser
 import de.mm20.launcher2.config.Diagnostic
 import de.mm20.launcher2.config.Severity
@@ -43,6 +44,15 @@ interface WallpaperStore {
 }
 
 data class WallpaperState(val image: String, val target: WallpaperTarget)
+
+/**
+ * How long [WallpaperStore.ensureRendered] refuses to re-apply a record it has
+ * already re-applied (issue #29). Long enough to cover a crop that outlives
+ * several activity resumes - the observed duplicate was 15 s apart - and short
+ * enough that a re-apply which genuinely failed is retried while the profile
+ * is still in front of someone.
+ */
+internal const val ReapplyCooldownMs = 60_000L
 
 /** What [WallpaperApplier] reports after a set: the per-target wallpaper ids. */
 data class WallpaperIds(val system: Int, val lock: Int)
@@ -100,12 +110,23 @@ internal data class AppliedWallpaper(
 class DefaultWallpaperStore(
     context: Context,
     private val applier: WallpaperApplier,
+    /** Monotonic, injectable so the re-apply cooldown is testable. */
+    private val elapsedRealtime: () -> Long = { SystemClock.elapsedRealtime() },
 ) : WallpaperStore {
     private val appContext = context.applicationContext
     private val stateFile = File(appContext.filesDir, "config/wallpaper-state.json")
 
     /** One writer at a time: reloads and the foreground fixer share this store. */
     private val mutex = Mutex()
+
+    /**
+     * What the last re-apply wrote, and when (issue #29).
+     *
+     * In memory on purpose: it guards against a second re-apply inside one
+     * process, which is where the duplicate was observed, and a restart should
+     * be free to try again.
+     */
+    private var lastReapply: Pair<AppliedWallpaper, Long>? = null
 
     override suspend fun current(): WallpaperState? = withContext(Dispatchers.IO) {
         val applied = readApplied() ?: return@withContext null
@@ -190,6 +211,22 @@ class DefaultWallpaperStore(
         mutex.withLock {
             val applied = readApplied() ?: return@withLock false
             if (applier.isRendered(applied.target)) return@withLock false
+            // isRendered says "no file yet", which covers both "never asked"
+            // and "asked, still cropping" - WallpaperManagerService produces
+            // the crop asynchronously, and on the emulator it took longer than
+            // the 15 s between two activity resumes. Without this the second
+            // resume sees the same false and sets the same image again, paying
+            // for another crop pass (issue #29, and issue #37 on what one
+            // costs). Refuse to re-apply the very same record twice inside the
+            // window; a different one - a new config, a new file - is not the
+            // record we just asked for and goes through.
+            val last = lastReapply
+            if (last != null &&
+                last.first == applied &&
+                elapsedRealtime() - last.second < ReapplyCooldownMs
+            ) {
+                return@withLock false
+            }
             // A wallpaper the user set by hand in the meantime is drift, not a
             // pending render; the next explicit reload decides, not this hook.
             if (!applied.holds(applier.currentIds())) return@withLock false
@@ -199,7 +236,9 @@ class DefaultWallpaperStore(
             // Same guard as apply(): a same-name upload landing mid-set must not
             // be recorded under the old hash.
             if (file.readBytes().sha256Hex() != applied.sha256) return@withLock false
-            writeApplied(applied.copy(systemId = ids.system, lockId = ids.lock))
+            val reapplied = applied.copy(systemId = ids.system, lockId = ids.lock)
+            writeApplied(reapplied)
+            lastReapply = reapplied to elapsedRealtime()
             true
         }
     }
