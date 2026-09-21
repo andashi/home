@@ -133,6 +133,45 @@ guarantees. Treat security as a design constraint, not a checklist item:
 - **When in doubt, ask**: if a change could weaken the security posture —
   even indirectly — flag it explicitly instead of merging it silently.
 
+## Releases
+
+A release is made by pushing an annotated tag. `.github/workflows/release.yml`
+publishes the annotation verbatim as the release body, so the annotation is
+where the release is described - `git tag -a`, never a lightweight tag (the
+workflow rejects those).
+
+End the annotation with the trailer the provisioning host parses:
+
+    Security-Fixes: #6, #7, #8         issues this release closes
+    Security-Fixes: none               checked, nothing security-relevant
+    Security-Fixes: unspecified        the default when the line is absent
+
+**Never type that list from memory.** v0.3.0 shipped with four issues in it
+where the release closed eight, because the list written down was the
+issues closed on GitHub that morning, not the issues the release fixed. Derive
+the candidates instead:
+
+```bash
+prev=$(git describe --tags --abbrev=0 HEAD^)
+git log "$prev..HEAD" --format='%B' | grep -oE '#[0-9]+' | tr -d '#' | sort -un |
+  while read -r n; do
+    gh issue view "$n" --json number,labels,title \
+      --jq 'select([.labels[].name] | index("security")) | "#\(.number)  \(.title)"'
+  done
+```
+
+Then strike what does not belong and paste the rest. The list is a superset:
+an issue mentioned in a commit is not necessarily fixed by it. For v0.3.0 this
+command returns the correct eight plus #14, whose fix shipped one release later
+- the version catalog entry it reported was still present at the tag.
+
+Do not derive the list from close timestamps. Issues closed by deleting the
+feature get closed whenever someone audits them, which for v0.3.0 was ten hours
+after the tag: a window query over the release interval returns exactly the
+four issues that were missed and none of the four that were written down. GitHub's own
+close references do not help either - only two of the eight were closed through
+a commit reference, the rest by hand.
+
 ## Emulator (GrapheneOS, self-built)
 
 The test target is a self-built GrapheneOS emulator (`~/android/grapheneos`,
