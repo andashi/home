@@ -173,13 +173,20 @@ remove the false positives, both mechanical:
   already shipped. `gh release list` and read the trailers.
 - **Mentioned or fixed?** A commit that merely discusses an issue number puts
   it in the list. Check that the release range actually contains the fix.
+- **Does the fix reach the device?** The trailer drives an urgency decision, so
+  it names what installing this release changes for a user. An issue closed by
+  removing something that was not in the shipped APK anyway belongs in the
+  prose, not in the trailer.
 
-Both rules earn their keep. For v0.3.0 the command returns the correct eight
+All three rules earn their keep. For v0.3.0 the command returns the correct eight
 plus #14, whose fix shipped one release later - the version catalog entry it
 reported was still present at the tag. For v0.3.1 it returns five candidates
 and **none** of them belong: #7, #8, #12 and #13 appear only as an example
 inside a commit message about the trailer format, and all four shipped in
-v0.3.0.
+v0.3.0. #14 survives both of the first two rules - the commit that closes it
+is in the range - and falls to the third: it removed a version catalog entry
+for a library no module had referenced since v0.3.0, so installing v0.3.1
+changes nothing about that exposure. It is named in v0.3.1's prose instead.
 
 If nothing survives, write `Security-Fixes: none`. Do not omit the line -
 omitting it publishes `unspecified`, which tells the provisioning host that
