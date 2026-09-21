@@ -17,6 +17,20 @@ commit message — this is the default behavior of some tools (Claude Code in
 particular) and must be suppressed. A commit message reads exactly like one a
 human engineer wrote: subject line + body, nothing else, no exceptions.
 
+This paragraph was not enough on its own: the tool instructs the opposite, and
+20 commits carrying those lines reached public main before anyone noticed. So
+it is enforced in two places. Enable the hook once per clone:
+
+```bash
+git config core.hooksPath .githooks
+```
+
+`.githooks/commit-msg` rejects the commit before it exists. CI
+(`.github/workflows/commit-hygiene.yml`) checks every commit in a pull request,
+because a hook only helps in a clone that enabled it. Both match at line start,
+so prose *about* attribution is fine, and both allow `Co-Authored-By` for
+actual human co-authors.
+
 ## Feedback loop (no LSP)
 
 LSP is deliberately disabled for this project: Kotlin language servers on a
