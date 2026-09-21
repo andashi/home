@@ -620,13 +620,39 @@ class ConfigParserTest {
         throw AssertionError("$path not found above ${File("").absolutePath}")
     }
 
+    /**
+     * The fenced block after [marker], by line rather than by substring.
+     *
+     * Only a run of backticks at least as long as the opening fence, with
+     * nothing but whitespace around it, closes the block - a language-tagged
+     * line such as ```` ```json ```` does not. A substring search would end the
+     * block there and hand the parser a prefix, and a guard that reads less
+     * than it thinks is the failure this whole test exists to prevent.
+     */
     private fun fencedJsonAfter(markdown: String, marker: String): String {
-        val afterMarker = markdown.substringAfter(marker, missingDelimiterValue = "")
-        assertTrue("$marker is missing from the ADR", afterMarker.isNotEmpty())
-        val fence = afterMarker.substringAfter("```json\n", missingDelimiterValue = "")
-        assertTrue("no json fence follows $marker", fence.isNotEmpty())
-        val body = fence.substringBefore("\n```", missingDelimiterValue = "")
-        assertTrue("the json fence after $marker is not closed", body.isNotEmpty())
-        return body
+        val lines = markdown.lines()
+
+        val markerAt = lines.indexOfFirst { it.trim() == marker }
+        assertTrue("$marker is missing from the ADR", markerAt >= 0)
+
+        val openAt = (markerAt + 1..lines.lastIndex)
+            .firstOrNull { lines[it].trimStart().startsWith("```") }
+        assertNotNull("no fenced block follows $marker", openAt)
+
+        val opener = lines[openAt!!].trim()
+        val fence = opener.takeWhile { it == '`' }
+        assertEquals(
+            "the block after $marker must be tagged json",
+            "json",
+            opener.removePrefix(fence).trim(),
+        )
+
+        val closeAt = (openAt + 1..lines.lastIndex).firstOrNull {
+            val line = lines[it].trim()
+            line.length >= fence.length && line.all { char -> char == '`' }
+        }
+        assertNotNull("the block after $marker is never closed", closeAt)
+
+        return lines.subList(openAt + 1, closeAt!!).joinToString("\n")
     }
 }
