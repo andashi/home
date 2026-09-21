@@ -19,10 +19,11 @@ name: Release
 # must not imply safety it was never told about. The host treats `unspecified`
 # as unknown, therefore urgent.
 #
-# The trailer is only meaningful from v0.3.0 on. v0.1.0 to v0.2.1 predate the
-# convention and carry none at all, and v0.3.0's body was written by hand after
-# the fact, so it is the one release whose body and tag annotation differ. From
-# v0.4.0 they are identical by construction.
+# The trailer is produced by this workflow from v0.4.0 on. Before that it is
+# not: v0.1.0 to v0.2.1 predate the convention and carry none at all, and
+# v0.3.0's trailer was written into the release body by hand, which makes it
+# the one release whose body and tag annotation differ. A host reading the
+# body can rely on v0.3.0; a host reading the annotation cannot.
 #
 # A tag with a SemVer pre-release suffix (v1.4.0-rc.1) publishes as a
 # prerelease and never as `latest`. `latest` is what the host resolves when a
@@ -144,7 +145,12 @@ jobs:
           # (v1.4.0-rc.1). The v* trigger accepts those, and publishing one as
           # Latest would hand the provisioning host a release candidate as the
           # version to install when a zone pins no tag.
-          case "$tag" in
+          # Strip build metadata before looking for the pre-release hyphen:
+          # SemVer puts it after a '+' (v1.4.0+build-1), and a hyphen in there
+          # would otherwise publish a stable release as a prerelease - which
+          # leaves `latest` pointing at the older version and stops updates
+          # from arriving at all.
+          case "${tag%%+*}" in
             *-*) release_flags=(--prerelease --latest=false) ;;
             *)   release_flags=(--latest) ;;
           esac
