@@ -40,10 +40,14 @@ class WallpaperStoreTest {
     private lateinit var store: DefaultWallpaperStore
     private lateinit var dir: File
 
+    /** Drives the re-apply cooldown; the tests move it by hand. */
+    private var elapsed = 0L
+
     @Before
     fun setup() {
         applier = FakeApplier()
-        store = DefaultWallpaperStore(context, applier)
+        elapsed = 0L
+        store = DefaultWallpaperStore(context, applier) { elapsed }
         dir = ConfigLocation.wallpapersDir(context)!!.apply { mkdirs() }
         File(context.filesDir, "config/wallpaper-state.json").delete()
         File(dir, "home.jpg").writeBytes(byteArrayOf(1, 2, 3))
@@ -154,5 +158,60 @@ class WallpaperStoreTest {
         assertEquals(listOf("wallpaper-missing"), diagnostics.map { it.code })
         assertEquals(emptyList<Any>(), applier.applied)
         assertNull(store.current())
+    }
+
+    /**
+     * Issue #29: the crop is asynchronous, so isRendered stays false for a
+     * while after a re-apply. A second resume in that window must not pay for
+     * another crop pass.
+     */
+    @Test
+    fun `a re-apply is not repeated while the crop is still in flight`() = runTest {
+        applier.foreground = false
+        store.apply("home.jpg", WallpaperTarget.Both)
+        assertEquals(1, applier.applied.size)
+
+        // Foreground again, but WallpaperManagerService has not finished the
+        // crop: the file the store probes still does not exist.
+        applier.foreground = false
+        assertEquals(true, store.ensureRendered())
+        assertEquals(2, applier.applied.size)
+
+        elapsed = 15_000L // the gap that was measured on the emulator
+        assertEquals(false, store.ensureRendered())
+        assertEquals("the same record must not be set twice", 2, applier.applied.size)
+    }
+
+    @Test
+    fun `the cooldown expires so a re-apply that failed is retried`() = runTest {
+        applier.foreground = false
+        store.apply("home.jpg", WallpaperTarget.Both)
+        store.ensureRendered()
+        assertEquals(2, applier.applied.size)
+
+        elapsed = ReapplyCooldownMs
+        assertEquals(true, store.ensureRendered())
+        assertEquals(3, applier.applied.size)
+    }
+
+    /**
+     * The cooldown is keyed on the record, not on the clock alone: a config
+     * that names another wallpaper is not the thing we just asked for.
+     */
+    @Test
+    fun `a new wallpaper is not held back by the cooldown`() = runTest {
+        File(dir, "other.jpg").writeBytes(byteArrayOf(4, 5, 6))
+        applier.foreground = false
+        store.apply("home.jpg", WallpaperTarget.Both)
+        store.ensureRendered()
+        assertEquals(2, applier.applied.size)
+
+        elapsed = 1_000L
+        store.apply("other.jpg", WallpaperTarget.Both)
+        assertEquals(3, applier.applied.size)
+
+        assertEquals(true, store.ensureRendered())
+        assertEquals(4, applier.applied.size)
+        assertEquals(File(dir, "other.jpg") to WallpaperTarget.Both, applier.applied.last())
     }
 }
