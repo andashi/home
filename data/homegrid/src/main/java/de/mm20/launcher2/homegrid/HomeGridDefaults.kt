@@ -36,13 +36,16 @@ object HomeGridDefaults {
         layout: String,
         columns: Int,
         rows: Int,
-    ): List<HomeGridItem> {
-        if (flag.isInitialized()) return emptyList()
+    ): List<HomeGridItem> = lock.withLock {
+        // Read, decide and write under the lock a config reload takes too:
+        // a first start and a provisioning push can coincide, and a stale
+        // "empty" read must not overwrite what the reload just provisioned.
+        if (flag.isInitialized()) return@withLock emptyList()
         val populated = listOf(HomeGridLayouts.Phone, HomeGridLayouts.Fold)
             .any { repository.observe(it).first().isNotEmpty() }
         if (populated) {
             flag.markInitialized()
-            return emptyList()
+            return@withLock emptyList()
         }
         val dock = HomeGridItem(
             layout = layout,
@@ -56,6 +59,6 @@ object HomeGridDefaults {
         )
         repository.replace(layout, listOf(dock))
         flag.markInitialized()
-        return listOf(dock)
+        listOf(dock)
     }
 }
