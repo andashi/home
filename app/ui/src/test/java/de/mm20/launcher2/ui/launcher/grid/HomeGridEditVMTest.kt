@@ -16,6 +16,7 @@ import de.mm20.launcher2.ui.settings.KoinSettingsRule
 import de.mm20.launcher2.widgets.Widget
 import de.mm20.launcher2.widgets.WidgetRepository
 import java.util.UUID
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -297,6 +298,47 @@ class HomeGridEditVMTest {
         // the first free cells at or below its old row, here right of the clock.
         assertEquals(listOf(0, 2, 2, 2), written.first { it.id == "clock" }.let { listOf(it.x, it.y, it.w, it.h) })
         assertEquals(listOf(2, 2), written.first { it.id == "note" }.let { listOf(it.x, it.y) })
+    }
+
+    @Test
+    fun `two concurrent exitEdit calls write back once`() = runTest(dispatcher) {
+        // Review on #70: Done tapped twice, or Done and Back, while the
+        // write suspends must not write the layout twice.
+        val gate = CompletableDeferred<Unit>()
+        val slow = object : HomeGridWriteBack {
+            var calls = 0
+            override suspend fun write(layout: String, items: List<HomeGridItem>): HomeGridWriteResult {
+                calls++
+                gate.await()
+                return HomeGridWriteResult.Written
+            }
+        }
+        val f = fixture(writeBack = FakeWriteBack())
+        f.vm.cells()
+        val vm = HomeGridVM(
+            repository = f.repository,
+            uiSettings = GlobalContext.get().get(),
+            formFactorDetector = FakeFormFactorDetector(FormFactor.Phone),
+            measuredRows = MeasuredGridRows(),
+            seeder = FakeSeeding(),
+            widgetRepository = emptyColumn,
+            writeBack = slow,
+            itemLimits = GridItemLimits.Unbounded,
+            locked = f.locked,
+        )
+        vm.onWindowMeasured(396f, 622f)
+        backgroundScope.launch { vm.state.collect {} }
+        vm.cells()
+        vm.enterEdit()
+
+        val first = launch { vm.exitEdit() }
+        val second = launch { vm.exitEdit() }
+        dispatcher.scheduler.advanceUntilIdle()
+        gate.complete(Unit)
+        first.join(); second.join()
+
+        assertEquals(1, slow.calls)
+        assertFalse(vm.editing.value)
     }
 
     @Test

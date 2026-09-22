@@ -142,7 +142,8 @@ jobs:
       # profiles are not in its devices.xml. The listing is in the log for
       # the day a profile name changes.
       - name: List the SDK's foldable device profiles
-        run: "$ANDROID_HOME/cmdline-tools/latest/bin/avdmanager" list device | grep -B1 -A1 -i fold || true
+        run: |
+          "$ANDROID_HOME/cmdline-tools/latest/bin/avdmanager" list device | grep -B1 -A1 -i fold || true
       - name: Fold tests on a foldable emulator (API 36)
         uses: reactivecircus/android-emulator-runner@v2
         with:
