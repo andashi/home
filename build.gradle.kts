@@ -18,4 +18,5 @@ dependencies {
     kover(project(":core:config"))
     kover(project(":core:grid"))
     kover(project(":services:config"))
+    kover(project(":data:homegrid"))
 }

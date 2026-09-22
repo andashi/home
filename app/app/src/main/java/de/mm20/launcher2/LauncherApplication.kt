@@ -16,6 +16,7 @@ import de.mm20.launcher2.searchable.searchableModule
 import de.mm20.launcher2.icons.iconsModule
 import de.mm20.launcher2.search.searchModule
 import de.mm20.launcher2.widgets.widgetsModule
+import de.mm20.launcher2.homegrid.homeGridModule
 import de.mm20.launcher2.database.databaseModule
 import de.mm20.launcher2.debug.initDebugMode
 import de.mm20.launcher2.globalactions.globalActionsModule
@@ -70,6 +71,7 @@ class LauncherApplication : Application(), CoroutineScope, ImageLoaderFactory {
                     searchActionsModule,
                     themesModule,
                     widgetsModule,
+                    homeGridModule,
                     servicesTagsModule,
                     widgetsServiceModule,
                     profilesModule,

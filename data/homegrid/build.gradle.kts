@@ -2,8 +2,8 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.android.library)
-    alias(libs.plugins.ksp)
     alias(libs.plugins.kotlin.plugin.serialization)
+    alias(libs.plugins.kover)
 }
 
 android {
@@ -18,19 +18,13 @@ android {
         
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
-
-        javaCompileOptions {
-            annotationProcessorOptions {
-                arguments["room.schemaLocation"] = "$projectDir/schemas"
-            }
-        }
     }
 
     buildTypes {
         release {
             proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                    getDefaultProguardFile("proguard-android-optimize.txt"),
+                    "proguard-rules.pro"
             )
         }
     }
@@ -49,42 +43,24 @@ android {
             jvmTarget.set(JvmTarget.JVM_11)
         }
     }
-    namespace = "de.mm20.launcher2.database"
-
-    sourceSets {
-        // Room schema JSONs, needed by MigrationTestHelper in unit tests
-        getByName("test") {
-            assets.srcDir("$projectDir/schemas")
-        }
-    }
-}
-
-ksp {
-    // The javaCompileOptions block above does not reach KSP, so schema export
-    // silently stopped at 24.json. This actually exports the schema.
-    arg("room.schemaLocation", "$projectDir/schemas")
+    namespace = "de.mm20.launcher2.homegrid"
 }
 
 dependencies {
-
-    implementation(libs.kotlin.stdlib)
+    implementation(libs.bundles.kotlin)
     implementation(libs.androidx.core)
-    implementation(libs.androidx.appcompat)
-    api(libs.androidx.roomruntime)
-    ksp(libs.androidx.roomcompiler)
-    api(libs.androidx.room)
-    implementation(libs.koin.android)
 
-    implementation(project(":core:i18n"))
+
+    implementation(libs.kotlinx.serialization.json)
+
+    implementation(libs.koin.android)
     implementation(project(":core:ktx"))
-    implementation(project(":core:preferences"))
     implementation(project(":core:base"))
+    implementation(project(":data:database"))
 
     testImplementation(libs.bundles.tests)
     testImplementation(libs.robolectric)
-    testImplementation(libs.androidx.room.testing)
     testImplementation(libs.androidx.test.core)
-    testImplementation(libs.androidx.room.common)
     testImplementation(libs.kotlinx.coroutines.test)
 }
 
@@ -101,4 +77,17 @@ tasks.withType<Test>().configureEach {
         "--add-opens=java.desktop/java.awt.font=ALL-UNNAMED",
         "--add-opens=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
     )
+}
+
+// Coverage gate (ADR 0005, AGENTS.md "Test policy"). Bound = the value the
+// tests reached when the module was created, rounded down; raised as tests
+// land, never lowered.
+kover {
+    reports {
+        verify {
+            rule("line coverage of :data:homegrid") {
+                minBound(96)
+            }
+        }
+    }
 }
