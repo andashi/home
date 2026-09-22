@@ -29,6 +29,7 @@ import de.mm20.launcher2.database.migrations.Migration_31_32
 import de.mm20.launcher2.database.migrations.Migration_32_33
 import de.mm20.launcher2.database.migrations.Migration_33_34
 import de.mm20.launcher2.database.migrations.Migration_34_35
+import de.mm20.launcher2.database.migrations.Migration_35_36
 import de.mm20.launcher2.database.migrations.Migration_6_7
 import de.mm20.launcher2.database.migrations.Migration_7_8
 import de.mm20.launcher2.database.migrations.Migration_8_9
@@ -41,9 +42,8 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 
 /**
- * Template for future migration tests (the Phase 3 grid migration will follow
- * this pattern). Validates the full migration chain 6 -> 35 against the
- * exported schema JSONs in `schemas/` (wired as test assets).
+ * Template for migration tests. Validates the full migration chain 6 -> 36
+ * against the exported schema JSONs in `schemas/` (wired as test assets).
  */
 @RunWith(RobolectricTestRunner::class)
 class MigrationTest {
@@ -88,20 +88,21 @@ class MigrationTest {
         Migration_32_33(),
         Migration_33_34(),
         Migration_34_35(),
+        Migration_35_36(),
     )
 
     @Test
-    fun `migrate 6 to 35`() {
+    fun `migrate 6 to 36`() {
         helper.createDatabase(testDb, 6).close()
 
-        val db = helper.runMigrationsAndValidate(testDb, 35, true, *allMigrations)
+        val db = helper.runMigrationsAndValidate(testDb, 36, true, *allMigrations)
 
         assertTrue(db.isOpen)
         db.close()
     }
 
     @Test
-    fun `search action survives migration 24 to 35`() {
+    fun `search action survives migration 24 to 36`() {
         helper.createDatabase(testDb, 24).apply {
             execSQL(
                 "INSERT INTO `SearchAction` (`position`, `type`, `data`, `label`, `icon`, `color`, `customIcon`, `options`) " +
@@ -110,7 +111,7 @@ class MigrationTest {
             close()
         }
 
-        val db = helper.runMigrationsAndValidate(testDb, 35, true, *allMigrations.copyOfRange(18, 29))
+        val db = helper.runMigrationsAndValidate(testDb, 36, true, *allMigrations.copyOfRange(18, 30))
 
         db.query("SELECT `data` FROM `SearchAction` WHERE `position` = 42").use { cursor ->
             assertTrue(cursor.moveToFirst())
@@ -162,6 +163,46 @@ class MigrationTest {
             // 'apps' is rewritten, not kept: Widget.fromDatabaseEntity only
             // knows AppsWidget.Type, which is "favorites"
             assertEquals(listOf("favorites", "favorites"), types)
+        }
+        db.close()
+    }
+
+    @Test
+    fun `migration 35 to 36 creates the HomeGridItem table`() {
+        helper.createDatabase(testDb, 35).close()
+
+        val db = helper.runMigrationsAndValidate(testDb, 36, true, Migration_35_36())
+
+        db.execSQL(
+            "INSERT INTO `HomeGridItem` (`layout`, `id`, `widget`, `profile`, `x`, `y`, `w`, `h`, " +
+                    "`appWidgetId`, `config`, `position`) VALUES " +
+                    "('phone', 'dock', 'favorites', NULL, 0, 5, 4, 1, NULL, NULL, 0)"
+        )
+        db.query("SELECT `widget`, `w` FROM `HomeGridItem` WHERE `layout` = 'phone' AND `id` = 'dock'")
+            .use { cursor ->
+                assertTrue(cursor.moveToFirst())
+                assertEquals("favorites", cursor.getString(0))
+                assertEquals(4, cursor.getInt(1))
+            }
+        db.close()
+    }
+
+    @Test
+    fun `migration 35 to 36 keeps the widget rows`() {
+        helper.createDatabase(testDb, 35).apply {
+            execSQL("DELETE FROM `Widget`")
+            execSQL(
+                "INSERT INTO `Widget` (`type`, `position`, `id`, `parentId`) VALUES " +
+                        "('favorites', 0, X'00000000000000000000000000000005', X'00000000000000000000000000000001')"
+            )
+            close()
+        }
+
+        val db = helper.runMigrationsAndValidate(testDb, 36, true, Migration_35_36())
+
+        db.query("SELECT COUNT(*) FROM `Widget`").use { cursor ->
+            assertTrue(cursor.moveToFirst())
+            assertEquals(1, cursor.getInt(0))
         }
         db.close()
     }

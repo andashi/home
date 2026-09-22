@@ -40,6 +40,7 @@ jobs:
           :data:searchable:testDebugUnitTest
           :data:appshortcuts:testDebugUnitTest
           :data:widgets:testDebugUnitTest
+          :data:homegrid:testDebugUnitTest
           :data:themes:testDebugUnitTest
           :core:base:testDebugUnitTest
       # The coverage gate: every module the fork owns carries a line-coverage
