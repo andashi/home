@@ -115,6 +115,14 @@ them before:
 `profile` accepts `personal`, `work` and `private`; Private Space is just
 another profile here (ADR 0006).
 
+**The document above is the contract, not a promise about one build.** A build
+may accept a key and not serve it - `home.dock.enabled` is accepted, stored and
+echoed back today while no dock is drawn (#46). Since #47 it does not stay
+silent about that: a present key the build does not serve is reported as an
+`inert-key` warning in the reload diagnostics, next to `unknown-key`. A warning
+does not fail the reload, so a config that names such a key still applies; the
+host is simply told which part of it landed nowhere.
+
 ## Consequences
 
 - One serialization stack everywhere: app settings, config file, schema, tests.
