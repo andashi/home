@@ -7,8 +7,6 @@ import de.mm20.launcher2.config.ReloadReport
 import de.mm20.launcher2.config.ReloadTrigger
 import de.mm20.launcher2.config.Severity
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.IOException
@@ -17,9 +15,10 @@ import java.io.IOException
  * Fork addition (Phase 2, ADR 0003): drives one config reload end to end —
  * parse, diff against current state, apply, persist a [ReloadReport].
  *
- * Reloads are serialized with a [Mutex]: a reload that arrives while another
- * one is running waits for it to finish, so writes of two reloads never
- * interleave.
+ * Reloads are serialized on the [ConfigFileLock]: a reload that arrives while
+ * another one is running waits for it to finish, so writes of two reloads
+ * never interleave, and neither does a write-back ([GridWriteBack]) with a
+ * reload.
  *
  * Failure semantics:
  * - malformed input or validation errors → nothing is applied, failed report;
@@ -31,8 +30,8 @@ import java.io.IOException
 class ConfigReloader(
     private val configStore: ConfigStore,
     private val reportStore: ReloadReportStore,
+    private val lock: ConfigFileLock = ConfigFileLock(),
 ) {
-    private val mutex = Mutex()
 
     /**
      * Reloads from [configText].
@@ -40,7 +39,7 @@ class ConfigReloader(
     suspend fun reload(
         configText: String,
         trigger: ReloadTrigger? = null,
-    ): ReloadReport = mutex.withLock {
+    ): ReloadReport = lock.withLock {
         reloadLocked(configText, configText.toByteArray(Charsets.UTF_8).sha256Hex(), trigger)
     }
 
@@ -51,7 +50,7 @@ class ConfigReloader(
     suspend fun reload(
         file: File,
         trigger: ReloadTrigger? = null,
-    ): ReloadReport = mutex.withLock {
+    ): ReloadReport = lock.withLock {
         val text = try {
             withContext(Dispatchers.IO) { file.readText() }
         } catch (e: IOException) {
