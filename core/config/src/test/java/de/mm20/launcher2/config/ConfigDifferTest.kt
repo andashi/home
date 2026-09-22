@@ -225,6 +225,20 @@ class ConfigDifferTest {
     }
 
     @Test
+    fun `a lone x or y is not a position and is not compared`() {
+        // A position is x and y together; a single coordinate cannot anchor
+        // an item, so the store places it freely and the differ must not
+        // keep asking for a coordinate the store cannot honour.
+        val loneX = clock.copy(x = 3, y = null)
+        val desired = LauncherConfig(
+            2,
+            home = HomeConfig(grid = GridConfig(layouts = mapOf("phone" to GridLayoutConfig(listOf(dock, loneX))))),
+        )
+
+        assertEquals(emptyList<ConfigMutation>(), ConfigDiffer.diff(desired, baseState))
+    }
+
+    @Test
     fun `a layout the config names is compared item by item, in order`() {
         val moved = clock.copy(y = 2)
         val desired = LauncherConfig(

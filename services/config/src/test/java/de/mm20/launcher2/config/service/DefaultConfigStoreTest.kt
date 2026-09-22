@@ -343,6 +343,27 @@ class DefaultConfigStoreTest {
     }
 
     @Test
+    fun `SetGrid anchors an item that sets only its position and defaults the span`() = runTest {
+        // Partial geometry: a position without a size is still a position.
+        // Review on #66: placing such an item at the first free cells drops
+        // the configured x/y, and because the differ compares x and y when
+        // the file sets them, every reload would emit SetGrid again.
+        gridLimits.limits[clockWidget] = ProviderLimits(default = CellSize(3, 1), limits = SizeLimits(2, 1, 4, 2))
+
+        store.apply(
+            listOf(
+                grid(
+                    GridItemConfig(id = "dock", widget = "favorites", x = 0, y = 5, w = 4, h = 1),
+                    GridItemConfig(id = "clock", widget = clockWidget, x = 1, y = 2),
+                )
+            )
+        )
+
+        val clock = homeGridRepository.layouts["phone"]!!.associateBy { it.id }.getValue("clock")
+        assertEquals(listOf(1, 2, 3, 1), listOf(clock.x, clock.y, clock.w, clock.h))
+    }
+
+    @Test
     fun `SetGrid enlarges a span below the provider minimum and says so`() = runTest {
         gridLimits.limits[clockWidget] = ProviderLimits(default = CellSize(4, 2), limits = SizeLimits(2, 2, 4, 3))
 

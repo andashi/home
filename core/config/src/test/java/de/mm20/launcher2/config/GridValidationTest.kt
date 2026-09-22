@@ -113,6 +113,21 @@ class GridValidationTest {
     }
 
     @Test
+    fun `a lone coordinate is reported as a warning, not an error`() {
+        val result = parse(
+            """{ "layouts": { "phone": { "items": [
+                 { "id": "clock", "widget": "com.android.deskclock/.DigitalAppWidgetProvider", "x": 2 }
+               ] } } }"""
+        )
+
+        val warning = result.diagnostics.single()
+        assertEquals(Severity.Warning, warning.severity)
+        assertEquals("partial-grid-position", warning.code)
+        assertEquals("home.grid.layouts.phone.items[0]", warning.path)
+        assertNotNull(result.config)
+    }
+
+    @Test
     fun `a layout holds at most 32 items`() {
         val items = (0 until 33).joinToString(",") { """{ "id": "i$it", "widget": "favorites" }""" }
 
