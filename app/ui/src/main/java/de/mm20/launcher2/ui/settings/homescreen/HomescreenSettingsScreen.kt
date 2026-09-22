@@ -66,11 +66,8 @@ fun HomescreenSettingsScreen() {
 
     val context = LocalContext.current
 
-    val dock by viewModel.dock.collectAsStateWithLifecycle(null)
-    val dockRows by viewModel.dockRows.collectAsStateWithLifecycle(1)
     val fixedRotation by viewModel.fixedRotation.collectAsStateWithLifecycle(null)
     val widgetsOnHomeScreen by viewModel.widgetsOnHomeScreen.collectAsStateWithLifecycle(null)
-    val editButton by viewModel.widgetEditButton.collectAsStateWithLifecycle(null)
     val searchBarStyle by viewModel.searchBarStyle.collectAsStateWithLifecycle(null)
     val searchBarColor by viewModel.searchBarColor.collectAsStateWithLifecycle(null)
     val bottomSearchBar by viewModel.bottomSearchBar.collectAsStateWithLifecycle(null)
@@ -100,38 +97,16 @@ fun HomescreenSettingsScreen() {
             PreferenceCategory(
                 title = stringResource(id = R.string.preference_category_widgets)
             ) {
-                SwitchPreference(
-                    title = stringResource(R.string.preference_clockwidget_favorites_part),
-                    summary = stringResource(R.string.preference_clockwidget_favorites_part_summary),
-                    value = dock == true,
-                    onValueChanged = {
-                        viewModel.setDock(it)
-                    },
-                )
-                AnimatedVisibility(dock == true) {
-                    SliderPreference(
-                        title = stringResource(R.string.preference_clockwidget_dock_rows),
-                        value = dockRows,
-                        min = 1,
-                        max = 4,
-                        onValueChanged = {
-                            viewModel.setDockRows(it)
-                        }
-                    )
-                }
+                // The dock toggle, the dock rows slider and the widget edit
+                // button used to sit here. The dock is the favorites widget on
+                // the grid (ADR 0001, revised 2026-09-22, #46) and the grid's
+                // edit mode opens on long-press, so none of them has a reader.
                 SwitchPreference(
                     title = stringResource(R.string.preference_widgets_on_home_screen),
                     summary = stringResource(R.string.preference_widgets_on_home_screen_summary),
                     value = widgetsOnHomeScreen == true,
                     onValueChanged = {
                         viewModel.setWidgetsOnHomeScreen(it)
-                    })
-                SwitchPreference(
-                    title = stringResource(id = R.string.preference_edit_button),
-                    summary = stringResource(id = R.string.preference_widgets_edit_button_summary),
-                    value = editButton == true,
-                    onValueChanged = {
-                        viewModel.setWidgetEditButton(it)
                     })
             }
 

@@ -143,6 +143,18 @@ them before:
 `profile` accepts `personal`, `work` and `private`; Private Space is just
 another profile here (ADR 0006).
 
+**Since write-back (ADR 0003 section 5, 2026-09-22) the file is no longer only
+the host's declaration; it is the last agreed state between host and device.**
+Edit mode on the device writes `home.grid` into `launcher.json`, so the copy in
+the dotfiles repo can be behind the one on the phone. The host therefore pulls
+before it pushes (owner: `adb pull`; other profiles: the read-back provider,
+which serves the effective document in this exact shape) and commits the
+pulled file like any other change; a push that would overwrite a device edit
+is refused by the provisioning step on a hash mismatch
+(andashi/provisioning#2). `home.grid.locked: true` turns this off for a
+profile that must not be edited on the device; it is the exception, not the
+default, because editing on the device and pulling the result is the point.
+
 **The document above is the contract, not a promise about one build.** A build
 may accept a key and not serve it as written. Since #47 it does not stay silent
 about that: a present key the build does not serve is reported as an
