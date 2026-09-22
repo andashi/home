@@ -18,6 +18,14 @@ enum class ReloadTrigger {
 
     @SerialName("startup-check")
     StartupCheck,
+
+    /**
+     * The launcher wrote `launcher.json` itself (edit mode writing `home.grid`
+     * back, ADR 0003 revised 2026-09-22). The report records the hash of the
+     * written bytes so the watcher can tell its own rename from a push.
+     */
+    @SerialName("self-write")
+    SelfWrite,
 }
 
 @Serializable

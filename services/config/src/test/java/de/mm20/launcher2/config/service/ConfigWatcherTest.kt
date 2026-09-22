@@ -164,6 +164,71 @@ class ConfigWatcherTest {
     }
 
     @Test
+    fun `a file event for the launcher's own write is not reloaded`() = runTest {
+        // Write-back renames onto launcher.json like a push does; the watcher
+        // tells the two apart by the hash the self-write report recorded.
+        val store = FakeConfigStore()
+        val reportStore = ReloadReportStore(context)
+        val watcher = newWatcher(store, reportStore)
+        writeConfig()
+        reportStore.save(
+            ReloadReport(
+                success = true,
+                configSha256 = configFile().readBytes().sha256Hex(),
+                trigger = ReloadTrigger.SelfWrite,
+            )
+        )
+
+        watcher.onConfigFileEvent()
+        advanceTimeBy(ConfigWatcher.DefaultDebounceMs)
+        watcher.debounceJob!!.join()
+
+        assertEquals(0, store.applyCount)
+        assertEquals(ReloadTrigger.SelfWrite, reportStore.read()!!.trigger)
+    }
+
+    @Test
+    fun `a file event with a different hash than the self-write reloads`() = runTest {
+        // A push that lands after a write-back wins by being the last writer.
+        val store = FakeConfigStore()
+        val reportStore = ReloadReportStore(context)
+        val watcher = newWatcher(store, reportStore)
+        writeConfig()
+        reportStore.save(ReloadReport(success = true, configSha256 = "self-written-but-stale", trigger = ReloadTrigger.SelfWrite))
+
+        watcher.onConfigFileEvent()
+        advanceTimeBy(ConfigWatcher.DefaultDebounceMs)
+        watcher.debounceJob!!.join()
+
+        assertEquals(1, store.applyCount)
+        assertEquals(ReloadTrigger.FileWatcher, reportStore.read()!!.trigger)
+    }
+
+    @Test
+    fun `a file event with an unchanged hash after a foreign reload still reloads`() = runTest {
+        // Control: only the launcher's own write is recognised by hash. A
+        // provisioning script that pushes the same bytes twice expects a
+        // file-watcher report for the second push (e2e/l4-config.sh step 5).
+        val store = FakeConfigStore()
+        val reportStore = ReloadReportStore(context)
+        val watcher = newWatcher(store, reportStore)
+        writeConfig()
+        reportStore.save(
+            ReloadReport(
+                success = true,
+                configSha256 = configFile().readBytes().sha256Hex(),
+                trigger = ReloadTrigger.Broadcast,
+            )
+        )
+
+        watcher.onConfigFileEvent()
+        advanceTimeBy(ConfigWatcher.DefaultDebounceMs)
+        watcher.debounceJob!!.join()
+
+        assertEquals(1, store.applyCount)
+    }
+
+    @Test
     fun `report hash equals the sha256 of the reloaded file`() = runTest {
         val store = FakeConfigStore()
         val reportStore = ReloadReportStore(context)

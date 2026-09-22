@@ -37,8 +37,11 @@ val configModule = module {
         )
     }
     single { ReloadReportStore(androidContext()) }
-    // One reloader, one mutex: watcher and receiver must serialize on it.
-    single { ConfigReloader(get(), get()) }
+    // One lock around launcher.json: reloads (watcher, receiver) and the
+    // edit-mode write-back must serialize on it.
+    single { ConfigFileLock() }
+    single { ConfigReloader(get(), get(), get()) }
+    single { GridWriteBack(androidContext(), get(), get(), get(), get()) }
     single(createdAtStart = true) { ConfigWatcher(androidContext(), get(), get()).also { it.start() } }
     single(createdAtStart = true) { WallpaperForegroundFixer(androidContext(), get(), get()).also { it.start() } }
 }
