@@ -21,7 +21,9 @@ class AppShortcutConfigActivity(
     }
     fun getIntent(context: Context): IntentSender? {
         val launcherApps = context.getSystemService<LauncherApps>()!!
-        return launcherApps.getShortcutConfigActivityIntent(launcherActivityInfo)
+        return queryShortcutHost(unavailable = null) {
+            launcherApps.getShortcutConfigActivityIntent(launcherActivityInfo)
+        }
     }
 
     override fun compareTo(other: AppShortcutConfigActivity): Int {

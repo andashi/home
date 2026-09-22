@@ -23,6 +23,7 @@ jobs:
         run: >-
           ./gradlew
           :core:preferences:testDebugUnitTest
+          :core:permissions:testDebugUnitTest
           :core:config:testDebugUnitTest
           :services:config:testDebugUnitTest
           :data:database:testDebugUnitTest

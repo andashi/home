@@ -41,6 +41,23 @@ interface PermissionsManager {
 
     }
 
+    /**
+     * Re-read [permissionGroup] from the system and publish the result to
+     * [hasPermission].
+     *
+     * [onResume] already does this for the groups that can change while the
+     * launcher runs, which covers someone granting a permission in Settings
+     * and coming back. It does not cover one that goes away *without* the
+     * launcher being resumed: the HOME role can move to another package at any
+     * moment, and the first thing to notice is a call that throws. Whatever
+     * catches such a call reports here, so the published state stops claiming
+     * a permission the system no longer grants - and because the flow really
+     * changes, collectors run again when it comes back.
+     */
+    fun recheckPermission(permissionGroup: PermissionGroup) {
+
+    }
+
     fun hasPermission(permissionGroup: PermissionGroup): Flow<Boolean>
 
     /**
@@ -192,6 +209,20 @@ internal class PermissionsManagerImpl(
     override fun onResume() {
         appShortcutsPermissionState.value = checkPermissionOnce(PermissionGroup.AppShortcuts)
         manageProfilesPermissionState.value = checkPermissionOnce(PermissionGroup.ManageProfiles)
+    }
+
+    override fun recheckPermission(permissionGroup: PermissionGroup) {
+        val state = when (permissionGroup) {
+            PermissionGroup.Contacts -> contactsPermissionState
+            PermissionGroup.AppShortcuts -> appShortcutsPermissionState
+            PermissionGroup.ManageProfiles -> manageProfilesPermissionState
+            PermissionGroup.Call -> callPermissionState
+            // Reported by the service that implements them; there is nothing
+            // to ask the system about.
+            PermissionGroup.Notifications,
+            PermissionGroup.Accessibility -> return
+        }
+        state.value = checkPermissionOnce(permissionGroup)
     }
 
     override fun reportNotificationListenerState(running: Boolean) {

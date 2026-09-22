@@ -2,6 +2,7 @@ package de.mm20.launcher2.appshortcuts
 
 import android.content.ComponentName
 import android.content.Context
+import android.content.pm.LauncherActivityInfo
 import android.content.pm.LauncherApps
 import android.content.pm.ShortcutInfo
 import android.os.Handler
@@ -81,10 +82,11 @@ internal class AppShortcutRepositoryImpl(
                 .setQueryFlags(
                     buildQueryFlags(manifest, dynamic, pinned, cached)
                 )
-            val shortcuts = try {
+            val shortcuts = queryShortcutHost(
+                unavailable = emptyList<ShortcutInfo>(),
+                permissionsManager = permissionsManager,
+            ) {
                 launcherApps.getShortcuts(query, user)
-            } catch (e: IllegalStateException) {
-                emptyList()
             }
             val appShortcuts = mutableListOf<LauncherShortcut>()
             appShortcuts.addAll(
@@ -225,7 +227,12 @@ internal class AppShortcutRepositoryImpl(
                     LauncherApps.ShortcutQuery.FLAG_MATCH_CACHED or
                     LauncherApps.ShortcutQuery.FLAG_MATCH_PINNED_BY_ANY_LAUNCHER
         )
-        val result = launcherApps.getShortcuts(shortcutQuery, Process.myUserHandle()) ?: emptyList()
+        val result = queryShortcutHost(
+            unavailable = emptyList<ShortcutInfo>(),
+            permissionsManager = permissionsManager,
+        ) {
+            launcherApps.getShortcuts(shortcutQuery, Process.myUserHandle())
+        } ?: emptyList()
         val normalized = result.mapNotNull {
             if ("${it.`package`}:${it.userHandle.getSerialNumber(context)}" in blocklist) return@mapNotNull null
             NormalizedShortcut(
@@ -246,7 +253,12 @@ internal class AppShortcutRepositoryImpl(
         val results = mutableListOf<AppShortcutConfigActivity>()
         val profiles = profileManager.unlockedProfiles.first()
         for (profile in profiles) {
-            val activities = launcherApps.getShortcutConfigActivityList(null, profile.userHandle)
+            val activities = queryShortcutHost(
+                unavailable = emptyList<LauncherActivityInfo>(),
+                permissionsManager = permissionsManager,
+            ) {
+                launcherApps.getShortcutConfigActivityList(null, profile.userHandle)
+            } ?: emptyList()
             results.addAll(
                 activities.map {
                     AppShortcutConfigActivity(it)
