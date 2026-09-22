@@ -16,18 +16,27 @@ interface FormFactorDetector {
 }
 
 /**
- * The classification rule, kept apart from the Android call so it can be
- * tested with plain values. A device folds when it has a hinge: Android
- * exposes that as the `android.hardware.sensor.hinge_angle` system feature,
- * which every foldable (and the SDK's foldable emulator profiles) declares
- * and no candybar phone or tablet does. The rule is a device property, not
- * a window measurement, so the answer is the same folded and unfolded.
+ * The classification rule, kept apart from the Android calls so it can be
+ * tested with plain values. A device folds when either of two device
+ * properties says so, and both are needed:
+ *
+ * - the `android.hardware.sensor.hinge_angle` system feature, which every
+ *   real foldable declares (the Pixel Fold does) but which the foldable
+ *   GrapheneOS emulator instance does not (`pm has-feature` answers false);
+ * - at least two built-in displays, which the emulator does expose (the
+ *   inner panel and the cover, the cover being off while closed), while a
+ *   device with a hinge but a single logical display would only ever show
+ *   the first.
+ *
+ * Both are device properties, not window measurements, so the answer is the
+ * same folded and unfolded.
  */
 object FormFactorRule {
     /**
-     * [hasHingeAngleSensor] is the system feature above. Invariant: the
-     * answer does not depend on the current window.
+     * [hasHingeAngleSensor] is the system feature above; [builtInDisplays]
+     * the number of displays that are not presentation displays.
+     * Invariant: the answer does not depend on the current window.
      */
     fun classify(hasHingeAngleSensor: Boolean, builtInDisplays: Int): FormFactor =
-        if (hasHingeAngleSensor) FormFactor.Fold else FormFactor.Phone
+        if (hasHingeAngleSensor || builtInDisplays >= 2) FormFactor.Fold else FormFactor.Phone
 }
