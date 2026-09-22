@@ -40,7 +40,7 @@ class FormFactorRuleTest {
     @Test
     fun `the Android detector reads the hinge angle system feature`() {
         val context = ApplicationProvider.getApplicationContext<Context>()
-        val detector = AndroidFormFactorDetector(context)
+        val detector = AndroidFormFactorDetector(context) { 1 }
 
         assertEquals(FormFactor.Phone, detector.detect())
 
@@ -49,19 +49,32 @@ class FormFactorRuleTest {
     }
 
     @Test
-    fun `the Android detector counts built-in displays`() {
+    fun `the Android detector counts the built-in displays it is given`() {
         val context = ApplicationProvider.getApplicationContext<Context>()
-        val detector = AndroidFormFactorDetector(context)
+        // The production source is the public built-in category, which
+        // Robolectric's shadow does not serve; the count plumbing is what is
+        // pinned here, the category was measured on the foldable instance.
+        var displays = 1
+        val detector = AndroidFormFactorDetector(context) { displays }
+
         assertEquals(FormFactor.Phone, detector.detect())
 
-        // A second panel, the cover of a foldable; the test device has no
-        // hinge feature, like the emulator.
+        displays = 2
+        assertEquals(FormFactor.Fold, detector.detect())
+    }
+
+    @Test
+    fun `the Android detector's default source is the built-in display category`() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        // Robolectric answers the category with nothing, plain getDisplays()
+        // with every added display: a detector that used the latter would
+        // say Fold here, and on a device whose cover is disabled while open
+        // it would never see two.
         val cover = ShadowDisplayManager.addDisplay("w412dp-h923dp")
         try {
-            assertEquals(FormFactor.Fold, detector.detect())
+            assertEquals(FormFactor.Phone, AndroidFormFactorDetector(context).detect())
         } finally {
             ShadowDisplayManager.removeDisplay(cover)
         }
-        assertEquals(FormFactor.Phone, detector.detect())
     }
 }

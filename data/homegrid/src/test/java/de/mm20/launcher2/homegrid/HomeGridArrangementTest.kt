@@ -41,13 +41,13 @@ class HomeGridArrangementTest {
     }
 
     @Test
-    fun `an overlapping later item is re-placed and reported`() {
+    fun `an overlapping later item is pushed down and reported`() {
         val items = listOf(item("a", 0, 0, 2, 2), item("b", 1, 1, 2, 2))
 
         val result = HomeGridArrangement.arrange(phone, items)
 
         assertEquals(Span(0, 0, 2, 2), result.cells.spanOf("a"))
-        assertEquals(Span(2, 0, 2, 2), result.cells.spanOf("b"))
+        assertEquals(Span(1, 2, 2, 2), result.cells.spanOf("b")) // down, in its column band (ADR 0001)
         assertTrue(result.issues.any { it is LayoutIssue.Overlap })
     }
 

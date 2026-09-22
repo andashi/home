@@ -124,7 +124,7 @@ object GridLayout {
      * the grid are slid back in when possible and dropped otherwise
      * ([LayoutIssue.OutOfBounds]), items crossing the fold are nudged to one
      * side or dropped ([LayoutIssue.CrossesFold]), and an item overlapping an
-     * earlier one is re-placed at the first free position
+     * earlier one is pushed down to the first free row at or below its own
      * ([LayoutIssue.Overlap]) or dropped when there is none
      * ([LayoutIssue.Overflow]). Items are processed in list order, so the
      * earlier item always keeps its place. Invariant: the result passes
@@ -155,12 +155,14 @@ object GridLayout {
             val blocker = result.firstOrNull { it.span.overlaps(span) }
             if (blocker != null) {
                 issues += LayoutIssue.Overlap(blocker.id, item.id)
-                val free = firstFree(spec, result.map { it.span }, w, h, item.mayCrossFold)
-                if (free == null) {
+                // Pushed down like move() does: the first row at or below its
+                // own, in its own column band. Nothing slides sideways.
+                val below = firstRowBelow(spec, result.map { it.span }, span)
+                if (below == null) {
                     issues += LayoutIssue.Overflow(item.id)
                     continue
                 }
-                span = free
+                span = below
             }
             result += if (span == item.span) item else item.copy(span = span)
         }

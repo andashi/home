@@ -70,7 +70,16 @@ class HomeGridVM(
         }
             // The config store derives its `grid-overflow` diagnostics from
             // the rows this device really has (GridRowsSource).
-            .onEach { it?.let { g -> measuredRows.update(g.layout, g.rows) } }
+            .onEach { geometry ->
+                if (geometry != null) {
+                    measuredRows.update(geometry.layout, geometry.rows)
+                    Log.i(
+                        Tag,
+                        "geometry ${geometry.layout}: ${geometry.spec.columns}x${geometry.rows} " +
+                                "(visible ${geometry.visibleColumns}, cover=${geometry.isCover}, cell ${geometry.cellDp} dp)",
+                    )
+                }
+            }
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), null)
 
     val state: StateFlow<HomeGridUiState?> = geometry

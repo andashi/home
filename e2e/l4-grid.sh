@@ -271,6 +271,22 @@ print(f"pitch {pitch:.1f} px, {len(expected)} cells match")
 PY
 }
 
+# A cell with a banner instead of a widget still has its content
+# description, so the screen alone cannot tell a bound widget from a refused
+# bind. The widget service can: every bound instance is listed under
+# "Widgets:" with its host and provider.
+assert_bound() { # $@ = provider components that must be bound to our host
+  local widgets provider
+  widgets="$(adb -s "$SERIAL" shell dumpsys appwidget 2>/dev/null | tr -d '\r' | sed -n '/^Widgets:/,/^Hosts:/p')"
+  for provider in "$@"; do
+    case "$widgets" in
+      *"hostId:$HOST_ID"*"${provider#*/}"*|*"${provider#*/}"*"hostId:$HOST_ID"*) ;;
+      *) printf '%s\n' "$widgets" >&2; die "no widget of $provider is bound to host $HOST_ID" ;;
+    esac
+  done
+}
+HOST_ID=44203
+
 # --- fixtures ----------------------------------------------------------
 
 # The v1 shape every zone pushed before #23: the launcher migrates it.
@@ -353,6 +369,15 @@ install_out="$(adb -s "$SERIAL" install -r "$APK" 2>&1)" || { printf '%s\n' "$in
 case "$install_out" in *Success*) ;; *) printf '%s\n' "$install_out" >&2; die "adb install failed" ;; esac
 ok "package installed: $PKG"
 
+# Binding an AppWidget without a dialog needs the HOME role (the widget
+# service whitelists the role holder); the fresh snapshot holds it for
+# launcher3. Shell may hand it over on this build.
+adb -s "$SERIAL" shell cmd role add-role-holder android.app.role.HOME "$PKG" >/dev/null 2>&1 \
+  || die "could not grant the HOME role to $PKG"
+adb -s "$SERIAL" shell dumpsys role 2>/dev/null | tr -d '\r' | grep -A2 'android.app.role.HOME' | grep -q "holders=$PKG" \
+  || die "$PKG does not hold the HOME role after add-role-holder"
+ok "HOME role granted to $PKG"
+
 HAVE_CLOCK=1
 adb -s "$SERIAL" shell pm list packages | tr -d '\r' | grep -x "package:$CLOCK_PKG" >/dev/null \
   || { HAVE_CLOCK=0; warn "$CLOCK_PKG not installed: AppWidget steps are skipped"; }
@@ -390,7 +415,8 @@ if [ "$HAVE_CLOCK" = 1 ]; then
       {"id":"dock","widget":"favorites","x":0,"y":5,"w":4,"h":1}]' \
     "read-back grid equals the pushed file"
   assert_cells $'digital 0 0 3 1\nanalog 0 1 2 2\ndock 0 5 4 1' "configured grid on screen"
-  ok "configured grid: read-back equals the file, cells measured where configured"
+  assert_bound "$DIGITAL_CLOCK" "$ANALOG_CLOCK"
+  ok "configured grid: read-back equals the file, cells measured where configured, both widgets bound"
 
   # --- 3./4. STUB: hand edit and write-back (PR 6) ---------------------
   warn "steps 3 and 4 (edit by hand, pull, idempotence) land with PR 6"
