@@ -6,6 +6,7 @@ import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.io.File
 
 class ConfigParserTest {
 
@@ -564,5 +565,94 @@ class ConfigParserTest {
             serialized.contains("\"packageName\""),
         )
         assertEquals(config.home?.dock?.favorites, ConfigParser.parse(serialized).config?.home?.dock?.favorites)
+    }
+
+    /**
+     * The example document in ADR 0002 is read from the ADR itself and parsed
+     * here, so a change to the contract that nobody carried into the
+     * documentation fails in L1.
+     *
+     * #35 is why: the favorites shape existed nowhere except in the Kotlin
+     * source, the ADR named "dock favorites" in one line of prose and showed
+     * nothing, and the config generator on the other side guessed a shape that
+     * failed the whole decode. An example that is only prose is an example
+     * that can be wrong.
+     */
+    @Test
+    fun `the example document in ADR 0002 parses`() {
+        val adr = repoFile("docs/architecture/adr/0002-config-format-json.md")
+        val example = fencedJsonAfter(adr.readText(), marker = "<!-- adr-0002-example -->")
+
+        val result = ConfigParser.parse(example)
+
+        assertEquals(
+            "the documented example must not produce diagnostics",
+            emptyList<Diagnostic>(),
+            result.diagnostics,
+        )
+        assertTrue(result.isSuccess)
+
+        val config = result.config!!
+        assertEquals(1, config.schemaVersion)
+        assertEquals("com.example.iconpack", config.icons?.pack)
+        assertEquals(WallpaperTarget.Both, config.appearance?.wallpaper?.target)
+        assertEquals(SearchBarPosition.Bottom, config.home?.searchBar?.position)
+        assertEquals(listOf(BuiltinWidget.Apps), config.home?.widgets?.widgets)
+        // Both spellings, which is the point of showing them.
+        assertEquals(
+            listOf(
+                Favorite("org.thoughtcrime.securesms", Profile.Personal),
+                Favorite("com.example.work.mail", Profile.Work),
+                Favorite("com.example.dialer", Profile.Personal),
+            ),
+            config.home?.dock?.favorites,
+        )
+    }
+
+    /** The unit test runs with the module directory as its working directory. */
+    private fun repoFile(path: String): File {
+        var dir: File? = File("").absoluteFile
+        while (dir != null) {
+            val candidate = File(dir, path)
+            if (candidate.isFile) return candidate
+            dir = dir.parentFile
+        }
+        throw AssertionError("$path not found above ${File("").absolutePath}")
+    }
+
+    /**
+     * The fenced block after [marker], by line rather than by substring.
+     *
+     * Only a run of backticks at least as long as the opening fence, with
+     * nothing but whitespace around it, closes the block - a language-tagged
+     * line such as ```` ```json ```` does not. A substring search would end the
+     * block there and hand the parser a prefix, and a guard that reads less
+     * than it thinks is the failure this whole test exists to prevent.
+     */
+    private fun fencedJsonAfter(markdown: String, marker: String): String {
+        val lines = markdown.lines()
+
+        val markerAt = lines.indexOfFirst { it.trim() == marker }
+        assertTrue("$marker is missing from the ADR", markerAt >= 0)
+
+        val openAt = (markerAt + 1..lines.lastIndex)
+            .firstOrNull { lines[it].trimStart().startsWith("```") }
+        assertNotNull("no fenced block follows $marker", openAt)
+
+        val opener = lines[openAt!!].trim()
+        val fence = opener.takeWhile { it == '`' }
+        assertEquals(
+            "the block after $marker must be tagged json",
+            "json",
+            opener.removePrefix(fence).trim(),
+        )
+
+        val closeAt = (openAt + 1..lines.lastIndex).firstOrNull {
+            val line = lines[it].trim()
+            line.length >= fence.length && line.all { char -> char == '`' }
+        }
+        assertNotNull("the block after $marker is never closed", closeAt)
+
+        return lines.subList(openAt + 1, closeAt!!).joinToString("\n")
     }
 }

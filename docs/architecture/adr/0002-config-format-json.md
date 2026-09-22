@@ -45,6 +45,76 @@ Additional rules:
   coupling"). The config schema is the fork's own, deliberately small, public
   contract.
 
+## The document
+
+What the rules above describe, in full. This example is not decoration: it is
+parsed by `ConfigParserTest` on every run, so it cannot drift from the code the
+way the favorites shape once did (#35, andashi/provisioning#1). Everything
+except `schemaVersion` is optional, and an absent key means *unmanaged*, not
+*off*.
+
+<!-- adr-0002-example -->
+```json
+{
+  // Bumped when the shape changes; migrations are pure ConfigVn -> ConfigVn+1.
+  "schemaVersion": 1,
+
+  "icons": {
+    "themed": true,
+    "enforceThemed": false,
+    "pack": "com.example.iconpack"
+  },
+
+  "appearance": {
+    "transparency": {
+      "name": "glass",
+      "background": 0.7,
+      "surface": 0.55,
+      "elevatedSurface": 0.65
+    },
+    "wallpaper": {
+      // Uploaded beforehand to
+      // content://<applicationId>.config-ingest/wallpapers/zone.jpg
+      "image": "zone.jpg",
+      "target": "both" // "home" | "lock" | "both"
+    }
+  },
+
+  "home": {
+    "searchBar": { "position": "bottom" }, // "top" | "bottom"
+    "dock": {
+      "enabled": true,
+      "favorites": [
+        // Both spellings are valid. The object form is what a round trip
+        // writes back; the bare package name means the personal profile.
+        { "packageName": "org.thoughtcrime.securesms", "profile": "personal" },
+        { "packageName": "com.example.work.mail", "profile": "work" },
+        "com.example.dialer"
+      ]
+    },
+    "widgets": {
+      "enabled": false,
+      "widgets": ["apps"]
+    }
+  }
+}
+```
+
+Two things the example is here to settle, because nothing written down said
+them before:
+
+- **A favorite is an object or a package name**, never anything else. The short
+  form was what the config generator emitted while the contract declared only
+  the long one, and because this parser does not set `coerceInputValues`, a
+  single bare string failed the decode and took the zone's *entire*
+  configuration with it - wallpaper, dock, icons and all. Both decode now, and
+  a favorite that is neither still fails loudly.
+- **Comments and trailing commas are part of the format**, not a courtesy of
+  whichever editor wrote the file. The reader above enables both.
+
+`profile` accepts `personal`, `work` and `private`; Private Space is just
+another profile here (ADR 0006).
+
 ## Consequences
 
 - One serialization stack everywhere: app settings, config file, schema, tests.

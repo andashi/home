@@ -35,3 +35,14 @@ dependencies {
 
     testImplementation(libs.junit)
 }
+
+// `ConfigParserTest` parses the example document out of ADR 0002, so the ADR is
+// an input of this test task. Gradle cannot infer that: without the line below
+// a change to the ADR alone leaves the task UP-TO-DATE, the test does not run,
+// and a wrong example passes unnoticed - which is exactly the kind of silent
+// drift the test exists to catch.
+tasks.withType<Test>().configureEach {
+    inputs.file(rootProject.file("docs/architecture/adr/0002-config-format-json.md"))
+        .withPropertyName("adr0002")
+        .withPathSensitivity(PathSensitivity.RELATIVE)
+}
