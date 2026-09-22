@@ -3,6 +3,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.plugin.serialization)
+    alias(libs.plugins.kover)
 }
 
 android {
@@ -68,4 +69,18 @@ tasks.withType<Test>().configureEach {
         "--add-opens=java.desktop/java.awt.font=ALL-UNNAMED",
         "--add-opens=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
     )
+}
+
+// Coverage gate (ADR 0005, AGENTS.md "Test policy"). The bound is the value the
+// tests reached when the gate was introduced, rounded down to the whole
+// percent; it is raised as tests land and never lowered. `koverVerifyDebug`
+// runs the unit tests itself, so it is one task in CI.
+kover {
+    reports {
+        verify {
+            rule("line coverage of :services:config") {
+                minBound(76)
+            }
+        }
+    }
 }

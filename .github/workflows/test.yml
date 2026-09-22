@@ -41,6 +41,22 @@ jobs:
           :data:widgets:testDebugUnitTest
           :data:themes:testDebugUnitTest
           :core:base:testDebugUnitTest
+      # The coverage gate: every module the fork owns carries a line-coverage
+      # bound in its build file, and this step fails the PR below it.
+      - name: Coverage gate
+        run: >-
+          ./gradlew
+          :core:config:koverVerifyDebug
+          :services:config:koverVerifyDebug
+      - name: Upload coverage reports on failure
+        if: ${{ failure() }}
+        run: ./gradlew :core:config:koverHtmlReportDebug :services:config:koverHtmlReportDebug
+      - uses: actions/upload-artifact@v4
+        if: ${{ failure() }}
+        with:
+          name: kover-html
+          path: '**/build/reports/kover/htmlDebug'
+          retention-days: 14
 
   l3-screenshots:
     runs-on: ubuntu-latest

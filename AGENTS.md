@@ -72,7 +72,13 @@ afterthought (see `docs/architecture/adr/0005-testing-strategy.md`):
 - Before touching existing upstream code, write characterization tests that pin
   its current behavior.
 - Coverage is measured on fork-touched modules only; untouched upstream code
-  staying untested is accepted.
+  staying untested is accepted. It is measured with Kover: a module the fork
+  owns applies `libs.plugins.kover` and carries a `minBound` in its build file,
+  CI runs `:<module>:koverVerifyDebug` and fails the PR below it, and the root
+  build lists the module under `kover(project(...))` so `./gradlew
+  koverHtmlReport` shows one merged report. The bound is set at the value the
+  tests reach when the gate is introduced (rounded down) and is only ever
+  raised. A new fork module ships with its gate in the same PR.
 - Definition of done: unit + Compose tests green; for config/provisioning-facing
   features, the L4 scenario in `e2e/` (driven against the provisioning repo's
   emulator harness) updated and green.
