@@ -57,6 +57,9 @@ sealed class GridEditEvent {
 
     /** A widget could not be added: no free cells of its default size. */
     data object NoRoom : GridEditEvent()
+
+    /** The write-back threw; the session is kept so the user can retry. */
+    data class WriteBackFailed(val reason: String) : GridEditEvent()
 }
 
 /** What the composable draws: the window's geometry and the cells arranged for it. */

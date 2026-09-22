@@ -2,10 +2,12 @@ package de.mm20.launcher2.ui.launcher.grid
 
 import de.mm20.launcher2.grid.CellSize
 import de.mm20.launcher2.grid.SizeLimits
+import de.mm20.launcher2.grid.Span
 import de.mm20.launcher2.homegrid.GridItemLimits
 import de.mm20.launcher2.homegrid.HomeGridCell
 import de.mm20.launcher2.homegrid.HomeGridItem
 import de.mm20.launcher2.homegrid.HomeGridLayouts
+import de.mm20.launcher2.homegrid.HomeGridWriteBack
 import de.mm20.launcher2.homegrid.HomeGridWriteResult
 import de.mm20.launcher2.homegrid.MeasuredGridRows
 import de.mm20.launcher2.homegrid.FormFactor
@@ -224,6 +226,77 @@ class HomeGridEditVMTest {
         assertEquals(listOf(0, 3), f.vm.spanOf("clock").let { listOf(it.x, it.y) })
         // The note (2x1 at row 2) is not under the clock's final rows 3..4: it is back where it was.
         assertEquals(listOf(0, 2), f.vm.spanOf("note").let { listOf(it.x, it.y) })
+    }
+
+    @Test
+    fun `a write-back that throws keeps the session and reports it`() = runTest(dispatcher) {
+        // Review on #70: exitEdit cleared the edit state before the write
+        // and nothing caught an exception from it, so a SQLite error would
+        // have crashed the launcher or left the working copy on screen with
+        // no way to save it.
+        val throwing = object : HomeGridWriteBack {
+            var calls = 0
+            override suspend fun write(layout: String, items: List<HomeGridItem>): HomeGridWriteResult {
+                calls++
+                throw IllegalStateException("disk full")
+            }
+        }
+        val f = fixture(writeBack = FakeWriteBack())
+        f.vm.cells()
+        val vm = HomeGridVM(
+            repository = f.repository,
+            uiSettings = GlobalContext.get().get(),
+            formFactorDetector = FakeFormFactorDetector(FormFactor.Phone),
+            measuredRows = MeasuredGridRows(),
+            seeder = FakeSeeding(),
+            widgetRepository = emptyColumn,
+            writeBack = throwing,
+            itemLimits = GridItemLimits.Unbounded,
+            locked = f.locked,
+        )
+        vm.onWindowMeasured(396f, 622f)
+        val events = mutableListOf<GridEditEvent>()
+        backgroundScope.launch { vm.state.collect {} }
+        backgroundScope.launch { vm.events.collect { events += it } }
+        vm.cells()
+        vm.enterEdit()
+        vm.move("note", 2, 3)
+
+        vm.exitEdit()
+        dispatcher.scheduler.advanceUntilIdle()
+
+        assertEquals(1, throwing.calls)
+        assertTrue(vm.editing.value)
+        assertEquals(listOf(2, 3), vm.spanOf("note").let { listOf(it.x, it.y) })
+        assertEquals(listOf<GridEditEvent>(GridEditEvent.WriteBackFailed("disk full")), events)
+    }
+
+    @Test
+    fun `restore never writes an overlap, the item is re-placed with push-down`() = runTest(dispatcher) {
+        // Review on #70: remove the note, move the clock into its cells,
+        // undo within the snackbar window. The note comes back through the
+        // engine, below what now occupies its old cells.
+        val f = fixture()
+        f.vm.cells()
+        f.vm.enterEdit()
+        val removed = f.vm.removeEditing("note")!!
+        assertTrue(f.vm.move("clock", 0, 2))
+
+        f.vm.restore(removed)
+        f.vm.exitEdit()
+        dispatcher.scheduler.advanceUntilIdle()
+
+        // What was written, not what the arrangement corrected for display.
+        val written = f.writeBack.writes.single().second
+        assertEquals(setOf("clock", "note", "dock"), written.map { it.id }.toSet())
+        for (a in written) for (b in written) if (a !== b) {
+            val sa = Span(a.x, a.y, a.w, a.h); val sb = Span(b.x, b.y, b.w, b.h)
+            assertFalse("${a.id} overlaps ${b.id}", sa.overlaps(sb))
+        }
+        // The clock keeps the cells the user moved it into; the note takes
+        // the first free cells at or below its old row, here right of the clock.
+        assertEquals(listOf(0, 2, 2, 2), written.first { it.id == "clock" }.let { listOf(it.x, it.y, it.w, it.h) })
+        assertEquals(listOf(2, 2), written.first { it.id == "note" }.let { listOf(it.x, it.y) })
     }
 
     @Test

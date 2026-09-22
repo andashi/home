@@ -178,7 +178,11 @@
     <string name="widget_action_allow">Allow</string>
     <string name="grid_edit_title">Edit home screen</string>
     <string name="grid_write_back_skipped">Layout saved on the device, but not into launcher.json: %1$s</string>
-    <string name="grid_seed_leftovers">%1$d widgets from the old widget list did not fit on the grid; add them again from the picker</string>
+    <plurals name="grid_seed_leftovers">
+        <item quantity="one">%1$d widget from the old widget list did not fit on the grid; add it again from the picker</item>
+        <item quantity="other">%1$d widgets from the old widget list did not fit on the grid; add them again from the picker</item>
+    </plurals>
+    <string name="grid_write_back_failed">The layout could not be saved: %1$s. Tap Done to try again.</string>
     <string name="grid_no_room">No room on the grid for this widget</string>
     <string name="grid_favorites_overflow">+%1$d more in search</string>
     <string name="grid_locked">The home screen layout is locked by its configuration</string>

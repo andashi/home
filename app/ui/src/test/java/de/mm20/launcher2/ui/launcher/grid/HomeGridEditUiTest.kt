@@ -99,6 +99,7 @@ class HomeGridEditUiTest {
     private val snackbars = SnackbarHostState()
     private var parentLongPressed = false
     private var editFavoritesRequested = false
+    private var seedLeftovers = 0
 
     @Before
     fun setUp() {
@@ -118,7 +119,7 @@ class HomeGridEditUiTest {
             uiSettings = uiSettings,
             formFactorDetector = FakeFormFactorDetector(FormFactor.Phone),
             measuredRows = MeasuredGridRows(),
-            seeder = FakeSeeding(),
+            seeder = FakeSeeding(seedLeftovers),
             widgetRepository = emptyColumn,
             writeBack = writeBack,
             itemLimits = GridItemLimits { item, _ ->
@@ -295,6 +296,20 @@ class HomeGridEditUiTest {
         composeRule.waitForIdle()
 
         assertEquals(listOf(0, 2, 2, 1), vm.spanOf("note").let { listOf(it.x, it.y, it.w, it.h) })
+    }
+
+    @Test
+    fun `one leftover of the seeding is announced in the singular`() {
+        seedLeftovers = 1
+        val vm = vm()
+        show(vm)
+
+        longPressEmptyArea()
+
+        val expected = ApplicationProvider.getApplicationContext<android.content.Context>()
+            .resources.getQuantityString(R.plurals.grid_seed_leftovers, 1, 1)
+        assertTrue(expected, expected.startsWith("1 widget "))
+        composeRule.onNodeWithText(expected).assertIsDisplayed()
     }
 
     @Test

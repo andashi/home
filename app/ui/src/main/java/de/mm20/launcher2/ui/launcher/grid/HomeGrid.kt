@@ -110,8 +110,10 @@ fun HomeGrid(
         viewModel.events.collect { event ->
             val message = when (event) {
                 is GridEditEvent.WriteBackSkipped -> context.getString(R.string.grid_write_back_skipped, event.reason)
-                is GridEditEvent.SeedLeftovers -> context.getString(R.string.grid_seed_leftovers, event.count)
+                is GridEditEvent.SeedLeftovers ->
+                    context.resources.getQuantityString(R.plurals.grid_seed_leftovers, event.count, event.count)
                 GridEditEvent.NoRoom -> context.getString(R.string.grid_no_room)
+                is GridEditEvent.WriteBackFailed -> context.getString(R.string.grid_write_back_failed, event.reason)
             }
             snackbar.showSnackbar(message, duration = SnackbarDuration.Long)
         }
