@@ -34,6 +34,7 @@ jobs:
           :core:preferences:testDebugUnitTest
           :core:permissions:testDebugUnitTest
           :core:config:testDebugUnitTest
+          :core:grid:test
           :services:config:testDebugUnitTest
           :data:database:testDebugUnitTest
           :data:searchable:testDebugUnitTest
