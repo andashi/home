@@ -76,6 +76,27 @@ afterthought (see `docs/architecture/adr/0005-testing-strategy.md`):
 - Definition of done: unit + Compose tests green; for config/provisioning-facing
   features, the L4 scenario in `e2e/` (driven against the provisioning repo's
   emulator harness) updated and green.
+- A test that reads a file outside its own source set **declares that file as an
+  input of the test task**, or the guard silently stops guarding:
+
+      tasks.withType<Test>().configureEach {
+          inputs.file(rootProject.file("docs/architecture/adr/0002-config-format-json.md"))
+              .withPropertyName("adr0002")
+              .withPathSensitivity(PathSensitivity.RELATIVE)
+      }
+
+  Gradle cannot infer that a Kotlin test reads a Markdown file two directories
+  up. Without the declaration a change to that file alone leaves the task
+  `UP-TO-DATE`, the test does not run, and a wrong example passes. It happened:
+  `ConfigParserTest` parses the example document out of ADR 0002, and the first
+  version of that test was verified by breaking the example on purpose - it
+  passed, because it had not run. CI would have hidden it, since every checkout
+  there is fresh.
+- Check a new test by breaking what it guards and watching it fail. A test that
+  has never been red has not been tested either. Say in the PR which tests fall
+  over without the change and which are deliberate controls that pass in both
+  states - a fix that "passes" by disabling the feature is otherwise
+  indistinguishable from one that works.
 
 ## Test harness (Phase 1)
 
