@@ -655,4 +655,56 @@ class ConfigParserTest {
 
         return lines.subList(openAt + 1, closeAt!!).joinToString("\n")
     }
+
+    /**
+     * What `content://<applicationId>.state/config` hands a host back is the
+     * document re-serialised from the decoded model, and the config Json does
+     * not set `encodeDefaults`. A favorite in the personal profile therefore
+     * comes back *without* its `profile` key, and one written as a bare
+     * package name comes back as an object.
+     *
+     * Pinned because a reader has been assuming otherwise: the convergence
+     * check in the provisioning repo's `45-launcher-config.sh` compares the
+     * read-back field by field against the file it pushed, on the stated
+     * assumption that "the provider serves a fully populated document". It
+     * does not, and the first zone to configure a dock favorite in the
+     * personal profile fails that check - measured on the GrapheneOS emulator,
+     * 2026-09-22, six of six profiles (andashi/home#35).
+     *
+     * If this test ever fails because the output grew the key, the contract
+     * became friendlier and the note above can go. If it fails because the
+     * input shape changed, the host comparing against it needs to hear about
+     * it first.
+     */
+    @Test
+    fun `the effective document drops a default profile and normalises the short form`() {
+        fun roundTrip(document: String): String {
+            val config = ConfigParser.parse(document).config
+            assertNotNull(document, config)
+            return ConfigParser.json.encodeToString(LauncherConfig.serializer(), config!!)
+                .replace(Regex("\\s+"), "")
+        }
+
+        val canonical =
+            """{"schemaVersion":1,"home":{"dock":{"enabled":true,"favorites":[{"packageName":"com.example.app"}]}}}"""
+
+        assertEquals(
+            "an explicit personal profile is the default and is not written back",
+            canonical,
+            roundTrip("""{"schemaVersion":1,"home":{"dock":{"enabled":true,"favorites":[{"packageName":"com.example.app","profile":"personal"}]}}}"""),
+        )
+        assertEquals(
+            "the bare package name becomes an object",
+            canonical,
+            roundTrip("""{"schemaVersion":1,"home":{"dock":{"enabled":true,"favorites":["com.example.app"]}}}"""),
+        )
+
+        val work =
+            """{"schemaVersion":1,"home":{"dock":{"enabled":true,"favorites":[{"packageName":"com.example.app","profile":"work"}]}}}"""
+        assertEquals(
+            "a non-default profile survives, which is why the asymmetry is easy to miss",
+            work,
+            roundTrip(work),
+        )
+    }
 }
