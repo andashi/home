@@ -10,6 +10,6 @@ import org.koin.dsl.module
 val appShortcutsModule = module {
     single<AppShortcutRepository> { AppShortcutRepositoryImpl(androidContext(), get(), get(), get(), get()) }
     factory<SearchableRepository<AppShortcut>>(named<AppShortcut>()) { get<AppShortcutRepository>() }
-    factory<SearchableDeserializer>(named(LauncherShortcut.Domain)) { LauncherShortcutDeserializer(androidContext()) }
+    factory<SearchableDeserializer>(named(LauncherShortcut.Domain)) { LauncherShortcutDeserializer(androidContext(), get()) }
     factory<SearchableDeserializer>(named(LegacyShortcut.Domain)) { LegacyShortcutDeserializer(androidContext()) }
 }

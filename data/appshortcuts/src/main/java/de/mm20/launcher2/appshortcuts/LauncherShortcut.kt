@@ -19,7 +19,10 @@ import de.mm20.launcher2.icons.*
 import de.mm20.launcher2.ktx.getSerialNumber
 import de.mm20.launcher2.search.AppShortcut
 import de.mm20.launcher2.search.ResultScore
+import de.mm20.launcher2.permissions.PermissionsManager
 import de.mm20.launcher2.search.SearchableSerializer
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.lang.NullPointerException
@@ -33,7 +36,18 @@ internal data class LauncherShortcut(
     internal val userSerialNumber: Long,
     override val labelOverride: String? = null,
     override val score: ResultScore = ResultScore.Unspecified,
-) : AppShortcut {
+) : AppShortcut, KoinComponent {
+
+    /**
+     * Injected rather than passed in, and deliberately not a constructor
+     * parameter: this is a data class, two shortcuts are the same shortcut
+     * regardless of who they report a lost role to, and threading a manager
+     * through four construction sites and two UI entry points to reach two
+     * catch branches would cost more than it explains.
+     * [LauncherShortcutDeserializer] in this package resolves its dependencies
+     * the same way.
+     */
+    private val permissionsManager: PermissionsManager by inject()
 
     override val domain: String = Domain
     override val componentName: ComponentName?
@@ -81,16 +95,17 @@ internal data class LauncherShortcut(
 
     override fun launch(context: Context, options: Bundle?): Boolean {
         val launcherApps = context.getSystemService<LauncherApps>()!!
-        try {
-            launcherApps.startShortcut(launcherShortcut, null, options)
-        } catch (e: IllegalStateException) {
-            return false
-        } catch (e: ActivityNotFoundException) {
-            return false
-        } catch (e: SecurityException) {
-            return false
+        // Starting a shortcut needs the HOME role like querying one does, so it
+        // goes through the same door. ActivityNotFoundException stays here: it
+        // says the target is gone, which has nothing to do with the role.
+        return queryShortcutHost(unavailable = false, permissionsManager = permissionsManager) {
+            try {
+                launcherApps.startShortcut(launcherShortcut, null, options)
+                true
+            } catch (e: ActivityNotFoundException) {
+                false
+            }
         }
-        return true
     }
 
     override fun getPlaceholderIcon(context: Context): StaticLauncherIcon {
@@ -111,17 +126,19 @@ internal data class LauncherShortcut(
     ): LauncherIcon? {
         val launcherApps = context.getSystemService(Context.LAUNCHER_APPS_SERVICE) as LauncherApps
         val icon = withContext(Dispatchers.IO) {
-            try {
-                launcherApps.getShortcutIconDrawable(
-                    launcherShortcut,
-                    context.resources.displayMetrics.densityDpi
-                )
-            } catch (e: SecurityException) {
-                CrashReporter.logException(e)
-                null
-            } catch (e: NullPointerException) {
-                CrashReporter.logException(e)
-                null
+            // Also role-gated. No icon is the right answer when the role is
+            // gone, and it is not worth a crash report: that is a state the
+            // launcher is expected to be in sometimes, not a defect.
+            queryShortcutHost(unavailable = null, permissionsManager = permissionsManager) {
+                try {
+                    launcherApps.getShortcutIconDrawable(
+                        launcherShortcut,
+                        context.resources.displayMetrics.densityDpi
+                    )
+                } catch (e: NullPointerException) {
+                    CrashReporter.logException(e)
+                    null
+                }
             }
         } ?: return null
         if (icon is AdaptiveIconDrawable) {
