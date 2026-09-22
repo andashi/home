@@ -326,27 +326,10 @@ class UiSettings internal constructor(
         }
     }
 
-    val dock
-        get() = launcherDataStore.data.map {
-            it.homeScreenDock
-        }.distinctUntilChanged()
-
-    fun setDock(dock: Boolean) {
-        launcherDataStore.update {
-            it.copy(homeScreenDock = dock)
-        }
-    }
-
-    val dockRows
-        get() = launcherDataStore.data.map {
-            it.homeScreenDockRows
-        }.distinctUntilChanged()
-
-    fun setDockRows(rows: Int) {
-        launcherDataStore.update {
-            it.copy(homeScreenDockRows = rows)
-        }
-    }
+    // `dock`/`dockRows` accessors used to be here. The DataStore fields
+    // `homeScreenDock` and `homeScreenDockRows` stay until a settings
+    // migration drops them; nothing reads or writes them any more (the dock
+    // is the favorites widget on the grid, ADR 0001 revised 2026-09-22, #46).
 
     val homeScreenWidgets
         get() = launcherDataStore.data.map {
@@ -383,14 +366,13 @@ class UiSettings internal constructor(
         }
     }
 
+    /**
+     * Read by the widget column of the secondary widget pages only; the home
+     * grid's edit mode opens on long-press. The settings entry that wrote it
+     * is gone, so the value is whatever the DataStore holds (default true).
+     */
     val widgetEditButton
         get() = launcherDataStore.data.map {
             it.widgetsEditButton
         }.distinctUntilChanged()
-
-    fun setWidgetEditButton(editButton: Boolean) {
-        launcherDataStore.update {
-            it.copy(widgetsEditButton = editButton)
-        }
-    }
 }
