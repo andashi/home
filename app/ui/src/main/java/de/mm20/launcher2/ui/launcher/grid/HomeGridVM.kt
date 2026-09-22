@@ -150,13 +150,25 @@ class HomeGridVM(
         return true
     }
 
-    /** Leaves edit mode and writes the working copy back exactly once, on Done. */
+    /**
+     * Leaves edit mode and writes the working copy back exactly once, on
+     * Done. The edit state is cleared only after the write returned: a
+     * write that throws (a SQLite error under the repository, say) keeps
+     * the working copy and edit mode, reports [GridEditEvent.WriteBackFailed],
+     * and the user taps Done again.
+     */
     suspend fun exitEdit() {
         val items = working.value ?: return
         val geometry = geometry.filterNotNull().first()
+        val result = try {
+            writeBack.write(geometry.layout, items.mapIndexed { index, item -> item.copy(position = index) })
+        } catch (e: Exception) {
+            Log.e(Tag, "write-back of ${geometry.layout} failed; staying in edit mode", e)
+            _events.tryEmit(GridEditEvent.WriteBackFailed(e.message ?: e.javaClass.simpleName))
+            return
+        }
         _editing.value = false
         _selectedId.value = null
-        val result = writeBack.write(geometry.layout, items.mapIndexed { index, item -> item.copy(position = index) })
         working.value = null
         if (result is HomeGridWriteResult.Skipped) {
             _events.tryEmit(GridEditEvent.WriteBackSkipped(result.code, result.reason))
@@ -205,11 +217,37 @@ class HomeGridVM(
         return removed
     }
 
-    /** Puts an item removed by [removeEditing] back at its cells. */
+    /**
+     * Puts an item removed by [removeEditing] back: at its old cells when
+     * they are still free, else at the first free cells at or below its old
+     * row (what the user moved into those cells meanwhile stays where it
+     * was put), else anywhere free, else nowhere with a
+     * [GridEditEvent.NoRoom]. The working copy never holds an overlap, so
+     * neither does the file (review on #70).
+     */
     fun restore(item: HomeGridItem) {
         val items = working.value ?: return
         if (items.any { it.id == item.id }) return
-        working.value = (items + item).sortedBy { it.position }
+        val geometry = geometry.value ?: return
+        val others = items.map { it.toGridItem(geometry) }
+        val candidate = item.toGridItem(geometry)
+        val spec = geometry.spec
+        var found: Span? = null
+        search@ for (y in item.y until spec.rows) {
+            for (x in 0..(spec.columns - item.w)) {
+                val span = Span(x, y, item.w, item.h)
+                if (GridLayout.validate(spec, others + candidate.copy(span = span)).isEmpty()) {
+                    found = span
+                    break@search
+                }
+            }
+        }
+        val span = found ?: GridLayout.place(spec, others, candidate)?.span
+        if (span == null) {
+            _events.tryEmit(GridEditEvent.NoRoom)
+            return
+        }
+        working.value = (items + item.copy(x = span.x, y = span.y, w = span.w, h = span.h)).sortedBy { it.position }
     }
 
     /**

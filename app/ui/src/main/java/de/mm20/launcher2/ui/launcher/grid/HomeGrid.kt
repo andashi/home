@@ -189,10 +189,13 @@ fun HomeGrid(
                                         actionLabel = context.getString(R.string.action_undo),
                                         duration = SnackbarDuration.Short,
                                     )
+                                    // Undo puts the item back; otherwise nothing more happens
+                                    // here. The host id stays allocated until Done has written
+                                    // the layout: the reconciler then releases every id no item
+                                    // references. Releasing it now would strand the stored item
+                                    // if the process died before Done (review on #70).
                                     if (result == SnackbarResult.ActionPerformed) {
                                         viewModel.restore(removed)
-                                    } else {
-                                        removed.appWidgetId?.let { host.deleteAppWidgetId(it) }
                                     }
                                 }
                             },

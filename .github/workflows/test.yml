@@ -137,11 +137,17 @@ jobs:
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
+      # The runner's SDK ships the classic foldable profiles ("7.6in
+      # Foldable" is the 7.6" fold-in with an outer display); the Pixel
+      # profiles are not in its devices.xml. The listing is in the log for
+      # the day a profile name changes.
+      - name: List the SDK's foldable device profiles
+        run: "$ANDROID_HOME/cmdline-tools/latest/bin/avdmanager" list device | grep -B1 -A1 -i fold || true
       - name: Fold tests on a foldable emulator (API 36)
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 36
           target: default
           arch: x86_64
-          profile: pixel_fold
+          profile: "7.6in Foldable"
           script: ./gradlew :app:ui:connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=de.mm20.launcher2.ui.launcher.grid.HomeGridFoldTest

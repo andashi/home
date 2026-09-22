@@ -22,7 +22,6 @@ import org.junit.rules.ExternalResource
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.GlobalContext
 import org.koin.core.context.startKoin
-import org.koin.core.context.stopKoin
 import org.koin.dsl.module
 
 /**
@@ -44,32 +43,35 @@ class KoinGridRule(
     val locked = MutableStateFlow(false)
 
     override fun before() {
-        seedDefaultSettingsFile()
         repository = FakeHomeGridRepository(items)
         writeBack = FakeWriteBack(repository)
-        stopKoin()
-        startKoin {
-            androidContext(ApplicationProvider.getApplicationContext())
-            modules(
-                preferencesModule,
-                module {
-                    single<PermissionsManager> { GrantedPermissions() }
-                    single { ProfileManager(androidContext(), get()) }
-                    single<de.mm20.launcher2.homegrid.HomeGridRepository> { repository }
-                    single<de.mm20.launcher2.homegrid.FormFactorDetector> { FakeFormFactorDetector(formFactor) }
-                    single { MeasuredGridRows() }
-                    single<HomeGridSeeding> { FakeSeeding() }
-                    single<WidgetRepository> { emptyColumn }
-                    single<de.mm20.launcher2.homegrid.HomeGridWriteBack> { writeBack }
-                    single<GridItemLimits> { GridItemLimits { item, _ -> limits[item.id] ?: SizeLimits.Unbounded } }
-                },
-            )
+        locked.value = false
+        // Koin starts once per test process. The preferences module owns a
+        // DataStore on the settings file, and DataStore refuses a second
+        // instance on the same file, which is exactly what a stop/start per
+        // test produced: every test after the first timed out waiting for a
+        // grid whose settings flow had failed. The fakes are per test and
+        // are handed to the view model directly; Koin only serves what the
+        // grid resolves itself (the profile manager, the settings).
+        if (GlobalContext.getOrNull() == null) {
+            seedDefaultSettingsFile()
+            startKoin {
+                androidContext(ApplicationProvider.getApplicationContext())
+                modules(
+                    preferencesModule,
+                    module {
+                        single<PermissionsManager> { GrantedPermissions() }
+                        single { ProfileManager(androidContext(), get()) }
+                        single { MeasuredGridRows() }
+                        single<HomeGridSeeding> { FakeSeeding() }
+                        single<WidgetRepository> { emptyColumn }
+                    },
+                )
+            }
         }
     }
 
-    override fun after() {
-        stopKoin()
-    }
+    override fun after() = Unit
 
     /** A view model over the rule's fakes, the way `HomeGridVM.factory` would build it. */
     fun viewModel(): HomeGridVM {
@@ -82,7 +84,7 @@ class KoinGridRule(
             seeder = koin.get<HomeGridSeeding>(),
             widgetRepository = emptyColumn,
             writeBack = writeBack,
-            itemLimits = koin.get(),
+            itemLimits = GridItemLimits { item, _ -> limits[item.id] ?: SizeLimits.Unbounded },
             locked = locked,
         )
     }
