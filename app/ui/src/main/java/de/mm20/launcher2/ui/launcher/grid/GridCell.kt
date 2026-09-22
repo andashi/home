@@ -33,20 +33,21 @@ import de.mm20.launcher2.ui.locals.LocalPreferDarkContentOverWallpaper
 import de.mm20.launcher2.ui.theme.transparency.transparency
 import de.mm20.launcher2.widgets.AppWidget
 
-/** One cell of the grid: the favorites widget or a hosted AppWidget, on a card. */
+/**
+ * One cell of the grid: the favorites widget or a hosted AppWidget, on a
+ * card. [favoritesContent] draws the favorites widget for a span; the
+ * default is [FavoritesGridWidget], tests pass a placeholder.
+ */
 @Composable
 internal fun GridCell(
     cell: HomeGridCell,
     viewModel: HomeGridVM,
+    favoritesContent: @Composable (columns: Int, rows: Int) -> Unit,
 ) {
     val item = cell.item
     if (item.isFavorites) {
         GridCard {
-            FavoritesGridWidget(
-                columns = cell.span.w,
-                rows = cell.span.h,
-                modifier = Modifier.fillMaxSize(),
-            )
+            favoritesContent(cell.span.w, cell.span.h)
         }
     } else {
         AppWidgetCell(
@@ -117,19 +118,22 @@ internal fun AppWidgetCell(
                 )
             }
         }
-        WidgetPickerSheet(
-            expanded = replaceWidget,
-            includeBuiltinWidgets = false,
-            onDismiss = { replaceWidget = false },
-            onWidgetSelected = { picked ->
-                if (picked is AppWidget) {
-                    val info = AppWidgetManager.getInstance(context).getAppWidgetInfo(picked.config.widgetId)
-                    val provider = info?.provider?.flattenToString()
-                    if (provider != null) onReplace(provider, picked.config.widgetId)
-                }
-                replaceWidget = false
-            },
-        )
+        // Composed only while open: the sheet carries its own view model.
+        if (replaceWidget) {
+            WidgetPickerSheet(
+                expanded = true,
+                includeBuiltinWidgets = false,
+                onDismiss = { replaceWidget = false },
+                onWidgetSelected = { picked ->
+                    if (picked is AppWidget) {
+                        val info = AppWidgetManager.getInstance(context).getAppWidgetInfo(picked.config.widgetId)
+                        val provider = info?.provider?.flattenToString()
+                        if (provider != null) onReplace(provider, picked.config.widgetId)
+                    }
+                    replaceWidget = false
+                },
+            )
+        }
         return
     }
 

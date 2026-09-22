@@ -25,7 +25,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import de.mm20.launcher2.grid.Span
 import de.mm20.launcher2.homegrid.GridGeometry
+import de.mm20.launcher2.profiles.ProfileManager
 import de.mm20.launcher2.ui.base.LocalAppWidgetHost
+import org.koin.compose.koinInject
 
 /**
  * The single-page widget grid (ADR 0001). One measurement at the top decides
@@ -35,6 +37,9 @@ import de.mm20.launcher2.ui.base.LocalAppWidgetHost
 fun HomeGrid(
     modifier: Modifier = Modifier,
     viewModel: HomeGridVM = viewModel(factory = HomeGridVM.factory()),
+    favoritesContent: @Composable (columns: Int, rows: Int) -> Unit = { columns, rows ->
+        FavoritesGridWidget(columns = columns, rows = rows, modifier = Modifier.fillMaxSize())
+    },
 ) {
     BoxWithConstraints(modifier = modifier.fillMaxSize()) {
         val widthDp = maxWidth.value
@@ -48,11 +53,15 @@ fun HomeGrid(
 
         val context = LocalContext.current
         val host = LocalAppWidgetHost.current
+        val profileManager: ProfileManager = koinInject()
         // Re-run whenever an item appears, disappears or changes its host id;
         // a pass that finds nothing to do costs one query.
         val bindingKey = uiState.cells.map { it.item.id to it.item.appWidgetId }
         LaunchedEffect(bindingKey) {
-            viewModel.reconcile(AndroidAppWidgetHostPort(context, host))
+            val port = AndroidAppWidgetHostPort(context, host) { type ->
+                profileManager.getProfile(type)?.userHandle
+            }
+            viewModel.reconcile(port)
         }
 
         val cellsById = remember(uiState.cells) { uiState.cells.associateBy { it.item.id } }
@@ -62,7 +71,7 @@ fun HomeGrid(
             modifier = Modifier.fillMaxSize(),
         ) { id ->
             val cell = cellsById[id] ?: return@HomeGridLayout
-            GridCell(cell = cell, viewModel = viewModel)
+            GridCell(cell = cell, viewModel = viewModel, favoritesContent = favoritesContent)
         }
     }
 }

@@ -103,6 +103,23 @@ class HomeGridSeederTest {
     }
 
     @Test
+    fun `the production seeder asks the AppWidgetManager for providers`() = runBlocking {
+        // Nothing is bound in Robolectric's AppWidgetManager, so the widget
+        // has no provider and is skipped; the dock is still written.
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val seeder = HomeGridSeeder(
+            context,
+            FakeWidgetRepository(mapOf(WidgetScreenTarget.Default.id to listOf(appWidget(11, 110)))),
+            grid,
+            FakeSeedFlag(),
+        )
+
+        val written = seeder.seedIfNeeded(phone)
+
+        assertEquals(listOf(HomeGridWidgets.Favorites), written.map { it.widget })
+    }
+
+    @Test
     fun `an AppWidget whose provider is unknown is skipped`() = runBlocking {
         val column = listOf(appWidget(99, 110))
 

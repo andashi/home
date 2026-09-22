@@ -1,0 +1,15 @@
+# label: before-homegrid
+# commit: 32746c7e04598a4574d97968607dc4705fd436d3
+# apk: app-default-debug.apk
+# measured: 2026-09-22T18:21:33Z
+apk.size.file	61073157	bytes
+apk.size.download	22362082	bytes
+apk.size.arsc	1971916	bytes
+apk.size.dex	55868272	bytes
+apk.size.lib	73584	bytes
+apk.size.other	197928	bytes
+apk.size.res	5069989	bytes
+dex.files	25	count
+dex.method_refs	230042	count
+manifest.permissions	12	count
+gradle.modules	35	count

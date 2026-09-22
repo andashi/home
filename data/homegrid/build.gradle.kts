@@ -89,7 +89,7 @@ kover {
     reports {
         verify {
             rule("line coverage of :data:homegrid") {
-                minBound(96)
+                minBound(100)
             }
         }
     }

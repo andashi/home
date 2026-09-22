@@ -6,24 +6,23 @@ import android.content.ComponentName
 import android.content.Context
 import android.os.Process
 import android.os.UserHandle
+import android.util.Log
 import de.mm20.launcher2.homegrid.AppWidgetHostPort
 import de.mm20.launcher2.profiles.Profile
-import de.mm20.launcher2.profiles.ProfileManager
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
 
 /**
  * The real [AppWidgetHostPort] over the process-wide [AppWidgetHost] the
  * launcher already runs (`ProvideAppWidgetHost`). Profiles are named the way
- * the config names them (`personal`, `work`, `private`); an unknown or
- * missing profile means the owner.
+ * the config names them (`personal`, `work`, `private`); a missing profile
+ * name means the owner, an unknown one binds nothing. [userHandleFor]
+ * resolves the two managed profiles (the `ProfileManager` in production).
  */
 internal class AndroidAppWidgetHostPort(
     private val context: Context,
     private val host: AppWidgetHost,
-) : AppWidgetHostPort, KoinComponent {
+    private val userHandleFor: (Profile.Type) -> UserHandle?,
+) : AppWidgetHostPort {
 
-    private val profileManager: ProfileManager by inject()
     private val manager: AppWidgetManager get() = AppWidgetManager.getInstance(context)
 
     override fun boundIds(): List<Int> = host.appWidgetIds.toList()
@@ -39,7 +38,10 @@ internal class AndroidAppWidgetHostPort(
         val userHandle = userHandleFor(profile) ?: return false
         return try {
             manager.bindAppWidgetIdIfAllowed(id, userHandle, component, null)
-        } catch (e: IllegalArgumentException) {
+        } catch (e: RuntimeException) {
+            // A bad id or a provider that vanished between lookup and bind;
+            // the cell shows the banner either way.
+            Log.w(Tag, "binding $widget failed", e)
             false
         }
     }
@@ -51,6 +53,10 @@ internal class AndroidAppWidgetHostPort(
             "private" -> Profile.Type.Private
             else -> return null
         }
-        return profileManager.getProfile(type)?.userHandle
+        return userHandleFor(type)
+    }
+
+    companion object {
+        private const val Tag = "AppWidgetHostPort"
     }
 }
