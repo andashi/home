@@ -113,6 +113,23 @@ class HomeGridVM(
     private var leftoversAnnounced = false
 
     /**
+     * The working copy as it was when a drag began. Every move of the drag
+     * is applied to this, not to the previous move's result, so an item the
+     * ghost passed over returns to its place instead of being pushed again
+     * at every row (which ended in an overflow that rejected the drop).
+     */
+    private var dragOrigin: List<HomeGridItem>? = null
+
+    fun beginDrag(id: String) {
+        dragOrigin = working.value
+        _selectedId.value = id
+    }
+
+    fun endDrag() {
+        dragOrigin = null
+    }
+
+    /**
      * Enters edit mode with a working copy of the layout, or returns false
      * when `home.grid.locked` is true (D3, D9). Edits change the working copy
      * only; [exitEdit] persists it once.
@@ -159,7 +176,7 @@ class HomeGridVM(
      * (ADR 0001) and returns true when the item is now there.
      */
     fun move(id: String, x: Int, y: Int): Boolean {
-        val items = working.value ?: return false
+        val items = dragOrigin ?: working.value ?: return false
         val geometry = geometry.value ?: return false
         val current = items.firstOrNull { it.id == id } ?: return false
         val result = GridLayout.move(geometry.spec, items.map { it.toGridItem(geometry) }, id, Span(x, y, current.w, current.h))

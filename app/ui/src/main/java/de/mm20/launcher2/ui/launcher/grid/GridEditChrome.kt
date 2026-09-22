@@ -110,7 +110,7 @@ internal fun GridCellEditOverlay(
             .pointerInput(id, pitchPx) {
                 detectDragGestures(
                     onDragStart = {
-                        viewModel.select(id)
+                        viewModel.beginDrag(id)
                         val origin = cellTopLeft(span, pitchPx - gapPx, gapPx)
                         visual.ghostLeftPx = origin.x.toFloat()
                         visual.ghostTopPx = origin.y.toFloat()
@@ -128,8 +128,8 @@ internal fun GridCellEditOverlay(
                             viewModel.move(id, targetX, targetY)
                         }
                     },
-                    onDragEnd = { visual.draggedId = null },
-                    onDragCancel = { visual.draggedId = null },
+                    onDragEnd = { visual.draggedId = null; viewModel.endDrag() },
+                    onDragCancel = { visual.draggedId = null; viewModel.endDrag() },
                 )
             }
             .then(
