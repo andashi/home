@@ -39,10 +39,11 @@ sealed class WriteBackResult {
  * (ADR 0003, revised 2026-09-22: the config is the source of truth in both
  * directions).
  *
- * The protocol, in order:
+ * The protocol, in order, all of it under the [ConfigFileLock] so that no
+ * reload runs between the two writes:
  * 1. the database first, through [HomeGridRepository.replace]: the screen
  *    is already right, the file is its mirror;
- * 2. under the [ConfigFileLock] the file is read and parsed; a missing,
+ * 2. the file is read and parsed; a missing,
  *    unparsable or `locked` file is left alone (a broken file stays visibly
  *    broken and is never overwritten);
  * 3. the effective `home.grid` from [ConfigStore.readState] is rendered and
@@ -73,8 +74,13 @@ class GridWriteBack(
     val lastResult: StateFlow<WriteBackResult?> = _lastResult
 
     suspend fun write(layout: String, items: List<HomeGridItem>): WriteBackResult {
-        repository.replace(layout, items)
-        val result = lock.withLock { writeFile() }
+        // The lock first, then the database, then the file: a reload that
+        // already read the old file must not apply its grid over the new
+        // rows between the two writes (review on #68).
+        val result = lock.withLock {
+            repository.replace(layout, items)
+            writeFile()
+        }
         if (result is WriteBackResult.Skipped) {
             Log.w(TAG, "home.grid not written back (${result.code}): ${result.reason}")
         }

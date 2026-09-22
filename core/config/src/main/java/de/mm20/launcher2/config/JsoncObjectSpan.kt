@@ -195,32 +195,38 @@ object JsoncObjectSpan {
             return i
         }
 
+        /**
+         * Decodes the escapes of a key. A `\u` without four hex digits, or a
+         * backslash with nothing after it, is malformed: keys are compared
+         * unescaped, and a key that cannot be decoded cannot be matched.
+         */
         private fun unescape(raw: String): String {
             if ('\\' !in raw) return raw
             val sb = StringBuilder(raw.length)
             var i = 0
             while (i < raw.length) {
                 val c = raw[i]
-                if (c == '\\' && i + 1 < raw.length) {
-                    when (val e = raw[i + 1]) {
-                        'n' -> sb.append('\n')
-                        't' -> sb.append('\t')
-                        'r' -> sb.append('\r')
-                        'b' -> sb.append('\b')
-                        'f' -> sb.append('')
-                        'u' -> {
-                            if (i + 5 < raw.length) {
-                                sb.append(raw.substring(i + 2, i + 6).toInt(16).toChar())
-                                i += 4
-                            }
-                        }
-                        else -> sb.append(e)
-                    }
-                    i += 2
-                } else {
+                if (c != '\\') {
                     sb.append(c)
                     i++
+                    continue
                 }
+                if (i + 1 >= raw.length) throw MalformedInput()
+                when (val e = raw[i + 1]) {
+                    'n' -> sb.append('\n')
+                    't' -> sb.append('\t')
+                    'r' -> sb.append('\r')
+                    'b' -> sb.append('\b')
+                    'f' -> sb.append('')
+                    'u' -> {
+                        if (i + 6 > raw.length) throw MalformedInput()
+                        val code = raw.substring(i + 2, i + 6).toIntOrNull(16) ?: throw MalformedInput()
+                        sb.append(code.toChar())
+                        i += 4
+                    }
+                    else -> sb.append(e)
+                }
+                i += 2
             }
             return sb.toString()
         }
