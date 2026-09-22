@@ -106,11 +106,32 @@ class HomeGridFoldTest {
         waitForColumns(vm, 8)
     }
 
+    /**
+     * Waits for the window to show [columns] and the dock cell to be laid
+     * out. A display switch on a software-rendered CI emulator takes tens
+     * of seconds the first time (the run on 2026-09-22 saw the first fold of
+     * the job miss a 15 s bound while the later folds of the same run
+     * passed), and the cover may lock again meanwhile, so the wait is long
+     * and re-wakes the screen on the way.
+     */
     private fun waitForColumns(vm: HomeGridVM, columns: Int) {
-        composeRule.waitUntil(15_000) {
-            vm.state.value?.geometry?.visibleColumns == columns &&
-                    composeRule.onAllNodesWithContentDescription("grid-item:dock").fetchSemanticsNodes()
-                        .any { it.size.height > 0 }
+        val deadline = System.currentTimeMillis() + 90_000
+        while (true) {
+            val settled = runCatching {
+                composeRule.waitUntil(5_000) {
+                    vm.state.value?.geometry?.visibleColumns == columns &&
+                            composeRule.onAllNodesWithContentDescription("grid-item:dock").fetchSemanticsNodes()
+                                .any { it.size.height > 0 }
+                }
+            }.isSuccess
+            if (settled) return
+            if (System.currentTimeMillis() > deadline) {
+                throw AssertionError(
+                    "no $columns-column grid within 90 s; geometry=${vm.state.value?.geometry}",
+                )
+            }
+            shell("input keyevent KEYCODE_WAKEUP")
+            shell("wm dismiss-keyguard")
         }
     }
 
