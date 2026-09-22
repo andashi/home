@@ -8,17 +8,19 @@ reload, and integrated into a GrapheneOS multi-profile setup.
 ## Principles
 
 1. **One page.** No paging, no app icons on the home surface. Widgets are placed on a
-   grid; a dock holds a handful of favorites. Everything else is reached through
-   search / the app drawer.
+   grid; the dock is the favorites widget on that grid, movable and resizable like
+   the rest (ADR 0001, revised 2026-09-22). Everything else is reached through
+   search.
 2. **Launch apps, host widgets, little else.** Search covers apps, app shortcuts
    and contacts. The clock, weather, calendar, music and notes are standard
    Android widgets, not built-in ones; files belong to a file manager, places to
    a maps app. A feature earns its place in the launcher when its cost is a
    scoped, revocable permission — not when it costs a blanket grant (ADR 0008).
-3. **Dotfiles are the source of truth.** The complete home configuration lives in one
-   JSON document under version control. The launcher converges its state towards it —
-   check-before-set, never blind writes. UI editing remains possible, but the config
-   file wins on reload.
+3. **The config file is the source of truth, in both directions.** The complete
+   home configuration lives in one JSON document under version control. The
+   launcher converges its state towards it — check-before-set, never blind
+   writes — and edit mode on the device writes the grid back into the same file
+   (ADR 0003 section 5), so the host pulls before it pushes.
 4. **Verifiable, not just applied.** Every externally applied change is readable back
    through an exported read-only interface, so provisioning can assert the state it
    intended (convergent steps, not set-once-unverifiable).
@@ -59,8 +61,11 @@ reload, and integrated into a GrapheneOS multi-profile setup.
    grid and the config contract have to cover.
 4. **Single-page widget grid** (ADR 0001) — the large piece, landing on top of the
    test net, the config system and a launcher that is no longer carrying what it
-   does not use.
-5. **Liquid Glass refinement** (ADR 0004) — iterated on top of a stable grid.
+   does not use. **Landed 2026-09-22** as a series: coverage gate (#63), layout
+   engine `:core:grid` (#64), `HomeGridItem` table (#65), config contract v2
+   (#66), renderer (#67), write-back (#68); edit mode is in progress.
+5. **Liquid Glass refinement** (ADR 0004, #24) — next, iterated on top of the
+   stable grid.
 
 ## Relationship to the provisioning repo
 
