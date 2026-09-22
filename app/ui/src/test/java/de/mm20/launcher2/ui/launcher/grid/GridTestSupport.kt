@@ -21,6 +21,11 @@ import de.mm20.launcher2.homegrid.HomeGridLayouts
 import de.mm20.launcher2.homegrid.HomeGridRepository
 import de.mm20.launcher2.homegrid.HomeGridSeedFlag
 import de.mm20.launcher2.homegrid.HomeGridWidgets
+import de.mm20.launcher2.homegrid.GridGeometry
+import de.mm20.launcher2.homegrid.HomeGridSeeder
+import de.mm20.launcher2.homegrid.HomeGridSeeding
+import de.mm20.launcher2.homegrid.HomeGridWriteBack
+import de.mm20.launcher2.homegrid.HomeGridWriteResult
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
@@ -53,6 +58,25 @@ class FakeHomeGridRepository(
     override suspend fun delete(layout: String, id: String) {
         layouts.value = layouts.value + (layout to layouts.value[layout].orEmpty().filter { it.id != id })
     }
+}
+
+/** Records what edit mode wrote back and answers with a configurable result. */
+class FakeWriteBack(
+    var result: HomeGridWriteResult = HomeGridWriteResult.Written,
+) : HomeGridWriteBack {
+    val writes = mutableListOf<Pair<String, List<HomeGridItem>>>()
+    override suspend fun write(layout: String, items: List<HomeGridItem>): HomeGridWriteResult {
+        writes += layout to items
+        return result
+    }
+}
+
+/** A seeder that seeds nothing and reports the given leftovers. */
+class FakeSeeding(private val leftovers: Int = 0) : HomeGridSeeding {
+    override suspend fun seedIfNeeded(geometry: GridGeometry): HomeGridSeeder.SeedResult =
+        HomeGridSeeder.SeedResult(
+            leftovers = List(leftovers) { HomeGridSeeder.Leftover(appWidgetId = 100 + it, provider = "com.example/.Left$it") },
+        )
 }
 
 class FakeFormFactorDetector(private val formFactor: FormFactor) : FormFactorDetector {

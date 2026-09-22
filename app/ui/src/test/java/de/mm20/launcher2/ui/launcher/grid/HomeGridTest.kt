@@ -14,6 +14,7 @@ import androidx.compose.ui.unit.dp
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import de.mm20.launcher2.homegrid.FormFactor
+import de.mm20.launcher2.homegrid.GridItemLimits
 import de.mm20.launcher2.homegrid.HomeGridLayouts
 import de.mm20.launcher2.homegrid.HomeGridSeeder
 import de.mm20.launcher2.homegrid.MeasuredGridRows
@@ -85,6 +86,8 @@ class HomeGridTest {
                 single { MeasuredGridRows() }
                 single { HomeGridSeeder(emptyColumn, repository, FakeSeedFlag(seeded = true)) { null } }
                 single<WidgetRepository> { emptyColumn }
+                single<de.mm20.launcher2.homegrid.HomeGridWriteBack> { FakeWriteBack() }
+                single<GridItemLimits> { GridItemLimits.Unbounded }
             },
         )
     }
@@ -101,6 +104,9 @@ class HomeGridTest {
             measuredRows = MeasuredGridRows(),
             seeder = HomeGridSeeder(emptyColumn, repository, FakeSeedFlag(seeded = true)) { null },
             widgetRepository = emptyColumn,
+            writeBack = FakeWriteBack(),
+            itemLimits = GridItemLimits.Unbounded,
+            locked = flowOf(false),
         )
 
         composeRule.setContent {

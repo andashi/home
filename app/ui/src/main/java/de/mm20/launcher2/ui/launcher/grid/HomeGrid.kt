@@ -1,5 +1,7 @@
 package de.mm20.launcher2.ui.launcher.grid
 
+import android.provider.Settings
+
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
@@ -17,6 +19,7 @@ import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.semantics.SemanticsPropertyKey
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
@@ -33,10 +36,15 @@ import org.koin.compose.koinInject
  * The single-page widget grid (ADR 0001). One measurement at the top decides
  * the geometry; everything below is placed at fixed cell rectangles.
  */
+/** Semantics of the grid root: true while the cells wiggle in edit mode (tests read it). */
+val GridWiggling = SemanticsPropertyKey<Boolean>("GridWiggling")
+
 @Composable
 fun HomeGrid(
     modifier: Modifier = Modifier,
     viewModel: HomeGridVM = viewModel(factory = HomeGridVM.factory()),
+    reducedMotion: Boolean = rememberReducedMotion(),
+    onEditFavorites: (() -> Unit)? = null,
     favoritesContent: @Composable (columns: Int, rows: Int) -> Unit = { columns, rows ->
         FavoritesGridWidget(columns = columns, rows = rows, modifier = Modifier.fillMaxSize())
     },
@@ -92,7 +100,9 @@ fun HomeGridLayout(
     geometry: GridGeometry,
     cells: List<Pair<String, Span>>,
     modifier: Modifier = Modifier,
+    visual: GridEditVisual? = null,
     onRecomposed: (() -> Unit)? = null,
+    overlay: (@Composable (id: String) -> Unit)? = null,
     content: @Composable (id: String) -> Unit,
 ) {
     if (onRecomposed != null) {
@@ -161,3 +171,12 @@ internal fun gridMeasurePolicy(
 }
 
 private class PlacedCell(val placeable: Placeable, val left: Int, val top: Int)
+
+/** Whether the platform asks for no animation (`Settings.Global.ANIMATOR_DURATION_SCALE == 0`). */
+@Composable
+fun rememberReducedMotion(): Boolean {
+    val context = LocalContext.current
+    return remember {
+        Settings.Global.getFloat(context.contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE, 1f) == 0f
+    }
+}

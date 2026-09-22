@@ -17,6 +17,14 @@ import de.mm20.launcher2.homegrid.HomeGridItem
 import de.mm20.launcher2.homegrid.HomeGridReconciler
 import de.mm20.launcher2.homegrid.HomeGridRepository
 import de.mm20.launcher2.homegrid.HomeGridSeeder
+import de.mm20.launcher2.homegrid.HomeGridSeeding
+import de.mm20.launcher2.homegrid.HomeGridWriteBack
+import de.mm20.launcher2.homegrid.GridItemLimits
+import de.mm20.launcher2.grid.CellSize
+import de.mm20.launcher2.grid.SizeLimits
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
 import de.mm20.launcher2.homegrid.MeasuredGridRows
 import de.mm20.launcher2.homegrid.ReconcileReport
 import de.mm20.launcher2.preferences.ui.UiSettings
@@ -34,6 +42,18 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import org.koin.core.context.GlobalContext
+
+/** What edit mode has to tell the user, shown as a snackbar by the grid. */
+sealed class GridEditEvent {
+    /** The database holds the layout, `launcher.json` does not (ADR 0003, section 5). */
+    data class WriteBackSkipped(val code: String, val reason: String) : GridEditEvent()
+
+    /** Widgets of the old column that found no room when the grid was seeded. */
+    data class SeedLeftovers(val count: Int) : GridEditEvent()
+
+    /** A widget could not be added: no free cells of its default size. */
+    data object NoRoom : GridEditEvent()
+}
 
 /** What the composable draws: the window's geometry and the cells arranged for it. */
 data class HomeGridUiState(
@@ -53,9 +73,73 @@ class HomeGridVM(
     uiSettings: UiSettings,
     formFactorDetector: FormFactorDetector,
     private val measuredRows: MeasuredGridRows,
-    private val seeder: HomeGridSeeder,
+    private val seeder: HomeGridSeeding,
     private val widgetRepository: WidgetRepository,
+    private val writeBack: HomeGridWriteBack,
+    private val itemLimits: GridItemLimits,
+    private val locked: Flow<Boolean>,
 ) : ViewModel() {
+
+    // ----- edit mode (PR 5) -----
+
+    private val _editing = MutableStateFlow(false)
+
+    /** True between [enterEdit] and [exitEdit]; the grid draws its edit chrome while it is. */
+    val editing: StateFlow<Boolean> = _editing
+
+    private val _selectedId = MutableStateFlow<String?>(null)
+
+    /** The cell whose handles are shown; null when none. */
+    val selectedId: StateFlow<String?> = _selectedId
+
+    private val _events = MutableSharedFlow<GridEditEvent>(extraBufferCapacity = 8)
+
+    /** What to show the user; collected by the grid into a snackbar. */
+    val events: SharedFlow<GridEditEvent> = _events
+
+    /**
+     * Enters edit mode with a working copy of the layout, or returns false
+     * when `home.grid.locked` is true (D3, D9). Edits change the working copy
+     * only; [exitEdit] persists it once.
+     */
+    suspend fun enterEdit(): Boolean = TODO("PR 5")
+
+    /** Leaves edit mode and writes the working copy back exactly once, on Done. */
+    suspend fun exitEdit(): Unit = TODO("PR 5")
+
+    fun select(id: String?) {
+        _selectedId.value = id
+    }
+
+    /** The spans [id] may take; the favorites widget is unbounded. */
+    fun limitsOf(id: String): SizeLimits = TODO("PR 5")
+
+    /**
+     * Moves [id] to the cell ([x], [y]) in the working copy with push-down
+     * (ADR 0001) and returns true when the item is now there.
+     */
+    fun move(id: String, x: Int, y: Int): Boolean = TODO("PR 5")
+
+    /** Resizes [id] to [w] x [h] in the working copy, clamped to its limits, with push-down. */
+    fun resize(id: String, w: Int, h: Int): Unit = TODO("PR 5")
+
+    /** Takes [id] out of the working copy and returns it for [restore] (undo). */
+    fun removeEditing(id: String): HomeGridItem? = TODO("PR 5")
+
+    /** Puts an item removed by [removeEditing] back at its cells. */
+    fun restore(item: HomeGridItem): Unit = TODO("PR 5")
+
+    /**
+     * Adds a widget at the first free cells of its default span; false, with
+     * a [GridEditEvent.NoRoom], when nothing fits.
+     */
+    fun addWidget(
+        widget: String,
+        profile: String?,
+        appWidgetId: Int?,
+        default: CellSize,
+        limits: SizeLimits,
+    ): Boolean = TODO("PR 5")
 
     val formFactor: FormFactor = formFactorDetector.detect()
 
@@ -143,8 +227,11 @@ class HomeGridVM(
                     uiSettings = koin.get(),
                     formFactorDetector = koin.get(),
                     measuredRows = koin.get(),
-                    seeder = koin.get(),
+                    seeder = koin.get<HomeGridSeeder>(),
                     widgetRepository = koin.get(),
+                    writeBack = koin.get(),
+                    itemLimits = koin.get(),
+                    locked = koin.get<UiSettings>().homeGridLocked,
                 )
             }
         }
