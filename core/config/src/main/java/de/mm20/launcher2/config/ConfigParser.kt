@@ -35,6 +35,10 @@ object ConfigParser {
      * `ConfigParserTest`, so a section that gains or loses a mutation cannot
      * drift away from this table unnoticed.
      */
+    private val GridItemKeys: Map<String, KeyEffect> = listOf(
+        "id", "widget", "x", "y", "w", "h", "profile", "borderless", "background", "themeColors",
+    ).associateWith { KeyEffect.Applied }
+
     internal val keyEffects: Map<String, Map<String, KeyEffect>> = mapOf(
         "" to mapOf(
             "schemaVersion" to KeyEffect.Applied,
@@ -63,32 +67,30 @@ object ConfigParser {
         ),
         "home" to mapOf(
             "searchBar" to KeyEffect.Applied,
-            // The container is served: `favorites` below still pins apps.
-            "dock" to KeyEffect.Applied,
+            "favorites" to KeyEffect.Applied,
             "widgets" to KeyEffect.Applied,
+            "grid" to KeyEffect.Applied,
         ),
         "home.searchBar" to mapOf(
             "position" to KeyEffect.Applied,
         ),
-        "home.dock" to mapOf(
-            "enabled" to KeyEffect.Inert(
-                "no dock is drawn on the home screen; the favorites widget took " +
-                        "that role and follows home.widgets. Setting this does change " +
-                        "something - it turns on the favorite affordances in search " +
-                        "results - which is not what the key means (#46)"
-            ),
-            // Applied through the favorites repository: the apps are pinned
-            // whether or not anything renders a dock, and a reader sees them.
-            "favorites" to KeyEffect.Applied,
-        ),
-        "home.dock.favorites[]" to mapOf(
+        "home.favorites[]" to mapOf(
             "packageName" to KeyEffect.Applied,
             "profile" to KeyEffect.Applied,
         ),
         "home.widgets" to mapOf(
             "enabled" to KeyEffect.Applied,
-            "widgets" to KeyEffect.Applied,
         ),
+        "home.grid" to mapOf(
+            "columns" to KeyEffect.Applied,
+            "locked" to KeyEffect.Applied,
+            "layouts" to KeyEffect.Applied,
+        ),
+        "home.grid.layouts" to GridLayouts.All.associateWith { KeyEffect.Applied },
+        "home.grid.layouts.phone" to mapOf("items" to KeyEffect.Applied),
+        "home.grid.layouts.fold" to mapOf("items" to KeyEffect.Applied),
+        "home.grid.layouts.phone.items[]" to GridItemKeys,
+        "home.grid.layouts.fold.items[]" to GridItemKeys,
     )
 
     private val knownKeys: Map<String, Set<String>> = keyEffects.mapValues { it.value.keys }
@@ -198,8 +200,9 @@ object ConfigParser {
 
         val document = ConfigMigrations.migrate(version, root)
 
-        val unknownKeyDiagnostics = diagnoseKeys(document).toMutableList()
-        val sanitized = document
+        val unknownKeyDiagnostics = mutableListOf<Diagnostic>()
+        val sanitized = dropUnknownLayouts(document, unknownKeyDiagnostics)
+        unknownKeyDiagnostics += diagnoseKeys(sanitized)
 
         val config = try {
             json.decodeFromJsonElement(LauncherConfig.serializer(), sanitized)
@@ -230,6 +233,47 @@ object ConfigParser {
             config = config,
             diagnostics = unknownKeyDiagnostics + validationDiagnostics,
         )
+    }
+
+    /**
+     * Removes entries of `home.grid.layouts` whose key is not a layout this
+     * build has, reporting each one as `unknown-layout`.
+     *
+     * A map decodes every key it finds, so a layout a later build introduced
+     * would otherwise ride into state under a name nothing renders. Dropping
+     * it keeps the rest of the document, including the layouts this build
+     * does render. Runs before the key walk so the entry is reported once,
+     * as what it is, and not also as an unknown key.
+     */
+    private fun dropUnknownLayouts(
+        document: JsonObject,
+        out: MutableList<Diagnostic>,
+    ): JsonObject {
+        val home = document["home"] as? JsonObject ?: return document
+        val grid = home["grid"] as? JsonObject ?: return document
+        val layouts = grid["layouts"] as? JsonObject ?: return document
+        val unknown = layouts.keys.filter { it !in GridLayouts.All }
+        if (unknown.isEmpty()) return document
+        for (key in unknown) {
+            out += Diagnostic(
+                Severity.Warning,
+                "unknown-layout",
+                "home.grid.layouts.$key",
+                "Unknown layout '$key' is ignored; this build renders ${GridLayouts.All.joinToString(" and ")}",
+            )
+        }
+        return buildJsonObject {
+            for ((k, v) in document) if (k != "home") put(k, v)
+            put("home", buildJsonObject {
+                for ((k, v) in home) if (k != "grid") put(k, v)
+                put("grid", buildJsonObject {
+                    for ((k, v) in grid) if (k != "layouts") put(k, v)
+                    put("layouts", buildJsonObject {
+                        for ((k, v) in layouts) if (k in GridLayouts.All) put(k, v)
+                    })
+                })
+            })
+        }
     }
 
     /**

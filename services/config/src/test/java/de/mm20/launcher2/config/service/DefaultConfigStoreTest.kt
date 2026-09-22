@@ -170,9 +170,14 @@ class DefaultConfigStoreTest {
         // Both layouts are always present; the device-local widget id is not
         // part of the contract and never appears.
         assertEquals(setOf("phone", "fold"), state.gridLayouts.keys)
+        // Every field is populated in the read-back, options included, so the
+        // document is complete (D3).
         assertEquals(
             listOf(
-                GridItemConfig(id = "dock", widget = "favorites", x = 0, y = 5, w = 4, h = 1),
+                GridItemConfig(
+                    id = "dock", widget = "favorites", x = 0, y = 5, w = 4, h = 1,
+                    borderless = false, background = true, themeColors = true,
+                ),
                 GridItemConfig(
                     id = "clock", widget = "com.android.deskclock/.DigitalAppWidgetProvider",
                     x = 0, y = 0, w = 4, h = 2, profile = ConfigProfile.Work,
@@ -355,13 +360,15 @@ class DefaultConfigStoreTest {
     @Test
     fun `SetGrid drops what does not fit and reports it`() = runTest {
         gridRows.rows = 2
+        // A widget whose minimum height is three rows can never fit two.
+        gridLimits.limits[clockWidget] = ProviderLimits(default = CellSize(4, 3), limits = SizeLimits(2, 3, 4, 4))
 
         val diagnostics = store.apply(
             listOf(
                 grid(
                     GridItemConfig(id = "a", widget = "favorites", x = 0, y = 0, w = 4, h = 2),
                     GridItemConfig(id = "b", widget = "favorites", x = 0, y = 0, w = 4, h = 1),
-                    GridItemConfig(id = "c", widget = "favorites", x = 0, y = 9, w = 9, h = 9),
+                    GridItemConfig(id = "c", widget = clockWidget, x = 0, y = 0, w = 4, h = 3),
                 )
             )
         )

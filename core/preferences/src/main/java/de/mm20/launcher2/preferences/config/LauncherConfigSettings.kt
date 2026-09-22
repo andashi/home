@@ -117,7 +117,10 @@ internal class LauncherConfigSettingsImpl(
 
             is ConfigMutation.SetWidgetsEnabled -> copy(homeScreenWidgets = mutation.enabled)
 
-            is ConfigMutation.SetGrid -> this // PR 3: columns and locked
+            is ConfigMutation.SetGrid -> copy(
+                homeGridColumns = mutation.columns ?: homeGridColumns,
+                homeGridLocked = mutation.locked ?: homeGridLocked,
+            )
 
             is ConfigMutation.SetTransparency,
             is ConfigMutation.SetFavorites,

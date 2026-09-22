@@ -5,6 +5,18 @@ import de.mm20.launcher2.config.ConfigMutation
 import de.mm20.launcher2.config.ConfigState
 import de.mm20.launcher2.config.Diagnostic
 import de.mm20.launcher2.config.Favorite
+import de.mm20.launcher2.config.GridItemConfig
+import de.mm20.launcher2.config.GridLayoutConfig
+import de.mm20.launcher2.config.GridLayouts
+import de.mm20.launcher2.grid.CellSize
+import de.mm20.launcher2.grid.GridItem
+import de.mm20.launcher2.grid.GridLayout
+import de.mm20.launcher2.grid.GridSpec
+import de.mm20.launcher2.grid.LayoutIssue
+import de.mm20.launcher2.grid.SizeLimits
+import de.mm20.launcher2.grid.Span
+import de.mm20.launcher2.homegrid.HomeGridItem
+import de.mm20.launcher2.homegrid.HomeGridItemConfig
 import de.mm20.launcher2.config.Severity
 import de.mm20.launcher2.preferences.config.LauncherConfigSettings
 import de.mm20.launcher2.profiles.Profile
@@ -64,7 +76,9 @@ class DefaultConfigStore(
             transparencySurface = transparencies?.surface ?: 1f,
             transparencyElevatedSurface = transparencies?.elevatedSurface ?: 1f,
             favorites = favorites,
-            gridLayouts = emptyMap(), // PR 3: from the repository
+            gridLayouts = GridLayouts.All.associateWith { layout ->
+                GridLayoutConfig(homeGridRepository.observe(layout).first().map { it.toConfig() })
+            },
             wallpaperImage = wallpaper?.image,
             wallpaperTarget = wallpaper?.target,
         )
@@ -202,8 +216,195 @@ class DefaultConfigStore(
     private suspend fun applyGrid(
         mutation: ConfigMutation.SetGrid,
     ): List<Diagnostic> {
-        TODO("PR 3: place, normalize, replace per layout")
+        val layouts = mutation.layouts ?: return emptyList()
+        val diagnostics = mutableListOf<Diagnostic>()
+        val columns = mutation.columns ?: settings.readState().state.gridColumns
+        for ((layoutKey, layout) in layouts) {
+            diagnostics += applyLayout(layoutKey, layout, columns)
+        }
+        return diagnostics
     }
+
+    private class SizedItem(val index: Int, val config: GridItemConfig, val limits: ProviderLimits)
+
+    private suspend fun applyLayout(
+        layoutKey: String,
+        layout: GridLayoutConfig,
+        columns: Int,
+    ): List<Diagnostic> {
+        val diagnostics = mutableListOf<Diagnostic>()
+        val basePath = "home.grid.layouts.$layoutKey.items"
+        val isFold = layoutKey == GridLayouts.Fold
+        val spec = GridSpec(
+            columns = if (isFold) columns * 2 else columns,
+            rows = gridRows.rows(layoutKey),
+            foldColumn = if (isFold) columns else null,
+        )
+
+        // Limits first, then geometry: items with a position keep it, items
+        // without one are placed after them, in array order, at the first
+        // free cells (D5).
+        val sized = layout.items.mapIndexed { index, item ->
+            val limits = if (item.isFavorites) {
+                ProviderLimits(default = CellSize(spec.columns, 1), limits = SizeLimits.Unbounded)
+            } else {
+                gridLimits.lookup(item.widget, item.profile, columns) ?: run {
+                    diagnostics += Diagnostic(
+                        Severity.Warning,
+                        "unknown-widget-provider",
+                        "$basePath[$index]",
+                        "No installed widget provider matches '${item.widget}'" +
+                                item.profile?.let { " in the ${it.name.lowercase()} profile" }.orEmpty() +
+                                "; the item is kept and shown as unavailable",
+                    )
+                    ProviderLimits(default = CellSize(1, 1), limits = SizeLimits.Unbounded)
+                }
+            }
+            SizedItem(index, item, limits)
+        }
+
+        val placed = mutableListOf<GridItem>()
+        for (s in sized) {
+            val item = s.config
+            if (item.hasGeometry) {
+                placed += GridItem(
+                    id = item.id,
+                    span = Span(item.x!!, item.y!!, item.w!!, item.h!!),
+                    limits = s.limits.limits,
+                    mayCrossFold = item.isFavorites,
+                )
+            }
+        }
+        for (s in sized) {
+            val item = s.config
+            if (item.hasGeometry) continue
+            val w = item.w ?: s.limits.default.w
+            val h = item.h ?: s.limits.default.h
+            val candidate = GridItem(
+                id = item.id,
+                span = Span(0, 0, w, h),
+                limits = s.limits.limits,
+                mayCrossFold = item.isFavorites,
+            )
+            val free = GridLayout.place(spec, placed, candidate)
+            if (free == null) {
+                diagnostics += Diagnostic(
+                    Severity.Warning,
+                    "grid-overflow",
+                    "$basePath[${s.index}]",
+                    "No free ${w}x$h cells left for '${item.id}'; the item was dropped",
+                )
+                continue
+            }
+            placed += free
+        }
+
+        // Back into array order, then normalise against this device's grid.
+        val order = layout.items.withIndex().associate { it.value.id to it.index }
+        val result = GridLayout.normalize(spec, placed.sortedBy { order[it.id] })
+        for (issue in result.issues) {
+            issue.toDiagnostic(basePath, order)?.let { diagnostics += it }
+        }
+        // The engine nudges a crossing item to one side without a word (that
+        // is the right thing for a hand move); a config that asked for the
+        // crossing is told, so the host does not learn it from a read-back
+        // that differs from what it pushed.
+        val dropped = result.issues.filterIsInstance<LayoutIssue.CrossesFold>().map { it.id }.toSet()
+        spec.foldColumn?.let { fold ->
+            for (item in layout.items) {
+                if (item.isFavorites || item.id in dropped) continue
+                val x = item.x ?: continue
+                val w = item.w ?: continue
+                if (x < fold && x + w > fold) {
+                    diagnostics += Diagnostic(
+                        Severity.Warning,
+                        "grid-crosses-fold",
+                        "$basePath[${order.getValue(item.id)}]",
+                        "'${item.id}' spans the fold line, which only the favorites widget may; " +
+                                "it was moved to one side",
+                    )
+                }
+            }
+        }
+
+        val existing = homeGridRepository.observe(layoutKey).first().associateBy { it.id }
+        val items = result.items.mapIndexed { position, gridItem ->
+            val config = layout.items[order.getValue(gridItem.id)]
+            val previous = existing[gridItem.id]?.takeIf {
+                it.widget == config.widget && it.profile == config.profile?.serialName()
+            }
+            HomeGridItem(
+                layout = layoutKey,
+                id = gridItem.id,
+                widget = config.widget,
+                profile = config.profile?.serialName(),
+                x = gridItem.span.x,
+                y = gridItem.span.y,
+                w = gridItem.span.w,
+                h = gridItem.span.h,
+                appWidgetId = previous?.appWidgetId,
+                config = HomeGridItemConfig(
+                    borderless = config.borderless ?: false,
+                    background = config.background ?: true,
+                    themeColors = config.themeColors ?: true,
+                ),
+                position = position,
+            )
+        }
+        homeGridRepository.replace(layoutKey, items)
+        return diagnostics
+    }
+
+    private fun LayoutIssue.toDiagnostic(basePath: String, order: Map<String, Int>): Diagnostic? {
+        fun path(id: String) = "$basePath[${order[id] ?: -1}]"
+        return when (this) {
+            is LayoutIssue.BelowMinimum -> Diagnostic(
+                Severity.Warning,
+                "widget-too-small",
+                path(id),
+                "'$id' asks for ${requested.w}x${requested.h} cells, below the widget's " +
+                        "minimum; it was enlarged to ${clamped.w}x${clamped.h}",
+            )
+
+            is LayoutIssue.OutOfBounds -> Diagnostic(
+                Severity.Warning,
+                "grid-out-of-bounds",
+                path(id),
+                "'$id' does not fit the grid at ${span.w}x${span.h} cells; the item was dropped",
+            )
+
+            is LayoutIssue.CrossesFold -> Diagnostic(
+                Severity.Warning,
+                "grid-crosses-fold",
+                path(id),
+                "'$id' spans the fold line, which only the favorites widget may, and is too wide " +
+                        "for either side; the item was dropped",
+            )
+
+            is LayoutIssue.Overflow -> Diagnostic(
+                Severity.Warning,
+                "grid-overflow",
+                path(id),
+                "No free cells left for '$id'; the item was dropped",
+            )
+
+            // An overlap is reported through what the engine did about it:
+            // the later item was re-placed (silently) or dropped (Overflow).
+            is LayoutIssue.Overlap -> null
+        }
+    }
+
+    private fun HomeGridItem.toConfig(): GridItemConfig = GridItemConfig(
+        id = id,
+        widget = widget,
+        x = x, y = y, w = w, h = h,
+        profile = profile?.let { name -> ConfigProfile.entries.firstOrNull { it.serialName() == name } },
+        borderless = config.borderless,
+        background = config.background,
+        themeColors = config.themeColors,
+    )
+
+    private fun ConfigProfile.serialName(): String = name.lowercase()
 
     /**
      * Resolves the configured favorites to installed apps and writes them in
@@ -218,7 +419,7 @@ class DefaultConfigStore(
         val resolved = mutableListOf<SavableSearchable>()
 
         mutation.favorites.forEachIndexed { index, favorite ->
-            val path = "home.dock.favorites[$index]"
+            val path = "home.favorites[$index]"
             val profileType = when (favorite.profile) {
                 ConfigProfile.Personal -> Profile.Type.Personal
                 ConfigProfile.Work -> Profile.Type.Work

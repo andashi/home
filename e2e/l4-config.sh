@@ -10,8 +10,9 @@
 #      the test instance (default emulator-5556 with its own qcow2 overlays
 #      under <gos-repo>/emulator/instances/test; SERIAL and OVERLAY_DIR pick
 #      another one) from the `clean` snapshot, installs the debug APK
-#   2. writes a known JSONC config (icons, transparency, search bar, dock,
-#      widgets; empty favorites so no installed-package assumptions)
+#   2. writes a known JSONC config (icons, transparency, search bar,
+#      favorites, widgets switch, grid; empty favorites so no
+#      installed-package assumptions)
 #      through the shell-gated ingest provider (`content write`), the
 #      provisioning transport (ADR 0003 §1a)
 #   3. proves the explicit, shell-gated ReloadConfigReceiver is reachable
@@ -23,8 +24,8 @@
 #   5. re-writes the unchanged config and asserts the follow-up broadcast
 #      report is successful with no applied mutations (watcher settled first)
 #   6. writes a second config that changes EVERY section (icons off, other
-#      transparency values, search bar top, dock off, other widgets, other
-#      widgets) and asserts the read-back shows the new values and the report
+#      transparency values, search bar top, widgets off, other grid) and
+#      asserts the read-back shows the new values and the report
 #      lists every section as applied; then writes the first config again
 #      and asserts the read-back is back to the first values - the
 #      everyday case: an existing state is changed, not created
@@ -37,6 +38,9 @@
 #      config remains intact
 #   8. writes unknown keys in an otherwise valid config and asserts warning
 #      diagnostics with a successful apply
+#  10. writes a schemaVersion 1 file in the old shape (dock.favorites, the
+#      widgets list) and asserts it still applies: the launcher migrates it and
+#      the read-back shows schemaVersion 2 with home.favorites
 #   9. restores the valid config with plain `adb push` (user 0 only): the
 #      interactive dotfile path, proving the file watcher reacts to a push
 #      exactly like to an ingest
@@ -244,7 +248,7 @@ VALID_CONFIG="$WORK/valid.jsonc"
 cat > "$VALID_CONFIG" <<'EOF'
 {
   // L4 test fixture: covers every config section.
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "icons": {
     "themed": true,
     "enforceThemed": true,
@@ -258,12 +262,18 @@ cat > "$VALID_CONFIG" <<'EOF'
   },
   "home": {
     "searchBar": { "position": "bottom" },
-    "dock": {
-      "enabled": true,
-      // Empty on purpose: favorites reference installed packages.
-      "favorites": [],
+    // Empty on purpose: favorites reference installed packages.
+    "favorites": [],
+    "widgets": { "enabled": true },
+    "grid": {
+      "columns": 4,
+      "locked": false,
+      "layouts": {
+        "phone": { "items": [
+          { "id": "dock", "widget": "favorites", "x": 0, "y": 5, "w": 4, "h": 1 },
+        ] },
+      },
     },
-    "widgets": { "enabled": true, "widgets": ["apps"] },
   },
 }
 EOF
@@ -271,7 +281,7 @@ EOF
 UNKNOWN_KEYS_CONFIG="$WORK/unknown-keys.jsonc"
 cat > "$UNKNOWN_KEYS_CONFIG" <<'EOF'
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "futureTopLevelKey": { "anything": 1 },
   "icons": {
     "themed": true,
@@ -287,12 +297,18 @@ cat > "$UNKNOWN_KEYS_CONFIG" <<'EOF'
   },
   "home": {
     "searchBar": { "position": "bottom" },
-    "dock": {
-      "enabled": true,
-      "favorites": [],
-      "futureDockKey": true,
+    "favorites": [],
+    "widgets": { "enabled": true },
+    "grid": {
+      "columns": 4,
+      "locked": false,
+      "futureGridKey": true,
+      "layouts": {
+        "phone": { "items": [
+          { "id": "dock", "widget": "favorites", "x": 0, "y": 5, "w": 4, "h": 1 },
+        ] },
+      },
     },
-    "widgets": { "enabled": true, "widgets": ["apps"] },
   },
 }
 EOF
@@ -302,7 +318,7 @@ EOF
 CHANGED_CONFIG="$WORK/changed.jsonc"
 cat > "$CHANGED_CONFIG" <<'EOF'
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "icons": {
     "themed": false,
     "enforceThemed": false,
@@ -316,8 +332,17 @@ cat > "$CHANGED_CONFIG" <<'EOF'
   },
   "home": {
     "searchBar": { "position": "top" },
-    "dock": { "enabled": false, "favorites": [] },
-    "widgets": { "enabled": false, "widgets": [] },
+    "favorites": [],
+    "widgets": { "enabled": false },
+    "grid": {
+      "columns": 5,
+      "locked": true,
+      "layouts": {
+        "phone": { "items": [
+          { "id": "dock", "widget": "favorites", "x": 0, "y": 0, "w": 5, "h": 2 },
+        ] },
+      },
+    },
   },
 }
 EOF
@@ -330,11 +355,38 @@ magick -size 320x640 gradient:navy-teal "$WALLPAPER_IMAGE"
 WALLPAPER_CONFIG="$WORK/wallpaper.jsonc"
 cat > "$WALLPAPER_CONFIG" <<'EOF'
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "icons": { "themed": true, "enforceThemed": true },
   "appearance": {
     "transparency": { "background": 0.5, "surface": 0.7, "elevatedSurface": 0.9 },
     "wallpaper": { "image": "l4.png", "target": "both" },
+  },
+  "home": {
+    "searchBar": { "position": "bottom" },
+    "favorites": [],
+    "widgets": { "enabled": true },
+    "grid": {
+      "columns": 4,
+      "locked": false,
+      "layouts": {
+        "phone": { "items": [
+          { "id": "dock", "widget": "favorites", "x": 0, "y": 5, "w": 4, "h": 1 },
+        ] },
+      },
+    },
+  },
+}
+EOF
+
+# Schema version 1, the shape every provisioning zone pushed before #23: the
+# launcher must migrate it rather than reject it (andashi/provisioning#7).
+LEGACY_CONFIG="$WORK/legacy-v1.jsonc"
+cat > "$LEGACY_CONFIG" <<'EOF'
+{
+  "schemaVersion": 1,
+  "icons": { "themed": true, "enforceThemed": true },
+  "appearance": {
+    "transparency": { "background": 0.5, "surface": 0.7, "elevatedSurface": 0.9 },
   },
   "home": {
     "searchBar": { "position": "bottom" },
@@ -345,49 +397,52 @@ cat > "$WALLPAPER_CONFIG" <<'EOF'
 EOF
 
 MALFORMED_CONFIG="$WORK/malformed.jsonc"
-printf '{ "schemaVersion": 1, "icons": { not json at all\n' > "$MALFORMED_CONFIG"
+printf '{ "schemaVersion": 2, "icons": { not json at all\n' > "$MALFORMED_CONFIG"
 
 H_VALID="$(sha256sum "$VALID_CONFIG" | cut -d' ' -f1)"
 H_UNKNOWN="$(sha256sum "$UNKNOWN_KEYS_CONFIG" | cut -d' ' -f1)"
 H_MALFORMED="$(sha256sum "$MALFORMED_CONFIG" | cut -d' ' -f1)"
 H_CHANGED="$(sha256sum "$CHANGED_CONFIG" | cut -d' ' -f1)"
 H_WALLPAPER="$(sha256sum "$WALLPAPER_CONFIG" | cut -d' ' -f1)"
+H_LEGACY="$(sha256sum "$LEGACY_CONFIG" | cut -d' ' -f1)"
 
 # The /config read-back is fully populated (ConfigStateMapper), so these are
 # the exact effective values after applying VALID_CONFIG.
 EFFECTIVE_FILTER='
-  .schemaVersion == 1
+  .schemaVersion == 2
   and .icons.themed == true
   and .icons.enforceThemed == true
   and .appearance.transparency.background == 0.5
   and .appearance.transparency.surface == 0.7
   and .appearance.transparency.elevatedSurface == 0.9
   and .home.searchBar.position == "bottom"
-  and .home.dock.enabled == true
-  and .home.dock.favorites == []
+  and .home.favorites == []
   and .home.widgets.enabled == true
-  and (.home.widgets.widgets | sort) == ["apps"]
+  and .home.grid.columns == 4
+  and .home.grid.locked == false
+  and .home.grid.layouts.phone.items == [{"id":"dock","widget":"favorites","x":0,"y":5,"w":4,"h":1,"borderless":false,"background":true,"themeColors":true}]
 '
 
 CHANGED_FILTER='
-  .schemaVersion == 1
+  .schemaVersion == 2
   and .icons.themed == false
   and .icons.enforceThemed == false
   and .appearance.transparency.background == 0.2
   and .appearance.transparency.surface == 0.3
   and .appearance.transparency.elevatedSurface == 0.4
   and .home.searchBar.position == "top"
-  and .home.dock.enabled == false
-  and .home.dock.favorites == []
+  and .home.favorites == []
   and .home.widgets.enabled == false
-  and (.home.widgets.widgets | sort) == []
+  and .home.grid.columns == 5
+  and .home.grid.locked == true
+  and .home.grid.layouts.phone.items == [{"id":"dock","widget":"favorites","x":0,"y":0,"w":5,"h":2,"borderless":false,"background":true,"themeColors":true}]
 '
 
 # The sections a full VALID <-> CHANGED convergence must report as applied.
 ALL_SECTIONS_FILTER='
   ((.appliedMutations // []) | sort) ==
-  ["appearance.transparency", "home.dock.enabled", "home.searchBar",
-   "home.widgets.enabled", "home.widgets.widgets", "icons"]
+  ["appearance.transparency", "home.grid", "home.searchBar",
+   "home.widgets.enabled", "icons"]
 '
 
 # --- 1. boot + install -------------------------------------------------
@@ -442,7 +497,7 @@ ok "explicit broadcast reached the receiver as unrooted shell (trigger=broadcast
 log "asserting effective config via $STATE_URI/config"
 effective="$(query_json config)" || die "could not query /config"
 assert_jq "$effective" "$EFFECTIVE_FILTER" "effective config matches pushed fixture"
-ok "effective config matches (icons, transparency, search bar, dock, widgets)"
+ok "effective config matches (icons, transparency, search bar, favorites, widgets, grid)"
 
 # --- 5. re-write unchanged config: no mutations -------------------------
 
@@ -458,7 +513,7 @@ settle_then_broadcast "$CHANGED_CONFIG" "$H_CHANGED" "change"
 assert_jq "$LAST_REPORT" '.success == true' "changed config applied"
 effective="$(query_json config)" || die "could not query /config"
 assert_jq "$effective" "$CHANGED_FILTER" "effective config shows the changed values in every section"
-ok "changed config: every section flipped (icons, transparency, search bar, dock, widgets)"
+ok "changed config: every section flipped (icons, transparency, search bar, widgets, grid)"
 
 settle_then_broadcast "$VALID_CONFIG" "$H_VALID" "change-back"
 assert_jq "$LAST_REPORT" '.success == true' "original config re-applied"
@@ -520,6 +575,18 @@ ok "unknown keys: warnings recorded, apply successful"
 effective="$(query_json config)" || die "could not query /config"
 assert_jq "$effective" "$EFFECTIVE_FILTER" "effective config unchanged by unknown keys"
 ok "effective config unchanged (unknown keys ignored)"
+
+# --- 10. schema version 1: migrated, not rejected ------------------------
+
+settle_then_broadcast "$LEGACY_CONFIG" "$H_LEGACY" "legacy-v1"
+assert_jq "$LAST_REPORT" \
+  '.success == true and ([.diagnostics[] | select(.severity == "error")] | length == 0)' \
+  "a schemaVersion 1 file applies without errors"
+effective="$(query_json config)" || die "could not query /config"
+assert_jq "$effective" \
+  '.schemaVersion == 2 and .home.favorites == [] and .home.widgets.enabled == true and (.home | has("dock") | not)' \
+  "read-back of a migrated v1 file is schema version 2 with home.favorites"
+ok "schemaVersion 1 file migrated (dock.favorites -> favorites, no dock in the read-back)"
 
 # --- 9. restore a valid config via adb push (interactive dotfile path) ---
 

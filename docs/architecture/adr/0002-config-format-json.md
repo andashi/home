@@ -57,7 +57,9 @@ except `schemaVersion` is optional, and an absent key means *unmanaged*, not
 ```json
 {
   // Bumped when the shape changes; migrations are pure ConfigVn -> ConfigVn+1.
-  "schemaVersion": 1,
+  // Version 1 files still load: the launcher migrates them (dock.favorites
+  // became favorites, the dock and the widgets list went away).
+  "schemaVersion": 2,
 
   "icons": {
     "themed": true,
@@ -82,25 +84,42 @@ except `schemaVersion` is optional, and an absent key means *unmanaged*, not
 
   "home": {
     "searchBar": { "position": "bottom" }, // "top" | "bottom"
-    "dock": {
-      "enabled": true,
-      "favorites": [
-        // Both spellings are valid. The object form is what a round trip
-        // writes back; the bare package name means the personal profile.
-        { "packageName": "org.thoughtcrime.securesms", "profile": "personal" },
-        { "packageName": "com.example.work.mail", "profile": "work" },
-        "com.example.dialer"
-      ]
-    },
-    "widgets": {
-      "enabled": false,
-      "widgets": ["apps"]
+
+    // The one pin list, shared by search and the favorites widget on the grid.
+    "favorites": [
+      // Both spellings are valid. The object form is what a round trip
+      // writes back; the bare package name means the personal profile.
+      { "packageName": "org.thoughtcrime.securesms", "profile": "personal" },
+      { "packageName": "com.example.work.mail", "profile": "work" },
+      "com.example.dialer"
+    ],
+
+    // The master switch for the grid below.
+    "widgets": { "enabled": true },
+
+    // The single-page home grid (ADR 0001). Rows are derived from the screen.
+    "grid": {
+      "columns": 4,     // per cover-width page; the fold layout is twice as wide
+      "locked": false,  // true: no edit mode, nothing is written back
+      "layouts": {
+        "phone": {
+          "items": [
+            // The favorites widget in the bottom row, full width: the dock.
+            { "id": "dock", "widget": "favorites", "x": 0, "y": 5, "w": 4, "h": 1 },
+            // An AppWidget by provider component, with geometry in cells.
+            { "id": "clock", "widget": "com.android.deskclock/.DigitalAppWidgetProvider",
+              "x": 0, "y": 0, "w": 4, "h": 2 }
+          ]
+        },
+        // 8 columns wide; the cover display renders columns 0 to 3.
+        "fold": { "items": [] }
+      }
     }
   }
 }
 ```
 
-Two things the example is here to settle, because nothing written down said
+Three things the example is here to settle, because nothing written down said
 them before:
 
 - **A favorite is an object or a package name**, never anything else. The short
@@ -111,6 +130,15 @@ them before:
   a favorite that is neither still fails loudly.
 - **Comments and trailing commas are part of the format**, not a courtesy of
   whichever editor wrote the file. The reader above enables both.
+- **A grid item has a stable `id`** (`^[a-z0-9][a-z0-9-]{0,31}$`, unique per
+  layout). Write-back and the database match on it, never on the array
+  position, so reordering or deleting an item in the file cannot rebind another
+  item's widget. The AppWidget host's integer id is device-local and never
+  appears in the document. Geometry (`x`, `y`, `w`, `h`, in cells) may be
+  omitted once: the launcher places the item at the first free cells and, once
+  write-back lands (#23), writes the geometry into this file. Until then a
+  re-push of the same file stays a no-op, because an absent field matches
+  whatever was placed.
 
 `profile` accepts `personal`, `work` and `private`; Private Space is just
 another profile here (ADR 0006).
@@ -123,11 +151,13 @@ a reason. A warning does not fail the reload, so a config that names such a key
 still applies.
 
 "Does not serve" covers doing nothing and doing something else, and the second
-is the more dangerous one. Today's example is `home.dock.enabled`: no dock is
-drawn, because the favorites widget took that role and follows `home.widgets`
-(#46) - but the value still reaches the favorite affordances in search results.
-A host that sets it gets an effect it did not ask for, which is why the
-diagnostic carries the specifics instead of a blanket "ignored".
+is the more dangerous one. The example that motivated the mechanism was
+`home.dock.enabled`: no dock was drawn, because the favorites widget had taken
+that role - but the value still reached the favorite affordances in search
+results. The grid closed that case (#46): the dock *is* the favorites widget on
+the grid, and the key left the contract with schema version 2. No key of the
+current contract is inert; the mechanism stays for the next one, and the test
+that guards it runs against a table of its own.
 
 ## Consequences
 

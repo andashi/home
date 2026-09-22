@@ -37,7 +37,13 @@ fun ConfigState.toLauncherConfig(): LauncherConfig {
         ),
         home = HomeConfig(
             searchBar = SearchBarConfig(position = searchBarPosition),
+            favorites = favorites,
             widgets = WidgetsConfig(enabled = widgetsEnabled),
+            grid = GridConfig(
+                columns = gridColumns,
+                locked = gridLocked,
+                layouts = gridLayouts,
+            ),
         ),
     )
 }

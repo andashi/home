@@ -136,7 +136,9 @@ object ConfigDiffer {
         }
 
         desired.home?.favorites?.let { favorites ->
-            TODO("PR 3: SetFavorites when the list differs")
+            if (favorites != current.favorites) {
+                mutations += ConfigMutation.SetFavorites(favorites)
+            }
         }
 
         desired.home?.widgets?.enabled?.let { enabled ->
@@ -146,9 +148,42 @@ object ConfigDiffer {
         }
 
         desired.home?.grid?.let { grid ->
-            TODO("PR 3: SetGrid when columns, locked or a named layout differ")
+            val columns = grid.columns?.takeIf { it != current.gridColumns }
+            val locked = grid.locked?.takeIf { it != current.gridLocked }
+            val layouts = grid.layouts?.filter { (key, layout) ->
+                !layout.matches(current.gridLayouts[key])
+            }?.takeIf { it.isNotEmpty() }
+            if (columns != null || locked != null || layouts != null) {
+                mutations += ConfigMutation.SetGrid(columns = columns, locked = locked, layouts = layouts)
+            }
         }
 
         return mutations
     }
+}
+
+/**
+ * Whether a configured layout is already what the state holds: the same
+ * items in the same order (write-back keeps the file's order, so order is
+ * part of the layout), each one [GridItemConfig.matches] its stored twin.
+ */
+internal fun GridLayoutConfig.matches(current: GridLayoutConfig?): Boolean {
+    if (current == null || current.items.size != items.size) return false
+    return items.zip(current.items).all { (desired, stored) -> desired.matches(stored) }
+}
+
+/**
+ * A configured item against its stored twin. Identity fields must be equal;
+ * every optional field is compared only when the config sets it - absent
+ * means unmanaged, as everywhere in the contract. That is what lets a file
+ * that omits geometry (placed once by the launcher, D5) stay a no-op on the
+ * next reload, before or without write-back.
+ */
+internal fun GridItemConfig.matches(stored: GridItemConfig): Boolean {
+    if (id != stored.id || widget != stored.widget) return false
+    fun <T> same(desired: T?, current: T?) = desired == null || desired == current
+    return same(x, stored.x) && same(y, stored.y) && same(w, stored.w) && same(h, stored.h) &&
+            same(profile, stored.profile) &&
+            same(borderless, stored.borderless) && same(background, stored.background) &&
+            same(themeColors, stored.themeColors)
 }

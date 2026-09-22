@@ -33,9 +33,13 @@ class UiSettingsHomeGridTest {
     }
 
     @Test
-    fun `favoritesEnabled follows its own field`() = runTest {
+    fun `favoritesEnabled follows its own field when on`() = runTest {
         assertEquals(true, settings(LauncherSettingsData(favoritesEnabled = true)).favoritesEnabled.first())
-        assertEquals(false, settings(LauncherSettingsData(favoritesEnabled = false)).favoritesEnabled.first())
+    }
+
+    @Test
+    fun `favoritesEnabled follows its own field when off`() = runTest {
+        assertEquals(false, settings(LauncherSettingsData(favoritesEnabled = false, homeScreenDock = false)).favoritesEnabled.first())
     }
 
     @Test

@@ -1,6 +1,8 @@
 package de.mm20.launcher2.config
 
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.buildJsonObject
 
 interface ConfigMigration {
     val fromVersion: Int
@@ -53,6 +55,39 @@ internal object Migration1To2 : ConfigMigration {
     override val toVersion = 2
 
     override fun migrate(document: JsonObject): JsonObject {
-        TODO("PR 3: dock.favorites -> favorites, drop dock and widgets.widgets, bump schemaVersion")
+        val home = document["home"] as? JsonObject
+        val migratedHome = home?.let { migrateHome(it) }
+        return buildJsonObject {
+            for ((key, value) in document) {
+                when (key) {
+                    "schemaVersion" -> put(key, JsonPrimitive(toVersion))
+                    "home" -> if (migratedHome != null) put(key, migratedHome) else put(key, value)
+                    else -> put(key, value)
+                }
+            }
+            if (!document.containsKey("schemaVersion")) put("schemaVersion", JsonPrimitive(toVersion))
+        }
+    }
+
+    private fun migrateHome(home: JsonObject): JsonObject {
+        val dock = home["dock"] as? JsonObject
+        val favorites = dock?.get("favorites")
+        val widgets = home["widgets"] as? JsonObject
+        return buildJsonObject {
+            for ((key, value) in home) {
+                when (key) {
+                    "dock" -> if (favorites != null) put("favorites", favorites)
+                    "widgets" -> if (widgets != null) {
+                        put("widgets", buildJsonObject {
+                            for ((k, v) in widgets) if (k != "widgets") put(k, v)
+                        })
+                    } else {
+                        put(key, value)
+                    }
+
+                    else -> put(key, value)
+                }
+            }
+        }
     }
 }

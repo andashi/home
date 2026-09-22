@@ -60,7 +60,9 @@ class ConfigReloaderTest {
         val report = reloader.reload("""{"schemaVersion": 1, "icons": {"themed": true}}""")
 
         assertTrue(report.success)
-        assertEquals(1, report.schemaVersion)
+        // The report names the schema version the document has after the
+        // migration, i.e. the one the effective state speaks.
+        assertEquals(2, report.schemaVersion)
         assertEquals(listOf("icons"), report.appliedMutations)
         assertEquals(listOf("read", "apply:[icons]"), store.events)
         assertEquals(report, reportStore.read())
