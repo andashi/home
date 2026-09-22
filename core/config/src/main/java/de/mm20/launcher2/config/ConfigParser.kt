@@ -21,18 +21,77 @@ object ConfigParser {
         prettyPrint = true
     }
 
-    private val knownKeys: Map<String, Set<String>> = mapOf(
-        "" to setOf("schemaVersion", "icons", "appearance", "home"),
-        "icons" to setOf("themed", "enforceThemed", "pack"),
-        "appearance" to setOf("transparency", "wallpaper"),
-        "appearance.transparency" to setOf("name", "background", "surface", "elevatedSurface"),
-        "appearance.wallpaper" to setOf("image", "target"),
-        "home" to setOf("searchBar", "dock", "widgets"),
-        "home.searchBar" to setOf("position"),
-        "home.dock" to setOf("enabled", "favorites"),
-        "home.dock.favorites[]" to setOf("packageName", "profile"),
-        "home.widgets" to setOf("enabled", "widgets"),
+    /**
+     * Every key of the contract, and what this build does with it (#47).
+     *
+     * Two questions in one table on purpose. The spelling check that used to
+     * live here answered only "is this key known"; a separate list of inert
+     * keys beside it would be optional, and optional lists rot. Here a new key
+     * cannot be added without a [KeyEffect], because the entry is required to
+     * compile - that property is the whole point, not the current contents.
+     *
+     * Keys are classified by tracing them to a consumer, not by intent. The
+     * classification is asserted against [ConfigMutation] in
+     * `ConfigParserTest`, so a section that gains or loses a mutation cannot
+     * drift away from this table unnoticed.
+     */
+    internal val keyEffects: Map<String, Map<String, KeyEffect>> = mapOf(
+        "" to mapOf(
+            "schemaVersion" to KeyEffect.Applied,
+            "icons" to KeyEffect.Applied,
+            "appearance" to KeyEffect.Applied,
+            "home" to KeyEffect.Applied,
+        ),
+        "icons" to mapOf(
+            "themed" to KeyEffect.Applied,
+            "enforceThemed" to KeyEffect.Applied,
+            "pack" to KeyEffect.Applied,
+        ),
+        "appearance" to mapOf(
+            "transparency" to KeyEffect.Applied,
+            "wallpaper" to KeyEffect.Applied,
+        ),
+        "appearance.transparency" to mapOf(
+            "name" to KeyEffect.Applied,
+            "background" to KeyEffect.Applied,
+            "surface" to KeyEffect.Applied,
+            "elevatedSurface" to KeyEffect.Applied,
+        ),
+        "appearance.wallpaper" to mapOf(
+            "image" to KeyEffect.Applied,
+            "target" to KeyEffect.Applied,
+        ),
+        "home" to mapOf(
+            "searchBar" to KeyEffect.Applied,
+            // The container is served: `favorites` below still pins apps.
+            "dock" to KeyEffect.Applied,
+            "widgets" to KeyEffect.Applied,
+        ),
+        "home.searchBar" to mapOf(
+            "position" to KeyEffect.Applied,
+        ),
+        "home.dock" to mapOf(
+            "enabled" to KeyEffect.Inert(
+                "no dock is drawn on the home screen; the favorites widget took " +
+                        "that role and follows home.widgets. Setting this does change " +
+                        "something - it turns on the favorite affordances in search " +
+                        "results - which is not what the key means (#46)"
+            ),
+            // Applied through the favorites repository: the apps are pinned
+            // whether or not anything renders a dock, and a reader sees them.
+            "favorites" to KeyEffect.Applied,
+        ),
+        "home.dock.favorites[]" to mapOf(
+            "packageName" to KeyEffect.Applied,
+            "profile" to KeyEffect.Applied,
+        ),
+        "home.widgets" to mapOf(
+            "enabled" to KeyEffect.Applied,
+            "widgets" to KeyEffect.Applied,
+        ),
     )
+
+    private val knownKeys: Map<String, Set<String>> = keyEffects.mapValues { it.value.keys }
 
     fun parse(input: String): ConfigParseResult {
         if (input.toByteArray(Charsets.UTF_8).size > MaxInputBytes) {
@@ -233,16 +292,30 @@ object ConfigParser {
     ) {
         when (element) {
             is JsonObject -> {
-                val known = knownKeys[canonicalPath]
-                if (known != null) {
+                val effects = keyEffects[canonicalPath]
+                if (effects != null) {
                     for (key in element.keys) {
-                        if (key !in known) {
-                            out += Diagnostic(
+                        val path = if (reportPath.isEmpty()) key else "$reportPath.$key"
+                        when (val effect = effects[key]) {
+                            null -> out += Diagnostic(
                                 Severity.Warning,
                                 "unknown-key",
-                                if (reportPath.isEmpty()) key else "$reportPath.$key",
-                                "Unknown key '${if (reportPath.isEmpty()) key else "$reportPath.$key"}' is ignored",
+                                path,
+                                "Unknown key '$path' is ignored",
                             )
+
+                            // Reported because it is present, not because it
+                            // changed: a key that is inert stays inert on the
+                            // second reload, when the differ produces no
+                            // mutation for it and nothing else would speak up.
+                            is KeyEffect.Inert -> out += Diagnostic(
+                                Severity.Warning,
+                                "inert-key",
+                                path,
+                                "'$path' is accepted but this build does not serve it: ${effect.reason}",
+                            )
+
+                            KeyEffect.Applied -> Unit
                         }
                     }
                 }
