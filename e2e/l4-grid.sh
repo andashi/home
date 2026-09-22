@@ -156,15 +156,36 @@ settle_then_broadcast() { # $1 = local config file, $2 = sha256, $3 = stage name
 # --- screen helpers ----------------------------------------------------
 
 # Brings the home screen to the front: the grid renders (and on first start
-# seeds the widget column) only while the launcher is in the foreground.
+# seeds the widget column) only while the launcher is in the foreground. No
+# sleep here: whatever follows polls for what it expects (wait_until,
+# assert_cells), because a first cold start plus seeding plus the DataStore
+# flag takes longer than any fixed pause on a fresh install.
 show_home() {
   adb -s "$SERIAL" shell am start -n "$LAUNCHER_ACTIVITY" >/dev/null 2>&1 || true
-  sleep 3
+}
+
+# Polls the /config read-back until the jq filter holds. Sets LAST_CONFIG.
+LAST_CONFIG=""
+wait_until() { # $1 = jq filter over /config, $2 = timeout (s), $3 = description
+  local filter="$1" timeout="$2" what="$3" elapsed=0 config=""
+  while [ "$elapsed" -lt "$timeout" ]; do
+    if config="$(query_json config 2>/dev/null)" && [ -n "$config" ]; then
+      if jq -e "$filter" >/dev/null 2>&1 <<<"$config"; then
+        LAST_CONFIG="$config"
+        return 0
+      fi
+    fi
+    sleep 1
+    elapsed=$((elapsed + 1))
+  done
+  printf 'last /config read-back:\n%s\n' "$config" >&2
+  die "timed out (${timeout}s) waiting for read-back: $what"
 }
 
 # Prints "id left top right bottom" for every grid cell on screen, in px.
 dump_cells() {
-  adb -s "$SERIAL" shell uiautomator dump /sdcard/l4-grid.xml >/dev/null 2>&1 || die "uiautomator dump failed"
+  adb -s "$SERIAL" shell rm -f /sdcard/l4-grid.xml >/dev/null 2>&1 || true
+  adb -s "$SERIAL" shell uiautomator dump /sdcard/l4-grid.xml >/dev/null 2>&1 || { printf "uiautomator dump failed\n" >&2; return 1; }
   adb -s "$SERIAL" shell cat /sdcard/l4-grid.xml | tr -d '\r' > "$WORK/dump.xml"
   python3 - "$WORK/dump.xml" <<'PY'
 import re, sys
@@ -192,10 +213,30 @@ density_scale() {
 #   $1 = expected "id x y w h" lines
 # The favorites row ("dock") anchors the grid: x = 0, bottom row, so its left
 # edge is the grid's left edge and its width gives the cell pitch.
+#
+# Polls: a reload is applied before its report is written, but the screen
+# recomposes asynchronously, so the dump is repeated until the expected
+# cells are there (up to CELLS_TIMEOUT seconds) and the last mismatch is
+# what a timeout reports.
+CELLS_TIMEOUT="${CELLS_TIMEOUT:-60}"
 assert_cells() { # $1 = expected lines, $2 = description
+  local expected="$1" what="$2" elapsed=0 result=""
+  while [ "$elapsed" -lt "$CELLS_TIMEOUT" ]; do
+    if result="$(check_cells "$expected" "$what" 2>&1)"; then
+      printf '%s\n' "$result"
+      return 0
+    fi
+    sleep 1
+    elapsed=$((elapsed + 1))
+  done
+  printf '%s\n' "$result" >&2
+  die "timed out (${CELLS_TIMEOUT}s) waiting for cells: $what"
+}
+
+check_cells() { # $1 = expected lines, $2 = description
   local expected="$1" what="$2" cells gap scale
   cells="$(dump_cells)"
-  [ -n "$cells" ] || die "$what: no grid-item cells on screen"
+  [ -n "$cells" ] || { printf '%s: no grid-item cells on screen\n' "$what" >&2; return 1; }
   scale="$(density_scale)"
   gap="$(awk -v s="$scale" 'BEGIN { print 8 * s }')"
   python3 - "$cells" "$expected" "$gap" "$what" <<'PY'
@@ -321,7 +362,10 @@ adb -s "$SERIAL" shell pm list packages | tr -d '\r' | grep -x "package:$CLOCK_P
 write_config "$LEGACY_CONFIG"
 wait_report ".success == true and .configSha256 == \"$H_LEGACY\"" 90 "first reload of the v1 file"
 show_home
-effective="$(query_json config)" || die "could not query /config"
+# The seeder runs on the launcher's first render; on a fresh install that is
+# a cold start plus the DataStore flag, so poll the read-back for its result.
+wait_until '(.home.grid.layouts.phone.items | length) > 0' 60 "the seeded phone layout"
+effective="$LAST_CONFIG"
 assert_jq "$effective" '.schemaVersion == 2 and .home.favorites == [] and (.home | has("dock") | not)' \
   "v1 file migrated to the v2 shape"
 assert_jq "$effective" \
