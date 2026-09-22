@@ -34,6 +34,7 @@ jobs:
           :core:preferences:testDebugUnitTest
           :core:permissions:testDebugUnitTest
           :core:config:testDebugUnitTest
+          :core:grid:test
           :services:config:testDebugUnitTest
           :data:database:testDebugUnitTest
           :data:searchable:testDebugUnitTest
@@ -47,15 +48,18 @@ jobs:
         run: >-
           ./gradlew
           :core:config:koverVerifyDebug
+          :core:grid:koverVerify
           :services:config:koverVerifyDebug
       - name: Upload coverage reports on failure
         if: ${{ failure() }}
-        run: ./gradlew :core:config:koverHtmlReportDebug :services:config:koverHtmlReportDebug
+        run: ./gradlew :core:config:koverHtmlReportDebug :core:grid:koverHtmlReport :services:config:koverHtmlReportDebug
       - uses: actions/upload-artifact@v4
         if: ${{ failure() }}
         with:
           name: kover-html
-          path: '**/build/reports/kover/htmlDebug'
+          path: |
+            '**/build/reports/kover/htmlDebug'
+            '**/build/reports/kover/html'
           retention-days: 14
 
   l3-screenshots:

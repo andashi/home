@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.ksp) apply false
     alias(libs.plugins.android.application) apply false
     alias(libs.plugins.android.library) apply false
+    alias(libs.plugins.kotlin.jvm) apply false
     alias(libs.plugins.dokka) apply true
     alias(libs.plugins.kover)
 }
@@ -15,5 +16,6 @@ dependencies {
     // (`./gradlew koverHtmlReport`); the threshold that fails CI lives in the
     // module itself, next to the tests that have to reach it.
     kover(project(":core:config"))
+    kover(project(":core:grid"))
     kover(project(":services:config"))
 }
