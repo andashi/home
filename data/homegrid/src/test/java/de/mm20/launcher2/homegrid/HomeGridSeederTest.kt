@@ -155,7 +155,8 @@ class HomeGridSeederTest {
         assertEquals(HomeGridLayouts.Fold, written.first().layout)
         val dock = written.first { it.isFavorites }
         assertEquals(listOf(0, fold.rows - 1, 8, 1), listOf(dock.x, dock.y, dock.w, dock.h))
-        assertEquals(8, written.first { it.appWidgetId == 11 }.w)
+        // The dock may span the fold; an AppWidget may not, so it takes the left half.
+        assertEquals(4, written.first { it.appWidgetId == 11 }.w)
 
         val phoneItems = grid.observe(HomeGridLayouts.Phone).first()
         assertEquals(2, phoneItems.size)

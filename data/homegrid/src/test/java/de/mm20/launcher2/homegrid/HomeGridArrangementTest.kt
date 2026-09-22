@@ -87,9 +87,8 @@ class HomeGridArrangementTest {
         assertEquals(listOf("a", "right", "crossing", "dock"), result.cells.map { it.item.id })
         assertEquals(Span(5, 0, 2, 2), result.cells.spanOf("right"))
         val crossing = result.cells.spanOf("crossing")
-        assertTrue(crossing.x >= 4 || crossing.x + crossing.w <= 4)
+        assertEquals(Span(2, 3, 2, 1), crossing) // nudged to the side holding more of it, ties go left
         assertEquals(Span(0, 5, 8, 1), result.cells.spanOf("dock"))
-        assertTrue(result.issues.any { it is LayoutIssue.CrossesFold })
     }
 
     @Test

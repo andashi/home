@@ -1,5 +1,7 @@
 package de.mm20.launcher2.homegrid
 
+import java.util.concurrent.ConcurrentHashMap
+
 /**
  * How many rows a layout has on this device. Rows are derived from the
  * usable screen height (D1), which only the rendered grid knows, so the
@@ -20,14 +22,14 @@ class MeasuredGridRows(
     private val defaultRows: Int = DefaultRows,
 ) : GridRowsSource {
 
+    private val measured = ConcurrentHashMap<String, Int>()
+
     /** Records the rows [layout] has on this device; later calls win. */
     fun update(layout: String, rows: Int) {
-        TODO("PR 4")
+        measured[layout] = rows
     }
 
-    override fun rows(layout: String): Int {
-        TODO("PR 4")
-    }
+    override fun rows(layout: String): Int = measured[layout] ?: defaultRows
 
     companion object {
         const val DefaultRows = 6

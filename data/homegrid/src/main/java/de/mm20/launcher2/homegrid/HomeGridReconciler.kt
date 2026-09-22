@@ -1,6 +1,9 @@
 package de.mm20.launcher2.homegrid
 
+import de.mm20.launcher2.preferences.WidgetScreenTarget
+import de.mm20.launcher2.widgets.AppWidget
 import de.mm20.launcher2.widgets.WidgetRepository
+import kotlinx.coroutines.flow.first
 
 /**
  * The AppWidget host as the reconciler needs it, so the reconciliation can be
@@ -50,6 +53,43 @@ class HomeGridReconciler(
     suspend fun reconcile(
         layouts: List<String> = listOf(HomeGridLayouts.Phone, HomeGridLayouts.Fold),
     ): ReconcileReport {
-        TODO("PR 4")
+        val bound = mutableListOf<String>()
+        val failed = mutableListOf<String>()
+        val unavailable = mutableListOf<String>()
+        val referenced = mutableSetOf<Int>()
+
+        for (layout in layouts) {
+            for (item in homeGridRepository.observe(layout).first()) {
+                if (item.isFavorites) continue
+                val id = item.appWidgetId
+                if (id == null) {
+                    val allocated = port.allocate()
+                    if (port.bind(allocated, item.widget, item.profile)) {
+                        homeGridRepository.setAppWidgetId(layout, item.id, allocated)
+                        referenced += allocated
+                        bound += item.id
+                    } else {
+                        port.release(allocated)
+                        failed += item.id
+                    }
+                } else {
+                    referenced += id
+                    if (!port.isProviderAvailable(id)) unavailable += item.id
+                }
+            }
+        }
+
+        // The widget column pages keep their AppWidgets in the same host.
+        val parents = WidgetScreenTarget.entries.map<WidgetScreenTarget, java.util.UUID?> { it.id } + null
+        for (parent in parents) {
+            referenced += widgetRepository.get(parent).first()
+                .filterIsInstance<AppWidget>()
+                .map { it.config.widgetId }
+        }
+
+        val released = port.boundIds().filter { it !in referenced }
+        for (id in released) port.release(id)
+
+        return ReconcileReport(bound, failed, unavailable, released)
     }
 }

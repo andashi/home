@@ -1,6 +1,8 @@
 package de.mm20.launcher2.homegrid
 
+import de.mm20.launcher2.grid.CellMath
 import de.mm20.launcher2.grid.GridSpec
+import kotlin.math.floor
 
 /**
  * What one window of the grid looks like: the layout it draws, the full
@@ -31,10 +33,17 @@ object HomeGridGeometry {
     const val GapDp = 8f
 
     /**
+     * A fold window narrower than this is the cover (Material's `Expanded`
+     * breakpoint): the Pixel Fold cover is about 412 dp, its inner display
+     * about 790 dp.
+     */
+    const val CoverMaxWidthDp = 600f
+
+    /**
      * Invariants: `cellDp * visibleColumns + gap * (visibleColumns - 1) == widthDp`;
      * `rows >= 1`; on a fold `spec.columns == 2 * columns` and
      * `spec.foldColumn == columns`; `isCover` only on a fold whose window is
-     * narrower than [FormFactorRule.ExpandedWidthDp].
+     * narrower than [CoverMaxWidthDp].
      */
     fun derive(
         formFactor: FormFactor,
@@ -43,6 +52,23 @@ object HomeGridGeometry {
         heightDp: Float,
         gapDp: Float = GapDp,
     ): GridGeometry {
-        TODO("PR 4")
+        require(columns >= 1) { "columns must be positive, got $columns" }
+        val folds = formFactor == FormFactor.Fold
+        val isCover = folds && widthDp < CoverMaxWidthDp
+        val visibleColumns = if (folds && !isCover) columns * 2 else columns
+        val cellDp = CellMath.cellDp(widthDp, visibleColumns, gapDp)
+        val rows = maxOf(1, floor((heightDp + gapDp) / (cellDp + gapDp)).toInt())
+        return GridGeometry(
+            layout = formFactor.layout,
+            spec = GridSpec(
+                columns = if (folds) columns * 2 else columns,
+                rows = rows,
+                foldColumn = if (folds) columns else null,
+            ),
+            visibleColumns = visibleColumns,
+            isCover = isCover,
+            cellDp = cellDp,
+            gapDp = gapDp,
+        )
     }
 }

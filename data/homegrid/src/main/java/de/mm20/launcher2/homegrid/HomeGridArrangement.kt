@@ -1,6 +1,9 @@
 package de.mm20.launcher2.homegrid
 
+import de.mm20.launcher2.grid.GridItem
+import de.mm20.launcher2.grid.GridLayout
 import de.mm20.launcher2.grid.LayoutIssue
+import de.mm20.launcher2.grid.SizeLimits
 import de.mm20.launcher2.grid.Span
 
 /** One item as drawn: its row from the database and the span it ended up with. */
@@ -26,6 +29,26 @@ object HomeGridArrangement {
      * span the fold and is clipped, not dropped, on the cover.
      */
     fun arrange(geometry: GridGeometry, items: List<HomeGridItem>): HomeGridArrangementResult {
-        TODO("PR 4")
+        val byId = items.associateBy { it.id }
+        val gridItems = items.map {
+            GridItem(
+                id = it.id,
+                span = Span(it.x, it.y, it.w, it.h),
+                // Provider limits were applied when the config was stored;
+                // here every item may shrink or grow to what the grid holds.
+                limits = SizeLimits.Unbounded,
+                mayCrossFold = it.isFavorites,
+            )
+        }
+        val normalized = GridLayout.normalize(geometry.spec, gridItems)
+        val visible = if (geometry.isCover) {
+            GridLayout.clampToCover(normalized.items, geometry.visibleColumns)
+        } else {
+            normalized.items
+        }
+        return HomeGridArrangementResult(
+            cells = visible.map { HomeGridCell(byId.getValue(it.id), it.span) },
+            issues = normalized.issues,
+        )
     }
 }

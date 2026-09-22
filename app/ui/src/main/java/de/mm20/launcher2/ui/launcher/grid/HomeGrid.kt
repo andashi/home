@@ -12,12 +12,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.MeasurePolicy
+import androidx.compose.ui.layout.Placeable
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import kotlin.math.roundToInt
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import de.mm20.launcher2.grid.Span
@@ -121,5 +124,31 @@ internal fun gridMeasurePolicy(
     cellPx: Float,
     gapPx: Float,
 ): MeasurePolicy {
-    TODO("PR 4")
+    val pitch = cellPx + gapPx
+    val spansById = cells.toMap()
+    return MeasurePolicy { measurables, constraints ->
+        val placed = measurables.map { measurable ->
+            val span = spansById.getValue(measurable.layoutId as String)
+            val left = (span.x * pitch).roundToInt()
+            val top = (span.y * pitch).roundToInt()
+            val right = (span.right * pitch - gapPx).roundToInt()
+            val bottom = (span.bottom * pitch - gapPx).roundToInt()
+            val placeable = measurable.measure(
+                Constraints.fixed(
+                    width = (right - left).coerceAtLeast(0),
+                    height = (bottom - top).coerceAtLeast(0),
+                ),
+            )
+            PlacedCell(placeable, left, top)
+        }
+        val width = if (constraints.hasBoundedWidth) constraints.maxWidth else placed.maxOfOrNull { it.left + it.placeable.width } ?: 0
+        val height = if (constraints.hasBoundedHeight) constraints.maxHeight else placed.maxOfOrNull { it.top + it.placeable.height } ?: 0
+        layout(width, height) {
+            for (cell in placed) {
+                cell.placeable.placeRelative(cell.left, cell.top)
+            }
+        }
+    }
 }
+
+private class PlacedCell(val placeable: Placeable, val left: Int, val top: Int)

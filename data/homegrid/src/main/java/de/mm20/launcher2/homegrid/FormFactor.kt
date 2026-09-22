@@ -28,7 +28,6 @@ object FormFactorRule {
      * [hasHingeAngleSensor] is the system feature above. Invariant: the
      * answer does not depend on the current window.
      */
-    fun classify(hasHingeAngleSensor: Boolean): FormFactor {
-        TODO("PR 4")
-    }
+    fun classify(hasHingeAngleSensor: Boolean): FormFactor =
+        if (hasHingeAngleSensor) FormFactor.Fold else FormFactor.Phone
 }
