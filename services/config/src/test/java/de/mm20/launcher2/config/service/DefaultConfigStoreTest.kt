@@ -555,6 +555,8 @@ class DefaultConfigStoreTest {
             return emptyList()
         }
         override suspend fun ensureRendered(): Boolean = false
+        var pending: WallpaperState? = null
+        override suspend fun pending(): WallpaperState? = pending
     }
 
     private class FakeAppRepository : AppRepository {
@@ -620,5 +622,27 @@ class DefaultConfigStoreTest {
                 parcel.recycle()
             }
         }
+    }
+
+    /**
+     * #37: the deferred wallpaper has to be reported on every reload, not only
+     * on the one that deferred it. Once recorded it stops producing mutations,
+     * so a run that checks whether everything sits would otherwise come back
+     * green for something still waiting.
+     */
+    @Test
+    fun `a pending wallpaper is reported even when nothing is applied`() = runTest {
+        wallpaperStore.pending = WallpaperState("home.jpg", WallpaperTarget.Both)
+
+        val diagnostics = store.apply(emptyList())
+
+        assertEquals(listOf("wallpaper-pending-foreground"), diagnostics.map { it.code })
+        assertEquals("appearance.wallpaper.image", diagnostics.single().path)
+        assertEquals(Severity.Warning, diagnostics.single().severity)
+    }
+
+    @Test
+    fun `nothing pending means nothing extra is reported`() = runTest {
+        assertEquals(emptyList<Diagnostic>(), store.apply(emptyList()))
     }
 }

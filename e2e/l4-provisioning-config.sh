@@ -465,8 +465,21 @@ for key in "${PROFILE_KEYS[@]}"; do
   # wallpaper id for that user (dumpsys is independent evidence of the read-back).
   want_wp="$(jq -r '.appearance.wallpaper.image // empty' "$cfgfile")"
   if [ -n "$want_wp" ]; then
+    # Since #37 a wallpaper is not set while nobody is looking, and a
+    # provisioning run looks at nothing - not even in user 0, where the
+    # launcher is HOME but never resumed during the run. So the contract is no
+    # longer "an id exists"; it is "an id exists OR the profile says the
+    # wallpaper is still outstanding". Deliberately not relaxed to "either is
+    # fine": one of the two has to be true, and a profile that reports neither
+    # is a failure exactly as before. Section 8 remains the proof that the
+    # deferred set actually happens, because it foregrounds the profile first.
+    pending_wp="$(printf '%s' "$diag" \
+      | jq -r '[(.diagnostics // [])[] | select(.code == "wallpaper-pending-foreground")] | length')"
     want_target="$(jq -r '.appearance.wallpaper.target // "both"' "$cfgfile")"
     sys_id="$(wallpaper_id "$uid" System)"; lock_id="$(wallpaper_id "$uid" Lock)"
+    if [ "${pending_wp:-0}" -gt 0 ]; then
+      ok "profile '$key' (user $uid): wallpaper '$want_wp' deferred until the profile is looked at (reported)"
+    else
     case "$want_target" in
       home) [ -n "$sys_id" ] && [ "$sys_id" != "0" ] || die "profile '$key' (user $uid): home wallpaper '$want_wp' configured but system id is '${sys_id:-}'" ;;
       lock) [ -n "$lock_id" ] && [ "$lock_id" != "0" ] || die "profile '$key' (user $uid): lock wallpaper '$want_wp' configured but lock id is '${lock_id:-}'" ;;
@@ -476,6 +489,7 @@ for key in "${PROFILE_KEYS[@]}"; do
             [ -z "$lock_id" ] || [ "$lock_id" != "0" ] || die "profile '$key' (user $uid): lock wallpaper id is 0 although target is both" ;;
     esac
     ok "profile '$key' (user $uid): wallpaper '$want_wp' set for $want_target (system id ${sys_id:-none}, lock id ${lock_id:-none})"
+    fi
   fi
 
   ok "profile '$key' (user $uid): /config matches generated file, diagnostics sha256 ${want_sha:0:12}..."

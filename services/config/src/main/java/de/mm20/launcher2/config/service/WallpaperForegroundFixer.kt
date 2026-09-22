@@ -24,6 +24,12 @@ import kotlinx.coroutines.launch
 class WallpaperForegroundFixer(
     context: Context,
     private val wallpapers: WallpaperStore,
+    /**
+     * Fed here rather than observed separately: this class already watches the
+     * lifecycle, and a second set of callbacks for the same question would be
+     * one more thing to keep in step (#37).
+     */
+    private val foreground: ForegroundState,
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO),
 ) : Application.ActivityLifecycleCallbacks {
 
@@ -41,6 +47,7 @@ class WallpaperForegroundFixer(
     }
 
     override fun onActivityResumed(activity: Activity) {
+        foreground.onResumed()
         if (job?.isActive == true) return
         job = scope.launch {
             try {
@@ -55,7 +62,7 @@ class WallpaperForegroundFixer(
 
     override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) = Unit
     override fun onActivityStarted(activity: Activity) = Unit
-    override fun onActivityPaused(activity: Activity) = Unit
+    override fun onActivityPaused(activity: Activity) = foreground.onPaused()
     override fun onActivityStopped(activity: Activity) = Unit
     override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) = Unit
     override fun onActivityDestroyed(activity: Activity) = Unit

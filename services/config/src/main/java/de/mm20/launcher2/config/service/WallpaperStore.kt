@@ -41,6 +41,19 @@ interface WallpaperStore {
      * hook. Returns true when a re-apply happened.
      */
     suspend fun ensureRendered(): Boolean
+
+    /**
+     * The wallpaper this profile is managed to have and has not been given
+     * yet, or null when nothing is outstanding.
+     *
+     * Reported on every reload rather than only on the one that deferred it
+     * (#37). Once the intent is recorded, [current] answers with it, the
+     * differ sees no difference and produces no mutation, and [apply] is never
+     * reached again - so a second run to check that everything sits would come
+     * back silently green for something that is still waiting. That is exactly
+     * the moment the information is wanted.
+     */
+    suspend fun pending(): WallpaperState?
 }
 
 data class WallpaperState(val image: String, val target: WallpaperTarget)
@@ -103,6 +116,13 @@ internal data class AppliedWallpaper(
     val image: String,
     val target: WallpaperTarget,
     val sha256: String,
+    /**
+     * Recorded but never handed to the system, because nothing was on screen
+     * when the config asked for it (#37). [systemId] and [lockId] are
+     * meaningless while this is true - no set happened, so there is nothing to
+     * compare them against.
+     */
+    val pending: Boolean = false,
     val systemId: Int,
     val lockId: Int,
 )
@@ -110,6 +130,8 @@ internal data class AppliedWallpaper(
 class DefaultWallpaperStore(
     context: Context,
     private val applier: WallpaperApplier,
+    /** Whether anyone can see the result right now, see [ForegroundState] (#37). */
+    private val foreground: ForegroundState = ForegroundState(),
     /** Monotonic, injectable so the re-apply cooldown is testable. */
     private val elapsedRealtime: () -> Long = { SystemClock.elapsedRealtime() },
 ) : WallpaperStore {
@@ -133,6 +155,13 @@ class DefaultWallpaperStore(
         val file = ConfigLocation.wallpaperFile(appContext, applied.image) ?: return@withContext null
         if (!file.exists()) return@withContext null
         if (file.readBytes().sha256Hex() != applied.sha256) return@withContext null
+        // A deferred wallpaper is still the one this profile is managed to
+        // have: the config named it, the file is here, and the foreground hook
+        // will set it. Reporting null instead would make the differ reapply on
+        // every reload and would drop appearance.wallpaper out of the
+        // read-back, which the provisioning convergence check compares against
+        // the pushed file (#37).
+        if (applied.pending) return@withContext WallpaperState(applied.image, applied.target)
         val ids = try {
             applier.currentIds()
         } catch (e: Exception) {
@@ -169,6 +198,34 @@ class DefaultWallpaperStore(
             // Android reads it. Record the state only when the bytes before
             // and after the set agree; otherwise the next reload reapplies.
             val before = file.readBytes().sha256Hex()
+
+            // Nothing on screen: record the intent and stop. The system does
+            // not crop for a background user, so setting here costs 30 s for a
+            // result it discards and the foreground hook redoes anyway (#37).
+            // The same diagnostic is reported as for a set that did not render,
+            // because from a host's point of view it is the same situation:
+            // the wallpaper is managed, named, and not visible yet.
+            if (!foreground.isForeground) {
+                writeApplied(
+                    AppliedWallpaper(
+                        image = image,
+                        target = target,
+                        sha256 = before,
+                        systemId = 0,
+                        lockId = 0,
+                        pending = true,
+                    )
+                )
+                // No diagnostic from here. "A wallpaper is outstanding" is a
+                // state, not an event, and DefaultConfigStore reports it from
+                // pending() on every reload - including this one. Emitting it
+                // here as well put it in the report twice on the reload that
+                // deferred, which is how the duplicated Security-Fixes trailer
+                // in v0.3.1 happened too: two places sure they were the one
+                // that had to say it.
+                return emptyList()
+            }
+
             val ids = applier.apply(file, target)
             val after = file.readBytes().sha256Hex()
             if (before != after) {
@@ -207,10 +264,18 @@ class DefaultWallpaperStore(
         }
     }
 
+    override suspend fun pending(): WallpaperState? = withContext(Dispatchers.IO) {
+        val applied = readApplied() ?: return@withContext null
+        if (!applied.pending) return@withContext null
+        WallpaperState(applied.image, applied.target)
+    }
+
     override suspend fun ensureRendered(): Boolean = withContext(Dispatchers.IO) {
         mutex.withLock {
             val applied = readApplied() ?: return@withLock false
-            if (applier.isRendered(applied.target)) return@withLock false
+            // A pending record was never handed to the system, so whatever is
+            // rendered belongs to someone else and says nothing about us (#37).
+            if (!applied.pending && applier.isRendered(applied.target)) return@withLock false
             // isRendered says "no file yet", which covers both "never asked"
             // and "asked, still cropping" - WallpaperManagerService produces
             // the crop asynchronously, and on the emulator it took longer than
@@ -229,14 +294,24 @@ class DefaultWallpaperStore(
             }
             // A wallpaper the user set by hand in the meantime is drift, not a
             // pending render; the next explicit reload decides, not this hook.
-            if (!applied.holds(applier.currentIds())) return@withLock false
+            // A pending record is exempt: nothing was ever set under it, so
+            // there are no ids of ours for the system to still be holding.
+            if (!applied.pending && !applied.holds(applier.currentIds())) return@withLock false
             val file = ConfigLocation.wallpaperFile(appContext, applied.image) ?: return@withLock false
             if (!file.isFile || file.readBytes().sha256Hex() != applied.sha256) return@withLock false
+            // Checked again here, not only by the caller: everything above -
+            // reading the record, resolving the file, hashing it - happens on
+            // the IO dispatcher while the lock is held, and the last activity
+            // can pause in the meantime. Going ahead then would start exactly
+            // the crop this change exists to avoid, in the background, for
+            // nobody. The record stays pending so the next resume retries.
+            if (!foreground.isForeground) return@withLock false
+
             val ids = applier.apply(file, applied.target)
             // Same guard as apply(): a same-name upload landing mid-set must not
             // be recorded under the old hash.
             if (file.readBytes().sha256Hex() != applied.sha256) return@withLock false
-            val reapplied = applied.copy(systemId = ids.system, lockId = ids.lock)
+            val reapplied = applied.copy(systemId = ids.system, lockId = ids.lock, pending = false)
             writeApplied(reapplied)
             lastReapply = reapplied to elapsedRealtime()
             true
