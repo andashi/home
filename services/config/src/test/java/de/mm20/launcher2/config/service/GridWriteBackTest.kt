@@ -275,6 +275,27 @@ class GridWriteBackTest {
     }
 
     @Test
+    fun `the lock is taken before the database is written`() = runBlocking {
+        // Review on #68: with the DB write outside the lock, a reload that
+        // already read the old file applies the old grid over the new rows,
+        // and the write-back then mirrors the reverted state. The lock
+        // comes first, then the database, then the file.
+        putFile(documentWithGrid)
+        val events = mutableListOf<String>()
+        val lock = object : ConfigFileLock() {
+            override suspend fun <T> withLock(block: suspend () -> T): T {
+                events += "lock"
+                return super.withLock { block().also { events += "unlock" } }
+            }
+        }
+        val recording = RecordingHomeGridRepository().apply { onReplace = { events += "replace" } }
+
+        GridWriteBack(context, recording, store, reportStore, lock).write(HomeGridLayouts.Phone, items)
+
+        assertEquals(listOf("lock", "replace", "unlock"), events)
+    }
+
+    @Test
     fun `the last result is exposed for the UI`() = runBlocking {
         val writeBack = writeBack()
         assertNull(writeBack.lastResult.value)
@@ -301,11 +322,13 @@ class GridWriteBackTest {
         val layouts = mutableMapOf<String, List<HomeGridItem>>()
         var fileTextAtReplace: (() -> String)? = null
         var observedFileText: String? = null
+        var onReplace: (() -> Unit)? = null
 
         override fun observe(layout: String): Flow<List<HomeGridItem>> = flowOf(layouts[layout] ?: emptyList())
 
         override suspend fun replace(layout: String, items: List<HomeGridItem>) {
             observedFileText = fileTextAtReplace?.invoke()
+            onReplace?.invoke()
             layouts[layout] = items
         }
 

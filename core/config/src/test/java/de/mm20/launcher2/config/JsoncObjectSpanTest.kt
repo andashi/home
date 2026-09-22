@@ -222,6 +222,22 @@ class JsoncObjectSpanTest {
     }
 
     @Test
+    fun `a unicode escape with non-hex digits is malformed, not thrown`() {
+        // Review on #68: "\uZZZZ" threw NumberFormatException out of find.
+        assertEquals(Malformed, JsoncObjectSpan.find("""{ "ho\uZZZZ": { "grid": {} } }""", home))
+        assertEquals(Malformed, JsoncObjectSpan.find("""{ "home": { "gr\u00G1d": {} } }""", home))
+    }
+
+    @Test
+    fun `a truncated escape at the end of a key is malformed, not dropped`() {
+        // "\u12" has no four digits; "\" alone before the closing quote
+        // would escape the quote itself, so the string runs on.
+        assertEquals(Malformed, JsoncObjectSpan.find("""{ "home\u12": { "grid": {} } }""", home))
+        assertEquals(Malformed, JsoncObjectSpan.find("""{ "home\u": { "grid": {} } }""", home))
+        assertEquals(Malformed, JsoncObjectSpan.find("""{ "home\": { "grid": {} } }""", home))
+    }
+
+    @Test
     fun `an empty path is a programming error`() {
         try {
             JsoncObjectSpan.find("{}", emptyList())

@@ -10,8 +10,8 @@ import kotlinx.coroutines.sync.withLock
  * state the reload derived from the old file. Bound as a Koin `single` and
  * shared by [ConfigReloader] and [GridWriteBack].
  */
-class ConfigFileLock {
+open class ConfigFileLock {
     private val mutex = Mutex()
 
-    suspend fun <T> withLock(block: suspend () -> T): T = mutex.withLock { block() }
+    open suspend fun <T> withLock(block: suspend () -> T): T = mutex.withLock { block() }
 }
