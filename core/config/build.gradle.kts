@@ -56,7 +56,7 @@ kover {
     reports {
         verify {
             rule("line coverage of :core:config") {
-                minBound(91)
+                minBound(94)
             }
         }
     }

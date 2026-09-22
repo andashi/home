@@ -80,7 +80,7 @@ kover {
     reports {
         verify {
             rule("line coverage of :services:config") {
-                minBound(76)
+                minBound(78)
             }
         }
     }
