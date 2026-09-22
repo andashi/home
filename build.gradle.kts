@@ -16,5 +16,6 @@ dependencies {
     // (`./gradlew koverHtmlReport`); the threshold that fails CI lives in the
     // module itself, next to the tests that have to reach it.
     kover(project(":core:config"))
+    kover(project(":core:grid"))
     kover(project(":services:config"))
 }
