@@ -12,6 +12,6 @@ class AndroidFormFactorDetector(
 ) : FormFactorDetector {
     override fun detect(): FormFactor {
         val hasHinge = context.packageManager.hasSystemFeature(PackageManager.FEATURE_SENSOR_HINGE_ANGLE)
-        return FormFactorRule.classify(hasHinge)
+        return FormFactorRule.classify(hasHinge, builtInDisplays = 1)
     }
 }
