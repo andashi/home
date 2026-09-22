@@ -375,6 +375,16 @@ log "generating launcher configs for entry '$LAUNCHER_CONFIG_KEY' into $LAUNCHER
 # form, which is what a round trip writes back, and the bare package name, which
 # is what a config generator naturally emits and what once failed the decode and
 # took a whole zone's configuration with it (#45, andashi/provisioning#1).
+#
+# The short form needs the build under test to carry #45, i.e. v0.3.1 or later.
+# Against 0.3.0 it is not normalised but REJECTED - "decode-failed: Expected
+# JsonObject, but had JsonLiteral" - and the previously applied configuration
+# stays in force, so a read-back can look like success when nothing arrived
+# (measured by the provisioning session on emulator-5558, 2026-09-22). This
+# scenario installs the APK it was given, so that only matters when someone
+# points PKG/APK at an older release; the diagnostics assert in section 6
+# compares configSha256 against the pushed file and fails loudly in that case
+# rather than quietly comparing a stale document.
 log "injecting dock favorites into the generated configs ($PKG)"
 for i in "${!PROFILE_KEYS[@]}"; do
   key="${PROFILE_KEYS[$i]}"
