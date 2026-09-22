@@ -379,7 +379,7 @@ cat > "$WALLPAPER_CONFIG" <<'EOF'
 EOF
 
 # Schema version 1, the shape every provisioning zone pushed before #23: the
-# launcher must migrate it rather than reject it (andashi/provisioning#7).
+# launcher must migrate it rather than reject it (andashi/provisioning#2).
 LEGACY_CONFIG="$WORK/legacy-v1.jsonc"
 cat > "$LEGACY_CONFIG" <<'EOF'
 {

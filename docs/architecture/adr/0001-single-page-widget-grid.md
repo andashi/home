@@ -75,7 +75,7 @@ stays compiled-in for the secondary widget pages reached by gestures.
   launcher on reload. **Measured 2026-09-22:** the HOME role does not carry the
   bind-widget grant; only the system's bind dialog ("always allow") or the shell
   (`appwidget grantbind --package <applicationId> --user <N>`) gives it.
-  Provisioning runs the shell command per profile (andashi/provisioning#7); a
+  Provisioning runs the shell command per profile (andashi/provisioning#2); a
   cell whose provider could not be bound offers "Allow", which opens the dialog.
 - Geometry may be omitted once: the launcher places the item at the first free
   cells in reading order and writes the geometry back. The full contract is the

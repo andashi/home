@@ -129,7 +129,7 @@ on the screen:
 - A provisioning push that lands after a write-back wins by being the last
   writer; the provisioning side pulls before it pushes and refuses a push
   when the device file's hash changed since the last pull
-  (andashi/provisioning#7).
+  (andashi/provisioning#2).
 
 ### 3. Convergence, not application
 

@@ -151,7 +151,7 @@ before it pushes (owner: `adb pull`; other profiles: the read-back provider,
 which serves the effective document in this exact shape) and commits the
 pulled file like any other change; a push that would overwrite a device edit
 is refused by the provisioning step on a hash mismatch
-(andashi/provisioning#7). `home.grid.locked: true` turns this off for a
+(andashi/provisioning#2). `home.grid.locked: true` turns this off for a
 profile that must not be edited on the device; it is the exception, not the
 default, because editing on the device and pulling the result is the point.
 
