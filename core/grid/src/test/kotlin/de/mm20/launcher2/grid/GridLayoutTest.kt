@@ -27,9 +27,9 @@ class GridLayoutTest {
         val issues = GridLayout.validate(Fold, items)
         assertEquals(
             listOf(
+                LayoutIssue.CrossesFold("d"),
                 LayoutIssue.OutOfBounds("c", Span(7, 5, 2, 1)),
                 LayoutIssue.Overlap("a", "b"),
-                LayoutIssue.CrossesFold("d"),
             ),
             issues.sortedBy { it::class.simpleName },
         )

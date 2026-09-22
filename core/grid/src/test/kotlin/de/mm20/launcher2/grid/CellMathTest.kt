@@ -76,15 +76,17 @@ class CellMathTest {
         val todo = ProviderSizes(150f, 200f, minResizeWidthDp = 150f, minResizeHeightDp = 80f)
         assertEquals(SizeLimits(2, 1, Int.MAX_VALUE, Int.MAX_VALUE), CellMath.limitsFor(todo, phone))
         assertEquals(CellSize(2, 2), CellMath.defaultSpanFor(todo, phone))
-        // a maximum of 300 x 100 dp: 3 x 1 cells
-        val capped = ProviderSizes(100f, 40f, maxResizeWidthDp = 300f, maxResizeHeightDp = 100f)
+        // 90 x 40 dp fits one 97 dp cell; a maximum of 300 x 90 dp is 3 x 1 cells
+        val capped = ProviderSizes(90f, 40f, maxResizeWidthDp = 300f, maxResizeHeightDp = 90f)
         assertEquals(SizeLimits(1, 1, 3, 1), CellMath.limitsFor(capped, phone))
     }
 
     @Test
     fun `minResize larger than min is ignored as the platform does`() {
-        val p = ProviderSizes(100f, 40f, minResizeWidthDp = 300f, minResizeHeightDp = 300f)
+        val p = ProviderSizes(90f, 40f, minResizeWidthDp = 300f, minResizeHeightDp = 300f)
         assertEquals(SizeLimits(1, 1, Int.MAX_VALUE, Int.MAX_VALUE), CellMath.limitsFor(p, phone))
+        // 100 dp does not fit one 97 dp cell: the minimum is two cells, not one
+        assertEquals(2, CellMath.limitsFor(ProviderSizes(100f, 40f), phone).minW)
     }
 
     @Test
