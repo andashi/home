@@ -10,6 +10,7 @@ import android.os.UserManager
 import android.util.Log
 import androidx.core.content.getSystemService
 import de.mm20.launcher2.ktx.jsonObjectOf
+import de.mm20.launcher2.permissions.PermissionsManager
 import de.mm20.launcher2.search.SavableSearchable
 import de.mm20.launcher2.search.SearchableDeserializer
 import de.mm20.launcher2.search.SearchableSerializer
@@ -33,7 +34,8 @@ class LauncherShortcutSerializer : SearchableSerializer {
 }
 
 class LauncherShortcutDeserializer(
-    val context: Context
+    val context: Context,
+    private val permissionsManager: PermissionsManager,
 ) : SearchableDeserializer, KoinComponent {
 
     override suspend fun deserialize(serialized: String): SavableSearchable? {
@@ -62,12 +64,26 @@ class LauncherShortcutDeserializer(
                             LauncherApps.ShortcutQuery.FLAG_MATCH_PINNED_BY_ANY_LAUNCHER
                 )
                 query.setShortcutIds(mutableListOf(id))
-                val shortcuts = try {
-                    launcherApps.getShortcuts(query, user)
-                } catch (e: IllegalStateException) {
-                    return null
+                // A query that could not run and a query that found nothing
+                // mean opposite things here, so they must stay
+                // distinguishable: orEmpty() makes success non-null, leaving
+                // null for the failure the helper reports.
+                val shortcuts = queryShortcutHost(
+                    unavailable = null,
+                    permissionsManager = permissionsManager,
+                ) {
+                    launcherApps.getShortcuts(query, user).orEmpty()
                 }
-                if (shortcuts.isNullOrEmpty()) {
+                // "Cannot look right now" must not delete the favorite, and
+                // returning null here would: SavableSearchableRepository drops
+                // the row for anything that fails to deserialize. A locked
+                // profile, or a HOME role that moved between the permission
+                // check above and this line, must not cost someone their
+                // pinned shortcuts (andashi/home#30).
+                    ?: return UnavailableShortcut(context, id, packageName, user, userSerial)
+
+                if (shortcuts.isEmpty()) {
+                    // Really gone, not merely unreachable: the row goes.
                     return null
                 } else {
                     return LauncherShortcut(
