@@ -182,7 +182,10 @@ internal fun GridLayoutConfig.matches(current: GridLayoutConfig?): Boolean {
 internal fun GridItemConfig.matches(stored: GridItemConfig): Boolean {
     if (id != stored.id || widget != stored.widget) return false
     fun <T> same(desired: T?, current: T?) = desired == null || desired == current
-    return same(x, stored.x) && same(y, stored.y) && same(w, stored.w) && same(h, stored.h) &&
+    // A position is x and y together; a lone coordinate cannot anchor the
+    // item, so the store places it freely and it is not compared here.
+    val positionSame = !hasPosition || (x == stored.x && y == stored.y)
+    return positionSame && same(w, stored.w) && same(h, stored.h) &&
             same(profile, stored.profile) &&
             same(borderless, stored.borderless) && same(background, stored.background) &&
             same(themeColors, stored.themeColors)

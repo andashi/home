@@ -126,6 +126,15 @@ object ConfigValidator {
                                 "provider component name (package/class)",
                     )
                 }
+                if ((item.x == null) != (item.y == null)) {
+                    out += Diagnostic(
+                        Severity.Warning,
+                        "partial-grid-position",
+                        path,
+                        "a position is x and y together; the lone coordinate is ignored and " +
+                                "the item is placed at the first free cells",
+                    )
+                }
                 val badPosition = (item.x != null && item.x < 0) || (item.y != null && item.y < 0)
                 val badSize = (item.w != null && item.w < 1) || (item.h != null && item.h < 1)
                 if (badPosition || badSize) {

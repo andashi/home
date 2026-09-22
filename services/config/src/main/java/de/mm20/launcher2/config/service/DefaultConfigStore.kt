@@ -263,13 +263,15 @@ class DefaultConfigStore(
             SizedItem(index, item, limits)
         }
 
+        // A position anchors the item; a missing size is the provider's
+        // default. Items without a position are placed after them.
         val placed = mutableListOf<GridItem>()
         for (s in sized) {
             val item = s.config
-            if (item.hasGeometry) {
+            if (item.hasPosition) {
                 placed += GridItem(
                     id = item.id,
-                    span = Span(item.x!!, item.y!!, item.w!!, item.h!!),
+                    span = Span(item.x!!, item.y!!, item.w ?: s.limits.default.w, item.h ?: s.limits.default.h),
                     limits = s.limits.limits,
                     mayCrossFold = item.isFavorites,
                 )
@@ -277,7 +279,7 @@ class DefaultConfigStore(
         }
         for (s in sized) {
             val item = s.config
-            if (item.hasGeometry) continue
+            if (item.hasPosition) continue
             val w = item.w ?: s.limits.default.w
             val h = item.h ?: s.limits.default.h
             val candidate = GridItem(

@@ -214,6 +214,13 @@ data class GridItemConfig(
     val isFavorites: Boolean get() = widget == Favorites
     val hasGeometry: Boolean get() = x != null && y != null && w != null && h != null
 
+    /**
+     * A position is `x` and `y` together. With one, the item anchors there
+     * and a missing size comes from the provider; a lone coordinate is not
+     * a position (the validator warns, the differ ignores it).
+     */
+    val hasPosition: Boolean get() = x != null && y != null
+
     companion object {
         const val Favorites = "favorites"
     }
