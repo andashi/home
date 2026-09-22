@@ -50,7 +50,13 @@ class ConfigParserTest {
         val result = ConfigParser.parse(fullConfig)
 
         assertTrue(result.isSuccess)
-        assertTrue(result.diagnostics.isEmpty())
+        // Since #47 a document that sets home.dock.enabled is told so. The
+        // config is still fully applied; the build just says which part of it
+        // it does not serve.
+        assertEquals(
+            listOf("inert-key" to "home.dock.enabled"),
+            result.diagnostics.map { it.code to it.path },
+        )
         val config = result.config!!
         assertEquals(1, config.schemaVersion)
         assertEquals(true, config.icons?.themed)
@@ -585,10 +591,15 @@ class ConfigParserTest {
 
         val result = ConfigParser.parse(example)
 
+        // The ADR documents the *contract*, and the contract has
+        // home.dock.enabled in it. This build does not serve that key, and
+        // since #47 it says so rather than staying silent - which is the whole
+        // point, so the example keeps the key and the test states the
+        // consequence instead of hiding it.
         assertEquals(
-            "the documented example must not produce diagnostics",
-            emptyList<Diagnostic>(),
-            result.diagnostics,
+            "the documented example must produce nothing but the known inert key",
+            listOf("inert-key" to "home.dock.enabled"),
+            result.diagnostics.map { it.code to it.path },
         )
         assertTrue(result.isSuccess)
 
@@ -705,6 +716,102 @@ class ConfigParserTest {
             "a non-default profile survives, which is why the asymmetry is easy to miss",
             work,
             roundTrip(work),
+        )
+    }
+
+    // ---- #47: reporting which contract keys this build actually serves ----
+
+    @Test
+    fun `an inert key is reported while it is present, not only when it changes`() {
+        val document = """
+            {
+              "schemaVersion": 1,
+              "home": { "dock": { "enabled": true, "favorites": [] } }
+            }
+        """.trimIndent()
+
+        val inert = ConfigParser.parse(document).diagnostics.filter { it.code == "inert-key" }
+
+        assertEquals(1, inert.size)
+        assertEquals("home.dock.enabled", inert.single().path)
+        assertEquals(Severity.Warning, inert.single().severity)
+        // The message has to say what actually happens, or a host reads
+        // "not served" and guesses the rest.
+        assertTrue(inert.single().message.contains("no dock is drawn"))
+    }
+
+    @Test
+    fun `a document that does not mention the inert key says nothing about it`() {
+        val document = """{"schemaVersion":1,"home":{"dock":{"favorites":["com.example.app"]}}}"""
+
+        val result = ConfigParser.parse(document)
+
+        assertEquals(emptyList<Diagnostic>(), result.diagnostics)
+        assertTrue(result.isSuccess)
+    }
+
+    @Test
+    fun `an inert key does not stop the config from applying`() {
+        val document = """{"schemaVersion":1,"home":{"dock":{"enabled":true}}}"""
+
+        val result = ConfigParser.parse(document)
+
+        assertTrue("a warning must not fail the reload", result.isSuccess)
+        assertEquals(true, result.config?.home?.dock?.enabled)
+    }
+
+    @Test
+    fun `an unknown key is still an unknown key, not an inert one`() {
+        val document = """{"schemaVersion":1,"home":{"dock":{"enabld":true}}}"""
+
+        val codes = ConfigParser.parse(document).diagnostics.map { it.code }
+
+        assertEquals(listOf("unknown-key"), codes)
+    }
+
+    /**
+     * Ties the effect table to the mutations that actually exist. A section
+     * that gains a mutation without an entry here fails, which is the property
+     * that keeps the table from becoming true-on-the-day-it-was-written: the
+     * classification cannot be skipped, only decided.
+     */
+    @Test
+    fun `every section the differ can produce is classified`() {
+        val everything = LauncherConfig(
+            schemaVersion = 1,
+            icons = IconsConfig(themed = true, enforceThemed = true, pack = "com.example.pack"),
+            appearance = AppearanceConfig(
+                transparency = TransparencyConfig(
+                    name = "glass",
+                    background = 0.5f,
+                    surface = 0.5f,
+                    elevatedSurface = 0.5f,
+                ),
+                wallpaper = WallpaperConfig(image = "w.jpg", target = WallpaperTarget.Both),
+            ),
+            home = HomeConfig(
+                searchBar = SearchBarConfig(position = SearchBarPosition.Bottom),
+                dock = DockConfig(
+                    enabled = true,
+                    favorites = listOf(Favorite("com.example.app", Profile.Personal)),
+                ),
+                widgets = WidgetsConfig(enabled = true, widgets = listOf(BuiltinWidget.Apps)),
+            ),
+        )
+
+        val sections = ConfigDiffer.diff(everything, ConfigState()).map { it.section }.distinct()
+        assertTrue("the fixture must actually produce mutations", sections.isNotEmpty())
+
+        val unclassified = sections.filter { section ->
+            val parent = section.substringBeforeLast('.', missingDelimiterValue = "")
+            val key = section.substringAfterLast('.')
+            ConfigParser.keyEffects[parent]?.get(key) == null
+        }
+
+        assertEquals(
+            "sections the differ produces but the key table does not classify",
+            emptyList<String>(),
+            unclassified,
         )
     }
 }
