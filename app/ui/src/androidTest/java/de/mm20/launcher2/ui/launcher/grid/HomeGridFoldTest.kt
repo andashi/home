@@ -12,6 +12,7 @@ import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import de.mm20.launcher2.homegrid.DevicePostures
 import de.mm20.launcher2.homegrid.FormFactor
 import de.mm20.launcher2.homegrid.HomeGridLayouts
 import de.mm20.launcher2.ui.base.ProvideAppWidgetHost
@@ -59,6 +60,9 @@ class HomeGridFoldTest {
         return FileInputStream(fd.fileDescriptor).use { it.readBytes().decodeToString() }.also { fd.close() }
     }
 
+    /** Posture ids of this device, by name: they differ between foldables. */
+    private lateinit var postures: DevicePostures
+
     private fun posture(state: Int) {
         shell("cmd device_state state $state")
         composeRule.waitForIdle()
@@ -66,9 +70,11 @@ class HomeGridFoldTest {
 
     @Before
     fun requireAFoldable() {
-        val states = shell("cmd device_state print-states-simple").trim()
-        assumeTrue("no device postures on this device: $states", states.split(",").size >= 2)
-        posture(OPENED)
+        val states = shell("cmd device_state print-states")
+        val parsed = DevicePostures.parse(states)
+        assumeTrue("no CLOSED/HALF_OPENED/OPENED postures on this device: $states", parsed != null)
+        postures = parsed!!
+        posture(postures.opened)
     }
 
     @After
@@ -117,7 +123,7 @@ class HomeGridFoldTest {
         val vm = koin.viewModel()
         show(vm)
 
-        posture(CLOSED)
+        posture(postures.closed)
         waitForColumns(vm, 4)
 
         composeRule.onNodeWithContentDescription("grid-item:right").assertDoesNotExist()
@@ -141,12 +147,12 @@ class HomeGridFoldTest {
         assertEquals(listOf(5, 2), stored.first { it.id == "analog" }.let { listOf(it.x, it.y) })
         assertEquals(listOf(0, 0), stored.first { it.id == "digital" }.let { listOf(it.x, it.y) })
 
-        posture(CLOSED)
+        posture(postures.closed)
         waitForColumns(vm, 4)
         composeRule.onNodeWithContentDescription("grid-item:analog").assertDoesNotExist()
         composeRule.onNodeWithContentDescription("grid-item:digital").assertIsDisplayed()
 
-        posture(OPENED)
+        posture(postures.opened)
         waitForColumns(vm, 8)
         composeRule.onNodeWithContentDescription("grid-item:analog").assertIsDisplayed()
         assertEquals(listOf(5, 2), vm.spanOf("analog").let { listOf(it.x, it.y) })
@@ -157,7 +163,7 @@ class HomeGridFoldTest {
         val vm = koin.viewModel()
         show(vm)
 
-        posture(HALF_OPENED)
+        posture(postures.halfOpened)
         waitForColumns(vm, 8)
 
         composeRule.onNodeWithContentDescription("grid-item:right").assertIsDisplayed()
@@ -189,15 +195,9 @@ class HomeGridFoldTest {
         show(vm)
 
         composeRule.onNodeWithContentDescription("grid-item:phone-only").assertDoesNotExist()
-        posture(CLOSED)
+        posture(postures.closed)
         waitForColumns(vm, 4)
         composeRule.onNodeWithContentDescription("grid-item:phone-only").assertDoesNotExist()
         assertEquals(HomeGridLayouts.Fold, vm.state.value!!.geometry.layout)
-    }
-
-    private companion object {
-        const val CLOSED = 0
-        const val HALF_OPENED = 1
-        const val OPENED = 2
     }
 }

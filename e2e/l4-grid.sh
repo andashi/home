@@ -28,8 +28,9 @@
 #   9. profile isolation: a second user gets its own grid through --user,
 #      user 0's file and report are untouched
 #
-# FOLD=1 runs on the foldable GrapheneOS instance (SERIAL=emulator-5560,
-# OVERLAY_DIR=.../instances/test-fold): the fixtures carry a `fold` layout
+# FOLD=1 runs on a foldable instance (the GrapheneOS one is SERIAL=emulator-5560,
+# OVERLAY_DIR=.../instances/test-fold; posture ids are resolved by name, since
+# they differ between foldables): the fixtures carry a `fold` layout
 # eight columns wide with an item in the right half, step 2 folds and
 # unfolds between its checks (D7: the cover shows columns 0-3, the right
 # item is absent, the dock is clipped to four columns), and the phone-only
@@ -293,8 +294,29 @@ device_config_sha() {
   adb -s "$SERIAL" shell sha256sum "$DEVICE_CONFIG" 2>/dev/null | tr -d '\r' | cut -d' ' -f1
 }
 
-posture() { # $1 = device state id (0 closed, 1 half, 2 opened)
-  adb -s "$SERIAL" shell cmd device_state state "$1" >/dev/null 2>&1 || die "cmd device_state state $1 failed"
+# Posture ids by name: the GrapheneOS fold instance counts CLOSED from 0
+# (with a rear-display state), the SDK's 7.6" foldable from 1. Resolved
+# once from `print-states`; `posture closed|half|opened` uses them.
+resolve_postures() {
+  local states
+  states="$(adb -s "$SERIAL" shell cmd device_state print-states 2>/dev/null | tr -d '\r')"
+  POSTURE_CLOSED="$(sed -n "s/.*identifier=\([0-9]*\), name='CLOSED'.*/\1/p" <<<"$states" | head -1)"
+  POSTURE_HALF="$(sed -n "s/.*identifier=\([0-9]*\), name='HALF_OPENED'.*/\1/p" <<<"$states" | head -1)"
+  POSTURE_OPENED="$(sed -n "s/.*identifier=\([0-9]*\), name='OPENED'.*/\1/p" <<<"$states" | head -1)"
+  [ -n "$POSTURE_CLOSED" ] && [ -n "$POSTURE_HALF" ] && [ -n "$POSTURE_OPENED" ] \
+    || die "FOLD=1 but $SERIAL has no CLOSED/HALF_OPENED/OPENED postures: $states"
+  log "postures: closed=$POSTURE_CLOSED half=$POSTURE_HALF opened=$POSTURE_OPENED"
+}
+
+posture() { # $1 = closed | half | opened
+  local id
+  case "$1" in
+    closed) id="$POSTURE_CLOSED" ;;
+    half) id="$POSTURE_HALF" ;;
+    opened) id="$POSTURE_OPENED" ;;
+    *) die "unknown posture $1" ;;
+  esac
+  adb -s "$SERIAL" shell cmd device_state state "$id" >/dev/null 2>&1 || die "cmd device_state state $id ($1) failed"
   sleep 4
   wake_screen
   show_home
@@ -589,21 +611,22 @@ if [ "$HAVE_CLOCK" = 1 ]; then
        [{"id":"digital","x":0,"y":0,"w":3,"h":1},{"id":"analog","x":0,"y":1,"w":2,"h":2},
         {"id":"right","x":5,"y":0,"w":3,"h":1},{"id":"dock","x":0,"y":5,"w":8,"h":1}]' \
       "read-back fold grid equals the pushed file"
-    posture 2
+    resolve_postures
+    posture opened
     assert_cells $'digital 0 0 3 1\nanalog 0 1 2 2\nright 5 0 3 1\ndock 0 5 8 1' "configured grid on the inner display"
     assert_bound "$DIGITAL_CLOCK" "$ANALOG_CLOCK"
     ok "fold, opened: eight columns, the right-half item on screen, both widgets bound"
     # Closed: the cover renders columns 0..3 of the same layout (D7). The
     # dock line says 4 wide, so the pitch is measured from four columns.
-    posture 0
+    posture closed
     DOCK_W=4
     assert_cells $'digital 0 0 3 1\nanalog 0 1 2 2\ndock 0 5 4 1' "the cover clips the fold layout"
     [ -z "$(dump_cells | awk '$1 == "right"')" ] || die "the right-half item is on the cover"
     ok "fold, closed: four columns, the right-half item absent, the dock clipped"
-    posture 1
+    posture half
     DOCK_W=8
     assert_cells $'digital 0 0 3 1\nanalog 0 1 2 2\nright 5 0 3 1\ndock 0 5 8 1' "half-opened renders as opened"
-    posture 2
+    posture opened
     assert_cells $'digital 0 0 3 1\nanalog 0 1 2 2\nright 5 0 3 1\ndock 0 5 8 1' "opened again"
     ok "fold, half-opened and opened again: the inner layout is back"
   else
