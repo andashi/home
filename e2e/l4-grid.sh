@@ -17,8 +17,8 @@
 #   4. STUB (PR 6): idempotence of the pulled file
 #   5. push a file that drops a 2x2 item onto the clock's cell: the clock's
 #      bounds moved down one row, diagnostics clean
-#   6. push h: 1 for the analog clock (declared minimum 2 rows): diagnostic
-#      widget-too-small, bounds show two rows
+#   6. push w: 1 for the digital clock (declared minimum two cells wide):
+#      diagnostic widget-too-small, bounds show two columns
 #   7. STUB (PR 5, edit mode): locked layout refuses edit mode
 #   8. malformed push: last good state kept, bounds unchanged
 #   9. STUB (PR 6): profile isolation in user 10
@@ -343,7 +343,11 @@ sed 's|{ "id": "digital", "widget": "'"$DIGITAL_CLOCK"'", "x": 0, "y": 0, "w": 3
 
 # The analog clock at one row: below its declared minimum.
 TOO_SMALL_CONFIG="$WORK/too-small.jsonc"
-sed 's|"id": "analog", "widget": "'"$ANALOG_CLOCK"'", "x": 0, "y": 1, "w": 2, "h": 2|"id": "analog", "widget": "'"$ANALOG_CLOCK"'", "x": 0, "y": 1, "w": 2, "h": 1|' \
+# The digital clock declares minResizeWidth 136 dp (dumpsys appwidget on the
+# GrapheneOS image: minResize=(34817x15105), TypedValue-encoded dp), which is
+# two cells on a phone grid; asking for one is below the minimum. The analog
+# clock resizes down to 55x55 dp, so a one-row analog clock is NOT too small.
+sed 's|"id": "digital", "widget": "'"$DIGITAL_CLOCK"'", "x": 0, "y": 0, "w": 3, "h": 1|"id": "digital", "widget": "'"$DIGITAL_CLOCK"'", "x": 0, "y": 0, "w": 1, "h": 1|' \
   "$GRID_CONFIG" > "$TOO_SMALL_CONFIG"
 
 MALFORMED_CONFIG="$WORK/malformed.jsonc"
@@ -451,11 +455,11 @@ if [ "$HAVE_CLOCK" = 1 ]; then
     '.success == true and (((.diagnostics // []) | map(select(.code == "widget-too-small")) | length) > 0)' \
     "an item below its provider minimum is reported"
   effective="$(query_json config)" || die "could not query /config"
-  assert_jq "$effective" '(.home.grid.layouts.phone.items[] | select(.id == "analog") | .h) == 2' \
-    "the analog clock keeps its two-row minimum"
+  assert_jq "$effective" '(.home.grid.layouts.phone.items[] | select(.id == "digital") | .w) == 2' \
+    "the digital clock keeps its two-column minimum"
   show_home
-  assert_cells $'digital 0 0 3 1\nanalog 0 1 2 2\ndock 0 5 4 1' "minimum enforced on screen"
-  ok "below minimum: widget-too-small reported, two rows drawn"
+  assert_cells $'digital 0 0 2 1\nanalog 0 1 2 2\ndock 0 5 4 1' "minimum enforced on screen"
+  ok "below minimum: widget-too-small reported, two columns drawn"
 
   # --- 7. STUB: locked layout (PR 5) -----------------------------------
   warn "step 7 (locked layout refuses edit mode) lands with PR 5"
