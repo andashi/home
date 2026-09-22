@@ -379,7 +379,7 @@ ok "seeded favorites row measured on screen"
 if [ "$HAVE_CLOCK" = 1 ]; then
   # --- 2. a configured grid, on screen where the file says -------------
   settle_then_broadcast "$GRID_CONFIG" "$H_GRID" "grid"
-  assert_jq "$LAST_REPORT" '.success == true and ([.diagnostics[] | select(.severity == "error")] | length == 0)' \
+  assert_jq "$LAST_REPORT" '.success == true and (((.diagnostics // []) | map(select(.severity == "error")) | length) == 0)' \
     "grid config applied without errors"
   show_home
   effective="$(query_json config)" || die "could not query /config"
@@ -409,7 +409,7 @@ if [ "$HAVE_CLOCK" = 1 ]; then
   # --- 6. below the declared minimum -----------------------------------
   settle_then_broadcast "$TOO_SMALL_CONFIG" "$H_TOO_SMALL" "too-small"
   assert_jq "$LAST_REPORT" \
-    '.success == true and ([.diagnostics[] | select(.code == "widget-too-small")] | length > 0)' \
+    '.success == true and (((.diagnostics // []) | map(select(.code == "widget-too-small")) | length) > 0)' \
     "an item below its provider minimum is reported"
   effective="$(query_json config)" || die "could not query /config"
   assert_jq "$effective" '(.home.grid.layouts.phone.items[] | select(.id == "analog") | .h) == 2' \
