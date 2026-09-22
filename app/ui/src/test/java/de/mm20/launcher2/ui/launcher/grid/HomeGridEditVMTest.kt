@@ -342,6 +342,22 @@ class HomeGridEditVMTest {
     }
 
     @Test
+    fun `restore ignores issues of other items when it looks for free cells`() = runTest(dispatcher) {
+        // Seen on the 7.6" foldable AVD: a stored dock at row 5 is out of
+        // bounds on a four-row window; restore then rejected every cell
+        // and put the note at the first free cells in reading order.
+        val f = fixture()
+        f.vm.onWindowMeasured(396f, 420f) // 4 rows of 97 dp
+        f.vm.cells()
+        f.vm.enterEdit()
+        val removed = f.vm.removeEditing("note")!!
+
+        f.vm.restore(removed)
+
+        assertEquals(listOf(0, 2), f.vm.spanOf("note").let { listOf(it.x, it.y) })
+    }
+
+    @Test
     fun `resize clamps to the item's limits`() = runTest(dispatcher) {
         val f = fixture(limits = mapOf("clock" to SizeLimits(minW = 2, minH = 1, maxW = 3, maxH = 2)))
         f.vm.cells()

@@ -3,6 +3,7 @@ package de.mm20.launcher2.ui.launcher.grid
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -67,9 +68,11 @@ class HomeGridEditModeTest {
             MaterialTheme {
                 CompositionLocalProvider(LocalSnackbarHostState provides snackbars) {
                     ProvideAppWidgetHost {
+                        // A fixed 396x700 dp host: a 4x6 grid on every device, the
+                        // geometry the assertions are written against.
                         Box(
                             Modifier
-                                .fillMaxSize()
+                                .size(396.dp, 700.dp)
                                 .testTag("parent")
                                 .pointerInput(Unit) {
                                     // The scaffold's configured long-press gesture, stood in for.

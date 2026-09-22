@@ -23,6 +23,7 @@ import de.mm20.launcher2.homegrid.GridItemLimits
 import de.mm20.launcher2.grid.CellSize
 import de.mm20.launcher2.grid.GridItem
 import de.mm20.launcher2.grid.GridLayout
+import de.mm20.launcher2.grid.LayoutIssue
 import de.mm20.launcher2.grid.SizeLimits
 import de.mm20.launcher2.grid.Span
 import de.mm20.launcher2.homegrid.HomeGridWriteResult
@@ -240,10 +241,21 @@ class HomeGridVM(
         val candidate = item.toGridItem(geometry)
         val spec = geometry.spec
         var found: Span? = null
+        // Only issues that involve the candidate count: a stored item that
+        // the display arrangement slides or clips (out of bounds on a
+        // smaller window, say) must not block every cell.
+        fun LayoutIssue.involves(id: String) = when (this) {
+            is LayoutIssue.Overlap -> a == id || b == id
+            is LayoutIssue.OutOfBounds -> this.id == id
+            is LayoutIssue.CrossesFold -> this.id == id
+            is LayoutIssue.BelowMinimum -> this.id == id
+            is LayoutIssue.Overflow -> this.id == id
+        }
         search@ for (y in item.y until spec.rows) {
             for (x in 0..(spec.columns - item.w)) {
                 val span = Span(x, y, item.w, item.h)
-                if (GridLayout.validate(spec, others + candidate.copy(span = span)).isEmpty()) {
+                val issues = GridLayout.validate(spec, others + candidate.copy(span = span))
+                if (issues.none { it.involves(item.id) }) {
                     found = span
                     break@search
                 }
