@@ -27,6 +27,7 @@ jobs:
           :services:config:testDebugUnitTest
           :data:database:testDebugUnitTest
           :data:searchable:testDebugUnitTest
+          :data:appshortcuts:testDebugUnitTest
           :data:widgets:testDebugUnitTest
           :data:themes:testDebugUnitTest
           :core:base:testDebugUnitTest

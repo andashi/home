@@ -9,6 +9,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import de.mm20.launcher2.appshortcuts.AppShortcutRepository
+import de.mm20.launcher2.appshortcuts.appShortcutFromConfigActivityResult
 import de.mm20.launcher2.badges.Badge
 import de.mm20.launcher2.badges.BadgeService
 import de.mm20.launcher2.data.customattrs.CustomAttributesRepository
@@ -17,7 +18,6 @@ import de.mm20.launcher2.icons.LauncherIcon
 import de.mm20.launcher2.permissions.PermissionGroup
 import de.mm20.launcher2.permissions.PermissionsManager
 import de.mm20.launcher2.search.SavableSearchable
-import de.mm20.launcher2.appshortcuts.AppShortcut
 import de.mm20.launcher2.preferences.search.FavoritesSettings
 import de.mm20.launcher2.search.Searchable
 import de.mm20.launcher2.search.Tag
@@ -218,7 +218,7 @@ class EditFavoritesSheetVM : ViewModel(), KoinComponent {
     fun createShortcut(context: Context, data: Intent?) {
         data ?: return cancelPickShortcut()
 
-        val shortcut = AppShortcut(context, data)
+        val shortcut = appShortcutFromConfigActivityResult(context, data)
 
         if (shortcut == null) {
             cancelPickShortcut()

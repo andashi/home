@@ -3,7 +3,7 @@ package de.mm20.launcher2.activity
 import android.app.Activity
 import android.os.Bundle
 import android.util.Log
-import de.mm20.launcher2.appshortcuts.AppShortcut
+import de.mm20.launcher2.appshortcuts.appShortcutFromPinRequest
 import de.mm20.launcher2.services.favorites.FavoritesService
 import org.koin.android.ext.android.inject
 
@@ -13,7 +13,7 @@ class AddItemActivity : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val shortcut = AppShortcut(this, intent)
+        val shortcut = appShortcutFromPinRequest(this, intent)
         if (shortcut != null) {
             favoritesService.pinItem(shortcut)
         } else {

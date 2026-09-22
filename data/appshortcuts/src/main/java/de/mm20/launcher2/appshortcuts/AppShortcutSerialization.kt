@@ -120,10 +120,18 @@ class LegacyShortcutSerializer: SearchableSerializer {
 class LegacyShortcutDeserializer(
     val context: Context
 ): SearchableDeserializer {
-    override suspend fun deserialize(serialized: String): SavableSearchable {
+    /**
+     * Returns null for a favorite whose stored Intent does not survive
+     * [LegacyShortcut.sanitize], which drops the row: before andashi/home#5
+     * was fixed, any app could have had one of these persisted through the
+     * exported pin-request path, so a favorite that is already in the database
+     * is checked on the way out as well as on the way in.
+     */
+    override suspend fun deserialize(serialized: String): SavableSearchable? {
         val json = JSONObject(serialized)
         val label = json.getString("label")
-        val intent = Intent.parseUri(json.getString("intent"), 0)
+        val storedIntent = Intent.parseUri(json.getString("intent"), 0)
+        val intent = LegacyShortcut.sanitize(context, storedIntent) ?: return null
         val iconResourceObj = json.optJSONObject("iconResource")
         val iconResource = iconResourceObj?.let {
             ShortcutIconResource().apply {
