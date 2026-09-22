@@ -6,6 +6,9 @@ import androidx.test.core.app.ApplicationProvider
 import de.mm20.launcher2.database.AppDatabase
 import de.mm20.launcher2.database.entities.HomeGridItemEntity
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.joinAll
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -169,5 +172,24 @@ class HomeGridRepositoryTest {
     fun `isFavorites tells the favorites widget from AppWidgets`() {
         assertEquals(true, dock.isFavorites)
         assertEquals(false, clock.isFavorites)
+    }
+
+    @Test
+    fun `racing mutations are applied whole and in lock order`() = runBlocking {
+        // Control for the one-writer promise: fifty coroutines each replace
+        // the phone layout with their own single item and then patch it.
+        // Whichever wins, the layout must hold exactly one item whose
+        // geometry is the patch of that same writer, never a mix.
+        val jobs = (0 until 50).map { n ->
+            launch(Dispatchers.IO) {
+                repository.replace(HomeGridLayouts.Phone, listOf(dock.copy(id = "w$n", x = 0, y = 0)))
+                repository.patchGeometry(HomeGridLayouts.Phone, "w$n", x = n, y = 0, w = 1, h = 1)
+            }
+        }
+        jobs.joinAll()
+        val items = repository.observe(HomeGridLayouts.Phone).first()
+        assertEquals(1, items.size)
+        val winner = items.single()
+        assertEquals("w${winner.x}", winner.id)
     }
 }

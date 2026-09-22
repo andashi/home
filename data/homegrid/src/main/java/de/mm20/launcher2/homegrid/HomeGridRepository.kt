@@ -4,16 +4,21 @@ import de.mm20.launcher2.database.AppDatabase
 import de.mm20.launcher2.database.entities.HomeGridItemEntity
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 
 /**
  * The home grid's persistence, one layout at a time.
  *
- * Bound as a Koin `single` on purpose: there is exactly one writer, so the
- * order of [replace] and the patch calls is the order they were made in. The
- * older `WidgetRepository` is a factory with a per-instance write queue, which
- * is the shape this repository deliberately does not copy.
+ * Bound as a Koin `single` on purpose, and every mutation runs under one
+ * [Mutex]: two mutations never interleave, and a caller that awaits one
+ * before starting the next sees them applied in that order. What the mutex
+ * does not promise is an order between callers that race each other; that
+ * is decided by who takes the lock first, as with any lock. The older
+ * `WidgetRepository` is a factory with a per-instance write queue, which is
+ * the shape this repository deliberately does not copy.
  */
 interface HomeGridRepository {
     /** The items of [layout] ordered by [HomeGridItem.position]; emits on every change. */
@@ -37,24 +42,27 @@ internal class HomeGridRepositoryImpl(
 
     private val dao get() = database.homeGridItemDao()
 
+    /** One writer: mutations are applied whole, never interleaved. */
+    private val writes = Mutex()
+
     override fun observe(layout: String): Flow<List<HomeGridItem>> {
         return dao.queryLayout(layout).map { rows -> rows.map { it.toDomain() } }
     }
 
     override suspend fun replace(layout: String, items: List<HomeGridItem>) {
-        dao.replaceLayout(layout, items.map { it.toEntity() })
+        writes.withLock { dao.replaceLayout(layout, items.map { it.toEntity() }) }
     }
 
     override suspend fun patchGeometry(layout: String, id: String, x: Int, y: Int, w: Int, h: Int) {
-        dao.patchGeometry(layout, id, x, y, w, h)
+        writes.withLock { dao.patchGeometry(layout, id, x, y, w, h) }
     }
 
     override suspend fun setAppWidgetId(layout: String, id: String, appWidgetId: Int?) {
-        dao.setAppWidgetId(layout, id, appWidgetId)
+        writes.withLock { dao.setAppWidgetId(layout, id, appWidgetId) }
     }
 
     override suspend fun delete(layout: String, id: String) {
-        dao.deleteItem(layout, id)
+        writes.withLock { dao.deleteItem(layout, id) }
     }
 }
 
