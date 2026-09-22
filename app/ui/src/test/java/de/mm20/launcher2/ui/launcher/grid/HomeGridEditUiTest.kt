@@ -31,6 +31,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import de.mm20.launcher2.grid.SizeLimits
 import de.mm20.launcher2.homegrid.FormFactor
 import de.mm20.launcher2.homegrid.GridItemLimits
+import de.mm20.launcher2.homegrid.HomeGridInitLock
 import de.mm20.launcher2.homegrid.HomeGridLayouts
 import de.mm20.launcher2.homegrid.HomeGridWriteResult
 import de.mm20.launcher2.homegrid.MeasuredGridRows
@@ -106,6 +107,7 @@ class HomeGridEditUiTest {
             formFactorDetector = FakeFormFactorDetector(FormFactor.Phone),
             measuredRows = MeasuredGridRows(),
             initFlag = FakeInitFlag(initialized = true),
+            initLock = HomeGridInitLock(),
             writeBack = writeBack,
             itemLimits = GridItemLimits { item, _ ->
                 if (item.id == "clock") SizeLimits(minW = 1, minH = 1, maxW = 3, maxH = 2) else SizeLimits.Unbounded

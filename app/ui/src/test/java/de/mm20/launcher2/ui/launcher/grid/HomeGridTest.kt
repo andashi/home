@@ -16,6 +16,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import de.mm20.launcher2.homegrid.FormFactor
 import de.mm20.launcher2.homegrid.GridItemLimits
 import de.mm20.launcher2.homegrid.HomeGridInitFlag
+import de.mm20.launcher2.homegrid.HomeGridInitLock
 import de.mm20.launcher2.homegrid.HomeGridLayouts
 import de.mm20.launcher2.homegrid.MeasuredGridRows
 import de.mm20.launcher2.preferences.ui.UiSettings
@@ -72,6 +73,7 @@ class HomeGridTest {
                 single<de.mm20.launcher2.homegrid.FormFactorDetector> { FakeFormFactorDetector(FormFactor.Phone) }
                 single { MeasuredGridRows() }
                 single<HomeGridInitFlag> { FakeInitFlag(initialized = true) }
+                single { HomeGridInitLock() }
                 single<de.mm20.launcher2.homegrid.HomeGridWriteBack> { FakeWriteBack() }
                 single<GridItemLimits> { GridItemLimits.Unbounded }
             },
@@ -89,6 +91,7 @@ class HomeGridTest {
             formFactorDetector = FakeFormFactorDetector(FormFactor.Phone),
             measuredRows = MeasuredGridRows(),
             initFlag = FakeInitFlag(initialized = true),
+            initLock = HomeGridInitLock(),
             writeBack = FakeWriteBack(),
             itemLimits = GridItemLimits.Unbounded,
             locked = flowOf(false),

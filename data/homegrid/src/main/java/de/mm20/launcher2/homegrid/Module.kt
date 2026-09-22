@@ -12,6 +12,8 @@ val homeGridModule = module {
     single { MeasuredGridRows() }
     single<GridRowsSource> { get<MeasuredGridRows>() }
     single<HomeGridInitFlag> { UiSettingsInitFlag(get()) }
+    // Shared by the default row and the config store; see HomeGridInitLock.
+    single { HomeGridInitLock() }
     // Edit mode's resize limits, from the provider info of bound widgets (D4).
     single<GridItemLimits> { AndroidGridItemLimits(androidContext()) }
 }

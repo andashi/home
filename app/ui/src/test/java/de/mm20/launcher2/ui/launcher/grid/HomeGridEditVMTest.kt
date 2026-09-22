@@ -6,6 +6,7 @@ import de.mm20.launcher2.grid.Span
 import de.mm20.launcher2.homegrid.GridItemLimits
 import de.mm20.launcher2.homegrid.HomeGridCell
 import de.mm20.launcher2.homegrid.HomeGridItem
+import de.mm20.launcher2.homegrid.HomeGridInitLock
 import de.mm20.launcher2.homegrid.HomeGridLayouts
 import de.mm20.launcher2.homegrid.HomeGridWriteBack
 import de.mm20.launcher2.homegrid.HomeGridWriteResult
@@ -96,6 +97,7 @@ class HomeGridEditVMTest {
             formFactorDetector = FakeFormFactorDetector(FormFactor.Phone),
             measuredRows = MeasuredGridRows(),
             initFlag = FakeInitFlag(initialized = true),
+            initLock = HomeGridInitLock(),
             writeBack = writeBack,
             itemLimits = GridItemLimits { item, _ -> limits[item.id] ?: SizeLimits.Unbounded },
             locked = lockedFlow,

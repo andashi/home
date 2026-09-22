@@ -32,6 +32,7 @@ object HomeGridDefaults {
     suspend fun ensureFavoritesRow(
         repository: HomeGridRepository,
         flag: HomeGridInitFlag,
+        lock: HomeGridInitLock,
         layout: String,
         columns: Int,
         rows: Int,

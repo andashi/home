@@ -150,5 +150,5 @@ after any config that applied `home.grid`, an empty layout means empty.
   migrated on read.
 - Write-back (#68) makes the on-device file the last agreed state between host
   and device (ADR 0002, ADR 0003).
-- The old `WidgetColumn` code path stays compiled-in for the secondary widget
-  pages; the home screen no longer uses it.
+- The old `WidgetColumn` code path is gone (PR 5b): with the widget pages
+  removed there is no secondary surface left that would draw it.

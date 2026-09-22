@@ -3,6 +3,7 @@ package de.mm20.launcher2.ui.launcher.grid
 
 import de.mm20.launcher2.homegrid.FormFactor
 import de.mm20.launcher2.homegrid.GridItemLimits
+import de.mm20.launcher2.homegrid.HomeGridInitLock
 import de.mm20.launcher2.homegrid.HomeGridLayouts
 import de.mm20.launcher2.homegrid.HomeGridWidgets
 import de.mm20.launcher2.homegrid.MeasuredGridRows
@@ -63,6 +64,7 @@ class HomeGridVMTest {
             formFactorDetector = FakeFormFactorDetector(formFactor),
             measuredRows = measuredRows,
             initFlag = flag,
+            initLock = HomeGridInitLock(),
             writeBack = FakeWriteBack(),
             itemLimits = GridItemLimits.Unbounded,
             locked = flowOf(false),

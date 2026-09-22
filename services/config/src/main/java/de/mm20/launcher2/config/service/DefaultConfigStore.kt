@@ -29,6 +29,7 @@ import de.mm20.launcher2.themes.DefaultThemeId
 import de.mm20.launcher2.themes.transparencies.Transparencies
 import de.mm20.launcher2.themes.transparencies.TransparenciesRepository
 import de.mm20.launcher2.homegrid.HomeGridInitFlag
+import de.mm20.launcher2.homegrid.HomeGridInitLock
 import de.mm20.launcher2.homegrid.HomeGridRepository
 import kotlinx.coroutines.flow.first
 import java.util.UUID
@@ -55,6 +56,7 @@ class DefaultConfigStore(
     private val transparenciesRepository: TransparenciesRepository,
     private val homeGridRepository: HomeGridRepository,
     private val homeGridInitFlag: HomeGridInitFlag,
+    private val homeGridInitLock: HomeGridInitLock,
     private val gridLimits: GridLimitsSource,
     private val gridRows: GridRowsSource,
     private val searchableRepository: SavableSearchableRepository,

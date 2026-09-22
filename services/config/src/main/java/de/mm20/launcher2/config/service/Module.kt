@@ -29,6 +29,7 @@ val configModule = module {
             transparenciesRepository = get(),
             homeGridRepository = get(),
             homeGridInitFlag = get(),
+            homeGridInitLock = get(),
             gridLimits = get(),
             gridRows = get(),
             searchableRepository = get(),

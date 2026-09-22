@@ -18,6 +18,7 @@ import de.mm20.launcher2.homegrid.HomeGridReconciler
 import de.mm20.launcher2.homegrid.HomeGridRepository
 import de.mm20.launcher2.homegrid.HomeGridDefaults
 import de.mm20.launcher2.homegrid.HomeGridInitFlag
+import de.mm20.launcher2.homegrid.HomeGridInitLock
 import de.mm20.launcher2.homegrid.HomeGridWriteBack
 import de.mm20.launcher2.homegrid.GridItemLimits
 import de.mm20.launcher2.grid.CellSize
@@ -80,6 +81,7 @@ class HomeGridVM(
     formFactorDetector: FormFactorDetector,
     private val measuredRows: MeasuredGridRows,
     private val initFlag: HomeGridInitFlag,
+    private val initLock: HomeGridInitLock,
     private val writeBack: HomeGridWriteBack,
     private val itemLimits: GridItemLimits,
     private val locked: Flow<Boolean>,
@@ -363,7 +365,7 @@ class HomeGridVM(
         viewModelScope.launch {
             val first = geometry.filterNotNull().first()
             HomeGridDefaults.ensureFavoritesRow(
-                repository, initFlag, first.layout, columns = first.spec.columns, rows = first.spec.rows,
+                repository, initFlag, initLock, first.layout, columns = first.spec.columns, rows = first.spec.rows,
             )
         }
     }
@@ -411,6 +413,7 @@ class HomeGridVM(
                     formFactorDetector = koin.get(),
                     measuredRows = koin.get(),
                     initFlag = koin.get(),
+                    initLock = koin.get(),
                     writeBack = koin.get(),
                     itemLimits = koin.get(),
                     locked = koin.get<UiSettings>().homeGridLocked,

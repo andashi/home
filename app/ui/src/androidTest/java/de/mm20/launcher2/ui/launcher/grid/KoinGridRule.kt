@@ -7,6 +7,7 @@ import de.mm20.launcher2.grid.SizeLimits
 import de.mm20.launcher2.homegrid.FormFactor
 import de.mm20.launcher2.homegrid.GridItemLimits
 import de.mm20.launcher2.homegrid.HomeGridInitFlag
+import de.mm20.launcher2.homegrid.HomeGridInitLock
 import de.mm20.launcher2.homegrid.HomeGridItem
 import de.mm20.launcher2.homegrid.MeasuredGridRows
 import de.mm20.launcher2.permissions.PermissionGroup
@@ -72,6 +73,7 @@ class KoinGridRule(
                         single { ProfileManager(androidContext(), get()) }
                         single { MeasuredGridRows() }
                         single<HomeGridInitFlag> { FakeInitFlag() }
+                        single { HomeGridInitLock() }
                     },
                 )
             }
@@ -89,6 +91,7 @@ class KoinGridRule(
             formFactorDetector = FakeFormFactorDetector(formFactor),
             measuredRows = koin.get(),
             initFlag = koin.get(),
+            initLock = koin.get(),
             writeBack = writeBack,
             itemLimits = GridItemLimits { item, _ -> limits[item.id] ?: SizeLimits.Unbounded },
             locked = locked,
