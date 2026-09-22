@@ -2,6 +2,7 @@ package de.mm20.launcher2.config.service
 
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
+import de.mm20.launcher2.config.Diagnostic
 import de.mm20.launcher2.config.WallpaperTarget
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -227,13 +228,44 @@ class WallpaperStoreTest {
     // ---- #37: a wallpaper nobody can see is not set now ----
 
     @Test
-    fun `nothing on screen defers the set and says so`() = runTest {
+    fun `nothing on screen defers the set`() = runTest {
         visible.onPaused()
 
         val diagnostics = store.apply("home.jpg", WallpaperTarget.Both)
 
-        assertEquals(listOf("wallpaper-pending-foreground"), diagnostics.map { it.code })
         assertEquals("no crop pass may be paid for an invisible result", 0, applier.applied.size)
+        assertEquals(WallpaperState("home.jpg", WallpaperTarget.Both), store.pending())
+        // Deliberately silent: the outstanding state is reported by whoever
+        // reads pending(), on this reload and on every later one. Saying it
+        // here as well put it in the report twice.
+        assertEquals(emptyList<Diagnostic>(), diagnostics)
+    }
+
+    /**
+     * The guard that closes the window between the resume which starts this
+     * work and the apply itself: reading the record, resolving the file and
+     * hashing it happen on the IO dispatcher while the lock is held, and the
+     * last activity can pause in the meantime.
+     *
+     * Exercises the guard rather than the interleaving - nothing the applier
+     * exposes is called before it for a pending record, so there is no honest
+     * hook to pause from mid-flight. What it does prove is that the decision
+     * is taken from the state at that point and that the record survives, so
+     * the next resume retries.
+     */
+    @Test
+    fun `a deferred set is not applied while nothing is on screen`() = runTest {
+        visible.onPaused()
+        store.apply("home.jpg", WallpaperTarget.Both)
+
+        assertEquals(false, store.ensureRendered())
+
+        assertEquals(0, applier.applied.size)
+        assertEquals(
+            "still outstanding, so the next resume retries",
+            WallpaperState("home.jpg", WallpaperTarget.Both),
+            store.pending(),
+        )
     }
 
     /**

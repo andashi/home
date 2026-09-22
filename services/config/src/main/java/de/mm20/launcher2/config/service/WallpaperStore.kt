@@ -216,17 +216,14 @@ class DefaultWallpaperStore(
                         pending = true,
                     )
                 )
-                return listOf(
-                    Diagnostic(
-                        Severity.Warning,
-                        "wallpaper-pending-foreground",
-                        "appearance.wallpaper.image",
-                        "'$image' is recorded but not set yet: the system crops a static " +
-                                "wallpaper only for the current user, so applying it now would " +
-                                "cost a crop pass for a result nobody sees. The launcher sets " +
-                                "it the next time this profile is in the foreground.",
-                    )
-                )
+                // No diagnostic from here. "A wallpaper is outstanding" is a
+                // state, not an event, and DefaultConfigStore reports it from
+                // pending() on every reload - including this one. Emitting it
+                // here as well put it in the report twice on the reload that
+                // deferred, which is how the duplicated Security-Fixes trailer
+                // in v0.3.1 happened too: two places sure they were the one
+                // that had to say it.
+                return emptyList()
             }
 
             val ids = applier.apply(file, target)
@@ -302,6 +299,14 @@ class DefaultWallpaperStore(
             if (!applied.pending && !applied.holds(applier.currentIds())) return@withLock false
             val file = ConfigLocation.wallpaperFile(appContext, applied.image) ?: return@withLock false
             if (!file.isFile || file.readBytes().sha256Hex() != applied.sha256) return@withLock false
+            // Checked again here, not only by the caller: everything above -
+            // reading the record, resolving the file, hashing it - happens on
+            // the IO dispatcher while the lock is held, and the last activity
+            // can pause in the meantime. Going ahead then would start exactly
+            // the crop this change exists to avoid, in the background, for
+            // nobody. The record stays pending so the next resume retries.
+            if (!foreground.isForeground) return@withLock false
+
             val ids = applier.apply(file, applied.target)
             // Same guard as apply(): a same-name upload landing mid-set must not
             // be recorded under the old hash.
