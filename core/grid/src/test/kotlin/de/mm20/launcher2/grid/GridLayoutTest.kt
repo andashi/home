@@ -274,4 +274,22 @@ class GridLayoutTest {
         assertEquals(Span(2, 3, 2, 1), cover.spanOf("d"))
         assertInside(GridSpec(4, 6), cover)
     }
+
+    @Test
+    fun `move and resize report overflow when the minimum exceeds the grid`() {
+        // A provider whose declared minimum is wider than the phone grid.
+        // Launcher3 hides such a widget from its picker; a config can still
+        // name it, and the engine must answer, not throw.
+        val tooWide = item("wide", 0, 0, 1, 1, limits = SizeLimits(minW = 5, minH = 1, maxW = 8, maxH = 8))
+        val tooTall = item("tall", 0, 0, 1, 1, limits = SizeLimits(minW = 1, minH = 7, maxW = 8, maxH = 8))
+        val items = listOf(tooWide, tooTall, item("a", 1, 1))
+
+        val moved = GridLayout.move(Phone, items, "wide", Span(1, 1, 1, 1))
+        assertEquals(items, moved.items)
+        assertEquals(listOf(LayoutIssue.Overflow("wide")), moved.issues)
+
+        val resized = GridLayout.resize(Phone, items, "tall", 1, 1)
+        assertEquals(items, resized.items)
+        assertEquals(listOf(LayoutIssue.Overflow("tall")), resized.issues)
+    }
 }
