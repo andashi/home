@@ -26,7 +26,7 @@ interface LauncherConfigSettings {
     /**
      * Reads the settings-backed portion of [ConfigState] plus the currently
      * selected transparency scheme ID. Fields of [ConfigState] that are not
-     * backed by settings (transparency values, dock favorites, widget list)
+     * backed by settings (transparency values, favorites, grid layouts)
      * keep their [ConfigState] defaults and must be filled by their
      * respective repositories.
      */
@@ -35,8 +35,10 @@ interface LauncherConfigSettings {
     /**
      * Applies [mutations] in a single awaited DataStore update. Mutations
      * that are not backed by settings ([ConfigMutation.SetTransparency],
-     * [ConfigMutation.SetDockFavorites], [ConfigMutation.SetWidgets]) are
+     * [ConfigMutation.SetFavorites], [ConfigMutation.SetWallpaper]) are
      * ignored here; they are handled by their respective repositories.
+     * [ConfigMutation.SetGrid] is split: `columns` and `locked` land here,
+     * `layouts` go to the grid repository.
      *
      * Returns [Unit] in the interface so consumers in other modules can fake
      * it (LauncherSettingsData has an internal constructor); the
@@ -67,8 +69,9 @@ internal class LauncherConfigSettingsImpl(
                 } else {
                     SearchBarPosition.Top
                 },
-                dockEnabled = data.homeScreenDock,
                 widgetsEnabled = data.homeScreenWidgets,
+                gridColumns = data.homeGridColumns,
+                gridLocked = data.homeGridLocked,
             ),
             transparenciesId = data.uiTransparenciesId,
         )
@@ -112,13 +115,15 @@ internal class LauncherConfigSettingsImpl(
                 searchBarBottom = mutation.position == SearchBarPosition.Bottom,
             )
 
-            is ConfigMutation.SetDockEnabled -> copy(homeScreenDock = mutation.enabled)
-
             is ConfigMutation.SetWidgetsEnabled -> copy(homeScreenWidgets = mutation.enabled)
 
+            is ConfigMutation.SetGrid -> copy(
+                homeGridColumns = mutation.columns ?: homeGridColumns,
+                homeGridLocked = mutation.locked ?: homeGridLocked,
+            )
+
             is ConfigMutation.SetTransparency,
-            is ConfigMutation.SetDockFavorites,
-            is ConfigMutation.SetWidgets,
+            is ConfigMutation.SetFavorites,
             is ConfigMutation.SetWallpaper,
             -> this
         }

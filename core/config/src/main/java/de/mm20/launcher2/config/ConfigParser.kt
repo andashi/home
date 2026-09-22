@@ -35,6 +35,10 @@ object ConfigParser {
      * `ConfigParserTest`, so a section that gains or loses a mutation cannot
      * drift away from this table unnoticed.
      */
+    private val GridItemKeys: Map<String, KeyEffect> = listOf(
+        "id", "widget", "x", "y", "w", "h", "profile", "borderless", "background", "themeColors",
+    ).associateWith { KeyEffect.Applied }
+
     internal val keyEffects: Map<String, Map<String, KeyEffect>> = mapOf(
         "" to mapOf(
             "schemaVersion" to KeyEffect.Applied,
@@ -63,32 +67,30 @@ object ConfigParser {
         ),
         "home" to mapOf(
             "searchBar" to KeyEffect.Applied,
-            // The container is served: `favorites` below still pins apps.
-            "dock" to KeyEffect.Applied,
+            "favorites" to KeyEffect.Applied,
             "widgets" to KeyEffect.Applied,
+            "grid" to KeyEffect.Applied,
         ),
         "home.searchBar" to mapOf(
             "position" to KeyEffect.Applied,
         ),
-        "home.dock" to mapOf(
-            "enabled" to KeyEffect.Inert(
-                "no dock is drawn on the home screen; the favorites widget took " +
-                        "that role and follows home.widgets. Setting this does change " +
-                        "something - it turns on the favorite affordances in search " +
-                        "results - which is not what the key means (#46)"
-            ),
-            // Applied through the favorites repository: the apps are pinned
-            // whether or not anything renders a dock, and a reader sees them.
-            "favorites" to KeyEffect.Applied,
-        ),
-        "home.dock.favorites[]" to mapOf(
+        "home.favorites[]" to mapOf(
             "packageName" to KeyEffect.Applied,
             "profile" to KeyEffect.Applied,
         ),
         "home.widgets" to mapOf(
             "enabled" to KeyEffect.Applied,
-            "widgets" to KeyEffect.Applied,
         ),
+        "home.grid" to mapOf(
+            "columns" to KeyEffect.Applied,
+            "locked" to KeyEffect.Applied,
+            "layouts" to KeyEffect.Applied,
+        ),
+        "home.grid.layouts" to GridLayouts.All.associateWith { KeyEffect.Applied },
+        "home.grid.layouts.phone" to mapOf("items" to KeyEffect.Applied),
+        "home.grid.layouts.fold" to mapOf("items" to KeyEffect.Applied),
+        "home.grid.layouts.phone.items[]" to GridItemKeys,
+        "home.grid.layouts.fold.items[]" to GridItemKeys,
     )
 
     private val knownKeys: Map<String, Set<String>> = keyEffects.mapValues { it.value.keys }
@@ -199,8 +201,8 @@ object ConfigParser {
         val document = ConfigMigrations.migrate(version, root)
 
         val unknownKeyDiagnostics = mutableListOf<Diagnostic>()
-        collectUnknownKeys(document, "", "", unknownKeyDiagnostics)
-        val sanitized = dropUnknownWidgets(document, unknownKeyDiagnostics)
+        val sanitized = dropUnknownLayouts(document, unknownKeyDiagnostics)
+        unknownKeyDiagnostics += diagnoseKeys(sanitized)
 
         val config = try {
             json.decodeFromJsonElement(LauncherConfig.serializer(), sanitized)
@@ -234,65 +236,71 @@ object ConfigParser {
     }
 
     /**
-     * Removes entries of `home.widgets.widgets` that name a widget this build
-     * does not have, reporting each one.
+     * Removes entries of `home.grid.layouts` whose key is not a layout this
+     * build has, reporting each one as `unknown-layout`.
      *
-     * An unknown *key* is already tolerated, but an unknown *value* is not:
-     * this parser deliberately does not set `coerceInputValues`, so a single
-     * `"widgets": ["weather"]` left over from before that widget was removed
-     * would fail the decode and take the zone's entire configuration with it —
-     * wallpaper, dock, icons and all. Dropping the entry keeps the rest of the
-     * document, which is the behaviour a removal should have.
-     *
-     * Scalar enums stay strict on purpose. A bad `searchBar.position` is a typo
-     * with no sensible fallback, and the objects that held removed scalars
-     * (`home.clock`) leave the contract whole, which makes them unknown keys.
+     * A map decodes every key it finds, so a layout a later build introduced
+     * would otherwise ride into state under a name nothing renders. Dropping
+     * it keeps the rest of the document, including the layouts this build
+     * does render. Runs before the key walk so the entry is reported once,
+     * as what it is, and not also as an unknown key.
      */
-    private fun dropUnknownWidgets(
+    private fun dropUnknownLayouts(
         document: JsonObject,
         out: MutableList<Diagnostic>,
     ): JsonObject {
         val home = document["home"] as? JsonObject ?: return document
-        val widgets = home["widgets"] as? JsonObject ?: return document
-        val list = widgets["widgets"] as? JsonArray ?: return document
-
-        val known = BuiltinWidget.serializer().descriptor.let { d ->
-            (0 until d.elementsCount).map { d.getElementName(it) }.toSet()
-        }
-        val kept = list.filterIndexed { index, entry ->
-            val name = (entry as? JsonPrimitive)?.takeIf { it.isString }?.contentOrNull
-            if (name != null && name in known) return@filterIndexed true
+        val grid = home["grid"] as? JsonObject ?: return document
+        val layouts = grid["layouts"] as? JsonObject ?: return document
+        val unknown = layouts.keys.filter { it !in GridLayouts.All }
+        if (unknown.isEmpty()) return document
+        for (key in unknown) {
             out += Diagnostic(
                 Severity.Warning,
-                "unknown-widget",
-                "home.widgets.widgets[$index]",
-                "Unknown widget '${name ?: entry}' is ignored",
+                "unknown-layout",
+                "home.grid.layouts.$key",
+                "Unknown layout '$key' is ignored; this build renders ${GridLayouts.All.joinToString(" and ")}",
             )
-            false
         }
-        if (kept.size == list.size) return document
-
         return buildJsonObject {
             for ((k, v) in document) if (k != "home") put(k, v)
             put("home", buildJsonObject {
-                for ((k, v) in home) if (k != "widgets") put(k, v)
-                put("widgets", buildJsonObject {
-                    for ((k, v) in widgets) if (k != "widgets") put(k, v)
-                    put("widgets", JsonArray(kept))
+                for ((k, v) in home) if (k != "grid") put(k, v)
+                put("grid", buildJsonObject {
+                    for ((k, v) in grid) if (k != "layouts") put(k, v)
+                    put("layouts", buildJsonObject {
+                        for ((k, v) in layouts) if (k in GridLayouts.All) put(k, v)
+                    })
                 })
             })
         }
+    }
+
+    /**
+     * Walks [document] against [effects] (the contract table by default) and
+     * reports every unknown key and every inert key. Takes the table as a
+     * parameter so the inert-key mechanism stays testable while the contract
+     * itself has no inert key.
+     */
+    internal fun diagnoseKeys(
+        document: JsonObject,
+        effects: Map<String, Map<String, KeyEffect>> = keyEffects,
+    ): List<Diagnostic> {
+        val out = mutableListOf<Diagnostic>()
+        collectUnknownKeys(document, "", "", effects, out)
+        return out
     }
 
     private fun collectUnknownKeys(
         element: JsonElement,
         canonicalPath: String,
         reportPath: String,
+        table: Map<String, Map<String, KeyEffect>>,
         out: MutableList<Diagnostic>,
     ) {
         when (element) {
             is JsonObject -> {
-                val effects = keyEffects[canonicalPath]
+                val effects = table[canonicalPath]
                 if (effects != null) {
                     for (key in element.keys) {
                         val path = if (reportPath.isEmpty()) key else "$reportPath.$key"
@@ -322,7 +330,7 @@ object ConfigParser {
                 for ((key, value) in element) {
                     val childCanonical = if (canonicalPath.isEmpty()) key else "$canonicalPath.$key"
                     val childReport = if (reportPath.isEmpty()) key else "$reportPath.$key"
-                    collectUnknownKeys(value, childCanonical, childReport, out)
+                    collectUnknownKeys(value, childCanonical, childReport, table, out)
                 }
             }
 
@@ -332,6 +340,7 @@ object ConfigParser {
                         item,
                         "$canonicalPath[]",
                         "$reportPath[$index]",
+                        table,
                         out,
                     )
                 }

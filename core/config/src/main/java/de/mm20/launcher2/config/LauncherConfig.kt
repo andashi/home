@@ -65,8 +65,14 @@ data class TransparencyConfig(
 @Serializable
 data class HomeConfig(
     val searchBar: SearchBarConfig? = null,
-    val dock: DockConfig? = null,
+    /**
+     * The one pin list, shared by search and the favorites widget on the grid
+     * (D2). Where the widget sits is a `"widget": "favorites"` item in
+     * [grid]; whether it is on the grid at all is whether such an item exists.
+     */
+    val favorites: List<Favorite>? = null,
     val widgets: WidgetsConfig? = null,
+    val grid: GridConfig? = null,
 )
 
 @Serializable
@@ -82,12 +88,6 @@ enum class SearchBarPosition {
     @SerialName("bottom")
     Bottom,
 }
-
-@Serializable
-data class DockConfig(
-    val enabled: Boolean? = null,
-    val favorites: List<Favorite>? = null,
-)
 
 @Serializable(with = FavoriteSerializer::class)
 data class Favorite(
@@ -157,15 +157,71 @@ enum class Profile {
     Private,
 }
 
+/** `enabled` is the master switch for the home grid (ADR 0001). */
 @Serializable
 data class WidgetsConfig(
     val enabled: Boolean? = null,
-    val widgets: List<BuiltinWidget>? = null,
 )
 
+/**
+ * The single-page home grid (ADR 0001, revised 2026-09-22).
+ *
+ * [columns] is the column count of one cover-width page; the `fold` layout
+ * is twice as wide and the cover display renders its columns `0 until
+ * columns` (D7). Rows are derived from the screen, not configured (D1).
+ * [locked] forbids edit mode, so nothing is ever written back for a locked
+ * profile (D3). [layouts] is keyed by [GridLayouts.Phone] or
+ * [GridLayouts.Fold]; a device uses exactly one of them.
+ */
 @Serializable
-enum class BuiltinWidget {
-    @SerialName("apps")
-    Apps,
+data class GridConfig(
+    val columns: Int? = null,
+    val locked: Boolean? = null,
+    val layouts: Map<String, GridLayoutConfig>? = null,
+)
+
+object GridLayouts {
+    const val Phone = "phone"
+    const val Fold = "fold"
+    val All: Set<String> = setOf(Phone, Fold)
 }
 
+@Serializable
+data class GridLayoutConfig(
+    val items: List<GridItemConfig>,
+)
+
+/**
+ * One item of a layout. [id] is stable across devices and reloads and is
+ * what write-back and the database match on, never the array position.
+ * [widget] is [GridItemConfig.Favorites] or a flattened provider
+ * `ComponentName` (`pkg/cls`). Geometry ([x], [y], [w], [h], in cells) may
+ * be omitted once: the launcher places the item and writes the geometry back.
+ */
+@Serializable
+data class GridItemConfig(
+    val id: String,
+    val widget: String,
+    val x: Int? = null,
+    val y: Int? = null,
+    val w: Int? = null,
+    val h: Int? = null,
+    val profile: Profile? = null,
+    val borderless: Boolean? = null,
+    val background: Boolean? = null,
+    val themeColors: Boolean? = null,
+) {
+    val isFavorites: Boolean get() = widget == Favorites
+    val hasGeometry: Boolean get() = x != null && y != null && w != null && h != null
+
+    /**
+     * A position is `x` and `y` together. With one, the item anchors there
+     * and a missing size comes from the provider; a lone coordinate is not
+     * a position (the validator warns, the differ ignores it).
+     */
+    val hasPosition: Boolean get() = x != null && y != null
+
+    companion object {
+        const val Favorites = "favorites"
+    }
+}

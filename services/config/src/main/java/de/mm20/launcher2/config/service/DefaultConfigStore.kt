@@ -1,11 +1,22 @@
 package de.mm20.launcher2.config.service
 
 import de.mm20.launcher2.applications.AppRepository
-import de.mm20.launcher2.config.BuiltinWidget
 import de.mm20.launcher2.config.ConfigMutation
 import de.mm20.launcher2.config.ConfigState
 import de.mm20.launcher2.config.Diagnostic
 import de.mm20.launcher2.config.Favorite
+import de.mm20.launcher2.config.GridItemConfig
+import de.mm20.launcher2.config.GridLayoutConfig
+import de.mm20.launcher2.config.GridLayouts
+import de.mm20.launcher2.grid.CellSize
+import de.mm20.launcher2.grid.GridItem
+import de.mm20.launcher2.grid.GridLayout
+import de.mm20.launcher2.grid.GridSpec
+import de.mm20.launcher2.grid.LayoutIssue
+import de.mm20.launcher2.grid.SizeLimits
+import de.mm20.launcher2.grid.Span
+import de.mm20.launcher2.homegrid.HomeGridItem
+import de.mm20.launcher2.homegrid.HomeGridItemConfig
 import de.mm20.launcher2.config.Severity
 import de.mm20.launcher2.preferences.config.LauncherConfigSettings
 import de.mm20.launcher2.profiles.Profile
@@ -16,10 +27,7 @@ import de.mm20.launcher2.searchable.SavableSearchableRepository
 import de.mm20.launcher2.themes.DefaultThemeId
 import de.mm20.launcher2.themes.transparencies.Transparencies
 import de.mm20.launcher2.themes.transparencies.TransparenciesRepository
-import de.mm20.launcher2.widgets.AppWidget
-import de.mm20.launcher2.widgets.AppsWidget
-import de.mm20.launcher2.widgets.Widget
-import de.mm20.launcher2.widgets.WidgetRepository
+import de.mm20.launcher2.homegrid.HomeGridRepository
 import kotlinx.coroutines.flow.first
 import java.util.UUID
 import de.mm20.launcher2.config.Profile as ConfigProfile
@@ -32,10 +40,10 @@ import de.mm20.launcher2.config.Profile as ConfigProfile
  *   (single awaited DataStore write per [apply] call).
  * - Transparency schemes are resolved/upserted via [TransparenciesRepository]
  *   and then selected via settings.
- * - Root widgets are reconciled via [WidgetRepository.setAwaited]; only the
- *   built-in widget types known to the config format are managed, external
- *   [AppWidget]s are preserved.
- * - Dock favorites are resolved from `{packageName, profile}` pairs via
+ * - Grid layouts (`home.grid.layouts`) are normalised through the layout
+ *   engine and written to [HomeGridRepository]; `columns` and `locked` are
+ *   settings-backed.
+ * - Favorites are resolved from `{packageName, profile}` pairs via
  *   [AppRepository] + [ProfileResolver] and written with
  *   [SavableSearchableRepository.updateFavoritesAwaited]. User serials never
  *   appear in config state or diagnostics.
@@ -43,7 +51,9 @@ import de.mm20.launcher2.config.Profile as ConfigProfile
 class DefaultConfigStore(
     private val settings: LauncherConfigSettings,
     private val transparenciesRepository: TransparenciesRepository,
-    private val widgetRepository: WidgetRepository,
+    private val homeGridRepository: HomeGridRepository,
+    private val gridLimits: GridLimitsSource,
+    private val gridRows: GridRowsSource,
     private val searchableRepository: SavableSearchableRepository,
     private val appRepository: AppRepository,
     private val profileResolver: ProfileResolver,
@@ -53,8 +63,7 @@ class DefaultConfigStore(
     override suspend fun readState(): ConfigState {
         val settingsState = settings.readState()
         val transparencies = transparenciesRepository.getOnce(settingsState.transparenciesId)
-        val widgets = widgetRepository.get().first()
-        val dockFavorites = searchableRepository.get(
+        val favorites = searchableRepository.get(
             includeTypes = listOf(AppDomain),
             minPinnedLevel = PinnedLevel.ManuallySorted,
             maxPinnedLevel = PinnedLevel.ManuallySorted,
@@ -66,8 +75,10 @@ class DefaultConfigStore(
             transparencyBackground = transparencies?.background ?: 1f,
             transparencySurface = transparencies?.surface ?: 1f,
             transparencyElevatedSurface = transparencies?.elevatedSurface ?: 1f,
-            dockFavorites = dockFavorites,
-            widgets = widgets.mapNotNull { it.toBuiltinWidget() },
+            favorites = favorites,
+            gridLayouts = GridLayouts.All.associateWith { layout ->
+                GridLayoutConfig(homeGridRepository.observe(layout).first().map { it.toConfig() })
+            },
             wallpaperImage = wallpaper?.image,
             wallpaperTarget = wallpaper?.target,
         )
@@ -95,14 +106,14 @@ class DefaultConfigStore(
                     diagnostics += mutation.applyFailed(e)
                 }
 
-                is ConfigMutation.SetWidgets -> try {
-                    diagnostics += applyWidgets(mutation)
+                is ConfigMutation.SetGrid -> try {
+                    diagnostics += applyGrid(mutation)
                 } catch (e: Exception) {
                     diagnostics += mutation.applyFailed(e)
                 }
 
-                is ConfigMutation.SetDockFavorites -> try {
-                    diagnostics += applyDockFavorites(mutation)
+                is ConfigMutation.SetFavorites -> try {
+                    diagnostics += applyFavorites(mutation)
                 } catch (e: Exception) {
                     diagnostics += mutation.applyFailed(e)
                 }
@@ -194,44 +205,208 @@ class DefaultConfigStore(
     }
 
     /**
-     * Reconciles the root widget list against the configured built-ins.
-     * Unchanged built-ins keep their IDs and configs, removed built-ins are
-     * deleted, and external
-     * [AppWidget]s are kept (appended in their previous relative order) with
-     * a warning instead of being deleted.
+     * Writes every layout the mutation names through the layout engine:
+     * items without geometry are placed at the first free cells in array
+     * order, then the whole layout is normalised against this device's grid
+     * (below-minimum spans enlarged, crossings of the fold line nudged,
+     * overlaps re-placed, what does not fit dropped), each correction a
+     * warning diagnostic. Items that already exist in the layout keep their
+     * device-local AppWidget id, so a re-push does not re-bind anything.
      */
-    private suspend fun applyWidgets(
-        mutation: ConfigMutation.SetWidgets,
+    private suspend fun applyGrid(
+        mutation: ConfigMutation.SetGrid,
     ): List<Diagnostic> {
-        val current = widgetRepository.get().first()
-        val remaining = current.toMutableList()
-        val reconciled = mutableListOf<Widget>()
+        val layouts = mutation.layouts ?: return emptyList()
+        val diagnostics = mutableListOf<Diagnostic>()
+        val columns = mutation.columns ?: settings.readState().state.gridColumns
+        for ((layoutKey, layout) in layouts) {
+            diagnostics += applyLayout(layoutKey, layout, columns)
+        }
+        return diagnostics
+    }
 
-        for (builtin in mutation.widgets) {
-            val existing = remaining.firstOrNull { it.toBuiltinWidget() == builtin }
-            if (existing != null) {
-                remaining.remove(existing)
-                reconciled += existing
+    private class SizedItem(val index: Int, val config: GridItemConfig, val limits: ProviderLimits)
+
+    private suspend fun applyLayout(
+        layoutKey: String,
+        layout: GridLayoutConfig,
+        columns: Int,
+    ): List<Diagnostic> {
+        val diagnostics = mutableListOf<Diagnostic>()
+        val basePath = "home.grid.layouts.$layoutKey.items"
+        val isFold = layoutKey == GridLayouts.Fold
+        val spec = GridSpec(
+            columns = if (isFold) columns * 2 else columns,
+            rows = gridRows.rows(layoutKey),
+            foldColumn = if (isFold) columns else null,
+        )
+
+        // Limits first, then geometry: items with a position keep it, items
+        // without one are placed after them, in array order, at the first
+        // free cells (D5).
+        val sized = layout.items.mapIndexed { index, item ->
+            val limits = if (item.isFavorites) {
+                ProviderLimits(default = CellSize(spec.columns, 1), limits = SizeLimits.Unbounded)
             } else {
-                reconciled += builtin.newWidget()
+                gridLimits.lookup(item.widget, item.profile, columns) ?: run {
+                    diagnostics += Diagnostic(
+                        Severity.Warning,
+                        "unknown-widget-provider",
+                        "$basePath[$index]",
+                        "No installed widget provider matches '${item.widget}'" +
+                                item.profile?.let { " in the ${it.name.lowercase()} profile" }.orEmpty() +
+                                "; the item is kept and shown as unavailable",
+                    )
+                    ProviderLimits(default = CellSize(1, 1), limits = SizeLimits.Unbounded)
+                }
+            }
+            SizedItem(index, item, limits)
+        }
+
+        // A position anchors the item; a missing size is the provider's
+        // default. Items without a position are placed after them.
+        val placed = mutableListOf<GridItem>()
+        for (s in sized) {
+            val item = s.config
+            if (item.hasPosition) {
+                placed += GridItem(
+                    id = item.id,
+                    span = Span(item.x!!, item.y!!, item.w ?: s.limits.default.w, item.h ?: s.limits.default.h),
+                    limits = s.limits.limits,
+                    mayCrossFold = item.isFavorites,
+                )
+            }
+        }
+        for (s in sized) {
+            val item = s.config
+            if (item.hasPosition) continue
+            val w = item.w ?: s.limits.default.w
+            val h = item.h ?: s.limits.default.h
+            val candidate = GridItem(
+                id = item.id,
+                span = Span(0, 0, w, h),
+                limits = s.limits.limits,
+                mayCrossFold = item.isFavorites,
+            )
+            val free = GridLayout.place(spec, placed, candidate)
+            if (free == null) {
+                diagnostics += Diagnostic(
+                    Severity.Warning,
+                    "grid-overflow",
+                    "$basePath[${s.index}]",
+                    "No free ${w}x$h cells left for '${item.id}'; the item was dropped",
+                )
+                continue
+            }
+            placed += free
+        }
+
+        // Back into array order, then normalise against this device's grid.
+        val order = layout.items.withIndex().associate { it.value.id to it.index }
+        val result = GridLayout.normalize(spec, placed.sortedBy { order[it.id] })
+        for (issue in result.issues) {
+            issue.toDiagnostic(basePath, order)?.let { diagnostics += it }
+        }
+        // The engine nudges a crossing item to one side without a word (that
+        // is the right thing for a hand move); a config that asked for the
+        // crossing is told, so the host does not learn it from a read-back
+        // that differs from what it pushed.
+        val dropped = result.issues.filterIsInstance<LayoutIssue.CrossesFold>().map { it.id }.toSet()
+        spec.foldColumn?.let { fold ->
+            for (item in layout.items) {
+                if (item.isFavorites || item.id in dropped) continue
+                val x = item.x ?: continue
+                val w = item.w ?: continue
+                if (x < fold && x + w > fold) {
+                    diagnostics += Diagnostic(
+                        Severity.Warning,
+                        "grid-crosses-fold",
+                        "$basePath[${order.getValue(item.id)}]",
+                        "'${item.id}' spans the fold line, which only the favorites widget may; " +
+                                "it was moved to one side",
+                    )
+                }
             }
         }
 
-        val external = remaining.filterIsInstance<AppWidget>()
-        reconciled += external
-
-        widgetRepository.setAwaited(reconciled)
-
-        return external.map {
-            Diagnostic(
-                Severity.Warning,
-                "unsupported-widget",
-                "home.widgets.widgets",
-                "External app widget ${it.id} is not manageable via config; " +
-                        "it was kept and moved after the configured widgets",
+        val existing = homeGridRepository.observe(layoutKey).first().associateBy { it.id }
+        val items = result.items.mapIndexed { position, gridItem ->
+            val config = layout.items[order.getValue(gridItem.id)]
+            val previous = existing[gridItem.id]?.takeIf {
+                it.widget == config.widget && it.profile == config.profile?.serialName()
+            }
+            HomeGridItem(
+                layout = layoutKey,
+                id = gridItem.id,
+                widget = config.widget,
+                profile = config.profile?.serialName(),
+                x = gridItem.span.x,
+                y = gridItem.span.y,
+                w = gridItem.span.w,
+                h = gridItem.span.h,
+                appWidgetId = previous?.appWidgetId,
+                config = HomeGridItemConfig(
+                    borderless = config.borderless ?: false,
+                    background = config.background ?: true,
+                    themeColors = config.themeColors ?: true,
+                ),
+                position = position,
             )
         }
+        homeGridRepository.replace(layoutKey, items)
+        return diagnostics
     }
+
+    private fun LayoutIssue.toDiagnostic(basePath: String, order: Map<String, Int>): Diagnostic? {
+        fun path(id: String) = "$basePath[${order[id] ?: -1}]"
+        return when (this) {
+            is LayoutIssue.BelowMinimum -> Diagnostic(
+                Severity.Warning,
+                "widget-too-small",
+                path(id),
+                "'$id' asks for ${requested.w}x${requested.h} cells, below the widget's " +
+                        "minimum; it was enlarged to ${clamped.w}x${clamped.h}",
+            )
+
+            is LayoutIssue.OutOfBounds -> Diagnostic(
+                Severity.Warning,
+                "grid-out-of-bounds",
+                path(id),
+                "'$id' does not fit the grid at ${span.w}x${span.h} cells; the item was dropped",
+            )
+
+            is LayoutIssue.CrossesFold -> Diagnostic(
+                Severity.Warning,
+                "grid-crosses-fold",
+                path(id),
+                "'$id' spans the fold line, which only the favorites widget may, and is too wide " +
+                        "for either side; the item was dropped",
+            )
+
+            is LayoutIssue.Overflow -> Diagnostic(
+                Severity.Warning,
+                "grid-overflow",
+                path(id),
+                "No free cells left for '$id'; the item was dropped",
+            )
+
+            // An overlap is reported through what the engine did about it:
+            // the later item was re-placed (silently) or dropped (Overflow).
+            is LayoutIssue.Overlap -> null
+        }
+    }
+
+    private fun HomeGridItem.toConfig(): GridItemConfig = GridItemConfig(
+        id = id,
+        widget = widget,
+        x = x, y = y, w = w, h = h,
+        profile = profile?.let { name -> ConfigProfile.entries.firstOrNull { it.serialName() == name } },
+        borderless = config.borderless,
+        background = config.background,
+        themeColors = config.themeColors,
+    )
+
+    private fun ConfigProfile.serialName(): String = name.lowercase()
 
     /**
      * Resolves the configured favorites to installed apps and writes them in
@@ -239,14 +414,14 @@ class DefaultConfigStore(
      * produce error diagnostics and are skipped. Automatically pinned
      * favorites are outside the config's scope and are preserved.
      */
-    private suspend fun applyDockFavorites(
-        mutation: ConfigMutation.SetDockFavorites,
+    private suspend fun applyFavorites(
+        mutation: ConfigMutation.SetFavorites,
     ): List<Diagnostic> {
         val diagnostics = mutableListOf<Diagnostic>()
         val resolved = mutableListOf<SavableSearchable>()
 
         mutation.favorites.forEachIndexed { index, favorite ->
-            val path = "home.dock.favorites[$index]"
+            val path = "home.favorites[$index]"
             val profileType = when (favorite.profile) {
                 ConfigProfile.Personal -> Profile.Type.Personal
                 ConfigProfile.Work -> Profile.Type.Work
@@ -302,15 +477,6 @@ class DefaultConfigStore(
         )
     }
 
-    private fun Widget.toBuiltinWidget(): BuiltinWidget? = when (this) {
-        is AppsWidget -> BuiltinWidget.Apps
-        else -> null
-    }
-
-    private fun BuiltinWidget.newWidget(): Widget = when (this) {
-        BuiltinWidget.Apps -> AppsWidget(UUID.randomUUID())
-    }
-
     private fun ConfigMutation.applyFailed(cause: Exception): Diagnostic {
         return Diagnostic(
             Severity.Error,
@@ -333,13 +499,13 @@ private val ConfigMutation.isSettingsBacked: Boolean
     get() = when (this) {
         is ConfigMutation.SetIcons,
         is ConfigMutation.SetSearchBarPosition,
-        is ConfigMutation.SetDockEnabled,
         is ConfigMutation.SetWidgetsEnabled,
+        // columns and locked live in settings; layouts are applied below too.
+        is ConfigMutation.SetGrid,
         -> true
 
         is ConfigMutation.SetTransparency,
-        is ConfigMutation.SetWidgets,
-        is ConfigMutation.SetDockFavorites,
+        is ConfigMutation.SetFavorites,
         is ConfigMutation.SetWallpaper,
         -> false
     }

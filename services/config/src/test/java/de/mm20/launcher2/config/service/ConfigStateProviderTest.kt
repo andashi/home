@@ -3,7 +3,9 @@ package de.mm20.launcher2.config.service
 import android.content.Context
 import android.net.Uri
 import androidx.test.core.app.ApplicationProvider
-import de.mm20.launcher2.config.BuiltinWidget
+import de.mm20.launcher2.config.Favorite
+import de.mm20.launcher2.config.GridItemConfig
+import de.mm20.launcher2.config.GridLayoutConfig
 import de.mm20.launcher2.config.ConfigParser
 import de.mm20.launcher2.config.ConfigState
 import de.mm20.launcher2.config.Diagnostic
@@ -31,9 +33,14 @@ class ConfigStateProviderTest {
 
     private val state = ConfigState(
         themedIcons = true,
-        dockEnabled = true,
+        favorites = listOf(Favorite("com.example.app")),
         widgetsEnabled = true,
-        widgets = listOf(BuiltinWidget.Apps),
+        gridColumns = 4,
+        gridLayouts = mapOf(
+            "phone" to GridLayoutConfig(
+                listOf(GridItemConfig(id = "dock", widget = "favorites", x = 0, y = 5, w = 4, h = 1))
+            ),
+        ),
     )
 
     private lateinit var store: FakeConfigStore
@@ -76,6 +83,11 @@ class ConfigStateProviderTest {
         val payload = cursor.getString(0)
         val config = ConfigParser.json.decodeFromString(LauncherConfig.serializer(), payload)
         assertEquals(state.toLauncherConfig(), config)
+        // D3: the read-back is a paste-able document, grid geometry included.
+        assertEquals(
+            listOf(GridItemConfig(id = "dock", widget = "favorites", x = 0, y = 5, w = 4, h = 1)),
+            config.home?.grid?.layouts?.get("phone")?.items,
+        )
         cursor.close()
     }
 

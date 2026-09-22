@@ -6,6 +6,14 @@ import org.junit.Test
 
 class ConfigDifferTest {
 
+    private val dock = GridItemConfig(id = "dock", widget = "favorites", x = 0, y = 5, w = 4, h = 1)
+    private val clock = GridItemConfig(
+        id = "clock",
+        widget = "com.android.deskclock/.DigitalAppWidgetProvider",
+        x = 0, y = 0, w = 4, h = 2,
+        profile = Profile.Personal,
+    )
+
     private val baseState = ConfigState(
         themedIcons = true,
         enforceThemedIcons = true,
@@ -15,16 +23,20 @@ class ConfigDifferTest {
         transparencySurface = 0.31f,
         transparencyElevatedSurface = 0.31f,
         searchBarPosition = SearchBarPosition.Bottom,
-        dockEnabled = true,
-        dockFavorites = listOf(Favorite("com.example.dialer", Profile.Personal)),
+        favorites = listOf(Favorite("com.example.dialer", Profile.Personal)),
         widgetsEnabled = true,
-        widgets = listOf(BuiltinWidget.Apps),
+        gridColumns = 4,
+        gridLocked = false,
+        gridLayouts = mapOf(
+            "phone" to GridLayoutConfig(listOf(dock, clock)),
+            "fold" to GridLayoutConfig(emptyList()),
+        ),
         wallpaperImage = "home.jpg",
         wallpaperTarget = WallpaperTarget.Both,
     )
 
     private val matchingConfig = LauncherConfig(
-        schemaVersion = 1,
+        schemaVersion = 2,
         icons = IconsConfig(
             themed = true,
             enforceThemed = true,
@@ -41,78 +53,71 @@ class ConfigDifferTest {
         ),
         home = HomeConfig(
             searchBar = SearchBarConfig(SearchBarPosition.Bottom),
-            dock = DockConfig(
-                enabled = true,
-                favorites = listOf(Favorite("com.example.dialer", Profile.Personal)),
-            ),
-            widgets = WidgetsConfig(
-                enabled = true,
-                widgets = listOf(BuiltinWidget.Apps),
+            favorites = listOf(Favorite("com.example.dialer", Profile.Personal)),
+            widgets = WidgetsConfig(enabled = true),
+            grid = GridConfig(
+                columns = 4,
+                locked = false,
+                layouts = mapOf(
+                    "phone" to GridLayoutConfig(listOf(dock, clock)),
+                    "fold" to GridLayoutConfig(emptyList()),
+                ),
             ),
         ),
     )
 
     @Test
     fun `wallpaper differs by image or target, target defaults to both`() {
-        val other = matchingConfig.copy(
-            appearance = AppearanceConfig(wallpaper = WallpaperConfig(image = "other.jpg"))
+        val byImage = ConfigDiffer.diff(
+            LauncherConfig(2, appearance = AppearanceConfig(wallpaper = WallpaperConfig("other.jpg"))),
+            baseState,
         )
-        assertEquals(
-            listOf(ConfigMutation.SetWallpaper("other.jpg", WallpaperTarget.Both)),
-            ConfigDiffer.diff(other, baseState),
-        )
+        assertEquals(listOf(ConfigMutation.SetWallpaper("other.jpg", WallpaperTarget.Both)), byImage)
 
-        val lockOnly = matchingConfig.copy(
-            appearance = AppearanceConfig(wallpaper = WallpaperConfig("home.jpg", WallpaperTarget.Lock))
+        val byTarget = ConfigDiffer.diff(
+            LauncherConfig(2, appearance = AppearanceConfig(wallpaper = WallpaperConfig("home.jpg", WallpaperTarget.Lock))),
+            baseState,
         )
-        assertEquals(
-            listOf(ConfigMutation.SetWallpaper("home.jpg", WallpaperTarget.Lock)),
-            ConfigDiffer.diff(lockOnly, baseState),
+        assertEquals(listOf(ConfigMutation.SetWallpaper("home.jpg", WallpaperTarget.Lock)), byTarget)
+
+        val same = ConfigDiffer.diff(
+            LauncherConfig(2, appearance = AppearanceConfig(wallpaper = WallpaperConfig("home.jpg"))),
+            baseState,
         )
+        assertEquals(emptyList<ConfigMutation>(), same)
     }
 
     @Test
     fun `drifted wallpaper state reapplies the configured image`() {
-        val drifted = baseState.copy(wallpaperImage = null, wallpaperTarget = null)
-        assertEquals(
-            listOf(ConfigMutation.SetWallpaper("home.jpg", WallpaperTarget.Both)),
-            ConfigDiffer.diff(matchingConfig, drifted),
-        )
+        val mutations = ConfigDiffer.diff(matchingConfig, baseState.copy(wallpaperImage = null, wallpaperTarget = null))
+
+        assertEquals(listOf(ConfigMutation.SetWallpaper("home.jpg", WallpaperTarget.Both)), mutations)
     }
 
     @Test
     fun `emits no mutations for equal state`() {
-        val mutations = ConfigDiffer.diff(matchingConfig, baseState)
-
-        assertTrue(mutations.isEmpty())
+        assertEquals(emptyList<ConfigMutation>(), ConfigDiffer.diff(matchingConfig, baseState))
     }
 
     @Test
     fun `empty desired config produces no mutations`() {
-        val mutations = ConfigDiffer.diff(LauncherConfig(schemaVersion = 1), baseState)
-
-        assertTrue(mutations.isEmpty())
+        assertEquals(emptyList<ConfigMutation>(), ConfigDiffer.diff(LauncherConfig(schemaVersion = 2), baseState))
     }
 
     @Test
     fun `absent desired sections produce no mutations`() {
         val desired = LauncherConfig(
-            schemaVersion = 1,
-            icons = IconsConfig(themed = false),
+            schemaVersion = 2,
+            icons = IconsConfig(themed = true, enforceThemed = true, pack = "app.lawnchair.lawnicons"),
         )
 
-        val mutations = ConfigDiffer.diff(desired, baseState)
-
-        assertEquals(
-            listOf(ConfigMutation.SetIcons(themed = false)),
-            mutations,
-        )
+        assertEquals(emptyList<ConfigMutation>(), ConfigDiffer.diff(desired, baseState.copy(favorites = emptyList())))
     }
 
     @Test
     fun `absent desired fields within a section produce no mutation for those fields`() {
         val desired = LauncherConfig(
-            schemaVersion = 1,
+            schemaVersion = 2,
             icons = IconsConfig(pack = "com.other.pack"),
         )
 
@@ -127,21 +132,16 @@ class ConfigDifferTest {
     @Test
     fun `emits deterministic mutations in stable order`() {
         val desired = LauncherConfig(
-            schemaVersion = 1,
+            schemaVersion = 2,
             icons = IconsConfig(themed = false),
             appearance = AppearanceConfig(
                 transparency = TransparencyConfig(background = 0.5f)
             ),
             home = HomeConfig(
                 searchBar = SearchBarConfig(SearchBarPosition.Top),
-                dock = DockConfig(
-                    enabled = false,
-                    favorites = listOf(Favorite("com.example.mail", Profile.Work)),
-                ),
-                widgets = WidgetsConfig(
-                    enabled = false,
-                    widgets = emptyList(),
-                ),
+                favorites = listOf(Favorite("com.example.mail", Profile.Work)),
+                widgets = WidgetsConfig(enabled = false),
+                grid = GridConfig(columns = 5, locked = true),
             ),
         )
 
@@ -152,10 +152,9 @@ class ConfigDifferTest {
                 "icons",
                 "appearance.transparency",
                 "home.searchBar",
-                "home.dock.enabled",
-                "home.dock.favorites",
+                "home.favorites",
                 "home.widgets.enabled",
-                "home.widgets.widgets",
+                "home.grid",
             ),
             mutations.map { it.section },
         )
@@ -164,12 +163,9 @@ class ConfigDifferTest {
                 ConfigMutation.SetIcons(themed = false),
                 ConfigMutation.SetTransparency(background = 0.5f),
                 ConfigMutation.SetSearchBarPosition(SearchBarPosition.Top),
-                ConfigMutation.SetDockEnabled(false),
-                ConfigMutation.SetDockFavorites(
-                    listOf(Favorite("com.example.mail", Profile.Work))
-                ),
+                ConfigMutation.SetFavorites(listOf(Favorite("com.example.mail", Profile.Work))),
                 ConfigMutation.SetWidgetsEnabled(false),
-                ConfigMutation.SetWidgets(emptyList()),
+                ConfigMutation.SetGrid(columns = 5, locked = true),
             ),
             mutations,
         )
@@ -178,19 +174,17 @@ class ConfigDifferTest {
     @Test
     fun `reordered favorites list is a mutation`() {
         val state = baseState.copy(
-            dockFavorites = listOf(
+            favorites = listOf(
                 Favorite("com.example.a"),
                 Favorite("com.example.b"),
             )
         )
         val desired = LauncherConfig(
-            schemaVersion = 1,
+            schemaVersion = 2,
             home = HomeConfig(
-                dock = DockConfig(
-                    favorites = listOf(
-                        Favorite("com.example.b"),
-                        Favorite("com.example.a"),
-                    )
+                favorites = listOf(
+                    Favorite("com.example.b"),
+                    Favorite("com.example.a"),
                 )
             ),
         )
@@ -199,10 +193,149 @@ class ConfigDifferTest {
 
         assertEquals(
             listOf(
-                ConfigMutation.SetDockFavorites(
+                ConfigMutation.SetFavorites(
                     listOf(Favorite("com.example.b"), Favorite("com.example.a"))
                 )
             ),
+            mutations,
+        )
+    }
+
+    // ----- grid -----
+
+    @Test
+    fun `grid fields that equal the state produce nothing, one that differs produces SetGrid with only that field`() {
+        val columns = ConfigDiffer.diff(
+            LauncherConfig(2, home = HomeConfig(grid = GridConfig(columns = 5))),
+            baseState,
+        )
+        assertEquals(listOf(ConfigMutation.SetGrid(columns = 5)), columns)
+
+        val locked = ConfigDiffer.diff(
+            LauncherConfig(2, home = HomeConfig(grid = GridConfig(locked = true))),
+            baseState,
+        )
+        assertEquals(listOf(ConfigMutation.SetGrid(locked = true)), locked)
+
+        val same = ConfigDiffer.diff(
+            LauncherConfig(2, home = HomeConfig(grid = GridConfig(columns = 4, locked = false))),
+            baseState,
+        )
+        assertEquals(emptyList<ConfigMutation>(), same)
+    }
+
+    @Test
+    fun `a lone x or y is not a position and is not compared`() {
+        // A position is x and y together; a single coordinate cannot anchor
+        // an item, so the store places it freely and the differ must not
+        // keep asking for a coordinate the store cannot honour.
+        val loneX = clock.copy(x = 3, y = null)
+        val desired = LauncherConfig(
+            2,
+            home = HomeConfig(grid = GridConfig(layouts = mapOf("phone" to GridLayoutConfig(listOf(dock, loneX))))),
+        )
+
+        assertEquals(emptyList<ConfigMutation>(), ConfigDiffer.diff(desired, baseState))
+    }
+
+    @Test
+    fun `a layout the config names is compared item by item, in order`() {
+        val moved = clock.copy(y = 2)
+        val desired = LauncherConfig(
+            2,
+            home = HomeConfig(grid = GridConfig(layouts = mapOf("phone" to GridLayoutConfig(listOf(dock, moved))))),
+        )
+
+        val mutations = ConfigDiffer.diff(desired, baseState)
+
+        assertEquals(
+            listOf(ConfigMutation.SetGrid(layouts = mapOf("phone" to GridLayoutConfig(listOf(dock, moved))))),
+            mutations,
+        )
+    }
+
+    @Test
+    fun `a reordered layout is a mutation because write-back keeps the file order`() {
+        val desired = LauncherConfig(
+            2,
+            home = HomeConfig(grid = GridConfig(layouts = mapOf("phone" to GridLayoutConfig(listOf(clock, dock))))),
+        )
+
+        assertEquals(1, ConfigDiffer.diff(desired, baseState).size)
+    }
+
+    @Test
+    fun `only the layouts the config names are compared`() {
+        // The fold layout in state is untouched by a config that only speaks
+        // about the phone layout, and vice versa.
+        val state = baseState.copy(
+            gridLayouts = mapOf(
+                "phone" to GridLayoutConfig(listOf(dock, clock)),
+                "fold" to GridLayoutConfig(listOf(dock.copy(w = 8))),
+            )
+        )
+        val desired = LauncherConfig(
+            2,
+            home = HomeConfig(grid = GridConfig(layouts = mapOf("phone" to GridLayoutConfig(listOf(dock, clock))))),
+        )
+
+        assertEquals(emptyList<ConfigMutation>(), ConfigDiffer.diff(desired, state))
+    }
+
+    @Test
+    fun `an item without geometry matches an item that has been placed`() {
+        // Geometry may be omitted once (D5): the launcher places the item and
+        // writes the geometry back. Until then a re-push of the same file must
+        // stay a no-op, so a null field matches whatever the state holds, the
+        // same "absent means unmanaged" rule as everywhere in the contract.
+        val desired = LauncherConfig(
+            2,
+            home = HomeConfig(
+                grid = GridConfig(
+                    layouts = mapOf(
+                        "phone" to GridLayoutConfig(
+                            listOf(
+                                GridItemConfig(id = "dock", widget = "favorites"),
+                                GridItemConfig(id = "clock", widget = clock.widget, w = 4, h = 2),
+                            )
+                        )
+                    )
+                )
+            ),
+        )
+
+        assertEquals(emptyList<ConfigMutation>(), ConfigDiffer.diff(desired, baseState))
+    }
+
+    @Test
+    fun `an item with a different id, widget or option is a mutation`() {
+        fun differs(items: List<GridItemConfig>): Boolean {
+            val desired = LauncherConfig(
+                2,
+                home = HomeConfig(grid = GridConfig(layouts = mapOf("phone" to GridLayoutConfig(items)))),
+            )
+            return ConfigDiffer.diff(desired, baseState).isNotEmpty()
+        }
+
+        assertTrue(differs(listOf(dock, clock.copy(id = "clock2"))))
+        assertTrue(differs(listOf(dock, clock.copy(widget = "com.other/.Widget"))))
+        assertTrue(differs(listOf(dock, clock.copy(borderless = true))))
+        assertTrue(differs(listOf(dock, clock.copy(profile = Profile.Work))))
+        assertTrue(differs(listOf(dock)))
+        assertTrue(differs(listOf(dock, clock, clock.copy(id = "clock2", y = 3))))
+    }
+
+    @Test
+    fun `a layout missing from the state is a mutation`() {
+        val desired = LauncherConfig(
+            2,
+            home = HomeConfig(grid = GridConfig(layouts = mapOf("fold" to GridLayoutConfig(listOf(dock))))),
+        )
+
+        val mutations = ConfigDiffer.diff(desired, baseState.copy(gridLayouts = emptyMap()))
+
+        assertEquals(
+            listOf(ConfigMutation.SetGrid(layouts = mapOf("fold" to GridLayoutConfig(listOf(dock))))),
             mutations,
         )
     }

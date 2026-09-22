@@ -12,7 +12,9 @@ package de.mm20.launcher2.config
  * (every section present, no null fields except genuinely unset values like
  * the icon pack or transparency scheme name). The one optional section is
  * `appearance.wallpaper`: present only while a config-managed wallpaper is in
- * effect, absent otherwise.
+ * effect, absent otherwise. `home.grid` carries every item with its full
+ * geometry, which is what makes the read-back a document one can paste into
+ * the dotfiles (D3).
  */
 fun ConfigState.toLauncherConfig(): LauncherConfig {
     return LauncherConfig(
@@ -35,8 +37,13 @@ fun ConfigState.toLauncherConfig(): LauncherConfig {
         ),
         home = HomeConfig(
             searchBar = SearchBarConfig(position = searchBarPosition),
-            dock = DockConfig(enabled = dockEnabled, favorites = dockFavorites),
-            widgets = WidgetsConfig(enabled = widgetsEnabled, widgets = widgets),
+            favorites = favorites,
+            widgets = WidgetsConfig(enabled = widgetsEnabled),
+            grid = GridConfig(
+                columns = gridColumns,
+                locked = gridLocked,
+                layouts = gridLayouts,
+            ),
         ),
     )
 }

@@ -29,8 +29,11 @@ data class GridSettings(
 class UiSettings internal constructor(
     private val launcherDataStore: LauncherDataStore,
 ) {
+    // `|| it.homeScreenDock` used to be here: the dead dock flag switched on
+    // the favorite affordances in search results, an effect its name never
+    // promised (#46). The grid replaced the dock; the flag is a leftover.
     val favoritesEnabled
-        get() = launcherDataStore.data.map { it.favoritesEnabled || it.homeScreenDock }
+        get() = launcherDataStore.data.map { it.favoritesEnabled }
 
     val iconShape
         get() = launcherDataStore.data.map {
@@ -348,6 +351,18 @@ class UiSettings internal constructor(
     val homeScreenWidgets
         get() = launcherDataStore.data.map {
             it.homeScreenWidgets
+        }.distinctUntilChanged()
+
+    /** `home.grid.columns` (ADR 0001, D1). Config-only: no settings screen writes it. */
+    val homeGridColumns
+        get() = launcherDataStore.data.map {
+            it.homeGridColumns
+        }.distinctUntilChanged()
+
+    /** `home.grid.locked` (D3): edit mode is refused while true. */
+    val homeGridLocked
+        get() = launcherDataStore.data.map {
+            it.homeGridLocked
         }.distinctUntilChanged()
 
     fun setHomeScreenWidgets(widgets: Boolean) {

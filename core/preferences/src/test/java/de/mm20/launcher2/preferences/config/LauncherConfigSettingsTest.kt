@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import de.mm20.launcher2.config.ConfigMutation
 import de.mm20.launcher2.config.Favorite
+import de.mm20.launcher2.config.GridLayoutConfig
 import de.mm20.launcher2.config.SearchBarPosition
 import de.mm20.launcher2.preferences.LauncherDataStore
 import de.mm20.launcher2.preferences.LauncherSettingsData
@@ -41,8 +42,9 @@ class LauncherConfigSettingsTest {
                 iconsForceThemed = true,
                 iconsPack = "com.example.iconpack",
                 searchBarBottom = true,
-                homeScreenDock = true,
                 homeScreenWidgets = true,
+                homeGridColumns = 5,
+                homeGridLocked = true,
                 uiTransparenciesId = transparenciesId,
             )
         )
@@ -53,8 +55,9 @@ class LauncherConfigSettingsTest {
         assertEquals(true, result.state.enforceThemedIcons)
         assertEquals("com.example.iconpack", result.state.iconPack)
         assertEquals(SearchBarPosition.Bottom, result.state.searchBarPosition)
-        assertEquals(true, result.state.dockEnabled)
         assertEquals(true, result.state.widgetsEnabled)
+        assertEquals(5, result.state.gridColumns)
+        assertEquals(true, result.state.gridLocked)
         assertEquals(transparenciesId, result.transparenciesId)
     }
 
@@ -124,12 +127,28 @@ class LauncherConfigSettingsTest {
     }
 
     @Test
-    fun `apply SetDockEnabled updates homeScreenDock`() = runTest {
-        val gateway = createGateway(LauncherSettingsData(homeScreenDock = false))
+    fun `apply SetGrid updates columns and locked, and leaves an absent field alone`() = runTest {
+        val gateway = createGateway(LauncherSettingsData(homeGridColumns = 4, homeGridLocked = false))
 
-        val updated = gateway.applyAndReturn(listOf(ConfigMutation.SetDockEnabled(true)))
+        val columns = gateway.applyAndReturn(listOf(ConfigMutation.SetGrid(columns = 5)))
+        assertEquals(5, columns.homeGridColumns)
+        assertEquals(false, columns.homeGridLocked)
 
-        assertEquals(true, updated.homeScreenDock)
+        val locked = gateway.applyAndReturn(listOf(ConfigMutation.SetGrid(locked = true)))
+        assertEquals(5, locked.homeGridColumns)
+        assertEquals(true, locked.homeGridLocked)
+    }
+
+    @Test
+    fun `apply SetGrid with only layouts changes no setting`() = runTest {
+        val seed = LauncherSettingsData(homeGridColumns = 4, homeGridLocked = true)
+        val gateway = createGateway(seed)
+
+        val updated = gateway.applyAndReturn(
+            listOf(ConfigMutation.SetGrid(layouts = mapOf("phone" to GridLayoutConfig(emptyList()))))
+        )
+
+        assertEquals(seed, updated)
     }
 
     @Test
@@ -149,7 +168,7 @@ class LauncherConfigSettingsTest {
             listOf(
                 ConfigMutation.SetIcons(themed = true, pack = "com.example.iconpack"),
                 ConfigMutation.SetSearchBarPosition(SearchBarPosition.Top),
-                ConfigMutation.SetDockEnabled(true),
+                ConfigMutation.SetGrid(columns = 6, locked = true),
                 ConfigMutation.SetWidgetsEnabled(true),
             )
         )
@@ -158,23 +177,24 @@ class LauncherConfigSettingsTest {
         assertEquals(true, result.state.themedIcons)
         assertEquals("com.example.iconpack", result.state.iconPack)
         assertEquals(SearchBarPosition.Top, result.state.searchBarPosition)
-        assertEquals(true, result.state.dockEnabled)
+        assertEquals(6, result.state.gridColumns)
+        assertEquals(true, result.state.gridLocked)
         assertEquals(true, result.state.widgetsEnabled)
     }
 
     @Test
     fun `apply ignores mutations not backed by settings`() = runTest {
-        val gateway = createGateway(LauncherSettingsData(homeScreenDock = true))
+        val gateway = createGateway(LauncherSettingsData(homeGridLocked = true))
 
         val updated = gateway.applyAndReturn(
             listOf(
                 ConfigMutation.SetTransparency(name = "scheme", background = 0.5f),
-                ConfigMutation.SetDockFavorites(listOf(Favorite("com.example.app"))),
-                ConfigMutation.SetWidgets(listOf(de.mm20.launcher2.config.BuiltinWidget.Apps)),
+                ConfigMutation.SetFavorites(listOf(Favorite("com.example.app"))),
+                ConfigMutation.SetWallpaper("w.jpg", de.mm20.launcher2.config.WallpaperTarget.Both),
             )
         )
 
-        assertEquals(LauncherSettingsData(homeScreenDock = true), updated)
+        assertEquals(LauncherSettingsData(homeGridLocked = true), updated)
     }
 
     @Test
@@ -195,8 +215,8 @@ class LauncherConfigSettingsTest {
         val store = LauncherDataStore(context)
         val gateway = LauncherConfigSettingsImpl(store)
 
-        gateway.applyAndReturn(listOf(ConfigMutation.SetDockEnabled(true)))
+        gateway.applyAndReturn(listOf(ConfigMutation.SetGrid(locked = true)))
 
-        assertEquals(true, store.data.first().homeScreenDock)
+        assertEquals(true, store.data.first().homeGridLocked)
     }
 }
