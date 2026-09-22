@@ -194,6 +194,33 @@ class GridWriteBackTest {
     }
 
     @Test
+    fun `a schemaVersion 1 file is not written back`() = runBlocking {
+        // The launcher reads a v1 file through migration but writes only the
+        // current schema; splicing a v2 grid next to the old dock keys would
+        // leave a mixed shape nobody can regenerate from. Byte for byte
+        // untouched, with a code the UI can explain.
+        val v1 = """
+            {
+              "schemaVersion": 1,
+              "home": {
+                "dock": { "enabled": true, "favorites": [ "com.example.dialer" ] },
+                "widgets": { "enabled": false, "widgets": ["apps"] }
+              }
+            }
+        """.trimIndent()
+        putFile(v1)
+        val before = file.readBytes()
+
+        val result = writeBack().write(HomeGridLayouts.Phone, items)
+
+        assertEquals("schema-version-outdated", (result as WriteBackResult.Skipped).code)
+        assertTrue(result.reason, result.reason.contains("schemaVersion 1"))
+        assertArrayEquals(before, file.readBytes())
+        assertEquals(items, repository.layouts[HomeGridLayouts.Phone])
+        assertNull(reportStore.read())
+    }
+
+    @Test
     fun `a locked grid is not written back`() = runBlocking {
         val locked = documentWithGrid.replace("\"columns\": 4,", "\"columns\": 4, \"locked\": true,")
         putFile(locked)
