@@ -30,7 +30,8 @@ abstract class HomeGridItemDao {
      */
     @Transaction
     open suspend fun replaceLayout(layout: String, items: List<HomeGridItemEntity>) {
-        TODO("PR 2 implementation commit")
+        deleteLayout(layout)
+        insert(items.map { if (it.layout == layout) it else it.copy(layout = layout) })
     }
 
     @Query(

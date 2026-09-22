@@ -18,6 +18,20 @@ import androidx.sqlite.db.SupportSQLiteDatabase
  */
 class Migration_35_36 : Migration(35, 36) {
     override fun migrate(db: SupportSQLiteDatabase) {
-        TODO("PR 2 implementation commit")
+        db.execSQL(
+            "CREATE TABLE IF NOT EXISTS `HomeGridItem` (" +
+                    "`layout` TEXT NOT NULL, " +
+                    "`id` TEXT NOT NULL, " +
+                    "`widget` TEXT NOT NULL, " +
+                    "`profile` TEXT, " +
+                    "`x` INTEGER NOT NULL, " +
+                    "`y` INTEGER NOT NULL, " +
+                    "`w` INTEGER NOT NULL, " +
+                    "`h` INTEGER NOT NULL, " +
+                    "`appWidgetId` INTEGER, " +
+                    "`config` TEXT, " +
+                    "`position` INTEGER NOT NULL, " +
+                    "PRIMARY KEY(`layout`, `id`))"
+        )
     }
 }
