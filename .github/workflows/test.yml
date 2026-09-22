@@ -1,11 +1,20 @@
 name: Tests
 
-# L1 (unit) + L3 (screenshot verify) on every push and PR.
+# L1 (unit) + L3 (screenshot verify) on pull requests and on main.
 # L2 (Compose UI on emulator) on PRs only — it is the slow layer.
 # L4 stays manual/local: it needs the self-built GrapheneOS emulator (ADR 0005).
 
+# `push` is limited to main on purpose. With a bare `push:` every commit on a
+# PR branch ran this workflow twice - once for the push, once for the pull
+# request - which doubles the cost and doubles the chance that a flake blocks a
+# PR. It is not hypothetical: two concurrent runs of the same commit fetch
+# Robolectric's android-all jar at the same moment, and on 2026-09-22 one of
+# them lost it with a SocketException in MavenArtifactFetcher while its twin
+# went green. A branch without a PR is not covered now, which is the accepted
+# side of the trade.
 on:
   push:
+    branches: [main]
   pull_request:
 
 jobs:
