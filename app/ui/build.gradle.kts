@@ -126,6 +126,8 @@ dependencies {
     implementation(project(":data:applications"))
     implementation(project(":data:appshortcuts"))
     implementation(project(":data:widgets"))
+    implementation(project(":data:homegrid"))
+    implementation(project(":core:grid"))
     implementation(project(":data:searchable"))
     implementation(project(":data:themes"))
     implementation(project(":services:badges"))

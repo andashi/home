@@ -1,0 +1,196 @@
+package de.mm20.launcher2.ui.launcher.grid
+
+
+import de.mm20.launcher2.homegrid.FormFactor
+import de.mm20.launcher2.homegrid.HomeGridLayouts
+import de.mm20.launcher2.homegrid.HomeGridSeeder
+import de.mm20.launcher2.homegrid.HomeGridWidgets
+import de.mm20.launcher2.homegrid.MeasuredGridRows
+import de.mm20.launcher2.preferences.ui.UiSettings
+import de.mm20.launcher2.ui.settings.KoinSettingsRule
+import de.mm20.launcher2.widgets.Widget
+import de.mm20.launcher2.widgets.WidgetRepository
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.setMain
+import org.junit.After
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
+import org.junit.Before
+import org.junit.Rule
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.koin.core.context.GlobalContext
+import org.robolectric.RobolectricTestRunner
+import java.util.UUID
+
+@OptIn(ExperimentalCoroutinesApi::class)
+@RunWith(RobolectricTestRunner::class)
+class HomeGridVMTest {
+
+    @get:Rule
+    val koin = KoinSettingsRule()
+
+    private val dispatcher = StandardTestDispatcher()
+
+    @Before
+    fun setUp() {
+        Dispatchers.setMain(dispatcher)
+    }
+
+    @After
+    fun tearDown() {
+        Dispatchers.resetMain()
+    }
+
+    private val emptyColumn = object : WidgetRepository {
+        override fun get(parent: UUID?, limit: Int, offset: Int): Flow<List<Widget>> = flowOf(emptyList())
+        override fun update(widget: Widget) = Unit
+        override fun create(widget: Widget, position: Int, parentId: UUID?) = Unit
+        override fun delete(widget: Widget) = Unit
+        override fun set(widgets: List<Widget>, parentId: UUID?) = Unit
+        override suspend fun setAwaited(widgets: List<Widget>, parentId: UUID?) = Unit
+        override fun exists(type: String): Flow<Boolean> = flowOf(false)
+        override fun count(type: String): Flow<Int> = flowOf(0)
+    }
+
+    private fun vm(
+        formFactor: FormFactor,
+        repository: FakeHomeGridRepository = FakeHomeGridRepository(),
+        measuredRows: MeasuredGridRows = MeasuredGridRows(),
+        seeded: Boolean = true,
+    ): HomeGridVM {
+        val uiSettings: UiSettings = GlobalContext.get().get()
+        val flag = FakeSeedFlag(seeded)
+        return HomeGridVM(
+            repository = repository,
+            uiSettings = uiSettings,
+            formFactorDetector = FakeFormFactorDetector(formFactor),
+            measuredRows = measuredRows,
+            seeder = HomeGridSeeder(emptyColumn, repository, flag) { null },
+            widgetRepository = emptyColumn,
+        )
+    }
+
+    @Test
+    fun `the geometry follows the measured window and the configured columns`() = runTest(dispatcher) {
+        val rows = MeasuredGridRows()
+        val vm = vm(FormFactor.Phone, measuredRows = rows)
+
+        vm.onWindowMeasured(396f, 800f)
+        val geometry = vm.geometry.filterNotNull().first()
+
+        assertEquals(HomeGridLayouts.Phone, geometry.layout)
+        assertEquals(4, geometry.spec.columns)
+        assertEquals(8, geometry.rows)
+        assertEquals(93f, geometry.cellDp, 0.001f)
+        // The config store reads the rows this device really has.
+        assertEquals(8, rows.rows(HomeGridLayouts.Phone))
+    }
+
+    @Test
+    fun `a fold's cover clamps the fold layout to its left half`() = runTest(dispatcher) {
+        val repository = FakeHomeGridRepository(
+            mapOf(
+                HomeGridLayouts.Fold to listOf(
+                    gridItem("left", 0, 0, 2, 2, HomeGridLayouts.Fold, position = 0),
+                    gridItem("right", 5, 0, 2, 2, HomeGridLayouts.Fold, position = 1),
+                    dockItem(0, 5, 8, 1, HomeGridLayouts.Fold),
+                ),
+            ),
+        )
+        val vm = vm(FormFactor.Fold, repository)
+
+        vm.onWindowMeasured(396f, 622f)
+        val state = vm.state.filterNotNull().first()
+
+        assertTrue(state.geometry.isCover)
+        assertEquals(4, state.geometry.visibleColumns)
+        assertEquals(8, state.geometry.spec.columns)
+        assertEquals(listOf("left", "dock"), state.cells.map { it.item.id })
+        assertEquals(4, state.cells.first { it.item.isFavorites }.span.w)
+    }
+
+    @Test
+    fun `a fold's inner display shows both halves`() = runTest(dispatcher) {
+        val repository = FakeHomeGridRepository(
+            mapOf(
+                HomeGridLayouts.Fold to listOf(
+                    gridItem("left", 0, 0, 2, 2, HomeGridLayouts.Fold, position = 0),
+                    gridItem("right", 5, 0, 2, 2, HomeGridLayouts.Fold, position = 1),
+                ),
+            ),
+        )
+        val vm = vm(FormFactor.Fold, repository)
+
+        vm.onWindowMeasured(790f, 780f)
+        val state = vm.state.filterNotNull().first()
+
+        assertFalse(state.geometry.isCover)
+        assertEquals(8, state.geometry.visibleColumns)
+        assertEquals(listOf("left", "right"), state.cells.map { it.item.id })
+    }
+
+    @Test
+    fun `a phone reads the phone layout and ignores the fold layout`() = runTest(dispatcher) {
+        val repository = FakeHomeGridRepository(
+            mapOf(
+                HomeGridLayouts.Phone to listOf(gridItem("p", 0, 0, position = 0)),
+                HomeGridLayouts.Fold to listOf(gridItem("f", 0, 0, layout = HomeGridLayouts.Fold, position = 0)),
+            ),
+        )
+        val vm = vm(FormFactor.Phone, repository)
+
+        vm.onWindowMeasured(396f, 800f)
+
+        assertEquals(listOf("p"), vm.state.filterNotNull().first().cells.map { it.item.id })
+    }
+
+    @Test
+    fun `an unseeded device gets the dock seeded once the window is known`() = runTest(dispatcher) {
+        val repository = FakeHomeGridRepository()
+        val vm = vm(FormFactor.Phone, repository, seeded = false)
+
+        vm.onWindowMeasured(396f, 622f)
+        val state = vm.state.filterNotNull().first { it.cells.isNotEmpty() }
+
+        val dock = state.cells.single()
+        assertEquals(HomeGridWidgets.Favorites, dock.item.widget)
+        assertEquals(5, dock.span.y)
+    }
+
+    @Test
+    fun `remove deletes the item from its layout`() = runTest(dispatcher) {
+        val item = gridItem("clock", 0, 0, 2, 2, position = 0)
+        val repository = FakeHomeGridRepository(mapOf(HomeGridLayouts.Phone to listOf(item)))
+        val vm = vm(FormFactor.Phone, repository)
+
+        vm.remove(item)
+        dispatcher.scheduler.advanceUntilIdle()
+
+        assertTrue(repository.observe(HomeGridLayouts.Phone).first().isEmpty())
+    }
+
+    @Test
+    fun `replace points the item at the new provider and host id`() = runTest(dispatcher) {
+        val item = gridItem("clock", 0, 0, 2, 2, position = 0)
+        val repository = FakeHomeGridRepository(mapOf(HomeGridLayouts.Phone to listOf(item)))
+        val vm = vm(FormFactor.Phone, repository)
+
+        vm.replace(item, "com.other/.Clock", 42)
+        dispatcher.scheduler.advanceUntilIdle()
+
+        val replaced = repository.observe(HomeGridLayouts.Phone).first().single()
+        assertEquals("com.other/.Clock", replaced.widget)
+        assertEquals(42, replaced.appWidgetId)
+        assertEquals(listOf(0, 0, 2, 2), listOf(replaced.x, replaced.y, replaced.w, replaced.h))
+    }
+}

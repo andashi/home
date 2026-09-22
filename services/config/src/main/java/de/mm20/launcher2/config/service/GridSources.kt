@@ -30,24 +30,8 @@ interface GridLimitsSource {
     fun lookup(widget: String, profile: ConfigProfile?, columns: Int): ProviderLimits?
 }
 
-/**
- * How many rows a layout has on this device. Rows are derived from the
- * usable screen height (D1), which only the rendered grid knows; until the
- * renderer lands (PR 4) the default source answers with a conservative
- * constant, so a config that fits six rows converges the same way then and
- * now, and one that needs more gets its `grid-overflow` diagnostic already.
- */
-interface GridRowsSource {
-    fun rows(layout: String): Int
-}
-
-class DefaultGridRowsSource : GridRowsSource {
-    override fun rows(layout: String): Int = DefaultRows
-
-    companion object {
-        const val DefaultRows = 6
-    }
-}
+// The rows source lives with the grid (`de.mm20.launcher2.homegrid.GridRowsSource`):
+// the renderer measures the rows and the store reads them from the same object.
 
 /**
  * The real [GridLimitsSource]: the provider's declared sizes, converted from
