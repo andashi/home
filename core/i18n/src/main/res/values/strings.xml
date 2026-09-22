@@ -175,6 +175,7 @@
     <string name="turn_off">Turn off</string>
     <string name="widget_action_remove">Remove</string>
     <string name="widget_action_replace">Replace</string>
+    <string name="widget_action_allow">Allow</string>
     <string name="menu_item_edit_favs">Edit favorites</string>
     <!-- Edit favorites, title for items that are frequently used but not pinned -->
     <string name="edit_favorites_dialog_unpinned">Not pinned – frequently used</string>

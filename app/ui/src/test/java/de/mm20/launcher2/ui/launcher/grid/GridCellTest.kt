@@ -82,4 +82,28 @@ class GridCellTest {
         }
         composeRule.waitForIdle()
     }
+
+    @Test
+    fun `an unbound item whose provider is installed offers Allow`() {
+        // Binding without a dialog needs the bind-widget grant, which only the
+        // system's "always allow" dialog gives a third-party launcher; the
+        // cell offers to open it.
+        var allowed = 0
+        composeRule.setContent {
+            MaterialTheme {
+                Box(Modifier.size(300.dp, 200.dp)) {
+                    AppWidgetCell(
+                        item = gridItem("clock", 0, 0, 3, 2),
+                        onRemove = {},
+                        onReplace = { _, _ -> },
+                        onAllow = { allowed++ },
+                    )
+                }
+            }
+        }
+
+        composeRule.onNodeWithText(string(R.string.widget_action_allow)).performClick()
+
+        assertEquals(1, allowed)
+    }
 }

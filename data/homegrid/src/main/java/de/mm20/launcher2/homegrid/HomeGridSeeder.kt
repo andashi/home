@@ -55,18 +55,32 @@ class HomeGridSeeder(
         },
     )
 
+    /** A column entry that found no room in the grid; its `Widget` row is untouched. */
+    data class Leftover(val appWidgetId: Int, val provider: String)
+
     /**
-     * Returns the items written for [geometry]'s layout, or an empty list
-     * when nothing was seeded. On a fold the same rows are written for the
-     * `phone` layout too, at the configured column count, so the document
-     * describes both.
+     * [items] are what was written for the geometry's own layout (empty when
+     * nothing was seeded); [leftovers] the AppWidgets of the column that did
+     * not fit above the dock.
      */
-    suspend fun seedIfNeeded(geometry: GridGeometry): List<HomeGridItem> {
-        if (flag.isSeeded()) return emptyList()
+    data class SeedResult(
+        val items: List<HomeGridItem> = emptyList(),
+        val leftovers: List<Leftover> = emptyList(),
+    )
+
+    /**
+     * Seeds every layout this device needs that is still empty: the
+     * geometry's own, and on a fold the `phone` layout too, at the
+     * configured column count, so the document describes both. A layout
+     * that already holds items is left alone. The flag is set only once
+     * every needed layout holds items.
+     */
+    suspend fun seedIfNeeded(geometry: GridGeometry): SeedResult {
+        if (flag.isSeeded()) return SeedResult()
         val layout = geometry.layout
         if (homeGridRepository.observe(layout).first().isNotEmpty()) {
             flag.markSeeded()
-            return emptyList()
+            return SeedResult()
         }
         val column = widgetRepository.get(WidgetScreenTarget.Default.id).first()
 
@@ -82,7 +96,7 @@ class HomeGridSeeder(
             )
         }
         flag.markSeeded()
-        return items
+        return SeedResult(items)
     }
 
     /**

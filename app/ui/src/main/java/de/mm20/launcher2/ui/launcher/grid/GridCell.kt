@@ -90,6 +90,7 @@ internal fun AppWidgetCell(
     item: HomeGridItem,
     onRemove: () -> Unit,
     onReplace: (widget: String, appWidgetId: Int) -> Unit,
+    onAllow: (() -> Unit)? = null,
 ) {
     val context = LocalContext.current
     val appWidgetId = item.appWidgetId

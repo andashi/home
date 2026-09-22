@@ -115,4 +115,19 @@ class HomeGridReconcilerTest {
 
         assertEquals(ReconcileReport(), reconciler(port).reconcile())
     }
+
+    @Test
+    fun `host ids referenced beyond the first page of the widget column are kept`() = runBlocking {
+        // The widget repository pages at 100; a column page holding 101
+        // AppWidgets must not get its last one released as an orphan.
+        val column = (1..101).map { n ->
+            AppWidget(UUID.randomUUID(), AppWidgetConfig(widgetId = 1000 + n, height = 100))
+        }
+        val port = FakeAppWidgetHostPort(bound = (1001..1101).toList())
+
+        val report = reconciler(port, mapOf(WidgetScreenTarget.Widgets2.id to column)).reconcile()
+
+        assertTrue(report.released.isEmpty())
+        assertEquals(101, port.bound.size)
+    }
 }
