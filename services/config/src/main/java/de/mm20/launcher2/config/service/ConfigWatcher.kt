@@ -109,23 +109,43 @@ class ConfigWatcher(
         debounceJob?.cancel()
         debounceJob = scope.launch {
             delay(debounceMs)
+            if (isOwnWrite(file)) {
+                Log.d(TAG, "Config file event matches the launcher's own write; no reload")
+                return@launch
+            }
             reloader.reload(file, ReloadTrigger.FileWatcher)
         }
+    }
+
+    /**
+     * Write-back (ADR 0003, revised 2026-09-22) renames onto `launcher.json`
+     * exactly like a push does, and the observer cannot tell who renamed.
+     * The self-write report carries the hash of the bytes the launcher
+     * wrote; a file with that hash is the launcher's own and needs no
+     * reload. Only a self-write report counts: a push of unchanged bytes
+     * after a foreign reload still reloads, because provisioning waits for
+     * that report (e2e/l4-config.sh step 5).
+     */
+    private suspend fun isOwnWrite(file: File): Boolean {
+        val report = reportStore.read() ?: return false
+        if (report.trigger != ReloadTrigger.SelfWrite || report.configSha256 == null) return false
+        return report.configSha256 == fileHash(file)
+    }
+
+    private suspend fun fileHash(file: File): String? = try {
+        withContext(Dispatchers.IO) {
+            if (!file.exists()) null else file.readBytes().sha256Hex()
+        }
+    } catch (e: IOException) {
+        null
+    } catch (e: SecurityException) {
+        null
     }
 
     internal fun startupCheck(): Job? {
         val file = ConfigLocation.configFile(appContext) ?: return null
         return scope.launch {
-            val hash = try {
-                withContext(Dispatchers.IO) {
-                    if (!file.exists()) return@withContext null
-                    file.readBytes().sha256Hex()
-                }
-            } catch (e: IOException) {
-                null
-            } catch (e: SecurityException) {
-                null
-            }
+            val hash = fileHash(file)
             if (hash == null && !file.exists()) return@launch
             val report = reportStore.read()
             if (report == null || report.configSha256 != hash) {

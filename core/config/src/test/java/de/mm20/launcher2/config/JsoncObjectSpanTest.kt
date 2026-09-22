@@ -188,6 +188,50 @@ class JsoncObjectSpanTest {
     }
 
     @Test
+    fun `escaped keys are compared unescaped`() {
+        val text = """{ "home": { "grid": { "columns": 4 } }, "a\"b": { "x": 1 }, "n\nl": 2, "t\tab": 3, "sl\/ash": 4 }"""
+
+        assertEquals("""{ "columns": 4 }""", spanOf(text))
+        assertEquals("""{ "x": 1 }""", spanOf(text, listOf("a\"b")))
+        assertEquals("2", spanOf(text, listOf("n\nl")))
+        assertEquals("3", spanOf(text, listOf("t\tab")))
+        assertEquals("4", spanOf(text, listOf("sl/ash")))
+    }
+
+    @Test
+    fun `line indent takes spaces and tabs up to the first character`() {
+        val text = "{\n\t  \"home\": {\n\t\t\"grid\": {}\n\t}\n}"
+
+        assertEquals("\t  ", JsoncObjectSpan.lineIndent(text, text.indexOf("\"home\"")))
+        assertEquals("\t\t", JsoncObjectSpan.lineIndent(text, text.indexOf("\"grid\"")))
+        assertEquals("", JsoncObjectSpan.lineIndent(text, 0))
+    }
+
+    @Test
+    fun `more malformed shapes are reported, not thrown`() {
+        assertEquals(Malformed, JsoncObjectSpan.find("""{ "a": }""", home))
+        assertEquals(Malformed, JsoncObjectSpan.find("""{ "a": 1 "b": 2 }""", home))
+        assertEquals(Malformed, JsoncObjectSpan.find("""{ "a": 1, ] }""", home))
+        assertEquals(Malformed, JsoncObjectSpan.find("""{ "a": [ 1, 2 }""", home))
+        assertEquals(Malformed, JsoncObjectSpan.find("""{ "a": 1 """, home))
+        assertEquals(Malformed, JsoncObjectSpan.find("""{ "a": 1, """, home))
+        assertEquals(Malformed, JsoncObjectSpan.find("""{ "a": """, home))
+        assertEquals(Malformed, JsoncObjectSpan.find("""{ "a" """, home))
+        assertEquals(Malformed, JsoncObjectSpan.find("""{ "a": "x""", home))
+        assertEquals(Malformed, JsoncObjectSpan.find("""{ "a": 1 // comment to the end""", listOf("b")))
+    }
+
+    @Test
+    fun `an empty path is a programming error`() {
+        try {
+            JsoncObjectSpan.find("{}", emptyList())
+            throw AssertionError("expected IllegalArgumentException")
+        } catch (e: IllegalArgumentException) {
+            assertTrue(e.message!!.contains("path"))
+        }
+    }
+
+    @Test
     fun `scalar and array values are spanned too`() {
         val text = """{ "home": { "columns": 4, "list": [ { "a": "]" }, 2 ], "s": "x" } }"""
 
