@@ -18,11 +18,12 @@ val configModule = module {
     // Reuse upstream's construction instead of binding a second instance.
     factory { get<ThemeRepository>().transparencies }
     factory<ProfileResolver> { ProfileManagerProfileResolver(get()) }
-    single<WallpaperStore> { DefaultWallpaperStore(androidContext(), AndroidWallpaperApplier(androidContext())) }
+    single { ForegroundState() }
+    single<WallpaperStore> { DefaultWallpaperStore(androidContext(), AndroidWallpaperApplier(androidContext()), get()) }
     factory<ConfigStore> { DefaultConfigStore(get(), get(), get(), get(), get(), get(), get()) }
     single { ReloadReportStore(androidContext()) }
     // One reloader, one mutex: watcher and receiver must serialize on it.
     single { ConfigReloader(get(), get()) }
     single(createdAtStart = true) { ConfigWatcher(androidContext(), get(), get()).also { it.start() } }
-    single(createdAtStart = true) { WallpaperForegroundFixer(androidContext(), get()).also { it.start() } }
+    single(createdAtStart = true) { WallpaperForegroundFixer(androidContext(), get(), get()).also { it.start() } }
 }
