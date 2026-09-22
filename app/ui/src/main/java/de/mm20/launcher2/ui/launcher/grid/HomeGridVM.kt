@@ -45,6 +45,8 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import org.koin.core.context.GlobalContext
 
 /** What edit mode has to tell the user, shown as a snackbar by the grid. */
@@ -157,15 +159,17 @@ class HomeGridVM(
      * the working copy and edit mode, reports [GridEditEvent.WriteBackFailed],
      * and the user taps Done again.
      */
-    suspend fun exitEdit() {
-        val items = working.value ?: return
+    suspend fun exitEdit() = exitMutex.withLock {
+        // Re-checked under the lock: a second Done (or Done and Back) that
+        // waited here finds the copy already written and does nothing.
+        val items = working.value ?: return@withLock
         val geometry = geometry.filterNotNull().first()
         val result = try {
             writeBack.write(geometry.layout, items.mapIndexed { index, item -> item.copy(position = index) })
         } catch (e: Exception) {
             Log.e(Tag, "write-back of ${geometry.layout} failed; staying in edit mode", e)
             _events.tryEmit(GridEditEvent.WriteBackFailed(e.message ?: e.javaClass.simpleName))
-            return
+            return@withLock
         }
         _editing.value = false
         _selectedId.value = null
@@ -174,6 +178,9 @@ class HomeGridVM(
             _events.tryEmit(GridEditEvent.WriteBackSkipped(result.code, result.reason))
         }
     }
+
+    /** Serialises [exitEdit]: one write-back per session, however often Done is tapped. */
+    private val exitMutex = Mutex()
 
     fun select(id: String?) {
         _selectedId.value = id
