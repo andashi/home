@@ -459,6 +459,7 @@ for key in "${PROFILE_KEYS[@]}"; do
   assert_jq "$eff" \
     "([.home.dock.favorites[]? | .packageName] | index(\"$PKG\")) != null" \
     "profile '$key' (user $uid): dock favorite $PKG survived the round trip"
+  ok "profile '$key' (user $uid): dock favorites $(jq -c '[.home.dock.favorites[]?|.packageName]' <<<"$eff") served back"
 
   # The generated config names a wallpaper; the system must show a non-default
   # wallpaper id for that user (dumpsys is independent evidence of the read-back).
