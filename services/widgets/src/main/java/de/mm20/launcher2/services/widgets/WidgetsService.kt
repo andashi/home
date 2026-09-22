@@ -66,6 +66,6 @@ class WidgetsService(
     }
 
     companion object {
-        const val AppWidgetHostId = 44203
+        const val AppWidgetHostId = AppWidgetHostIds.Home
     }
 }

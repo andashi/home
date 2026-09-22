@@ -42,6 +42,8 @@ data class LauncherSettingsData internal constructor(
     val homeGridColumns: Int = 4,
     /** `home.grid.locked`: no edit mode, nothing written back (D3). */
     val homeGridLocked: Boolean = false,
+    /** The one-time conversion of the widget column into grid items ran (ADR 0001 migration). */
+    val homeGridSeeded: Boolean = false,
 
     val favoritesEnabled: Boolean = true,
     val favoritesFrequentlyUsed: Boolean = true,

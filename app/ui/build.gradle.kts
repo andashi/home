@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.kotlin.plugin.serialization)
     alias(libs.plugins.kotlin.plugin.compose)
     alias(libs.plugins.roborazzi)
+    alias(libs.plugins.kover)
 }
 
 android {
@@ -126,6 +127,8 @@ dependencies {
     implementation(project(":data:applications"))
     implementation(project(":data:appshortcuts"))
     implementation(project(":data:widgets"))
+    implementation(project(":data:homegrid"))
+    implementation(project(":core:grid"))
     implementation(project(":data:searchable"))
     implementation(project(":data:themes"))
     implementation(project(":services:badges"))
@@ -150,6 +153,26 @@ dependencies {
     androidTestImplementation(libs.androidx.test.rules)
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
+}
+
+// Coverage gate (ADR 0005, AGENTS.md "Test policy"), scoped to the code the
+// fork owns in this module: the home grid package. The rest of app/ui is
+// upstream and stays unmeasured on purpose. Bound = the value the tests
+// reached when the package was created, rounded down; raised as tests land,
+// never lowered.
+kover {
+    reports {
+        filters {
+            includes {
+                classes("de.mm20.launcher2.ui.launcher.grid.*")
+            }
+        }
+        verify {
+            rule("line coverage of app/ui launcher.grid") {
+                minBound(73)
+            }
+        }
+    }
 }
 
 // Screenshot goldens live in the source tree so they are committed and CI can

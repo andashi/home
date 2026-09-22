@@ -61,6 +61,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import de.mm20.launcher2.services.widgets.AppWidgetHostIds
 import de.mm20.launcher2.ui.R
 import de.mm20.launcher2.ui.component.DismissableBottomSheet
 import de.mm20.launcher2.ui.ktx.animateShapeAsState
@@ -79,7 +80,7 @@ class BindAndConfigureAppWidgetActivity : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        appWidgetHost = AppWidgetHost(this, 44203)
+        appWidgetHost = AppWidgetHost(this, AppWidgetHostIds.Home)
         appWidgetManager = AppWidgetManager.getInstance(this)
 
         val appWidgetProviderInfo = intent.getParcelableExtra<AppWidgetProviderInfo>(

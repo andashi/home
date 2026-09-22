@@ -224,11 +224,43 @@ class GridLayoutTest {
     }
 
     @Test
+    fun `normalize pushes an overlapping later item down, not sideways`() {
+        // ADR 0001: a collision pushes the displaced item down to the next
+        // free position, the same rule move() applies. The earlier item
+        // keeps its place, the later one stays in its column band.
+        val items = listOf(item("a", 0, 0, 2, 2), item("b", 0, 1, 2, 2))
+        val result = GridLayout.normalize(Phone, items)
+        assertEquals(Span(0, 0, 2, 2), result.items.spanOf("a"))
+        assertEquals(Span(0, 2, 2, 2), result.items.spanOf("b"))
+        assertEquals(listOf(LayoutIssue.Overlap("a", "b")), result.issues)
+        assertEquals(emptyList<LayoutIssue>(), GridLayout.validate(Phone, result.items))
+    }
+
+    @Test
+    fun `normalize push-down cascades through later items in list order`() {
+        // The L4 grid scenario's step 5: a 2x2 dropped on the digital clock's
+        // cell; the clock moves below it and the analog clock below the clock.
+        val items = listOf(
+            item("analog2", 0, 0, 2, 2),
+            item("digital", 0, 0, 3, 1),
+            item("analog", 0, 1, 2, 2),
+            item("dock", 0, 5, 4, 1),
+        )
+        val result = GridLayout.normalize(Phone, items)
+        assertEquals(Span(0, 0, 2, 2), result.items.spanOf("analog2"))
+        assertEquals(Span(0, 2, 3, 1), result.items.spanOf("digital"))
+        assertEquals(Span(0, 3, 2, 2), result.items.spanOf("analog"))
+        assertEquals(Span(0, 5, 4, 1), result.items.spanOf("dock"))
+        assertEquals(emptyList<LayoutIssue>(), GridLayout.validate(Phone, result.items))
+    }
+
+    @Test
     fun `normalize re-places a later item that overlaps an earlier one`() {
         val items = listOf(item("a", 0, 0, 2, 2), item("b", 1, 1, 2, 2))
         val result = GridLayout.normalize(Phone, items)
         assertEquals(Span(0, 0, 2, 2), result.items.spanOf("a"))
-        assertEquals(Span(2, 0, 2, 2), result.items.spanOf("b"))
+        // Down in its own column band, not to the first free cell to the right.
+        assertEquals(Span(1, 2, 2, 2), result.items.spanOf("b"))
         assertEquals(listOf(LayoutIssue.Overlap("a", "b")), result.issues)
         assertEquals(emptyList<LayoutIssue>(), GridLayout.validate(Phone, result.items))
     }

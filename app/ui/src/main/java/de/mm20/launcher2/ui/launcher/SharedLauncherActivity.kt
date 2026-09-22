@@ -51,7 +51,7 @@ import de.mm20.launcher2.ui.launcher.scaffold.ScaffoldAnimation
 import de.mm20.launcher2.ui.launcher.scaffold.ScaffoldConfiguration
 import de.mm20.launcher2.ui.launcher.scaffold.ScaffoldGesture
 import de.mm20.launcher2.ui.launcher.scaffold.SearchBarPosition
-import de.mm20.launcher2.ui.launcher.scaffold.components.WidgetsHomeComponent
+import de.mm20.launcher2.ui.launcher.grid.HomeGridComponent
 import de.mm20.launcher2.ui.launcher.scaffold.components.DismissComponent
 import de.mm20.launcher2.ui.launcher.scaffold.components.FeedComponent
 import de.mm20.launcher2.ui.launcher.scaffold.components.LaunchComponent
@@ -340,7 +340,7 @@ abstract class SharedLauncherActivity(
                                     val gestures = gestures!!
 
                                     val config = ScaffoldConfiguration(
-                                        homeComponent = WidgetsHomeComponent,
+                                        homeComponent = HomeGridComponent,
                                         searchComponent = searchComponent,
                                         swipeUp = getScaffoldGesture(
                                             gestures.swipeUpAction,

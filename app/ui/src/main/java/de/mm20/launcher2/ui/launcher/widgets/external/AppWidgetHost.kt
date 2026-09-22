@@ -15,6 +15,7 @@ import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.key
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.dp
@@ -45,7 +46,15 @@ fun AppWidgetHost(
     ) {
         val maxWidth = maxWidth
         val maxHeight = maxHeight
+        // Computed once per color scheme, not on every update of the view.
+        val colorMapping = remember(colorScheme, useThemeColors) {
+            if (useThemeColors) getColorMapping(colorScheme) else null
+        }
         key(widgetId) {
+            // The size the widget was last told; the framework compares too,
+            // but only after building the options bundle, and the grid's
+            // cells are sized once, so most updates have nothing to report.
+            val reportedSize = remember { arrayOfNulls<SizeF>(1) }
             AndroidView(
                 modifier = modifier
                     .fillMaxSize(),
@@ -56,16 +65,16 @@ fun AppWidgetHost(
                 },
                 update = {
                     it.setOnLightBackground(onLightBackground)
-                    if (useThemeColors) {
-                        val colorMapping = getColorMapping(colorScheme)
+                    if (colorMapping != null) {
                         it.setColorResources(colorMapping)
                     } else {
                         it.resetColorResources()
                     }
-                    it.updateAppWidgetSize(
-                        Bundle(),
-                        arrayListOf(SizeF(maxWidth.value, maxHeight.value))
-                    )
+                    val size = SizeF(maxWidth.value, maxHeight.value)
+                    if (reportedSize[0] != size) {
+                        reportedSize[0] = size
+                        it.updateAppWidgetSize(Bundle(), arrayListOf(size))
+                    }
                     it.setPadding(padding)
                 }
             )

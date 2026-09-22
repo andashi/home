@@ -14,6 +14,7 @@ import de.mm20.launcher2.grid.GridLayout
 import de.mm20.launcher2.grid.GridSpec
 import de.mm20.launcher2.grid.LayoutIssue
 import de.mm20.launcher2.grid.SizeLimits
+import de.mm20.launcher2.homegrid.GridRowsSource
 import de.mm20.launcher2.grid.Span
 import de.mm20.launcher2.homegrid.HomeGridItem
 import de.mm20.launcher2.homegrid.HomeGridItemConfig

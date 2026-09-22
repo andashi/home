@@ -21,8 +21,7 @@ val configModule = module {
     single { ForegroundState() }
     single<WallpaperStore> { DefaultWallpaperStore(androidContext(), AndroidWallpaperApplier(androidContext()), get()) }
     factory<GridLimitsSource> { AppWidgetGridLimitsSource(androidContext(), get()) }
-    // Replaced by the renderer's measured rows in PR 4; see GridRowsSource.
-    factory<GridRowsSource> { DefaultGridRowsSource() }
+    // GridRowsSource comes from homeGridModule: the renderer's measured rows.
     factory<ConfigStore> {
         DefaultConfigStore(
             settings = get(),

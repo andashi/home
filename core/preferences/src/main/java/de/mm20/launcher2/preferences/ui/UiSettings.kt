@@ -365,6 +365,18 @@ class UiSettings internal constructor(
             it.homeGridLocked
         }.distinctUntilChanged()
 
+    /** Whether the widget column was converted into grid items once (ADR 0001 migration). */
+    val homeGridSeeded
+        get() = launcherDataStore.data.map {
+            it.homeGridSeeded
+        }.distinctUntilChanged()
+
+    fun setHomeGridSeeded(seeded: Boolean) {
+        launcherDataStore.update {
+            it.copy(homeGridSeeded = seeded)
+        }
+    }
+
     fun setHomeScreenWidgets(widgets: Boolean) {
         launcherDataStore.update {
             it.copy(homeScreenWidgets = widgets)

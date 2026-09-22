@@ -10,6 +10,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.repeatOnLifecycle
+import de.mm20.launcher2.services.widgets.AppWidgetHostIds
 import de.mm20.launcher2.crashreporter.CrashReporter
 import kotlinx.coroutines.awaitCancellation
 
@@ -22,7 +23,7 @@ fun ProvideAppWidgetHost(
 ) {
     val lifecycleOwner = LocalLifecycleOwner.current
     val context = LocalContext.current
-    val widgetHost = remember { AppWidgetHost(context.applicationContext, 44203) }
+    val widgetHost = remember { AppWidgetHost(context.applicationContext, AppWidgetHostIds.Home) }
     LaunchedEffect(null) {
         lifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
             widgetHost.startListening()

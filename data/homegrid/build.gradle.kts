@@ -57,6 +57,9 @@ dependencies {
     implementation(project(":core:ktx"))
     implementation(project(":core:base"))
     implementation(project(":data:database"))
+    implementation(project(":data:widgets"))
+    implementation(project(":core:grid"))
+    implementation(project(":core:preferences"))
 
     testImplementation(libs.bundles.tests)
     testImplementation(libs.robolectric)
@@ -86,7 +89,7 @@ kover {
     reports {
         verify {
             rule("line coverage of :data:homegrid") {
-                minBound(96)
+                minBound(100)
             }
         }
     }

@@ -15,6 +15,7 @@ import de.mm20.launcher2.config.GridItemConfig
 import de.mm20.launcher2.config.GridLayoutConfig
 import de.mm20.launcher2.grid.CellSize
 import de.mm20.launcher2.grid.SizeLimits
+import de.mm20.launcher2.homegrid.GridRowsSource
 import de.mm20.launcher2.homegrid.HomeGridItem
 import de.mm20.launcher2.homegrid.HomeGridItemConfig
 import de.mm20.launcher2.homegrid.HomeGridRepository

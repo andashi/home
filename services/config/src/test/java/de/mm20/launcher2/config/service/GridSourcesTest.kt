@@ -125,13 +125,4 @@ class GridSourcesTest {
         assertNull(source.lookup("not a component", ConfigProfile.Personal, 4))
         assertNull(AppWidgetGridLimitsSource(context, Resolver(null)).lookup(provider.flattenToString(), null, 4))
     }
-
-    @Test
-    fun `the default rows source answers six for every layout until the renderer lands`() {
-        val rows = DefaultGridRowsSource()
-
-        assertEquals(6, rows.rows("phone"))
-        assertEquals(6, rows.rows("fold"))
-        assertTrue(DefaultGridRowsSource.DefaultRows == 6)
-    }
 }
