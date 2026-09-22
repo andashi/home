@@ -32,7 +32,6 @@ import androidx.navigation3.runtime.NavKey
 import de.mm20.launcher2.FeatureFlags
 import de.mm20.launcher2.icons.LauncherIcon
 import de.mm20.launcher2.preferences.GestureAction
-import de.mm20.launcher2.preferences.WidgetScreenTarget
 import de.mm20.launcher2.search.SavableSearchable
 import de.mm20.launcher2.ui.R
 import de.mm20.launcher2.ui.common.SearchablePicker
@@ -61,12 +60,10 @@ fun GestureSettingsScreen() {
         add(GestureAction.Recents::class)
         add(GestureAction.PowerMenu::class)
         add(GestureAction.Search::class)
-        add(GestureAction.Widgets::class)
         add(GestureAction.Launch::class)
     }
 
     val shortcutOptions by viewModel.shortcutOptions.collectAsStateWithLifecycle(emptyList())
-    val widgetOptions by viewModel.widgetOptions.collectAsStateWithLifecycle(emptyList())
 
     val optionsWithFeed =
         if (FeatureFlags.feed) {
@@ -91,7 +88,6 @@ fun GestureSettingsScreen() {
                         onValueChanged = viewModel::setSwipeDown,
                         options = options,
                         shortcutOptions = shortcutOptions,
-                        widgetOptions = widgetOptions,
                     )
                 }
 
@@ -108,7 +104,6 @@ fun GestureSettingsScreen() {
                         onValueChanged = viewModel::setSwipeLeft,
                         options = options,
                         shortcutOptions = shortcutOptions,
-                        widgetOptions = widgetOptions,
                     )
                 }
 
@@ -125,7 +120,6 @@ fun GestureSettingsScreen() {
                         onValueChanged = viewModel::setSwipeRight,
                         options = optionsWithFeed,
                         shortcutOptions = shortcutOptions,
-                        widgetOptions = widgetOptions,
                     )
                 }
 
@@ -142,7 +136,6 @@ fun GestureSettingsScreen() {
                         onValueChanged = viewModel::setSwipeUp,
                         options = options,
                         shortcutOptions = shortcutOptions,
-                        widgetOptions = widgetOptions,
                     )
                 }
 
@@ -159,7 +152,6 @@ fun GestureSettingsScreen() {
                         onValueChanged = viewModel::setDoubleTap,
                         options = options,
                         shortcutOptions = shortcutOptions,
-                        widgetOptions = widgetOptions,
                     )
                 }
 
@@ -176,7 +168,6 @@ fun GestureSettingsScreen() {
                         onValueChanged = viewModel::setLongPress,
                         options = options,
                         shortcutOptions = shortcutOptions,
-                        widgetOptions = widgetOptions,
                     )
                 }
                 val homeButton by viewModel.homeButton.collectAsStateWithLifecycle(null)
@@ -192,7 +183,6 @@ fun GestureSettingsScreen() {
                         onValueChanged = viewModel::setHomeButton,
                         options = options,
                         shortcutOptions = shortcutOptions,
-                        widgetOptions = widgetOptions,
                     )
                 }
             }
@@ -210,89 +200,3 @@ fun requiresAccessibilityService(action: GestureAction?): Boolean {
         else -> false
     }
 }
-
-//@Composable
-//fun GesturePreference(
-//    title: String,
-//    @DrawableRes icon: Int,
-//    value: GestureAction?,
-//    onValueChanged: (GestureAction) -> Unit,
-//    options: List<Pair<String, GestureAction>>,
-//    app: SavableSearchable?,
-//    appIcon: LauncherIcon?,
-//    onAppChanged: (SavableSearchable?) -> Unit,
-//) {
-//    var showAppPicker by remember { mutableStateOf(false) }
-//    Row(
-//        verticalAlignment = (Alignment.CenterVertically),
-//    ) {
-//        Box(
-//            modifier = Modifier.weight(1f),
-//        ) {
-//            ListPreference(
-//                title = title,
-//                icon = icon,
-//                items = options,
-//                value = value,
-//                summary = options.find { option ->
-//                    when {
-//                        value is GestureAction.Widgets && option.second is GestureAction.Widgets -> {
-//                            val valueTarget = value.target
-//                            val optionTarget = (option.second as GestureAction.Widgets).target
-//                            valueTarget == optionTarget
-//                        }
-//
-//                        else -> value?.javaClass == option.second.javaClass
-//                    }
-//                }?.first ?: stringResource(R.string.gesture_action_none),
-//                onValueChanged = { if (it != null) onValueChanged(it) },
-//            )
-//        }
-//
-//        if (value is GestureAction.Launch) {
-//            Box(
-//                modifier = Modifier
-//                    .height(36.dp)
-//                    .width(1.dp)
-//                    .background(MaterialTheme.colorScheme.outlineVariant),
-//            )
-//            Box(
-//                modifier = Modifier
-//                    .clickable { showAppPicker = true }
-//                    .padding(12.dp),
-//            ) {
-//                ShapedLauncherIcon(size = 32.dp, icon = { appIcon })
-//            }
-//        }
-//        if (value is GestureAction.Widgets) {
-//            Box(
-//                modifier = Modifier
-//                    .height(36.dp)
-//                    .width(1.dp)
-//                    .background(MaterialTheme.colorScheme.outlineVariant),
-//            )
-//            IconButton(
-//                modifier = Modifier.padding(4.dp),
-//                onClick = {}
-//            ) {
-//                Icon(painterResource(R.drawable.tune_24px), "")
-//            }
-//        }
-//    }
-//
-//    if (value is GestureAction.Launch) {
-//        SearchablePicker(
-//            expanded = (showAppPicker || app == null),
-//            onDismissRequest = {
-//                showAppPicker = false
-//                if (app == null) onValueChanged(GestureAction.NoAction)
-//            },
-//            value = app,
-//            onValueChanged = {
-//                showAppPicker = false
-//                onAppChanged(it)
-//            },
-//        )
-//    }
-//
-//}

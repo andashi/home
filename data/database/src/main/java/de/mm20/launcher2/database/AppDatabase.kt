@@ -19,7 +19,6 @@ import de.mm20.launcher2.database.entities.SearchActionEntity
 import de.mm20.launcher2.database.entities.ShapesEntity
 import de.mm20.launcher2.database.entities.TransparenciesEntity
 import de.mm20.launcher2.database.entities.TypographyEntity
-import de.mm20.launcher2.database.entities.WidgetEntity
 import de.mm20.launcher2.database.migrations.Migration_10_11
 import de.mm20.launcher2.database.migrations.Migration_11_12
 import de.mm20.launcher2.database.migrations.Migration_12_13
@@ -52,7 +51,6 @@ import de.mm20.launcher2.database.migrations.Migration_7_8
 import de.mm20.launcher2.database.migrations.Migration_8_9
 import de.mm20.launcher2.database.migrations.Migration_9_10
 import de.mm20.launcher2.ktx.toBytes
-import de.mm20.launcher2.preferences.WidgetScreenTarget
 import java.util.UUID
 
 @Database(
@@ -60,7 +58,6 @@ import java.util.UUID
         SavedSearchableEntity::class,
         IconEntity::class,
         IconPackEntity::class,
-        WidgetEntity::class,
         CustomAttributeEntity::class,
         SearchActionEntity::class,
         ColorsEntity::class,
@@ -76,7 +73,6 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun iconDao(): IconDao
 
     abstract fun searchableDao(): SearchableDao
-    abstract fun widgetDao(): WidgetDao
     abstract fun homeGridItemDao(): HomeGridItemDao
     abstract fun backupDao(): BackupRestoreDao
     abstract fun customAttrsDao(): CustomAttrsDao
@@ -130,23 +126,6 @@ abstract class AppDatabase : RoomDatabase() {
                                 )
                             )
 
-                            val defaultParentId = WidgetScreenTarget.Default.id
-                            db.execSQL(
-                                // The favorites widget is the only built-in
-                                // left (ADR 0008). The type string must be the
-                                // one AppsWidget.Type uses - "favorites", not
-                                // "apps" - because Widget.fromDatabaseEntity
-                                // returns null for anything else and the row
-                                // would be dropped on read, leaving a home
-                                // screen that is empty for no visible reason.
-                                // WidgetSeedTest pins that they agree.
-                                "INSERT INTO Widget (`type`, `position`, `id`, `parentId`) VALUES " +
-                                        "('favorites', 0, ?, ?);",
-                                arrayOf(
-                                    UUID.randomUUID().toBytes(),
-                                    defaultParentId.toBytes()
-                                )
-                            )
                         }
                     })
                     .addMigrations(

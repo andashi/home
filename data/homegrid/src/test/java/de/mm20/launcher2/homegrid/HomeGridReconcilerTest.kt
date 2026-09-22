@@ -4,9 +4,6 @@ import android.content.Context
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import de.mm20.launcher2.database.AppDatabase
-import de.mm20.launcher2.preferences.WidgetScreenTarget
-import de.mm20.launcher2.widgets.AppWidget
-import de.mm20.launcher2.widgets.AppWidgetConfig
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.After
@@ -17,7 +14,6 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
-import java.util.UUID
 
 @RunWith(RobolectricTestRunner::class)
 class HomeGridReconcilerTest {
@@ -40,8 +36,7 @@ class HomeGridReconcilerTest {
     private fun item(id: String, widget: String, appWidgetId: Int? = null, profile: String? = null, layout: String = HomeGridLayouts.Phone) =
         HomeGridItem(layout, id, widget, profile = profile, x = 0, y = 0, w = 2, h = 2, appWidgetId = appWidgetId, position = 0)
 
-    private fun reconciler(port: FakeAppWidgetHostPort, column: Map<UUID?, List<de.mm20.launcher2.widgets.Widget>> = emptyMap()) =
-        HomeGridReconciler(grid, FakeWidgetRepository(column), port)
+    private fun reconciler(port: FakeAppWidgetHostPort) = HomeGridReconciler(grid, port)
 
     @Test
     fun `an item without a host id is bound and gets the id`() = runBlocking {
@@ -85,16 +80,13 @@ class HomeGridReconcilerTest {
     fun `host ids nothing references are released, referenced ones stay`() = runBlocking {
         grid.replace(HomeGridLayouts.Phone, listOf(item("clock", "com.example/.Clock", appWidgetId = 7)))
         grid.replace(HomeGridLayouts.Fold, listOf(item("weather", "com.example/.Weather", appWidgetId = 8, layout = HomeGridLayouts.Fold)))
-        // A widget column page still hosts id 9 (ADR 0001: the pages stay).
-        val column = mapOf<UUID?, List<de.mm20.launcher2.widgets.Widget>>(
-            WidgetScreenTarget.Widgets2.id to listOf(AppWidget(UUID.randomUUID(), AppWidgetConfig(widgetId = 9, height = 100))),
-        )
+        // Nothing else shares the host any more (the widget pages are gone, PR 5b).
         val port = FakeAppWidgetHostPort(bound = listOf(7, 8, 9, 10, 11))
 
-        val report = reconciler(port, column).reconcile()
+        val report = reconciler(port).reconcile()
 
-        assertEquals(listOf(10, 11), report.released.sorted())
-        assertEquals(setOf(7, 8, 9), port.bound)
+        assertEquals(listOf(9, 10, 11), report.released.sorted())
+        assertEquals(setOf(7, 8), port.bound)
     }
 
     @Test
@@ -114,20 +106,5 @@ class HomeGridReconcilerTest {
         val port = FakeAppWidgetHostPort(bound = listOf(7))
 
         assertEquals(ReconcileReport(), reconciler(port).reconcile())
-    }
-
-    @Test
-    fun `host ids referenced beyond the first page of the widget column are kept`() = runBlocking {
-        // The widget repository pages at 100; a column page holding 101
-        // AppWidgets must not get its last one released as an orphan.
-        val column = (1..101).map { n ->
-            AppWidget(UUID.randomUUID(), AppWidgetConfig(widgetId = 1000 + n, height = 100))
-        }
-        val port = FakeAppWidgetHostPort(bound = (1001..1101).toList())
-
-        val report = reconciler(port, mapOf(WidgetScreenTarget.Widgets2.id to column)).reconcile()
-
-        assertTrue(report.released.isEmpty())
-        assertEquals(101, port.bound.size)
     }
 }

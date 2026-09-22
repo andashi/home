@@ -63,7 +63,9 @@ reload, and integrated into a GrapheneOS multi-profile setup.
    test net, the config system and a launcher that is no longer carrying what it
    does not use. **Landed 2026-09-22** as a series: coverage gate (#63), layout
    engine `:core:grid` (#64), `HomeGridItem` table (#65), config contract v2
-   (#66), renderer (#67), write-back (#68); edit mode is in progress.
+   (#66), renderer (#67), write-back (#68), edit mode (#70); the old widget
+   column, the widget pages reached by gestures and their table were removed
+   afterwards (PR 5b), so the launcher has exactly one widget surface.
 5. **Liquid Glass refinement** (ADR 0004, #24) — next, iterated on top of the
    stable grid.
 

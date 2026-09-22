@@ -39,7 +39,7 @@ import de.mm20.launcher2.ui.launcher.widgets.external.AppWidgetHost
 import de.mm20.launcher2.ui.locals.LocalDarkTheme
 import de.mm20.launcher2.ui.locals.LocalPreferDarkContentOverWallpaper
 import de.mm20.launcher2.ui.theme.transparency.transparency
-import de.mm20.launcher2.widgets.AppWidget
+import de.mm20.launcher2.services.widgets.PickedWidget
 
 /**
  * One cell of the grid: the favorites widget or a hosted AppWidget, on a
@@ -175,10 +175,10 @@ internal fun AppWidgetCell(
                 includeBuiltinWidgets = false,
                 onDismiss = { replaceWidget = false },
                 onWidgetSelected = { picked ->
-                    if (picked is AppWidget) {
-                        val info = AppWidgetManager.getInstance(context).getAppWidgetInfo(picked.config.widgetId)
+                    if (picked is PickedWidget.App) {
+                        val info = AppWidgetManager.getInstance(context).getAppWidgetInfo(picked.appWidgetId)
                         val provider = info?.provider?.flattenToString()
-                        if (provider != null) onReplace(provider, picked.config.widgetId)
+                        if (provider != null) onReplace(provider, picked.appWidgetId)
                     }
                     replaceWidget = false
                 },

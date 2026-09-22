@@ -9,7 +9,8 @@
 # Steps (numbers are the plan's; the ones marked STUB land with later PRs):
 #   1. push a schemaVersion 1 file, open the launcher: the read-back shows
 #      schemaVersion 2, home.favorites, and a home.grid whose phone layout
-#      holds the seeded favorites row in the bottom row (migration + seeder)
+#      holds the default favorites row in the bottom row (migration + the
+#      one default a never-configured launcher gets, HomeGridDefaults)
 #   2. push a schemaVersion 2 file with favorites and two AppWidgets of the
 #      AOSP clock: the read-back `home` equals the file, and the uiautomator
 #      bounds of every `grid-item:<id>` match the configured cells
@@ -181,10 +182,10 @@ wake_screen() {
 }
 
 # Brings the home screen to the front: the grid renders (and on first start
-# seeds the widget column) only while the launcher is in the foreground. No
-# sleep here: whatever follows polls for what it expects (wait_until,
-# assert_cells), because a first cold start plus seeding plus the DataStore
-# flag takes longer than any fixed pause on a fresh install.
+# writes its default favorites row) only while the launcher is in the
+# foreground. No sleep here: whatever follows polls for what it expects
+# (wait_until, assert_cells), because a first cold start plus the default row
+# plus the DataStore flag takes longer than any fixed pause on a fresh install.
 show_home() {
   wake_screen
   adb -s "$SERIAL" shell am start -n "$LAUNCHER_ACTIVITY" >/dev/null 2>&1 || true
@@ -578,25 +579,25 @@ HAVE_CLOCK=1
 adb -s "$SERIAL" shell pm list packages | tr -d '\r' | grep -x "package:$CLOCK_PKG" >/dev/null \
   || { HAVE_CLOCK=0; warn "$CLOCK_PKG not installed: AppWidget steps are skipped"; }
 
-# --- 1. schemaVersion 1 file + seeding ---------------------------------
+# --- 1. schemaVersion 1 file + the default favorites row ----------------
 
 write_config "$LEGACY_CONFIG"
 wait_report ".success == true and .configSha256 == \"$H_LEGACY\"" 90 "first reload of the v1 file"
 show_home
-# The seeder runs on the launcher's first render; on a fresh install that is
-# a cold start plus the DataStore flag, so poll the read-back for its result.
-wait_until '(.home.grid.layouts.'"$LAYOUT"'.items | length) > 0' 60 "the seeded $LAYOUT layout"
+# The default row is written on the launcher's first render; on a fresh
+# install that is a cold start plus the DataStore flag, so poll the read-back.
+wait_until '(.home.grid.layouts.'"$LAYOUT"'.items | length) > 0' 60 "the default $LAYOUT layout"
 effective="$LAST_CONFIG"
 assert_jq "$effective" '.schemaVersion == 2 and .home.favorites == [] and (.home | has("dock") | not)' \
   "v1 file migrated to the v2 shape"
 assert_jq "$effective" \
   '[.home.grid.layouts.'"$LAYOUT"'.items[] | select(.widget == "favorites" and .x == 0 and .w == '"$DOCK_W"' and .h == 1 and .y >= 4)] | length == 1' \
-  "the seeded favorites row sits full width in the bottom row"
-ok "v1 file migrated, favorites row seeded"
+  "the default favorites row sits full width in the bottom row"
+ok "v1 file migrated, default favorites row written"
 wake_screen
 assert_cells "dock 0 $(jq -r '.home.grid.layouts.'"$LAYOUT"'.items[] | select(.widget == "favorites") | .y' <<<"$effective") $DOCK_W 1" \
-  "seeded grid on screen"
-ok "seeded favorites row measured on screen"
+  "default grid on screen"
+ok "default favorites row measured on screen"
 
 if [ "$HAVE_CLOCK" = 1 ]; then
   # --- 2. a configured grid, on screen where the file says -------------
@@ -740,7 +741,7 @@ fi
 
 # --- 8. malformed push keeps the last good state -----------------------
 # Against whatever the last good state is: the configured grid when the
-# clock is installed, the seeded one otherwise.
+# clock is installed, the default one otherwise.
 
 good_grid="$(query_json config | jq -c '.home.grid')" || die "could not query /config"
 settle_then_broadcast "$MALFORMED_CONFIG" "$H_MALFORMED" "malformed"

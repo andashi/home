@@ -6,15 +6,14 @@ import androidx.test.platform.app.InstrumentationRegistry
 import de.mm20.launcher2.grid.SizeLimits
 import de.mm20.launcher2.homegrid.FormFactor
 import de.mm20.launcher2.homegrid.GridItemLimits
+import de.mm20.launcher2.homegrid.HomeGridInitFlag
 import de.mm20.launcher2.homegrid.HomeGridItem
-import de.mm20.launcher2.homegrid.HomeGridSeeding
 import de.mm20.launcher2.homegrid.MeasuredGridRows
 import de.mm20.launcher2.permissions.PermissionGroup
 import de.mm20.launcher2.permissions.PermissionsManager
 import de.mm20.launcher2.preferences.preferencesModule
 import de.mm20.launcher2.preferences.ui.UiSettings
 import de.mm20.launcher2.profiles.ProfileManager
-import de.mm20.launcher2.widgets.WidgetRepository
 import java.io.File
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -72,8 +71,7 @@ class KoinGridRule(
                         single<PermissionsManager> { GrantedPermissions() }
                         single { ProfileManager(androidContext(), get()) }
                         single { MeasuredGridRows() }
-                        single<HomeGridSeeding> { FakeSeeding() }
-                        single<WidgetRepository> { emptyColumn }
+                        single<HomeGridInitFlag> { FakeInitFlag() }
                     },
                 )
             }
@@ -90,8 +88,7 @@ class KoinGridRule(
             uiSettings = koin.get<UiSettings>(),
             formFactorDetector = FakeFormFactorDetector(formFactor),
             measuredRows = koin.get(),
-            seeder = koin.get<HomeGridSeeding>(),
-            widgetRepository = emptyColumn,
+            initFlag = koin.get(),
             writeBack = writeBack,
             itemLimits = GridItemLimits { item, _ -> limits[item.id] ?: SizeLimits.Unbounded },
             locked = locked,

@@ -40,9 +40,6 @@ import de.mm20.launcher2.ui.R
 import de.mm20.launcher2.ui.base.ProvideAppWidgetHost
 import de.mm20.launcher2.ui.locals.LocalSnackbarHostState
 import de.mm20.launcher2.ui.settings.KoinSettingsRule
-import de.mm20.launcher2.widgets.Widget
-import de.mm20.launcher2.widgets.WidgetRepository
-import java.util.UUID
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
@@ -78,16 +75,6 @@ class HomeGridEditUiTest {
     @get:Rule(order = 1)
     val composeRule = createComposeRule()
 
-    private val emptyColumn = object : WidgetRepository {
-        override fun get(parent: UUID?, limit: Int, offset: Int): Flow<List<Widget>> = flowOf(emptyList())
-        override fun update(widget: Widget) = Unit
-        override fun create(widget: Widget, position: Int, parentId: UUID?) = Unit
-        override fun delete(widget: Widget) = Unit
-        override fun set(widgets: List<Widget>, parentId: UUID?) = Unit
-        override suspend fun setAwaited(widgets: List<Widget>, parentId: UUID?) = Unit
-        override fun exists(type: String): Flow<Boolean> = flowOf(false)
-        override fun count(type: String): Flow<Int> = flowOf(0)
-    }
 
     private val clock = gridItem("clock", 0, 0, 2, 2, position = 0)
     private val note = gridItem("note", 0, 2, 2, 1, position = 1)
@@ -99,7 +86,6 @@ class HomeGridEditUiTest {
     private val snackbars = SnackbarHostState()
     private var parentLongPressed = false
     private var editFavoritesRequested = false
-    private var seedLeftovers = 0
 
     @Before
     fun setUp() {
@@ -119,8 +105,7 @@ class HomeGridEditUiTest {
             uiSettings = uiSettings,
             formFactorDetector = FakeFormFactorDetector(FormFactor.Phone),
             measuredRows = MeasuredGridRows(),
-            seeder = FakeSeeding(seedLeftovers),
-            widgetRepository = emptyColumn,
+            initFlag = FakeInitFlag(initialized = true),
             writeBack = writeBack,
             itemLimits = GridItemLimits { item, _ ->
                 if (item.id == "clock") SizeLimits(minW = 1, minH = 1, maxW = 3, maxH = 2) else SizeLimits.Unbounded
@@ -296,20 +281,6 @@ class HomeGridEditUiTest {
         composeRule.waitForIdle()
 
         assertEquals(listOf(0, 2, 2, 1), vm.spanOf("note").let { listOf(it.x, it.y, it.w, it.h) })
-    }
-
-    @Test
-    fun `one leftover of the seeding is announced in the singular`() {
-        seedLeftovers = 1
-        val vm = vm()
-        show(vm)
-
-        longPressEmptyArea()
-
-        val expected = ApplicationProvider.getApplicationContext<android.content.Context>()
-            .resources.getQuantityString(R.plurals.grid_seed_leftovers, 1, 1)
-        assertTrue(expected, expected.startsWith("1 widget "))
-        composeRule.onNodeWithText(expected).assertIsDisplayed()
     }
 
     @Test

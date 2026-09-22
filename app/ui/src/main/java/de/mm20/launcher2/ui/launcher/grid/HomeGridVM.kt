@@ -16,8 +16,8 @@ import de.mm20.launcher2.homegrid.HomeGridGeometry
 import de.mm20.launcher2.homegrid.HomeGridItem
 import de.mm20.launcher2.homegrid.HomeGridReconciler
 import de.mm20.launcher2.homegrid.HomeGridRepository
-import de.mm20.launcher2.homegrid.HomeGridSeeder
-import de.mm20.launcher2.homegrid.HomeGridSeeding
+import de.mm20.launcher2.homegrid.HomeGridDefaults
+import de.mm20.launcher2.homegrid.HomeGridInitFlag
 import de.mm20.launcher2.homegrid.HomeGridWriteBack
 import de.mm20.launcher2.homegrid.GridItemLimits
 import de.mm20.launcher2.grid.CellSize
@@ -33,7 +33,6 @@ import kotlinx.coroutines.flow.SharedFlow
 import de.mm20.launcher2.homegrid.MeasuredGridRows
 import de.mm20.launcher2.homegrid.ReconcileReport
 import de.mm20.launcher2.preferences.ui.UiSettings
-import de.mm20.launcher2.widgets.WidgetRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -55,9 +54,6 @@ sealed class GridEditEvent {
     /** The database holds the layout, `launcher.json` does not (ADR 0003, section 5). */
     data class WriteBackSkipped(val code: String, val reason: String) : GridEditEvent()
 
-    /** Widgets of the old column that found no room when the grid was seeded. */
-    data class SeedLeftovers(val count: Int) : GridEditEvent()
-
     /** A widget could not be added: no free cells of its default size. */
     data object NoRoom : GridEditEvent()
 
@@ -73,9 +69,9 @@ data class HomeGridUiState(
 
 /**
  * Derives the grid's geometry from the measured window (D1), arranges what
- * the repository holds for it, and runs the one-time seeding of the old
- * widget column. Constructor-injected so tests build it with fakes; the
- * composable obtains it through [factory].
+ * the repository holds for it, and gives a never-configured launcher its one
+ * default, the favorites row (PR 5b). Constructor-injected so tests build it
+ * with fakes; the composable obtains it through [factory].
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 class HomeGridVM(
@@ -83,8 +79,7 @@ class HomeGridVM(
     uiSettings: UiSettings,
     formFactorDetector: FormFactorDetector,
     private val measuredRows: MeasuredGridRows,
-    private val seeder: HomeGridSeeding,
-    private val widgetRepository: WidgetRepository,
+    private val initFlag: HomeGridInitFlag,
     private val writeBack: HomeGridWriteBack,
     private val itemLimits: GridItemLimits,
     private val locked: Flow<Boolean>,
@@ -115,9 +110,6 @@ class HomeGridVM(
      */
     private val working = MutableStateFlow<List<HomeGridItem>?>(null)
 
-    private var seedLeftovers = 0
-    private var leftoversAnnounced = false
-
     /**
      * The working copy as it was when a drag began. Every move of the drag
      * is applied to this, not to the previous move's result, so an item the
@@ -146,10 +138,6 @@ class HomeGridVM(
         working.value = repository.observe(geometry.layout).first()
         _selectedId.value = null
         _editing.value = true
-        if (seedLeftovers > 0 && !leftoversAnnounced) {
-            leftoversAnnounced = true
-            _events.tryEmit(GridEditEvent.SeedLeftovers(seedLeftovers))
-        }
         return true
     }
 
@@ -373,8 +361,10 @@ class HomeGridVM(
 
     init {
         viewModelScope.launch {
-            val result = seeder.seedIfNeeded(geometry.filterNotNull().first())
-            seedLeftovers = result.leftovers.size
+            val first = geometry.filterNotNull().first()
+            HomeGridDefaults.ensureFavoritesRow(
+                repository, initFlag, first.layout, columns = first.spec.columns, rows = first.spec.rows,
+            )
         }
     }
 
@@ -384,7 +374,7 @@ class HomeGridVM(
 
     /** Binds what needs binding and releases what nothing references; see [HomeGridReconciler]. */
     suspend fun reconcile(port: AppWidgetHostPort): ReconcileReport {
-        return HomeGridReconciler(repository, widgetRepository, port).reconcile()
+        return HomeGridReconciler(repository, port).reconcile()
     }
 
     fun remove(item: HomeGridItem) {
@@ -420,8 +410,7 @@ class HomeGridVM(
                     uiSettings = koin.get(),
                     formFactorDetector = koin.get(),
                     measuredRows = koin.get(),
-                    seeder = koin.get<HomeGridSeeder>(),
-                    widgetRepository = koin.get(),
+                    initFlag = koin.get(),
                     writeBack = koin.get(),
                     itemLimits = koin.get(),
                     locked = koin.get<UiSettings>().homeGridLocked,

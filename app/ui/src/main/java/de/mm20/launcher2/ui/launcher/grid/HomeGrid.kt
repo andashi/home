@@ -60,7 +60,7 @@ import de.mm20.launcher2.ui.base.LocalAppWidgetHost
 import de.mm20.launcher2.ui.launcher.sheets.EditFavoritesSheet
 import de.mm20.launcher2.ui.launcher.sheets.WidgetPickerSheet
 import de.mm20.launcher2.ui.locals.LocalSnackbarHostState
-import de.mm20.launcher2.widgets.AppWidget
+import de.mm20.launcher2.services.widgets.PickedWidget
 import kotlin.math.roundToInt
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
@@ -110,8 +110,6 @@ fun HomeGrid(
         viewModel.events.collect { event ->
             val message = when (event) {
                 is GridEditEvent.WriteBackSkipped -> context.getString(R.string.grid_write_back_skipped, event.reason)
-                is GridEditEvent.SeedLeftovers ->
-                    context.resources.getQuantityString(R.plurals.grid_seed_leftovers, event.count, event.count)
                 GridEditEvent.NoRoom -> context.getString(R.string.grid_no_room)
                 is GridEditEvent.WriteBackFailed -> context.getString(R.string.grid_write_back_failed, event.reason)
             }
@@ -229,19 +227,19 @@ fun HomeGrid(
                 onDismiss = { pickerSheet = false },
                 onWidgetSelected = { picked ->
                     pickerSheet = false
-                    if (picked is AppWidget) {
-                        val info = AppWidgetManager.getInstance(context).getAppWidgetInfo(picked.config.widgetId)
+                    if (picked is PickedWidget.App) {
+                        val info = AppWidgetManager.getInstance(context).getAppWidgetInfo(picked.appWidgetId)
                         val provider = info?.provider?.flattenToString()
                         if (provider != null) {
                             val geometry = uiState.geometry
                             val added = viewModel.addWidget(
                                 widget = provider,
                                 profile = null,
-                                appWidgetId = picked.config.widgetId,
+                                appWidgetId = picked.appWidgetId,
                                 default = AndroidGridItemLimits.defaultSpanFor(info, geometry, density.density),
                                 limits = AndroidGridItemLimits.limitsFor(info, geometry, density.density),
                             )
-                            if (!added) host.deleteAppWidgetId(picked.config.widgetId)
+                            if (!added) host.deleteAppWidgetId(picked.appWidgetId)
                         }
                     }
                 },

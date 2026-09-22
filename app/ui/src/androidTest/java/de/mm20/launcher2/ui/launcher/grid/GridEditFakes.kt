@@ -4,16 +4,12 @@ import de.mm20.launcher2.homegrid.FormFactor
 import de.mm20.launcher2.homegrid.FormFactorDetector
 import de.mm20.launcher2.homegrid.GridGeometry
 import de.mm20.launcher2.homegrid.HomeGridItem
+import de.mm20.launcher2.homegrid.HomeGridInitFlag
 import de.mm20.launcher2.homegrid.HomeGridLayouts
 import de.mm20.launcher2.homegrid.HomeGridRepository
-import de.mm20.launcher2.homegrid.HomeGridSeeder
-import de.mm20.launcher2.homegrid.HomeGridSeeding
 import de.mm20.launcher2.homegrid.HomeGridWidgets
 import de.mm20.launcher2.homegrid.HomeGridWriteBack
 import de.mm20.launcher2.homegrid.HomeGridWriteResult
-import de.mm20.launcher2.widgets.Widget
-import de.mm20.launcher2.widgets.WidgetRepository
-import java.util.UUID
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
@@ -66,24 +62,18 @@ class FakeWriteBack(
     }
 }
 
-class FakeSeeding : HomeGridSeeding {
-    override suspend fun seedIfNeeded(geometry: GridGeometry): HomeGridSeeder.SeedResult = HomeGridSeeder.SeedResult()
+/** The init flag of HomeGridDefaults; `initialized = true` means "no default row". */
+class FakeInitFlag(var initialized: Boolean = true) : HomeGridInitFlag {
+    override suspend fun isInitialized(): Boolean = initialized
+    override suspend fun markInitialized() {
+        initialized = true
+    }
 }
 
 class FakeFormFactorDetector(private val formFactor: FormFactor) : FormFactorDetector {
     override fun detect(): FormFactor = formFactor
 }
 
-val emptyColumn = object : WidgetRepository {
-    override fun get(parent: UUID?, limit: Int, offset: Int): Flow<List<Widget>> = flowOf(emptyList())
-    override fun update(widget: Widget) = Unit
-    override fun create(widget: Widget, position: Int, parentId: UUID?) = Unit
-    override fun delete(widget: Widget) = Unit
-    override fun set(widgets: List<Widget>, parentId: UUID?) = Unit
-    override suspend fun setAwaited(widgets: List<Widget>, parentId: UUID?) = Unit
-    override fun exists(type: String): Flow<Boolean> = flowOf(false)
-    override fun count(type: String): Flow<Int> = flowOf(0)
-}
 
 fun gridItem(
     id: String,

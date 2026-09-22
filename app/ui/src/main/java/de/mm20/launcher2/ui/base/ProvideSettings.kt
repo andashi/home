@@ -24,8 +24,6 @@ import de.mm20.launcher2.ui.locals.LocalFavoritesEnabled
 import de.mm20.launcher2.ui.locals.LocalShowAppDetails
 import de.mm20.launcher2.ui.locals.LocalGridSettings
 import de.mm20.launcher2.ui.locals.LocalTimeFormat
-import de.mm20.launcher2.widgets.AppsWidget
-import de.mm20.launcher2.widgets.WidgetRepository
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
@@ -39,7 +37,6 @@ fun ProvideSettings(
 
     val settings: UiSettings = koinInject()
     val searchUiSettings: SearchUiSettings = koinInject()
-    val widgetRepository: WidgetRepository = koinInject()
     val localeSettings: LocaleSettings = koinInject()
 
     val iconShape by remember {
@@ -47,10 +44,7 @@ fun ProvideSettings(
     }.collectAsState(IconShape.Circle)
 
     val favoritesEnabled by remember {
-        combine(
-            widgetRepository.exists(AppsWidget.Type),
-            settings.favoritesEnabled,
-        ) { a, b -> a || b }.distinctUntilChanged()
+        settings.favoritesEnabled.distinctUntilChanged()
     }.collectAsState(true)
 
     val gridSettings by remember {

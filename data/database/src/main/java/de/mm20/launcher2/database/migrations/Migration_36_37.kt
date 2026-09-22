@@ -15,6 +15,6 @@ import androidx.sqlite.db.SupportSQLiteDatabase
  */
 class Migration_36_37 : Migration(36, 37) {
     override fun migrate(db: SupportSQLiteDatabase) {
-        TODO("PR 5b")
+        db.execSQL("DROP TABLE IF EXISTS `Widget`")
     }
 }

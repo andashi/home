@@ -1,5 +1,7 @@
 package de.mm20.launcher2.homegrid
 
+import kotlinx.coroutines.flow.first
+
 /**
  * Remembers that the grid has been given its first content, by the default
  * row below or by a config that applied `home.grid`. Once set, an empty
@@ -23,8 +25,9 @@ object HomeGridDefaults {
 
     /**
      * Writes the favorites row into [layout] when the grid has never been
-     * initialised and both layouts are empty; a no-op otherwise. Returns the
-     * items written (empty when nothing was).
+     * initialised and both layouts are empty; a no-op otherwise. A grid that
+     * already holds something is marked initialised without being touched.
+     * Returns the items written (empty when nothing was).
      */
     suspend fun ensureFavoritesRow(
         repository: HomeGridRepository,
@@ -33,6 +36,25 @@ object HomeGridDefaults {
         columns: Int,
         rows: Int,
     ): List<HomeGridItem> {
-        TODO("PR 5b")
+        if (flag.isInitialized()) return emptyList()
+        val populated = listOf(HomeGridLayouts.Phone, HomeGridLayouts.Fold)
+            .any { repository.observe(it).first().isNotEmpty() }
+        if (populated) {
+            flag.markInitialized()
+            return emptyList()
+        }
+        val dock = HomeGridItem(
+            layout = layout,
+            id = FavoritesId,
+            widget = HomeGridWidgets.Favorites,
+            x = 0,
+            y = (rows - 1).coerceAtLeast(0),
+            w = columns,
+            h = 1,
+            position = 0,
+        )
+        repository.replace(layout, listOf(dock))
+        flag.markInitialized()
+        return listOf(dock)
     }
 }

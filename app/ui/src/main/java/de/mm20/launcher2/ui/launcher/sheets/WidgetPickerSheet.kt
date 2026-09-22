@@ -62,14 +62,11 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import de.mm20.launcher2.services.widgets.AppWidgetHostIds
+import de.mm20.launcher2.services.widgets.BuiltInWidgets
+import de.mm20.launcher2.services.widgets.PickedWidget
 import de.mm20.launcher2.ui.R
 import de.mm20.launcher2.ui.component.DismissableBottomSheet
 import de.mm20.launcher2.ui.ktx.animateShapeAsState
-import de.mm20.launcher2.widgets.AppWidget
-import de.mm20.launcher2.widgets.AppWidgetConfig
-import de.mm20.launcher2.widgets.AppsWidget
-import de.mm20.launcher2.widgets.Widget
-import java.util.UUID
 import kotlin.math.roundToInt
 
 class BindAndConfigureAppWidgetActivity : Activity() {
@@ -211,16 +208,14 @@ class BindAndConfigureAppWidgetActivity : Activity() {
     }
 }
 
-private class BindAndConfigureAppWidgetContract(
-    private val density: Density,
-) : ActivityResultContract<AppWidgetProviderInfo, Widget?>() {
+private class BindAndConfigureAppWidgetContract : ActivityResultContract<AppWidgetProviderInfo, PickedWidget?>() {
     override fun createIntent(context: Context, input: AppWidgetProviderInfo): Intent {
         return Intent(context, BindAndConfigureAppWidgetActivity::class.java).apply {
             putExtra(BindAndConfigureAppWidgetActivity.ExtraAppWidgetProviderInfo, input)
         }
     }
 
-    override fun parseResult(resultCode: Int, intent: Intent?): Widget? {
+    override fun parseResult(resultCode: Int, intent: Intent?): PickedWidget? {
         if (resultCode == Activity.RESULT_OK) {
             val widgetId = intent?.extras?.getInt(AppWidgetManager.EXTRA_APPWIDGET_ID)
             val widgetProviderInfo = intent?.extras?.getParcelable<AppWidgetProviderInfo>(
@@ -228,14 +223,7 @@ private class BindAndConfigureAppWidgetContract(
             )
 
             if (widgetId != null && widgetProviderInfo != null) {
-                return AppWidget(
-                    id = UUID.randomUUID(),
-                    config = AppWidgetConfig(
-                        height = with(density) { widgetProviderInfo.minHeight.toDp() }.value.toInt(),
-                        width = with(density) { widgetProviderInfo.minWidth.toDp() }.value.toInt(),
-                        widgetId = widgetId,
-                    ),
-                )
+                return PickedWidget.App(appWidgetId = widgetId, provider = widgetProviderInfo)
             } else {
                 Log.e(
                     "MM20",
@@ -255,7 +243,7 @@ fun WidgetPickerSheet(
     expanded: Boolean,
     includeBuiltinWidgets: Boolean = true,
     title: String = stringResource(R.string.widget_pick_widget),
-    onWidgetSelected: (Widget) -> Unit,
+    onWidgetSelected: (PickedWidget) -> Unit,
     onDismiss: () -> Unit
 ) {
 
@@ -268,7 +256,7 @@ fun WidgetPickerSheet(
         val viewModel: WidgetPickerSheetVM = viewModel(factory = WidgetPickerSheetVM.Factory)
 
         val bindAppWidgetStarter =
-            rememberLauncherForActivityResult(BindAndConfigureAppWidgetContract(density)) {
+            rememberLauncherForActivityResult(BindAndConfigureAppWidgetContract()) {
                 if (it != null) {
                     onWidgetSelected(it)
                     onDismiss()
@@ -372,9 +360,8 @@ fun WidgetPickerSheet(
                                 MaterialTheme.colorScheme.surfaceBright,
                             )
                             .clickable {
-                                val id = UUID.randomUUID()
                                 val widget = when (it.type) {
-                                    AppsWidget.Type -> AppsWidget(id)
+                                    BuiltInWidgets.Favorites -> PickedWidget.Favorites
                                     else -> return@clickable
                                 }
                                 onWidgetSelected(widget)
@@ -388,7 +375,7 @@ fun WidgetPickerSheet(
                             painter =
                                 painterResource(
                                     when (it.type) {
-                                        AppsWidget.Type -> R.drawable.apps_24px
+                                        BuiltInWidgets.Favorites -> R.drawable.apps_24px
                                         else -> R.drawable.widgets_24px
                                     }
                                 ),

@@ -28,6 +28,7 @@ import de.mm20.launcher2.searchable.SavableSearchableRepository
 import de.mm20.launcher2.themes.DefaultThemeId
 import de.mm20.launcher2.themes.transparencies.Transparencies
 import de.mm20.launcher2.themes.transparencies.TransparenciesRepository
+import de.mm20.launcher2.homegrid.HomeGridInitFlag
 import de.mm20.launcher2.homegrid.HomeGridRepository
 import kotlinx.coroutines.flow.first
 import java.util.UUID
@@ -53,6 +54,7 @@ class DefaultConfigStore(
     private val settings: LauncherConfigSettings,
     private val transparenciesRepository: TransparenciesRepository,
     private val homeGridRepository: HomeGridRepository,
+    private val homeGridInitFlag: HomeGridInitFlag,
     private val gridLimits: GridLimitsSource,
     private val gridRows: GridRowsSource,
     private val searchableRepository: SavableSearchableRepository,
@@ -355,6 +357,9 @@ class DefaultConfigStore(
             )
         }
         homeGridRepository.replace(layoutKey, items)
+        // A config that names a layout is the grid's first content as much as
+        // the default row is: from here on an empty layout means empty.
+        homeGridInitFlag.markInitialized()
         return diagnostics
     }
 

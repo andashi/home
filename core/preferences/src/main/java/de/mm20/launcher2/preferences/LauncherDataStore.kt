@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.datastore.core.handlers.ReplaceFileCorruptionHandler
 import de.mm20.launcher2.preferences.migrations.Migration4
 import de.mm20.launcher2.preferences.migrations.Migration5
+import de.mm20.launcher2.preferences.migrations.Migration6
 import de.mm20.launcher2.settings.BaseSettings
 
 internal class LauncherDataStore(
@@ -15,6 +16,7 @@ internal class LauncherDataStore(
     migrations = listOf(
         Migration4(),
         Migration5(),
+        Migration6(),
     ),
     corruptionHandler = ReplaceFileCorruptionHandler { LauncherSettingsData() }
 ) {

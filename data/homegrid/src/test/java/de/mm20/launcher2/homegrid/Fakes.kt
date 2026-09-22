@@ -1,39 +1,5 @@
 package de.mm20.launcher2.homegrid
 
-import de.mm20.launcher2.widgets.Widget
-import de.mm20.launcher2.widgets.WidgetRepository
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.map
-import java.util.UUID
-
-/** The widget column as a map from parent to ordered widgets. */
-class FakeWidgetRepository(
-    initial: Map<UUID?, List<Widget>> = emptyMap(),
-) : WidgetRepository {
-    val widgets = MutableStateFlow(initial)
-
-    override fun get(parent: UUID?, limit: Int, offset: Int): Flow<List<Widget>> =
-        widgets.map { it[parent].orEmpty().drop(offset).take(limit) }
-
-    override fun update(widget: Widget) = Unit
-    override fun create(widget: Widget, position: Int, parentId: UUID?) = Unit
-    override fun delete(widget: Widget) = Unit
-    override fun set(widgets: List<Widget>, parentId: UUID?) = Unit
-    override suspend fun setAwaited(widgets: List<Widget>, parentId: UUID?) = Unit
-    override fun exists(type: String): Flow<Boolean> = flowOf(false)
-    override fun count(type: String): Flow<Int> = flowOf(0)
-}
-
-class FakeSeedFlag(var seeded: Boolean = false) : HomeGridSeedFlag {
-    var marks = 0
-    override suspend fun isSeeded(): Boolean = seeded
-    override suspend fun markSeeded() {
-        seeded = true
-        marks++
-    }
-}
 
 /**
  * A host that hands out ids in sequence. [bindable] lists the widgets it

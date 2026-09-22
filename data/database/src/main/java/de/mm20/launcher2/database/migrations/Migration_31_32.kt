@@ -3,7 +3,7 @@ package de.mm20.launcher2.database.migrations
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import de.mm20.launcher2.ktx.toBytes
-import de.mm20.launcher2.preferences.WidgetScreenTarget
+import java.util.UUID
 
 class Migration_31_32 : Migration(31, 32) {
 
@@ -15,3 +15,6 @@ class Migration_31_32 : Migration(31, 32) {
         )
     }
 }
+
+/** The former default widget screen's parent id, inlined: the enum went with the widget pages (PR 5b). */
+private val DefaultWidgetScreen: UUID = UUID.fromString("00000000-0000-0000-0000-000000000001")

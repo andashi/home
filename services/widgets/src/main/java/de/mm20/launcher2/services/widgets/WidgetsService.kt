@@ -4,21 +4,20 @@ import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProviderInfo
 import android.content.Context
 import android.content.pm.LauncherApps
-import android.os.Build
 import androidx.core.content.getSystemService
-import de.mm20.launcher2.widgets.AppsWidget
-import de.mm20.launcher2.widgets.Widget
-import de.mm20.launcher2.widgets.WidgetRepository
+import de.mm20.launcher2.i18n.R
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
-import java.util.UUID
 
+/**
+ * What the widget picker needs: the installed AppWidget providers of every
+ * profile, and the one built-in widget. The old widget column's storage
+ * went with it (PR 5b); the grid keeps its own table.
+ */
 class WidgetsService(
     private val context: Context,
-    private val widgetRepository: WidgetRepository,
 ) {
     suspend fun getAppWidgetProviders(): List<AppWidgetProviderInfo> = withContext(Dispatchers.IO) {
         val appWidgetManager = AppWidgetManager.getInstance(context)
@@ -43,26 +42,10 @@ class WidgetsService(
     fun getBuiltInWidgets(): List<BuiltInWidgetInfo> {
         return listOf(
             BuiltInWidgetInfo(
-                type = AppsWidget.Type,
+                type = BuiltInWidgets.Favorites,
                 label = context.getString(R.string.widget_name_apps),
             ),
         )
-    }
-
-    fun addWidget(widget: Widget, position: Int, parentId: UUID? = null) {
-        widgetRepository.create(widget, position, parentId)
-    }
-
-    fun updateWidget(widget: Widget) {
-        widgetRepository.update(widget)
-    }
-
-    fun getWidgets() = widgetRepository.get()
-
-    fun countWidgets(type: String) = widgetRepository.count(type)
-
-    fun removeWidget(widget: Widget) {
-        widgetRepository.delete(widget)
     }
 
     companion object {

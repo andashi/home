@@ -15,16 +15,14 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import de.mm20.launcher2.homegrid.FormFactor
 import de.mm20.launcher2.homegrid.GridItemLimits
+import de.mm20.launcher2.homegrid.HomeGridInitFlag
 import de.mm20.launcher2.homegrid.HomeGridLayouts
-import de.mm20.launcher2.homegrid.HomeGridSeeder
 import de.mm20.launcher2.homegrid.MeasuredGridRows
 import de.mm20.launcher2.preferences.ui.UiSettings
 import de.mm20.launcher2.profiles.ProfileManager
 import de.mm20.launcher2.ui.R
 import de.mm20.launcher2.ui.base.ProvideAppWidgetHost
 import de.mm20.launcher2.ui.settings.KoinSettingsRule
-import de.mm20.launcher2.widgets.Widget
-import de.mm20.launcher2.widgets.WidgetRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import org.junit.Before
@@ -37,7 +35,6 @@ import org.koin.core.context.loadKoinModules
 import org.koin.dsl.module
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
-import java.util.UUID
 
 /**
  * The grid composable end to end under Robolectric: measured, arranged, cells
@@ -56,16 +53,6 @@ class HomeGridTest {
     @get:Rule(order = 1)
     val composeRule = createComposeRule()
 
-    private val emptyColumn = object : WidgetRepository {
-        override fun get(parent: UUID?, limit: Int, offset: Int): Flow<List<Widget>> = flowOf(emptyList())
-        override fun update(widget: Widget) = Unit
-        override fun create(widget: Widget, position: Int, parentId: UUID?) = Unit
-        override fun delete(widget: Widget) = Unit
-        override fun set(widgets: List<Widget>, parentId: UUID?) = Unit
-        override suspend fun setAwaited(widgets: List<Widget>, parentId: UUID?) = Unit
-        override fun exists(type: String): Flow<Boolean> = flowOf(false)
-        override fun count(type: String): Flow<Int> = flowOf(0)
-    }
 
     private val repository = FakeHomeGridRepository(
         mapOf(
@@ -84,8 +71,7 @@ class HomeGridTest {
                 single<de.mm20.launcher2.homegrid.HomeGridRepository> { repository }
                 single<de.mm20.launcher2.homegrid.FormFactorDetector> { FakeFormFactorDetector(FormFactor.Phone) }
                 single { MeasuredGridRows() }
-                single { HomeGridSeeder(emptyColumn, repository, FakeSeedFlag(seeded = true)) { null } }
-                single<WidgetRepository> { emptyColumn }
+                single<HomeGridInitFlag> { FakeInitFlag(initialized = true) }
                 single<de.mm20.launcher2.homegrid.HomeGridWriteBack> { FakeWriteBack() }
                 single<GridItemLimits> { GridItemLimits.Unbounded }
             },
@@ -102,8 +88,7 @@ class HomeGridTest {
             uiSettings = uiSettings,
             formFactorDetector = FakeFormFactorDetector(FormFactor.Phone),
             measuredRows = MeasuredGridRows(),
-            seeder = HomeGridSeeder(emptyColumn, repository, FakeSeedFlag(seeded = true)) { null },
-            widgetRepository = emptyColumn,
+            initFlag = FakeInitFlag(initialized = true),
             writeBack = FakeWriteBack(),
             itemLimits = GridItemLimits.Unbounded,
             locked = flowOf(false),

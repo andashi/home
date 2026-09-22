@@ -5,7 +5,6 @@ import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import de.mm20.launcher2.database.AppDatabase
 import de.mm20.launcher2.preferences.preferencesModule
-import de.mm20.launcher2.widgets.WidgetRepository
 import org.junit.After
 import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
@@ -40,7 +39,6 @@ class HomeGridModuleTest {
                 preferencesModule,
                 module {
                     single { database }
-                    single<WidgetRepository> { FakeWidgetRepository() }
                     // UiSettings is internal to construct: the real module provides it.
                 },
             )
@@ -59,8 +57,7 @@ class HomeGridModuleTest {
 
         assertTrue(koin.get<HomeGridRepository>() is HomeGridRepositoryImpl)
         assertTrue(koin.get<FormFactorDetector>() is AndroidFormFactorDetector)
-        assertTrue(koin.get<HomeGridSeedFlag>() is UiSettingsSeedFlag)
-        koin.get<HomeGridSeeder>()
+        assertTrue(koin.get<HomeGridInitFlag>() is UiSettingsInitFlag)
         assertSame(koin.get<MeasuredGridRows>(), koin.get<GridRowsSource>())
         assertSame(koin.get<HomeGridRepository>(), koin.get<HomeGridRepository>())
     }

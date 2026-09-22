@@ -40,7 +40,6 @@ jobs:
           :data:database:testDebugUnitTest
           :data:searchable:testDebugUnitTest
           :data:appshortcuts:testDebugUnitTest
-          :data:widgets:testDebugUnitTest
           :data:homegrid:testDebugUnitTest
           :data:themes:testDebugUnitTest
           :core:base:testDebugUnitTest

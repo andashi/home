@@ -18,6 +18,7 @@ import de.mm20.launcher2.grid.SizeLimits
 import de.mm20.launcher2.homegrid.GridRowsSource
 import de.mm20.launcher2.homegrid.HomeGridItem
 import de.mm20.launcher2.homegrid.HomeGridItemConfig
+import de.mm20.launcher2.homegrid.HomeGridInitFlag
 import de.mm20.launcher2.homegrid.HomeGridRepository
 import de.mm20.launcher2.config.ConfigState
 import de.mm20.launcher2.config.Diagnostic
@@ -63,6 +64,7 @@ class DefaultConfigStoreTest {
     private lateinit var transparenciesRepository: TransparenciesRepository
     private lateinit var settings: FakeLauncherConfigSettings
     private lateinit var homeGridRepository: FakeHomeGridRepository
+    private lateinit var initFlag: FakeInitFlag
     private lateinit var gridLimits: FakeGridLimitsSource
     private lateinit var gridRows: FakeGridRowsSource
     private lateinit var searchableRepository: FakeSavableSearchableRepository
@@ -81,6 +83,7 @@ class DefaultConfigStoreTest {
         transparenciesRepository = TransparenciesRepository(context, database)
         settings = FakeLauncherConfigSettings()
         homeGridRepository = FakeHomeGridRepository()
+        initFlag = FakeInitFlag()
         gridLimits = FakeGridLimitsSource()
         gridRows = FakeGridRowsSource()
         searchableRepository = FakeSavableSearchableRepository()
@@ -94,6 +97,7 @@ class DefaultConfigStoreTest {
             settings,
             transparenciesRepository,
             homeGridRepository,
+            initFlag,
             gridLimits,
             gridRows,
             searchableRepository,
@@ -297,6 +301,13 @@ class DefaultConfigStoreTest {
 
     private fun grid(vararg items: GridItemConfig, layout: String = "phone") =
         ConfigMutation.SetGrid(layouts = mapOf(layout to GridLayoutConfig(items.toList())))
+
+    @Test
+    fun `SetGrid marks the grid initialised so the default row never overwrites a configured layout`() = runTest {
+        store.apply(listOf(grid(GridItemConfig(id = "dock", widget = "favorites", x = 0, y = 5, w = 4, h = 1))))
+
+        assertTrue(initFlag.initialized)
+    }
 
     @Test
     fun `SetGrid writes a layout with full geometry in config order`() = runTest {
@@ -615,6 +626,14 @@ class DefaultConfigStoreTest {
 
         override suspend fun setTransparenciesId(id: UUID) {
             transparenciesId = id
+        }
+    }
+
+    private class FakeInitFlag : HomeGridInitFlag {
+        var initialized = false
+        override suspend fun isInitialized(): Boolean = initialized
+        override suspend fun markInitialized() {
+            initialized = true
         }
     }
 
