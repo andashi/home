@@ -58,15 +58,21 @@ object GridLayout {
      * is displaced in turn. Invariants: no two result items overlap; no item
      * moved up or sideways except the one being moved; items lying entirely
      * above `to.y` are untouched; the same input always yields the same
-     * output. When a displaced item runs out of rows, or the item may not
-     * cross the fold and cannot be nudged clear of it, the input is returned
-     * unchanged with an [LayoutIssue.Overflow] or [LayoutIssue.CrossesFold].
+     * output. When a displaced item runs out of rows, the item's minimum size
+     * is larger than the grid, or the item may not cross the fold and cannot
+     * be nudged clear of it, the input is returned unchanged with an
+     * [LayoutIssue.Overflow] or [LayoutIssue.CrossesFold].
      */
     fun move(spec: GridSpec, items: List<GridItem>, id: String, to: Span): LayoutResult {
         val moving = items.firstOrNull { it.id == id }
             ?: throw IllegalArgumentException("no item with id '$id' in the layout")
         val w = clampWidth(spec, moving, to.w)
         val h = clampHeight(spec, moving, to.h)
+        // A minimum larger than the grid cannot be clamped into it; answer
+        // instead of letting coerceIn throw on an inverted range.
+        if (w > spec.columns || h > spec.rows) {
+            return LayoutResult(items, listOf(LayoutIssue.Overflow(id)))
+        }
         val y = to.y.coerceIn(0, spec.rows - h)
         val x = nudgeClearOfFold(spec, to.x.coerceIn(0, spec.columns - w), w, moving.mayCrossFold)
             ?: return LayoutResult(items, listOf(LayoutIssue.CrossesFold(id)))
