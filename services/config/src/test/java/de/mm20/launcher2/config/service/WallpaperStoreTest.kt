@@ -291,4 +291,34 @@ class WallpaperStoreTest {
         assertEquals(emptyList<Any>(), diagnostics)
         assertEquals(1, applier.applied.size)
     }
+
+    /**
+     * The condition the provisioning session asked for: a second run that
+     * checks whether everything sits must not come back silently green. Once
+     * the intent is recorded, `current()` answers with it, the differ sees no
+     * difference and `apply` is never reached again - so the pending state has
+     * to be readable on its own rather than as a side effect of applying.
+     */
+    @Test
+    fun `a deferred wallpaper stays reportable across reloads`() = runTest {
+        visible.onPaused()
+        store.apply("home.jpg", WallpaperTarget.Both)
+
+        assertEquals(WallpaperState("home.jpg", WallpaperTarget.Both), store.pending())
+
+        // A second reload changes nothing and must still be able to say so.
+        assertEquals(WallpaperState("home.jpg", WallpaperTarget.Both), store.pending())
+
+        visible.onResumed()
+        store.ensureRendered()
+
+        assertNull("once it is set there is nothing outstanding", store.pending())
+    }
+
+    @Test
+    fun `nothing is pending when the wallpaper was applied straight away`() = runTest {
+        store.apply("home.jpg", WallpaperTarget.Both)
+
+        assertNull(store.pending())
+    }
 }

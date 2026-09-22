@@ -41,6 +41,19 @@ interface WallpaperStore {
      * hook. Returns true when a re-apply happened.
      */
     suspend fun ensureRendered(): Boolean
+
+    /**
+     * The wallpaper this profile is managed to have and has not been given
+     * yet, or null when nothing is outstanding.
+     *
+     * Reported on every reload rather than only on the one that deferred it
+     * (#37). Once the intent is recorded, [current] answers with it, the
+     * differ sees no difference and produces no mutation, and [apply] is never
+     * reached again - so a second run to check that everything sits would come
+     * back silently green for something that is still waiting. That is exactly
+     * the moment the information is wanted.
+     */
+    suspend fun pending(): WallpaperState?
 }
 
 data class WallpaperState(val image: String, val target: WallpaperTarget)
@@ -252,6 +265,12 @@ class DefaultWallpaperStore(
                 )
             }
         }
+    }
+
+    override suspend fun pending(): WallpaperState? = withContext(Dispatchers.IO) {
+        val applied = readApplied() ?: return@withContext null
+        if (!applied.pending) return@withContext null
+        WallpaperState(applied.image, applied.target)
     }
 
     override suspend fun ensureRendered(): Boolean = withContext(Dispatchers.IO) {

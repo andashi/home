@@ -116,6 +116,23 @@ class DefaultConfigStore(
                 else -> Unit
             }
         }
+
+        // Reported whether or not this reload touched the wallpaper: the
+        // record makes the differ see no difference, so without this a second
+        // run would come back silently green for a wallpaper that is still
+        // waiting for the profile to be looked at (#37).
+        wallpapers.pending()?.let {
+            diagnostics += Diagnostic(
+                Severity.Warning,
+                "wallpaper-pending-foreground",
+                "appearance.wallpaper.image",
+                "'${it.image}' is recorded but not set yet: the system crops a static " +
+                        "wallpaper only for the current user, so applying it now would cost " +
+                        "a crop pass for a result nobody sees. The launcher sets it the next " +
+                        "time this profile is in the foreground.",
+            )
+        }
+
         return diagnostics
     }
 
