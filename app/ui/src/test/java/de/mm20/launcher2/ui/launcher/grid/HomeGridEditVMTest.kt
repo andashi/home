@@ -205,6 +205,28 @@ class HomeGridEditVMTest {
     }
 
     @Test
+    fun `a drag through occupied rows does not accumulate push-down`() = runTest(dispatcher) {
+        // Seen on emulator-5556: dragging the digital clock three rows down
+        // passed over the analog clock, which was pushed down at every
+        // intermediate row until the last move overflowed and was rejected,
+        // leaving the clock one row short. Every move of a drag is applied
+        // to the layout as it was when the drag began.
+        val f = fixture()
+        f.vm.cells()
+        f.vm.enterEdit()
+
+        f.vm.beginDrag("clock")
+        assertTrue(f.vm.move("clock", 0, 1))
+        assertTrue(f.vm.move("clock", 0, 2))
+        assertTrue(f.vm.move("clock", 0, 3))
+        f.vm.endDrag()
+
+        assertEquals(listOf(0, 3), f.vm.spanOf("clock").let { listOf(it.x, it.y) })
+        // The note (2x1 at row 2) is not under the clock's final rows 3..4: it is back where it was.
+        assertEquals(listOf(0, 2), f.vm.spanOf("note").let { listOf(it.x, it.y) })
+    }
+
+    @Test
     fun `resize clamps to the item's limits`() = runTest(dispatcher) {
         val f = fixture(limits = mapOf("clock" to SizeLimits(minW = 2, minH = 1, maxW = 3, maxH = 2)))
         f.vm.cells()

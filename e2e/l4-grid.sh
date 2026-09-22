@@ -170,15 +170,6 @@ settle_then_broadcast() { # $1 = local config file, $2 = sha256, $3 = stage name
 
 # --- screen helpers ----------------------------------------------------
 
-# Brings the home screen to the front: the grid renders (and on first start
-# seeds the widget column) only while the launcher is in the foreground. No
-# sleep here: whatever follows polls for what it expects (wait_until,
-# assert_cells), because a first cold start plus seeding plus the DataStore
-# flag takes longer than any fixed pause on a fresh install.
-show_home() {
-  adb -s "$SERIAL" shell am start -n "$LAUNCHER_ACTIVITY" >/dev/null 2>&1 || true
-}
-
 # The foldable instance sleeps and locks between steps; a dump then shows
 # only the keyguard. Harmless on the phone instance.
 wake_screen() {
@@ -186,6 +177,16 @@ wake_screen() {
   adb -s "$SERIAL" shell input keyevent KEYCODE_WAKEUP >/dev/null 2>&1 || true
   adb -s "$SERIAL" shell wm dismiss-keyguard >/dev/null 2>&1 || true
   adb -s "$SERIAL" shell cmd statusbar collapse >/dev/null 2>&1 || true
+}
+
+# Brings the home screen to the front: the grid renders (and on first start
+# seeds the widget column) only while the launcher is in the foreground. No
+# sleep here: whatever follows polls for what it expects (wait_until,
+# assert_cells), because a first cold start plus seeding plus the DataStore
+# flag takes longer than any fixed pause on a fresh install.
+show_home() {
+  wake_screen
+  adb -s "$SERIAL" shell am start -n "$LAUNCHER_ACTIVITY" >/dev/null 2>&1 || true
 }
 
 # Prints "left top right bottom" of the first node with the content
@@ -263,10 +264,12 @@ enter_edit_mode() {
   wait_desc grid-edit-done 15 "edit bar after the long press"
 }
 
-# Drags a cell by whole cells: a press that moves within a second is a
-# drag for the cell's gesture detector, so no long press is needed here.
+# Drags a cell by whole cells with explicit motion events: `input swipe`
+# interpolates its moves and the last one lands short of the end point,
+# which rounds the drop to the wrong row; DOWN, eight MOVEs and an UP at
+# the exact target are deterministic (measured on emulator-5556).
 drag_cell() { # $1 = id, $2 = dx cells, $3 = dy cells
-  local from pitch scale gap dock
+  local from pitch scale gap dock x y tx ty i
   from="$(cell_center "$1")" || die "cell $1 not on screen"
   dock="$(dump_cells | awk '$1 == "dock"')"
   scale="$(density_scale)"
@@ -277,8 +280,13 @@ _, l, t, r, b = sys.argv[1].split(); l, r = int(l), int(r)
 print(int((r - l + float(sys.argv[2])) / int(sys.argv[3])))
 PY
 )"
-  set -- $from $2 $3
-  adb -s "$SERIAL" shell input swipe "$1" "$2" $(( $1 + $3 * pitch )) $(( $2 + $4 * pitch )) 700
+  x="${from%% *}"; y="${from##* }"
+  tx=$(( x + $2 * pitch )); ty=$(( y + $3 * pitch ))
+  adb -s "$SERIAL" shell input motionevent DOWN "$x" "$y"
+  for i in 1 2 3 4 5 6 7 8; do
+    adb -s "$SERIAL" shell input motionevent MOVE $(( x + ($2 * pitch * i) / 8 )) $(( y + ($3 * pitch * i) / 8 ))
+  done
+  adb -s "$SERIAL" shell input motionevent UP "$tx" "$ty"
 }
 
 device_config_sha() {
@@ -514,6 +522,16 @@ install_out="$(adb -s "$SERIAL" install -r "$APK" 2>&1)" || { printf '%s\n' "$in
 case "$install_out" in *Success*) ;; *) printf '%s\n' "$install_out" >&2; die "adb install failed" ;; esac
 ok "package installed: $PKG"
 
+# No animations on the test instance: `uiautomator dump` waits for the
+# window to go idle and gives up while edit mode's wiggle runs, so it
+# would never see the edit bar. The launcher reads the animator scale as
+# its reduced-motion signal (rememberReducedMotion), which is also what a
+# user who turned animations off gets; the wiggle itself is covered by the
+# L2 suites.
+for scale in window_animation_scale transition_animation_scale animator_duration_scale; do
+  adb -s "$SERIAL" shell settings put global "$scale" 0 >/dev/null 2>&1 || die "could not set $scale"
+done
+
 # Binding an AppWidget without a dialog needs the HOME role (the widget
 # service whitelists the role holder); the fresh snapshot holds it for
 # launcher3. Shell may hand it over on this build.
@@ -612,8 +630,18 @@ if [ "$HAVE_CLOCK" = 1 ]; then
   [ "$(device_config_sha)" = "$H_WRITTEN" ] || die "the file on the device does not carry the self-write hash"
   PULLED="$WORK/pulled.jsonc"
   adb -s "$SERIAL" pull "$DEVICE_CONFIG" "$PULLED" >/dev/null 2>&1 || die "adb pull of $DEVICE_CONFIG failed"
-  [ "$(jq -r '.home.grid.layouts.'"$LAYOUT"'.items[] | select(.id == "digital") | .y' <<<"$(sed 's|//.*$||' "$PULLED")")" = "3" ] \
-    || { cat "$PULLED" >&2; die "the pulled file does not hold the digital clock at y 3"; }
+  # The pulled file is JSONC (comments, trailing commas), which jq refuses:
+  # python strips both before it reads the digital clock's row.
+  pulled_y="$(python3 - "$PULLED" "$LAYOUT" <<'PY'
+import json, re, sys
+text = open(sys.argv[1]).read()
+text = re.sub(r"//[^\n]*", "", text)
+text = re.sub(r",(\s*[}\]])", r"\1", text)
+doc = json.loads(text)
+print(next(i["y"] for i in doc["home"]["grid"]["layouts"][sys.argv[2]]["items"] if i["id"] == "digital"))
+PY
+)"
+  [ "$pulled_y" = "3" ] || { cat "$PULLED" >&2; die "the pulled file does not hold the digital clock at y 3 (got '$pulled_y')"; }
   grep -qF '// note: this comment must survive a write-back' "$PULLED" \
     || die "the note comment did not survive the write-back"
   python3 - "$GRID_CONFIG" "$PULLED" <<'PY' || die "something outside home.grid changed in the write-back"
