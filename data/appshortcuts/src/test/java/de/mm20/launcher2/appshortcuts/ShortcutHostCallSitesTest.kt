@@ -23,10 +23,19 @@ import java.io.File
  */
 class ShortcutHostCallSitesTest {
 
-    /** Calls `LauncherApps` only answers for the holder of the HOME role. */
+    /**
+     * `LauncherApps` calls that only the holder of the HOME role may make.
+     *
+     * The list describes the API surface, not today's usage: entries the code
+     * does not call yet are the point, because the first call to one of them
+     * is exactly the moment this check has to fire.
+     */
     private val roleGated = listOf(
         "getShortcuts(",
         "pinShortcuts(",
+        "startShortcut(",
+        "getShortcutIconDrawable(",
+        "getShortcutBadgedIconDrawable(",
         "getShortcutConfigActivityList(",
         "getShortcutConfigActivityIntent(",
     )
