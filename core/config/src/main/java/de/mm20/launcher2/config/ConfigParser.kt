@@ -198,9 +198,8 @@ object ConfigParser {
 
         val document = ConfigMigrations.migrate(version, root)
 
-        val unknownKeyDiagnostics = mutableListOf<Diagnostic>()
-        collectUnknownKeys(document, "", "", unknownKeyDiagnostics)
-        val sanitized = dropUnknownWidgets(document, unknownKeyDiagnostics)
+        val unknownKeyDiagnostics = diagnoseKeys(document).toMutableList()
+        val sanitized = document
 
         val config = try {
             json.decodeFromJsonElement(LauncherConfig.serializer(), sanitized)
@@ -234,65 +233,30 @@ object ConfigParser {
     }
 
     /**
-     * Removes entries of `home.widgets.widgets` that name a widget this build
-     * does not have, reporting each one.
-     *
-     * An unknown *key* is already tolerated, but an unknown *value* is not:
-     * this parser deliberately does not set `coerceInputValues`, so a single
-     * `"widgets": ["weather"]` left over from before that widget was removed
-     * would fail the decode and take the zone's entire configuration with it —
-     * wallpaper, dock, icons and all. Dropping the entry keeps the rest of the
-     * document, which is the behaviour a removal should have.
-     *
-     * Scalar enums stay strict on purpose. A bad `searchBar.position` is a typo
-     * with no sensible fallback, and the objects that held removed scalars
-     * (`home.clock`) leave the contract whole, which makes them unknown keys.
+     * Walks [document] against [effects] (the contract table by default) and
+     * reports every unknown key and every inert key. Takes the table as a
+     * parameter so the inert-key mechanism stays testable while the contract
+     * itself has no inert key.
      */
-    private fun dropUnknownWidgets(
+    internal fun diagnoseKeys(
         document: JsonObject,
-        out: MutableList<Diagnostic>,
-    ): JsonObject {
-        val home = document["home"] as? JsonObject ?: return document
-        val widgets = home["widgets"] as? JsonObject ?: return document
-        val list = widgets["widgets"] as? JsonArray ?: return document
-
-        val known = BuiltinWidget.serializer().descriptor.let { d ->
-            (0 until d.elementsCount).map { d.getElementName(it) }.toSet()
-        }
-        val kept = list.filterIndexed { index, entry ->
-            val name = (entry as? JsonPrimitive)?.takeIf { it.isString }?.contentOrNull
-            if (name != null && name in known) return@filterIndexed true
-            out += Diagnostic(
-                Severity.Warning,
-                "unknown-widget",
-                "home.widgets.widgets[$index]",
-                "Unknown widget '${name ?: entry}' is ignored",
-            )
-            false
-        }
-        if (kept.size == list.size) return document
-
-        return buildJsonObject {
-            for ((k, v) in document) if (k != "home") put(k, v)
-            put("home", buildJsonObject {
-                for ((k, v) in home) if (k != "widgets") put(k, v)
-                put("widgets", buildJsonObject {
-                    for ((k, v) in widgets) if (k != "widgets") put(k, v)
-                    put("widgets", JsonArray(kept))
-                })
-            })
-        }
+        effects: Map<String, Map<String, KeyEffect>> = keyEffects,
+    ): List<Diagnostic> {
+        val out = mutableListOf<Diagnostic>()
+        collectUnknownKeys(document, "", "", effects, out)
+        return out
     }
 
     private fun collectUnknownKeys(
         element: JsonElement,
         canonicalPath: String,
         reportPath: String,
+        table: Map<String, Map<String, KeyEffect>>,
         out: MutableList<Diagnostic>,
     ) {
         when (element) {
             is JsonObject -> {
-                val effects = keyEffects[canonicalPath]
+                val effects = table[canonicalPath]
                 if (effects != null) {
                     for (key in element.keys) {
                         val path = if (reportPath.isEmpty()) key else "$reportPath.$key"
@@ -322,7 +286,7 @@ object ConfigParser {
                 for ((key, value) in element) {
                     val childCanonical = if (canonicalPath.isEmpty()) key else "$canonicalPath.$key"
                     val childReport = if (reportPath.isEmpty()) key else "$reportPath.$key"
-                    collectUnknownKeys(value, childCanonical, childReport, out)
+                    collectUnknownKeys(value, childCanonical, childReport, table, out)
                 }
             }
 
@@ -332,6 +296,7 @@ object ConfigParser {
                         item,
                         "$canonicalPath[]",
                         "$reportPath[$index]",
+                        table,
                         out,
                     )
                 }

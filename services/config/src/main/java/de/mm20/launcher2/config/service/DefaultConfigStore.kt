@@ -1,7 +1,6 @@
 package de.mm20.launcher2.config.service
 
 import de.mm20.launcher2.applications.AppRepository
-import de.mm20.launcher2.config.BuiltinWidget
 import de.mm20.launcher2.config.ConfigMutation
 import de.mm20.launcher2.config.ConfigState
 import de.mm20.launcher2.config.Diagnostic
@@ -16,10 +15,7 @@ import de.mm20.launcher2.searchable.SavableSearchableRepository
 import de.mm20.launcher2.themes.DefaultThemeId
 import de.mm20.launcher2.themes.transparencies.Transparencies
 import de.mm20.launcher2.themes.transparencies.TransparenciesRepository
-import de.mm20.launcher2.widgets.AppWidget
-import de.mm20.launcher2.widgets.AppsWidget
-import de.mm20.launcher2.widgets.Widget
-import de.mm20.launcher2.widgets.WidgetRepository
+import de.mm20.launcher2.homegrid.HomeGridRepository
 import kotlinx.coroutines.flow.first
 import java.util.UUID
 import de.mm20.launcher2.config.Profile as ConfigProfile
@@ -32,10 +28,10 @@ import de.mm20.launcher2.config.Profile as ConfigProfile
  *   (single awaited DataStore write per [apply] call).
  * - Transparency schemes are resolved/upserted via [TransparenciesRepository]
  *   and then selected via settings.
- * - Root widgets are reconciled via [WidgetRepository.setAwaited]; only the
- *   built-in widget types known to the config format are managed, external
- *   [AppWidget]s are preserved.
- * - Dock favorites are resolved from `{packageName, profile}` pairs via
+ * - Grid layouts (`home.grid.layouts`) are normalised through the layout
+ *   engine and written to [HomeGridRepository]; `columns` and `locked` are
+ *   settings-backed.
+ * - Favorites are resolved from `{packageName, profile}` pairs via
  *   [AppRepository] + [ProfileResolver] and written with
  *   [SavableSearchableRepository.updateFavoritesAwaited]. User serials never
  *   appear in config state or diagnostics.
@@ -43,7 +39,9 @@ import de.mm20.launcher2.config.Profile as ConfigProfile
 class DefaultConfigStore(
     private val settings: LauncherConfigSettings,
     private val transparenciesRepository: TransparenciesRepository,
-    private val widgetRepository: WidgetRepository,
+    private val homeGridRepository: HomeGridRepository,
+    private val gridLimits: GridLimitsSource,
+    private val gridRows: GridRowsSource,
     private val searchableRepository: SavableSearchableRepository,
     private val appRepository: AppRepository,
     private val profileResolver: ProfileResolver,
@@ -53,8 +51,7 @@ class DefaultConfigStore(
     override suspend fun readState(): ConfigState {
         val settingsState = settings.readState()
         val transparencies = transparenciesRepository.getOnce(settingsState.transparenciesId)
-        val widgets = widgetRepository.get().first()
-        val dockFavorites = searchableRepository.get(
+        val favorites = searchableRepository.get(
             includeTypes = listOf(AppDomain),
             minPinnedLevel = PinnedLevel.ManuallySorted,
             maxPinnedLevel = PinnedLevel.ManuallySorted,
@@ -66,8 +63,8 @@ class DefaultConfigStore(
             transparencyBackground = transparencies?.background ?: 1f,
             transparencySurface = transparencies?.surface ?: 1f,
             transparencyElevatedSurface = transparencies?.elevatedSurface ?: 1f,
-            dockFavorites = dockFavorites,
-            widgets = widgets.mapNotNull { it.toBuiltinWidget() },
+            favorites = favorites,
+            gridLayouts = emptyMap(), // PR 3: from the repository
             wallpaperImage = wallpaper?.image,
             wallpaperTarget = wallpaper?.target,
         )
@@ -95,14 +92,14 @@ class DefaultConfigStore(
                     diagnostics += mutation.applyFailed(e)
                 }
 
-                is ConfigMutation.SetWidgets -> try {
-                    diagnostics += applyWidgets(mutation)
+                is ConfigMutation.SetGrid -> try {
+                    diagnostics += applyGrid(mutation)
                 } catch (e: Exception) {
                     diagnostics += mutation.applyFailed(e)
                 }
 
-                is ConfigMutation.SetDockFavorites -> try {
-                    diagnostics += applyDockFavorites(mutation)
+                is ConfigMutation.SetFavorites -> try {
+                    diagnostics += applyFavorites(mutation)
                 } catch (e: Exception) {
                     diagnostics += mutation.applyFailed(e)
                 }
@@ -194,43 +191,18 @@ class DefaultConfigStore(
     }
 
     /**
-     * Reconciles the root widget list against the configured built-ins.
-     * Unchanged built-ins keep their IDs and configs, removed built-ins are
-     * deleted, and external
-     * [AppWidget]s are kept (appended in their previous relative order) with
-     * a warning instead of being deleted.
+     * Writes every layout the mutation names through the layout engine:
+     * items without geometry are placed at the first free cells in array
+     * order, then the whole layout is normalised against this device's grid
+     * (below-minimum spans enlarged, crossings of the fold line nudged,
+     * overlaps re-placed, what does not fit dropped), each correction a
+     * warning diagnostic. Items that already exist in the layout keep their
+     * device-local AppWidget id, so a re-push does not re-bind anything.
      */
-    private suspend fun applyWidgets(
-        mutation: ConfigMutation.SetWidgets,
+    private suspend fun applyGrid(
+        mutation: ConfigMutation.SetGrid,
     ): List<Diagnostic> {
-        val current = widgetRepository.get().first()
-        val remaining = current.toMutableList()
-        val reconciled = mutableListOf<Widget>()
-
-        for (builtin in mutation.widgets) {
-            val existing = remaining.firstOrNull { it.toBuiltinWidget() == builtin }
-            if (existing != null) {
-                remaining.remove(existing)
-                reconciled += existing
-            } else {
-                reconciled += builtin.newWidget()
-            }
-        }
-
-        val external = remaining.filterIsInstance<AppWidget>()
-        reconciled += external
-
-        widgetRepository.setAwaited(reconciled)
-
-        return external.map {
-            Diagnostic(
-                Severity.Warning,
-                "unsupported-widget",
-                "home.widgets.widgets",
-                "External app widget ${it.id} is not manageable via config; " +
-                        "it was kept and moved after the configured widgets",
-            )
-        }
+        TODO("PR 3: place, normalize, replace per layout")
     }
 
     /**
@@ -239,8 +211,8 @@ class DefaultConfigStore(
      * produce error diagnostics and are skipped. Automatically pinned
      * favorites are outside the config's scope and are preserved.
      */
-    private suspend fun applyDockFavorites(
-        mutation: ConfigMutation.SetDockFavorites,
+    private suspend fun applyFavorites(
+        mutation: ConfigMutation.SetFavorites,
     ): List<Diagnostic> {
         val diagnostics = mutableListOf<Diagnostic>()
         val resolved = mutableListOf<SavableSearchable>()
@@ -302,15 +274,6 @@ class DefaultConfigStore(
         )
     }
 
-    private fun Widget.toBuiltinWidget(): BuiltinWidget? = when (this) {
-        is AppsWidget -> BuiltinWidget.Apps
-        else -> null
-    }
-
-    private fun BuiltinWidget.newWidget(): Widget = when (this) {
-        BuiltinWidget.Apps -> AppsWidget(UUID.randomUUID())
-    }
-
     private fun ConfigMutation.applyFailed(cause: Exception): Diagnostic {
         return Diagnostic(
             Severity.Error,
@@ -333,13 +296,13 @@ private val ConfigMutation.isSettingsBacked: Boolean
     get() = when (this) {
         is ConfigMutation.SetIcons,
         is ConfigMutation.SetSearchBarPosition,
-        is ConfigMutation.SetDockEnabled,
         is ConfigMutation.SetWidgetsEnabled,
+        // columns and locked live in settings; layouts are applied below too.
+        is ConfigMutation.SetGrid,
         -> true
 
         is ConfigMutation.SetTransparency,
-        is ConfigMutation.SetWidgets,
-        is ConfigMutation.SetDockFavorites,
+        is ConfigMutation.SetFavorites,
         is ConfigMutation.SetWallpaper,
         -> false
     }

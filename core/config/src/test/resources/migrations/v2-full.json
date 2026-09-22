@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 2,
+
+  "icons": {
+    "themed": true,
+    "enforceThemed": false,
+    "pack": "com.example.iconpack"
+  },
+
+  "appearance": {
+    "transparency": {
+      "name": "glass",
+      "background": 0.7,
+      "surface": 0.55,
+      "elevatedSurface": 0.65
+    },
+    "wallpaper": {
+      "image": "zone.jpg",
+      "target": "both"
+    }
+  },
+
+  "home": {
+    "searchBar": { "position": "bottom" },
+    "favorites": [
+      { "packageName": "org.thoughtcrime.securesms", "profile": "personal" },
+      { "packageName": "com.example.work.mail", "profile": "work" },
+      "com.example.dialer"
+    ],
+    "widgets": {
+      "enabled": true
+    }
+  }
+}

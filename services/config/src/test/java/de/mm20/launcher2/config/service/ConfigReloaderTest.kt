@@ -124,13 +124,13 @@ class ConfigReloaderTest {
     fun `apply error diagnostics make the report unsuccessful and exclude the section`() = runTest {
         val store = FakeConfigStore(
             applyDiagnostics = listOf(
-                Diagnostic(Severity.Error, "favorite-unavailable", "home.dock.favorites[0]", "not installed"),
+                Diagnostic(Severity.Error, "favorite-unavailable", "home.favorites[0]", "not installed"),
             )
         )
         val (reloader, _) = newReloader(store)
 
         val report = reloader.reload(
-            """{"schemaVersion": 1, "icons": {"themed": true}, "home": {"dock": {"favorites": [{"packageName": "com.example.app"}]}}}"""
+            """{"schemaVersion": 2, "icons": {"themed": true}, "home": {"favorites": [{"packageName": "com.example.app"}]}}"""
         )
 
         assertFalse(report.success)
@@ -142,17 +142,17 @@ class ConfigReloaderTest {
     fun `apply warning diagnostics keep the report successful`() = runTest {
         val store = FakeConfigStore(
             applyDiagnostics = listOf(
-                Diagnostic(Severity.Warning, "unsupported-widget", "home.widgets.widgets", "kept"),
+                Diagnostic(Severity.Warning, "unknown-widget-provider", "home.grid.layouts.phone.items[0]", "kept"),
             )
         )
         val (reloader, _) = newReloader(store)
 
         val report = reloader.reload(
-            """{"schemaVersion": 1, "home": {"widgets": {"widgets": ["apps"]}}}"""
+            """{"schemaVersion": 2, "home": {"grid": {"layouts": {"phone": {"items": [{"id": "a", "widget": "com.x/.W"}]}}}}}"""
         )
 
         assertTrue(report.success)
-        assertEquals(listOf("home.widgets.widgets"), report.appliedMutations)
+        assertEquals(listOf("home.grid"), report.appliedMutations)
     }
 
     @Test
@@ -161,7 +161,7 @@ class ConfigReloaderTest {
         val (reloader, _) = newReloader(store)
 
         val icons = """{"schemaVersion": 1, "icons": {"themed": true}}"""
-        val dock = """{"schemaVersion": 1, "home": {"dock": {"enabled": true}}}"""
+        val dock = """{"schemaVersion": 2, "home": {"grid": {"locked": true}}}"""
 
         val reports = listOf(icons, dock).map { text ->
             async(Dispatchers.Default) { reloader.reload(text) }
@@ -176,7 +176,7 @@ class ConfigReloaderTest {
         assertEquals("read", events[2])
         assertTrue(events[3].startsWith("apply:"))
         // Both reloads were applied exactly once.
-        assertEquals(setOf("apply:[icons]", "apply:[home.dock.enabled]"), setOf(events[1], events[3]))
+        assertEquals(setOf("apply:[icons]", "apply:[home.grid]"), setOf(events[1], events[3]))
     }
 
     @Test

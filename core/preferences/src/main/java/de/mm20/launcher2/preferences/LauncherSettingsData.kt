@@ -38,6 +38,10 @@ data class LauncherSettingsData internal constructor(
     val homeScreenDock: Boolean = false,
     val homeScreenDockRows: Int = 1,
     val homeScreenWidgets: Boolean = false,
+    /** `home.grid.columns`: columns of one cover-width page (ADR 0001, D1). */
+    val homeGridColumns: Int = 4,
+    /** `home.grid.locked`: no edit mode, nothing written back (D3). */
+    val homeGridLocked: Boolean = false,
 
     val favoritesEnabled: Boolean = true,
     val favoritesFrequentlyUsed: Boolean = true,

@@ -42,12 +42,13 @@ dependencies {
 
     implementation(project(":core:base"))
     implementation(project(":core:config"))
+    implementation(project(":core:grid"))
     implementation(project(":core:preferences"))
     implementation(project(":core:profiles"))
     implementation(project(":data:applications"))
     implementation(project(":data:searchable"))
     implementation(project(":data:themes"))
-    implementation(project(":data:widgets"))
+    implementation(project(":data:homegrid"))
     implementation(project(":data:database"))
 
     testImplementation(libs.bundles.tests)

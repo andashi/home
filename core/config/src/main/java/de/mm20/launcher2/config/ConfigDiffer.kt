@@ -9,10 +9,17 @@ data class ConfigState(
     val transparencySurface: Float = 1f,
     val transparencyElevatedSurface: Float = 1f,
     val searchBarPosition: SearchBarPosition = SearchBarPosition.Top,
-    val dockEnabled: Boolean = false,
-    val dockFavorites: List<Favorite> = emptyList(),
+    /** The manually pinned apps, in order: `home.favorites`. */
+    val favorites: List<Favorite> = emptyList(),
     val widgetsEnabled: Boolean = false,
-    val widgets: List<BuiltinWidget> = emptyList(),
+    val gridColumns: Int = 4,
+    val gridLocked: Boolean = false,
+    /**
+     * The layouts as stored, every item with full geometry. Keyed like
+     * `home.grid.layouts`; a layout with no items is an empty list, not an
+     * absent key, so the read-back always shows both.
+     */
+    val gridLayouts: Map<String, GridLayoutConfig> = emptyMap(),
     /**
      * The wallpaper image (by upload name) and target currently in effect:
      * applied by a config reload, still the system's current wallpaper and
@@ -57,16 +64,10 @@ sealed class ConfigMutation {
         override val section = "home.searchBar"
     }
 
-    data class SetDockEnabled(
-        val enabled: Boolean,
-    ) : ConfigMutation() {
-        override val section = "home.dock.enabled"
-    }
-
-    data class SetDockFavorites(
+    data class SetFavorites(
         val favorites: List<Favorite>,
     ) : ConfigMutation() {
-        override val section = "home.dock.favorites"
+        override val section = "home.favorites"
     }
 
     data class SetWidgetsEnabled(
@@ -75,10 +76,17 @@ sealed class ConfigMutation {
         override val section = "home.widgets.enabled"
     }
 
-    data class SetWidgets(
-        val widgets: List<BuiltinWidget>,
+    /**
+     * `home.grid`. [columns] and [locked] are settings-backed; [layouts]
+     * goes to the grid repository through the layout engine. A null field
+     * is unmanaged; a layout key that is absent from [layouts] is untouched.
+     */
+    data class SetGrid(
+        val columns: Int? = null,
+        val locked: Boolean? = null,
+        val layouts: Map<String, GridLayoutConfig>? = null,
     ) : ConfigMutation() {
-        override val section = "home.widgets.widgets"
+        override val section = "home.grid"
     }
 }
 
@@ -127,30 +135,18 @@ object ConfigDiffer {
             }
         }
 
-        desired.home?.dock?.let { dock ->
-            dock.enabled?.let { enabled ->
-                if (enabled != current.dockEnabled) {
-                    mutations += ConfigMutation.SetDockEnabled(enabled)
-                }
-            }
-            dock.favorites?.let { favorites ->
-                if (favorites != current.dockFavorites) {
-                    mutations += ConfigMutation.SetDockFavorites(favorites)
-                }
+        desired.home?.favorites?.let { favorites ->
+            TODO("PR 3: SetFavorites when the list differs")
+        }
+
+        desired.home?.widgets?.enabled?.let { enabled ->
+            if (enabled != current.widgetsEnabled) {
+                mutations += ConfigMutation.SetWidgetsEnabled(enabled)
             }
         }
 
-        desired.home?.widgets?.let { widgets ->
-            widgets.enabled?.let { enabled ->
-                if (enabled != current.widgetsEnabled) {
-                    mutations += ConfigMutation.SetWidgetsEnabled(enabled)
-                }
-            }
-            widgets.widgets?.let { list ->
-                if (list != current.widgets) {
-                    mutations += ConfigMutation.SetWidgets(list)
-                }
-            }
+        desired.home?.grid?.let { grid ->
+            TODO("PR 3: SetGrid when columns, locked or a named layout differ")
         }
 
         return mutations

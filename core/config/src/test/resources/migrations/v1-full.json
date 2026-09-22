@@ -1,0 +1,39 @@
+{
+  // What the provisioning generator emitted for schema 1: every section.
+  "schemaVersion": 1,
+
+  "icons": {
+    "themed": true,
+    "enforceThemed": false,
+    "pack": "com.example.iconpack"
+  },
+
+  "appearance": {
+    "transparency": {
+      "name": "glass",
+      "background": 0.7,
+      "surface": 0.55,
+      "elevatedSurface": 0.65
+    },
+    "wallpaper": {
+      "image": "zone.jpg",
+      "target": "both"
+    }
+  },
+
+  "home": {
+    "searchBar": { "position": "bottom" },
+    "dock": {
+      "enabled": true,
+      "favorites": [
+        { "packageName": "org.thoughtcrime.securesms", "profile": "personal" },
+        { "packageName": "com.example.work.mail", "profile": "work" },
+        "com.example.dialer"
+      ]
+    },
+    "widgets": {
+      "enabled": true,
+      "widgets": ["apps"]
+    }
+  }
+}

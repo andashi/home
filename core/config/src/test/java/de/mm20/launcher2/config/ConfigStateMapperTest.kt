@@ -7,6 +7,15 @@ import org.junit.Test
 
 class ConfigStateMapperTest {
 
+    private val dock = GridItemConfig(id = "dock", widget = "favorites", x = 0, y = 5, w = 4, h = 1)
+    private val clock = GridItemConfig(
+        id = "clock",
+        widget = "com.android.deskclock/.DigitalAppWidgetProvider",
+        x = 0, y = 0, w = 4, h = 2,
+        profile = Profile.Personal,
+        borderless = true, background = false, themeColors = true,
+    )
+
     @Test
     fun `maps every state field into the config schema`() {
         val state = ConfigState(
@@ -18,13 +27,17 @@ class ConfigStateMapperTest {
             transparencySurface = 0.6f,
             transparencyElevatedSurface = 0.7f,
             searchBarPosition = SearchBarPosition.Bottom,
-            dockEnabled = true,
-            dockFavorites = listOf(
+            favorites = listOf(
                 Favorite("com.example.app", Profile.Personal),
                 Favorite("com.example.work", Profile.Work),
             ),
             widgetsEnabled = true,
-            widgets = listOf(BuiltinWidget.Apps),
+            gridColumns = 5,
+            gridLocked = true,
+            gridLayouts = mapOf(
+                "phone" to GridLayoutConfig(listOf(dock, clock)),
+                "fold" to GridLayoutConfig(emptyList()),
+            ),
         )
 
         val config = state.toLauncherConfig()
@@ -36,10 +49,11 @@ class ConfigStateMapperTest {
             config.appearance?.transparency,
         )
         assertEquals(SearchBarPosition.Bottom, config.home?.searchBar?.position)
-        assertEquals(true, config.home?.dock?.enabled)
-        assertEquals(state.dockFavorites, config.home?.dock?.favorites)
+        assertEquals(state.favorites, config.home?.favorites)
         assertEquals(true, config.home?.widgets?.enabled)
-        assertEquals(state.widgets, config.home?.widgets?.widgets)
+        assertEquals(5, config.home?.grid?.columns)
+        assertEquals(true, config.home?.grid?.locked)
+        assertEquals(state.gridLayouts, config.home?.grid?.layouts)
     }
 
     @Test
@@ -59,8 +73,12 @@ class ConfigStateMapperTest {
         assertNotNull(config.icons)
         assertNotNull(config.appearance?.transparency)
         assertNotNull(config.home?.searchBar)
-        assertNotNull(config.home?.dock)
+        assertNotNull(config.home?.favorites)
         assertNotNull(config.home?.widgets)
+        assertNotNull(config.home?.grid)
+        assertEquals(4, config.home?.grid?.columns)
+        assertEquals(false, config.home?.grid?.locked)
+        assertNotNull(config.home?.grid?.layouts)
     }
 
     @Test
@@ -70,10 +88,9 @@ class ConfigStateMapperTest {
             iconPack = "com.example.icons",
             transparencyName = "mystique",
             transparencyBackground = 0.5f,
-            dockEnabled = true,
-            dockFavorites = listOf(Favorite("com.example.app")),
+            favorites = listOf(Favorite("com.example.app")),
             widgetsEnabled = true,
-            widgets = listOf(BuiltinWidget.Apps),
+            gridLayouts = mapOf("phone" to GridLayoutConfig(listOf(dock, clock))),
         )
 
         val serialized = ConfigParser.json.encodeToString(
@@ -85,5 +102,17 @@ class ConfigStateMapperTest {
         assertNotNull(parseResult.config)
         assertTrue(parseResult.diagnostics.none { it.severity == Severity.Error })
         assertEquals(emptyList<ConfigMutation>(), ConfigDiffer.diff(parseResult.config!!, state))
+    }
+
+    @Test
+    fun `the read-back carries every item with full geometry`() {
+        // D3: the read-back is a document one can paste into the dotfiles, so
+        // nothing in it may be left for the launcher to fill in.
+        val state = ConfigState(gridLayouts = mapOf("phone" to GridLayoutConfig(listOf(dock, clock))))
+
+        val items = state.toLauncherConfig().home?.grid?.layouts?.get("phone")?.items
+
+        assertNotNull(items)
+        assertTrue(items!!.all { it.hasGeometry })
     }
 }

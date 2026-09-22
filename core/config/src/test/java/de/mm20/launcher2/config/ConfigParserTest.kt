@@ -6,13 +6,14 @@ import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import kotlinx.serialization.json.JsonObject
 import java.io.File
 
 class ConfigParserTest {
 
     private val fullConfig = """
         {
-          "schemaVersion": 1,
+          "schemaVersion": 2,
           "icons": {
             "themed": true,
             "enforceThemed": true,
@@ -29,17 +30,26 @@ class ConfigParserTest {
           },
           "home": {
             "searchBar": { "position": "bottom" },
-            "dock": {
-              "enabled": true,
-              "favorites": [
-                { "packageName": "com.example.dialer", "profile": "personal" },
-                { "packageName": "com.example.mail", "profile": "work" },
-                { "packageName": "com.example.vault", "profile": "private" }
-              ]
-            },
-            "widgets": {
-              "enabled": true,
-              "widgets": ["apps"]
+            "favorites": [
+              { "packageName": "com.example.dialer", "profile": "personal" },
+              { "packageName": "com.example.mail", "profile": "work" },
+              { "packageName": "com.example.vault", "profile": "private" }
+            ],
+            "widgets": { "enabled": true },
+            "grid": {
+              "columns": 4,
+              "locked": false,
+              "layouts": {
+                "phone": {
+                  "items": [
+                    { "id": "dock", "widget": "favorites", "x": 0, "y": 5, "w": 4, "h": 1 },
+                    { "id": "clock", "widget": "com.android.deskclock/.DigitalAppWidgetProvider",
+                      "x": 0, "y": 0, "w": 4, "h": 2, "profile": "personal",
+                      "borderless": true, "background": false, "themeColors": true }
+                  ]
+                },
+                "fold": { "items": [] }
+              }
             }
           }
         }
@@ -50,15 +60,9 @@ class ConfigParserTest {
         val result = ConfigParser.parse(fullConfig)
 
         assertTrue(result.isSuccess)
-        // Since #47 a document that sets home.dock.enabled is told so. The
-        // config is still fully applied; the build just says which part of it
-        // it does not serve.
-        assertEquals(
-            listOf("inert-key" to "home.dock.enabled"),
-            result.diagnostics.map { it.code to it.path },
-        )
+        assertEquals(emptyList<Diagnostic>(), result.diagnostics)
         val config = result.config!!
-        assertEquals(1, config.schemaVersion)
+        assertEquals(2, config.schemaVersion)
         assertEquals(true, config.icons?.themed)
         assertEquals(true, config.icons?.enforceThemed)
         assertEquals("app.lawnchair.lawnicons", config.icons?.pack)
@@ -66,19 +70,33 @@ class ConfigParserTest {
         assertEquals(0.31f, config.appearance?.transparency?.background)
         assertEquals(WallpaperConfig("home.jpg", WallpaperTarget.Lock), config.appearance?.wallpaper)
         assertEquals(SearchBarPosition.Bottom, config.home?.searchBar?.position)
-        assertEquals(true, config.home?.dock?.enabled)
         assertEquals(
             listOf(
                 Favorite("com.example.dialer", Profile.Personal),
                 Favorite("com.example.mail", Profile.Work),
                 Favorite("com.example.vault", Profile.Private),
             ),
-            config.home?.dock?.favorites,
+            config.home?.favorites,
         )
+        assertEquals(true, config.home?.widgets?.enabled)
+        val grid = config.home?.grid!!
+        assertEquals(4, grid.columns)
+        assertEquals(false, grid.locked)
+        assertEquals(setOf("phone", "fold"), grid.layouts?.keys)
         assertEquals(
-            listOf(BuiltinWidget.Apps),
-            config.home?.widgets?.widgets,
+            listOf(
+                GridItemConfig(id = "dock", widget = "favorites", x = 0, y = 5, w = 4, h = 1),
+                GridItemConfig(
+                    id = "clock",
+                    widget = "com.android.deskclock/.DigitalAppWidgetProvider",
+                    x = 0, y = 0, w = 4, h = 2,
+                    profile = Profile.Personal,
+                    borderless = true, background = false, themeColors = true,
+                ),
+            ),
+            grid.layouts?.get("phone")?.items,
         )
+        assertEquals(emptyList<GridItemConfig>(), grid.layouts?.get("fold")?.items)
     }
 
     @Test
@@ -182,16 +200,24 @@ class ConfigParserTest {
     }
 
     @Test
-    fun `schemaVersion 1 parses`() {
+    fun `schemaVersion 1 still parses through the migration`() {
         val result = ConfigParser.parse("""{ "schemaVersion": 1 }""")
 
         assertTrue(result.isSuccess)
-        assertNotNull(result.config)
+        assertEquals(2, result.config?.schemaVersion)
     }
 
     @Test
-    fun `schemaVersion 2 fails cleanly`() {
+    fun `schemaVersion 2 parses`() {
         val result = ConfigParser.parse("""{ "schemaVersion": 2 }""")
+
+        assertTrue(result.isSuccess)
+        assertEquals(2, result.config?.schemaVersion)
+    }
+
+    @Test
+    fun `schemaVersion 3 fails cleanly`() {
+        val result = ConfigParser.parse("""{ "schemaVersion": 3 }""")
 
         assertFalse(result.isSuccess)
         assertNull(result.config)
@@ -211,19 +237,22 @@ class ConfigParserTest {
     fun `unknown keys at multiple nesting levels are reported but accepted`() {
         val input = """
             {
-              "schemaVersion": 1,
+              "schemaVersion": 2,
               "futureTopLevel": true,
               "icons": {
                 "themed": true,
                 "futureIconsKey": 42
               },
               "home": {
-                "dock": {
-                  "enabled": true,
-                  "futureDockKey": "x",
-                  "favorites": [
-                    { "packageName": "com.example.app", "futureFavoriteKey": 1 }
-                  ]
+                "favorites": [
+                  { "packageName": "com.example.app", "futureFavoriteKey": 1 }
+                ],
+                "grid": {
+                  "columns": 4,
+                  "futureGridKey": "x",
+                  "layouts": {
+                    "phone": { "items": [ { "id": "a", "widget": "favorites", "futureItemKey": 1 } ] }
+                  }
                 }
               }
             }
@@ -234,19 +263,20 @@ class ConfigParserTest {
         assertTrue(result.isSuccess)
         assertNotNull(result.config)
         val unknownKeys = result.diagnostics.filter { it.code == "unknown-key" }
-        assertEquals(4, unknownKeys.size)
+        assertEquals(5, unknownKeys.size)
         assertTrue(unknownKeys.all { it.severity == Severity.Warning })
         assertEquals(
             setOf(
                 "futureTopLevel",
                 "icons.futureIconsKey",
-                "home.dock.futureDockKey",
-                "home.dock.favorites[0].futureFavoriteKey",
+                "home.favorites[0].futureFavoriteKey",
+                "home.grid.futureGridKey",
+                "home.grid.layouts.phone.items[0].futureItemKey",
             ),
             unknownKeys.map { it.path }.toSet(),
         )
         assertEquals(true, result.config?.icons?.themed)
-        assertEquals(true, result.config?.home?.dock?.enabled)
+        assertEquals(4, result.config?.home?.grid?.columns)
     }
 
     @Test
@@ -294,16 +324,14 @@ class ConfigParserTest {
     fun `invalid package names are reported`() {
         val input = """
             {
-              "schemaVersion": 1,
+              "schemaVersion": 2,
               "icons": { "pack": "not a package!" },
               "home": {
-                "dock": {
-                  "favorites": [
-                    { "packageName": "com.example.valid" },
-                    { "packageName": "nodot" },
-                    { "packageName": "com..double" }
-                  ]
-                }
+                "favorites": [
+                  { "packageName": "com.example.valid" },
+                  { "packageName": "nodot" },
+                  { "packageName": "com..double" }
+                ]
               }
             }
         """.trimIndent()
@@ -316,8 +344,8 @@ class ConfigParserTest {
         assertEquals(
             setOf(
                 "icons.pack",
-                "home.dock.favorites[1].packageName",
-                "home.dock.favorites[2].packageName",
+                "home.favorites[1].packageName",
+                "home.favorites[2].packageName",
             ),
             invalid.map { it.path }.toSet(),
         )
@@ -327,15 +355,13 @@ class ConfigParserTest {
     fun `duplicate favorites are reported`() {
         val input = """
             {
-              "schemaVersion": 1,
+              "schemaVersion": 2,
               "home": {
-                "dock": {
-                  "favorites": [
-                    { "packageName": "com.example.a", "profile": "personal" },
-                    { "packageName": "com.example.a", "profile": "work" },
-                    { "packageName": "com.example.a", "profile": "personal" }
-                  ]
-                }
+                "favorites": [
+                  { "packageName": "com.example.a", "profile": "personal" },
+                  { "packageName": "com.example.a", "profile": "work" },
+                  { "packageName": "com.example.a", "profile": "personal" }
+                ]
               }
             }
         """.trimIndent()
@@ -344,25 +370,7 @@ class ConfigParserTest {
 
         val duplicates = result.diagnostics.filter { it.code == "duplicate-favorite" }
         assertEquals(1, duplicates.size)
-        assertEquals("home.dock.favorites[2]", duplicates.single().path)
-    }
-
-    @Test
-    fun `duplicate widgets are reported`() {
-        val input = """
-            {
-              "schemaVersion": 1,
-              "home": {
-                "widgets": { "widgets": ["apps", "apps"] }
-              }
-            }
-        """.trimIndent()
-
-        val result = ConfigParser.parse(input)
-
-        val duplicates = result.diagnostics.filter { it.code == "duplicate-widget" }
-        assertEquals(1, duplicates.size)
-        assertEquals("home.widgets.widgets[1]", duplicates.single().path)
+        assertEquals("home.favorites[2]", duplicates.single().path)
     }
 
     @Test
@@ -427,7 +435,7 @@ class ConfigParserTest {
 
     @Test
     fun `round trip of minimal config`() {
-        val config = LauncherConfig(schemaVersion = 1)
+        val config = LauncherConfig(schemaVersion = 2)
 
         val encoded = ConfigParser.json.encodeToString(LauncherConfig.serializer(), config)
         val decoded = ConfigParser.parse(encoded)
@@ -436,17 +444,22 @@ class ConfigParserTest {
     }
 
     @Test
-    fun `a widget this build no longer has is dropped, not fatal`() {
-        // A launcher.json written before weather was removed still names it.
-        // Without this the decode fails and the zone loses its wallpaper, dock
-        // and icons too - everything, because of one stale list entry.
+    fun `a layout this build does not know is dropped, not fatal`() {
+        // A layouts map decodes every key it finds, so a document that names a
+        // layout a later build introduced ("tablet", say) would otherwise carry
+        // it into state. The entry is dropped with a warning; the rest of the
+        // document, phone layout included, survives.
         val input = """
             {
-              "schemaVersion": 1,
+              "schemaVersion": 2,
               "icons": { "themed": true },
               "home": {
-                "dock": { "enabled": true },
-                "widgets": { "enabled": true, "widgets": ["weather", "apps", "calendar"] }
+                "grid": {
+                  "layouts": {
+                    "tablet": { "items": [ { "id": "a", "widget": "favorites" } ] },
+                    "phone": { "items": [ { "id": "a", "widget": "favorites" } ] }
+                  }
+                }
               }
             }
         """.trimIndent()
@@ -454,16 +467,18 @@ class ConfigParserTest {
         val result = ConfigParser.parse(input)
 
         assertTrue(result.isSuccess)
-        assertEquals(listOf(BuiltinWidget.Apps), result.config?.home?.widgets?.widgets)
-        // the rest of the document survives
+        assertEquals(setOf("phone"), result.config?.home?.grid?.layouts?.keys)
         assertEquals(true, result.config?.icons?.themed)
-        assertEquals(true, result.config?.home?.dock?.enabled)
 
-        val dropped = result.diagnostics.filter { it.code == "unknown-widget" }
-        assertEquals(2, dropped.size)
-        assertEquals("home.widgets.widgets[0]", dropped[0].path)
-        assertEquals("home.widgets.widgets[2]", dropped[1].path)
-        assertTrue(dropped.all { it.severity == Severity.Warning })
+        val dropped = result.diagnostics.filter { it.code == "unknown-layout" }
+        assertEquals(1, dropped.size)
+        assertEquals("home.grid.layouts.tablet", dropped.single().path)
+        assertEquals(Severity.Warning, dropped.single().severity)
+        assertEquals(
+            "an unknown layout is reported once, not also as an unknown key",
+            emptyList<Diagnostic>(),
+            result.diagnostics.filter { it.code == "unknown-key" },
+        )
     }
 
     @Test
@@ -513,16 +528,13 @@ class ConfigParserTest {
         // with it. Never triggered only because every zone ships an empty list.
         val input = """
             {
-              "schemaVersion": 1,
+              "schemaVersion": 2,
               "icons": { "themed": true },
               "home": {
-                "dock": {
-                  "enabled": true,
-                  "favorites": [
-                    "com.example.dialer",
-                    { "packageName": "com.example.mail", "profile": "work" }
-                  ]
-                }
+                "favorites": [
+                  "com.example.dialer",
+                  { "packageName": "com.example.mail", "profile": "work" }
+                ]
               }
             }
         """.trimIndent()
@@ -535,7 +547,7 @@ class ConfigParserTest {
                 Favorite("com.example.dialer", Profile.Personal),
                 Favorite("com.example.mail", Profile.Work),
             ),
-            result.config?.home?.dock?.favorites,
+            result.config?.home?.favorites,
         )
         assertEquals(true, result.config?.icons?.themed)
     }
@@ -544,8 +556,8 @@ class ConfigParserTest {
     fun `a favorite that is neither a name nor an object fails`() {
         val input = """
             {
-              "schemaVersion": 1,
-              "home": { "dock": { "favorites": [42] } }
+              "schemaVersion": 2,
+              "home": { "favorites": [42] }
             }
         """.trimIndent()
 
@@ -558,10 +570,8 @@ class ConfigParserTest {
     @Test
     fun `writing a favorite always uses the object form`() {
         val config = LauncherConfig(
-            schemaVersion = 1,
-            home = HomeConfig(
-                dock = DockConfig(favorites = listOf(Favorite("com.example.dialer"))),
-            ),
+            schemaVersion = 2,
+            home = HomeConfig(favorites = listOf(Favorite("com.example.dialer"))),
         )
 
         val serialized = ConfigParser.json.encodeToString(LauncherConfig.serializer(), config)
@@ -570,7 +580,7 @@ class ConfigParserTest {
             "a round trip should normalise to the object form, got: $serialized",
             serialized.contains("\"packageName\""),
         )
-        assertEquals(config.home?.dock?.favorites, ConfigParser.parse(serialized).config?.home?.dock?.favorites)
+        assertEquals(config.home?.favorites, ConfigParser.parse(serialized).config?.home?.favorites)
     }
 
     /**
@@ -591,24 +601,21 @@ class ConfigParserTest {
 
         val result = ConfigParser.parse(example)
 
-        // The ADR documents the *contract*, and the contract has
-        // home.dock.enabled in it. This build does not serve that key, and
-        // since #47 it says so rather than staying silent - which is the whole
-        // point, so the example keeps the key and the test states the
-        // consequence instead of hiding it.
+        // The example is the contract, and since #23 every key in it is
+        // served: no unknown keys, no inert keys, no validation errors.
         assertEquals(
-            "the documented example must produce nothing but the known inert key",
-            listOf("inert-key" to "home.dock.enabled"),
-            result.diagnostics.map { it.code to it.path },
+            "the documented example must produce no diagnostic at all",
+            emptyList<Diagnostic>(),
+            result.diagnostics,
         )
         assertTrue(result.isSuccess)
 
         val config = result.config!!
-        assertEquals(1, config.schemaVersion)
+        assertEquals(2, config.schemaVersion)
         assertEquals("com.example.iconpack", config.icons?.pack)
         assertEquals(WallpaperTarget.Both, config.appearance?.wallpaper?.target)
         assertEquals(SearchBarPosition.Bottom, config.home?.searchBar?.position)
-        assertEquals(listOf(BuiltinWidget.Apps), config.home?.widgets?.widgets)
+        assertEquals(true, config.home?.widgets?.enabled)
         // Both spellings, which is the point of showing them.
         assertEquals(
             listOf(
@@ -616,8 +623,16 @@ class ConfigParserTest {
                 Favorite("com.example.work.mail", Profile.Work),
                 Favorite("com.example.dialer", Profile.Personal),
             ),
-            config.home?.dock?.favorites,
+            config.home?.favorites,
         )
+        // The grid: the favorites widget in the bottom row and one AppWidget
+        // with full geometry, so the example shows both item shapes.
+        val phone = config.home?.grid?.layouts?.get("phone")?.items
+        assertEquals(4, config.home?.grid?.columns)
+        assertEquals(false, config.home?.grid?.locked)
+        assertNotNull(phone)
+        assertTrue(phone!!.any { it.isFavorites && it.hasGeometry })
+        assertTrue(phone.any { !it.isFavorites && it.hasGeometry })
     }
 
     /** The unit test runs with the module directory as its working directory. */
@@ -697,21 +712,21 @@ class ConfigParserTest {
         }
 
         val canonical =
-            """{"schemaVersion":1,"home":{"dock":{"enabled":true,"favorites":[{"packageName":"com.example.app"}]}}}"""
+            """{"schemaVersion":2,"home":{"favorites":[{"packageName":"com.example.app"}]}}"""
 
         assertEquals(
             "an explicit personal profile is the default and is not written back",
             canonical,
-            roundTrip("""{"schemaVersion":1,"home":{"dock":{"enabled":true,"favorites":[{"packageName":"com.example.app","profile":"personal"}]}}}"""),
+            roundTrip("""{"schemaVersion":2,"home":{"favorites":[{"packageName":"com.example.app","profile":"personal"}]}}"""),
         )
         assertEquals(
             "the bare package name becomes an object",
             canonical,
-            roundTrip("""{"schemaVersion":1,"home":{"dock":{"enabled":true,"favorites":["com.example.app"]}}}"""),
+            roundTrip("""{"schemaVersion":2,"home":{"favorites":["com.example.app"]}}"""),
         )
 
         val work =
-            """{"schemaVersion":1,"home":{"dock":{"enabled":true,"favorites":[{"packageName":"com.example.app","profile":"work"}]}}}"""
+            """{"schemaVersion":2,"home":{"favorites":[{"packageName":"com.example.app","profile":"work"}]}}"""
         assertEquals(
             "a non-default profile survives, which is why the asymmetry is easy to miss",
             work,
@@ -721,52 +736,75 @@ class ConfigParserTest {
 
     // ---- #47: reporting which contract keys this build actually serves ----
 
+    /**
+     * No key of the current contract is inert (the grid gave the last one,
+     * `home.dock.enabled`, a renderer and then removed it, #46), so the
+     * mechanism is exercised against a table of its own. The mechanism has
+     * to stay: the next build that accepts a key without serving it must say
+     * so, and a test that only passes while such a key exists would vanish
+     * with it.
+     */
+    private val tableWithAnInertKey: Map<String, Map<String, KeyEffect>> = mapOf(
+        "" to mapOf("schemaVersion" to KeyEffect.Applied, "home" to KeyEffect.Applied),
+        "home" to mapOf(
+            "legacy" to KeyEffect.Inert("nothing reads it any more"),
+            "favorites" to KeyEffect.Applied,
+        ),
+        "home.favorites[]" to mapOf("packageName" to KeyEffect.Applied, "profile" to KeyEffect.Applied),
+    )
+
+    private fun keysOf(document: String, table: Map<String, Map<String, KeyEffect>>): List<Diagnostic> {
+        val root = ConfigParser.json.parseToJsonElement(document) as JsonObject
+        return ConfigParser.diagnoseKeys(root, table)
+    }
+
     @Test
     fun `an inert key is reported while it is present, not only when it changes`() {
-        val document = """
-            {
-              "schemaVersion": 1,
-              "home": { "dock": { "enabled": true, "favorites": [] } }
-            }
-        """.trimIndent()
+        val document = """{"schemaVersion":2,"home":{"legacy":true,"favorites":[]}}"""
 
-        val inert = ConfigParser.parse(document).diagnostics.filter { it.code == "inert-key" }
+        val inert = keysOf(document, tableWithAnInertKey).filter { it.code == "inert-key" }
 
         assertEquals(1, inert.size)
-        assertEquals("home.dock.enabled", inert.single().path)
+        assertEquals("home.legacy", inert.single().path)
         assertEquals(Severity.Warning, inert.single().severity)
         // The message has to say what actually happens, or a host reads
         // "not served" and guesses the rest.
-        assertTrue(inert.single().message.contains("no dock is drawn"))
+        assertTrue(inert.single().message.contains("nothing reads it any more"))
     }
 
     @Test
     fun `a document that does not mention the inert key says nothing about it`() {
-        val document = """{"schemaVersion":1,"home":{"dock":{"favorites":["com.example.app"]}}}"""
+        val document = """{"schemaVersion":2,"home":{"favorites":["com.example.app"]}}"""
 
-        val result = ConfigParser.parse(document)
-
-        assertEquals(emptyList<Diagnostic>(), result.diagnostics)
-        assertTrue(result.isSuccess)
+        assertEquals(emptyList<Diagnostic>(), keysOf(document, tableWithAnInertKey))
     }
 
     @Test
-    fun `an inert key does not stop the config from applying`() {
-        val document = """{"schemaVersion":1,"home":{"dock":{"enabled":true}}}"""
+    fun `an inert key is a warning, which does not stop a config from applying`() {
+        val document = """{"schemaVersion":2,"home":{"legacy":true}}"""
 
-        val result = ConfigParser.parse(document)
+        val diagnostics = keysOf(document, tableWithAnInertKey)
 
-        assertTrue("a warning must not fail the reload", result.isSuccess)
-        assertEquals(true, result.config?.home?.dock?.enabled)
+        assertEquals(listOf("inert-key"), diagnostics.map { it.code })
+        assertTrue(diagnostics.none { it.severity == Severity.Error })
     }
 
     @Test
     fun `an unknown key is still an unknown key, not an inert one`() {
-        val document = """{"schemaVersion":1,"home":{"dock":{"enabld":true}}}"""
+        val document = """{"schemaVersion":2,"home":{"grid":{"colums":4}}}"""
 
         val codes = ConfigParser.parse(document).diagnostics.map { it.code }
 
         assertEquals(listOf("unknown-key"), codes)
+    }
+
+    @Test
+    fun `the current contract has no inert key`() {
+        val inert = ConfigParser.keyEffects.flatMap { (path, keys) ->
+            keys.filter { it.value is KeyEffect.Inert }.map { "$path.${it.key}" }
+        }
+
+        assertEquals(emptyList<String>(), inert)
     }
 
     /**
@@ -778,7 +816,7 @@ class ConfigParserTest {
     @Test
     fun `every section the differ can produce is classified`() {
         val everything = LauncherConfig(
-            schemaVersion = 1,
+            schemaVersion = 2,
             icons = IconsConfig(themed = true, enforceThemed = true, pack = "com.example.pack"),
             appearance = AppearanceConfig(
                 transparency = TransparencyConfig(
@@ -791,11 +829,17 @@ class ConfigParserTest {
             ),
             home = HomeConfig(
                 searchBar = SearchBarConfig(position = SearchBarPosition.Bottom),
-                dock = DockConfig(
-                    enabled = true,
-                    favorites = listOf(Favorite("com.example.app", Profile.Personal)),
+                favorites = listOf(Favorite("com.example.app", Profile.Personal)),
+                widgets = WidgetsConfig(enabled = true),
+                grid = GridConfig(
+                    columns = 5,
+                    locked = true,
+                    layouts = mapOf(
+                        "phone" to GridLayoutConfig(
+                            listOf(GridItemConfig(id = "dock", widget = "favorites", x = 0, y = 5, w = 4, h = 1)),
+                        ),
+                    ),
                 ),
-                widgets = WidgetsConfig(enabled = true, widgets = listOf(BuiltinWidget.Apps)),
             ),
         )
 

@@ -350,6 +350,18 @@ class UiSettings internal constructor(
             it.homeScreenWidgets
         }.distinctUntilChanged()
 
+    /** `home.grid.columns` (ADR 0001, D1). Config-only: no settings screen writes it. */
+    val homeGridColumns
+        get() = launcherDataStore.data.map {
+            it.homeGridColumns
+        }.distinctUntilChanged()
+
+    /** `home.grid.locked` (D3): edit mode is refused while true. */
+    val homeGridLocked
+        get() = launcherDataStore.data.map {
+            it.homeGridLocked
+        }.distinctUntilChanged()
+
     fun setHomeScreenWidgets(widgets: Boolean) {
         launcherDataStore.update {
             it.copy(homeScreenWidgets = widgets)

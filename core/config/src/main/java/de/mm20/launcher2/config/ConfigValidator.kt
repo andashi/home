@@ -4,7 +4,7 @@ object ConfigValidator {
     const val MaxNameLength = 64
     const val MaxPackageNameLength = 256
     const val MaxFavorites = 64
-    const val MaxWidgets = 16
+    const val MaxGridItems = 32
 
     private val packageNameRegex =
         Regex("^[A-Za-z][A-Za-z0-9_]*(\\.[A-Za-z][A-Za-z0-9_]*)+$")
@@ -39,18 +39,18 @@ object ConfigValidator {
             }
         }
 
-        config.home?.dock?.favorites?.let { favorites ->
+        config.home?.favorites?.let { favorites ->
             if (favorites.size > MaxFavorites) {
                 diagnostics += Diagnostic(
                     Severity.Error,
                     "too-many-favorites",
-                    "home.dock.favorites",
-                    "Dock favorites list exceeds the maximum of $MaxFavorites entries",
+                    "home.favorites",
+                    "Favorites list exceeds the maximum of $MaxFavorites entries",
                 )
             }
             val seen = mutableSetOf<Favorite>()
             favorites.forEachIndexed { index, favorite ->
-                val path = "home.dock.favorites[$index]"
+                val path = "home.favorites[$index]"
                 validatePackageName(favorite.packageName, "$path.packageName", diagnostics)
                 if (!seen.add(favorite)) {
                     diagnostics += Diagnostic(
@@ -59,28 +59,6 @@ object ConfigValidator {
                         path,
                         "Duplicate favorite '${favorite.packageName}' " +
                                 "(${favorite.profile.name.lowercase()})",
-                    )
-                }
-            }
-        }
-
-        config.home?.widgets?.widgets?.let { widgets ->
-            if (widgets.size > MaxWidgets) {
-                diagnostics += Diagnostic(
-                    Severity.Error,
-                    "too-many-widgets",
-                    "home.widgets.widgets",
-                    "Widget list exceeds the maximum of $MaxWidgets entries",
-                )
-            }
-            val seen = mutableSetOf<BuiltinWidget>()
-            widgets.forEachIndexed { index, widget ->
-                if (!seen.add(widget)) {
-                    diagnostics += Diagnostic(
-                        Severity.Error,
-                        "duplicate-widget",
-                        "home.widgets.widgets[$index]",
-                        "Duplicate widget type '${widget.name.lowercase()}'",
                     )
                 }
             }

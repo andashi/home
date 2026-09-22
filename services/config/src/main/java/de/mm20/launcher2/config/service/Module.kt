@@ -20,7 +20,22 @@ val configModule = module {
     factory<ProfileResolver> { ProfileManagerProfileResolver(get()) }
     single { ForegroundState() }
     single<WallpaperStore> { DefaultWallpaperStore(androidContext(), AndroidWallpaperApplier(androidContext()), get()) }
-    factory<ConfigStore> { DefaultConfigStore(get(), get(), get(), get(), get(), get(), get()) }
+    factory<GridLimitsSource> { AppWidgetGridLimitsSource(androidContext(), get()) }
+    // Replaced by the renderer's measured rows in PR 4; see GridRowsSource.
+    factory<GridRowsSource> { DefaultGridRowsSource() }
+    factory<ConfigStore> {
+        DefaultConfigStore(
+            settings = get(),
+            transparenciesRepository = get(),
+            homeGridRepository = get(),
+            gridLimits = get(),
+            gridRows = get(),
+            searchableRepository = get(),
+            appRepository = get(),
+            profileResolver = get(),
+            wallpapers = get(),
+        )
+    }
     single { ReloadReportStore(androidContext()) }
     // One reloader, one mutex: watcher and receiver must serialize on it.
     single { ConfigReloader(get(), get()) }

@@ -9,9 +9,15 @@ import android.os.UserHandle
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import de.mm20.launcher2.applications.AppRepository
-import de.mm20.launcher2.config.BuiltinWidget
 import de.mm20.launcher2.config.WallpaperTarget
 import de.mm20.launcher2.config.ConfigMutation
+import de.mm20.launcher2.config.GridItemConfig
+import de.mm20.launcher2.config.GridLayoutConfig
+import de.mm20.launcher2.grid.CellSize
+import de.mm20.launcher2.grid.SizeLimits
+import de.mm20.launcher2.homegrid.HomeGridItem
+import de.mm20.launcher2.homegrid.HomeGridItemConfig
+import de.mm20.launcher2.homegrid.HomeGridRepository
 import de.mm20.launcher2.config.ConfigState
 import de.mm20.launcher2.config.Diagnostic
 import de.mm20.launcher2.config.Favorite
@@ -31,11 +37,6 @@ import de.mm20.launcher2.themes.DefaultThemeId
 import de.mm20.launcher2.themes.R
 import de.mm20.launcher2.themes.transparencies.Transparencies
 import de.mm20.launcher2.themes.transparencies.TransparenciesRepository
-import de.mm20.launcher2.widgets.AppWidget
-import de.mm20.launcher2.widgets.AppWidgetConfig
-import de.mm20.launcher2.widgets.AppsWidget
-import de.mm20.launcher2.widgets.Widget
-import de.mm20.launcher2.widgets.WidgetRepository
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
@@ -60,7 +61,9 @@ class DefaultConfigStoreTest {
     private lateinit var database: AppDatabase
     private lateinit var transparenciesRepository: TransparenciesRepository
     private lateinit var settings: FakeLauncherConfigSettings
-    private lateinit var widgetRepository: FakeWidgetRepository
+    private lateinit var homeGridRepository: FakeHomeGridRepository
+    private lateinit var gridLimits: FakeGridLimitsSource
+    private lateinit var gridRows: FakeGridRowsSource
     private lateinit var searchableRepository: FakeSavableSearchableRepository
     private lateinit var appRepository: FakeAppRepository
     private lateinit var profileResolver: FakeProfileResolver
@@ -76,7 +79,9 @@ class DefaultConfigStoreTest {
         database = Room.inMemoryDatabaseBuilder(context, AppDatabase::class.java).build()
         transparenciesRepository = TransparenciesRepository(context, database)
         settings = FakeLauncherConfigSettings()
-        widgetRepository = FakeWidgetRepository()
+        homeGridRepository = FakeHomeGridRepository()
+        gridLimits = FakeGridLimitsSource()
+        gridRows = FakeGridRowsSource()
         searchableRepository = FakeSavableSearchableRepository()
         appRepository = FakeAppRepository()
         profileResolver = FakeProfileResolver(
@@ -87,7 +92,9 @@ class DefaultConfigStoreTest {
         store = DefaultConfigStore(
             settings,
             transparenciesRepository,
-            widgetRepository,
+            homeGridRepository,
+            gridLimits,
+            gridRows,
             searchableRepository,
             appRepository,
             profileResolver,
@@ -120,7 +127,7 @@ class DefaultConfigStoreTest {
     // ----- readState -----
 
     @Test
-    fun `readState combines settings transparency widgets and dock favorites`() = runTest {
+    fun `readState combines settings transparency grid layouts and favorites`() = runTest {
         val theme = Transparencies(
             id = UUID.randomUUID(),
             name = "glass",
@@ -129,11 +136,16 @@ class DefaultConfigStoreTest {
             elevatedSurface = 0.7f,
         )
         transparenciesRepository.upsert(theme)
-        settings.state = ConfigState(themedIcons = true, dockEnabled = true)
+        settings.state = ConfigState(themedIcons = true, gridColumns = 5, gridLocked = true)
         settings.transparenciesId = theme.id
-        widgetRepository.widgets = listOf(
-            AppsWidget(UUID.randomUUID()),
-            AppWidget(UUID.randomUUID(), AppWidgetConfig(widgetId = 1, height = 100)),
+        homeGridRepository.layouts["phone"] = listOf(
+            HomeGridItem(layout = "phone", id = "dock", widget = "favorites", x = 0, y = 5, w = 4, h = 1, position = 0),
+            HomeGridItem(
+                layout = "phone", id = "clock", widget = "com.android.deskclock/.DigitalAppWidgetProvider",
+                profile = "work", x = 0, y = 0, w = 4, h = 2, appWidgetId = 42,
+                config = HomeGridItemConfig(borderless = true, background = false, themeColors = true),
+                position = 1,
+            ),
         )
         val appA = app("com.example.a", personalHandle)
         val appB = app("com.example.b", workHandle)
@@ -142,19 +154,34 @@ class DefaultConfigStoreTest {
         val state = store.readState()
 
         assertTrue(state.themedIcons)
-        assertTrue(state.dockEnabled)
+        assertEquals(5, state.gridColumns)
+        assertEquals(true, state.gridLocked)
         assertEquals("glass", state.transparencyName)
         assertEquals(0.5f, state.transparencyBackground)
         assertEquals(0.6f, state.transparencySurface)
         assertEquals(0.7f, state.transparencyElevatedSurface)
-        assertEquals(listOf(BuiltinWidget.Apps), state.widgets)
         assertEquals(
             listOf(
                 Favorite("com.example.a", ConfigProfile.Personal),
                 Favorite("com.example.b", ConfigProfile.Work),
             ),
-            state.dockFavorites,
+            state.favorites,
         )
+        // Both layouts are always present; the device-local widget id is not
+        // part of the contract and never appears.
+        assertEquals(setOf("phone", "fold"), state.gridLayouts.keys)
+        assertEquals(
+            listOf(
+                GridItemConfig(id = "dock", widget = "favorites", x = 0, y = 5, w = 4, h = 1),
+                GridItemConfig(
+                    id = "clock", widget = "com.android.deskclock/.DigitalAppWidgetProvider",
+                    x = 0, y = 0, w = 4, h = 2, profile = ConfigProfile.Work,
+                    borderless = true, background = false, themeColors = true,
+                ),
+            ),
+            state.gridLayouts["phone"]?.items,
+        )
+        assertEquals(emptyList<GridItemConfig>(), state.gridLayouts["fold"]?.items)
     }
 
     @Test
@@ -163,7 +190,7 @@ class DefaultConfigStoreTest {
 
         val state = store.readState()
 
-        assertEquals(emptyList<Favorite>(), state.dockFavorites)
+        assertEquals(emptyList<Favorite>(), state.favorites)
     }
 
     // ----- transparency -----
@@ -258,56 +285,180 @@ class DefaultConfigStoreTest {
         assertEquals(0.4f, updated.surface)
     }
 
-    // ----- widgets -----
+    // ----- grid -----
+
+    private val clockWidget = "com.android.deskclock/.DigitalAppWidgetProvider"
+
+    private fun grid(vararg items: GridItemConfig, layout: String = "phone") =
+        ConfigMutation.SetGrid(layouts = mapOf(layout to GridLayoutConfig(items.toList())))
 
     @Test
-    fun `SetWidgets reconciles built-ins and preserves external widgets`() = runTest {
-        val apps = AppsWidget(UUID.randomUUID())
-        val external = AppWidget(UUID.randomUUID(), AppWidgetConfig(widgetId = 7, height = 200))
-        widgetRepository.widgets = listOf(apps, external)
+    fun `SetGrid writes a layout with full geometry in config order`() = runTest {
+        val diagnostics = store.apply(
+            listOf(
+                grid(
+                    GridItemConfig(id = "clock", widget = clockWidget, x = 0, y = 0, w = 4, h = 2, profile = ConfigProfile.Work, borderless = true),
+                    GridItemConfig(id = "dock", widget = "favorites", x = 0, y = 5, w = 4, h = 1),
+                )
+            )
+        )
+
+        assertEquals(emptyList<Diagnostic>(), diagnostics)
+        assertEquals(
+            listOf(
+                HomeGridItem(
+                    layout = "phone", id = "clock", widget = clockWidget, profile = "work",
+                    x = 0, y = 0, w = 4, h = 2, config = HomeGridItemConfig(borderless = true), position = 0,
+                ),
+                HomeGridItem(layout = "phone", id = "dock", widget = "favorites", x = 0, y = 5, w = 4, h = 1, position = 1),
+            ),
+            homeGridRepository.layouts["phone"],
+        )
+        assertEquals("the fold layout was not named and is untouched", null, homeGridRepository.layouts["fold"])
+    }
+
+    @Test
+    fun `SetGrid places items without geometry at the first free cells, provider default span`() = runTest {
+        gridLimits.limits[clockWidget] = ProviderLimits(default = CellSize(3, 1), limits = SizeLimits(2, 1, 4, 2))
+
+        store.apply(
+            listOf(
+                grid(
+                    GridItemConfig(id = "dock", widget = "favorites", x = 0, y = 5, w = 4, h = 1),
+                    GridItemConfig(id = "clock", widget = clockWidget),
+                    GridItemConfig(id = "favs2", widget = "favorites", w = 2, h = 2),
+                )
+            )
+        )
+
+        val items = homeGridRepository.layouts["phone"]!!.associateBy { it.id }
+        assertEquals(listOf(0, 0, 3, 1), items["clock"]!!.let { listOf(it.x, it.y, it.w, it.h) })
+        assertEquals(listOf(0, 1, 2, 2), items["favs2"]!!.let { listOf(it.x, it.y, it.w, it.h) })
+        assertEquals(listOf(0, 5, 4, 1), items["dock"]!!.let { listOf(it.x, it.y, it.w, it.h) })
+    }
+
+    @Test
+    fun `SetGrid enlarges a span below the provider minimum and says so`() = runTest {
+        gridLimits.limits[clockWidget] = ProviderLimits(default = CellSize(4, 2), limits = SizeLimits(2, 2, 4, 3))
 
         val diagnostics = store.apply(
-            listOf(ConfigMutation.SetWidgets(listOf(BuiltinWidget.Apps)))
+            listOf(grid(GridItemConfig(id = "clock", widget = clockWidget, x = 0, y = 0, w = 4, h = 1)))
         )
 
-        val result = widgetRepository.widgets
-        assertEquals(2, result.size)
-        // The built-in keeps its ID.
-        assertEquals(apps, result[0])
-        // The external app widget is preserved, not deleted.
-        assertEquals(external, result[1])
-        assertEquals(1, diagnostics.size)
-        assertEquals(Severity.Warning, diagnostics[0].severity)
-        assertEquals("unsupported-widget", diagnostics[0].code)
+        val clock = homeGridRepository.layouts["phone"]!!.single()
+        assertEquals(2, clock.h)
+        assertEquals(listOf("widget-too-small"), diagnostics.map { it.code })
+        assertEquals("home.grid.layouts.phone.items[0]", diagnostics.single().path)
+        assertEquals(Severity.Warning, diagnostics.single().severity)
     }
 
     @Test
-    fun `SetWidgets creates a built-in that is not there yet`() = runTest {
-        widgetRepository.widgets = emptyList()
+    fun `SetGrid drops what does not fit and reports it`() = runTest {
+        gridRows.rows = 2
 
-        store.apply(listOf(ConfigMutation.SetWidgets(listOf(BuiltinWidget.Apps))))
-
-        assertEquals(1, widgetRepository.widgets.size)
-        assertTrue(widgetRepository.widgets[0] is AppsWidget)
-    }
-
-    @Test
-    fun `SetWidgets removes built-ins missing from the config`() = runTest {
-        widgetRepository.widgets = listOf(
-            AppsWidget(UUID.randomUUID()),
-            AppsWidget(UUID.randomUUID()),
+        val diagnostics = store.apply(
+            listOf(
+                grid(
+                    GridItemConfig(id = "a", widget = "favorites", x = 0, y = 0, w = 4, h = 2),
+                    GridItemConfig(id = "b", widget = "favorites", x = 0, y = 0, w = 4, h = 1),
+                    GridItemConfig(id = "c", widget = "favorites", x = 0, y = 9, w = 9, h = 9),
+                )
+            )
         )
 
-        store.apply(listOf(ConfigMutation.SetWidgets(listOf(BuiltinWidget.Apps))))
-
-        assertEquals(1, widgetRepository.widgets.size)
-        assertTrue(widgetRepository.widgets[0] is AppsWidget)
+        assertEquals(listOf("a"), homeGridRepository.layouts["phone"]!!.map { it.id })
+        val codes = diagnostics.map { it.code to it.path }
+        assertTrue(codes.toString(), ("grid-overflow" to "home.grid.layouts.phone.items[1]") in codes)
+        assertTrue(codes.toString(), ("grid-out-of-bounds" to "home.grid.layouts.phone.items[2]") in codes)
+        assertTrue(diagnostics.all { it.severity == Severity.Warning })
     }
 
-    // ----- dock favorites -----
+    @Test
+    fun `SetGrid keeps the fold line rule on the fold layout`() = runTest {
+        settings.state = ConfigState(gridColumns = 4)
+
+        val diagnostics = store.apply(
+            listOf(
+                grid(
+                    GridItemConfig(id = "dock", widget = "favorites", x = 0, y = 5, w = 8, h = 1),
+                    GridItemConfig(id = "clock", widget = clockWidget, x = 3, y = 0, w = 2, h = 1),
+                    layout = "fold",
+                )
+            )
+        )
+
+        val items = homeGridRepository.layouts["fold"]!!.associateBy { it.id }
+        assertEquals("favorites may span the fold", 8, items["dock"]!!.w)
+        val clock = items["clock"]!!
+        assertTrue("the clock was nudged to one side: x=${clock.x}", clock.x + clock.w <= 4 || clock.x >= 4)
+        assertEquals(listOf("grid-crosses-fold"), diagnostics.map { it.code })
+    }
 
     @Test
-    fun `SetDockFavorites resolves apps and writes them in config order`() = runTest {
+    fun `SetGrid keeps the AppWidget host id of an item that already exists`() = runTest {
+        homeGridRepository.layouts["phone"] = listOf(
+            HomeGridItem(layout = "phone", id = "clock", widget = clockWidget, x = 0, y = 0, w = 4, h = 2, appWidgetId = 42, position = 0),
+            HomeGridItem(layout = "phone", id = "gone", widget = clockWidget, x = 0, y = 2, w = 4, h = 2, appWidgetId = 43, position = 1),
+        )
+
+        store.apply(
+            listOf(
+                grid(
+                    GridItemConfig(id = "clock", widget = clockWidget, x = 0, y = 3, w = 4, h = 2),
+                    GridItemConfig(id = "other", widget = clockWidget, x = 0, y = 0, w = 4, h = 2),
+                )
+            )
+        )
+
+        val items = homeGridRepository.layouts["phone"]!!.associateBy { it.id }
+        assertEquals(42, items["clock"]!!.appWidgetId)
+        assertEquals(3, items["clock"]!!.y)
+        assertEquals(null, items["other"]!!.appWidgetId)
+        assertEquals(null, items["gone"])
+    }
+
+    @Test
+    fun `SetGrid does not carry a host id over to a different provider under the same id`() = runTest {
+        homeGridRepository.layouts["phone"] = listOf(
+            HomeGridItem(layout = "phone", id = "w", widget = clockWidget, x = 0, y = 0, w = 4, h = 2, appWidgetId = 42, position = 0),
+        )
+
+        store.apply(listOf(grid(GridItemConfig(id = "w", widget = "com.other/.Widget", x = 0, y = 0, w = 4, h = 2))))
+
+        assertEquals(null, homeGridRepository.layouts["phone"]!!.single().appWidgetId)
+    }
+
+    @Test
+    fun `SetGrid keeps an item whose provider is not installed, with a warning`() = runTest {
+        gridLimits.limits.clear()
+
+        val diagnostics = store.apply(
+            listOf(grid(GridItemConfig(id = "clock", widget = clockWidget, x = 0, y = 0, w = 4, h = 2)))
+        )
+
+        assertEquals(listOf("clock"), homeGridRepository.layouts["phone"]!!.map { it.id })
+        assertEquals(listOf("unknown-widget-provider"), diagnostics.map { it.code })
+        assertEquals("home.grid.layouts.phone.items[0]", diagnostics.single().path)
+        assertEquals(Severity.Warning, diagnostics.single().severity)
+    }
+
+    @Test
+    fun `SetGrid without layouts touches no layout`() = runTest {
+        homeGridRepository.layouts["phone"] = listOf(
+            HomeGridItem(layout = "phone", id = "dock", widget = "favorites", x = 0, y = 5, w = 4, h = 1, position = 0),
+        )
+
+        val diagnostics = store.apply(listOf(ConfigMutation.SetGrid(columns = 5, locked = true)))
+
+        assertEquals(emptyList<Diagnostic>(), diagnostics)
+        assertEquals(1, homeGridRepository.layouts["phone"]!!.size)
+        assertEquals(0, homeGridRepository.replaceCalls)
+    }
+
+    // ----- favorites -----
+
+    @Test
+    fun `SetFavorites resolves apps and writes them in config order`() = runTest {
         val appA = app("com.example.a", personalHandle)
         val appB = app("com.example.b", workHandle)
         appRepository.apps["com.example.a" to personalHandle] = appA
@@ -317,7 +468,7 @@ class DefaultConfigStoreTest {
 
         val diagnostics = store.apply(
             listOf(
-                ConfigMutation.SetDockFavorites(
+                ConfigMutation.SetFavorites(
                     listOf(
                         Favorite("com.example.b", ConfigProfile.Work),
                         Favorite("com.example.a", ConfigProfile.Personal),
@@ -333,13 +484,13 @@ class DefaultConfigStoreTest {
     }
 
     @Test
-    fun `SetDockFavorites skips unavailable apps with error diagnostics`() = runTest {
+    fun `SetFavorites skips unavailable apps with error diagnostics`() = runTest {
         val appA = app("com.example.a", personalHandle)
         appRepository.apps["com.example.a" to personalHandle] = appA
 
         val diagnostics = store.apply(
             listOf(
-                ConfigMutation.SetDockFavorites(
+                ConfigMutation.SetFavorites(
                     listOf(
                         Favorite("com.example.a", ConfigProfile.Personal),
                         Favorite("com.example.missing", ConfigProfile.Personal),
@@ -352,16 +503,16 @@ class DefaultConfigStoreTest {
         assertEquals(1, diagnostics.size)
         assertEquals(Severity.Error, diagnostics[0].severity)
         assertEquals("favorite-unavailable", diagnostics[0].code)
-        assertEquals("home.dock.favorites[1]", diagnostics[0].path)
+        assertEquals("home.favorites[1]", diagnostics[0].path)
     }
 
     @Test
-    fun `SetDockFavorites reports an unavailable profile`() = runTest {
+    fun `SetFavorites reports an unavailable profile`() = runTest {
         profileResolver.work = null
 
         val diagnostics = store.apply(
             listOf(
-                ConfigMutation.SetDockFavorites(
+                ConfigMutation.SetFavorites(
                     listOf(Favorite("com.example.b", ConfigProfile.Work))
                 )
             )
@@ -380,16 +531,17 @@ class DefaultConfigStoreTest {
         store.apply(
             listOf(
                 ConfigMutation.SetIcons(themed = true),
-                ConfigMutation.SetDockEnabled(true),
+                ConfigMutation.SetGrid(columns = 5, locked = true),
                 ConfigMutation.SetWidgetsEnabled(true),
-                ConfigMutation.SetWidgets(emptyList()),
+                ConfigMutation.SetFavorites(emptyList()),
             )
         )
 
         assertEquals(1, settings.applyCalls.size)
         assertEquals(3, settings.applyCalls[0].size)
         assertTrue(settings.state.themedIcons)
-        assertTrue(settings.state.dockEnabled)
+        assertEquals(5, settings.state.gridColumns)
+        assertTrue(settings.state.gridLocked)
         assertTrue(settings.state.widgetsEnabled)
     }
 
@@ -418,8 +570,11 @@ class DefaultConfigStoreTest {
                     is ConfigMutation.SetSearchBarPosition ->
                         state = state.copy(searchBarPosition = mutation.position)
 
-                    is ConfigMutation.SetDockEnabled ->
-                        state = state.copy(dockEnabled = mutation.enabled)
+                    is ConfigMutation.SetGrid ->
+                        state = state.copy(
+                            gridColumns = mutation.columns ?: state.gridColumns,
+                            gridLocked = mutation.locked ?: state.gridLocked,
+                        )
 
                     is ConfigMutation.SetWidgetsEnabled ->
                         state = state.copy(widgetsEnabled = mutation.enabled)
@@ -434,25 +589,38 @@ class DefaultConfigStoreTest {
         }
     }
 
-    private class FakeWidgetRepository : WidgetRepository {
-        var widgets: List<Widget> = emptyList()
+    private class FakeHomeGridRepository : HomeGridRepository {
+        val layouts = mutableMapOf<String, List<HomeGridItem>>()
+        var replaceCalls = 0
 
-        override fun get(parent: UUID?, limit: Int, offset: Int): Flow<List<Widget>> {
-            return flowOf(widgets)
+        override fun observe(layout: String): Flow<List<HomeGridItem>> = flowOf(layouts[layout] ?: emptyList())
+
+        override suspend fun replace(layout: String, items: List<HomeGridItem>) {
+            replaceCalls++
+            layouts[layout] = items
         }
 
-        override suspend fun setAwaited(widgets: List<Widget>, parentId: UUID?) {
-            this.widgets = widgets
-        }
-
-        override fun create(widget: Widget, position: Int, parentId: UUID?) =
+        override suspend fun patchGeometry(layout: String, id: String, x: Int, y: Int, w: Int, h: Int) =
             throw NotImplementedError()
 
-        override fun update(widget: Widget) = throw NotImplementedError()
-        override fun delete(widget: Widget) = throw NotImplementedError()
-        override fun set(widgets: List<Widget>, parentId: UUID?) = throw NotImplementedError()
-        override fun exists(type: String): Flow<Boolean> = throw NotImplementedError()
-        override fun count(type: String): Flow<Int> = throw NotImplementedError()
+        override suspend fun setAppWidgetId(layout: String, id: String, appWidgetId: Int?) =
+            throw NotImplementedError()
+
+        override suspend fun delete(layout: String, id: String) = throw NotImplementedError()
+    }
+
+    private class FakeGridLimitsSource : GridLimitsSource {
+        /** Providers the fake knows; the clock is installed by default. */
+        val limits = mutableMapOf(
+            "com.android.deskclock/.DigitalAppWidgetProvider" to
+                    ProviderLimits(default = CellSize(4, 2), limits = SizeLimits(2, 1, 4, 4)),
+        )
+
+        override fun lookup(widget: String, profile: ConfigProfile?, columns: Int): ProviderLimits? = limits[widget]
+    }
+
+    private class FakeGridRowsSource(var rows: Int = 6) : GridRowsSource {
+        override fun rows(layout: String): Int = rows
     }
 
     private class FakeSavableSearchableRepository : SavableSearchableRepository {
