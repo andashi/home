@@ -8,6 +8,7 @@ import de.mm20.launcher2.grid.GridLayout
 import de.mm20.launcher2.grid.GridSpec
 import de.mm20.launcher2.grid.SizeLimits
 import de.mm20.launcher2.grid.Span
+import android.util.Log
 import de.mm20.launcher2.preferences.WidgetScreenTarget
 import de.mm20.launcher2.widgets.AppWidget
 import de.mm20.launcher2.widgets.Widget
@@ -77,32 +78,43 @@ class HomeGridSeeder(
      */
     suspend fun seedIfNeeded(geometry: GridGeometry): SeedResult {
         if (flag.isSeeded()) return SeedResult()
-        val layout = geometry.layout
-        if (homeGridRepository.observe(layout).first().isNotEmpty()) {
+
+        // Every layout this device needs, each with its own spec: the
+        // geometry's own, and on a fold the phone layout at cover width.
+        val targets = linkedMapOf(geometry.layout to geometry.spec)
+        if (geometry.layout == HomeGridLayouts.Fold) {
+            targets[HomeGridLayouts.Phone] = GridSpec(columns = geometry.spec.columns / 2, rows = geometry.spec.rows)
+        }
+        val empty = targets.filterKeys { homeGridRepository.observe(it).first().isEmpty() }
+        if (empty.isEmpty()) {
             flag.markSeeded()
             return SeedResult()
         }
+
         val column = widgetRepository.get(WidgetScreenTarget.Default.id).first()
-
-        val items = convert(column, layout, geometry.spec, geometry.cellDp, geometry.gapDp)
-        homeGridRepository.replace(layout, items)
-
-        if (layout == HomeGridLayouts.Fold) {
-            val columns = geometry.spec.columns / 2
-            val phoneSpec = GridSpec(columns = columns, rows = geometry.spec.rows)
-            homeGridRepository.replace(
-                HomeGridLayouts.Phone,
-                convert(column, HomeGridLayouts.Phone, phoneSpec, geometry.cellDp, geometry.gapDp),
-            )
+        var own = Converted(emptyList(), emptyList())
+        for ((layout, spec) in empty) {
+            val converted = convert(column, layout, spec, geometry.cellDp, geometry.gapDp)
+            // A failed write propagates: the flag stays clear, and the next
+            // start seeds whatever is still empty.
+            homeGridRepository.replace(layout, converted.items)
+            if (layout == geometry.layout) own = converted
+        }
+        for (leftover in own.leftovers) {
+            Log.w(Tag, "no room above the dock for AppWidget ${leftover.appWidgetId} (${leftover.provider}); its column entry is kept")
         }
         flag.markSeeded()
-        return SeedResult(items)
+        return SeedResult(own.items, own.leftovers)
     }
+
+    private class Converted(val items: List<HomeGridItem>, val leftovers: List<Leftover>)
 
     /**
      * AppWidgets in column order, each the full cover width and as many rows as
      * its height needs (never more than the rows above the dock), placed
-     * from the top by the engine; the dock last, in the bottom row.
+     * from the top by the engine; the dock last, in the bottom row. A widget
+     * that finds no room is a [Leftover]: its `Widget` row in the old column
+     * is left untouched, so it is not lost, only not on the grid.
      */
     private fun convert(
         column: List<Widget>,
@@ -110,10 +122,11 @@ class HomeGridSeeder(
         spec: GridSpec,
         cellDp: Float,
         gapDp: Float,
-    ): List<HomeGridItem> {
+    ): Converted {
         val dockSpan = Span(0, spec.rows - 1, spec.columns, 1)
         val occupied = mutableListOf(GridItem(DockId, dockSpan, SizeLimits.Unbounded, mayCrossFold = true))
         val result = mutableListOf<HomeGridItem>()
+        val leftovers = mutableListOf<Leftover>()
         for (widget in column) {
             if (widget !is AppWidget) continue
             val provider = providerOf(widget.config.widgetId) ?: continue
@@ -124,7 +137,11 @@ class HomeGridSeeder(
             // an AppWidget may not span the fold line (D7).
             val width = spec.foldColumn ?: spec.columns
             val candidate = GridItem(id, Span(0, 0, width, h), SizeLimits.Unbounded)
-            val placed = GridLayout.place(spec, occupied, candidate) ?: continue
+            val placed = GridLayout.place(spec, occupied, candidate)
+            if (placed == null) {
+                leftovers += Leftover(widget.config.widgetId, provider)
+                continue
+            }
             occupied += placed
             result += HomeGridItem(
                 layout = layout,
@@ -153,11 +170,12 @@ class HomeGridSeeder(
             h = dockSpan.h,
             position = result.size,
         )
-        return result
+        return Converted(result, leftovers)
     }
 
     companion object {
         /** The id the seeded favorites widget gets; a config may rename it. */
         const val DockId = "dock"
+        private const val Tag = "HomeGridSeeder"
     }
 }

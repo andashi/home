@@ -114,6 +114,11 @@ class HomeGridVM(
         viewModelScope.launch { repository.delete(item.layout, item.id) }
     }
 
+    /** Records the host id the system's bind dialog gave an item (see `BindProviderContract`). */
+    fun bind(item: HomeGridItem, appWidgetId: Int) {
+        viewModelScope.launch { repository.setAppWidgetId(item.layout, item.id, appWidgetId) }
+    }
+
     /** Points an item at another provider, already bound to [appWidgetId]. */
     fun replace(item: HomeGridItem, widget: String, appWidgetId: Int) {
         viewModelScope.launch {

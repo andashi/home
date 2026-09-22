@@ -219,8 +219,10 @@ density_scale() {
 # cells are there (up to CELLS_TIMEOUT seconds) and the last mismatch is
 # what a timeout reports.
 CELLS_TIMEOUT="${CELLS_TIMEOUT:-60}"
+LAST_EXPECTED_CELLS=""
 assert_cells() { # $1 = expected lines, $2 = description
   local expected="$1" what="$2" elapsed=0 result=""
+  LAST_EXPECTED_CELLS="$expected"
   while [ "$elapsed" -lt "$CELLS_TIMEOUT" ]; do
     if result="$(check_cells "$expected" "$what" 2>&1)"; then
       printf '%s\n' "$result"
@@ -378,6 +380,17 @@ adb -s "$SERIAL" shell dumpsys role 2>/dev/null | tr -d '\r' | grep -A2 'android
   || die "$PKG does not hold the HOME role after add-role-holder"
 ok "HOME role granted to $PKG"
 
+# The HOME role does not carry the bind-widget grant (measured 2026-09-22 on
+# the foldable instance: role held, dumpsys appwidget "Grants:" empty, every
+# bind refused). A real user gives it once through the system's bind dialog
+# ("always allow", the cell's Allow action); here the shell tool stands in
+# for that tap.
+adb -s "$SERIAL" shell appwidget grantbind --package "$PKG" --user 0 >/dev/null 2>&1 \
+  || die "appwidget grantbind failed for $PKG"
+adb -s "$SERIAL" shell dumpsys appwidget 2>/dev/null | tr -d '\r' | sed -n '/^Grants:/,$p' | grep -q "package=$PKG" \
+  || die "$PKG has no bind-widget grant after grantbind"
+ok "bind-widget grant given to $PKG (stands in for the always-allow dialog)"
+
 HAVE_CLOCK=1
 adb -s "$SERIAL" shell pm list packages | tr -d '\r' | grep -x "package:$CLOCK_PKG" >/dev/null \
   || { HAVE_CLOCK=0; warn "$CLOCK_PKG not installed: AppWidget steps are skipped"; }
@@ -447,19 +460,24 @@ if [ "$HAVE_CLOCK" = 1 ]; then
   # --- 7. STUB: locked layout (PR 5) -----------------------------------
   warn "step 7 (locked layout refuses edit mode) lands with PR 5"
 
-  # --- 8. malformed push keeps the last good state ---------------------
-  settle_then_broadcast "$MALFORMED_CONFIG" "$H_MALFORMED" "malformed"
-  assert_jq "$LAST_REPORT" \
-    '.success == false and ([.diagnostics[] | select(.severity == "error" and .code == "malformed-json")] | length > 0)' \
-    "malformed config yields a failed report"
-  effective="$(query_json config)" || die "could not query /config"
-  assert_jq "$effective" '(.home.grid.layouts.phone.items | length) == 3' "the last good grid is still effective"
-  show_home
-  assert_cells $'digital 0 0 3 1\nanalog 0 1 2 2\ndock 0 5 4 1' "last good state on screen"
-  ok "malformed push: last good state kept, cells unchanged"
 else
-  warn "steps 2, 5, 6 and 8 need $CLOCK_PKG; skipped"
+  warn "steps 2, 5 and 6 need $CLOCK_PKG; skipped"
 fi
+
+# --- 8. malformed push keeps the last good state -----------------------
+# Against whatever the last good state is: the configured grid when the
+# clock is installed, the seeded one otherwise.
+
+good_grid="$(query_json config | jq -c '.home.grid')" || die "could not query /config"
+settle_then_broadcast "$MALFORMED_CONFIG" "$H_MALFORMED" "malformed"
+assert_jq "$LAST_REPORT" \
+  '.success == false and ([.diagnostics[] | select(.severity == "error" and .code == "malformed-json")] | length > 0)' \
+  "malformed config yields a failed report"
+effective="$(query_json config)" || die "could not query /config"
+[ "$(jq -c '.home.grid' <<<"$effective")" = "$good_grid" ] || die "the effective grid changed after a malformed push"
+show_home
+assert_cells "$LAST_EXPECTED_CELLS" "last good state on screen"
+ok "malformed push: last good state kept, cells unchanged"
 
 # --- 9. STUB: profile isolation (PR 6) ---------------------------------
 warn "step 9 (profile isolation in user 10) lands with PR 6"

@@ -79,17 +79,28 @@ class HomeGridReconciler(
             }
         }
 
-        // The widget column pages keep their AppWidgets in the same host.
+        // The widget column pages keep their AppWidgets in the same host. The
+        // repository pages at PageSize, so every page is read before anything
+        // is released; an id missed here would be released as an orphan.
         val parents = WidgetScreenTarget.entries.map<WidgetScreenTarget, java.util.UUID?> { it.id } + null
         for (parent in parents) {
-            referenced += widgetRepository.get(parent).first()
-                .filterIsInstance<AppWidget>()
-                .map { it.config.widgetId }
+            var offset = 0
+            while (true) {
+                val page = widgetRepository.get(parent, limit = PageSize, offset = offset).first()
+                referenced += page.filterIsInstance<AppWidget>().map { it.config.widgetId }
+                if (page.size < PageSize) break
+                offset += PageSize
+            }
         }
 
         val released = port.boundIds().filter { it !in referenced }
         for (id in released) port.release(id)
 
         return ReconcileReport(bound, failed, unavailable, released)
+    }
+
+    companion object {
+        /** The widget repository's page size (its `limit` default). */
+        const val PageSize = 100
     }
 }

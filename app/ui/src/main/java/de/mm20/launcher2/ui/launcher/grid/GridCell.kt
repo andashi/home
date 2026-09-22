@@ -1,6 +1,14 @@
 package de.mm20.launcher2.ui.launcher.grid
 
 import android.appwidget.AppWidgetManager
+import android.appwidget.AppWidgetProviderInfo
+import android.content.ComponentName
+import android.content.Context
+import android.os.Process
+import androidx.activity.compose.rememberLauncherForActivityResult
+import de.mm20.launcher2.profiles.Profile
+import de.mm20.launcher2.profiles.ProfileManager
+import org.koin.compose.koinInject
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -50,12 +58,42 @@ internal fun GridCell(
             favoritesContent(cell.span.w, cell.span.h)
         }
     } else {
+        // An item the host could not bind silently (no bind-widget grant yet)
+        // offers the system's dialog for its own provider, if it is installed.
+        val context = LocalContext.current
+        val profileManager: ProfileManager = koinInject()
+        val providerInfo = remember(item.widget, item.profile) {
+            installedProvider(context, profileManager, item.widget, item.profile)
+        }
+        val bindLauncher = rememberLauncherForActivityResult(BindProviderContract()) { appWidgetId ->
+            if (appWidgetId != null) viewModel.bind(item, appWidgetId)
+        }
         AppWidgetCell(
             item = item,
             onRemove = { viewModel.remove(item) },
             onReplace = { widget, appWidgetId -> viewModel.replace(item, widget, appWidgetId) },
+            onAllow = providerInfo?.let { info -> { bindLauncher.launch(info) } },
         )
     }
+}
+
+/** The installed provider an item names, in its profile, or null. */
+private fun installedProvider(
+    context: Context,
+    profileManager: ProfileManager,
+    widget: String,
+    profile: String?,
+): AppWidgetProviderInfo? {
+    val component = ComponentName.unflattenFromString(widget) ?: return null
+    val userHandle = when (profile) {
+        null, "personal" -> Process.myUserHandle()
+        "work" -> profileManager.getProfile(Profile.Type.Work)?.userHandle
+        "private" -> profileManager.getProfile(Profile.Type.Private)?.userHandle
+        else -> null
+    } ?: return null
+    return AppWidgetManager.getInstance(context)
+        ?.getInstalledProvidersForProfile(userHandle)
+        ?.firstOrNull { it.provider == component }
 }
 
 /**
@@ -110,10 +148,21 @@ internal fun AppWidgetCell(
                         OutlinedButton(onClick = onRemove) {
                             Text(stringResource(R.string.widget_action_remove))
                         }
+                        if (onAllow != null) {
+                            OutlinedButton(onClick = { replaceWidget = true }) {
+                                Text(stringResource(R.string.widget_action_replace))
+                            }
+                        }
                     },
                     primaryAction = {
-                        Button(onClick = { replaceWidget = true }) {
-                            Text(stringResource(R.string.widget_action_replace))
+                        if (onAllow != null) {
+                            Button(onClick = onAllow) {
+                                Text(stringResource(R.string.widget_action_allow))
+                            }
+                        } else {
+                            Button(onClick = { replaceWidget = true }) {
+                                Text(stringResource(R.string.widget_action_replace))
+                            }
                         }
                     },
                 )

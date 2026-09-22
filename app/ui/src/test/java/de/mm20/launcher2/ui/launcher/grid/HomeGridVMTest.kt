@@ -180,6 +180,20 @@ class HomeGridVMTest {
     }
 
     @Test
+    fun `bind records the host id the system dialog returned`() = runTest(dispatcher) {
+        val item = gridItem("clock", 0, 0, 2, 2, position = 0)
+        val repository = FakeHomeGridRepository(mapOf(HomeGridLayouts.Phone to listOf(item)))
+        val vm = vm(FormFactor.Phone, repository)
+
+        vm.bind(item, 77)
+        dispatcher.scheduler.advanceUntilIdle()
+
+        val bound = repository.observe(HomeGridLayouts.Phone).first().single()
+        assertEquals(77, bound.appWidgetId)
+        assertEquals(item.widget, bound.widget)
+    }
+
+    @Test
     fun `replace points the item at the new provider and host id`() = runTest(dispatcher) {
         val item = gridItem("clock", 0, 0, 2, 2, position = 0)
         val repository = FakeHomeGridRepository(mapOf(HomeGridLayouts.Phone to listOf(item)))
