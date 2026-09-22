@@ -15,6 +15,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.SerializationException
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.intOrNull
 import java.io.File
 import java.io.IOException
 
@@ -100,6 +104,20 @@ class GridWriteBack(
         if (config.home?.grid?.locked == true) {
             return@withContext skipped("locked", "home.grid.locked is true; nothing is written back")
         }
+        // The parsed config carries the migrated version; the declared one
+        // is what is on disk. A v1 file is read through migration but never
+        // written: a v2 grid next to v1 keys would be a shape nobody can
+        // regenerate from.
+        val declared = declaredSchemaVersion(text)
+        if (declared != null && declared < ConfigMigrations.currentSchemaVersion) {
+            return@withContext skipped(
+                "schema-version-outdated",
+                "${file.name} is schemaVersion $declared; the launcher reads it through migration " +
+                        "but writes only the current schema (${ConfigMigrations.currentSchemaVersion}). " +
+                        "Regenerate the file as schemaVersion ${ConfigMigrations.currentSchemaVersion} " +
+                        "to enable write-back.",
+            )
+        }
 
         val state = configStore.readState()
         val grid = GridConfig(columns = state.gridColumns, locked = state.gridLocked, layouts = state.gridLayouts)
@@ -152,6 +170,16 @@ class GridWriteBack(
     }
 
     private fun skipped(code: String, reason: String) = WriteBackResult.Skipped(code, reason)
+
+    /** The `schemaVersion` as written in the file, before migration. Null when it cannot be read. */
+    private fun declaredSchemaVersion(text: String): Int? = try {
+        (ConfigParser.json.parseToJsonElement(text) as? JsonObject)
+            ?.get("schemaVersion")?.let { it as? JsonPrimitive }?.intOrNull
+    } catch (e: SerializationException) {
+        null
+    } catch (e: IllegalArgumentException) {
+        null
+    }
 
     /**
      * Replaces the value of `home.grid`, or inserts `grid` into `home`, or
