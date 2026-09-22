@@ -3,6 +3,7 @@ package de.mm20.launcher2.ui.launcher.grid
 import de.mm20.launcher2.grid.CellSize
 import de.mm20.launcher2.grid.SizeLimits
 import de.mm20.launcher2.homegrid.GridItemLimits
+import de.mm20.launcher2.homegrid.HomeGridCell
 import de.mm20.launcher2.homegrid.HomeGridItem
 import de.mm20.launcher2.homegrid.HomeGridLayouts
 import de.mm20.launcher2.homegrid.HomeGridWriteResult
@@ -22,6 +23,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
@@ -81,9 +83,15 @@ class HomeGridEditVMTest {
         val repository: FakeHomeGridRepository,
         val writeBack: FakeWriteBack,
         val locked: MutableStateFlow<Boolean>,
+        /** Every event the view model emitted, collected in the background. */
+        val events: List<GridEditEvent>,
     )
 
-    private fun fixture(
+    /**
+     * A view model over fakes with its state and events collected in the
+     * test's background scope, the way the composable would collect them.
+     */
+    private fun TestScope.fixture(
         items: List<HomeGridItem> = listOf(clock, note, dock),
         locked: Boolean = false,
         limits: Map<String, SizeLimits> = emptyMap(),
@@ -106,10 +114,24 @@ class HomeGridEditVMTest {
         )
         // A 4x6 phone grid.
         vm.onWindowMeasured(396f, 622f)
-        return Fixture(vm, repository, writeBack, lockedFlow)
+        val events = mutableListOf<GridEditEvent>()
+        backgroundScope.launch { vm.state.collect {} }
+        backgroundScope.launch { vm.events.collect { events += it } }
+        testScheduler.advanceUntilIdle()
+        return Fixture(vm, repository, writeBack, lockedFlow, events)
     }
 
-    private suspend fun HomeGridVM.cells() = state.filterNotNull().first { it.cells.isNotEmpty() }.cells
+    /**
+     * The cells after every pending dispatch has run. The first value waits
+     * for the settings DataStore (real IO, outside the test scheduler); later
+     * values only need the test dispatcher to run.
+     */
+    private suspend fun HomeGridVM.cells(): List<HomeGridCell> {
+        if (state.value == null) state.filterNotNull().first()
+        dispatcher.scheduler.advanceUntilIdle()
+        return state.value!!.cells
+    }
+
     private suspend fun HomeGridVM.spanOf(id: String) = cells().first { it.item.id == id }.span
 
     @Test
@@ -158,15 +180,12 @@ class HomeGridEditVMTest {
         val writeBack = FakeWriteBack(HomeGridWriteResult.Skipped("locked", "home.grid.locked is true"))
         val f = fixture(writeBack = writeBack)
         f.vm.cells()
-        val events = mutableListOf<GridEditEvent>()
-        val collector = launch { f.vm.events.collect { events += it } }
 
         f.vm.enterEdit()
         f.vm.exitEdit()
         dispatcher.scheduler.advanceUntilIdle()
-        collector.cancel()
 
-        assertEquals(listOf(GridEditEvent.WriteBackSkipped("locked", "home.grid.locked is true")), events)
+        assertEquals(listOf(GridEditEvent.WriteBackSkipped("locked", "home.grid.locked is true")), f.events)
     }
 
     @Test
@@ -237,14 +256,11 @@ class HomeGridEditVMTest {
         val f = fixture(items = listOf(dockItem(0, 0, 4, 6)))
         f.vm.cells()
         f.vm.enterEdit()
-        val events = mutableListOf<GridEditEvent>()
-        val collector = launch { f.vm.events.collect { events += it } }
 
         assertFalse(f.vm.addWidget("com.example/.New", null, null, CellSize(1, 1), SizeLimits.Unbounded))
         dispatcher.scheduler.advanceUntilIdle()
-        collector.cancel()
 
-        assertEquals(listOf<GridEditEvent>(GridEditEvent.NoRoom), events)
+        assertEquals(listOf<GridEditEvent>(GridEditEvent.NoRoom), f.events)
         assertEquals(1, f.vm.cells().size)
     }
 
@@ -252,17 +268,14 @@ class HomeGridEditVMTest {
     fun `seed leftovers are announced once on the first edit`() = runTest(dispatcher) {
         val f = fixture(leftovers = 2)
         f.vm.cells()
-        val events = mutableListOf<GridEditEvent>()
-        val collector = launch { f.vm.events.collect { events += it } }
 
         f.vm.enterEdit()
         f.vm.exitEdit()
         f.vm.enterEdit()
         f.vm.exitEdit()
         dispatcher.scheduler.advanceUntilIdle()
-        collector.cancel()
 
-        assertEquals(listOf<GridEditEvent>(GridEditEvent.SeedLeftovers(2)), events)
+        assertEquals(listOf<GridEditEvent>(GridEditEvent.SeedLeftovers(2)), f.events)
     }
 
     @Test

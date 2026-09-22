@@ -13,15 +13,27 @@
 #   2. push a schemaVersion 2 file with favorites and two AppWidgets of the
 #      AOSP clock: the read-back `home` equals the file, and the uiautomator
 #      bounds of every `grid-item:<id>` match the configured cells
-#   3. STUB (PR 6, write-back): edit by hand, pull the file, diff
-#   4. STUB (PR 6): idempotence of the pulled file
+#   3. edit by hand: long-press a free cell into edit mode, drag the
+#      digital clock three rows down, tap Done; pull the file; the digital
+#      clock's y is 3, only the home.grid object changed (the `// note`
+#      comment in icons survives byte for byte), the report says self-write
+#   4. idempotence: reloading the pulled file applies nothing
 #   5. push a file that drops a 2x2 item onto the clock's cell: the clock's
 #      bounds moved down one row, diagnostics clean
 #   6. push w: 1 for the digital clock (declared minimum two cells wide):
 #      diagnostic widget-too-small, bounds show two columns
-#   7. STUB (PR 5, edit mode): locked layout refuses edit mode
+#   7. locked: push locked: true, a long press shows no edit bar, the file's
+#      hash on the device is unchanged
 #   8. malformed push: last good state kept, bounds unchanged
-#   9. STUB (PR 6): profile isolation in user 10
+#   9. profile isolation: a second user gets its own grid through --user,
+#      user 0's file and report are untouched
+#
+# FOLD=1 runs on the foldable GrapheneOS instance (SERIAL=emulator-5560,
+# OVERLAY_DIR=.../instances/test-fold): the fixtures carry a `fold` layout
+# eight columns wide with an item in the right half, step 2 folds and
+# unfolds between its checks (D7: the cover shows columns 0-3, the right
+# item is absent, the dock is clipped to four columns), and the phone-only
+# steps 5 to 7 are skipped.
 #
 # Cells are found by their content description "grid-item:<id>", which the
 # renderer sets on every cell. The favorites row anchors the geometry: it
@@ -59,6 +71,9 @@ ACTION="$PKG.action.RELOAD_CONFIG"
 STATE_URI="content://$PKG.state"
 INGEST_URI="content://$PKG.config-ingest/launcher.json"
 LAUNCHER_ACTIVITY="$PKG/de.mm20.launcher2.ui.launcher.LauncherActivity"
+DEVICE_CONFIG="/storage/emulated/0/Android/data/$PKG/files/config/launcher.json"
+FOLD="${FOLD:-0}"
+if [ "$FOLD" = 1 ]; then LAYOUT=fold; DOCK_W=8; else LAYOUT=phone; DOCK_W=4; fi
 CLOCK_PKG="com.android.deskclock"
 DIGITAL_CLOCK="$CLOCK_PKG/com.android.alarmclock.DigitalAppWidgetProvider"
 ANALOG_CLOCK="$CLOCK_PKG/com.android.alarmclock.AnalogAppWidgetProvider"
@@ -162,6 +177,119 @@ settle_then_broadcast() { # $1 = local config file, $2 = sha256, $3 = stage name
 # flag takes longer than any fixed pause on a fresh install.
 show_home() {
   adb -s "$SERIAL" shell am start -n "$LAUNCHER_ACTIVITY" >/dev/null 2>&1 || true
+}
+
+# The foldable instance sleeps and locks between steps; a dump then shows
+# only the keyguard. Harmless on the phone instance.
+wake_screen() {
+  adb -s "$SERIAL" shell svc power stayon true >/dev/null 2>&1 || true
+  adb -s "$SERIAL" shell input keyevent KEYCODE_WAKEUP >/dev/null 2>&1 || true
+  adb -s "$SERIAL" shell wm dismiss-keyguard >/dev/null 2>&1 || true
+  adb -s "$SERIAL" shell cmd statusbar collapse >/dev/null 2>&1 || true
+}
+
+# Prints "left top right bottom" of the first node with the content
+# description, or nothing.
+desc_bounds() { # $1 = content-desc
+  adb -s "$SERIAL" shell rm -f /sdcard/l4-grid.xml >/dev/null 2>&1 || true
+  adb -s "$SERIAL" shell uiautomator dump /sdcard/l4-grid.xml >/dev/null 2>&1 || return 1
+  adb -s "$SERIAL" shell cat /sdcard/l4-grid.xml | tr -d '\r' > "$WORK/dump.xml"
+  python3 - "$WORK/dump.xml" "$1" <<'PY'
+import re, sys
+try:
+    import defusedxml.ElementTree as ET
+except ImportError:
+    import xml.etree.ElementTree as ET
+root = ET.parse(sys.argv[1]).getroot()
+for node in root.iter("node"):
+    if node.get("content-desc", "") == sys.argv[2]:
+        m = re.match(r"\[(\d+),(\d+)\]\[(\d+),(\d+)\]", node.get("bounds", ""))
+        if m:
+            print(*m.groups()); break
+PY
+}
+
+wait_desc() { # $1 = content-desc, $2 = timeout (s), $3 = description
+  local elapsed=0
+  while [ "$elapsed" -lt "$2" ]; do
+    [ -n "$(desc_bounds "$1")" ] && return 0
+    sleep 1; elapsed=$((elapsed + 1))
+  done
+  die "timed out (${2}s) waiting for '$1' on screen: $3"
+}
+
+tap_desc() { # $1 = content-desc
+  local b
+  b="$(desc_bounds "$1")"
+  [ -n "$b" ] || die "'$1' is not on screen"
+  set -- $b
+  adb -s "$SERIAL" shell input tap $(( ($1 + $3) / 2 )) $(( ($2 + $4) / 2 ))
+}
+
+# Centre of a grid cell on screen, "x y".
+cell_center() { # $1 = id
+  local line
+  line="$(dump_cells | awk -v id="$1" '$1 == id')"
+  [ -n "$line" ] || return 1
+  set -- $line
+  printf '%s %s\n' $(( ($2 + $4) / 2 )) $(( ($3 + $5) / 2 ))
+}
+
+# The centre of a free cell: [DOCK_W - 1] columns right of the dock's left
+# edge, two rows above the dock, which every fixture leaves empty.
+free_cell_point() {
+  local dock gap scale
+  dock="$(dump_cells | awk '$1 == "dock"')"
+  [ -n "$dock" ] || return 1
+  scale="$(density_scale)"
+  gap="$(awk -v s="$scale" 'BEGIN { print 8 * s }')"
+  python3 - "$dock" "$gap" "$DOCK_W" <<'PY'
+import sys
+_, l, t, r, b = sys.argv[1].split(); l, t, r, b = map(int, (l, t, r, b))
+gap = float(sys.argv[2]); w = int(sys.argv[3])
+pitch = (r - l + gap) / w
+print(int(l + (w - 0.5) * pitch), int(t - 1.5 * pitch))
+PY
+}
+
+# Long-presses a free cell (input swipe of zero length) and waits for the
+# edit bar. The launcher's own long-press detector on the grid is what
+# consumes it; the scaffold's gesture never fires.
+enter_edit_mode() {
+  local point
+  point="$(free_cell_point)" || die "no dock on screen to locate a free cell from"
+  set -- $point
+  adb -s "$SERIAL" shell input swipe "$1" "$2" "$1" "$2" 900
+  wait_desc grid-edit-done 15 "edit bar after the long press"
+}
+
+# Drags a cell by whole cells: a press that moves within a second is a
+# drag for the cell's gesture detector, so no long press is needed here.
+drag_cell() { # $1 = id, $2 = dx cells, $3 = dy cells
+  local from pitch scale gap dock
+  from="$(cell_center "$1")" || die "cell $1 not on screen"
+  dock="$(dump_cells | awk '$1 == "dock"')"
+  scale="$(density_scale)"
+  gap="$(awk -v s="$scale" 'BEGIN { print 8 * s }')"
+  pitch="$(python3 - "$dock" "$gap" "$DOCK_W" <<'PY'
+import sys
+_, l, t, r, b = sys.argv[1].split(); l, r = int(l), int(r)
+print(int((r - l + float(sys.argv[2])) / int(sys.argv[3])))
+PY
+)"
+  set -- $from $2 $3
+  adb -s "$SERIAL" shell input swipe "$1" "$2" $(( $1 + $3 * pitch )) $(( $2 + $4 * pitch )) 700
+}
+
+device_config_sha() {
+  adb -s "$SERIAL" shell sha256sum "$DEVICE_CONFIG" 2>/dev/null | tr -d '\r' | cut -d' ' -f1
+}
+
+posture() { # $1 = device state id (0 closed, 1 half, 2 opened)
+  adb -s "$SERIAL" shell cmd device_state state "$1" >/dev/null 2>&1 || die "cmd device_state state $1 failed"
+  sleep 4
+  wake_screen
+  show_home
 }
 
 # Polls the /config read-back until the jq filter holds. Sets LAST_CONFIG.
@@ -330,6 +458,13 @@ cat > "$GRID_CONFIG" <<EOF
           { "id": "analog", "widget": "$ANALOG_CLOCK", "x": 0, "y": 1, "w": 2, "h": 2 },
           { "id": "dock", "widget": "favorites", "x": 0, "y": 5, "w": 4, "h": 1 },
         ] },
+        // Eight columns wide (D7); "right" lives in the half only the inner display shows.
+        "fold": { "items": [
+          { "id": "digital", "widget": "$DIGITAL_CLOCK", "x": 0, "y": 0, "w": 3, "h": 1 },
+          { "id": "analog", "widget": "$ANALOG_CLOCK", "x": 0, "y": 1, "w": 2, "h": 2 },
+          { "id": "right", "widget": "$DIGITAL_CLOCK", "x": 5, "y": 0, "w": 3, "h": 1 },
+          { "id": "dock", "widget": "favorites", "x": 0, "y": 5, "w": 8, "h": 1 },
+        ] },
       },
     },
   },
@@ -350,6 +485,9 @@ TOO_SMALL_CONFIG="$WORK/too-small.jsonc"
 sed 's|"id": "digital", "widget": "'"$DIGITAL_CLOCK"'", "x": 0, "y": 0, "w": 3, "h": 1|"id": "digital", "widget": "'"$DIGITAL_CLOCK"'", "x": 0, "y": 0, "w": 1, "h": 1|' \
   "$GRID_CONFIG" > "$TOO_SMALL_CONFIG"
 
+LOCKED_CONFIG="$WORK/locked.jsonc"
+sed 's|"locked": false|"locked": true|' "$GRID_CONFIG" > "$LOCKED_CONFIG"
+
 MALFORMED_CONFIG="$WORK/malformed.jsonc"
 printf '{ "schemaVersion": 2, "home": { not json at all\n' > "$MALFORMED_CONFIG"
 
@@ -358,6 +496,7 @@ H_GRID="$(sha256sum "$GRID_CONFIG" | cut -d' ' -f1)"
 H_PUSHDOWN="$(sha256sum "$PUSHDOWN_CONFIG" | cut -d' ' -f1)"
 H_TOO_SMALL="$(sha256sum "$TOO_SMALL_CONFIG" | cut -d' ' -f1)"
 H_MALFORMED="$(sha256sum "$MALFORMED_CONFIG" | cut -d' ' -f1)"
+H_LOCKED="$(sha256sum "$LOCKED_CONFIG" | cut -d' ' -f1)"
 
 # --- boot + install ----------------------------------------------------
 
@@ -406,15 +545,16 @@ wait_report ".success == true and .configSha256 == \"$H_LEGACY\"" 90 "first relo
 show_home
 # The seeder runs on the launcher's first render; on a fresh install that is
 # a cold start plus the DataStore flag, so poll the read-back for its result.
-wait_until '(.home.grid.layouts.phone.items | length) > 0' 60 "the seeded phone layout"
+wait_until '(.home.grid.layouts.'"$LAYOUT"'.items | length) > 0' 60 "the seeded $LAYOUT layout"
 effective="$LAST_CONFIG"
 assert_jq "$effective" '.schemaVersion == 2 and .home.favorites == [] and (.home | has("dock") | not)' \
   "v1 file migrated to the v2 shape"
 assert_jq "$effective" \
-  '[.home.grid.layouts.phone.items[] | select(.widget == "favorites" and .x == 0 and .w == 4 and .h == 1 and .y >= 4)] | length == 1' \
+  '[.home.grid.layouts.'"$LAYOUT"'.items[] | select(.widget == "favorites" and .x == 0 and .w == '"$DOCK_W"' and .h == 1 and .y >= 4)] | length == 1' \
   "the seeded favorites row sits full width in the bottom row"
 ok "v1 file migrated, favorites row seeded"
-assert_cells "dock 0 $(jq -r '.home.grid.layouts.phone.items[] | select(.widget == "favorites") | .y' <<<"$effective") 4 1" \
+wake_screen
+assert_cells "dock 0 $(jq -r '.home.grid.layouts.'"$LAYOUT"'.items[] | select(.widget == "favorites") | .y' <<<"$effective") $DOCK_W 1" \
   "seeded grid on screen"
 ok "seeded favorites row measured on screen"
 
@@ -425,19 +565,87 @@ if [ "$HAVE_CLOCK" = 1 ]; then
     "grid config applied without errors"
   show_home
   effective="$(query_json config)" || die "could not query /config"
-  assert_jq "$effective" \
-    '(.home.grid.layouts.phone.items | map({id, widget, x, y, w, h})) ==
-     [{"id":"digital","widget":"'"$DIGITAL_CLOCK"'","x":0,"y":0,"w":3,"h":1},
-      {"id":"analog","widget":"'"$ANALOG_CLOCK"'","x":0,"y":1,"w":2,"h":2},
-      {"id":"dock","widget":"favorites","x":0,"y":5,"w":4,"h":1}]' \
-    "read-back grid equals the pushed file"
-  assert_cells $'digital 0 0 3 1\nanalog 0 1 2 2\ndock 0 5 4 1' "configured grid on screen"
-  assert_bound "$DIGITAL_CLOCK" "$ANALOG_CLOCK"
-  ok "configured grid: read-back equals the file, cells measured where configured, both widgets bound"
+  if [ "$FOLD" = 1 ]; then
+    assert_jq "$effective" \
+      '(.home.grid.layouts.fold.items | map({id, x, y, w, h})) ==
+       [{"id":"digital","x":0,"y":0,"w":3,"h":1},{"id":"analog","x":0,"y":1,"w":2,"h":2},
+        {"id":"right","x":5,"y":0,"w":3,"h":1},{"id":"dock","x":0,"y":5,"w":8,"h":1}]' \
+      "read-back fold grid equals the pushed file"
+    posture 2
+    assert_cells $'digital 0 0 3 1\nanalog 0 1 2 2\nright 5 0 3 1\ndock 0 5 8 1' "configured grid on the inner display"
+    assert_bound "$DIGITAL_CLOCK" "$ANALOG_CLOCK"
+    ok "fold, opened: eight columns, the right-half item on screen, both widgets bound"
+    # Closed: the cover renders columns 0..3 of the same layout (D7). The
+    # dock line says 4 wide, so the pitch is measured from four columns.
+    posture 0
+    DOCK_W=4
+    assert_cells $'digital 0 0 3 1\nanalog 0 1 2 2\ndock 0 5 4 1' "the cover clips the fold layout"
+    [ -z "$(dump_cells | awk '$1 == "right"')" ] || die "the right-half item is on the cover"
+    ok "fold, closed: four columns, the right-half item absent, the dock clipped"
+    posture 1
+    DOCK_W=8
+    assert_cells $'digital 0 0 3 1\nanalog 0 1 2 2\nright 5 0 3 1\ndock 0 5 8 1' "half-opened renders as opened"
+    posture 2
+    assert_cells $'digital 0 0 3 1\nanalog 0 1 2 2\nright 5 0 3 1\ndock 0 5 8 1' "opened again"
+    ok "fold, half-opened and opened again: the inner layout is back"
+  else
+    assert_jq "$effective" \
+      '(.home.grid.layouts.phone.items | map({id, widget, x, y, w, h})) ==
+       [{"id":"digital","widget":"'"$DIGITAL_CLOCK"'","x":0,"y":0,"w":3,"h":1},
+        {"id":"analog","widget":"'"$ANALOG_CLOCK"'","x":0,"y":1,"w":2,"h":2},
+        {"id":"dock","widget":"favorites","x":0,"y":5,"w":4,"h":1}]' \
+      "read-back grid equals the pushed file"
+    assert_cells $'digital 0 0 3 1\nanalog 0 1 2 2\ndock 0 5 4 1' "configured grid on screen"
+    assert_bound "$DIGITAL_CLOCK" "$ANALOG_CLOCK"
+    ok "configured grid: read-back equals the file, cells measured where configured, both widgets bound"
+  fi
 
-  # --- 3./4. STUB: hand edit and write-back (PR 6) ---------------------
-  warn "steps 3 and 4 (edit by hand, pull, idempotence) land with PR 6"
+  # --- 3. edit by hand, then the file follows ----------------------------
+  wake_screen
+  enter_edit_mode
+  ok "edit mode entered by long press"
+  drag_cell digital 0 3
+  sleep 1
+  tap_desc grid-edit-done
+  wait_report '.trigger == "self-write" and .success == true' 30 "the launcher's own write-back report"
+  H_WRITTEN="$(jq -r '.configSha256' <<<"$LAST_REPORT")"
+  [ "$(device_config_sha)" = "$H_WRITTEN" ] || die "the file on the device does not carry the self-write hash"
+  PULLED="$WORK/pulled.jsonc"
+  adb -s "$SERIAL" pull "$DEVICE_CONFIG" "$PULLED" >/dev/null 2>&1 || die "adb pull of $DEVICE_CONFIG failed"
+  [ "$(jq -r '.home.grid.layouts.'"$LAYOUT"'.items[] | select(.id == "digital") | .y' <<<"$(sed 's|//.*$||' "$PULLED")")" = "3" ] \
+    || { cat "$PULLED" >&2; die "the pulled file does not hold the digital clock at y 3"; }
+  grep -qF '// note: this comment must survive a write-back' "$PULLED" \
+    || die "the note comment did not survive the write-back"
+  python3 - "$GRID_CONFIG" "$PULLED" <<'PY' || die "something outside home.grid changed in the write-back"
+import sys
+before = open(sys.argv[1]).read(); after = open(sys.argv[2]).read()
+cut = '"grid":'
+b, a = before.index(cut), after.index(cut)
+assert before[:b] == after[:a], "the bytes before home.grid differ"
+assert before.rstrip().endswith('}') and after.rstrip().endswith('}')
+PY
+  effective="$(query_json config)" || die "could not query /config"
+  assert_jq "$effective" '(.home.grid.layouts.'"$LAYOUT"'.items[] | select(.id == "digital") | .y) == 3' \
+    "the read-back holds the hand-moved clock"
+  wake_screen
+  if [ "$FOLD" = 1 ]; then
+    assert_cells $'digital 0 3 3 1\nanalog 0 1 2 2\nright 5 0 3 1\ndock 0 5 8 1' "the moved clock on screen"
+  else
+    assert_cells $'digital 0 3 3 1\nanalog 0 1 2 2\ndock 0 5 4 1' "the moved clock on screen"
+  fi
+  ok "hand edit: the clock moved, only home.grid changed in the file, the report says self-write"
 
+  # --- 4. the pulled file is a no-op when reloaded ------------------------
+  # The bytes are the launcher's own, so the watcher would skip them; an
+  # explicit reload always runs and must find nothing to apply.
+  reload_broadcast
+  wait_report ".configSha256 == \"$H_WRITTEN\" and .trigger == \"broadcast\"" 30 "reload of the pulled file"
+  assert_jq "$LAST_REPORT" '.success == true and ((.appliedMutations // []) == [])' "the pulled file applies nothing"
+  ok "idempotence: the pulled file reloads as a no-op"
+
+  if [ "$FOLD" = 1 ]; then
+    warn "steps 5 to 7 (push-down, minimum, locked) are phone-layout fixtures; skipped in FOLD mode"
+  else
   # --- 5. push-down ----------------------------------------------------
   settle_then_broadcast "$PUSHDOWN_CONFIG" "$H_PUSHDOWN" "push-down"
   assert_jq "$LAST_REPORT" '.success == true' "push-down config applied"
@@ -461,8 +669,19 @@ if [ "$HAVE_CLOCK" = 1 ]; then
   assert_cells $'digital 0 0 2 1\nanalog 0 1 2 2\ndock 0 5 4 1' "minimum enforced on screen"
   ok "below minimum: widget-too-small reported, two columns drawn"
 
-  # --- 7. STUB: locked layout (PR 5) -----------------------------------
-  warn "step 7 (locked layout refuses edit mode) lands with PR 5"
+  # --- 7. a locked layout refuses edit mode ------------------------------
+  settle_then_broadcast "$LOCKED_CONFIG" "$H_LOCKED" "locked"
+  show_home
+  wake_screen
+  assert_cells $'digital 0 0 3 1\nanalog 0 1 2 2\ndock 0 5 4 1' "locked grid on screen"
+  point="$(free_cell_point)" || die "no dock on screen"
+  set -- $point
+  adb -s "$SERIAL" shell input swipe "$1" "$2" "$1" "$2" 900
+  sleep 3
+  [ -z "$(desc_bounds grid-edit-done)" ] || die "a locked layout entered edit mode"
+  [ "$(device_config_sha)" = "$H_LOCKED" ] || die "the locked file changed on the device"
+  ok "locked: the long press shows no edit bar, the file is unchanged"
+  fi
 
 else
   warn "steps 2, 5 and 6 need $CLOCK_PKG; skipped"
@@ -480,10 +699,39 @@ assert_jq "$LAST_REPORT" \
 effective="$(query_json config)" || die "could not query /config"
 [ "$(jq -c '.home.grid' <<<"$effective")" = "$good_grid" ] || die "the effective grid changed after a malformed push"
 show_home
+wake_screen
 assert_cells "$LAST_EXPECTED_CELLS" "last good state on screen"
 ok "malformed push: last good state kept, cells unchanged"
 
-# --- 9. STUB: profile isolation (PR 6) ---------------------------------
-warn "step 9 (profile isolation in user 10) lands with PR 6"
+# --- 9. profile isolation: a second user has its own grid ----------------
+# The same push through --user reaches the launcher instance of that user
+# and nothing else: user 0's file hash and last report stay as they were.
+H_USER0="$(device_config_sha)"
+REPORT_USER0="$(query_json diagnostics)"
+uid="$(adb -s "$SERIAL" shell pm create-user l4grid 2>&1 | tr -d '\r' | grep -o 'id [0-9]*' | cut -d' ' -f2)"
+[ -n "$uid" ] || die "pm create-user failed"
+log "user $uid created, starting it"
+adb -s "$SERIAL" shell am start-user -w "$uid" </dev/null >/dev/null || die "user $uid could not be started"
+adb -s "$SERIAL" shell pm install-existing --user "$uid" "$PKG" >/dev/null 2>&1 || die "install-existing for user $uid failed"
+adb -s "$SERIAL" shell appwidget grantbind --package "$PKG" --user "$uid" >/dev/null 2>&1 || true
+elapsed=0
+until out="$(adb -s "$SERIAL" shell content write --user "$uid" --uri "$INGEST_URI" < "$GRID_CONFIG" 2>&1 | tr -d '\r')" && [ -z "$out" ]; do
+  sleep 2; elapsed=$((elapsed + 2))
+  [ "$elapsed" -lt 60 ] || { printf '%s\n' "$out" >&2; die "content write --user $uid kept failing"; }
+done
+adb -s "$SERIAL" shell am broadcast -n "$RECEIVER" -a "$ACTION" --user "$uid" >/dev/null 2>&1 || die "broadcast --user $uid failed"
+elapsed=0
+until report="$(adb -s "$SERIAL" shell content query --uri "$STATE_URI/diagnostics" --user "$uid" 2>/dev/null | tr -d '\r')" \
+    && jq -e ".configSha256 == \"$H_GRID\" and .success == true" >/dev/null 2>&1 <<<"${report#Row: 0 json=}"; do
+  sleep 1; elapsed=$((elapsed + 1))
+  [ "$elapsed" -lt 60 ] || { printf '%s\n' "$report" >&2; die "user $uid never reported the grid config"; }
+done
+user_config="$(adb -s "$SERIAL" shell content query --uri "$STATE_URI/config" --user "$uid" 2>/dev/null | tr -d '\r')"
+assert_jq "${user_config#Row: 0 json=}" '(.home.grid.layouts.'"$LAYOUT"'.items | map(.id)) | index("dock") != null' \
+  "user $uid holds the pushed grid"
+[ "$(device_config_sha)" = "$H_USER0" ] || die "user 0's file changed when user $uid was provisioned"
+[ "$(query_json diagnostics)" = "$REPORT_USER0" ] || die "user 0's last report changed when user $uid was provisioned"
+adb -s "$SERIAL" shell pm remove-user "$uid" >/dev/null 2>&1 || warn "could not remove user $uid"
+ok "profile isolation: user $uid got the grid, user 0 was untouched"
 
 ok "L4 grid: all implemented steps passed"

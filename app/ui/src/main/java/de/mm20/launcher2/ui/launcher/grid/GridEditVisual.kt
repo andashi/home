@@ -1,6 +1,7 @@
 package de.mm20.launcher2.ui.launcher.grid
 
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -24,9 +25,16 @@ class GridEditVisual {
     var ghostLeftPx: Float by mutableFloatStateOf(0f)
     var ghostTopPx: Float by mutableFloatStateOf(0f)
 
-    /** The wiggle angle of the moment in degrees; zero outside edit mode. */
-    var wiggleDegrees: Float by mutableFloatStateOf(0f)
+    /**
+     * The wiggle angle of the moment in degrees, driven by an infinite
+     * transition while edit mode animates; null outside it. The layers read
+     * the state's value, never the composition.
+     */
+    var wiggle: State<Float>? by mutableStateOf(null)
 
     /** Alternate the wiggle's direction per cell so neighbours do not swing in step. */
-    fun wiggleFor(id: String): Float = if (id.hashCode() and 1 == 0) wiggleDegrees else -wiggleDegrees
+    fun wiggleFor(id: String): Float {
+        val degrees = wiggle?.value ?: return 0f
+        return if (id.hashCode() and 1 == 0) degrees else -degrees
+    }
 }
