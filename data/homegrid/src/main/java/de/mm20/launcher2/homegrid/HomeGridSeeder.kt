@@ -36,12 +36,17 @@ interface HomeGridSeedFlag {
  * [AppWidgetManager]. A widget whose provider is unknown cannot render and
  * is skipped.
  */
+/** What [HomeGridSeeder] does, as the view model sees it, so tests can answer with a canned result. */
+interface HomeGridSeeding {
+    suspend fun seedIfNeeded(geometry: GridGeometry): HomeGridSeeder.SeedResult
+}
+
 class HomeGridSeeder(
     private val widgetRepository: WidgetRepository,
     private val homeGridRepository: HomeGridRepository,
     private val flag: HomeGridSeedFlag,
     private val providerOf: (appWidgetId: Int) -> String?,
-) {
+) : HomeGridSeeding {
     constructor(
         context: Context,
         widgetRepository: WidgetRepository,
@@ -76,7 +81,7 @@ class HomeGridSeeder(
      * that already holds items is left alone. The flag is set only once
      * every needed layout holds items.
      */
-    suspend fun seedIfNeeded(geometry: GridGeometry): SeedResult {
+    override suspend fun seedIfNeeded(geometry: GridGeometry): SeedResult {
         if (flag.isSeeded()) return SeedResult()
 
         // Every layout this device needs, each with its own spec: the

@@ -13,4 +13,6 @@ val homeGridModule = module {
     single<GridRowsSource> { get<MeasuredGridRows>() }
     single<HomeGridSeedFlag> { UiSettingsSeedFlag(get()) }
     single { HomeGridSeeder(androidContext(), get(), get(), get()) }
+    // Edit mode's resize limits, from the provider info of bound widgets (D4).
+    single<GridItemLimits> { AndroidGridItemLimits(androidContext()) }
 }

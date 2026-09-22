@@ -2,6 +2,7 @@ package de.mm20.launcher2.ui.launcher.grid
 
 
 import de.mm20.launcher2.homegrid.FormFactor
+import de.mm20.launcher2.homegrid.GridItemLimits
 import de.mm20.launcher2.homegrid.HomeGridLayouts
 import de.mm20.launcher2.homegrid.HomeGridSeeder
 import de.mm20.launcher2.homegrid.HomeGridWidgets
@@ -77,6 +78,9 @@ class HomeGridVMTest {
             measuredRows = measuredRows,
             seeder = HomeGridSeeder(emptyColumn, repository, flag) { null },
             widgetRepository = emptyColumn,
+            writeBack = FakeWriteBack(),
+            itemLimits = GridItemLimits.Unbounded,
+            locked = flowOf(false),
         )
     }
 

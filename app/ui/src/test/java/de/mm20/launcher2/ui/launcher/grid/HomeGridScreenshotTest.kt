@@ -19,6 +19,7 @@ import de.mm20.launcher2.homegrid.FormFactor
 import de.mm20.launcher2.homegrid.HomeGridArrangement
 import de.mm20.launcher2.homegrid.HomeGridGeometry
 import de.mm20.launcher2.homegrid.HomeGridItem
+import de.mm20.launcher2.homegrid.GridItemLimits
 import de.mm20.launcher2.homegrid.HomeGridLayouts
 import org.junit.Rule
 import org.junit.Test

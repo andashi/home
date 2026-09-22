@@ -1,6 +1,7 @@
 package de.mm20.launcher2.config.service
 
 import de.mm20.launcher2.themes.ThemeRepository
+import de.mm20.launcher2.homegrid.HomeGridWriteBack
 import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.module
 
@@ -41,6 +42,8 @@ val configModule = module {
     single { ConfigFileLock() }
     single { ConfigReloader(get(), get(), get()) }
     single { GridWriteBack(androidContext(), get(), get(), get(), get()) }
+    // What the grid's edit mode calls on Done (data/homegrid's interface).
+    single<HomeGridWriteBack> { HomeGridWriteBackAdapter(get()) }
     single(createdAtStart = true) { ConfigWatcher(androidContext(), get(), get()).also { it.start() } }
     single(createdAtStart = true) { WallpaperForegroundFixer(androidContext(), get(), get()).also { it.start() } }
 }

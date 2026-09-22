@@ -1,7 +1,8 @@
 name: Tests
 
 # L1 (unit) + L3 (screenshot verify) on pull requests and on main.
-# L2 (Compose UI on emulator) on PRs only — it is the slow layer.
+# L2 (Compose UI on emulator) on PRs only — it is the slow layer; the fold
+# suite runs on a second, foldable emulator in its own job.
 # L4 stays manual/local: it needs the self-built GrapheneOS emulator (ADR 0005).
 
 # `push` is limited to main on purpose. With a bare `push:` every commit on a
@@ -114,3 +115,45 @@ jobs:
           arch: x86_64
           profile: pixel_6
           script: ./gradlew :app:ui:connectedDebugAndroidTest
+
+  # The Fold (ADR 0001, D7) on a foldable AVD: HomeGridFoldTest switches the
+  # device posture with `cmd device_state` and asserts the eight-column inner
+  # layout, the four-column cover and the moves between them. The suite skips
+  # itself by assumption on a device without postures, so the phone job above
+  # stays green and this job is the one that proves the fold.
+  l2-fold:
+    if: ${{ github.event_name == 'pull_request' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Enable KVM for the emulator
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      # The runner's SDK has no Pixel Fold profile, and its classic "7.6in
+      # Foldable" only masks half of one display when folded (the window
+      # keeps its size, measured 2026-09-23), so the AVD is created from
+      # that profile and rewritten to the Pixel Fold shape by
+      # e2e/avd/pixel-fold.sh before launch: two logical displays, the cover
+      # taking over when CLOSED. That needs a google_apis image, whose
+      # advancedFeatures.ini carries SupportPixelFold.
+      - name: List the SDK's foldable device profiles
+        run: |
+          "$ANDROID_HOME/cmdline-tools/latest/bin/avdmanager" list device | grep -B1 -A1 -i fold || true
+      - name: Fold tests on a foldable emulator (API 36)
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 36
+          target: google_apis
+          arch: x86_64
+          profile: "7.6in Foldable"
+          avd-name: fold
+          pre-emulator-launch-script: e2e/avd/pixel-fold.sh "$HOME/.android/avd/fold.avd/config.ini"
+          script: ./gradlew :app:ui:connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=de.mm20.launcher2.ui.launcher.grid.HomeGridFoldTest

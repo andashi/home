@@ -107,6 +107,51 @@ class HomeGridLayoutTest {
         composeRule.waitForIdle()
         assertEquals(2, recompositions)
     }
+
+    @Test
+    fun `a drag moves the dragged cell's layer without recomposing the grid`() {
+        var recompositions = 0
+        val visual = GridEditVisual()
+        val cells = listOf("a" to Span(0, 0, 2, 2), "b" to Span(2, 0, 1, 1))
+
+        composeRule.setContent {
+            Box(Modifier.size(400.dp, 600.dp)) {
+                HomeGridLayout(
+                    geometry = geometry,
+                    cells = cells,
+                    modifier = Modifier.fillMaxSize(),
+                    visual = visual,
+                    onRecomposed = { recompositions++ },
+                ) { id -> Box(Modifier.fillMaxSize().testTag("cell-$id")) }
+            }
+        }
+        composeRule.waitForIdle()
+        assertEquals(1, recompositions)
+
+        // Thirty drag frames: the ghost follows the finger through the
+        // graphics layer; nothing in the composition reads its position.
+        composeRule.runOnIdle {
+            visual.draggedId = "a"
+            visual.ghostLeftPx = 0f
+            visual.ghostTopPx = 0f
+        }
+        repeat(30) { frame ->
+            composeRule.runOnIdle {
+                visual.ghostLeftPx = 10f * (frame + 1)
+                visual.ghostTopPx = 5f * (frame + 1)
+            }
+        }
+        composeRule.waitForIdle()
+
+        assertEquals(1, recompositions)
+        // 300 px right and 150 px down of its rectangle: the layer carries the translation.
+        val density = composeRule.density
+        composeRule.onNodeWithTag("cell-a")
+            .assertLeftPositionInRootIsEqualTo(with(density) { 300f.toDp() })
+            .assertTopPositionInRootIsEqualTo(with(density) { 150f.toDp() })
+        // The other cell did not move.
+        composeRule.onNodeWithTag("cell-b").assertLeftPositionInRootIsEqualTo(204.dp)
+    }
 }
 
 /** Reads the state in its own scope, so only this text recomposes when it changes. */
