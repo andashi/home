@@ -63,8 +63,16 @@ class HomeGridFoldTest {
     /** Posture ids of this device, by name: they differ between foldables. */
     private lateinit var postures: DevicePostures
 
+    /**
+     * Switches the posture, then wakes and unlocks: on a two-display
+     * foldable the cover comes up locked when the device closes (measured
+     * on the Pixel-Fold-shaped AVD), and a locked screen hides the test
+     * activity from the semantics tree.
+     */
     private fun posture(state: Int) {
         shell("cmd device_state state $state")
+        shell("input keyevent KEYCODE_WAKEUP")
+        shell("wm dismiss-keyguard")
         composeRule.waitForIdle()
     }
 

@@ -2,6 +2,7 @@ package de.mm20.launcher2.ui.launcher.grid
 
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
+import androidx.test.platform.app.InstrumentationRegistry
 import de.mm20.launcher2.grid.SizeLimits
 import de.mm20.launcher2.homegrid.FormFactor
 import de.mm20.launcher2.homegrid.GridItemLimits
@@ -43,6 +44,14 @@ class KoinGridRule(
     val locked = MutableStateFlow(false)
 
     override fun before() {
+        // A google_apis image boots to its lock screen and the test activity
+        // stays behind it (mViewVisibility GONE, seen on a Pixel-Fold-shaped
+        // AVD): wake and dismiss before the activity is launched, the same
+        // way the L4 script does before every dump.
+        val automation = InstrumentationRegistry.getInstrumentation().uiAutomation
+        for (command in listOf("input keyevent KEYCODE_WAKEUP", "wm dismiss-keyguard")) {
+            automation.executeShellCommand(command).close()
+        }
         repository = FakeHomeGridRepository(items)
         writeBack = FakeWriteBack(repository)
         locked.value = false
