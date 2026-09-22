@@ -364,6 +364,45 @@ log "generating launcher configs for entry '$LAUNCHER_CONFIG_KEY' into $LAUNCHER
 (cd "$GOS_REPO/config" && OUT_DIR="$LAUNCHER_CFG_DIR" GEN_LAUNCHER_KEY="$LAUNCHER_CONFIG_KEY" ./gen-launcher.sh) \
   || die "gen-launcher.sh failed for entry '$LAUNCHER_CONFIG_KEY'"
 
+# gen-launcher.sh emits `"favorites": []` for every zone, so the one corner of
+# the config contract that no other layer covers is the one this scenario never
+# filled (#35). Fill it here rather than waiting for the provisioning repo to
+# declare favorites again, so the dock path is exercised either way. $PKG is the
+# single package this scenario installs into every profile, which makes it the
+# safe entry.
+#
+# Both legal spellings are used, in different profiles on purpose: the object
+# form, which is what a round trip writes back, and the bare package name, which
+# is what a config generator naturally emits and what once failed the decode and
+# took a whole zone's configuration with it (#45, andashi/provisioning#1).
+#
+# The short form needs the build under test to carry #45, i.e. v0.3.1 or later.
+# Against 0.3.0 it is not normalised but REJECTED - "decode-failed: Expected
+# JsonObject, but had JsonLiteral" - and the previously applied configuration
+# stays in force, so a read-back can look like success when nothing arrived
+# (measured by the provisioning session on emulator-5558, 2026-09-22). This
+# scenario installs the APK it was given, so that only matters when someone
+# points PKG/APK at an older release; the diagnostics assert in section 6
+# compares configSha256 against the pushed file and fails loudly in that case
+# rather than quietly comparing a stale document.
+log "injecting dock favorites into the generated configs ($PKG)"
+for i in "${!PROFILE_KEYS[@]}"; do
+  key="${PROFILE_KEYS[$i]}"
+  cfgfile="$LAUNCHER_CFG_DIR/$key.json"
+  [ -f "$cfgfile" ] || die "generated config missing: $cfgfile (run config/gen-launcher.sh)"
+  if [ "$i" -eq 1 ]; then
+    favorites="$(jq -n --arg p "$PKG" '[$p]')"
+  else
+    favorites="$(jq -n --arg p "$PKG" '[{packageName: $p, profile: "personal"}]')"
+  fi
+  jq --argjson fav "$favorites" \
+    '.home.dock.enabled = true | .home.dock.favorites = $fav' \
+    "$cfgfile" > "$cfgfile.tmp" \
+    || die "could not inject favorites into $cfgfile"
+  mv "$cfgfile.tmp" "$cfgfile"
+  ok "profile '$key': dock favorites := $(jq -c '.home.dock.favorites' "$cfgfile")"
+done
+
 log "running provision/45-launcher-config.sh (LAUNCHER_CONFIG_KEY=$LAUNCHER_CONFIG_KEY)"
 (cd "$GOS_REPO" && LAUNCHER_CONFIG_KEY="$LAUNCHER_CONFIG_KEY" ADB_SERIAL="$SERIAL" bash provision/45-launcher-config.sh) \
   || die "45-launcher-config.sh exited non-zero - provisioning step FAILED"
@@ -389,13 +428,38 @@ for key in "${PROFILE_KEYS[@]}"; do
     "profile '$key' (user $uid): diagnostics success + sha256 of config/launcher/$key.json"
 
   eff="$(query_json config "$uid")" || die "profile '$key' (user $uid): /config not served"
+  # /config serves the *effective* document, re-serialised from the decoded
+  # model. Two consequences for favorites: a bare package name comes back as an
+  # object, and `profile` is absent when it is the default, because the config
+  # Json does not set encodeDefaults. Both spellings mean the same favorite
+  # (#45), so canonicalise both sides instead of calling that a mismatch. The
+  # exact serialisation is L1's job; this level asks whether the favorite
+  # arrived at the right profile.
   mism="$(jq -r -n --argjson eff "$eff" --slurpfile want "$cfgfile" '
-    ($want[0]) as $w
+    def canon:
+      if ((.home.dock.favorites // null) | type) == "array" then
+        .home.dock.favorites |= map(
+          if type == "string" then { packageName: ., profile: "personal" }
+          else { packageName: .packageName, profile: (.profile // "personal") }
+          end)
+      else . end;
+    ($want[0] | canon) as $w
+    | ($eff | canon) as $e
     | [ "schemaVersion", "icons", "appearance", "home" ]
-    | map(select($eff[.] != $w[.]))
+    | map(select($e[.] != $w[.]))
     | join(", ")')"
   [ -z "$mism" ] || { printf 'effective config for user %s:\n%s\n' "$uid" "$eff" >&2; \
     die "profile '$key' (user $uid): /config differs from generated file in: $mism"; }
+
+  # Named explicitly, because the canonicalising comparison above would also be
+  # satisfied by an empty list on both sides - which is exactly the state that
+  # let this corner go untested for so long. This asserts the config path only:
+  # home.dock.enabled still has no renderer (#46), so a rendering assert would
+  # prove nothing yet.
+  assert_jq "$eff" \
+    "([.home.dock.favorites[]? | .packageName] | index(\"$PKG\")) != null" \
+    "profile '$key' (user $uid): dock favorite $PKG survived the round trip"
+  ok "profile '$key' (user $uid): dock favorites $(jq -c '[.home.dock.favorites[]?|.packageName]' <<<"$eff") served back"
 
   # The generated config names a wallpaper; the system must show a non-default
   # wallpaper id for that user (dumpsys is independent evidence of the read-back).
