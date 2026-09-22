@@ -3,6 +3,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.plugin.serialization)
+    alias(libs.plugins.kover)
 }
 
 android {
@@ -77,5 +78,16 @@ tasks.withType<Test>().configureEach {
         "--add-opens=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
     )
 }
-// TODO(#63): coverage gate - add alias(libs.plugins.kover) and a minBound rule
-// once the Kover plugin from PR #63 is on main.
+
+// Coverage gate (ADR 0005, AGENTS.md "Test policy"). Bound = the value the
+// tests reached when the module was created, rounded down; raised as tests
+// land, never lowered.
+kover {
+    reports {
+        verify {
+            rule("line coverage of :data:homegrid") {
+                minBound(96)
+            }
+        }
+    }
+}

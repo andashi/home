@@ -51,9 +51,10 @@ jobs:
           :core:config:koverVerifyDebug
           :core:grid:koverVerify
           :services:config:koverVerifyDebug
+          :data:homegrid:koverVerifyDebug
       - name: Upload coverage reports on failure
         if: ${{ failure() }}
-        run: ./gradlew :core:config:koverHtmlReportDebug :core:grid:koverHtmlReport :services:config:koverHtmlReportDebug
+        run: ./gradlew :core:config:koverHtmlReportDebug :core:grid:koverHtmlReport :services:config:koverHtmlReportDebug :data:homegrid:koverHtmlReportDebug
       - uses: actions/upload-artifact@v4
         if: ${{ failure() }}
         with:
