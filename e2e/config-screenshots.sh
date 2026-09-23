@@ -242,26 +242,42 @@ capture() { # $1 = output jpg, $2 = width
 # Opens search from the launcher's own bar (content-desc "Search"; the grid's
 # search widgets only carry that as text) and types the scene's query.
 # Closes search again after the picture, so the next scene starts on home.
-close_search() { # $1 = scene
-  [ -n "${SCENE_QUERY[$1]:-}" ] || return 0
-  # The first back clears the query, the second closes search; Home does
-  # not close it on this build.
-  adb -s "$SERIAL" shell input keyevent KEYCODE_BACK
-  sleep 1
-  adb -s "$SERIAL" shell input keyevent KEYCODE_BACK
+ime_shown() {
+  # Captured first: `grep -q` stops at the first match, the writer upstream
+  # dies of SIGPIPE, and under pipefail a match would read as "not shown".
+  local state
+  state="$(adb -s "$SERIAL" shell dumpsys input_method | tr -d '\r')"
+  grep -q 'mInputShown=true' <<<"$state"
+}
+
+search_is_open() { [ -n "$(desc_bounds 'Show filters')" ]; }
+
+# Opens search from the launcher's own bar (content-desc "Search"; the grid's
+# search widgets only carry that as text), types the scene's query and
+# closes the keyboard, which would cover the results the picture is about.
+open_search() { # $1 = scene
+  local query="${SCENE_QUERY[$1]:-}" i
+  [ -n "$query" ] || return 0
+  tap_desc Search
+  for i in $(seq 10); do search_is_open && break; sleep 1; done
+  search_is_open || die "$1: tapping the bar did not open search"
+  adb -s "$SERIAL" shell input text "$query"
+  # The keyboard comes up a moment after the field is focused.
+  for i in $(seq 5); do ime_shown && break; sleep 1; done
+  if ime_shown; then
+    adb -s "$SERIAL" shell input keyevent KEYCODE_BACK
+    for i in $(seq 10); do ime_shown || break; sleep 1; done
+  fi
   sleep 2
 }
 
-open_search() { # $1 = scene
-  local query="${SCENE_QUERY[$1]:-}"
-  [ -n "$query" ] || return 0
-  tap_desc Search
-  sleep 2
-  adb -s "$SERIAL" shell input text "$query"
-  sleep 3
-  # The keyboard would cover the results the picture is about.
+# Back from search to home, so the next scene starts there (#95).
+close_search() { # $1 = scene
+  local i
+  [ -n "${SCENE_QUERY[$1]:-}" ] || return 0
   adb -s "$SERIAL" shell input keyevent KEYCODE_BACK
-  sleep 2
+  for i in $(seq 5); do search_is_open || return 0; sleep 1; done
+  die "$1: Back did not leave search"
 }
 
 mkdir -p "$OUT"
