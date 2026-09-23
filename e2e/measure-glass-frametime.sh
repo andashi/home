@@ -169,10 +169,12 @@ log "booting $SERIAL from snapshot '$SNAPSHOT' (overlays: $OVERLAY_DIR)"
 adb -s "$SERIAL" unroot >/dev/null 2>&1 || true
 adb -s "$SERIAL" wait-for-device
 # A cold boot (SNAPSHOT=) is still booting here; a snapshot load is not.
+booted=0
 for _ in $(seq 180); do
-  [ "$(adb -s "$SERIAL" shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" = 1 ] && break
+  [ "$(adb -s "$SERIAL" shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" = 1 ] && { booted=1; break; }
   sleep 2
 done
+[ "$booted" = 1 ] || die "$SERIAL did not finish booting within 6 minutes"
 [ "$(adb -s "$SERIAL" shell id -u | tr -d '\r')" = "2000" ] || die "adb is not the unrooted shell"
 ok "adb as unrooted shell (uid 2000)"
 

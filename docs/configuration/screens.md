@@ -8,7 +8,7 @@ the defaults, `home.grid.labels: true`; see [home-grid](home-grid.md#a-screen-fu
 
 | Phone | Fold, cover | Fold, inner |
 |---|---|---|
-| <img src="img/full-dock-bottom-phone.jpg" width="200"> | <img src="img/full-dock-bottom-fold-cover.jpg" width="200"> | <img src="img/full-dock-bottom-fold-inner.jpg" width="300"> |
+| <img alt="full dock bottom, phone" src="img/full-dock-bottom-phone.jpg" width="200"> | <img alt="full dock bottom, Fold cover" src="img/full-dock-bottom-fold-cover.jpg" width="200"> | <img alt="full dock bottom, Fold inner display" src="img/full-dock-bottom-fold-inner.jpg" width="300"> |
 
 ## A screen full of widgets, dock as a side column
 
@@ -16,7 +16,7 @@ dock item `x: 3, w: 1, h: 6`; see [home-grid](home-grid.md#a-screen-full-of-widg
 
 | Phone | Fold, cover | Fold, inner |
 |---|---|---|
-| <img src="img/full-dock-side-phone.jpg" width="200"> | <img src="img/full-dock-side-fold-cover.jpg" width="200"> | <img src="img/full-dock-side-fold-inner.jpg" width="300"> |
+| <img alt="full dock side, phone" src="img/full-dock-side-phone.jpg" width="200"> | <img alt="full dock side, Fold cover" src="img/full-dock-side-fold-cover.jpg" width="200"> | <img alt="full dock side, Fold inner display" src="img/full-dock-side-fold-inner.jpg" width="300"> |
 
 ## Contrast low
 
@@ -24,7 +24,7 @@ dock item `x: 3, w: 1, h: 6`; see [home-grid](home-grid.md#a-screen-full-of-widg
 
 | Phone | Fold, cover | Fold, inner |
 |---|---|---|
-| <img src="img/contrast-low-phone.jpg" width="200"> | <img src="img/contrast-low-fold-cover.jpg" width="200"> | <img src="img/contrast-low-fold-inner.jpg" width="300"> |
+| <img alt="contrast low, phone" src="img/contrast-low-phone.jpg" width="200"> | <img alt="contrast low, Fold cover" src="img/contrast-low-fold-cover.jpg" width="200"> | <img alt="contrast low, Fold inner display" src="img/contrast-low-fold-inner.jpg" width="300"> |
 
 ## Contrast high
 
@@ -32,7 +32,7 @@ dock item `x: 3, w: 1, h: 6`; see [home-grid](home-grid.md#a-screen-full-of-widg
 
 | Phone | Fold, cover | Fold, inner |
 |---|---|---|
-| <img src="img/contrast-high-phone.jpg" width="200"> | <img src="img/contrast-high-fold-cover.jpg" width="200"> | <img src="img/contrast-high-fold-inner.jpg" width="300"> |
+| <img alt="contrast high, phone" src="img/contrast-high-phone.jpg" width="200"> | <img alt="contrast high, Fold cover" src="img/contrast-high-fold-cover.jpg" width="200"> | <img alt="contrast high, Fold inner display" src="img/contrast-high-fold-inner.jpg" width="300"> |
 
 ## No blur
 
@@ -40,7 +40,7 @@ dock item `x: 3, w: 1, h: 6`; see [home-grid](home-grid.md#a-screen-full-of-widg
 
 | Phone | Fold, cover | Fold, inner |
 |---|---|---|
-| <img src="img/blur-0-phone.jpg" width="200"> | <img src="img/blur-0-fold-cover.jpg" width="200"> | <img src="img/blur-0-fold-inner.jpg" width="300"> |
+| <img alt="blur 0, phone" src="img/blur-0-phone.jpg" width="200"> | <img alt="blur 0, Fold cover" src="img/blur-0-fold-cover.jpg" width="200"> | <img alt="blur 0, Fold inner display" src="img/blur-0-fold-inner.jpg" width="300"> |
 
 ## Sharp wallpaper
 
@@ -48,7 +48,7 @@ dock item `x: 3, w: 1, h: 6`; see [home-grid](home-grid.md#a-screen-full-of-widg
 
 | Phone | Fold, cover | Fold, inner |
 |---|---|---|
-| <img src="img/wallpaper-sharp-phone.jpg" width="200"> | <img src="img/wallpaper-sharp-fold-cover.jpg" width="200"> | <img src="img/wallpaper-sharp-fold-inner.jpg" width="300"> |
+| <img alt="wallpaper sharp, phone" src="img/wallpaper-sharp-phone.jpg" width="200"> | <img alt="wallpaper sharp, Fold cover" src="img/wallpaper-sharp-fold-cover.jpg" width="200"> | <img alt="wallpaper sharp, Fold inner display" src="img/wallpaper-sharp-fold-inner.jpg" width="300"> |
 
 ## Stronger tint
 
@@ -56,7 +56,7 @@ dock item `x: 3, w: 1, h: 6`; see [home-grid](home-grid.md#a-screen-full-of-widg
 
 | Phone | Fold, cover | Fold, inner |
 |---|---|---|
-| <img src="img/tint-0-4-phone.jpg" width="200"> | <img src="img/tint-0-4-fold-cover.jpg" width="200"> | <img src="img/tint-0-4-fold-inner.jpg" width="300"> |
+| <img alt="tint 0.4, phone" src="img/tint-0-4-phone.jpg" width="200"> | <img alt="tint 0.4, Fold cover" src="img/tint-0-4-fold-cover.jpg" width="200"> | <img alt="tint 0.4, Fold inner display" src="img/tint-0-4-fold-inner.jpg" width="300"> |
 
 ## Small radius
 
@@ -64,7 +64,7 @@ dock item `x: 3, w: 1, h: 6`; see [home-grid](home-grid.md#a-screen-full-of-widg
 
 | Phone | Fold, cover | Fold, inner |
 |---|---|---|
-| <img src="img/radius-8-phone.jpg" width="200"> | <img src="img/radius-8-fold-cover.jpg" width="200"> | <img src="img/radius-8-fold-inner.jpg" width="300"> |
+| <img alt="radius 8, phone" src="img/radius-8-phone.jpg" width="200"> | <img alt="radius 8, Fold cover" src="img/radius-8-fold-cover.jpg" width="200"> | <img alt="radius 8, Fold inner display" src="img/radius-8-fold-inner.jpg" width="300"> |
 
 ## Labels off
 
@@ -72,7 +72,7 @@ dock item `x: 3, w: 1, h: 6`; see [home-grid](home-grid.md#a-screen-full-of-widg
 
 | Phone | Fold, cover | Fold, inner |
 |---|---|---|
-| <img src="img/labels-off-phone.jpg" width="200"> | <img src="img/labels-off-fold-cover.jpg" width="200"> | <img src="img/labels-off-fold-inner.jpg" width="300"> |
+| <img alt="labels off, phone" src="img/labels-off-phone.jpg" width="200"> | <img alt="labels off, Fold cover" src="img/labels-off-fold-cover.jpg" width="200"> | <img alt="labels off, Fold inner display" src="img/labels-off-fold-inner.jpg" width="300"> |
 
 ## Themed icons off
 
@@ -80,7 +80,7 @@ dock item `x: 3, w: 1, h: 6`; see [home-grid](home-grid.md#a-screen-full-of-widg
 
 | Phone | Fold, cover | Fold, inner |
 |---|---|---|
-| <img src="img/icons-themed-off-phone.jpg" width="200"> | <img src="img/icons-themed-off-fold-cover.jpg" width="200"> | <img src="img/icons-themed-off-fold-inner.jpg" width="300"> |
+| <img alt="icons themed off, phone" src="img/icons-themed-off-phone.jpg" width="200"> | <img alt="icons themed off, Fold cover" src="img/icons-themed-off-fold-cover.jpg" width="200"> | <img alt="icons themed off, Fold inner display" src="img/icons-themed-off-fold-inner.jpg" width="300"> |
 
 ## Search bar at the bottom
 
@@ -88,4 +88,4 @@ dock item `x: 3, w: 1, h: 6`; see [home-grid](home-grid.md#a-screen-full-of-widg
 
 | Phone | Fold, cover | Fold, inner |
 |---|---|---|
-| <img src="img/search-bottom-phone.jpg" width="200"> | <img src="img/search-bottom-fold-cover.jpg" width="200"> | <img src="img/search-bottom-fold-inner.jpg" width="300"> |
+| <img alt="search bottom, phone" src="img/search-bottom-phone.jpg" width="200"> | <img alt="search bottom, Fold cover" src="img/search-bottom-fold-cover.jpg" width="200"> | <img alt="search bottom, Fold inner display" src="img/search-bottom-fold-inner.jpg" width="300"> |

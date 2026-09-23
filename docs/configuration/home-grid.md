@@ -30,7 +30,7 @@ a cell stays square.
 
 | Labels on (default) | `labels: false` |
 |---|---|
-| <img src="img/full-dock-bottom-phone.jpg" width="220"> | <img src="img/labels-off-phone.jpg" width="220"> |
+| <img alt="full dock bottom, phone" src="img/full-dock-bottom-phone.jpg" width="220"> | <img alt="labels off, phone" src="img/labels-off-phone.jpg" width="220"> |
 
 ## Layouts: phone and fold
 
@@ -94,7 +94,7 @@ through search, and edit mode shows how many do not fit.
 
 | Phone | Fold, cover | Fold, inner |
 |---|---|---|
-| <img src="img/full-dock-bottom-phone.jpg" width="200"> | <img src="img/full-dock-bottom-fold-cover.jpg" width="200"> | <img src="img/full-dock-bottom-fold-inner.jpg" width="300"> |
+| <img alt="full dock bottom, phone" src="img/full-dock-bottom-phone.jpg" width="200"> | <img alt="full dock bottom, Fold cover" src="img/full-dock-bottom-fold-cover.jpg" width="200"> | <img alt="full dock bottom, Fold inner display" src="img/full-dock-bottom-fold-inner.jpg" width="300"> |
 
 <!-- config -->
 ```json
@@ -139,7 +139,7 @@ so the cover's dock shows the first four favorites.
 
 | Phone | Fold, cover | Fold, inner |
 |---|---|---|
-| <img src="img/full-dock-side-phone.jpg" width="200"> | <img src="img/full-dock-side-fold-cover.jpg" width="200"> | <img src="img/full-dock-side-fold-inner.jpg" width="300"> |
+| <img alt="full dock side, phone" src="img/full-dock-side-phone.jpg" width="200"> | <img alt="full dock side, Fold cover" src="img/full-dock-side-fold-cover.jpg" width="200"> | <img alt="full dock side, Fold inner display" src="img/full-dock-side-fold-inner.jpg" width="300"> |
 
 <!-- config -->
 ```json

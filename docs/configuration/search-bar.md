@@ -14,4 +14,4 @@ and contacts. It is configured under `home.searchBar`.
 
 | `top` | `bottom` |
 |---|---|
-| <img src="img/full-dock-bottom-phone.jpg" width="220"> | <img src="img/search-bottom-phone.jpg" width="220"> |
+| <img alt="full dock bottom, phone" src="img/full-dock-bottom-phone.jpg" width="220"> | <img alt="search bottom, phone" src="img/search-bottom-phone.jpg" width="220"> |

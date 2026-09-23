@@ -95,26 +95,28 @@ FOLD_SIDE="$(item analog "$ANALOG" 0 0 3 2), $(item search "$SEARCH" 0 2 3 1), \
 $(item messages "$MESSAGES" 0 3 3 2), $(item clock "$DIGITAL" 0 5 3 1), $(item dock favorites 3 0 1 6), \
 $(item bookmarks "$BOOKMARKS" 4 0 4 3), $(item messages-2 "$MESSAGES" 4 3 4 3)"
 
-# scene <name> <appearance.glass JSON> <icons JSON> <grid extras JSON> <searchBar position> <phone items> <fold items>
-scene_config() {
+# Every scene states the whole baseline plus its one variant. An absent key
+# is "unmanaged" and keeps what the previous scene set, so a partial config
+# would inherit the scene before it (review on #89).
+scene_config() { # blur tint radius contrast wallpaperBlur labels themed position phone-items fold-items
   cat <<EOF
 {
   "schemaVersion": 2,
-  "icons": $3,
+  "icons": { "themed": $7 },
   "appearance": {
-    "glass": $2,
+    "glass": { "blur": $1, "tint": $2, "radius": $3, "contrast": "$4", "wallpaperBlur": $5 },
     "wallpaper": { "image": "mauritius.jpg", "target": "both" }
   },
   "home": {
-    "searchBar": { "position": "$5" },
+    "searchBar": { "position": "$8" },
     "favorites": $FAVORITES,
     "widgets": { "enabled": true },
     "grid": {
       "columns": 4,
-      $4
+      "labels": $6,
       "layouts": {
-        "phone": { "items": [ $6 ] },
-        "fold": { "items": [ $7 ] }
+        "phone": { "items": [ $9 ] },
+        "fold": { "items": [ ${10} ] }
       }
     }
   }
@@ -122,20 +124,26 @@ scene_config() {
 EOF
 }
 
-GLASS='{ "blur": 24, "tint": 0.12, "radius": 28, "contrast": "medium", "wallpaperBlur": true }'
-ICONS='{ "themed": true }'
+# blur tint radius contrast wallpaperBlur labels themed position
+BASE=(24 0.12 28 medium true true true top)
+variant() { # name, the two layouts, then index=value overrides of BASE
+  local name="$1" phone="$2" fold="$3"; shift 3
+  local v=("${BASE[@]}") kv
+  for kv in "$@"; do v[${kv%%=*}]="${kv#*=}"; done
+  SCENES_CFG[$name]="$(scene_config "${v[@]}" "$phone" "$fold")"
+}
 declare -A SCENES_CFG
-SCENES_CFG[full-dock-bottom]="$(scene_config x "$GLASS" "$ICONS" '"labels": true,' top "$PHONE_BOTTOM" "$FOLD_BOTTOM")"
-SCENES_CFG[full-dock-side]="$(scene_config x "$GLASS" "$ICONS" '"labels": true,' top "$PHONE_SIDE" "$FOLD_SIDE")"
-SCENES_CFG[contrast-low]="$(scene_config x '{ "contrast": "low" }' "$ICONS" '' top "$PHONE_BOTTOM" "$FOLD_BOTTOM")"
-SCENES_CFG[contrast-high]="$(scene_config x '{ "contrast": "high" }' "$ICONS" '' top "$PHONE_BOTTOM" "$FOLD_BOTTOM")"
-SCENES_CFG[blur-0]="$(scene_config x '{ "blur": 0, "wallpaperBlur": false }' "$ICONS" '' top "$PHONE_BOTTOM" "$FOLD_BOTTOM")"
-SCENES_CFG[tint-0-4]="$(scene_config x '{ "tint": 0.4 }' "$ICONS" '' top "$PHONE_BOTTOM" "$FOLD_BOTTOM")"
-SCENES_CFG[radius-8]="$(scene_config x '{ "radius": 8 }' "$ICONS" '' top "$PHONE_BOTTOM" "$FOLD_BOTTOM")"
-SCENES_CFG[wallpaper-sharp]="$(scene_config x '{ "wallpaperBlur": false }' "$ICONS" '' top "$PHONE_BOTTOM" "$FOLD_BOTTOM")"
-SCENES_CFG[labels-off]="$(scene_config x "$GLASS" "$ICONS" '"labels": false,' top "$PHONE_BOTTOM" "$FOLD_BOTTOM")"
-SCENES_CFG[icons-themed-off]="$(scene_config x "$GLASS" '{ "themed": false }' '' top "$PHONE_BOTTOM" "$FOLD_BOTTOM")"
-SCENES_CFG[search-bottom]="$(scene_config x "$GLASS" "$ICONS" '' bottom "$PHONE_BOTTOM" "$FOLD_BOTTOM")"
+variant full-dock-bottom "$PHONE_BOTTOM" "$FOLD_BOTTOM"
+variant full-dock-side "$PHONE_SIDE" "$FOLD_SIDE"
+variant contrast-low "$PHONE_BOTTOM" "$FOLD_BOTTOM" 3=low
+variant contrast-high "$PHONE_BOTTOM" "$FOLD_BOTTOM" 3=high
+variant blur-0 "$PHONE_BOTTOM" "$FOLD_BOTTOM" 0=0 4=false
+variant tint-0-4 "$PHONE_BOTTOM" "$FOLD_BOTTOM" 1=0.4
+variant radius-8 "$PHONE_BOTTOM" "$FOLD_BOTTOM" 2=8
+variant wallpaper-sharp "$PHONE_BOTTOM" "$FOLD_BOTTOM" 4=false
+variant labels-off "$PHONE_BOTTOM" "$FOLD_BOTTOM" 5=false
+variant icons-themed-off "$PHONE_BOTTOM" "$FOLD_BOTTOM" 6=false
+variant search-bottom "$PHONE_BOTTOM" "$FOLD_BOTTOM" 7=bottom
 ALL_SCENES="full-dock-bottom full-dock-side contrast-low contrast-high blur-0 tint-0-4 radius-8 wallpaper-sharp labels-off icons-themed-off search-bottom"
 SCENES="${SCENES:-$ALL_SCENES}"
 
@@ -209,7 +217,12 @@ for name in $SCENES; do
   push_config "$WORK/$name.json" "$name"
   report="$(query_json diagnostics)"
   jq -e '.success == true' <<<"$report" >/dev/null || die "$name did not apply: $report"
-  jq -r '(.diagnostics // [])[] | "   diagnostic: \(.code) \(.path) \(.message)"' <<<"$report" | head -5
+  # A warning (a grid correction, say) still applies the file, but the
+  # picture would then not match the config next to it in the docs.
+  # wallpaper-pending-foreground only says the system is still cropping the
+  # first wallpaper set in this run; the launcher is in front, so it renders.
+  jq -e '[(.diagnostics // [])[] | select(.code != "wallpaper-pending-foreground")] | length == 0' <<<"$report" >/dev/null \
+    || die "$name applied with diagnostics, the picture would not match its config: $(jq -c '.diagnostics' <<<"$report")"
   if [ "$FOLDABLE" = 1 ]; then
     posture closed
     capture "$OUT/$name-fold-cover.jpg" 540

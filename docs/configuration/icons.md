@@ -25,11 +25,9 @@ it for every zone. Lawnicons covers every dock app the catalog uses. Without
 it, some system apps' own monochrome layers are filled shapes and read as
 white blocks.
 
-| No pack | Lawnicons |
-|---|---|
-| <img src="../../e2e/screenshots/glass/77-dock-without-and-with-lawnicons.jpg" width="440"> | |
+<img src="../../e2e/screenshots/glass/77-dock-without-and-with-lawnicons.jpg" width="440" alt="Two docks: above, filled white icons without a pack; below, white line icons from Lawnicons">
 
-(Top row: without a pack. Bottom row: with Lawnicons.)
+Top: without a pack. Bottom: with Lawnicons.
 
 Lawnicons is not bundled into the launcher. It is a separate app, 40 MB of
 icons of other companies' logos, and it updates weekly.
@@ -43,7 +41,7 @@ icons of other companies' logos, and it updates weekly.
 
 | Default | `themed: false` |
 |---|---|
-| <img src="img/full-dock-bottom-phone.jpg" width="220"> | <img src="img/icons-themed-off-phone.jpg" width="220"> |
+| <img alt="full dock bottom, phone" src="img/full-dock-bottom-phone.jpg" width="220"> | <img alt="icons themed off, phone" src="img/icons-themed-off-phone.jpg" width="220"> |
 
 No glyph is used, so every icon is its colorless original. The Clear look
 still never shows color.

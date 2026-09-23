@@ -48,7 +48,7 @@ labels and glyphs.
 
 | `low` | `medium` | `high` |
 |---|---|---|
-| <img src="img/contrast-low-phone.jpg" width="220"> | <img src="img/full-dock-bottom-phone.jpg" width="220"> | <img src="img/contrast-high-phone.jpg" width="220"> |
+| <img alt="contrast low, phone" src="img/contrast-low-phone.jpg" width="220"> | <img alt="full dock bottom, phone" src="img/full-dock-bottom-phone.jpg" width="220"> | <img alt="contrast high, phone" src="img/contrast-high-phone.jpg" width="220"> |
 
 ### Blur and the soft background
 
@@ -68,7 +68,7 @@ altogether, which leaves the surfaces as tinted panes.
 
 | Default | `wallpaperBlur: false` | `blur: 0` |
 |---|---|---|
-| <img src="img/full-dock-bottom-phone.jpg" width="220"> | <img src="img/wallpaper-sharp-phone.jpg" width="220"> | <img src="img/blur-0-phone.jpg" width="220"> |
+| <img alt="full dock bottom, phone" src="img/full-dock-bottom-phone.jpg" width="220"> | <img alt="wallpaper sharp, phone" src="img/wallpaper-sharp-phone.jpg" width="220"> | <img alt="blur 0, phone" src="img/blur-0-phone.jpg" width="220"> |
 
 ### Tint and radius
 
@@ -79,7 +79,7 @@ altogether, which leaves the surfaces as tinted panes.
 
 | Default | `tint: 0.4` | `radius: 8` |
 |---|---|---|
-| <img src="img/full-dock-bottom-phone.jpg" width="220"> | <img src="img/tint-0-4-phone.jpg" width="220"> | <img src="img/radius-8-phone.jpg" width="220"> |
+| <img alt="full dock bottom, phone" src="img/full-dock-bottom-phone.jpg" width="220"> | <img alt="tint 0.4, phone" src="img/tint-0-4-phone.jpg" width="220"> | <img alt="radius 8, phone" src="img/radius-8-phone.jpg" width="220"> |
 
 The tint uses the zone's Material You surface color, derived from the
 wallpaper or the theme. The lens (how far the edge bends the backdrop) and the

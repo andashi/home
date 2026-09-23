@@ -36,11 +36,19 @@ class ConfigurationDocsTest {
         var i = 0
         while (i < lines.size) {
             if (lines[i].trim() == "<!-- config -->") {
-                val open = (i + 1 until lines.size).firstOrNull { lines[it].trimStart().startsWith("```") }
-                    ?: throw AssertionError("a <!-- config --> marker without a fenced block")
-                assertEquals("examples are tagged json", "```json", lines[open].trim())
-                val close = (open + 1 until lines.size).firstOrNull { lines[it].trim() == "```" }
-                    ?: throw AssertionError("an example that is never closed")
+                // The fence must follow its marker directly (blank lines
+                // allowed): a detached marker must not borrow a later block.
+                val open = (i + 1 until lines.size).firstOrNull { lines[it].isNotBlank() }
+                    ?: throw AssertionError("a <!-- config --> marker at the end of a page")
+                val opener = lines[open].trim()
+                val fence = opener.takeWhile { it == '`' }
+                assertTrue("a <!-- config --> marker not followed by a fenced block: '${lines[open]}'", fence.length >= 3)
+                assertEquals("examples are tagged json", "json", opener.removePrefix(fence).trim())
+                // CommonMark: a closing fence is a run of at least as many backticks, nothing else.
+                val close = (open + 1 until lines.size).firstOrNull {
+                    val t = lines[it].trim()
+                    t.length >= fence.length && t.all { c -> c == '`' }
+                } ?: throw AssertionError("an example that is never closed")
                 out += lines.subList(open + 1, close).joinToString("\n")
                 i = close
             }
