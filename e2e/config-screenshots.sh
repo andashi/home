@@ -183,6 +183,25 @@ wait_grid() {
   die "the grid is not on screen"
 }
 
+# The launcher sets a wallpaper deferred for a profile in the background
+# asynchronously when its activity resumes; foregrounding alone does not
+# mean it is rendered (review on #89). Wait until the system reports a set
+# system wallpaper (id > 0) for user 0, as e2e/l4-config.sh reads it.
+wallpaper_id() {
+  adb -s "$SERIAL" shell dumpsys wallpaper 2>/dev/null | tr -d '\r' \
+    | awk '/wallpaper state:/ { in_sec = (index($0, "System wallpaper state:") > 0); next }
+           in_sec && index($0, "User 0:") { if (match($0, /id=[0-9]+/)) { print substr($0, RSTART+3, RLENGTH-3); exit } }'
+}
+wait_wallpaper() {
+  local i id
+  for i in $(seq 60); do
+    id="$(wallpaper_id)"
+    [ -n "$id" ] && [ "$id" != 0 ] && return 0
+    sleep 1
+  done
+  die "the wallpaper was not rendered within 60 s (system id ${id:-none})"
+}
+
 posture() { # closed | opened
   local id; [ "$1" = closed ] && id="$POSTURE_CLOSED" || id="$POSTURE_OPENED"
   adb -s "$SERIAL" shell cmd device_state state "$id" >/dev/null
@@ -225,12 +244,15 @@ for name in $SCENES; do
     || die "$name applied with diagnostics, the picture would not match its config: $(jq -c '.diagnostics' <<<"$report")"
   if [ "$FOLDABLE" = 1 ]; then
     posture closed
+    wait_wallpaper
     capture "$OUT/$name-fold-cover.jpg" 540
     posture opened
+    wait_wallpaper
     capture "$OUT/$name-fold-inner.jpg" 780
   else
     show_home
     wait_grid
+    wait_wallpaper
     sleep 3
     capture "$OUT/$name-phone.jpg" 540
   fi
