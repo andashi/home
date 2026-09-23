@@ -37,7 +37,15 @@ enum class ClockSublayerRole {
 data class TintedIconLayer(
     val icon: Drawable,
     val scale: Float = 0.5f,
-    val color: Int = 0
+    val color: Int = 0,
+    /**
+     * A silhouette forced out of a colored icon (`icons.enforceThemed`), not
+     * a glyph the app or a pack drew. The Clear look draws these as the
+     * desaturated original instead (#76).
+     */
+    val forced: Boolean = false,
+    /** For a [forced] silhouette: the icon it was forced out of, background included. */
+    val original: StaticLauncherIcon? = null,
 ) : LauncherIconLayer
 
 data class TintedClockLayer(

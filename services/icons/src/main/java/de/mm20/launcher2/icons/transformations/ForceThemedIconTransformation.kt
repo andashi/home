@@ -5,12 +5,12 @@ import de.mm20.launcher2.icons.*
 internal class ForceThemedIconTransformation : LauncherIconTransformation {
     override suspend fun transform(icon: StaticLauncherIcon): StaticLauncherIcon {
         return StaticLauncherIcon(
-            foregroundLayer = asThemed(icon.foregroundLayer),
+            foregroundLayer = asThemed(icon.foregroundLayer, icon),
             backgroundLayer = ColorLayer(0),
         )
     }
 
-    private fun asThemed(layer: LauncherIconLayer): LauncherIconLayer {
+    private fun asThemed(layer: LauncherIconLayer, original: StaticLauncherIcon): LauncherIconLayer {
         return when(layer) {
             is ClockLayer -> TintedClockLayer(
                 scale = layer.scale,
@@ -24,6 +24,10 @@ internal class ForceThemedIconTransformation : LauncherIconTransformation {
                 color = 0,
                 icon = layer.icon,
                 scale = layer.scale / 1.2f,
+                // A silhouette of a colored icon, not a glyph: the Clear look
+                // draws the original desaturated instead (#76).
+                forced = true,
+                original = original,
             )
             is TextLayer -> layer.copy(
                 color = 0

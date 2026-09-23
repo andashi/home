@@ -45,6 +45,15 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shader
 import androidx.compose.ui.graphics.ShaderBrush
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.ColorMatrix
+import androidx.compose.ui.semantics.semantics
+import de.mm20.launcher2.glass.GlassLook
+import de.mm20.launcher2.ui.launcher.glass.ClearIcon
+import de.mm20.launcher2.ui.launcher.glass.ClearIconKey
+import de.mm20.launcher2.ui.launcher.glass.ClearIconKind
+import de.mm20.launcher2.ui.launcher.glass.GlassSurface
+import de.mm20.launcher2.ui.launcher.glass.LocalClearIcons
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.asComposePath
 import androidx.compose.ui.graphics.drawOutline
@@ -97,6 +106,10 @@ fun ShapedLauncherIcon(
     badge: () -> Badge? = { null },
     shape: Shape = LocalIconShape.current
 ) {
+    if (LocalClearIcons.current) {
+        ClearLauncherIcon(modifier, size, icon, badge)
+        return
+    }
 
     val _icon = icon()
 
@@ -250,6 +263,116 @@ fun ShapedLauncherIcon(
         }
     }
 }
+
+/**
+ * The Clear look (ADR 0004, #76): a glass chip on the squircle, the icon's
+ * glyph in white on it, or - when the app has no glyph - its original
+ * drawn without saturation. Never the colored icon. The `IconShape` setting
+ * is not consulted: the squircle is the only shape.
+ */
+@Composable
+private fun ClearLauncherIcon(
+    modifier: Modifier,
+    size: Dp,
+    icon: () -> LauncherIcon?,
+    badge: () -> Badge?,
+) {
+    val _icon = icon()
+    var currentIcon by remember(_icon) { mutableStateOf(_icon as? StaticLauncherIcon) }
+    if (_icon is DynamicLauncherIcon) {
+        val date = Instant.ofEpochMilli(LocalTime.current).atZone(ZoneId.systemDefault())
+        LaunchedEffect(date.dayOfYear, _icon) {
+            currentIcon = _icon.getIcon(date.toEpochSecond() * 1000L)
+        }
+    }
+    val clear = remember(currentIcon) { currentIcon?.let { ClearIcon.of(it) } }
+
+    val defaultIconSize = LocalGridSettings.current.iconSize.dp
+    val renderSettings = LauncherIconRenderSettings(
+        size = defaultIconSize.toPixels().toInt(),
+        fgThemeColor = Color.White.toArgb(),
+        bgThemeColor = Color.Transparent.toArgb(),
+        fgTone = 100,
+        bgTone = 0,
+    )
+    var bitmap by remember(clear) { mutableStateOf(clear?.icon?.getCachedBitmap(renderSettings)) }
+    LaunchedEffect(clear, renderSettings) {
+        bitmap = clear?.icon?.render(renderSettings)
+    }
+
+    Box(modifier = modifier.size(size)) {
+        GlassSurface(
+            modifier = Modifier.fillMaxSize(),
+            shape = SquircleShape,
+            tintBoost = GlassLook.ChipTintBoost,
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .then(
+                        if (clear != null) {
+                            Modifier.semantics {
+                                this[ClearIconKey] =
+                                    if (clear is ClearIcon.Glyph) ClearIconKind.Glyph else ClearIconKind.Desaturated
+                            }
+                        } else {
+                            Modifier
+                        }
+                    ),
+                contentAlignment = Alignment.Center,
+            ) {
+                val bmp = bitmap
+                if (bmp != null && clear != null) {
+                    Canvas(
+                        modifier = Modifier
+                            .requiredSize(defaultIconSize)
+                            .scale(size / defaultIconSize, TransformOrigin.Center)
+                    ) {
+                        val outline = SquircleShape.createOutline(this.size, layoutDirection, Density(density, fontScale))
+                        drawOutline(
+                            outline,
+                            BitmapShaderBrush(bmp),
+                            colorFilter = if (clear is ClearIcon.Desaturated) Desaturate else null,
+                        )
+                    }
+                    when (val fg = clear.icon.foregroundLayer) {
+                        is TintedClockLayer -> ClockLayer(
+                            modifier = Modifier.fillMaxSize().clip(SquircleShape),
+                            sublayers = fg.sublayers,
+                            defaultMinute = fg.defaultMinute,
+                            defaultHour = fg.defaultHour,
+                            defaultSecond = fg.defaultSecond,
+                            scale = fg.scale,
+                            tintColor = Color.White,
+                        )
+
+                        is TextLayer -> Text(
+                            text = fg.text,
+                            style = MaterialTheme.typography.headlineSmall.copy(fontSize = 20.sp * (size / 48.dp)),
+                            color = Color.White,
+                        )
+
+                        is VectorLayer -> Icon(
+                            painter = painterResource(fg.icon),
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.size(size / 2f),
+                        )
+
+                        else -> {}
+                    }
+                }
+            }
+        }
+        val _badge = badge()
+        if (_badge != null) {
+            Badge(badge = _badge, modifier = Modifier.align(Alignment.BottomEnd), size = size * 0.33f)
+        }
+    }
+}
+
+/** No saturation: the fallback reads as a grey glyph, one step below a real one. */
+private val Desaturate = ColorFilter.colorMatrix(ColorMatrix().apply { setToSaturation(0f) })
 
 private fun getTone(argb: Int, tone: Int): Int {
     return TonalPalette

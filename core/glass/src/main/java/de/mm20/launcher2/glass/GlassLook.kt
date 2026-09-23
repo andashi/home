@@ -31,6 +31,9 @@ object GlassLook {
         1f to 0.10f, // right again
     )
 
+    /** How much stronger an icon chip is tinted than a card, so the glyph reads (#76). */
+    const val ChipTintBoost = 0.08f
+
     /** How far the lens pulls the backdrop at the very edge, dp. */
     const val LensStrengthDp = 10f
 
