@@ -22,12 +22,7 @@ object AndroidBackdropRenderer {
 
     suspend fun render(image: BackdropImage, key: BackdropKey): ImageBitmap? = withContext(Dispatchers.Default) {
         try {
-            val started = System.nanoTime()
-            decode(image, key)?.also {
-                // Sizes and timing only, no path: what e2e/measure-glass-frametime.sh reads.
-                Log.i(Tag, "backdrop ${it.width}x${it.height} blur ${key.blurPx}px for " +
-                        "${key.windowWidthPx}x${key.windowHeightPx} in ${(System.nanoTime() - started) / 1_000_000} ms")
-            }
+            decode(image, key)
         } catch (e: Exception) {
             Log.w(Tag, "backdrop not made: ${e.javaClass.simpleName}")
             null
@@ -49,6 +44,7 @@ object AndroidBackdropRenderer {
         var sample = 1
         while (crop.width / (sample * 2) >= width && crop.height / (sample * 2) >= height) sample *= 2
 
+        val started = System.nanoTime()
         val options = BitmapFactory.Options().apply {
             inSampleSize = sample
             inPreferredConfig = Bitmap.Config.ARGB_8888
@@ -58,8 +54,19 @@ object AndroidBackdropRenderer {
         decoded.getPixels(pixels, 0, decoded.width, 0, 0, decoded.width, decoded.height)
         val source = Pixels(decoded.width, decoded.height, pixels)
         decoded.recycle()
+        val decodedAt = System.nanoTime()
 
         val out = BackdropGeometry.render(source, key.windowWidthPx, key.windowHeightPx, key.blurPx)
-        return Bitmap.createBitmap(out.argb, out.width, out.height, Bitmap.Config.ARGB_8888).asImageBitmap()
+        val bitmap = Bitmap.createBitmap(out.argb, out.width, out.height, Bitmap.Config.ARGB_8888).asImageBitmap()
+        val doneAt = System.nanoTime()
+        // Sizes and timing only, no path: what e2e/measure-glass-frametime.sh reads.
+        Log.i(
+            Tag,
+            "backdrop ${out.width}x${out.height} blur ${key.blurPx}px for " +
+                    "${key.windowWidthPx}x${key.windowHeightPx} in ${(doneAt - started) / 1_000_000} ms " +
+                    "(decode ${source.width}x${source.height} at 1/$sample: ${(decodedAt - started) / 1_000_000} ms, " +
+                    "crop+scale+blur: ${(doneAt - decodedAt) / 1_000_000} ms)",
+        )
+        return bitmap
     }
 }

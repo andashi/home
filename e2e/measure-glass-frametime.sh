@@ -54,6 +54,8 @@ RUNS="${RUNS:-15}"
 VARIANTS="${VARIANTS:-off hook}"
 WALLPAPER="${WALLPAPER:-$GOS_REPO/themes/mauritius/tall/wallpaper.jpg}"
 REV="$(git -C "$HERE/.." rev-parse --short HEAD)"
+# The APK is built from the working tree; a dirty tree is recorded as such.
+git -C "$HERE/.." diff --quiet HEAD -- app core services data || REV="$REV-dirty"
 OUT="${OUT:-$HERE/measurements/glass-$(tr ' ' '-' <<<"$VARIANTS")-$REV.tsv}"
 CLOCK="com.android.deskclock/com.android.alarmclock.DigitalAppWidgetProvider"
 
@@ -201,10 +203,10 @@ for variant in $VARIANTS; do
   done
   # The blur, once per display and wallpaper, as the renderer logged it.
   adb -s "$SERIAL" logcat -d -s GlassBackdrop:I | tr -d '\r' \
-    | sed -n 's/.*backdrop \([0-9]*x[0-9]*\) blur \([0-9]*\)px for \([0-9]*x[0-9]*\) in \([0-9]*\) ms/\3 \1 \2 \4/p' \
-    | while read -r window size blur ms; do
-        record "backdrop.$variant.$window" "${ms} ms (${size}, blur ${blur}px)"
-        ok "backdrop for $window: $size, blur ${blur}px, ${ms} ms"
+    | sed -n 's/.*backdrop \([0-9]*x[0-9]*\) blur \([0-9]*\)px for \([0-9]*x[0-9]*\) in \([0-9]*\) ms (\(.*\))$/\3|\1|\2|\4|\5/p' \
+    | while IFS='|' read -r window size blur ms detail; do
+        record "backdrop.$variant.$window" "${ms} ms (${size}, blur ${blur}px; ${detail})"
+        ok "backdrop for $window: $size, blur ${blur}px, ${ms} ms ($detail)"
       done
 done
 
