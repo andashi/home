@@ -66,11 +66,20 @@ reload, and integrated into a GrapheneOS multi-profile setup.
    (#66), renderer (#67), write-back (#68), edit mode (#70); the old widget
    column, the widget pages reached by gestures and their table were removed
    afterwards (PR 5b), so the launcher has exactly one widget surface.
-5. **Liquid Glass refinement** (ADR 0004, #24) — in progress, iterated on top
-   of the stable grid. The contract comes first (#73): `appearance.glass`
-   (`blur`, `tint`, `radius`, `contrast`) and `home.grid.labels` replace
-   `appearance.transparency`; keys, defaults and bounds are in ADR 0002,
-   section "Glass".
+5. **Liquid Glass** (ADR 0004, #24) — **landed 2026-09-23** as a series:
+   the contract (#73), one cached backdrop per wallpaper and display (#74),
+   glass cards, dock and search pill with labels (#75), the liquid look with
+   edge lens and wallpaper blur (#82), Clear icons (#76), and the gate with
+   goldens on the reference wallpaper (#77). The contract it added:
+
+   ```jsonc
+   "appearance": { "glass": { "blur": 24, "tint": 0.12, "radius": 28, "contrast": "medium", "wallpaperBlur": true } },
+   "home":       { "grid": { "labels": true } }
+   ```
+
+   `appearance.transparency` left the contract and is reported as an inert
+   key. Keys, defaults and bounds: ADR 0002, section "Glass"; what was built:
+   ADR 0004, "As built".
 
 ## Relationship to the provisioning repo
 

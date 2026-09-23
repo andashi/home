@@ -58,6 +58,15 @@ REV="$(git -C "$HERE/.." rev-parse --short HEAD)"
 git -C "$HERE/.." diff --quiet HEAD -- app core services data || REV="$REV-dirty"
 OUT="${OUT:-$HERE/measurements/glass-$(tr ' ' '-' <<<"$VARIANTS")-$REV.tsv}"
 CLOCK="com.android.deskclock/com.android.alarmclock.DigitalAppWidgetProvider"
+# clocks: seven identical clocks, the fixture every frame-time number is
+#   measured with, so the numbers stay comparable across #74, #75 and #77.
+# varied: different widgets and a dock of real apps, for screenshots that
+#   look like a home screen (labels name different apps).
+FIXTURE="${FIXTURE:-clocks}"
+# PACK=lawnicons installs provisioning's Lawnicons APK before the launcher and
+# names it in icons.pack, as a zone does: the dock's glyphs then come from the
+# pack instead of the apps' own monochrome layers.
+PACK="${PACK:-}"
 
 c(){ [ -t 1 ] && printf '\033[%sm%s\033[0m\n' "$1" "$2" || printf '%s\n' "$2"; }
 log(){ c '1;34' ":: $*"; }; ok(){ c '1;32' " + $*"; }; warn(){ c '1;33' " ! $*"; }
@@ -99,21 +108,46 @@ items() { # $1 = dock width
   done
   printf '%s{ "id": "dock", "widget": "favorites", "x": 0, "y": 5, "w": %s, "h": 1 }' "$out" "$1"
 }
+varied_items() { # $1 = dock width
+  printf '%s' \
+    '{ "id": "analog", "widget": "com.android.deskclock/com.android.alarmclock.AnalogAppWidgetProvider", "x": 0, "y": 0, "w": 2, "h": 2 },' \
+    '{ "id": "messages", "widget": "com.android.messaging/com.android.messaging.widget.BugleWidgetProvider", "x": 2, "y": 0, "w": 2, "h": 2 },' \
+    '{ "id": "search", "widget": "app.vanadium.browser/org.chromium.chrome.browser.searchwidget.SearchWidgetProvider", "x": 0, "y": 2, "w": 4, "h": 1 },' \
+    '{ "id": "clock", "widget": "com.android.deskclock/com.android.alarmclock.DigitalAppWidgetProvider", "x": 0, "y": 3, "w": 2, "h": 1 },'
+  printf '{ "id": "dock", "widget": "favorites", "x": 0, "y": 5, "w": %s, "h": 1 }' "$1"
+}
+case "$FIXTURE" in
+  clocks) PHONE_ITEMS="$(items 4)"; FOLD_ITEMS="$(items 8)"; FAVORITES='[]' ;;
+  varied)
+    PHONE_ITEMS="$(varied_items 4)"; FOLD_ITEMS="$(varied_items 8)"
+    FAVORITES='["com.android.dialer", "com.android.messaging", "app.vanadium.browser", "app.grapheneos.camera"]' ;;
+  *) die "unknown FIXTURE $FIXTURE (clocks | varied)" ;;
+esac
+ICONS='"icons": { "themed": true },'
+if [ "$PACK" = lawnicons ]; then
+  LAWNICONS_APK="$(ls "$GOS_REPO"/apks/universal/app.lawnchair.lawnicons-*.apk 2>/dev/null | head -1)"
+  [ -n "$LAWNICONS_APK" ] || die "no Lawnicons APK under $GOS_REPO/apks/universal"
+  ICONS='"icons": { "themed": true, "pack": "app.lawnchair.lawnicons" },'
+elif [ -n "$PACK" ]; then
+  die "unknown PACK $PACK (lawnicons)"
+fi
 CONFIG="$WORK/glass.json"
 cat > "$CONFIG" <<EOF
 {
   "schemaVersion": 2,
+  $ICONS
   "appearance": {
     "wallpaper": { "image": "mauritius.jpg", "target": "both" },
     "glass": { "blur": 24, "tint": 0.12, "radius": 28, "contrast": "medium", "wallpaperBlur": true }
   },
   "home": {
+    "favorites": $FAVORITES,
     "widgets": { "enabled": true },
     "grid": {
       "columns": 4,
       "layouts": {
-        "phone": { "items": [ $(items 4) ] },
-        "fold": { "items": [ $(items 8) ] }
+        "phone": { "items": [ $PHONE_ITEMS ] },
+        "fold": { "items": [ $FOLD_ITEMS ] }
       }
     }
   }
@@ -131,6 +165,10 @@ adb -s "$SERIAL" wait-for-device
 [ "$(adb -s "$SERIAL" shell id -u | tr -d '\r')" = "2000" ] || die "adb is not the unrooted shell"
 ok "adb as unrooted shell (uid 2000)"
 
+if [ -n "${LAWNICONS_APK:-}" ]; then
+  adb -s "$SERIAL" install -r "$LAWNICONS_APK" | grep -q Success || die "Lawnicons install failed"
+  ok "icon pack installed: $(basename "$LAWNICONS_APK")"
+fi
 adb -s "$SERIAL" install -r "$APK" | grep -q Success || die "install failed"
 adb -s "$SERIAL" shell appwidget grantbind --package "$PKG" --user 0 >/dev/null
 resolve_postures() {
@@ -142,11 +180,19 @@ resolve_postures() {
 }
 resolve_postures
 posture() { # $1 = closed | opened
-  local id; [ "$1" = closed ] && id="$POSTURE_CLOSED" || id="$POSTURE_OPENED"
+  local id i; [ "$1" = closed ] && id="$POSTURE_CLOSED" || id="$POSTURE_OPENED"
   adb -s "$SERIAL" shell cmd device_state state "$id" >/dev/null
   sleep 4
   show_home
-  sleep 3
+  # The activity is recreated on the other display; a series started before
+  # the grid is back measures the blank in between (it did: 2 frames on the
+  # cover). Wait for the dock cell.
+  for i in $(seq 30); do
+    [ -n "$(desc_bounds grid-item:dock 2>/dev/null)" ] && break
+    wake_screen; show_home; sleep 1
+  done
+  [ -n "$(desc_bounds grid-item:dock 2>/dev/null)" ] || die "the grid did not come back after posture $1"
+  sleep 2
 }
 
 show_home
@@ -154,7 +200,7 @@ sleep 5
 adb -s "$SERIAL" shell content write --uri "content://$PKG.config-ingest/wallpapers/mauritius.jpg" < "$WALLPAPER"
 push_config "$CONFIG" "glass fixture"
 jq -e '.success == true' <<<"$(query_json diagnostics)" >/dev/null || die "fixture did not apply: $(query_json diagnostics)"
-ok "fixture applied: mauritius wallpaper, seven clocks and the dock"
+ok "fixture applied: mauritius wallpaper, $FIXTURE widgets and the dock"
 
 # --- measure ------------------------------------------------------------------
 
@@ -163,6 +209,8 @@ record() { printf '%s\t%s\n' "$1" "$2" >> "$WORK/out.tsv"; }
 record rev "$REV"
 record serial "$SERIAL"
 record runs "$RUNS"
+record fixture "$FIXTURE"
+record pack "${PACK:-none}"
 
 series() { # $1 = label
   local size w h i
@@ -193,12 +241,7 @@ series() { # $1 = label
 # (the PNG header carries width and height at bytes 16..23).
 capture() { # $1 = output png
   local size want id got i
-  # After a posture change the activity is recreated; wait until the grid is
-  # on screen again (the dock cell), or the picture is the blank in between.
-  for i in $(seq 20); do
-    [ -n "$(desc_bounds grid-item:dock 2>/dev/null)" ] && break
-    wake_screen; sleep 1
-  done
+  # posture() has already waited for the grid to be back.
   size="$(adb -s "$SERIAL" shell wm size | tr -d '\r' | awk '/size/ {s=$NF} END {print s}')"
   for id in $(adb -s "$SERIAL" shell dumpsys SurfaceFlinger --display-id | tr -d '\r' | sed -n 's/^Display \([0-9]*\).*/\1/p'); do
     adb -s "$SERIAL" exec-out screencap -d "$id" -p > "$WORK/shot.png" 2>/dev/null || continue

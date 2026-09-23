@@ -111,6 +111,9 @@ val LocalGlassBackdrop = staticCompositionLocalOf<RenderedBackdrop<ImageBitmap>?
 /** The backdrop region a surface drew, in backdrop pixels (tests read it). */
 val GlassBackdropRegion = SemanticsPropertyKey<PixelRect>("GlassBackdropRegion")
 
+/** The blur, in backdrop pixels, of the backdrop a surface drew (tests read it, #77). */
+val GlassBackdropBlurPx = SemanticsPropertyKey<Int>("GlassBackdropBlurPx")
+
 /**
  * Provides [LocalGlassBackdrop] for [content]: tells the controller the
  * window size and asks the source to re-check the wallpaper whenever the
@@ -174,7 +177,10 @@ fun Modifier.glassBackdrop(
         }
     }
     positioned
-        .semantics { this[GlassBackdropRegion] = region }
+        .semantics {
+            this[GlassBackdropRegion] = region
+            this[GlassBackdropBlurPx] = backdrop.key.blurPx
+        }
         .drawBehind {
             // RuntimeShader exists only on the hardware renderer; a software
             // canvas (drawToBitmap, some screenshot paths) throws on it, so

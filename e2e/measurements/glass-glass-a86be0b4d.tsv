@@ -1,0 +1,17 @@
+rev	a86be0b4d
+serial	emulator-5560
+runs	15
+cover.glass.frames	227
+cover.glass.janky	223
+cover.glass.p50_ms	150
+cover.glass.p90_ms	350
+cover.glass.p95_ms	400
+cover.glass.p99_ms	650
+inner.glass.frames	183
+inner.glass.janky	183
+inner.glass.p50_ms	300
+inner.glass.p90_ms	500
+inner.glass.p95_ms	550
+inner.glass.p99_ms	600
+backdrop.glass.1080x2364	323 ms (135x296, blur 7px; decode 192x344 at 1/8: 122 ms, crop+scale+blur: 201 ms)
+backdrop.glass.2076x2152	351 ms (260x269, blur 7px; decode 384x688 at 1/4: 133 ms, crop+scale+blur: 218 ms)
