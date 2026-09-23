@@ -123,14 +123,17 @@ case "$FIXTURE" in
     FAVORITES='["com.android.dialer", "com.android.messaging", "app.vanadium.browser", "app.grapheneos.camera"]' ;;
   *) die "unknown FIXTURE $FIXTURE (clocks | varied)" ;;
 esac
+# lawnicons-default installs Lawnicons and writes no icons section at all:
+# the launcher's own defaults (#86) must pick it up.
 ICONS='"icons": { "themed": true },'
-if [ "$PACK" = lawnicons ]; then
-  LAWNICONS_APK="$(ls "$GOS_REPO"/apks/universal/app.lawnchair.lawnicons-*.apk 2>/dev/null | head -1)"
-  [ -n "$LAWNICONS_APK" ] || die "no Lawnicons APK under $GOS_REPO/apks/universal"
-  ICONS='"icons": { "themed": true, "pack": "app.lawnchair.lawnicons" },'
-elif [ -n "$PACK" ]; then
-  die "unknown PACK $PACK (lawnicons)"
-fi
+case "$PACK" in
+  "") ;;
+  lawnicons | lawnicons-default)
+    LAWNICONS_APK="$(ls "$GOS_REPO"/apks/universal/app.lawnchair.lawnicons-*.apk 2>/dev/null | head -1)"
+    [ -n "$LAWNICONS_APK" ] || die "no Lawnicons APK under $GOS_REPO/apks/universal"
+    if [ "$PACK" = lawnicons ]; then ICONS='"icons": { "themed": true, "pack": "app.lawnchair.lawnicons" },'; else ICONS=''; fi ;;
+  *) die "unknown PACK $PACK (lawnicons | lawnicons-default)" ;;
+esac
 CONFIG="$WORK/glass.json"
 cat > "$CONFIG" <<EOF
 {

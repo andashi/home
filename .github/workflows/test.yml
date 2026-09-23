@@ -37,6 +37,7 @@ jobs:
           :core:config:testDebugUnitTest
           :core:grid:test
           :core:glass:test
+          :services:icons:testDebugUnitTest
           :services:config:testDebugUnitTest
           :data:database:testDebugUnitTest
           :data:searchable:testDebugUnitTest

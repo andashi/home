@@ -31,7 +31,7 @@ class ReloadConfigReceiverTest {
         val reloader = ConfigReloader(store, reportStore)
         val file = configFile()
         file.parentFile?.mkdirs()
-        file.writeText("""{"schemaVersion": 1, "icons": {"themed": true}}""")
+        file.writeText("""{"schemaVersion": 1, "icons": {"themed": false}}""")
         try {
             val intent = Intent(context.packageName + ReloadConfigReceiver.ActionSuffix)
             receiver.handle(context, intent, reloader)
@@ -96,7 +96,7 @@ class ReloadConfigReceiverTest {
         val reloader = ConfigReloader(store, reportStore)
         val file = configFile()
         file.parentFile?.mkdirs()
-        file.writeText("""{"schemaVersion": 1, "icons": {"themed": true}}""")
+        file.writeText("""{"schemaVersion": 1, "icons": {"themed": false}}""")
         try {
             receiver.handle(context, Intent("com.example.SOME_OTHER_ACTION"), reloader)
 

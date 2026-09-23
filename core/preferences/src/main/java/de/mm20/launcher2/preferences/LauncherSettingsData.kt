@@ -104,7 +104,8 @@ data class LauncherSettingsData internal constructor(
 
     val iconsShape: IconShape = IconShape.PlatformDefault,
     val iconsAdaptify: Boolean = false,
-    val iconsThemed: Boolean = false,
+    /** On in the fork: the Clear look (#76) is built from themed layers (#86). */
+    val iconsThemed: Boolean = true,
     val iconsForceThemed: Boolean = false,
     val iconsPack: String? = null,
     @Deprecated("Use iconsThemed instead")

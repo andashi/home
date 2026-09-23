@@ -1,7 +1,7 @@
 package de.mm20.launcher2.config
 
 data class ConfigState(
-    val themedIcons: Boolean = false,
+    val themedIcons: Boolean = true,
     val enforceThemedIcons: Boolean = false,
     val iconPack: String? = null,
     val glassBlur: Float = GlassDefaults.Blur,

@@ -61,7 +61,7 @@ class ConfigReloaderTest {
         val store = FakeConfigStore()
         val (reloader, reportStore) = newReloader(store)
 
-        val report = reloader.reload("""{"schemaVersion": 1, "icons": {"themed": true}}""")
+        val report = reloader.reload("""{"schemaVersion": 1, "icons": {"themed": false}}""")
 
         assertTrue(report.success)
         // The report names the schema version the document has after the
@@ -93,7 +93,7 @@ class ConfigReloaderTest {
         val store = FakeConfigStore(applyFailure = IllegalStateException("disk full"))
         val (reloader, _) = newReloader(store)
 
-        val report = reloader.reload("""{"schemaVersion": 2, "icons": {"themed": true}}""")
+        val report = reloader.reload("""{"schemaVersion": 2, "icons": {"themed": false}}""")
 
         assertFalse(report.success)
         val failure = report.diagnostics.single { it.code == "apply-failed" }
@@ -133,7 +133,7 @@ class ConfigReloaderTest {
         val (reloader, _) = newReloader(store)
 
         val report = reloader.reload(
-            """{"schemaVersion": 1, "icons": {"themed": true}, "nonsense": 42}"""
+            """{"schemaVersion": 1, "icons": {"themed": false}, "nonsense": 42}"""
         )
 
         assertTrue(report.success)
@@ -165,7 +165,7 @@ class ConfigReloaderTest {
         val (reloader, _) = newReloader(store)
 
         val report = reloader.reload(
-            """{"schemaVersion": 2, "icons": {"themed": true}, "home": {"favorites": [{"packageName": "com.example.app"}]}}"""
+            """{"schemaVersion": 2, "icons": {"themed": false}, "home": {"favorites": [{"packageName": "com.example.app"}]}}"""
         )
 
         assertFalse(report.success)
@@ -195,7 +195,7 @@ class ConfigReloaderTest {
         val store = FakeConfigStore(applyDelayMs = 100)
         val (reloader, _) = newReloader(store)
 
-        val icons = """{"schemaVersion": 1, "icons": {"themed": true}}"""
+        val icons = """{"schemaVersion": 1, "icons": {"themed": false}}"""
         val dock = """{"schemaVersion": 2, "home": {"grid": {"locked": true}}}"""
 
         val reports = listOf(icons, dock).map { text ->
@@ -219,7 +219,7 @@ class ConfigReloaderTest {
         val store = FakeConfigStore()
         val (reloader, _) = newReloader(store)
         val file = File(context.filesDir, "test-config.json")
-        file.writeText("""{"schemaVersion": 1, "icons": {"themed": true}}""")
+        file.writeText("""{"schemaVersion": 1, "icons": {"themed": false}}""")
         try {
             val report = reloader.reload(file)
             assertTrue(report.success)

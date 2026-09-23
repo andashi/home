@@ -107,8 +107,11 @@ class IconService(
                     }
                     val providers = mutableListOf<IconProvider>()
 
-                    if (!settings.iconPack.isNullOrBlank()) {
-                        val pack = iconPackManager.getIconPack(settings.iconPack!!)
+                    // Re-evaluated on every pack install and removal
+                    // (iconPacksUpdated), so installing Lawnicons later applies it.
+                    val packName = DefaultIconPack.effective(settings.iconPack) { iconPackManager.getIconPack(it) != null }
+                    if (packName != null) {
+                        val pack = iconPackManager.getIconPack(packName)
                         if (pack != null) {
                             providers.add(
                                 IconPackIconProvider(
@@ -119,7 +122,7 @@ class IconService(
                                 )
                             )
                         } else {
-                            Log.w("MM20", "Icon pack ${settings.iconPack} not found")
+                            Log.w("MM20", "Icon pack $packName not found")
                         }
                     }
                     providers.add(DynamicClockIconProvider(context, settings.themedIcons))

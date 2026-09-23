@@ -7,3 +7,4 @@ scene	caption	guarded by
 77-fold-inner	The same on the inner display.	HomeGridScreenshotTest.foldInner*
 77-fold-cover-lawnicons	The same screen with provisioning's Lawnicons installed and named in icons.pack, as a zone does (PACK=lawnicons): the dock's glyphs come from the pack as white line icons, Vanadium included - no fallback left.	ClearIconTest (pack entry); ClearIconDeviceTest
 77-dock-without-and-with-lawnicons	The dock without a pack (top: the system apps' filled monochrome layers, Vanadium as the desaturated fallback) and with Lawnicons (bottom).	ClearIconTest
+86-dock-fresh-launcher-lawnicons	A launcher with no icons section in its config and Lawnicons installed (#86): the defaults pick the pack up, and the dock shows its line glyphs.	DefaultIconPackTest; LauncherConfigSettingsTest

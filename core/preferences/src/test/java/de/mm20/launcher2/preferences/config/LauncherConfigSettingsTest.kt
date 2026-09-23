@@ -261,4 +261,20 @@ class LauncherConfigSettingsTest {
 
         assertEquals(true, store.data.first().homeGridLocked)
     }
+
+    /**
+     * The Clear look (#76) needs themed icons: without them no monochrome
+     * layer or pack glyph is used and every icon is the grey fallback (#86).
+     */
+    @Test
+    fun `fresh settings have themed icons on`() = runTest {
+        assertEquals(true, createGateway().readState().themedIcons)
+    }
+
+    @Test
+    fun `a config that turns themed icons off still wins`() = runTest {
+        val gateway = createGateway()
+        val updated = gateway.applyAndReturn(listOf(ConfigMutation.SetIcons(themed = false)))
+        assertEquals(false, updated.iconsThemed)
+    }
 }
