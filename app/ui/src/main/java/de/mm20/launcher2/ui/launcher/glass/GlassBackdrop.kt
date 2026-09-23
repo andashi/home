@@ -34,6 +34,8 @@ import de.mm20.launcher2.glass.GlassInputs
 import de.mm20.launcher2.glass.PixelRect
 import de.mm20.launcher2.glass.RenderedBackdrop
 import de.mm20.launcher2.glass.WindowInputs
+import android.util.Log
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -66,7 +68,20 @@ class GlassBackdropController(
         window.value = WindowInputs(widthPx, heightPx, density)
     }
 
-    suspend fun refresh() = source.refresh()
+    /**
+     * Asks the source to re-check the wallpaper. Runs from the resume hook,
+     * where an exception would take the launcher down; a failed check keeps
+     * the backdrop as it was and is logged.
+     */
+    suspend fun refresh() {
+        try {
+            source.refresh()
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Log.w("GlassBackdrop", "refresh failed: ${e.javaClass.simpleName}")
+        }
+    }
 }
 
 /** The backdrop surfaces draw from; null without a managed home wallpaper. */

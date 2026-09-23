@@ -167,7 +167,16 @@ class DefaultWallpaperStore(
         val applied = readApplied() ?: return null
         if (applied.pending || applied.target == WallpaperTarget.Lock) return null
         val file = ConfigLocation.wallpaperFile(appContext, applied.image) ?: return null
-        if (!file.isFile || file.readBytes().sha256Hex() != applied.sha256) return null
+        // An upload can replace or remove the file between the check and the
+        // read; that is "no backdrop", never an exception out of apply() or
+        // the resume hook.
+        val hash = try {
+            if (!file.isFile) return null
+            file.readBytes().sha256Hex()
+        } catch (e: IOException) {
+            return null
+        }
+        if (hash != applied.sha256) return null
         val ids = try {
             applier.currentIds()
         } catch (e: Exception) {

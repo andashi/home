@@ -417,4 +417,18 @@ class WallpaperStoreTest {
 
         assertEquals(backdropOf("home.jpg"), restarted.image.value)
     }
+
+    @Test
+    fun `an unreadable wallpaper file is no backdrop, not an exception`() = runTest {
+        store.apply("home.jpg", WallpaperTarget.Both)
+        val file = File(dir, "home.jpg")
+        check(file.setReadable(false)) { "cannot make the file unreadable here" }
+        try {
+            store.refresh()
+
+            assertNull(store.image.value)
+        } finally {
+            file.setReadable(true)
+        }
+    }
 }

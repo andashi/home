@@ -47,8 +47,10 @@ class GlassBackdropTest {
     private class FakeSource : GlassBackdropSource {
         override val image = MutableStateFlow<BackdropImage?>(BackdropImage("/w/zone.jpg", "sha1"))
         var refreshes = 0
+        var failRefresh = false
         override suspend fun refresh() {
             refreshes++
+            if (failRefresh) throw java.io.IOException("file gone mid-read")
         }
     }
 
@@ -150,6 +152,19 @@ class GlassBackdropTest {
         }
         composeRule.waitForIdle()
         assertEquals(2, source.refreshes)
+    }
+
+    @Test
+    fun `a failing re-check on resume keeps the launcher and the backdrop`() {
+        source.failRefresh = true
+        setContent()
+        composeRule.waitForIdle()
+
+        assertEquals(1, source.refreshes)
+        assertEquals(1, renders)
+        composeRule.onNode(SemanticsMatcher.keyIsDefined(GlassBackdropRegion).and(
+            SemanticsMatcher.expectValue(androidx.compose.ui.semantics.SemanticsProperties.TestTag, "surface-0")
+        )).assertExists()
     }
 
     private companion object {
