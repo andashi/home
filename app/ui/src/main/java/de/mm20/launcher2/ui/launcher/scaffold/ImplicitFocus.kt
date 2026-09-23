@@ -1,6 +1,7 @@
 package de.mm20.launcher2.ui.launcher.scaffold
 
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.focusTarget
 
 /**
  * The launcher's content takes focus only where someone asks for it (#95).
@@ -18,4 +19,4 @@ import androidx.compose.ui.Modifier
  * adds no semantics, so accessibility services do not see the whole screen
  * as one unlabeled element, and it draws no indication.
  */
-fun Modifier.holdImplicitFocus(): Modifier = this
+fun Modifier.holdImplicitFocus(): Modifier = focusTarget()
