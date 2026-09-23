@@ -96,7 +96,7 @@ fun GlassSurface(
 
 private val SpecularHeight = 24.dp
 private const val SpecularAlpha = 0.18f
-private val RimBrush = Brush.sweepGradient(
+internal val RimBrush = Brush.sweepGradient(
     colorStops = GlassLook.RimStops.map { (at, alpha) -> at to Color.White.copy(alpha = alpha) }.toTypedArray(),
 )
 
