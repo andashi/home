@@ -46,6 +46,11 @@ tasks.withType<Test>().configureEach {
     inputs.file(rootProject.file("docs/architecture/adr/0002-config-format-json.md"))
         .withPropertyName("adr0002")
         .withPathSensitivity(PathSensitivity.RELATIVE)
+    // ConfigurationDocsTest parses every example in the configuration docs
+    // and checks every contract key is documented (#88).
+    inputs.dir(rootProject.file("docs/configuration"))
+        .withPropertyName("configurationDocs")
+        .withPathSensitivity(PathSensitivity.RELATIVE)
 }
 
 // Coverage gate (ADR 0005, AGENTS.md "Test policy"). The bound is the value the
