@@ -57,7 +57,10 @@ class GlassSurfaceTest {
     @Test
     fun `a surface draws the resolved glass, no scrim at medium`() {
         show()
-        assertEquals(GlassSurfaceInfo(tint = 0.35f, radiusDp = 28f, scrimAlpha = 0f, pill = false), info())
+        assertEquals(
+            GlassSurfaceInfo(tint = 0.35f, radiusDp = 28f, scrimAlpha = 0f, pill = false, lens = true, rim = true),
+            info(),
+        )
     }
 
     @Test
@@ -85,5 +88,12 @@ class GlassSurfaceTest {
         show(backdrop = false)
         composeRule.onNode(SemanticsMatcher.keyIsDefined(GlassBackdropRegion)).assertDoesNotExist()
         composeRule.onNode(SemanticsMatcher.keyIsDefined(GlassSurfaceKey)).assertExists()
+    }
+
+    @Test
+    fun `every surface has the rim and the lens, a pill too`() {
+        show(pill = true)
+        assertEquals(true, info().rim)
+        assertEquals(true, info().lens)
     }
 }

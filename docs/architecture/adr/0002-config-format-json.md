@@ -69,7 +69,7 @@ except `schemaVersion` is optional, and an absent key means *unmanaged*, not
 
   "appearance": {
     // The glass surfaces (ADR 0004); these are the defaults, see "Glass" below.
-    "glass": { "blur": 24, "tint": 0.35, "radius": 28, "contrast": "medium" },
+    "glass": { "blur": 24, "tint": 0.12, "radius": 28, "contrast": "medium", "wallpaperBlur": true },
     "wallpaper": {
       // Uploaded beforehand to
       // content://<applicationId>.config-ingest/wallpapers/zone.jpg

@@ -58,8 +58,12 @@ class GlassBackdropController(
     private val source: GlassBackdropSource,
     glass: Flow<GlassInputs>,
     scope: CoroutineScope,
+    wallpaperBlur: Flow<Boolean> = kotlinx.coroutines.flow.flowOf(true),
     render: suspend (BackdropImage, BackdropKey) -> ImageBitmap?,
 ) {
+    /** `appearance.glass.wallpaperBlur` (#82). */
+    val wallpaperBlur: StateFlow<Boolean> = MutableStateFlow(false)
+
     private val window = MutableStateFlow<WindowInputs?>(null)
 
     /** The glass values with contrast applied, for every surface (#75). */

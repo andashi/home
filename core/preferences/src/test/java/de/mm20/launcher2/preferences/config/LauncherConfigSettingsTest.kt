@@ -50,6 +50,7 @@ class LauncherConfigSettingsTest {
                 glassTint = 0.6f,
                 glassRadius = 20f,
                 glassContrast = GlassContrast.High,
+                glassWallpaperBlur = false,
             )
         )
 
@@ -67,6 +68,7 @@ class LauncherConfigSettingsTest {
         assertEquals(0.6f, result.glassTint)
         assertEquals(20f, result.glassRadius)
         assertEquals(GlassContrast.High, result.glassContrast)
+        assertEquals(false, result.glassWallpaperBlur)
     }
 
     @Test
@@ -97,6 +99,10 @@ class LauncherConfigSettingsTest {
         assertEquals(0f, rest.glassBlur)
         assertEquals(8f, rest.glassRadius)
         assertEquals(GlassContrast.Low, rest.glassContrast)
+
+        val wallpaper = gateway.applyAndReturn(listOf(ConfigMutation.SetGlass(wallpaperBlur = false)))
+        assertEquals(false, wallpaper.glassWallpaperBlur)
+        assertEquals(0.1f, wallpaper.glassTint)
     }
 
     @Test

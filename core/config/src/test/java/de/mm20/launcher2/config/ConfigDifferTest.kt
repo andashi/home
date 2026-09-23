@@ -77,6 +77,10 @@ class ConfigDifferTest {
             listOf(ConfigMutation.SetGlass(contrast = GlassContrast.High)),
             diff(GlassConfig(contrast = GlassContrast.High)),
         )
+        assertEquals(
+            listOf(ConfigMutation.SetGlass(wallpaperBlur = false)),
+            diff(GlassConfig(wallpaperBlur = false)),
+        )
     }
 
     @Test

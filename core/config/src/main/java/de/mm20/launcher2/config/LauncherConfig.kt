@@ -49,6 +49,7 @@ data class GlassConfig(
     val tint: Float? = null,
     val radius: Float? = null,
     val contrast: GlassContrast? = null,
+    val wallpaperBlur: Boolean? = null,
 )
 
 @Serializable(with = GlassContrastSerializer::class)
@@ -98,6 +99,7 @@ object GlassDefaults {
     const val Tint = 0.35f
     const val Radius = 28f
     val Contrast = GlassContrast.Medium
+    const val WallpaperBlur = true
 
     /** `home.grid.labels`: labels under grid items, never on the dock. */
     const val Labels = true

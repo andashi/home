@@ -29,7 +29,16 @@ val LocalGlassStyle = staticCompositionLocalOf { DefaultStyle }
 internal val DefaultStyle = GlassStyle.resolve(GlassInputs(24f, 0.35f, 28f, Contrast.Medium))
 
 /** What a glass surface drew, for tests: the tint alpha, the corner radius, the scrim, pill or card. */
-data class GlassSurfaceInfo(val tint: Float, val radiusDp: Float, val scrimAlpha: Float, val pill: Boolean)
+data class GlassSurfaceInfo(
+    val tint: Float,
+    val radiusDp: Float,
+    val scrimAlpha: Float,
+    val pill: Boolean,
+    /** The edge lens bends the backdrop (#82). */
+    val lens: Boolean = false,
+    /** The directional rim is drawn (#82). */
+    val rim: Boolean = false,
+)
 
 val GlassSurfaceKey = SemanticsPropertyKey<GlassSurfaceInfo>("GlassSurface")
 

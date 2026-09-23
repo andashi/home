@@ -8,6 +8,7 @@ data class ConfigState(
     val glassTint: Float = GlassDefaults.Tint,
     val glassRadius: Float = GlassDefaults.Radius,
     val glassContrast: GlassContrast = GlassDefaults.Contrast,
+    val glassWallpaperBlur: Boolean = GlassDefaults.WallpaperBlur,
     val searchBarPosition: SearchBarPosition = SearchBarPosition.Top,
     /** The manually pinned apps, in order: `home.favorites`. */
     val favorites: List<Favorite> = emptyList(),
@@ -48,6 +49,7 @@ sealed class ConfigMutation {
         val tint: Float? = null,
         val radius: Float? = null,
         val contrast: GlassContrast? = null,
+        val wallpaperBlur: Boolean? = null,
     ) : ConfigMutation() {
         override val section = "appearance.glass"
     }

@@ -389,4 +389,6 @@ data class GlassSettings(
     val tint: Float,
     val radius: Float,
     val contrast: GlassContrast,
+    /** `appearance.glass.wallpaperBlur`: the home background is the blurred backdrop (#82). */
+    val wallpaperBlur: Boolean = true,
 )
