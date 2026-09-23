@@ -14,6 +14,7 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.semantics.SemanticsPropertyKey
@@ -56,18 +57,26 @@ val GlassSurfaceKey = SemanticsPropertyKey<GlassSurfaceInfo>("GlassSurface")
 fun GlassSurface(
     modifier: Modifier = Modifier,
     pill: Boolean = false,
+    /** A shape of its own (the icon chip's squircle); null is the glass radius or the pill. */
+    shape: Shape? = null,
+    /** Added to the tint: an icon chip is a little stronger than a card (#76). */
+    tintBoost: Float = 0f,
     content: @Composable () -> Unit,
 ) {
     val style = LocalGlassStyle.current
-    val shape = if (pill) RoundedCornerShape(percent = 50) else RoundedCornerShape(style.radiusDp.dp)
-    val tint = MaterialTheme.colorScheme.surface.copy(alpha = style.tint)
-    val info = GlassSurfaceInfo(style.tint, style.radiusDp, style.scrimAlpha, pill, lens = true, rim = true)
+    val outline = shape ?: if (pill) RoundedCornerShape(percent = 50) else RoundedCornerShape(style.radiusDp.dp)
+    val tintAlpha = (style.tint + tintBoost).coerceIn(0f, 1f)
+    val tint = MaterialTheme.colorScheme.surface.copy(alpha = tintAlpha)
+    val info = GlassSurfaceInfo(tintAlpha, style.radiusDp, style.scrimAlpha, pill, lens = true, rim = true)
     Box(
         modifier = modifier
             .semantics { this[GlassSurfaceKey] = info }
-            .clip(shape)
+            .clip(outline)
             // Drawn first: the blurred wallpaper under this surface.
-            .glassBackdrop(lens = true, cornerRadius = style.radiusDp.dp, pill = pill)
+            // The lens follows a rounded rectangle; a custom shape (the icon
+            // chip's squircle) is lensed as a pill - at icon size the two
+            // outlines are a pixel or two apart.
+            .glassBackdrop(lens = true, cornerRadius = style.radiusDp.dp, pill = pill || shape != null)
             .drawBehind {
                 drawRect(tint)
                 if (style.scrimAlpha > 0f) drawRect(Color.Black.copy(alpha = style.scrimAlpha))
@@ -85,7 +94,7 @@ fun GlassSurface(
             }
             // The rim: light from the top-left, a weaker reflection at the
             // bottom-right, faint along the sides (#82).
-            .glassRim(shape),
+            .glassRim(outline),
         propagateMinConstraints = true,
     ) {
         CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onSurface) {

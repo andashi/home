@@ -24,6 +24,9 @@ internal class ForceThemedIconTransformation : LauncherIconTransformation {
                 color = 0,
                 icon = layer.icon,
                 scale = layer.scale / 1.2f,
+                // A silhouette of a colored icon, not a glyph: the Clear look
+                // draws the original desaturated instead (#76).
+                forced = true,
             )
             is TextLayer -> layer.copy(
                 color = 0
