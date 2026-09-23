@@ -19,6 +19,12 @@ data class GridGeometry(
     val isCover: Boolean,
     val cellDp: Float,
     val gapDp: Float,
+    /**
+     * The first layout column the cover shows, on a fold: the cover's half
+     * of the inner display. Search puts its apps there (#91), so the apps on
+     * the cover and inside sit in the same half; #93 moves it to the right.
+     */
+    val coverFirstColumn: Int = 0,
 ) {
     val rows: Int get() = spec.rows
 }
