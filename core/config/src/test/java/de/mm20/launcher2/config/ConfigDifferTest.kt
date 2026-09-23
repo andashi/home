@@ -81,6 +81,20 @@ class ConfigDifferTest {
             listOf(ConfigMutation.SetGlass(wallpaperBlur = false)),
             diff(GlassConfig(wallpaperBlur = false)),
         )
+        assertEquals(
+            listOf(ConfigMutation.SetGlass(searchWallpaperBlur = false)),
+            diff(GlassConfig(searchWallpaperBlur = false)),
+        )
+    }
+
+    @Test
+    fun `searchWallpaperBlur equal to the state produces nothing`() {
+        val mutations = ConfigDiffer.diff(
+            LauncherConfig(2, appearance = AppearanceConfig(glass = GlassConfig(searchWallpaperBlur = false))),
+            baseState.copy(glassSearchWallpaperBlur = false),
+        )
+
+        assertEquals(emptyList<ConfigMutation>(), mutations)
     }
 
     @Test

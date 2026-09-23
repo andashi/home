@@ -185,6 +185,14 @@ roborazzi {
 
 // Robolectric on JDK 17+ (https://robolectric.org/getting-started/)
 tasks.withType<Test>().configureEach {
+    // SearchScreenGlassGuardTest reads these sources as text (#91).
+    listOf(
+        "launcher/search", "launcher/searchbar", "launcher/scaffold", "launcher/sheets", "component", "common",
+    ).forEach { dir ->
+        inputs.dir(file("src/main/java/de/mm20/launcher2/ui/$dir"))
+            .withPropertyName("searchScreenSources-${dir.replace('/', '-')}")
+            .withPathSensitivity(PathSensitivity.RELATIVE)
+    }
     // Failed assertions with their messages in the build log: CI keeps no
     // test reports, and a bare "AssertionError at Foo.kt:81" says nothing.
     testLogging {

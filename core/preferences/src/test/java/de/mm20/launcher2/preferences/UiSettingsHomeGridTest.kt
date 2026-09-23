@@ -74,10 +74,14 @@ class UiSettingsHomeGridTest {
             LauncherSettingsData(
                 glassBlur = 0f, glassTint = 0.6f, glassRadius = 12f, glassContrast = GlassContrast.High,
                 glassWallpaperBlur = false,
+                glassSearchWallpaperBlur = false,
             )
         )
 
-        assertEquals(GlassSettings(0f, 0.6f, 12f, GlassContrast.High, wallpaperBlur = false), settings.glass.first())
+        assertEquals(
+            GlassSettings(0f, 0.6f, 12f, GlassContrast.High, wallpaperBlur = false, searchWallpaperBlur = false),
+            settings.glass.first(),
+        )
     }
 
     @Test

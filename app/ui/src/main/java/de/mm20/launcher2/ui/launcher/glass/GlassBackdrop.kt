@@ -68,10 +68,14 @@ class GlassBackdropController(
     glass: Flow<GlassInputs>,
     scope: CoroutineScope,
     wallpaperBlur: Flow<Boolean> = kotlinx.coroutines.flow.flowOf(true),
+    searchWallpaperBlur: Flow<Boolean> = kotlinx.coroutines.flow.flowOf(true),
     render: suspend (BackdropImage, BackdropKey) -> ImageBitmap?,
 ) {
     /** `appearance.glass.wallpaperBlur` (#82). */
     val wallpaperBlur: StateFlow<Boolean> = wallpaperBlur.stateIn(scope, SharingStarted.Eagerly, true)
+
+    /** `appearance.glass.searchWallpaperBlur` (#91). */
+    val searchWallpaperBlur: StateFlow<Boolean> = MutableStateFlow(true)
 
     private val window = MutableStateFlow<WindowInputs?>(null)
 

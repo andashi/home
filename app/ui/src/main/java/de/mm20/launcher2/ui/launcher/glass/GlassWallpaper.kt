@@ -18,13 +18,23 @@ const val GlassWallpaperTag = "glass-wallpaper"
 /** `appearance.glass.wallpaperBlur`: whether the home background is the blurred backdrop. */
 val LocalGlassWallpaperBlur = staticCompositionLocalOf { false }
 
+/** `appearance.glass.searchWallpaperBlur`: whether the background behind search is (#91). */
+val LocalGlassSearchWallpaperBlur = staticCompositionLocalOf { true }
+
+/** The alpha the full-window backdrop was drawn with (tests read it, #91). */
+val GlassWallpaperAlphaKey = androidx.compose.ui.semantics.SemanticsPropertyKey<Float>("GlassWallpaperAlpha")
+
 /**
  * The home background as the blurred backdrop, full window (#82), drawn
  * behind the scaffold. Nothing without a backdrop or with `wallpaperBlur`
  * off: the sharp system wallpaper shows through as before.
  */
 @Composable
-fun GlassWallpaper(modifier: Modifier = Modifier) {
+fun GlassWallpaper(
+    modifier: Modifier = Modifier,
+    /** The search page's progress, 0 = home, 1 = search open (#91). */
+    searchProgress: () -> Float = { 0f },
+) {
     val backdrop = LocalGlassBackdrop.current
     if (!LocalGlassWallpaperBlur.current || backdrop == null) return
     val bitmap = backdrop.bitmap

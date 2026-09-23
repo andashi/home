@@ -15,6 +15,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.drawOutline
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.semantics.SemanticsPropertyKey
@@ -43,7 +44,16 @@ data class GlassSurfaceInfo(
     val lens: Boolean = false,
     /** The directional rim is drawn (#82). */
     val rim: Boolean = false,
+    /** The edges where this segment meets the next one of the same card (#91). */
+    val openEdges: Set<GlassEdge> = emptySet(),
 )
+
+/**
+ * An edge where a surface continues into the next segment of the same card
+ * (#91): a lazily laid out result list is one card made of row slices, and
+ * the slices must not show corners, rim or specular where they meet.
+ */
+enum class GlassEdge { Top, Bottom }
 
 val GlassSurfaceKey = SemanticsPropertyKey<GlassSurfaceInfo>("GlassSurface")
 
@@ -61,6 +71,8 @@ fun GlassSurface(
     shape: Shape? = null,
     /** Added to the tint: an icon chip is a little stronger than a card (#76). */
     tintBoost: Float = 0f,
+    /** Edges that continue into the next segment of the same card (#91). */
+    openEdges: Set<GlassEdge> = emptySet(),
     content: @Composable () -> Unit,
 ) {
     val style = LocalGlassStyle.current
@@ -112,3 +124,19 @@ internal val RimBrush = Brush.sweepGradient(
 /** The directional rim on its own, for tests: the same stroke every surface draws. */
 internal fun Modifier.glassRim(shape: androidx.compose.ui.graphics.Shape): Modifier =
     border(GlassLook.RimWidthDp.dp, RimBrush, shape)
+
+/** The outline of a surface: the pill, the given [shape] or the glass radius, square on [openEdges]. */
+internal fun glassOutline(radiusDp: Float, pill: Boolean, shape: Shape?, openEdges: Set<GlassEdge>): Shape =
+    shape ?: if (pill) RoundedCornerShape(percent = 50) else RoundedCornerShape(radiusDp.dp)
+
+/** The rim stroke into [this] scope, left out along [openEdges] (tests draw it into a bitmap). */
+internal fun androidx.compose.ui.graphics.drawscope.DrawScope.drawGlassRim(
+    shape: Shape,
+    openEdges: Set<GlassEdge>,
+) {
+    drawOutline(
+        shape.createOutline(size, layoutDirection, this),
+        RimBrush,
+        style = androidx.compose.ui.graphics.drawscope.Stroke(GlassLook.RimWidthDp.dp.toPx()),
+    )
+}

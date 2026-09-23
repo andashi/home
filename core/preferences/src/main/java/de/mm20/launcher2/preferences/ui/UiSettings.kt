@@ -391,4 +391,6 @@ data class GlassSettings(
     val contrast: GlassContrast,
     /** `appearance.glass.wallpaperBlur`: the home background is the blurred backdrop (#82). */
     val wallpaperBlur: Boolean = true,
+    /** `appearance.glass.searchWallpaperBlur`: behind search, whatever [wallpaperBlur] says (#91). */
+    val searchWallpaperBlur: Boolean = true,
 )

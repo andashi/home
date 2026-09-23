@@ -86,4 +86,17 @@ object EdgeLens {
     }
 
     private const val Epsilon = 0.5f
+
+    /**
+     * The rectangle the lens is computed for, relative to a surface of
+     * [height] (#91). A segment of a card - one lazily laid out row of search
+     * results - has open edges where it meets the next; there the rectangle
+     * reaches [band] past the edge, so the pull there is zero and stacked
+     * segments bend only at the card's outer edges.
+     */
+    fun frame(height: Float, band: Float, openTop: Boolean, openBottom: Boolean): LensFrame =
+        LensFrame(offsetY = 0f, height = height)
 }
+
+/** The lens rectangle: starts [offsetY] above the surface's top, [height] tall. */
+data class LensFrame(val offsetY: Float, val height: Float)
