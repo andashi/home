@@ -10,15 +10,20 @@ class GridLabelsTest {
     private val widget = gridItem("clock", 0, 0, 2, 1)
     private val dock = dockItem(0, 5, 4, 1)
 
+    /**
+     * The reference labels a widget with its app - "Kalender", "Netatmo",
+     * "Tesla" - never with the widget's own name; seven clock widgets read
+     * "Clock", not "Digital clock" seven times.
+     */
     @Test
-    fun `an AppWidget is labelled with its provider's label`() {
-        assertEquals("Digital clock", gridItemLabel(widget, { "Digital clock" }, { "Clock" }))
+    fun `an AppWidget is labelled with its app's name`() {
+        assertEquals("Clock", gridItemLabel(widget, { "Digital clock" }, { "Clock" }))
     }
 
     @Test
-    fun `without a provider label the providing app's name is used`() {
-        assertEquals("Clock", gridItemLabel(widget, { null }, { "Clock" }))
-        assertEquals("Clock", gridItemLabel(widget, { "  " }, { "Clock" }))
+    fun `without an app name the provider's label is used`() {
+        assertEquals("Digital clock", gridItemLabel(widget, { "Digital clock" }, { null }))
+        assertEquals("Digital clock", gridItemLabel(widget, { "Digital clock" }, { "  " }))
     }
 
     @Test
