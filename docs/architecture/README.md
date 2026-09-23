@@ -66,8 +66,11 @@ reload, and integrated into a GrapheneOS multi-profile setup.
    (#66), renderer (#67), write-back (#68), edit mode (#70); the old widget
    column, the widget pages reached by gestures and their table were removed
    afterwards (PR 5b), so the launcher has exactly one widget surface.
-5. **Liquid Glass refinement** (ADR 0004, #24) — next, iterated on top of the
-   stable grid.
+5. **Liquid Glass refinement** (ADR 0004, #24) — in progress, iterated on top
+   of the stable grid. The contract comes first (#73): `appearance.glass`
+   (`blur`, `tint`, `radius`, `contrast`) and `home.grid.labels` replace
+   `appearance.transparency`; keys, defaults and bounds are in ADR 0002,
+   section "Glass".
 
 ## Relationship to the provisioning repo
 

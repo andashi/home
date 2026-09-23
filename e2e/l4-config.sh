@@ -10,7 +10,7 @@
 #      the test instance (default emulator-5556 with its own qcow2 overlays
 #      under <gos-repo>/emulator/instances/test; SERIAL and OVERLAY_DIR pick
 #      another one) from the `clean` snapshot, installs the debug APK
-#   2. writes a known JSONC config (icons, transparency, search bar,
+#   2. writes a known JSONC config (icons, glass, search bar,
 #      favorites, widgets switch, grid; empty favorites so no
 #      installed-package assumptions)
 #      through the shell-gated ingest provider (`content write`), the
@@ -24,7 +24,7 @@
 #   5. re-writes the unchanged config and asserts the follow-up broadcast
 #      report is successful with no applied mutations (watcher settled first)
 #   6. writes a second config that changes EVERY section (icons off, other
-#      transparency values, search bar top, widgets off, other grid) and
+#      glass values, search bar top, widgets off, other grid) and
 #      asserts the read-back shows the new values and the report
 #      lists every section as applied; then writes the first config again
 #      and asserts the read-back is back to the first values - the
@@ -40,7 +40,8 @@
 #      diagnostics with a successful apply
 #  10. writes a schemaVersion 1 file in the old shape (dock.favorites, the
 #      widgets list) and asserts it still applies: the launcher migrates it and
-#      the read-back shows schemaVersion 2 with home.favorites
+#      the read-back shows schemaVersion 2 with home.favorites; its leftover
+#      appearance.transparency gets one inert-key warning and no effect
 #   9. restores the valid config with plain `adb push` (user 0 only): the
 #      interactive dotfile path, proving the file watcher reacts to a push
 #      exactly like to an ingest
@@ -254,11 +255,8 @@ cat > "$VALID_CONFIG" <<'EOF'
     "enforceThemed": true,
   },
   "appearance": {
-    "transparency": {
-      "background": 0.5,
-      "surface": 0.7,
-      "elevatedSurface": 0.9,
-    },
+    // Not the defaults, so applying it is a real change.
+    "glass": { "blur": 16, "tint": 0.5, "radius": 20, "contrast": "high" },
   },
   "home": {
     "searchBar": { "position": "bottom" },
@@ -268,6 +266,7 @@ cat > "$VALID_CONFIG" <<'EOF'
     "grid": {
       "columns": 4,
       "locked": false,
+      "labels": false,
       "layouts": {
         "phone": { "items": [
           { "id": "dock", "widget": "favorites", "x": 0, "y": 5, "w": 4, "h": 1 },
@@ -289,11 +288,8 @@ cat > "$UNKNOWN_KEYS_CONFIG" <<'EOF'
     "futureIconsKey": "ignored",
   },
   "appearance": {
-    "transparency": {
-      "background": 0.5,
-      "surface": 0.7,
-      "elevatedSurface": 0.9,
-    },
+    // Not the defaults, so applying it is a real change.
+    "glass": { "blur": 16, "tint": 0.5, "radius": 20, "contrast": "high" },
   },
   "home": {
     "searchBar": { "position": "bottom" },
@@ -302,6 +298,7 @@ cat > "$UNKNOWN_KEYS_CONFIG" <<'EOF'
     "grid": {
       "columns": 4,
       "locked": false,
+      "labels": false,
       "futureGridKey": true,
       "layouts": {
         "phone": { "items": [
@@ -324,11 +321,7 @@ cat > "$CHANGED_CONFIG" <<'EOF'
     "enforceThemed": false,
   },
   "appearance": {
-    "transparency": {
-      "background": 0.2,
-      "surface": 0.3,
-      "elevatedSurface": 0.4,
-    },
+    "glass": { "blur": 32, "tint": 0.2, "radius": 12, "contrast": "low" },
   },
   "home": {
     "searchBar": { "position": "top" },
@@ -337,6 +330,7 @@ cat > "$CHANGED_CONFIG" <<'EOF'
     "grid": {
       "columns": 5,
       "locked": true,
+      "labels": true,
       "layouts": {
         "phone": { "items": [
           { "id": "dock", "widget": "favorites", "x": 0, "y": 0, "w": 5, "h": 2 },
@@ -358,7 +352,7 @@ cat > "$WALLPAPER_CONFIG" <<'EOF'
   "schemaVersion": 2,
   "icons": { "themed": true, "enforceThemed": true },
   "appearance": {
-    "transparency": { "background": 0.5, "surface": 0.7, "elevatedSurface": 0.9 },
+    "glass": { "blur": 16, "tint": 0.5, "radius": 20, "contrast": "high" },
     "wallpaper": { "image": "l4.png", "target": "both" },
   },
   "home": {
@@ -368,6 +362,7 @@ cat > "$WALLPAPER_CONFIG" <<'EOF'
     "grid": {
       "columns": 4,
       "locked": false,
+      "labels": false,
       "layouts": {
         "phone": { "items": [
           { "id": "dock", "widget": "favorites", "x": 0, "y": 5, "w": 4, "h": 1 },
@@ -412,14 +407,14 @@ EFFECTIVE_FILTER='
   .schemaVersion == 2
   and .icons.themed == true
   and .icons.enforceThemed == true
-  and .appearance.transparency.background == 0.5
-  and .appearance.transparency.surface == 0.7
-  and .appearance.transparency.elevatedSurface == 0.9
+  and .appearance.glass == {"blur":16.0,"tint":0.5,"radius":20.0,"contrast":"high"}
+  and (.appearance | has("transparency") | not)
   and .home.searchBar.position == "bottom"
   and .home.favorites == []
   and .home.widgets.enabled == true
   and .home.grid.columns == 4
   and .home.grid.locked == false
+  and .home.grid.labels == false
   and .home.grid.layouts.phone.items == [{"id":"dock","widget":"favorites","x":0,"y":5,"w":4,"h":1,"borderless":false,"background":true,"themeColors":true}]
 '
 
@@ -427,21 +422,20 @@ CHANGED_FILTER='
   .schemaVersion == 2
   and .icons.themed == false
   and .icons.enforceThemed == false
-  and .appearance.transparency.background == 0.2
-  and .appearance.transparency.surface == 0.3
-  and .appearance.transparency.elevatedSurface == 0.4
+  and .appearance.glass == {"blur":32.0,"tint":0.2,"radius":12.0,"contrast":"low"}
   and .home.searchBar.position == "top"
   and .home.favorites == []
   and .home.widgets.enabled == false
   and .home.grid.columns == 5
   and .home.grid.locked == true
+  and .home.grid.labels == true
   and .home.grid.layouts.phone.items == [{"id":"dock","widget":"favorites","x":0,"y":0,"w":5,"h":2,"borderless":false,"background":true,"themeColors":true}]
 '
 
 # The sections a full VALID <-> CHANGED convergence must report as applied.
 ALL_SECTIONS_FILTER='
   ((.appliedMutations // []) | sort) ==
-  ["appearance.transparency", "home.grid", "home.searchBar",
+  ["appearance.glass", "home.grid", "home.searchBar",
    "home.widgets.enabled", "icons"]
 '
 
@@ -497,7 +491,14 @@ ok "explicit broadcast reached the receiver as unrooted shell (trigger=broadcast
 log "asserting effective config via $STATE_URI/config"
 effective="$(query_json config)" || die "could not query /config"
 assert_jq "$effective" "$EFFECTIVE_FILTER" "effective config matches pushed fixture"
-ok "effective config matches (icons, transparency, search bar, favorites, widgets, grid)"
+ok "effective config matches (icons, glass, search bar, favorites, widgets, grid incl. labels)"
+
+# Nothing renders glass or labels yet (#73): the build must say so on every
+# reload that carries them, as inert-key warnings, and still apply.
+assert_jq "$LAST_REPORT" \
+  '([.diagnostics[] | select(.code == "inert-key") | .path] | sort) == ["appearance.glass", "home.grid.labels"]' \
+  "glass and labels are reported as inert until they are rendered"
+ok "glass and labels reported inert (stored and served back, not rendered yet)"
 
 # --- 5. re-write unchanged config: no mutations -------------------------
 
@@ -513,7 +514,7 @@ settle_then_broadcast "$CHANGED_CONFIG" "$H_CHANGED" "change"
 assert_jq "$LAST_REPORT" '.success == true' "changed config applied"
 effective="$(query_json config)" || die "could not query /config"
 assert_jq "$effective" "$CHANGED_FILTER" "effective config shows the changed values in every section"
-ok "changed config: every section flipped (icons, transparency, search bar, widgets, grid)"
+ok "changed config: every section flipped (icons, glass, search bar, widgets, grid)"
 
 settle_then_broadcast "$VALID_CONFIG" "$H_VALID" "change-back"
 assert_jq "$LAST_REPORT" '.success == true' "original config re-applied"
@@ -533,6 +534,21 @@ ok "applied sections reported: $(jq -c '.appliedMutations' <<<"$LAST_REPORT")"
 settle_then_broadcast "$VALID_CONFIG" "$H_VALID" "change-back-2"
 
 # --- 6b. wallpaper: upload, apply, verify, idempotent -------------------
+
+# Since ba37d7009 the launcher sets a wallpaper only while one of its
+# activities is resumed (the system crops for the current user only, so a
+# background set is deferred and reported as wallpaper-pending-foreground).
+# On the clean snapshot the process runs but no activity does; bring the
+# launcher to the front first, as a user unlocking the phone would.
+log "starting the launcher activity (wallpapers apply only in the foreground)"
+home_activity="$(adb -s "$SERIAL" shell cmd package resolve-activity --brief \
+  -a android.intent.action.MAIN -c android.intent.category.HOME "$PKG" | tr -d '\r' | tail -1)"
+case "$home_activity" in
+  "$PKG"/*) ;;
+  *) die "could not resolve the launcher's HOME activity (got '$home_activity')" ;;
+esac
+adb -s "$SERIAL" shell am start -W -n "$home_activity" >/dev/null || die "am start $home_activity failed"
+ok "launcher in the foreground ($home_activity)"
 
 id_before="$(wallpaper_id)"
 write_wallpaper "$WALLPAPER_IMAGE" "l4.png"
@@ -587,6 +603,17 @@ assert_jq "$effective" \
   '.schemaVersion == 2 and .home.favorites == [] and .home.widgets.enabled == true and (.home | has("dock") | not)' \
   "read-back of a migrated v1 file is schema version 2 with home.favorites"
 ok "schemaVersion 1 file migrated (dock.favorites -> favorites, no dock in the read-back)"
+
+# The legacy fixture still carries appearance.transparency, which left the
+# contract with #73: one inert-key warning for the section, and the glass
+# values in effect are untouched by it.
+assert_jq "$LAST_REPORT" \
+  '[.diagnostics[] | select(.code == "inert-key" and .path == "appearance.transparency")] | length == 1' \
+  "a file that still carries transparency gets exactly one inert-key diagnostic"
+assert_jq "$effective" \
+  '.appearance.glass == {"blur":16.0,"tint":0.5,"radius":20.0,"contrast":"high"} and (.appearance | has("transparency") | not)' \
+  "transparency has no effect: glass unchanged, transparency not served"
+ok "transparency: reported inert, no effect, not served back"
 
 # --- 9. restore a valid config via adb push (interactive dotfile path) ---
 

@@ -22,10 +22,10 @@ class ConfigStateMapperTest {
             themedIcons = true,
             enforceThemedIcons = true,
             iconPack = "com.example.icons",
-            transparencyName = "mystique",
-            transparencyBackground = 0.5f,
-            transparencySurface = 0.6f,
-            transparencyElevatedSurface = 0.7f,
+            glassBlur = 16f,
+            glassTint = 0.5f,
+            glassRadius = 20f,
+            glassContrast = GlassContrast.High,
             searchBarPosition = SearchBarPosition.Bottom,
             favorites = listOf(
                 Favorite("com.example.app", Profile.Personal),
@@ -34,6 +34,7 @@ class ConfigStateMapperTest {
             widgetsEnabled = true,
             gridColumns = 5,
             gridLocked = true,
+            gridLabels = false,
             gridLayouts = mapOf(
                 "phone" to GridLayoutConfig(listOf(dock, clock)),
                 "fold" to GridLayoutConfig(emptyList()),
@@ -44,10 +45,8 @@ class ConfigStateMapperTest {
 
         assertEquals(ConfigMigrations.currentSchemaVersion, config.schemaVersion)
         assertEquals(IconsConfig(true, true, "com.example.icons"), config.icons)
-        assertEquals(
-            TransparencyConfig("mystique", 0.5f, 0.6f, 0.7f),
-            config.appearance?.transparency,
-        )
+        assertEquals(GlassConfig(16f, 0.5f, 20f, GlassContrast.High), config.appearance?.glass)
+        assertEquals(false, config.home?.grid?.labels)
         assertEquals(SearchBarPosition.Bottom, config.home?.searchBar?.position)
         assertEquals(state.favorites, config.home?.favorites)
         assertEquals(true, config.home?.widgets?.enabled)
@@ -71,7 +70,13 @@ class ConfigStateMapperTest {
         val config = ConfigState().toLauncherConfig()
 
         assertNotNull(config.icons)
-        assertNotNull(config.appearance?.transparency)
+        // Fully populated with the defaults, so provisioning's read-back can
+        // compare field by field without knowing them (#73).
+        assertEquals(
+            GlassConfig(GlassDefaults.Blur, GlassDefaults.Tint, GlassDefaults.Radius, GlassDefaults.Contrast),
+            config.appearance?.glass,
+        )
+        assertEquals(GlassDefaults.Labels, config.home?.grid?.labels)
         assertNotNull(config.home?.searchBar)
         assertNotNull(config.home?.favorites)
         assertNotNull(config.home?.widgets)
@@ -86,8 +91,9 @@ class ConfigStateMapperTest {
         val state = ConfigState(
             themedIcons = true,
             iconPack = "com.example.icons",
-            transparencyName = "mystique",
-            transparencyBackground = 0.5f,
+            glassTint = 0.2f,
+            glassContrast = GlassContrast.Low,
+            gridLabels = false,
             favorites = listOf(Favorite("com.example.app")),
             widgetsEnabled = true,
             gridLayouts = mapOf("phone" to GridLayoutConfig(listOf(dock, clock))),
@@ -114,5 +120,22 @@ class ConfigStateMapperTest {
 
         assertNotNull(items)
         assertTrue(items!!.all { it.hasGeometry })
+    }
+
+    @Test
+    fun `the read-back no longer serves transparency`() {
+        val serialized = ConfigParser.json.encodeToString(LauncherConfig.serializer(), ConfigState().toLauncherConfig())
+
+        assertTrue(serialized, !serialized.contains("transparency"))
+    }
+
+    /** The documented defaults (#73, #24) are what an empty state reads back as. */
+    @Test
+    fun `the glass defaults are the documented ones`() {
+        assertEquals(24f, GlassDefaults.Blur)
+        assertEquals(0.35f, GlassDefaults.Tint)
+        assertEquals(28f, GlassDefaults.Radius)
+        assertEquals(GlassContrast.Medium, GlassDefaults.Contrast)
+        assertEquals(true, GlassDefaults.Labels)
     }
 }

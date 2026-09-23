@@ -10,7 +10,8 @@ package de.mm20.launcher2.config
  *
  * Unlike a hand-written config document, the mapped config is fully populated
  * (every section present, no null fields except genuinely unset values like
- * the icon pack or transparency scheme name). The one optional section is
+ * the icon pack). `appearance.glass` is always complete, defaults filled in,
+ * so a host compares field by field without knowing them. The one optional section is
  * `appearance.wallpaper`: present only while a config-managed wallpaper is in
  * effect, absent otherwise. `home.grid` carries every item with its full
  * geometry, which is what makes the read-back a document one can paste into
@@ -25,11 +26,11 @@ fun ConfigState.toLauncherConfig(): LauncherConfig {
             pack = iconPack,
         ),
         appearance = AppearanceConfig(
-            transparency = TransparencyConfig(
-                name = transparencyName,
-                background = transparencyBackground,
-                surface = transparencySurface,
-                elevatedSurface = transparencyElevatedSurface,
+            glass = GlassConfig(
+                blur = glassBlur,
+                tint = glassTint,
+                radius = glassRadius,
+                contrast = glassContrast,
             ),
             // Only while a managed wallpaper is in effect; a generated config
             // without the key must compare equal to the read-back.
@@ -43,6 +44,7 @@ fun ConfigState.toLauncherConfig(): LauncherConfig {
                 columns = gridColumns,
                 locked = gridLocked,
                 layouts = gridLayouts,
+                labels = gridLabels,
             ),
         ),
     )

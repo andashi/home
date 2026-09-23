@@ -47,9 +47,7 @@ dependencies {
     implementation(project(":core:profiles"))
     implementation(project(":data:applications"))
     implementation(project(":data:searchable"))
-    implementation(project(":data:themes"))
     implementation(project(":data:homegrid"))
-    implementation(project(":data:database"))
 
     testImplementation(libs.bundles.tests)
     testImplementation(libs.robolectric)
@@ -80,7 +78,7 @@ kover {
     reports {
         verify {
             rule("line coverage of :services:config") {
-                minBound(79)
+                minBound(81)
             }
         }
     }

@@ -1,6 +1,27 @@
 # 0004: Liquid Glass as the single visual direction
 
-Status: accepted (2026-09-17)
+Status: accepted (2026-09-17), revised 2026-09-23 (#24)
+
+## Revision 2026-09-23
+
+The glass epic (#24) settled the questions this ADR left open, before any
+code, so nobody re-argues them mid-implementation. Where the sections below
+say otherwise, this table wins:
+
+| Question | Decision |
+|---|---|
+| Icon look | **Clear**: white glyph on a neutral glass chip. The zone color lives in the surfaces' tint, never in the icons. |
+| Apps without a monochrome glyph | **Desaturated original on the same chip.** A colored icon never appears on the home screen, in the dock or in search. |
+| The old `appearance.transparency` scheme | **Replaced** by `appearance.glass`. A file that still carries it gets a diagnostic and no effect (#73). |
+| Muting third-party widgets' colors | **Not in this epic.** Follow-up: #78. |
+| Blur strategy | One blurred copy per wallpaper change and per display, cached; every surface draws its region. No per-frame blur, no `haze`, no system cross-window blur. |
+| Icon shape | Squircle, fixed, no key. |
+| Labels | Under grid items (`home.grid.labels`, default on), never on the dock. |
+| Phase 2 (AGSL refraction, motion) | Not started; the reference does not need it. |
+
+The config keys, their defaults and bounds are specified in ADR 0002, section
+"Glass". The "Themes" section's `.kvtheme` transport is unaffected; the glass
+parameters live in `launcher.json` as it says.
 
 ## Context
 

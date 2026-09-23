@@ -6,7 +6,6 @@ import de.mm20.launcher2.config.SearchBarPosition
 import de.mm20.launcher2.preferences.LauncherDataStore
 import de.mm20.launcher2.preferences.LauncherSettingsData
 import kotlinx.coroutines.flow.first
-import java.util.UUID
 
 /**
  * Fork addition (Phase 2): settings-backed projection of [ConfigState] and
@@ -24,20 +23,19 @@ import java.util.UUID
 interface LauncherConfigSettings {
 
     /**
-     * Reads the settings-backed portion of [ConfigState] plus the currently
-     * selected transparency scheme ID. Fields of [ConfigState] that are not
-     * backed by settings (transparency values, favorites, grid layouts)
-     * keep their [ConfigState] defaults and must be filled by their
-     * respective repositories.
+     * Reads the settings-backed portion of [ConfigState]. Fields that are not
+     * backed by settings (favorites, grid layouts, wallpaper) keep their
+     * [ConfigState] defaults and must be filled by their respective
+     * repositories.
      */
-    suspend fun readState(): SettingsBackedState
+    suspend fun readState(): ConfigState
 
     /**
      * Applies [mutations] in a single awaited DataStore update. Mutations
-     * that are not backed by settings ([ConfigMutation.SetTransparency],
-     * [ConfigMutation.SetFavorites], [ConfigMutation.SetWallpaper]) are
-     * ignored here; they are handled by their respective repositories.
-     * [ConfigMutation.SetGrid] is split: `columns` and `locked` land here,
+     * that are not backed by settings ([ConfigMutation.SetFavorites],
+     * [ConfigMutation.SetWallpaper]) are ignored here; they are handled by
+     * their respective repositories.
+     * [ConfigMutation.SetGrid] is split: `columns`, `locked` and `labels` land here,
      * `layouts` go to the grid repository.
      *
      * Returns [Unit] in the interface so consumers in other modules can fake
@@ -45,35 +43,31 @@ interface LauncherConfigSettings {
      * implementation covariantly returns the updated settings data.
      */
     suspend fun apply(mutations: List<ConfigMutation>)
-
-    /**
-     * Selects the transparency scheme with [id]. Called after the
-     * transparency repository has upserted/selected the scheme.
-     */
-    suspend fun setTransparenciesId(id: UUID)
 }
 
 internal class LauncherConfigSettingsImpl(
     private val dataStore: LauncherDataStore,
 ) : LauncherConfigSettings {
 
-    override suspend fun readState(): SettingsBackedState {
+    override suspend fun readState(): ConfigState {
         val data = dataStore.data.first()
-        return SettingsBackedState(
-            state = ConfigState(
-                themedIcons = data.iconsThemed,
-                enforceThemedIcons = data.iconsForceThemed,
-                iconPack = data.iconsPack,
-                searchBarPosition = if (data.searchBarBottom) {
-                    SearchBarPosition.Bottom
-                } else {
-                    SearchBarPosition.Top
-                },
-                widgetsEnabled = data.homeScreenWidgets,
-                gridColumns = data.homeGridColumns,
-                gridLocked = data.homeGridLocked,
-            ),
-            transparenciesId = data.uiTransparenciesId,
+        return ConfigState(
+            themedIcons = data.iconsThemed,
+            enforceThemedIcons = data.iconsForceThemed,
+            iconPack = data.iconsPack,
+            glassBlur = data.glassBlur,
+            glassTint = data.glassTint,
+            glassRadius = data.glassRadius,
+            glassContrast = data.glassContrast,
+            searchBarPosition = if (data.searchBarBottom) {
+                SearchBarPosition.Bottom
+            } else {
+                SearchBarPosition.Top
+            },
+            widgetsEnabled = data.homeScreenWidgets,
+            gridColumns = data.homeGridColumns,
+            gridLocked = data.homeGridLocked,
+            gridLabels = data.homeGridLabels,
         )
     }
 
@@ -89,18 +83,6 @@ internal class LauncherConfigSettingsImpl(
         return dataStore.updateAndAwait { current ->
             mutations.fold(current) { acc, mutation -> acc.apply(mutation) }
         }
-    }
-
-    override suspend fun setTransparenciesId(id: UUID) {
-        setTransparenciesIdAndReturn(id)
-    }
-
-    /**
-     * Rich variant of [setTransparenciesId] for in-module consumers/tests:
-     * returns the updated settings data.
-     */
-    suspend fun setTransparenciesIdAndReturn(id: UUID): LauncherSettingsData {
-        return dataStore.updateAndAwait { it.copy(uiTransparenciesId = id) }
     }
 
     private fun LauncherSettingsData.apply(mutation: ConfigMutation): LauncherSettingsData {
@@ -120,9 +102,16 @@ internal class LauncherConfigSettingsImpl(
             is ConfigMutation.SetGrid -> copy(
                 homeGridColumns = mutation.columns ?: homeGridColumns,
                 homeGridLocked = mutation.locked ?: homeGridLocked,
+                homeGridLabels = mutation.labels ?: homeGridLabels,
             )
 
-            is ConfigMutation.SetTransparency,
+            is ConfigMutation.SetGlass -> copy(
+                glassBlur = mutation.blur ?: glassBlur,
+                glassTint = mutation.tint ?: glassTint,
+                glassRadius = mutation.radius ?: glassRadius,
+                glassContrast = mutation.contrast ?: glassContrast,
+            )
+
             is ConfigMutation.SetFavorites,
             is ConfigMutation.SetWallpaper,
             -> this
@@ -130,12 +119,3 @@ internal class LauncherConfigSettingsImpl(
     }
 
 }
-
-/**
- * The settings-backed portion of [ConfigState] plus the ID of the currently
- * selected transparency scheme.
- */
-data class SettingsBackedState(
-    val state: ConfigState,
-    val transparenciesId: UUID,
-)

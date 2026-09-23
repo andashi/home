@@ -4,16 +4,17 @@ data class ConfigState(
     val themedIcons: Boolean = false,
     val enforceThemedIcons: Boolean = false,
     val iconPack: String? = null,
-    val transparencyName: String? = null,
-    val transparencyBackground: Float = 1f,
-    val transparencySurface: Float = 1f,
-    val transparencyElevatedSurface: Float = 1f,
+    val glassBlur: Float = GlassDefaults.Blur,
+    val glassTint: Float = GlassDefaults.Tint,
+    val glassRadius: Float = GlassDefaults.Radius,
+    val glassContrast: GlassContrast = GlassDefaults.Contrast,
     val searchBarPosition: SearchBarPosition = SearchBarPosition.Top,
     /** The manually pinned apps, in order: `home.favorites`. */
     val favorites: List<Favorite> = emptyList(),
     val widgetsEnabled: Boolean = false,
     val gridColumns: Int = 4,
     val gridLocked: Boolean = false,
+    val gridLabels: Boolean = GlassDefaults.Labels,
     /**
      * The layouts as stored, every item with full geometry. Keyed like
      * `home.grid.layouts`; a layout with no items is an empty list, not an
@@ -42,13 +43,13 @@ sealed class ConfigMutation {
         override val section = "icons"
     }
 
-    data class SetTransparency(
-        val name: String? = null,
-        val background: Float? = null,
-        val surface: Float? = null,
-        val elevatedSurface: Float? = null,
+    data class SetGlass(
+        val blur: Float? = null,
+        val tint: Float? = null,
+        val radius: Float? = null,
+        val contrast: GlassContrast? = null,
     ) : ConfigMutation() {
-        override val section = "appearance.transparency"
+        override val section = "appearance.glass"
     }
 
     data class SetWallpaper(
@@ -77,7 +78,7 @@ sealed class ConfigMutation {
     }
 
     /**
-     * `home.grid`. [columns] and [locked] are settings-backed; [layouts]
+     * `home.grid`. [columns], [locked] and [labels] are settings-backed; [layouts]
      * goes to the grid repository through the layout engine. A null field
      * is unmanaged; a layout key that is absent from [layouts] is untouched.
      */
@@ -85,6 +86,7 @@ sealed class ConfigMutation {
         val columns: Int? = null,
         val locked: Boolean? = null,
         val layouts: Map<String, GridLayoutConfig>? = null,
+        val labels: Boolean? = null,
     ) : ConfigMutation() {
         override val section = "home.grid"
     }
@@ -107,18 +109,13 @@ object ConfigDiffer {
             }
         }
 
-        desired.appearance?.transparency?.let { transparency ->
-            val name = transparency.name?.takeIf { it != current.transparencyName }
-            val background = transparency.background?.takeIf { it != current.transparencyBackground }
-            val surface = transparency.surface?.takeIf { it != current.transparencySurface }
-            val elevated = transparency.elevatedSurface?.takeIf { it != current.transparencyElevatedSurface }
-            if (name != null || background != null || surface != null || elevated != null) {
-                mutations += ConfigMutation.SetTransparency(
-                    name = name,
-                    background = background,
-                    surface = surface,
-                    elevatedSurface = elevated,
-                )
+        desired.appearance?.glass?.let { glass ->
+            val blur = glass.blur?.takeIf { it != current.glassBlur }
+            val tint = glass.tint?.takeIf { it != current.glassTint }
+            val radius = glass.radius?.takeIf { it != current.glassRadius }
+            val contrast = glass.contrast?.takeIf { it != current.glassContrast }
+            if (blur != null || tint != null || radius != null || contrast != null) {
+                mutations += ConfigMutation.SetGlass(blur = blur, tint = tint, radius = radius, contrast = contrast)
             }
         }
 
@@ -150,11 +147,17 @@ object ConfigDiffer {
         desired.home?.grid?.let { grid ->
             val columns = grid.columns?.takeIf { it != current.gridColumns }
             val locked = grid.locked?.takeIf { it != current.gridLocked }
+            val labels = grid.labels?.takeIf { it != current.gridLabels }
             val layouts = grid.layouts?.filter { (key, layout) ->
                 !layout.matches(current.gridLayouts[key])
             }?.takeIf { it.isNotEmpty() }
-            if (columns != null || locked != null || layouts != null) {
-                mutations += ConfigMutation.SetGrid(columns = columns, locked = locked, layouts = layouts)
+            if (columns != null || locked != null || layouts != null || labels != null) {
+                mutations += ConfigMutation.SetGrid(
+                    columns = columns,
+                    locked = locked,
+                    layouts = layouts,
+                    labels = labels,
+                )
             }
         }
 

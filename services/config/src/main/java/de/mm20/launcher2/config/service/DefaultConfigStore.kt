@@ -25,14 +25,10 @@ import de.mm20.launcher2.search.Application
 import de.mm20.launcher2.search.SavableSearchable
 import de.mm20.launcher2.searchable.PinnedLevel
 import de.mm20.launcher2.searchable.SavableSearchableRepository
-import de.mm20.launcher2.themes.DefaultThemeId
-import de.mm20.launcher2.themes.transparencies.Transparencies
-import de.mm20.launcher2.themes.transparencies.TransparenciesRepository
 import de.mm20.launcher2.homegrid.HomeGridInitFlag
 import de.mm20.launcher2.homegrid.HomeGridInitLock
 import de.mm20.launcher2.homegrid.HomeGridRepository
 import kotlinx.coroutines.flow.first
-import java.util.UUID
 import de.mm20.launcher2.config.Profile as ConfigProfile
 
 /**
@@ -41,8 +37,8 @@ import de.mm20.launcher2.config.Profile as ConfigProfile
  *
  * - Settings-backed state/mutations go through [LauncherConfigSettings]
  *   (single awaited DataStore write per [apply] call).
- * - Transparency schemes are resolved/upserted via [TransparenciesRepository]
- *   and then selected via settings.
+ * - `appearance.glass` is settings-backed; the file no longer feeds the
+ *   upstream transparency schemes (#73).
  * - Grid layouts (`home.grid.layouts`) are normalised through the layout
  *   engine and written to [HomeGridRepository]; `columns` and `locked` are
  *   settings-backed.
@@ -53,7 +49,6 @@ import de.mm20.launcher2.config.Profile as ConfigProfile
  */
 class DefaultConfigStore(
     private val settings: LauncherConfigSettings,
-    private val transparenciesRepository: TransparenciesRepository,
     private val homeGridRepository: HomeGridRepository,
     private val homeGridInitFlag: HomeGridInitFlag,
     private val homeGridInitLock: HomeGridInitLock,
@@ -67,7 +62,6 @@ class DefaultConfigStore(
 
     override suspend fun readState(): ConfigState {
         val settingsState = settings.readState()
-        val transparencies = transparenciesRepository.getOnce(settingsState.transparenciesId)
         val favorites = searchableRepository.get(
             includeTypes = listOf(AppDomain),
             minPinnedLevel = PinnedLevel.ManuallySorted,
@@ -75,11 +69,7 @@ class DefaultConfigStore(
         ).first().mapNotNull { it.toFavorite() }
         val wallpaper = wallpapers.current()
 
-        return settingsState.state.copy(
-            transparencyName = transparencies?.name,
-            transparencyBackground = transparencies?.background ?: 1f,
-            transparencySurface = transparencies?.surface ?: 1f,
-            transparencyElevatedSurface = transparencies?.elevatedSurface ?: 1f,
+        return settingsState.copy(
             favorites = favorites,
             gridLayouts = GridLayouts.All.associateWith { layout ->
                 GridLayoutConfig(homeGridRepository.observe(layout).first().map { it.toConfig() })
@@ -105,12 +95,6 @@ class DefaultConfigStore(
 
         for (mutation in mutations) {
             when (mutation) {
-                is ConfigMutation.SetTransparency -> try {
-                    diagnostics += applyTransparency(mutation)
-                } catch (e: Exception) {
-                    diagnostics += mutation.applyFailed(e)
-                }
-
                 is ConfigMutation.SetGrid -> try {
                     diagnostics += applyGrid(mutation)
                 } catch (e: Exception) {
@@ -153,63 +137,6 @@ class DefaultConfigStore(
     }
 
     /**
-     * Resolves the target scheme by name (or the currently selected scheme),
-     * preserves values the mutation does not mention, upserts and selects it.
-     * Built-in schemes are never modified; changing values while a built-in
-     * is targeted derives a new user scheme instead. When no name is given
-     * and the selected scheme no longer exists (deleted user scheme), the
-     * built-in default is the base, so the section still converges.
-     */
-    private suspend fun applyTransparency(
-        mutation: ConfigMutation.SetTransparency,
-    ): List<Diagnostic> {
-        val name = mutation.name
-        val base = if (name != null) {
-            transparenciesRepository.findByName(name)
-        } else {
-            transparenciesRepository.getOnce(settings.readState().transparenciesId)
-                ?: transparenciesRepository.getOnce(DefaultThemeId)
-        }
-
-        val hasValueChanges = mutation.background != null ||
-                mutation.surface != null ||
-                mutation.elevatedSurface != null
-
-        val target: Transparencies = when {
-            base == null -> Transparencies(
-                id = UUID.randomUUID(),
-                name = name!!,
-                background = mutation.background,
-                surface = mutation.surface,
-                elevatedSurface = mutation.elevatedSurface,
-            )
-
-            base.builtIn && hasValueChanges -> Transparencies(
-                id = UUID.randomUUID(),
-                name = name ?: base.name,
-                background = mutation.background ?: base.background,
-                surface = mutation.surface ?: base.surface,
-                elevatedSurface = mutation.elevatedSurface ?: base.elevatedSurface,
-            )
-
-            base.builtIn -> base
-
-            else -> base.copy(
-                name = name ?: base.name,
-                background = mutation.background ?: base.background,
-                surface = mutation.surface ?: base.surface,
-                elevatedSurface = mutation.elevatedSurface ?: base.elevatedSurface,
-            )
-        }
-
-        if (!target.builtIn) {
-            transparenciesRepository.upsert(target)
-        }
-        settings.setTransparenciesId(target.id)
-        return emptyList()
-    }
-
-    /**
      * Writes every layout the mutation names through the layout engine:
      * items without geometry are placed at the first free cells in array
      * order, then the whole layout is normalised against this device's grid
@@ -223,7 +150,7 @@ class DefaultConfigStore(
     ): List<Diagnostic> {
         val layouts = mutation.layouts ?: return emptyList()
         val diagnostics = mutableListOf<Diagnostic>()
-        val columns = mutation.columns ?: settings.readState().state.gridColumns
+        val columns = mutation.columns ?: settings.readState().gridColumns
         for ((layoutKey, layout) in layouts) {
             diagnostics += applyLayout(layoutKey, layout, columns)
         }
@@ -514,9 +441,9 @@ private val ConfigMutation.isSettingsBacked: Boolean
         is ConfigMutation.SetWidgetsEnabled,
         // columns and locked live in settings; layouts are applied below too.
         is ConfigMutation.SetGrid,
+        is ConfigMutation.SetGlass,
         -> true
 
-        is ConfigMutation.SetTransparency,
         is ConfigMutation.SetFavorites,
         is ConfigMutation.SetWallpaper,
         -> false

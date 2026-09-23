@@ -1,6 +1,5 @@
 package de.mm20.launcher2.config.service
 
-import de.mm20.launcher2.themes.ThemeRepository
 import de.mm20.launcher2.homegrid.HomeGridWriteBack
 import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.module
@@ -16,8 +15,6 @@ import org.koin.dsl.module
  * background once the profile is in the foreground.
  */
 val configModule = module {
-    // Reuse upstream's construction instead of binding a second instance.
-    factory { get<ThemeRepository>().transparencies }
     factory<ProfileResolver> { ProfileManagerProfileResolver(get()) }
     single { ForegroundState() }
     single<WallpaperStore> { DefaultWallpaperStore(androidContext(), AndroidWallpaperApplier(androidContext()), get()) }
@@ -26,7 +23,6 @@ val configModule = module {
     factory<ConfigStore> {
         DefaultConfigStore(
             settings = get(),
-            transparenciesRepository = get(),
             homeGridRepository = get(),
             homeGridInitFlag = get(),
             homeGridInitLock = get(),

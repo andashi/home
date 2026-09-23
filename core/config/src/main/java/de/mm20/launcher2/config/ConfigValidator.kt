@@ -1,7 +1,8 @@
 package de.mm20.launcher2.config
 
 object ConfigValidator {
-    const val MaxNameLength = 64
+    const val MaxGlassBlur = 64f
+    const val MaxGlassRadius = 64f
     const val MaxPackageNameLength = 256
     const val MaxFavorites = 64
     const val MaxGridItems = 32
@@ -26,13 +27,10 @@ object ConfigValidator {
             validatePackageName(pack, "icons.pack", diagnostics)
         }
 
-        config.appearance?.transparency?.let { transparency ->
-            transparency.name?.let { name ->
-                validateName(name, "appearance.transparency.name", diagnostics)
-            }
-            validateTransparency(transparency.background, "appearance.transparency.background", diagnostics)
-            validateTransparency(transparency.surface, "appearance.transparency.surface", diagnostics)
-            validateTransparency(transparency.elevatedSurface, "appearance.transparency.elevatedSurface", diagnostics)
+        config.appearance?.glass?.let { glass ->
+            validateGlass(glass.blur, 0f, MaxGlassBlur, "appearance.glass.blur", "dp", diagnostics)
+            validateGlass(glass.tint, 0f, 1f, "appearance.glass.tint", "", diagnostics)
+            validateGlass(glass.radius, 0f, MaxGlassRadius, "appearance.glass.radius", "dp", diagnostics)
         }
 
         config.appearance?.wallpaper?.image?.let { image ->
@@ -161,43 +159,31 @@ object ConfigValidator {
                 classNameRegex.matches(className)
     }
 
-    private fun validateTransparency(
+    /**
+     * A glass number in [min]..[max]. Bounded above as well: the file is
+     * untrusted input, and blur costs GPU time on every surface.
+     */
+    private fun validateGlass(
         value: Float?,
+        min: Float,
+        max: Float,
         path: String,
+        unit: String,
         out: MutableList<Diagnostic>,
     ) {
         if (value == null) return
-        if (value.isNaN() || value < 0f || value > 1f) {
+        if (value.isNaN() || value < min || value > max) {
+            val field = path.substringAfterLast('.')
             out += Diagnostic(
                 Severity.Error,
-                "invalid-transparency",
+                "invalid-glass",
                 path,
-                "Transparency value must be between 0.0 and 1.0, got $value",
+                "Glass $field must be between ${min.plain()} and ${max.plain()}$unit, got $value",
             )
         }
     }
 
-    private fun validateName(
-        name: String,
-        path: String,
-        out: MutableList<Diagnostic>,
-    ) {
-        if (name.isBlank()) {
-            out += Diagnostic(
-                Severity.Error,
-                "invalid-name",
-                path,
-                "Name must not be blank",
-            )
-        } else if (name.length > MaxNameLength) {
-            out += Diagnostic(
-                Severity.Error,
-                "invalid-name",
-                path,
-                "Name exceeds the maximum length of $MaxNameLength characters",
-            )
-        }
-    }
+    private fun Float.plain(): String = if (this % 1f == 0f) toInt().toString() else toString()
 
     private fun validatePackageName(
         packageName: String,
