@@ -29,9 +29,14 @@ sealed interface ClearIcon {
         fun of(icon: StaticLauncherIcon): ClearIcon {
             return when (val fg = icon.foregroundLayer) {
                 is TintedIconLayer -> if (fg.forced) {
-                    // ForceThemedIconTransformation shrank it by 1.2 for the
-                    // silhouette; the original goes back to its own scale.
-                    Desaturated(StaticLauncherIcon(StaticIconLayer(fg.icon, fg.scale * 1.2f), TransparentLayer))
+                    // The whole original, background included: a white logo
+                    // needs its colored ground to read. Without a recorded
+                    // original, the foreground at its own scale (the
+                    // silhouette was shrunk by 1.2).
+                    Desaturated(
+                        fg.original
+                            ?: StaticLauncherIcon(StaticIconLayer(fg.icon, fg.scale * 1.2f), TransparentLayer)
+                    )
                 } else {
                     Glyph(StaticLauncherIcon(fg.copy(color = 0), TransparentLayer))
                 }

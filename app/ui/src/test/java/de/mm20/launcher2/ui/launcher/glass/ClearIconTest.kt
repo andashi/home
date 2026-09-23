@@ -43,8 +43,25 @@ class ClearIconTest {
         assertTrue(clear is ClearIcon.Glyph)
     }
 
+    /**
+     * enforceThemed replaced the background before Clear sees the icon; an
+     * adaptive icon's foreground is often a white logo that only reads on
+     * its colored background, so the fallback must be the whole original
+     * (review on #84).
+     */
     @Test
-    fun `a forced silhouette is the desaturated original, at the original scale`() {
+    fun `a forced silhouette is the desaturated original, background and all`() {
+        val original = icon(StaticIconLayer(drawable, scale = 1.5f), ColorLayer(0xFF1E88E5.toInt()))
+        val forced = icon(TintedIconLayer(drawable, scale = 1.5f / 1.2f, forced = true, original = original), ColorLayer(0))
+
+        val clear = ClearIcon.of(forced)
+
+        assertTrue(clear is ClearIcon.Desaturated)
+        assertEquals(original, clear.icon)
+    }
+
+    @Test
+    fun `a forced silhouette without its original falls back to the foreground at the original scale`() {
         val clear = ClearIcon.of(icon(TintedIconLayer(drawable, scale = 1.5f / 1.2f, forced = true), ColorLayer(0)))
 
         assertTrue(clear is ClearIcon.Desaturated)

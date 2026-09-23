@@ -44,6 +44,8 @@ data class TintedIconLayer(
      * desaturated original instead (#76).
      */
     val forced: Boolean = false,
+    /** For a [forced] silhouette: the icon it was forced out of, background included. */
+    val original: StaticLauncherIcon? = null,
 ) : LauncherIconLayer
 
 data class TintedClockLayer(
