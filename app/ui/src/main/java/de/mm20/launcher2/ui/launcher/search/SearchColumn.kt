@@ -1,5 +1,11 @@
 package de.mm20.launcher2.ui.launcher.search
 
+import de.mm20.launcher2.homegrid.SearchLayout
+import de.mm20.launcher2.homegrid.HomeGridGeometry
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.foundation.layout.calculateStartPadding
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.activity.compose.BackHandler
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.animation.AnimatedContent
@@ -56,17 +62,19 @@ fun SearchColumn(
     modifier: Modifier = Modifier,
     paddingValues: PaddingValues = PaddingValues(0.dp),
     state: LazyListState = rememberLazyListState(),
+    /** The results pane's list on a fold's inner display (#91); unused in one column. */
+    resultsState: LazyListState = rememberLazyListState(),
     reverse: Boolean = false,
     userScrollEnabled: Boolean = true,
     onHideKeyboard: () -> Unit = {},
 ) {
 
-    val columns = LocalGridSettings.current.columnCount
     val showList = LocalGridSettings.current.showList
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
 
     val viewModel: SearchVM = viewModel()
+    val homeGridColumns by viewModel.homeGridColumns.collectAsState(4)
 
     val favoritesVM: SearchFavoritesVM = viewModel()
     val favorites by favoritesVM.favorites.collectAsState(emptyList())
@@ -129,146 +137,194 @@ fun SearchColumn(
         }
     }
 
-    AnimatedContent(
-        showFilters,
-        modifier = modifier.padding(horizontal = 8.dp),
-    ) {
-        if (it) {
-            BackHandler {
-                viewModel.showFilters.value = false
-            }
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues),
-                contentAlignment = if (reverse) Alignment.BottomCenter else Alignment.TopCenter,
-            ) {
-                GlassSurface(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 4.dp),
-                ) {
-                    SearchFilters(
-                        modifier = Modifier.padding(12.dp),
-                        filters = viewModel.filters.value,
-                        onFiltersChange = {
-                            viewModel.setFilters(it)
+    // Search lays out on the home grid (#91): the same width the home grid
+    // derives its geometry from - this column's inner width, minus the
+    // system insets - gives the same columns at the same pitch.
+    BoxWithConstraints(modifier.padding(horizontal = 8.dp)) {
+        val layoutDirection = LocalLayoutDirection.current
+        val insetStart = paddingValues.calculateStartPadding(layoutDirection)
+        val insetEnd = paddingValues.calculateEndPadding(layoutDirection)
+        val layout = remember(viewModel.formFactor, homeGridColumns, maxWidth, insetStart, insetEnd) {
+            SearchLayout.from(
+                HomeGridGeometry.derive(
+                    viewModel.formFactor,
+                    homeGridColumns,
+                    (maxWidth - insetStart - insetEnd).value,
+                    maxHeight.value,
+                )
+            )
+        }
+        val twoPane = layout is SearchLayout.TwoPane
+        // The panes are placed in the grid area; the vertical insets stay
+        // content padding, so results scroll under the system bars.
+        val verticalPadding = PaddingValues(
+            top = paddingValues.calculateTopPadding(),
+            bottom = paddingValues.calculateBottomPadding(),
+        )
+        ProvideSearchGrid(layout) {
+            val columns = LocalGridSettings.current.columnCount
+            AnimatedContent(showFilters && !twoPane) { fullScreenFilters ->
+                if (fullScreenFilters) {
+                    BackHandler {
+                        viewModel.showFilters.value = false
+                    }
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(paddingValues),
+                        contentAlignment = if (reverse) Alignment.BottomCenter else Alignment.TopCenter,
+                    ) {
+                        GlassSurface(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 4.dp),
+                        ) {
+                            SearchFilters(
+                                modifier = Modifier.padding(12.dp),
+                                filters = viewModel.filters.value,
+                                onFiltersChange = {
+                                    viewModel.setFilters(it)
+                                }
+                            )
                         }
-                    )
+                    }
+                } else {
+                    SearchPanes(
+                        layout = layout,
+                        appsState = state,
+                        resultsState = resultsState,
+                        contentPadding = verticalPadding,
+                        reverse = reverse,
+                        userScrollEnabled = userScrollEnabled,
+                        modifier = Modifier.padding(start = insetStart, end = insetEnd),
+                        apps = {
+            if (!hideFavs && favoritesEnabled) {
+                SearchFavorites(
+                    favorites = favorites,
+                    selectedTag = selectedTag,
+                    pinnedTags = pinnedTags,
+                    tagsExpanded = favoritesTagsExpanded,
+                    onSelectTag = { favoritesVM.selectTag(it) },
+                    reverse = reverse,
+                    onExpandTags = {
+                        favoritesVM.setTagsExpanded(it)
+                    },
+                    compactTags = compactTags,
+                    editButton = favoritesEditButton
+                )
+            } else {
+                // Empty item to maintain scroll position
+                item(key = "favorites") {
                 }
             }
-        } else {
-            LazyColumn(
-                state = state,
-                userScrollEnabled = userScrollEnabled,
-                contentPadding = paddingValues,
-                reverseLayout = reverse,
-            ) {
-                if (!hideFavs && favoritesEnabled) {
-                    SearchFavorites(
-                        favorites = favorites,
-                        selectedTag = selectedTag,
-                        pinnedTags = pinnedTags,
-                        tagsExpanded = favoritesTagsExpanded,
-                        onSelectTag = { favoritesVM.selectTag(it) },
-                        reverse = reverse,
-                        onExpandTags = {
-                            favoritesVM.setTagsExpanded(it)
-                        },
-                        compactTags = compactTags,
-                        editButton = favoritesEditButton
-                    )
-                } else {
-                    // Empty item to maintain scroll position
-                    item(key = "favorites") {
-                    }
+
+            if (isSearchEmpty && profiles.size > 1 && allAppsEnabled) {
+                val visibleProfiles by derivedStateOf {
+                    profiles.filter { profileStates[it.type]?.hidden == false }
                 }
+                val selectedProfile = visibleProfiles.getOrNull(selectedAppProfileIndex) ?: visibleProfiles.firstOrNull()
+                AppResults(
+                    apps = when (selectedProfile?.type) {
+                        Profile.Type.Private -> privateApps
+                        Profile.Type.Work -> workApps
+                        else -> apps
+                    },
+                    highlightedItem = bestMatch as? Application,
+                    profiles = visibleProfiles,
+                    profileStates = profileStates,
+                    selectedProfile = visibleProfiles.getOrNull(selectedAppProfileIndex),
+                    onProfileSelected = {
+                        selectedAppProfileIndex = visibleProfiles.indexOf(it)
+                        onHideKeyboard()
+                    },
+                    onProfileLockChange = { p, l ->
+                        viewModel.setProfileLock(p, l)
+                    },
+                    columns = columns,
+                    reverse = reverse,
+                    showProfileLockControls = hasProfilesPermission,
+                    showList = showList,
+                    selectedIndex = selectedAppIndex,
+                    onSelect = { selectedAppIndex = it },
+                )
+            } else if (!isSearchEmpty || allAppsEnabled) {
+                AppResults(
+                    apps = apps,
+                    highlightedItem = bestMatch as? Application,
+                    columns = columns,
+                    reverse = reverse,
+                    showList = showList,
+                    selectedIndex = selectedAppIndex,
+                    onSelect = { selectedAppIndex = it },
+                )
+            }
+                        },
+                        results = {
+                            if (twoPane && showFilters) {
+                                // On a fold's inner display the filters take
+                                // the results pane, not both halves.
+                                item(key = "filters") {
+                                    BackHandler {
+                                        viewModel.showFilters.value = false
+                                    }
+                                    GlassSurface(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(top = 4.dp),
+                                    ) {
+                                        SearchFilters(
+                                            modifier = Modifier.padding(12.dp),
+                                            filters = viewModel.filters.value,
+                                            onFiltersChange = {
+                                                viewModel.setFilters(it)
+                                            }
+                                        )
+                                    }
+                                }
+                            } else if (!isSearchEmpty) {
+                ShortcutResults(
+                    shortcuts = appShortcuts,
+                    missingPermission = missingShortcutsPermission,
+                    onPermissionRequest = {
+                        viewModel.requestAppShortcutPermission(context as AppCompatActivity)
+                    },
+                    onPermissionRequestRejected = {
+                        viewModel.disableAppShortcutSearch()
+                    },
+                    reverse = reverse,
+                    selectedIndex = selectedShortcutIndex,
+                    onSelect = { selectedShortcutIndex = it },
+                    highlightedItem = bestMatch as? AppShortcut,
+                    truncate = expandedCategory != SearchCategory.Shortcuts,
+                    onShowAll = {
+                        viewModel.expandCategory(SearchCategory.Shortcuts)
+                    },
+                )
 
-                if (isSearchEmpty && profiles.size > 1 && allAppsEnabled) {
-                    val visibleProfiles by derivedStateOf {
-                        profiles.filter { profileStates[it.type]?.hidden == false }
-                    }
-                    val selectedProfile = visibleProfiles.getOrNull(selectedAppProfileIndex) ?: visibleProfiles.firstOrNull()
-                    AppResults(
-                        apps = when (selectedProfile?.type) {
-                            Profile.Type.Private -> privateApps
-                            Profile.Type.Work -> workApps
-                            else -> apps
+                ContactResults(
+                    contacts = contacts,
+                    missingPermission = missingContactsPermission,
+                    onPermissionRequest = {
+                        viewModel.requestContactsPermission(context as AppCompatActivity)
+                    },
+                    onPermissionRequestRejected = {
+                        viewModel.disableContactsSearch()
+                    },
+                    reverse = reverse,
+                    selectedIndex = selectedContactIndex,
+                    onSelect = { selectedContactIndex = it },
+                    highlightedItem = bestMatch as? Contact,
+                    truncate = expandedCategory != SearchCategory.Contacts,
+                    onShowAll = {
+                        viewModel.expandCategory(SearchCategory.Contacts)
+                    },
+                )
+                            }
                         },
-                        highlightedItem = bestMatch as? Application,
-                        profiles = visibleProfiles,
-                        profileStates = profileStates,
-                        selectedProfile = visibleProfiles.getOrNull(selectedAppProfileIndex),
-                        onProfileSelected = {
-                            selectedAppProfileIndex = visibleProfiles.indexOf(it)
-                            onHideKeyboard()
-                        },
-                        onProfileLockChange = { p, l ->
-                            viewModel.setProfileLock(p, l)
-                        },
-                        columns = columns,
-                        reverse = reverse,
-                        showProfileLockControls = hasProfilesPermission,
-                        showList = showList,
-                        selectedIndex = selectedAppIndex,
-                        onSelect = { selectedAppIndex = it },
                     )
-                } else if (!isSearchEmpty || allAppsEnabled) {
-                    AppResults(
-                        apps = apps,
-                        highlightedItem = bestMatch as? Application,
-                        columns = columns,
-                        reverse = reverse,
-                        showList = showList,
-                        selectedIndex = selectedAppIndex,
-                        onSelect = { selectedAppIndex = it },
-                    )
-                }
-
-                if (!isSearchEmpty) {
-
-                    ShortcutResults(
-                        shortcuts = appShortcuts,
-                        missingPermission = missingShortcutsPermission,
-                        onPermissionRequest = {
-                            viewModel.requestAppShortcutPermission(context as AppCompatActivity)
-                        },
-                        onPermissionRequestRejected = {
-                            viewModel.disableAppShortcutSearch()
-                        },
-                        reverse = reverse,
-                        selectedIndex = selectedShortcutIndex,
-                        onSelect = { selectedShortcutIndex = it },
-                        highlightedItem = bestMatch as? AppShortcut,
-                        truncate = expandedCategory != SearchCategory.Shortcuts,
-                        onShowAll = {
-                            viewModel.expandCategory(SearchCategory.Shortcuts)
-                        },
-                    )
-
-                    ContactResults(
-                        contacts = contacts,
-                        missingPermission = missingContactsPermission,
-                        onPermissionRequest = {
-                            viewModel.requestContactsPermission(context as AppCompatActivity)
-                        },
-                        onPermissionRequestRejected = {
-                            viewModel.disableContactsSearch()
-                        },
-                        reverse = reverse,
-                        selectedIndex = selectedContactIndex,
-                        onSelect = { selectedContactIndex = it },
-                        highlightedItem = bestMatch as? Contact,
-                        truncate = expandedCategory != SearchCategory.Contacts,
-                        onShowAll = {
-                            viewModel.expandCategory(SearchCategory.Contacts)
-                        },
-                    )
-
                 }
             }
         }
-
     }
 
 

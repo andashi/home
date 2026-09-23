@@ -28,6 +28,22 @@ sealed interface SearchLayout {
     }
 
     companion object {
-        fun from(geometry: GridGeometry): SearchLayout = Single(geometry.visibleColumns)
+        fun from(geometry: GridGeometry): SearchLayout {
+            val fold = geometry.spec.foldColumn
+            if (fold == null || geometry.isCover) return Single(geometry.visibleColumns)
+            // Each half is exactly the home grid's cells on that side of the
+            // fold line; the gap between the halves straddles the seam.
+            val half = geometry.cellDp * fold + geometry.gapDp * (fold - 1)
+            val left = Pane(0f, half)
+            val rightStart = half + geometry.gapDp
+            val rightColumns = geometry.spec.columns - fold
+            val right = Pane(rightStart, geometry.cellDp * rightColumns + geometry.gapDp * (rightColumns - 1))
+            val appsOnLeft = geometry.coverFirstColumn < fold
+            return TwoPane(
+                columns = fold,
+                apps = if (appsOnLeft) left else right,
+                results = if (appsOnLeft) right else left,
+            )
+        }
     }
 }

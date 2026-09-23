@@ -51,23 +51,31 @@ internal class SearchComponent(
     ) {
         val searchVM = viewModel<SearchVM>()
         val lazyListState = rememberLazyListState()
+        // The results pane on a fold's inner display (#91); idle in one column.
+        val resultsState = rememberLazyListState()
 
         LaunchedEffect(isActive) {
             if (!isActive) {
                 searchVM.reset()
                 lazyListState.scrollToItem(0, 0)
+                resultsState.scrollToItem(0, 0)
             }
         }
 
         LaunchedEffect(searchVM.searchQuery.value, searchVM.filters.value) {
             lazyListState.requestScrollToItem(0, 0)
+            resultsState.requestScrollToItem(0, 0)
         }
 
-        LaunchedEffect(lazyListState.canScrollForward, lazyListState.canScrollBackward) {
+        // At the top or bottom only when every pane is: the search bar and
+        // the system-bar strips follow the content that is still scrolled.
+        val canScrollForward = lazyListState.canScrollForward || resultsState.canScrollForward
+        val canScrollBackward = lazyListState.canScrollBackward || resultsState.canScrollBackward
+        LaunchedEffect(canScrollForward, canScrollBackward) {
             isAtBottom.value =
-                !lazyListState.canScrollForward && !reverse || !lazyListState.canScrollBackward && reverse
+                !canScrollForward && !reverse || !canScrollBackward && reverse
             isAtTop.value =
-                !lazyListState.canScrollForward && reverse || !lazyListState.canScrollBackward && !reverse
+                !canScrollForward && reverse || !canScrollBackward && !reverse
         }
 
 
@@ -98,6 +106,7 @@ internal class SearchComponent(
                     modifier = Modifier.nestedScroll(scrollConnection).widthIn(max = 916.dp).fillMaxHeight(),
                     paddingValues = insets,
                     state = lazyListState,
+                    resultsState = resultsState,
                     reverse = reverse,
                     userScrollEnabled = !state.isDragged,
                     onHideKeyboard = {

@@ -1,5 +1,11 @@
 package de.mm20.launcher2.ui.launcher.search
 
+import de.mm20.launcher2.homegrid.SearchLayout
+import de.mm20.launcher2.homegrid.HomeGridGeometry
+import de.mm20.launcher2.homegrid.FormFactor
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.BoxWithConstraints
 import android.content.Context
 import android.os.Bundle
 import androidx.compose.foundation.layout.Arrangement
@@ -9,7 +15,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -88,7 +93,7 @@ class SearchScreenshotTest {
     private val contacts = listOf("Carla", "Chris", "Conny").map(::Fake)
 
     @Composable
-    private fun Frame(contrast: Contrast) {
+    private fun Frame(contrast: Contrast, formFactor: FormFactor, square: Boolean) {
         val context = LocalContext.current
         val window = LocalWindowInfo.current.containerSize
         val density = LocalDensity.current.density
@@ -97,7 +102,7 @@ class SearchScreenshotTest {
             val blurPx = BackdropGeometry.key(
                 BackdropImage("", "mauritius"), WindowInputs(window.width, window.height, density), inputs,
             ).blurPx
-            mauritiusBackdrop(false, window.width, window.height, blurPx)
+            mauritiusBackdrop(square, window.width, window.height, blurPx)
         }
         val icons = remember { dockIcons(context) }
         MaterialTheme(colorScheme = ZoneSeed.Home.colorScheme()) {
@@ -130,7 +135,21 @@ class SearchScreenshotTest {
                                 }
                             },
                         )
-                        LazyColumn(Modifier.padding(top = 8.dp)) {
+                        // Laid out as production does (#91): the home grid's
+                            // geometry for this window, one column or two panes.
+                        BoxWithConstraints(Modifier.padding(top = 8.dp)) {
+                            val layout = SearchLayout.from(
+                                HomeGridGeometry.derive(formFactor, 4, maxWidth.value, maxHeight.value)
+                            )
+                            ProvideSearchGrid(layout) {
+                            SearchPanes(
+                                layout = layout,
+                                appsState = rememberLazyListState(),
+                                resultsState = rememberLazyListState(),
+                                contentPadding = PaddingValues(),
+                                reverse = false,
+                                userScrollEnabled = true,
+                                apps = {
                             GridResults(
                                 key = "apps",
                                 items = apps,
@@ -145,6 +164,8 @@ class SearchScreenshotTest {
                                     }
                                 },
                             )
+                                },
+                                results = {
                             ListResults(
                                 key = "contacts",
                                 items = contacts,
@@ -168,6 +189,9 @@ class SearchScreenshotTest {
                                     GlassChip("Contacts", onClick = {})
                                 }
                             }
+                                },
+                            )
+                            }
                         }
                     }
                 }
@@ -175,8 +199,12 @@ class SearchScreenshotTest {
         }
     }
 
-    private fun golden(contrast: Contrast = Contrast.Medium) {
-        composeRule.setContent { Frame(contrast) }
+    private fun golden(
+        contrast: Contrast = Contrast.Medium,
+        formFactor: FormFactor = FormFactor.Phone,
+        square: Boolean = false,
+    ) {
+        composeRule.setContent { Frame(contrast, formFactor, square) }
         composeRule.waitForIdle()
         composeRule.onRoot().captureRoboImage()
     }
@@ -186,7 +214,15 @@ class SearchScreenshotTest {
     /** `contrast: high` over search: the scrim that keeps result text readable. */
     @Test @Config(qualifiers = Phone) fun phoneHighContrast() = golden(Contrast.High)
 
+    /** The cover: the home grid's four columns, not upstream's five (#91). */
+    @Test @Config(qualifiers = FoldCover) fun foldCover() = golden(formFactor = FormFactor.Fold)
+
+    /** The inner display: apps in the cover's half, the other results across the seam (#91). */
+    @Test @Config(qualifiers = FoldInner) fun foldInner() = golden(formFactor = FormFactor.Fold, square = true)
+
     private companion object {
         const val Phone = "w412dp-h915dp-normal-long-notround-port-420dpi"
+        const val FoldCover = "w412dp-h923dp-normal-long-notround-port-420dpi"
+        const val FoldInner = "w790dp-h820dp-normal-notlong-notround-port-420dpi"
     }
 }
