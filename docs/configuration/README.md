@@ -17,6 +17,7 @@ Fold (cover and inner display).
 | [Home grid](home-grid.md) | `home.grid`: columns, lock, labels, the phone and fold layouts, every item field, **where the dock can sit**, screens full of widgets |
 | [Favorites](favorites.md) | `home.favorites`: the pinned apps the dock shows |
 | [Search bar](search-bar.md) | `home.searchBar.position` |
+| [Screens](screens.md) | Every scene on the phone, the Fold's cover and its inner display |
 
 ## The file
 
