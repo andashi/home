@@ -68,6 +68,8 @@ except `schemaVersion` is optional, and an absent key means *unmanaged*, not
   },
 
   "appearance": {
+    // The glass surfaces (ADR 0004); these are the defaults, see "Glass" below.
+    "glass": { "blur": 24, "tint": 0.35, "radius": 28, "contrast": "medium" },
     "wallpaper": {
       // Uploaded beforehand to
       // content://<applicationId>.config-ingest/wallpapers/zone.jpg
@@ -95,6 +97,7 @@ except `schemaVersion` is optional, and an absent key means *unmanaged*, not
     "grid": {
       "columns": 4,     // per cover-width page; the fold layout is twice as wide
       "locked": false,  // true: no edit mode, nothing is written back
+      "labels": true,   // a label under every item but the dock
       "layouts": {
         "phone": {
           "items": [
@@ -163,16 +166,15 @@ that role - but the value still reached the favorite affordances in search
 results. The grid closed that case (#46): the dock *is* the favorites widget on
 the grid, and the key left the contract with schema version 2.
 
-Inert today, each for a stated reason (`ConfigParserTest` pins the list):
+Inert today, for a stated reason (`ConfigParserTest` pins the list):
 
-- `appearance.glass` and `home.grid.labels`: stored and served back, but
-  nothing draws them until the glass epic's renderer lands (#24, #75). They
-  are `Applied` from the PR that makes them true, and join the example above
-  then.
 - `appearance.transparency`: replaced by `appearance.glass` (#73). The file no
   longer feeds upstream's transparency schemes, the read-back no longer serves
   the section, and its sub-keys are neither spell-checked nor validated - one
   diagnostic for the section, nothing more.
+
+`appearance.glass` and `home.grid.labels` were inert while only stored and
+served back (#73, #74) and are applied since the surfaces draw them (#75).
 
 ### Glass (ADR 0004, #24)
 

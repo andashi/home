@@ -35,14 +35,6 @@ object ConfigParser {
      * `ConfigParserTest`, so a section that gains or loses a mutation cannot
      * drift away from this table unnoticed.
      */
-    /**
-     * `appearance.glass` and `home.grid.labels` are parsed, stored and served
-     * back, but nothing draws them yet (#73). The sub-keys of `glass` are
-     * classified [KeyEffect.Applied] so that the section reports once, not
-     * five times; the section's own entry carries the truth.
-     */
-    private val GlassNotRendered = KeyEffect.Inert("stored and served back, but nothing renders it until #75")
-
     private val GridItemKeys: Map<String, KeyEffect> = listOf(
         "id", "widget", "x", "y", "w", "h", "profile", "borderless", "background", "themeColors",
     ).associateWith { KeyEffect.Applied }
@@ -66,7 +58,7 @@ object ConfigParser {
             "transparency" to KeyEffect.Inert(
                 "replaced by appearance.glass (#24); the file no longer feeds the transparency scheme",
             ),
-            "glass" to GlassNotRendered,
+            "glass" to KeyEffect.Applied,
             "wallpaper" to KeyEffect.Applied,
         ),
         "appearance.glass" to mapOf(
@@ -99,7 +91,7 @@ object ConfigParser {
             "columns" to KeyEffect.Applied,
             "locked" to KeyEffect.Applied,
             "layouts" to KeyEffect.Applied,
-            "labels" to GlassNotRendered,
+            "labels" to KeyEffect.Applied,
         ),
         "home.grid.layouts" to GridLayouts.All.associateWith { KeyEffect.Applied },
         "home.grid.layouts.phone" to mapOf("items" to KeyEffect.Applied),

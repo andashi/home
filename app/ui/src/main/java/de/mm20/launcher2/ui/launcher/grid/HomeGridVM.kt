@@ -99,6 +99,10 @@ class HomeGridVM(
     /** The cell whose handles are shown; null when none. */
     val selectedId: StateFlow<String?> = _selectedId
 
+    /** `home.grid.labels`: whether cells other than the dock show a label. */
+    val labels: StateFlow<Boolean> = uiSettings.homeGridLabels
+        .stateIn(viewModelScope, SharingStarted.Eagerly, true)
+
     private val _events = MutableSharedFlow<GridEditEvent>(extraBufferCapacity = 8)
 
     /** What to show the user; collected by the grid into a snackbar. */

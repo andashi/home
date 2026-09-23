@@ -77,11 +77,11 @@ class ConfigReloaderTest {
         val store = FakeConfigStore(readFailure = IllegalStateException("datastore gone"))
         val (reloader, reportStore) = newReloader(store)
 
-        val report = reloader.reload("""{"schemaVersion": 2, "appearance": {"glass": {"tint": 0.2}}}""")
+        val report = reloader.reload("""{"schemaVersion": 2, "appearance": {"transparency": {"background": 0.2}}}""")
 
         assertFalse(report.success)
         // The parse diagnostics survive next to the failure, so the host still
-        // learns that glass is not rendered yet.
+        // learns that transparency has no effect any more.
         assertEquals(listOf("inert-key", "read-state-failed"), report.diagnostics.map { it.code })
         assertTrue(report.errorMessage!!.contains("datastore gone"))
         assertEquals(0, store.applyCount)

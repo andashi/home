@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithContentDescription
@@ -128,5 +130,85 @@ class HomeGridTest {
         val vm = factory.create(HomeGridVM::class.java, androidx.lifecycle.viewmodel.CreationExtras.Empty)
 
         org.junit.Assert.assertEquals(FormFactor.Phone, vm.formFactor)
+    }
+
+    // ----- labels (#75) -----
+
+    private fun showGrid() {
+        val vm = HomeGridVM(
+            repository = repository,
+            uiSettings = GlobalContext.get().get(),
+            formFactorDetector = FakeFormFactorDetector(FormFactor.Phone),
+            measuredRows = MeasuredGridRows(),
+            initFlag = FakeInitFlag(initialized = true),
+            initLock = HomeGridInitLock(),
+            writeBack = FakeWriteBack(),
+            itemLimits = GridItemLimits.Unbounded,
+            locked = flowOf(false),
+        )
+        composeRule.setContent {
+            MaterialTheme {
+                ProvideAppWidgetHost {
+                    Box(Modifier.size(396.dp, 700.dp)) {
+                        HomeGrid(viewModel = vm) { columns, rows -> Text("favorites ${columns}x$rows") }
+                    }
+                }
+            }
+        }
+        composeRule.waitUntil(5_000) {
+            composeRule.onAllNodesWithContentDescription("grid-item:dock").fetchSemanticsNodes()
+                .any { it.size.height > 0 }
+        }
+    }
+
+    /** The fixture's widget comes from `com.example`; give that package a name. */
+    private fun installExampleApp() {
+        val context = ApplicationProvider.getApplicationContext<android.content.Context>()
+        org.robolectric.Shadows.shadowOf(context.packageManager).installPackage(
+            android.content.pm.PackageInfo().apply {
+                packageName = "com.example"
+                applicationInfo = android.content.pm.ApplicationInfo().apply {
+                    packageName = "com.example"
+                    nonLocalizedLabel = "Example Clock"
+                }
+            },
+        )
+    }
+
+    @Test
+    fun `labels sit under grid items, never under the dock`() {
+        installExampleApp()
+        showGrid()
+
+        composeRule.waitUntil(5_000) {
+            composeRule.onAllNodes(androidx.compose.ui.test.hasTestTag("grid-label:clock")).fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onNode(androidx.compose.ui.test.hasTestTag("grid-label:clock"))
+            .assertIsDisplayed()
+            .assert(androidx.compose.ui.test.hasText("Example Clock"))
+        composeRule.onNode(androidx.compose.ui.test.hasTestTag("grid-label:dock")).assertDoesNotExist()
+    }
+
+    @Test
+    fun `labels off shows none`() {
+        installExampleApp()
+        kotlinx.coroutines.runBlocking {
+            GlobalContext.get().get<de.mm20.launcher2.preferences.config.LauncherConfigSettings>()
+                .apply(listOf(de.mm20.launcher2.config.ConfigMutation.SetGrid(labels = false)))
+        }
+        showGrid()
+        composeRule.waitForIdle()
+
+        composeRule.onNode(androidx.compose.ui.test.hasTestTag("grid-label:clock")).assertDoesNotExist()
+    }
+
+    @Test
+    fun `every cell with a background is a glass surface`() {
+        showGrid()
+
+        // The dock and the (unbound) clock: two cards, two surfaces.
+        composeRule.onAllNodes(
+            androidx.compose.ui.test.SemanticsMatcher.keyIsDefined(de.mm20.launcher2.ui.launcher.glass.GlassSurfaceKey)
+        ).assertCountEquals(2)
     }
 }
