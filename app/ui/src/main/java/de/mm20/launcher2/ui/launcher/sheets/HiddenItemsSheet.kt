@@ -17,7 +17,7 @@ fun HiddenItemsSheet(
     items: List<SavableSearchable>,
     onDismiss: () -> Unit
 ) {
-    DismissableBottomSheet(expanded = expanded, onDismissRequest = onDismiss) {
+    DismissableBottomSheet(expanded = expanded, onDismissRequest = onDismiss, glass = true) {
         SearchResultGrid(
             items,
             modifier = Modifier

@@ -19,7 +19,7 @@ import de.mm20.launcher2.ui.common.FavoritesTagSelector
 import de.mm20.launcher2.ui.component.Banner
 import de.mm20.launcher2.ui.launcher.search.common.grid.SearchResultGrid
 import de.mm20.launcher2.ui.layout.BottomReversed
-import de.mm20.launcher2.ui.theme.transparency.transparency
+import de.mm20.launcher2.ui.launcher.glass.GlassSurface
 
 fun LazyListScope.SearchFavorites(
     favorites: List<SavableSearchable>,
@@ -35,20 +35,14 @@ fun LazyListScope.SearchFavorites(
     item(
         key = "favorites",
     ) {
-        CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onSurface) {
+        GlassSurface(
+            modifier = Modifier.padding(
+                top = if (reverse) 8.dp else 0.dp,
+                bottom = if (reverse) 0.dp else 8.dp,
+            ),
+        ) {
             Column(
-                modifier = Modifier
-                    .padding(
-                        top = if (reverse) 8.dp else 0.dp,
-                        bottom = if (reverse) 0.dp else 8.dp,
-                    )
-                    .background(
-                        MaterialTheme.colorScheme.surface.copy(
-                            MaterialTheme.transparency.surface
-                        ),
-                        MaterialTheme.shapes.medium
-                    )
-                    .padding(vertical = 4.dp),
+                modifier = Modifier.padding(vertical = 4.dp),
                 verticalArrangement = if (reverse) Arrangement.BottomReversed else Arrangement.Top
             ) {
                 if (favorites.isNotEmpty()) {

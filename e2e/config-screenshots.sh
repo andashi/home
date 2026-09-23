@@ -102,13 +102,13 @@ $(item bookmarks "$BOOKMARKS" 4 0 4 3), $(item messages-2 "$MESSAGES" 4 3 4 3), 
 # Every scene states the whole baseline plus its one variant. An absent key
 # is "unmanaged" and keeps what the previous scene set, so a partial config
 # would inherit the scene before it (review on #89).
-scene_config() { # blur tint radius contrast wallpaperBlur labels themed position phone-items fold-items
+scene_config() { # blur tint radius contrast wallpaperBlur labels themed position searchWallpaperBlur phone-items fold-items
   cat <<EOF
 {
   "schemaVersion": 2,
   "icons": { "themed": $7 },
   "appearance": {
-    "glass": { "blur": $1, "tint": $2, "radius": $3, "contrast": "$4", "wallpaperBlur": $5 },
+    "glass": { "blur": $1, "tint": $2, "radius": $3, "contrast": "$4", "wallpaperBlur": $5, "searchWallpaperBlur": $9 },
     "wallpaper": { "image": "mauritius.jpg", "target": "both" }
   },
   "home": {
@@ -119,8 +119,8 @@ scene_config() { # blur tint radius contrast wallpaperBlur labels themed positio
       "columns": 4,
       "labels": $6,
       "layouts": {
-        "phone": { "items": [ $9 ] },
-        "fold": { "items": [ ${10} ] }
+        "phone": { "items": [ ${10} ] },
+        "fold": { "items": [ ${11} ] }
       }
     }
   }
@@ -128,8 +128,8 @@ scene_config() { # blur tint radius contrast wallpaperBlur labels themed positio
 EOF
 }
 
-# blur tint radius contrast wallpaperBlur labels themed position
-BASE=(24 0.12 28 medium true true true top)
+# blur tint radius contrast wallpaperBlur labels themed position searchWallpaperBlur
+BASE=(24 0.12 28 medium true true true top true)
 variant() { # name, the two layouts, then index=value overrides of BASE
   local name="$1" phone="$2" fold="$3"; shift 3
   local v=("${BASE[@]}") kv
@@ -151,8 +151,11 @@ variant search-bottom "$PHONE_BOTTOM" "$FOLD_BOTTOM" 7=bottom
 # The baseline with search open on a query: shows what of the glass look
 # reaches the search screen.
 variant search-open "$PHONE_BOTTOM" "$FOLD_BOTTOM"
-declare -A SCENE_QUERY=([search-open]=c)
-ALL_SCENES="full-dock-bottom full-dock-side contrast-low contrast-high blur-0 tint-0-4 radius-8 wallpaper-sharp labels-off icons-themed-off search-bottom search-open"
+# A sharp home with search blurred behind it, and the reverse (#91).
+variant search-sharp-home "$PHONE_BOTTOM" "$FOLD_BOTTOM" 4=false
+variant search-sharp "$PHONE_BOTTOM" "$FOLD_BOTTOM" 8=false
+declare -A SCENE_QUERY=([search-open]=c [search-sharp-home]=c [search-sharp]=c)
+ALL_SCENES="full-dock-bottom full-dock-side contrast-low contrast-high blur-0 tint-0-4 radius-8 wallpaper-sharp labels-off icons-themed-off search-bottom search-open search-sharp-home search-sharp"
 SCENES="${SCENES:-$ALL_SCENES}"
 
 # --- boot ---------------------------------------------------------------------
@@ -238,6 +241,17 @@ capture() { # $1 = output jpg, $2 = width
 
 # Opens search from the launcher's own bar (content-desc "Search"; the grid's
 # search widgets only carry that as text) and types the scene's query.
+# Closes search again after the picture, so the next scene starts on home.
+close_search() { # $1 = scene
+  [ -n "${SCENE_QUERY[$1]:-}" ] || return 0
+  # The first back clears the query, the second closes search; Home does
+  # not close it on this build.
+  adb -s "$SERIAL" shell input keyevent KEYCODE_BACK
+  sleep 1
+  adb -s "$SERIAL" shell input keyevent KEYCODE_BACK
+  sleep 2
+}
+
 open_search() { # $1 = scene
   local query="${SCENE_QUERY[$1]:-}"
   [ -n "$query" ] || return 0
@@ -273,10 +287,12 @@ for name in $SCENES; do
     wait_wallpaper
     open_search "$name"
     capture "$OUT/$name-fold-cover.jpg" 540
+    close_search "$name"
     posture opened
     wait_wallpaper
     open_search "$name"
     capture "$OUT/$name-fold-inner.jpg" 780
+    close_search "$name"
   else
     show_home
     wait_grid
@@ -284,6 +300,7 @@ for name in $SCENES; do
     sleep 3
     open_search "$name"
     capture "$OUT/$name-phone.jpg" 540
+    close_search "$name"
   fi
 done
 ok "scenes written to $OUT"

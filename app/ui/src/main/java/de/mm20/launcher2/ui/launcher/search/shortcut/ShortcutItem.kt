@@ -1,6 +1,7 @@
 package de.mm20.launcher2.ui.launcher.search.shortcut
 
 
+import de.mm20.launcher2.ui.launcher.glass.GlassChip
 import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
@@ -133,24 +134,16 @@ fun AppShortcutItem(
                                     )
                                 }.collectAsState(null)
 
-                                InputChip(
+                                GlassChip(
                                     modifier = Modifier
                                         .width(IntrinsicSize.Max)
                                         .padding(top = 8.dp)
                                         .semantics { role = Role.Button },
-                                    selected = false,
                                     onClick = {
                                         viewModel.launchChild(context, app)
                                     },
-                                    label = {
-                                        Text(
-                                            title,
-                                            maxLines = 1,
-                                            overflow = TextOverflow.Ellipsis,
-                                            modifier = Modifier.weight(1f)
-                                        )
-                                    },
-                                    avatar = {
+                                    label = title,
+                                    leadingIcon = {
                                         ShapedLauncherIcon(
                                             size = InputChipDefaults.AvatarSize,
                                             icon = { childIcon },
@@ -175,7 +168,7 @@ fun AppShortcutItem(
                                                     },
                                             )
                                         }
-                                    } else null
+                                    } else null,
                                 )
 
                             }

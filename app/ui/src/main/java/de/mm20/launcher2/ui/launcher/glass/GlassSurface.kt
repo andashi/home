@@ -11,6 +11,9 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.graphics.drawscope.clipRect
+import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -76,10 +79,12 @@ fun GlassSurface(
     content: @Composable () -> Unit,
 ) {
     val style = LocalGlassStyle.current
-    val outline = shape ?: if (pill) RoundedCornerShape(percent = 50) else RoundedCornerShape(style.radiusDp.dp)
+    val outline = glassOutline(style.radiusDp, pill, shape, openEdges)
     val tintAlpha = (style.tint + tintBoost).coerceIn(0f, 1f)
     val tint = MaterialTheme.colorScheme.surface.copy(alpha = tintAlpha)
-    val info = GlassSurfaceInfo(tintAlpha, style.radiusDp, style.scrimAlpha, pill, lens = true, rim = true)
+    val info = GlassSurfaceInfo(
+        tintAlpha, style.radiusDp, style.scrimAlpha, pill, lens = true, rim = true, openEdges = openEdges,
+    )
     Box(
         modifier = modifier
             .semantics { this[GlassSurfaceKey] = info }
@@ -88,11 +93,18 @@ fun GlassSurface(
             // The lens follows a rounded rectangle; a custom shape (the icon
             // chip's squircle) is lensed as a pill - at icon size the two
             // outlines are a pixel or two apart.
-            .glassBackdrop(lens = true, cornerRadius = style.radiusDp.dp, pill = pill || shape != null)
+            .glassBackdrop(
+                lens = true,
+                cornerRadius = style.radiusDp.dp,
+                pill = pill || shape != null,
+                openEdges = openEdges,
+            )
             .drawBehind {
                 drawRect(tint)
                 if (style.scrimAlpha > 0f) drawRect(Color.Black.copy(alpha = style.scrimAlpha))
-                // The top-edge specular: a short fade from white to nothing.
+                // The top-edge specular: a short fade from white to nothing,
+                // only on the card's real top edge.
+                if (GlassEdge.Top in openEdges) return@drawBehind
                 val height = minOf(size.height, SpecularHeight.toPx())
                 drawRect(
                     brush = Brush.verticalGradient(
@@ -105,8 +117,19 @@ fun GlassSurface(
                 )
             }
             // The rim: light from the top-left, a weaker reflection at the
-            // bottom-right, faint along the sides (#82).
-            .glassRim(outline),
+            // bottom-right, faint along the sides (#82); not along a seam.
+            // A closed surface keeps Modifier.border (the home screen's
+            // pixels are unchanged); a segment strokes around its seams.
+            .then(
+                if (openEdges.isEmpty()) {
+                    Modifier.glassRim(outline)
+                } else {
+                    Modifier.drawWithContent {
+                        drawContent()
+                        drawGlassRim(outline, openEdges)
+                    }
+                }
+            ),
         propagateMinConstraints = true,
     ) {
         CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onSurface) {
@@ -126,17 +149,54 @@ internal fun Modifier.glassRim(shape: androidx.compose.ui.graphics.Shape): Modif
     border(GlassLook.RimWidthDp.dp, RimBrush, shape)
 
 /** The outline of a surface: the pill, the given [shape] or the glass radius, square on [openEdges]. */
-internal fun glassOutline(radiusDp: Float, pill: Boolean, shape: Shape?, openEdges: Set<GlassEdge>): Shape =
-    shape ?: if (pill) RoundedCornerShape(percent = 50) else RoundedCornerShape(radiusDp.dp)
+internal fun glassOutline(radiusDp: Float, pill: Boolean, shape: Shape?, openEdges: Set<GlassEdge>): Shape {
+    if (shape != null) return shape
+    if (pill) return RoundedCornerShape(percent = 50)
+    val top = if (GlassEdge.Top in openEdges) 0.dp else radiusDp.dp
+    val bottom = if (GlassEdge.Bottom in openEdges) 0.dp else radiusDp.dp
+    return RoundedCornerShape(topStart = top, topEnd = top, bottomEnd = bottom, bottomStart = bottom)
+}
 
-/** The rim stroke into [this] scope, left out along [openEdges] (tests draw it into a bitmap). */
+/**
+ * The rim stroke into [this] scope, left out along [openEdges] (tests draw
+ * it into a bitmap). On an open edge the outline is stroked as if it went on
+ * past the edge and then clipped to the surface: the sides run to the seam
+ * without a gap, and the stroke along the seam falls outside.
+ */
 internal fun androidx.compose.ui.graphics.drawscope.DrawScope.drawGlassRim(
     shape: Shape,
     openEdges: Set<GlassEdge>,
 ) {
-    drawOutline(
-        shape.createOutline(size, layoutDirection, this),
-        RimBrush,
-        style = androidx.compose.ui.graphics.drawscope.Stroke(GlassLook.RimWidthDp.dp.toPx()),
-    )
+    val stroke = GlassLook.RimWidthDp.dp.toPx()
+    val above = if (GlassEdge.Top in openEdges) stroke * 2 else 0f
+    val below = if (GlassEdge.Bottom in openEdges) stroke * 2 else 0f
+    // Inset by half the stroke, as Modifier.border does, so the whole rim
+    // lies inside the surface's clip.
+    val inset = stroke / 2f
+    val extended = Size(size.width - stroke, size.height + above + below - stroke)
+    clipRect {
+        translate(left = inset, top = inset - above) {
+            drawOutline(
+                shape.createOutline(extended, layoutDirection, this),
+                RimBrush,
+                style = androidx.compose.ui.graphics.drawscope.Stroke(stroke),
+            )
+        }
+    }
+}
+
+/**
+ * The open edges of segment [index] of [count] in one card (#91). With
+ * [reverse] the list is laid out bottom up (search bar at the bottom), so the
+ * first segment is the card's bottom.
+ */
+fun segmentEdges(index: Int, count: Int, reverse: Boolean = false): Set<GlassEdge> {
+    val first = index == 0
+    val last = index == count - 1
+    val top = if (reverse) last else first
+    val bottom = if (reverse) first else last
+    return buildSet {
+        if (!top) add(GlassEdge.Top)
+        if (!bottom) add(GlassEdge.Bottom)
+    }
 }

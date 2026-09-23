@@ -1,5 +1,6 @@
 package de.mm20.launcher2.ui.launcher.searchbar
 
+import de.mm20.launcher2.ui.launcher.glass.GlassMenuGroup
 import android.content.Intent
 import android.net.Uri
 import androidx.browser.customtabs.CustomTabColorSchemeParams
@@ -63,12 +64,9 @@ fun RowScope.SearchBarMenu(
             expanded = showOverflowMenu,
             onDismissRequest = { showOverflowMenu = false },
         ) {
-            DropdownMenuGroup(
-                shapes = MenuDefaults.groupShapes(),
-                modifier = Modifier
+            GlassMenuGroup(modifier = Modifier
                     .fillMaxWidth()
-                    .align(Alignment.Start)
-            ) {
+                    .align(Alignment.Start)) {
                 DropdownMenuItem(
                     shape = MenuDefaults.leadingItemShape,
                     onClick = {

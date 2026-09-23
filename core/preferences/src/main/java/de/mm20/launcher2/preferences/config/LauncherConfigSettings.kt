@@ -60,6 +60,7 @@ internal class LauncherConfigSettingsImpl(
             glassRadius = data.glassRadius,
             glassContrast = data.glassContrast,
             glassWallpaperBlur = data.glassWallpaperBlur,
+            glassSearchWallpaperBlur = data.glassSearchWallpaperBlur,
             searchBarPosition = if (data.searchBarBottom) {
                 SearchBarPosition.Bottom
             } else {
@@ -112,6 +113,7 @@ internal class LauncherConfigSettingsImpl(
                 glassRadius = mutation.radius ?: glassRadius,
                 glassContrast = mutation.contrast ?: glassContrast,
                 glassWallpaperBlur = mutation.wallpaperBlur ?: glassWallpaperBlur,
+                glassSearchWallpaperBlur = mutation.searchWallpaperBlur ?: glassSearchWallpaperBlur,
             )
 
             is ConfigMutation.SetFavorites,

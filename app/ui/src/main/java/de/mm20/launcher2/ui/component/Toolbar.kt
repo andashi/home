@@ -1,5 +1,6 @@
 package de.mm20.launcher2.ui.component
 
+import de.mm20.launcher2.ui.launcher.glass.GlassMenuGroup
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ColumnScope
@@ -71,10 +72,7 @@ fun Icons(actions: List<ToolbarAction>, slots: Int) {
                         modifier = Modifier
                             .verticalScroll(rememberScrollState()),
                     ) {
-                        DropdownMenuGroup(
-                            shapes = MenuDefaults.groupShapes(),
-                            modifier = Modifier.animateContentSize()
-                        ) {
+                        GlassMenuGroup(modifier = Modifier.animateContentSize()) {
                             OverflowMenuItems(items = actions.subList(slots - 1, actions.size)) {
                                 showMenu = false
                             }
@@ -117,9 +115,7 @@ fun Icons(actions: List<ToolbarAction>, slots: Int) {
                                     onDismissRequest = { showMenu = false },
                                     modifier = Modifier.animateContentSize()
                                 ) {
-                                    DropdownMenuGroup(
-                                        shapes = MenuDefaults.groupShapes()
-                                    ) {
+                                    GlassMenuGroup() {
                                         OverflowMenuItems(items = action.children) {
                                             showMenu = false
                                         }

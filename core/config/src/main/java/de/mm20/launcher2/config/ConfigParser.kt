@@ -67,6 +67,7 @@ object ConfigParser {
             "radius" to KeyEffect.Applied,
             "contrast" to KeyEffect.Applied,
             "wallpaperBlur" to KeyEffect.Applied,
+            "searchWallpaperBlur" to KeyEffect.Applied,
         ),
         "appearance.wallpaper" to mapOf(
             "image" to KeyEffect.Applied,

@@ -9,5 +9,10 @@ package de.mm20.launcher2.glass
  */
 object GlassWallpaperAlpha {
     /** [progress] is the search page's, 0 = home, 1 = search open; clamped. */
-    fun at(homeBlur: Boolean, searchBlur: Boolean, progress: Float): Float = 0f
+    fun at(homeBlur: Boolean, searchBlur: Boolean, progress: Float): Float {
+        val p = progress.coerceIn(0f, 1f)
+        val home = if (homeBlur) 1f else 0f
+        val search = if (searchBlur) 1f else 0f
+        return home + (search - home) * p
+    }
 }

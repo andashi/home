@@ -127,8 +127,9 @@ fun LazyListScope.AppResults(
                                     MaterialTheme.colorScheme.outlineVariant,
                                     MaterialTheme.shapes.small
                                 )
+                                // A slightly stronger layer inside the glass card (#91).
                                 .background(
-                                    MaterialTheme.colorScheme.surfaceContainer,
+                                    MaterialTheme.colorScheme.surface.copy(alpha = InnerLayerAlpha),
                                     MaterialTheme.shapes.small
                                 )
                                 .padding(vertical = 64.dp),
@@ -245,3 +246,5 @@ fun LazyListScope.AppResults(
     }
 
 }
+/** An inner area of a glass card: the card's own tint, once more. */
+private const val InnerLayerAlpha = 0.12f

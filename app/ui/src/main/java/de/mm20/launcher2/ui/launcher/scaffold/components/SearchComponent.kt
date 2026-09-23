@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import de.mm20.launcher2.ui.launcher.glass.LocalOnGlass
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
@@ -34,6 +36,11 @@ internal class SearchComponent(
     override val reverseScrolling: Boolean = reverse
 
     override val hasIme: Boolean = true
+
+    // No flat color over the wallpaper: the background behind search is the
+    // blurred backdrop, or the wallpaper itself (appearance.glass.
+    // searchWallpaperBlur, #91), drawn by GlassWallpaper.
+    override val drawBackground: Boolean = false
 
 
     @Composable
@@ -86,16 +93,18 @@ internal class SearchComponent(
             contentAlignment = Alignment.Center
         ) {
 
-            SearchColumn(
-                modifier = Modifier.nestedScroll(scrollConnection).widthIn(max = 916.dp).fillMaxHeight(),
-                paddingValues = insets,
-                state = lazyListState,
-                reverse = reverse,
-                userScrollEnabled = !state.isDragged,
-                onHideKeyboard = {
-                    state.isSearchBarFocused = false
-                }
-            )
+            CompositionLocalProvider(LocalOnGlass provides true) {
+                SearchColumn(
+                    modifier = Modifier.nestedScroll(scrollConnection).widthIn(max = 916.dp).fillMaxHeight(),
+                    paddingValues = insets,
+                    state = lazyListState,
+                    reverse = reverse,
+                    userScrollEnabled = !state.isDragged,
+                    onHideKeyboard = {
+                        state.isSearchBarFocused = false
+                    }
+                )
+            }
         }
     }
 

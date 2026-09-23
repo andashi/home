@@ -20,20 +20,22 @@ class SearchScreenGlassGuardTest {
 
     private val ui = File(System.getProperty("user.dir"), "src/main/java/de/mm20/launcher2/ui")
 
-    /** What draws the search screen: its packages and the shared pieces it shows. */
+    /**
+     * What draws the search screen and nothing else. Components it shares
+     * with the settings screens and the Material sheets (Banner, TagChip,
+     * SearchBar) keep a Material branch for those and are tested by
+     * behavior instead: glass where LocalOnGlass is set (SharedGlassSwitchTest,
+     * SearchBarGlassTest).
+     */
     private val searchScreen: List<File> = listOf(
         "launcher/search",
         "launcher/searchbar",
         "launcher/scaffold/LauncherScaffold.kt",
         "launcher/scaffold/components/SearchComponent.kt",
         "launcher/sheets/HiddenItemsSheet.kt",
-        "component/Banner.kt",
         "component/MissingPermissionBanner.kt",
-        "component/InnerCard.kt",
         "component/Toolbar.kt",
-        "component/SearchBar.kt",
         "common/FavoritesTagSelector.kt",
-        "common/TagChip.kt",
     ).flatMap { path ->
         val file = File(ui, path)
         assertTrue("$path exists - update the guard when a file moves", file.exists())
@@ -54,7 +56,9 @@ class SearchScreenGlassGuardTest {
     fun `nothing on the search screen draws a non-glass surface`() {
         val hits = searchScreen.flatMap { file ->
             file.readLines().mapIndexedNotNull { index, line ->
-                if (line.trimStart().startsWith("import ") || line.trimStart().startsWith("//")) return@mapIndexedNotNull null
+                val code = line.trimStart()
+                val comment = code.startsWith("//") || code.startsWith("*") || code.startsWith("/*")
+                if (code.startsWith("import ") || comment) return@mapIndexedNotNull null
                 forbidden.entries.firstOrNull { it.value.containsMatchIn(line) }?.let { (what, _) ->
                     "${file.relativeTo(ui)}:${index + 1}: $what: ${line.trim()}"
                 }

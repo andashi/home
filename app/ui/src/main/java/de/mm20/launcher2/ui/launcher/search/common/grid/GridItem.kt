@@ -1,5 +1,7 @@
 package de.mm20.launcher2.ui.launcher.search.common.grid
 
+import de.mm20.launcher2.ui.component.SquircleShape
+import de.mm20.launcher2.ui.launcher.glass.LocalClearIcons
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.MutableTransitionState
@@ -26,6 +28,7 @@ import androidx.compose.foundation.layout.union
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -54,7 +57,8 @@ import de.mm20.launcher2.search.Application
 import de.mm20.launcher2.search.Contact
 import de.mm20.launcher2.search.SavableSearchable
 import de.mm20.launcher2.search.Searchable
-import de.mm20.launcher2.ui.component.LauncherCard
+import de.mm20.launcher2.ui.launcher.glass.GlassSurface
+import de.mm20.launcher2.ui.launcher.glass.LocalOnGlass
 import de.mm20.launcher2.ui.component.LocalIconShape
 import de.mm20.launcher2.ui.component.ShapedLauncherIcon
 import de.mm20.launcher2.ui.ktx.toPixels
@@ -68,7 +72,6 @@ import de.mm20.launcher2.ui.launcher.transitions.HandleEnterHomeTransition
 import de.mm20.launcher2.ui.locals.LocalGridSettings
 import de.mm20.launcher2.ui.locals.LocalWindowSize
 import de.mm20.launcher2.ui.overlays.Overlay
-import de.mm20.launcher2.ui.theme.transparency.transparency
 import kotlin.math.pow
 
 
@@ -144,13 +147,17 @@ fun GridItem(
             }
         }
 
-        val iconShape = LocalIconShape.current
+        // A Clear icon is a glass chip (#76); its highlight is a lighter
+        // layer in the chip's own shape, not an opaque disc (#91).
+        val clear = LocalClearIcons.current
+        val iconShape = if (clear) SquircleShape else LocalIconShape.current
 
         Box(
             modifier = if (highlight) {
                 Modifier
                     .background(
-                        MaterialTheme.colorScheme.surfaceVariant,
+                        if (clear) MaterialTheme.colorScheme.surface.copy(alpha = HighlightAlpha)
+                        else MaterialTheme.colorScheme.surfaceVariant,
                         iconShape
                     )
             } else Modifier then if (showLabels) Modifier else Modifier
@@ -166,7 +173,7 @@ fun GridItem(
                             .boundsInWindow()
                             .roundToIntRect()
                     } then
-                        if (highlight) Modifier.background(
+                        if (highlight && !clear) Modifier.background(
                             MaterialTheme.colorScheme.surface,
                             iconShape
                         )
@@ -252,9 +259,7 @@ fun ItemPopup(origin: IntRect, searchable: Searchable, onDismissRequest: () -> U
                     }
                 )
         ) {
-            LauncherCard(
-                elevation = 8.dp * p,
-                backgroundOpacity = MaterialTheme.transparency.elevatedSurface,
+            GlassSurface(
                 modifier = Modifier
                     .placeOverlay(
                         origin.translate(
@@ -265,6 +270,8 @@ fun ItemPopup(origin: IntRect, searchable: Searchable, onDismissRequest: () -> U
                         p,
                     )
             ) {
+                // An overlay composes at the host, not here: it opts in itself.
+                CompositionLocalProvider(LocalOnGlass provides true) {
                 when (searchable) {
                     is Application -> {
                         AppItemGridPopup(
@@ -301,6 +308,7 @@ fun ItemPopup(origin: IntRect, searchable: Searchable, onDismissRequest: () -> U
                             }
                         )
                     }
+                }
                 }
             }
         }
@@ -342,3 +350,6 @@ private fun lerp(start: Float, stop: Float, fraction: Float): Float {
 private fun lerp(start: Int, stop: Int, fraction: Float): Int {
     return start + (fraction * (stop - start)).toInt()
 }
+
+/** The best match's layer behind a Clear icon. */
+private const val HighlightAlpha = 0.35f

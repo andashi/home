@@ -9,6 +9,8 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.semantics
+import de.mm20.launcher2.glass.GlassWallpaperAlpha
 import androidx.compose.ui.unit.IntSize
 import kotlin.math.roundToInt
 
@@ -25,9 +27,11 @@ val LocalGlassSearchWallpaperBlur = staticCompositionLocalOf { true }
 val GlassWallpaperAlphaKey = androidx.compose.ui.semantics.SemanticsPropertyKey<Float>("GlassWallpaperAlpha")
 
 /**
- * The home background as the blurred backdrop, full window (#82), drawn
- * behind the scaffold. Nothing without a backdrop or with `wallpaperBlur`
- * off: the sharp system wallpaper shows through as before.
+ * The background as the blurred backdrop, full window (#82), drawn behind
+ * the scaffold. Home and search each have their own setting (#91); while
+ * search opens, the backdrop fades from the one to the other
+ * ([GlassWallpaperAlpha]). Nothing without a backdrop or where both are off:
+ * the sharp system wallpaper shows through.
  */
 @Composable
 fun GlassWallpaper(
@@ -35,15 +39,27 @@ fun GlassWallpaper(
     /** The search page's progress, 0 = home, 1 = search open (#91). */
     searchProgress: () -> Float = { 0f },
 ) {
-    val backdrop = LocalGlassBackdrop.current
-    if (!LocalGlassWallpaperBlur.current || backdrop == null) return
+    val backdrop = LocalGlassBackdrop.current ?: return
+    val home = LocalGlassWallpaperBlur.current
+    val search = LocalGlassSearchWallpaperBlur.current
+    if (!home && !search) return
+    val alpha = GlassWallpaperAlpha.at(home, search, searchProgress())
+    // Read in composition, so the node leaves the tree when nothing is drawn
+    // (and tests see it); the progress is animated state, so this recomposes
+    // with it.
+    if (alpha <= 0f) return
     val bitmap = backdrop.bitmap
     Box(
         modifier
             .fillMaxSize()
             .testTag(GlassWallpaperTag)
+            .semantics { this[GlassWallpaperAlphaKey] = alpha }
             .drawBehind {
-                drawImage(bitmap, dstSize = IntSize(size.width.roundToInt(), size.height.roundToInt()))
+                drawImage(
+                    bitmap,
+                    dstSize = IntSize(size.width.roundToInt(), size.height.roundToInt()),
+                    alpha = alpha,
+                )
             }
     )
 }

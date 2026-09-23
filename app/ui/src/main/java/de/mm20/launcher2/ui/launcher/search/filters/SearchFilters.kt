@@ -1,5 +1,6 @@
 package de.mm20.launcher2.ui.launcher.search.filters
 
+import de.mm20.launcher2.ui.launcher.glass.GlassChip
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.padding
@@ -31,7 +32,7 @@ fun SearchFilters(
         modifier = modifier
             .padding(horizontal = 4.dp),
     ) {
-        FilterChip(
+        GlassChip(
             selected = filters.hiddenItems,
             onClick = {
                 onFiltersChange(filters.copy(hiddenItems = !filters.hiddenItems))
@@ -40,10 +41,10 @@ fun SearchFilters(
                 Icon(
                     painter = painterResource(R.drawable.visibility_off_20px),
                     contentDescription = null,
-                    modifier = Modifier.size(FilterChipDefaults.IconSize)
+                    modifier = Modifier.size(18.dp)
                 )
             },
-            label = { Text(stringResource(R.string.preference_hidden_items)) }
+            label = stringResource(R.string.preference_hidden_items),
         )
     }
 }

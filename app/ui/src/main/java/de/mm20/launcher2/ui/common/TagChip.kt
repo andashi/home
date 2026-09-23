@@ -40,6 +40,11 @@ import de.mm20.launcher2.search.Tag
 import de.mm20.launcher2.ui.component.ShapedLauncherIcon
 import de.mm20.launcher2.ui.ktx.toPixels
 import de.mm20.launcher2.ui.R
+import de.mm20.launcher2.ui.launcher.glass.GlassSurface
+import de.mm20.launcher2.ui.launcher.glass.LocalOnGlass
+import de.mm20.launcher2.ui.launcher.glass.SelectedTintBoost
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import org.koin.compose.koinInject
 
 @Composable
@@ -77,11 +82,14 @@ fun TagChip(
     val borderWidth by transition.animateDp {
         if (it and 1 == 1) 0.dp else 1.dp
     }
+    val onGlassColors = LocalOnGlass.current
     val textColor by transition.animateColor {
-        if (it and 1 == 1) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
+        if (onGlassColors) MaterialTheme.colorScheme.onSurface
+        else if (it and 1 == 1) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
     }
     val iconColor by transition.animateColor {
-        if (it and 1 == 1) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.primary
+        if (onGlassColors) MaterialTheme.colorScheme.onSurface
+        else if (it and 1 == 1) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.primary
     }
     val elevation by transition.animateDp(
         transitionSpec = {
@@ -102,19 +110,49 @@ fun TagChip(
     }.collectAsState(null)
 
 
+    val onGlass = LocalOnGlass.current
+    val size = modifier
+        .padding(vertical = 8.dp)
+        .height(32.dp)
+        .widthIn(min = 48.dp)
+    val row: @Composable (Modifier) -> Unit = { rowModifier ->
+        TagChipRow(rowModifier, compact, icon, iconColor, tag, textColor, clearable, onClear)
+    }
+    val clicks = Modifier.combinedClickable(onClick = onClick, onLongClick = onLongClick)
+    if (onGlass) {
+        // On the search screen a glass chip (#91); selected is a stronger tint.
+        GlassSurface(
+            modifier = size.semantics { this.selected = selected },
+            shape = shape,
+            tintBoost = if (selected) SelectedTintBoost else 0f,
+        ) {
+            row(clicks.padding(start = 4.dp, end = 8.dp))
+        }
+    } else {
+        row(
+            size
+                .shadow(elevation, shape, true)
+                .border(borderWidth, borderColor, shape)
+                .background(backgroundColor)
+                .then(clicks)
+                .padding(start = 4.dp, end = 8.dp)
+        )
+    }
+}
+
+@Composable
+private fun TagChipRow(
+    modifier: Modifier,
+    compact: Boolean,
+    icon: de.mm20.launcher2.icons.LauncherIcon?,
+    iconColor: Color,
+    tag: Tag,
+    textColor: Color,
+    clearable: Boolean,
+    onClear: (() -> Unit)?,
+) {
     Row(
-        modifier = modifier
-            .padding(vertical = 8.dp)
-            .height(32.dp)
-            .widthIn(min = 48.dp)
-            .shadow(elevation, shape, true)
-            .border(borderWidth, borderColor, shape)
-            .background(backgroundColor)
-            .combinedClickable(
-                onClick = onClick,
-                onLongClick = onLongClick
-            )
-            .padding(start = 4.dp, end = 8.dp),
+        modifier = modifier,
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center,
     ) {

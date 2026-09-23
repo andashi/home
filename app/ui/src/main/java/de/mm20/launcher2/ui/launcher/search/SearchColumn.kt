@@ -37,7 +37,6 @@ import de.mm20.launcher2.profiles.Profile
 import de.mm20.launcher2.search.AppShortcut
 import de.mm20.launcher2.search.Application
 import de.mm20.launcher2.search.Contact
-import de.mm20.launcher2.ui.component.LauncherCard
 import de.mm20.launcher2.ui.launcher.search.apps.AppResults
 import de.mm20.launcher2.ui.launcher.search.contacts.ContactResults
 import de.mm20.launcher2.ui.launcher.search.favorites.SearchFavorites
@@ -47,7 +46,7 @@ import de.mm20.launcher2.ui.launcher.search.shortcut.ShortcutResults
 import de.mm20.launcher2.ui.launcher.sheets.HiddenItemsSheet
 import de.mm20.launcher2.ui.launcher.sheets.LocalBottomSheetManager
 import de.mm20.launcher2.ui.locals.LocalGridSettings
-import de.mm20.launcher2.ui.theme.transparency.transparency
+import de.mm20.launcher2.ui.launcher.glass.GlassSurface
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.zip
@@ -144,20 +143,19 @@ fun SearchColumn(
                     .padding(paddingValues),
                 contentAlignment = if (reverse) Alignment.BottomCenter else Alignment.TopCenter,
             ) {
-                SearchFilters(
+                GlassSurface(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 4.dp)
-                        .background(
-                            MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp),
-                            MaterialTheme.shapes.medium
-                        )
-                        .padding(12.dp),
-                    filters = viewModel.filters.value,
-                    onFiltersChange = {
-                        viewModel.setFilters(it)
-                    }
-                )
+                        .padding(top = 4.dp),
+                ) {
+                    SearchFilters(
+                        modifier = Modifier.padding(12.dp),
+                        filters = viewModel.filters.value,
+                        onFiltersChange = {
+                            viewModel.setFilters(it)
+                        }
+                    )
+                }
             }
         } else {
             LazyColumn(
@@ -282,23 +280,4 @@ fun SearchColumn(
 }
 
 
-fun LazyListScope.SingleResult(
-    highlight: Boolean = false,
-    content: @Composable (() -> Unit)?
-) {
-    if (content == null) return
-    item {
-        LauncherCard(
-            modifier = Modifier
-                .padding(
-                    horizontal = 8.dp,
-                    vertical = 4.dp,
-                ),
-            color = if (highlight) MaterialTheme.colorScheme.secondaryContainer
-            else MaterialTheme.colorScheme.surface.copy(MaterialTheme.transparency.surface)
-        ) {
-            content()
-        }
-    }
-}
 

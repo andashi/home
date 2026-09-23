@@ -1,0 +1,187 @@
+package de.mm20.launcher2.ui.launcher.glass
+
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalWindowInfo
+import androidx.compose.ui.platform.LocalView
+import android.graphics.Bitmap
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.toPixelMap
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.test.captureToImage
+import androidx.compose.ui.semantics.getOrNull
+import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onRoot
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Popup
+import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.platform.app.InstrumentationRegistry
+import de.mm20.launcher2.glass.BackdropGeometry
+import de.mm20.launcher2.glass.BackdropImage
+import de.mm20.launcher2.glass.Contrast
+import de.mm20.launcher2.glass.GlassBackdropSource
+import de.mm20.launcher2.glass.GlassInputs
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
+import org.junit.Rule
+import org.junit.Test
+import org.junit.runner.RunWith
+
+/** Search on the glass look (#91, L2): the background behind it and the menus over it. */
+@RunWith(AndroidJUnit4::class)
+class GlassSearchTest {
+
+    @get:Rule
+    val composeRule = createComposeRule()
+
+    private val source = object : GlassBackdropSource {
+        override val image = MutableStateFlow<BackdropImage?>(BackdropImage("/w/zone.jpg", "sha1"))
+        override suspend fun refresh() = Unit
+    }
+
+    /** The backdrop: blue on the left half, green on the right. */
+    private fun controller(home: Boolean, search: Boolean) = GlassBackdropController(
+        source,
+        MutableStateFlow(GlassInputs(24f, 0.12f, 28f, Contrast.Medium)),
+        CoroutineScope(Dispatchers.Main.immediate),
+        wallpaperBlur = MutableStateFlow(home),
+        searchWallpaperBlur = MutableStateFlow(search),
+    ) { _, key ->
+        val (w, h) = BackdropGeometry.backdropSize(key.windowWidthPx, key.windowHeightPx)
+        Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888).apply {
+            for (x in 0 until w) for (y in 0 until h) {
+                setPixel(x, y, if (x < w / 2) android.graphics.Color.BLUE else android.graphics.Color.GREEN)
+            }
+        }.asImageBitmap()
+    }
+
+    private val progress = mutableFloatStateOf(0f)
+
+    /** Blue at the left centre of the window: the backdrop is drawn; red: the "sharp wallpaper" shows. */
+    private fun background(home: Boolean, search: Boolean, at: Float): Color {
+        progress.floatValue = at
+        composeRule.waitForIdle()
+        val image = composeRule.onRoot().captureToImage().toPixelMap()
+        return image[image.width / 4, image.height / 2]
+    }
+
+    private fun showBackground(home: Boolean, search: Boolean) {
+        val controller = controller(home, search)
+        composeRule.setContent {
+            MaterialTheme {
+                // Red stands in for the sharp system wallpaper under the launcher.
+                Box(Modifier.fillMaxSize().background(Color.Red)) {
+                    ProvideGlassBackdrop(controller) {
+                        GlassWallpaper(searchProgress = { progress.floatValue })
+                    }
+                }
+            }
+        }
+    }
+
+    @Test
+    fun aSharpHomeFadesTheBlurInAsSearchOpens() {
+        showBackground(home = false, search = true)
+        val closed = background(home = false, search = true, at = 0f)
+        val open = background(home = false, search = true, at = 1f)
+        assertTrue("home: the wallpaper, $closed", closed.red > 0.9f && closed.blue < 0.1f)
+        assertTrue("search: the backdrop, $open", open.blue > 0.9f && open.red < 0.1f)
+    }
+
+    /** Control: the reverse combination fades the other way. */
+    @Test
+    fun aBlurredHomeWithASharpSearchFadesTheBlurOut() {
+        showBackground(home = true, search = false)
+        val closed = background(home = true, search = false, at = 0f)
+        val open = background(home = true, search = false, at = 1f)
+        assertTrue("home: the backdrop, $closed", closed.blue > 0.9f)
+        assertTrue("search: the wallpaper, $open", open.red > 0.9f)
+    }
+
+    /**
+     * A menu is a popup window of its own. Its glass must show the part of
+     * the backdrop that lies under it on screen. The backdrop here encodes
+     * y in its color (red at the bottom, blue at the top) and the tint is 0,
+     * so the color at a surface's centre says which row of the backdrop it
+     * drew; that row must be where the surface really is on screen, in the
+     * window the backdrop was made for.
+     */
+    @Test
+    fun aGlassSurfaceInAPopupDrawsTheBackdropUnderItOnScreen() {
+        val controller = GlassBackdropController(
+            source,
+            MutableStateFlow(GlassInputs(24f, 0f, 28f, Contrast.Medium)),
+            CoroutineScope(Dispatchers.Main.immediate),
+        ) { _, key ->
+            val (w, h) = BackdropGeometry.backdropSize(key.windowWidthPx, key.windowHeightPx)
+            Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888).apply {
+                for (y in 0 until h) {
+                    val red = (255f * y / (h - 1)).toInt()
+                    for (x in 0 until w) setPixel(x, y, android.graphics.Color.rgb(red, 0, 255 - red))
+                }
+            }.asImageBitmap()
+        }
+        var windowHeight = 0
+        var hostTop = 0f
+        composeRule.setContent {
+            val view = LocalView.current
+            windowHeight = LocalWindowInfo.current.containerSize.height
+            MaterialTheme {
+                ProvideGlassBackdrop(controller) {
+                    Box(
+                        Modifier
+                            .fillMaxSize()
+                            .onGloballyPositioned {
+                                val origin = IntArray(2)
+                                view.rootView.getLocationOnScreen(origin)
+                                hostTop = origin[1].toFloat()
+                            }
+                    ) {
+                        GlassSurface(Modifier.offset(16.dp, 200.dp).size(120.dp).testTag("window")) {}
+                        // The popup window itself is placed; an offset inside
+                        // it would move the content out of its window.
+                        val offset = with(LocalDensity.current) { IntOffset(200.dp.roundToPx(), 420.dp.roundToPx()) }
+                        Popup(offset = offset) {
+                            GlassMenuGroup(Modifier.size(120.dp).testTag("popup")) {}
+                        }
+                    }
+                }
+            }
+        }
+        composeRule.waitForIdle()
+
+        // The screen as the user sees it: a popup is a window of its own,
+        // and capturing its node alone comes back blank.
+        val screen = InstrumentationRegistry.getInstrumentation().uiAutomation.takeScreenshot()
+
+        fun check(tag: String) {
+            val semantics = composeRule.onNodeWithTag(tag, useUnmergedTree = true).fetchSemanticsNode()
+            val centreX = semantics.positionOnScreen.x + semantics.size.width / 2f
+            val centreY = semantics.positionOnScreen.y + semantics.size.height / 2f
+            val expected = (centreY - hostTop) / windowHeight
+            val pixel = screen.getPixel(centreX.toInt(), centreY.toInt())
+            val red = android.graphics.Color.red(pixel).toFloat()
+            val blue = android.graphics.Color.blue(pixel).toFloat()
+            val drawn = red / (red + blue)
+            assertEquals("$tag: backdrop row drawn vs where it is on screen", expected, drawn, 0.03f)
+        }
+        check("window")
+        check("popup")
+    }
+
+}

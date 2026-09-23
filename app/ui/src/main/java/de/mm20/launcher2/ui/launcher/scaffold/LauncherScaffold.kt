@@ -1,5 +1,7 @@
 package de.mm20.launcher2.ui.launcher.scaffold
 
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.ui.graphics.RectangleShape
 import android.app.WallpaperManager
 import android.view.animation.PathInterpolator
 import androidx.activity.compose.LocalActivity
@@ -98,21 +100,19 @@ import de.mm20.launcher2.searchactions.actions.SearchAction
 import de.mm20.launcher2.ui.component.SearchBarLevel
 import de.mm20.launcher2.ui.ktx.toPixels
 import de.mm20.launcher2.ui.launcher.SharedLauncherActivity
-import de.mm20.launcher2.ui.launcher.helper.WallpaperBlur
+import de.mm20.launcher2.ui.launcher.glass.GlassEdge
+import de.mm20.launcher2.ui.launcher.glass.GlassSurface
+import de.mm20.launcher2.ui.launcher.glass.GlassWallpaper
+import de.mm20.launcher2.ui.launcher.scaffold.components.SearchComponent
 import de.mm20.launcher2.ui.launcher.scaffold.animation.Offset3D
 import de.mm20.launcher2.ui.launcher.scaffold.animation.PushScaffoldAnimationController
 import de.mm20.launcher2.ui.launcher.scaffold.animation.RubberbandScaffoldAnimationController
 import de.mm20.launcher2.ui.launcher.scaffold.animation.ScaffoldAnimationController
 import de.mm20.launcher2.ui.launcher.scaffold.animation.ZoomInScaffoldAnimationController
 import de.mm20.launcher2.ui.launcher.scaffold.components.ScaffoldComponent
-import de.mm20.launcher2.ui.launcher.scaffold.components.SearchComponent
 import de.mm20.launcher2.ui.launcher.search.SearchVM
 import de.mm20.launcher2.ui.launcher.search.filters.KeyboardFilterBar
 import de.mm20.launcher2.ui.launcher.searchbar.LauncherSearchBar
-import de.mm20.launcher2.ui.theme.transparency.transparency
-import dev.chrisbanes.haze.hazeEffect
-import dev.chrisbanes.haze.hazeSource
-import dev.chrisbanes.haze.rememberHazeState
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.awaitCancellation
@@ -172,7 +172,6 @@ internal data class ScaffoldConfiguration(
     /**
      * Wallpaper blur radius. 0 to disable.
      */
-    val wallpaperBlurRadius: Dp = 32.dp,
     /**
      * Show the navigation bar
      */
@@ -989,7 +988,6 @@ internal fun LauncherScaffold(
     val filterBarItems by searchVM.filterBarItems.collectAsState(emptyList())
     val launchOnEnter by searchVM.launchOnEnter.collectAsState(false)
 
-    val hazeState = rememberHazeState(blurEnabled = true)
 
     BoxWithConstraints(
         modifier = modifier,
@@ -1142,11 +1140,6 @@ internal fun LauncherScaffold(
             }
         }
 
-        if (config.wallpaperBlurRadius > 0.dp) {
-            val maxRadius = config.wallpaperBlurRadius.toPixels()
-            WallpaperBlur { (maxRadius * state.currentProgress).toInt() }
-        }
-
         if (!config.finishOnBack || state.currentProgress > 0) {
             PredictiveBackHandler {
                 try {
@@ -1224,11 +1217,19 @@ internal fun LauncherScaffold(
         }
 
 
+        // The blurred backdrop behind home and search (#82, #91): with the
+        // search progress it fades between the two settings. Other secondary
+        // pages keep their own background.
+        GlassWallpaper(
+            searchProgress = {
+                if (state.currentComponent is SearchComponent) state.currentProgress else 0f
+            },
+        )
+
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .holdImplicitFocus()
-                .hazeSource(hazeState)
                 .nestedScroll(nestedScrollConnection)
                 .draggable2D(
                     state = rememberDraggable2DState {
@@ -1331,7 +1332,7 @@ internal fun LauncherScaffold(
                         .homePageAnimation(
                             state,
                             if (config.homeComponent.drawBackground) {
-                                config.backgroundColor.copy(alpha = MaterialTheme.transparency.background)
+                                config.backgroundColor.copy(alpha = PageBackgroundAlpha)
                             } else {
                                 Color.Transparent
                             }
@@ -1425,18 +1426,15 @@ internal fun LauncherScaffold(
                 .align(Alignment.TopCenter)
                 .fillMaxWidth()
         ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .hazeEffect(hazeState) {
-                        blurRadius = 4.dp
-                        backgroundColor = config.backgroundColor
-                    }
-                    .background(
-                        MaterialTheme.colorScheme.surfaceContainer.copy(alpha = MaterialTheme.transparency.background)
-                    )
-                    .statusBarsPadding()
-            )
+            // A glass strip behind the system bar while content scrolls
+            // under it (#91); no rim along the screen edge.
+            GlassSurface(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RectangleShape,
+                openEdges = setOf(GlassEdge.Top),
+            ) {
+                Spacer(Modifier.fillMaxWidth().statusBarsPadding())
+            }
         }
         AnimatedVisibility(
             state.navBarScrim,
@@ -1446,18 +1444,15 @@ internal fun LauncherScaffold(
                 .align(Alignment.BottomCenter)
                 .fillMaxWidth()
         ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .hazeEffect(hazeState) {
-                        blurRadius = 4.dp
-                        backgroundColor = config.backgroundColor
-                    }
-                    .background(
-                        MaterialTheme.colorScheme.surfaceContainer.copy(alpha = MaterialTheme.transparency.background)
-                    )
-                    .navigationBarsPadding()
-            )
+            // A glass strip behind the system bar while content scrolls
+            // under it (#91); no rim along the screen edge.
+            GlassSurface(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RectangleShape,
+                openEdges = setOf(GlassEdge.Bottom),
+            ) {
+                Spacer(Modifier.fillMaxWidth().navigationBarsPadding())
+            }
         }
     }
 }
@@ -1502,7 +1497,7 @@ private fun SecondaryPage(
             .fillMaxSize()
             .secondaryPageAnimation(
                 state,
-                config.backgroundColor.copy(alpha = MaterialTheme.transparency.background),
+                config.backgroundColor.copy(alpha = PageBackgroundAlpha),
             )
         val composable = composables[component]
 
@@ -1696,3 +1691,8 @@ private fun Modifier.searchBarAnimation(
     return this then (component?.searchBarModifier(state, modifier)
         ?: modifier) then Modifier.padding(insets)
 }
+/**
+ * The flat background of a page that asks for one (upstream's transparency
+ * scheme default). Search draws none (#91); the other secondary pages keep it.
+ */
+private const val PageBackgroundAlpha = 0.85f

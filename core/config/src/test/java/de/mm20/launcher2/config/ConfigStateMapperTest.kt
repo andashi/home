@@ -80,7 +80,7 @@ class ConfigStateMapperTest {
         assertEquals(
             GlassConfig(
                 GlassDefaults.Blur, GlassDefaults.Tint, GlassDefaults.Radius, GlassDefaults.Contrast,
-                GlassDefaults.WallpaperBlur,
+                GlassDefaults.WallpaperBlur, GlassDefaults.SearchWallpaperBlur,
             ),
             config.appearance?.glass,
         )

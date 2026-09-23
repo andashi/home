@@ -65,12 +65,15 @@ import kotlinx.coroutines.CancellationException
 fun DismissableBottomSheet(
     expanded: Boolean,
     onDismissRequest: () -> Unit,
+    /** A glass sheet, for the search screen (#91); the others stay Material. */
+    glass: Boolean = false,
     content: @Composable () -> Unit,
 ) {
     DismissableBottomSheet(
         state = expanded,
         expanded = { it },
         onDismissRequest = onDismissRequest,
+        glass = glass,
     ) {
         content()
     }
@@ -90,6 +93,7 @@ fun <T> DismissableBottomSheet(
     state: T,
     expanded: (T) -> Boolean,
     onDismissRequest: () -> Unit,
+    glass: Boolean = false,
     content: @Composable (state: T) -> Unit,
 ) {
 
@@ -203,9 +207,9 @@ fun <T> DismissableBottomSheet(
                     )
 
                 Surface(
-                    shadowElevation = 1.dp,
+                    shadowElevation = if (glass) 0.dp else 1.dp,
                     shape = BottomSheetDefaults.ExpandedShape,
-                    color = MaterialTheme.colorScheme.surfaceContainerLow,
+                    color = if (glass) Color.Transparent else MaterialTheme.colorScheme.surfaceContainerLow,
                     modifier = Modifier
                         .statusBarsPadding()
                         .focusRequester(focusRequester)
@@ -255,6 +259,7 @@ fun <T> DismissableBottomSheet(
                             flingBehavior = flingBehavior,
                         )
                 ) {
+                    GlassSheetBackground(glass) {
                     CompositionLocalProvider(
                         LocalOverscrollFactory provides null
                     ) {
@@ -271,6 +276,7 @@ fun <T> DismissableBottomSheet(
                                 )
                             }
                         }
+                    }
                     }
                 }
             }
@@ -353,3 +359,13 @@ private fun BottomSheetNestedScrollConnection(
             return consumedVelocity
         }
     }
+/** The sheet's glass, or nothing: a Material sheet draws its own Surface color. */
+@Composable
+private fun GlassSheetBackground(glass: Boolean, content: @Composable () -> Unit) {
+    if (!glass) return content()
+    de.mm20.launcher2.ui.launcher.glass.GlassSurface(shape = BottomSheetDefaults.ExpandedShape) {
+        CompositionLocalProvider(de.mm20.launcher2.ui.launcher.glass.LocalOnGlass provides true) {
+            content()
+        }
+    }
+}

@@ -94,8 +94,11 @@ object EdgeLens {
      * reaches [band] past the edge, so the pull there is zero and stacked
      * segments bend only at the card's outer edges.
      */
-    fun frame(height: Float, band: Float, openTop: Boolean, openBottom: Boolean): LensFrame =
-        LensFrame(offsetY = 0f, height = height)
+    fun frame(height: Float, band: Float, openTop: Boolean, openBottom: Boolean): LensFrame {
+        val above = if (openTop) band else 0f
+        val below = if (openBottom) band else 0f
+        return LensFrame(offsetY = above, height = height + above + below)
+    }
 }
 
 /** The lens rectangle: starts [offsetY] above the surface's top, [height] tall. */

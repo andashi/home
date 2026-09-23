@@ -13,7 +13,13 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.drawscope.translate
+import androidx.compose.ui.layout.positionOnScreen
+import androidx.compose.ui.platform.LocalView
+import de.mm20.launcher2.glass.EdgeLens
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.ShaderBrush
 import androidx.compose.ui.graphics.nativeCanvas
@@ -75,7 +81,7 @@ class GlassBackdropController(
     val wallpaperBlur: StateFlow<Boolean> = wallpaperBlur.stateIn(scope, SharingStarted.Eagerly, true)
 
     /** `appearance.glass.searchWallpaperBlur` (#91). */
-    val searchWallpaperBlur: StateFlow<Boolean> = MutableStateFlow(true)
+    val searchWallpaperBlur: StateFlow<Boolean> = searchWallpaperBlur.stateIn(scope, SharingStarted.Eagerly, true)
 
     private val window = MutableStateFlow<WindowInputs?>(null)
 
@@ -109,6 +115,15 @@ class GlassBackdropController(
     }
 }
 
+/**
+ * True where content sits over the wallpaper or other glass - the search
+ * screen, its popup and its glass sheet (#91). Components shared with the
+ * settings screens and the opaque Material sheets (a banner, a tag chip) draw
+ * glass only here; inside an opaque sheet a glass surface would be a hole
+ * down to the wallpaper.
+ */
+val LocalOnGlass = staticCompositionLocalOf { false }
+
 /** The backdrop surfaces draw from; null without a managed home wallpaper. */
 val LocalGlassBackdrop = staticCompositionLocalOf<RenderedBackdrop<ImageBitmap>?> { null }
 
@@ -139,10 +154,12 @@ fun ProvideGlassBackdrop(controller: GlassBackdropController, content: @Composab
     val backdrop by controller.backdrop.collectAsState()
     val style by controller.style.collectAsState()
     val wallpaperBlur by controller.wallpaperBlur.collectAsState()
+    val searchWallpaperBlur by controller.searchWallpaperBlur.collectAsState()
     CompositionLocalProvider(
         LocalGlassBackdrop provides backdrop,
         LocalGlassStyle provides style,
         LocalGlassWallpaperBlur provides wallpaperBlur,
+        LocalGlassSearchWallpaperBlur provides searchWallpaperBlur,
         // Every icon inside the launcher's scaffold is Clear (#76).
         LocalClearIcons provides true,
         content = content,
@@ -161,10 +178,17 @@ fun Modifier.glassBackdrop(
     lens: Boolean = false,
     cornerRadius: Dp = 0.dp,
     pill: Boolean = false,
+    /** Edges that continue into the next segment (#91): the lens does not bend there. */
+    openEdges: Set<GlassEdge> = emptySet(),
 ): Modifier = composed {
     val backdrop = LocalGlassBackdrop.current
     var bounds by remember { mutableStateOf<Rect?>(null) }
-    val positioned = Modifier.onGloballyPositioned { bounds = it.boundsInWindow() }
+    // The backdrop is mapped to the launcher's window. A popup (a menu) is a
+    // window of its own, so bounds are taken on screen and moved into the
+    // launcher window's frame (#91); for the launcher's own nodes the two
+    // are the same.
+    val view = LocalView.current
+    val positioned = Modifier.onGloballyPositioned { bounds = it.boundsInLauncherWindow(view) }
     val box = bounds
     if (backdrop == null || box == null) return@composed positioned
     val bitmap = backdrop.bitmap
@@ -192,15 +216,24 @@ fun Modifier.glassBackdrop(
             val hardware = drawContext.canvas.nativeCanvas.isHardwareAccelerated
             if (hardware && lensShader != null && bitmapShader != null) {
                 val radius = if (pill) size.minDimension / 2f else cornerRadius.toPx()
+                val band = GlassLook.LensBandDp.dp.toPx()
+                // A segment's lens reaches past its open edges, so a seam is
+                // not bent (#91); the region grows by the same amount.
+                val frame = EdgeLens.frame(
+                    size.height, band, GlassEdge.Top in openEdges, GlassEdge.Bottom in openEdges,
+                )
+                val scale = region.height / size.height
                 GlassLens.configure(
                     lensShader, bitmapShader,
-                    width = size.width, height = size.height, radius = radius,
-                    regionLeft = region.left.toFloat(), regionTop = region.top.toFloat(),
-                    regionWidth = region.width.toFloat(), regionHeight = region.height.toFloat(),
+                    width = size.width, height = frame.height, radius = radius,
+                    regionLeft = region.left.toFloat(), regionTop = region.top - frame.offsetY * scale,
+                    regionWidth = region.width.toFloat(), regionHeight = frame.height * scale,
                     strength = GlassLook.LensStrengthDp.dp.toPx(),
-                    band = GlassLook.LensBandDp.dp.toPx(),
+                    band = band,
                 )
-                drawRect(ShaderBrush(lensShader))
+                translate(top = -frame.offsetY) {
+                    drawRect(ShaderBrush(lensShader), size = Size(size.width, frame.height))
+                }
             } else {
                 drawImage(
                     image = bitmap,
@@ -221,4 +254,27 @@ private fun rememberLens(): RuntimeShader? = remember {
         Log.w("GlassBackdrop", "edge lens unavailable: ${e.javaClass.simpleName}")
         null
     }
+}
+
+/**
+ * The node's bounds in the launcher window's frame. In the launcher's own
+ * window that is [boundsInWindow]; inside a popup, whose [view] belongs to
+ * another window, the node's position on screen minus where the launcher
+ * window starts.
+ */
+internal fun androidx.compose.ui.layout.LayoutCoordinates.boundsInLauncherWindow(view: android.view.View): Rect {
+    val host = view.context.findActivity()?.window?.decorView
+    if (host == null || host.rootView === view.rootView) return boundsInWindow()
+    val origin = IntArray(2).also(host::getLocationOnScreen)
+    val onScreen = positionOnScreen()
+    return Rect(
+        offset = Offset(onScreen.x - origin[0], onScreen.y - origin[1]),
+        size = Size(size.width.toFloat(), size.height.toFloat()),
+    )
+}
+
+private tailrec fun android.content.Context.findActivity(): android.app.Activity? = when (this) {
+    is android.app.Activity -> this
+    is android.content.ContextWrapper -> baseContext.findActivity()
+    else -> null
 }

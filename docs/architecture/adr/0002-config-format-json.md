@@ -69,7 +69,7 @@ except `schemaVersion` is optional, and an absent key means *unmanaged*, not
 
   "appearance": {
     // The glass surfaces (ADR 0004); these are the defaults, see "Glass" below.
-    "glass": { "blur": 24, "tint": 0.12, "radius": 28, "contrast": "medium", "wallpaperBlur": true },
+    "glass": { "blur": 24, "tint": 0.12, "radius": 28, "contrast": "medium", "wallpaperBlur": true, "searchWallpaperBlur": true },
     "wallpaper": {
       // Uploaded beforehand to
       // content://<applicationId>.config-ingest/wallpapers/zone.jpg
@@ -179,7 +179,7 @@ served back (#73, #74) and are applied since the surfaces draw them (#75).
 ### Glass (ADR 0004, #24)
 
 ```jsonc
-"appearance": { "glass": { "blur": 24, "tint": 0.12, "radius": 28, "contrast": "medium", "wallpaperBlur": true } },
+"appearance": { "glass": { "blur": 24, "tint": 0.12, "radius": 28, "contrast": "medium", "wallpaperBlur": true, "searchWallpaperBlur": true } },
 "home":       { "grid": { "labels": true } }
 ```
 
@@ -190,6 +190,7 @@ served back (#73, #74) and are applied since the surfaces draw them (#75).
 | `appearance.glass.radius` | corner radius of every glass surface, dp | 0..64 | 28 |
 | `appearance.glass.contrast` | `low` / `medium` / `high`: scales blur and tint, `high` adds a text scrim | enum | `medium` |
 | `appearance.glass.wallpaperBlur` | the home background is the blurred backdrop, not the sharp wallpaper (#82) | boolean | `true` |
+| `appearance.glass.searchWallpaperBlur` | the background behind search is the blurred backdrop, whatever `wallpaperBlur` says; search is an overlay (#91) | boolean | `true` |
 | `home.grid.labels` | labels under grid items; never on the dock | boolean | `true` |
 
 Numbers decode as floats, so a generator that writes `24.0` does not lose the

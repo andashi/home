@@ -15,7 +15,7 @@ specular at the top edge.
 {
   "schemaVersion": 2,
   "appearance": {
-    "glass": { "blur": 24, "tint": 0.12, "radius": 28, "contrast": "medium", "wallpaperBlur": true }
+    "glass": { "blur": 24, "tint": 0.12, "radius": 28, "contrast": "medium", "wallpaperBlur": true, "searchWallpaperBlur": true }
   }
 }
 ```
@@ -30,6 +30,7 @@ device has.
 | `appearance.glass.radius` | Corner radius of cards, the dock and the search bar while open, in dp | 0–64 | 28 |
 | `appearance.glass.contrast` | `low`, `medium` or `high`. Scales blur and tint; `high` adds a dark scrim behind text and glyphs | enum | `medium` |
 | `appearance.glass.wallpaperBlur` | The whole home background is the blurred wallpaper, not only what lies under glass | boolean | `true` |
+| `appearance.glass.searchWallpaperBlur` | While search is open, the background behind it is the blurred wallpaper, whatever `wallpaperBlur` says | boolean | `true` |
 
 A value out of range is an `invalid-glass` error and the file is not applied.
 The glass needs a wallpaper the launcher manages (below). With a wallpaper set
@@ -69,6 +70,18 @@ altogether, which leaves the surfaces as tinted panes.
 | Default | `wallpaperBlur: false` | `blur: 0` |
 |---|---|---|
 | <img alt="full dock bottom, phone" src="img/full-dock-bottom-phone.jpg" width="220"> | <img alt="wallpaper sharp, phone" src="img/wallpaper-sharp-phone.jpg" width="220"> | <img alt="blur 0, phone" src="img/blur-0-phone.jpg" width="220"> |
+
+### Behind search
+
+Search is an overlay, so it has its own setting. With the default
+`searchWallpaperBlur: true` the wallpaper behind search is blurred even when
+the home screen shows it sharp; opening search fades the blur in. `false`
+shows the wallpaper behind search as the home screen does.
+
+<!-- config -->
+```json
+{ "schemaVersion": 2, "appearance": { "glass": { "wallpaperBlur": false, "searchWallpaperBlur": true } } }
+```
 
 ### Tint and radius
 

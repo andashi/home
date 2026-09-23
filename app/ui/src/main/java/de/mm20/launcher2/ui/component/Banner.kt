@@ -21,6 +21,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.material3.LocalContentColor
+import androidx.compose.runtime.CompositionLocalProvider
+import de.mm20.launcher2.ui.launcher.glass.GlassSurface
+import de.mm20.launcher2.ui.launcher.glass.LocalOnGlass
 
 @Composable
 fun Banner(
@@ -31,14 +35,7 @@ fun Banner(
     primaryAction: (@Composable () -> Unit)? = null,
     secondaryAction: (@Composable () -> Unit)? = null,
 ) {
-    OutlinedCard(
-        modifier = modifier,
-        colors = CardDefaults.outlinedCardColors(
-            containerColor = color,
-            contentColor = MaterialTheme.colorScheme.secondary,
-        ),
-        shape = MaterialTheme.shapes.small,
-    ) {
+    val content: @Composable () -> Unit = {
         Column {
             Row(
                 modifier = Modifier
@@ -77,6 +74,25 @@ fun Banner(
                 }
             }
 
+        }
+    }
+    if (LocalOnGlass.current) {
+        // On the search screen a glass card (#91).
+        GlassSurface(modifier = modifier) {
+            CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onSurface) {
+                content()
+            }
+        }
+    } else {
+        OutlinedCard(
+            modifier = modifier,
+            colors = CardDefaults.outlinedCardColors(
+                containerColor = color,
+                contentColor = MaterialTheme.colorScheme.secondary,
+            ),
+            shape = MaterialTheme.shapes.small,
+        ) {
+            content()
         }
     }
 }

@@ -42,7 +42,7 @@ A file that sets a little of everything:
   "schemaVersion": 2,
   "icons": { "themed": true },
   "appearance": {
-    "glass": { "blur": 24, "tint": 0.12, "radius": 28, "contrast": "medium", "wallpaperBlur": true },
+    "glass": { "blur": 24, "tint": 0.12, "radius": 28, "contrast": "medium", "wallpaperBlur": true, "searchWallpaperBlur": true },
     "wallpaper": { "image": "zone.jpg", "target": "both" }
   },
   "home": {
