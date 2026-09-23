@@ -68,6 +68,8 @@ except `schemaVersion` is optional, and an absent key means *unmanaged*, not
   },
 
   "appearance": {
+    // The glass surfaces (ADR 0004); these are the defaults, see "Glass" below.
+    "glass": { "blur": 24, "tint": 0.35, "radius": 28, "contrast": "medium" },
     "wallpaper": {
       // Uploaded beforehand to
       // content://<applicationId>.config-ingest/wallpapers/zone.jpg
@@ -95,6 +97,7 @@ except `schemaVersion` is optional, and an absent key means *unmanaged*, not
     "grid": {
       "columns": 4,     // per cover-width page; the fold layout is twice as wide
       "locked": false,  // true: no edit mode, nothing is written back
+      "labels": true,   // a label under every item but the dock
       "layouts": {
         "phone": {
           "items": [

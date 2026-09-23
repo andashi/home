@@ -53,6 +53,7 @@ internal fun GridCell(
     cell: HomeGridCell,
     viewModel: HomeGridVM,
     favoritesContent: @Composable (columns: Int, rows: Int) -> Unit,
+    showLabel: Boolean = false,
 ) {
     val item = cell.item
     if (item.isFavorites) {

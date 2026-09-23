@@ -76,4 +76,14 @@ class UiSettingsHomeGridTest {
 
         assertEquals(GlassSettings(0f, 0.6f, 12f, GlassContrast.High), settings.glass.first())
     }
+
+    @Test
+    fun `grid labels are on by default and follow the setting`() = runTest {
+        assertEquals(true, settings(LauncherSettingsData()).homeGridLabels.first())
+    }
+
+    @Test
+    fun `grid labels off is exposed`() = runTest {
+        assertEquals(false, settings(LauncherSettingsData(homeGridLabels = false)).homeGridLabels.first())
+    }
 }

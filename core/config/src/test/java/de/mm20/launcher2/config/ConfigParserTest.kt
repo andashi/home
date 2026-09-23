@@ -56,13 +56,8 @@ class ConfigParserTest {
         val result = ConfigParser.parse(fullConfig)
 
         assertTrue(result.isSuccess)
-        // Nothing renders glass or labels yet (#73), so the only diagnostics
-        // are the two inert-key warnings that say so.
-        assertEquals(
-            listOf("appearance.glass", "home.grid.labels"),
-            result.diagnostics.map { it.path },
-        )
-        assertTrue(result.diagnostics.all { it.code == "inert-key" })
+        // Glass and labels are rendered since #75: nothing to report.
+        assertEquals(emptyList<Diagnostic>(), result.diagnostics)
         val config = result.config!!
         assertEquals(2, config.schemaVersion)
         assertEquals(true, config.icons?.themed)
@@ -674,6 +669,8 @@ class ConfigParserTest {
         assertEquals(WallpaperTarget.Both, config.appearance?.wallpaper?.target)
         assertEquals(SearchBarPosition.Bottom, config.home?.searchBar?.position)
         assertEquals(true, config.home?.widgets?.enabled)
+        assertEquals(GlassConfig(24f, 0.35f, 28f, GlassContrast.Medium), config.appearance?.glass)
+        assertEquals(true, config.home?.grid?.labels)
         // Both spellings, which is the point of showing them.
         assertEquals(
             listOf(
@@ -857,21 +854,17 @@ class ConfigParserTest {
     }
 
     /**
-     * The glass keys are stored and served back but not rendered until #75,
-     * and `transparency` left the contract (#73). Each switch back to
-     * [KeyEffect.Applied] happens in the PR that makes it true and updates
-     * this list; a key that becomes inert by accident fails here.
+     * `transparency` left the contract (#73) and is the one inert key; glass
+     * and labels became [KeyEffect.Applied] with the renderer (#75). A key
+     * that becomes inert by accident fails here.
      */
     @Test
-    fun `the inert keys of the current contract are the unrendered glass keys and transparency`() {
+    fun `the only inert key of the current contract is transparency`() {
         val inert = ConfigParser.keyEffects.flatMap { (path, keys) ->
             keys.filter { it.value is KeyEffect.Inert }.map { "$path.${it.key}" }
         }
 
-        assertEquals(
-            setOf("appearance.transparency", "appearance.glass", "home.grid.labels"),
-            inert.toSet(),
-        )
+        assertEquals(listOf("appearance.transparency"), inert)
     }
 
     /**

@@ -62,7 +62,9 @@ fun SearchBar(
     readOnly: Boolean = false,
     menu: @Composable RowScope.() -> Unit = {},
     actions: @Composable ColumnScope.() -> Unit = {},
-    onKeyboardActionGo: (KeyboardActionScope.() -> Unit)? = null
+    onKeyboardActionGo: (KeyboardActionScope.() -> Unit)? = null,
+    /** The home screen's search pill is a glass surface (ADR 0004, #75). */
+    glass: Boolean = false,
 ) {
 
     val transition = updateTransition(level, label = "Searchbar")

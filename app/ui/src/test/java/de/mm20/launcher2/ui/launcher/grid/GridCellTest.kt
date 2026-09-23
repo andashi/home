@@ -13,6 +13,11 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import de.mm20.launcher2.ui.R
 import org.junit.Assert.assertEquals
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.test.assertCountEquals
+import de.mm20.launcher2.ui.launcher.glass.GlassSurfaceKey
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -73,14 +78,20 @@ class GridCellTest {
     }
 
     @Test
-    fun `the card is transparent only when the widget asked for no background`() {
+    fun `a card is glass, and a widget that asked for no background gets no surface at all`() {
         composeRule.setContent {
             MaterialTheme {
-                Box(Modifier.size(100.dp)) { GridCard(transparent = true) {} }
-                Box(Modifier.size(100.dp)) { GridCard(transparent = false) {} }
+                Box(Modifier.size(100.dp).testTag("transparent")) { GridCard(transparent = true) {} }
+                Box(Modifier.size(100.dp).testTag("card")) { GridCard(transparent = false) {} }
             }
         }
-        composeRule.waitForIdle()
+
+        composeRule.onNode(
+            hasTestTag("card").and(androidx.compose.ui.test.hasAnyDescendant(SemanticsMatcher.keyIsDefined(GlassSurfaceKey)))
+        ).assertExists()
+        composeRule.onNode(hasTestTag("transparent").and(androidx.compose.ui.test.hasAnyDescendant(SemanticsMatcher.keyIsDefined(GlassSurfaceKey))))
+            .assertDoesNotExist()
+        composeRule.onAllNodes(SemanticsMatcher.keyIsDefined(GlassSurfaceKey)).assertCountEquals(1)
     }
 
     @Test
