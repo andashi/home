@@ -10,8 +10,9 @@ import androidx.sqlite.db.SupportSQLiteDatabase
  * The table starts empty. Converting the existing `Widget` rows of the home
  * screen into grid items is not done here on purpose: the target cells depend
  * on the cell size in dp, which only the display knows, so that conversion
- * runs once from the UI (`HomeGridSeeder`) and not in SQL. The `Widget` table
- * stays as it is; the secondary widget pages reached by gestures keep using it.
+ * ran once from the UI (`HomeGridSeeder`) and not in SQL. Both the seeder and
+ * the `Widget` table were removed one migration later (36 to 37, #71): there
+ * was never a stable release, so nothing had to be carried over.
  *
  * The statement must match the schema Room exports for version 36 exactly
  * (`schemas/…/36.json`), which `MigrationTest` validates.
