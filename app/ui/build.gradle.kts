@@ -185,6 +185,12 @@ roborazzi {
 
 // Robolectric on JDK 17+ (https://robolectric.org/getting-started/)
 tasks.withType<Test>().configureEach {
+    // Failed assertions with their messages in the build log: CI keeps no
+    // test reports, and a bare "AssertionError at Foo.kt:81" says nothing.
+    testLogging {
+        exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+        events("failed")
+    }
     jvmArgs(
         "--add-opens=java.base/java.io=ALL-UNNAMED",
         "--add-opens=java.base/java.lang=ALL-UNNAMED",
