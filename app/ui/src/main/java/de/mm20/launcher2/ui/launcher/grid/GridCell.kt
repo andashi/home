@@ -109,7 +109,7 @@ internal fun GridCell(
  * contrast scrim when `contrast` is `high`, one line.
  */
 @Composable
-private fun GridLabel(id: String, text: String) {
+internal fun GridLabel(id: String, text: String) {
     val scrim = LocalGlassStyle.current.scrimAlpha
     Text(
         text = text,
