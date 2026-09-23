@@ -446,5 +446,6 @@ private val ConfigMutation.isSettingsBacked: Boolean
 
         is ConfigMutation.SetFavorites,
         is ConfigMutation.SetWallpaper,
+        is ConfigMutation.SetSearch,
         -> false
     }

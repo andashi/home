@@ -18,6 +18,7 @@ data class LauncherConfig(
     val icons: IconsConfig? = null,
     val appearance: AppearanceConfig? = null,
     val home: HomeConfig? = null,
+    val search: SearchConfig? = null,
 )
 
 @Serializable
@@ -300,4 +301,78 @@ data class GridItemConfig(
     companion object {
         const val Favorites = "favorites"
     }
+}
+
+/**
+ * `search` (#91): how search behaves. Every key is optional; a key that is
+ * left out stays unmanaged. The look of search is `appearance.glass`, its
+ * columns are `home.grid.columns` - this section is behavior only.
+ */
+@Serializable
+data class SearchConfig(
+    /** The favorites row at the top of search. */
+    val favorites: Boolean? = null,
+    /** All apps while the query is empty. */
+    val allApps: Boolean? = null,
+    val layout: SearchResultLayout? = null,
+    /** Labels under app icons in search. */
+    val labels: Boolean? = null,
+    /** Contacts in the results; without the permission a banner asks for it. */
+    val contacts: Boolean? = null,
+    /** App shortcuts in the results. */
+    val shortcuts: Boolean? = null,
+    /** The filter bar above the keyboard. */
+    val filterBar: Boolean? = null,
+    /** The keyboard opens with search. */
+    val openKeyboard: Boolean? = null,
+    /** Enter launches the best match. */
+    val launchOnEnter: Boolean? = null,
+    /** Results from the bottom up, the best match nearest a bottom search bar. */
+    val reversed: Boolean? = null,
+    /** A button in the search bar that shows hidden items. */
+    val hiddenItemsButton: Boolean? = null,
+)
+
+@Serializable(with = SearchResultLayoutSerializer::class)
+enum class SearchResultLayout {
+    @SerialName("grid")
+    Grid,
+
+    @SerialName("list")
+    List,
+}
+
+/** Decodes [SearchResultLayout] with an error that names the field, as [GlassContrastSerializer] does. */
+internal object SearchResultLayoutSerializer : KSerializer<SearchResultLayout> {
+    private const val Path = "search.layout"
+    private val names = SearchResultLayout.entries.associateBy { it.name.lowercase() }
+
+    override val descriptor: SerialDescriptor =
+        PrimitiveSerialDescriptor("de.mm20.launcher2.config.SearchResultLayout", PrimitiveKind.STRING)
+
+    override fun serialize(encoder: Encoder, value: SearchResultLayout) {
+        encoder.encodeString(value.name.lowercase())
+    }
+
+    override fun deserialize(decoder: Decoder): SearchResultLayout {
+        val name = decoder.decodeString()
+        return names[name] ?: throw SerializationException(
+            "'$name' is not a valid value for $Path (${names.keys.joinToString(", ")})"
+        )
+    }
+}
+
+/** The one place the search defaults live: today's behavior, so a file without `search` changes nothing. */
+object SearchDefaults {
+    const val Favorites = true
+    const val AllApps = true
+    val Layout = SearchResultLayout.Grid
+    const val Labels = true
+    const val Contacts = true
+    const val Shortcuts = true
+    const val FilterBar = true
+    const val OpenKeyboard = true
+    const val LaunchOnEnter = true
+    const val Reversed = false
+    const val HiddenItemsButton = false
 }

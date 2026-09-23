@@ -1,5 +1,8 @@
 package de.mm20.launcher2.preferences.config
 
+import de.mm20.launcher2.config.SearchState
+import de.mm20.launcher2.config.SearchResultLayout
+import de.mm20.launcher2.config.SearchConfig
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import de.mm20.launcher2.config.ConfigMutation
@@ -285,5 +288,57 @@ class LauncherConfigSettingsTest {
         val gateway = createGateway()
         val updated = gateway.applyAndReturn(listOf(ConfigMutation.SetIcons(themed = false)))
         assertEquals(false, updated.iconsThemed)
+    }
+
+    // ---- search (#91) ----
+
+    @Test
+    fun `readState maps upstream's search settings into the search section`() = runTest {
+        val gateway = createGateway(
+            LauncherSettingsData(
+                favoritesEnabled = false, searchAllApps = false, gridList = true, gridLabels = false,
+                contactSearchProviders = emptySet(), shortcutSearchEnabled = false, searchFilterBar = false,
+                searchBarKeyboard = false, searchLaunchOnEnter = false, searchResultsReversed = true,
+                hiddenItemsShowButton = true,
+            )
+        )
+
+        assertEquals(
+            SearchState(
+                favorites = false, allApps = false, layout = SearchResultLayout.List, labels = false,
+                contacts = false, shortcuts = false, filterBar = false, openKeyboard = false,
+                launchOnEnter = false, reversed = true, hiddenItemsButton = true,
+            ),
+            gateway.readState().search,
+        )
+    }
+
+    /** Control: fresh settings are today's behavior, the documented defaults. */
+    @Test
+    fun `fresh settings read back the search defaults`() = runTest {
+        assertEquals(SearchState(), createGateway().readState().search)
+    }
+
+    @Test
+    fun `apply SetSearch writes only the keys it carries`() = runTest {
+        val seed = LauncherSettingsData()
+        val gateway = createGateway(seed)
+
+        val updated = gateway.applyAndReturn(
+            listOf(ConfigMutation.SetSearch(SearchConfig(layout = SearchResultLayout.List, reversed = true)))
+        )
+
+        assertEquals(seed.copy(gridList = true, searchResultsReversed = true), updated)
+    }
+
+    @Test
+    fun `contacts switches the local provider and keeps any other`() = runTest {
+        val gateway = createGateway(LauncherSettingsData(contactSearchProviders = setOf("local", "other")))
+
+        val off = gateway.applyAndReturn(listOf(ConfigMutation.SetSearch(SearchConfig(contacts = false))))
+        assertEquals(setOf("other"), off.contactSearchProviders)
+
+        val on = gateway.applyAndReturn(listOf(ConfigMutation.SetSearch(SearchConfig(contacts = true))))
+        assertEquals(setOf("other", "local"), on.contactSearchProviders)
     }
 }

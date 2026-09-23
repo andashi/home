@@ -915,6 +915,7 @@ class ConfigParserTest {
                     ),
                 ),
             ),
+            search = SearchConfig(favorites = false),
         )
 
         val sections = ConfigDiffer.diff(everything, ConfigState()).map { it.section }.distinct()
@@ -931,5 +932,51 @@ class ConfigParserTest {
             emptyList<String>(),
             unclassified,
         )
+    }
+
+    // ---- search (#91) ----
+
+    private val everySearchKey = """
+        {
+          "schemaVersion": 2,
+          "search": {
+            "favorites": false, "allApps": false, "layout": "list", "labels": false,
+            "contacts": false, "shortcuts": false, "filterBar": false, "openKeyboard": false,
+            "launchOnEnter": false, "reversed": true, "hiddenItemsButton": true
+          }
+        }
+    """.trimIndent()
+
+    @Test
+    fun `every search key parses, all away from its default, with nothing to report`() {
+        val result = ConfigParser.parse(everySearchKey)
+
+        assertTrue(result.isSuccess)
+        assertEquals(emptyList<Diagnostic>(), result.diagnostics)
+        assertEquals(
+            SearchConfig(
+                favorites = false, allApps = false, layout = SearchResultLayout.List, labels = false,
+                contacts = false, shortcuts = false, filterBar = false, openKeyboard = false,
+                launchOnEnter = false, reversed = true, hiddenItemsButton = true,
+            ),
+            result.config?.search,
+        )
+    }
+
+    @Test
+    fun `a misspelled key inside search is reported at its path`() {
+        val result = ConfigParser.parse("""{ "schemaVersion": 2, "search": { "favourites": false } }""")
+
+        assertTrue(result.isSuccess)
+        assertEquals(listOf("search.favourites"), result.diagnostics.filter { it.code == "unknown-key" }.map { it.path })
+    }
+
+    /** Control: the enum's own serializer rejects it in both states. */
+    @Test
+    fun `an unknown search layout fails with the field in the message`() {
+        val result = ConfigParser.parse("""{ "schemaVersion": 2, "search": { "layout": "carousel" } }""")
+
+        assertTrue(!result.isSuccess)
+        assertTrue(result.diagnostics.any { it.code == "decode-failed" && it.message.contains("search.layout") })
     }
 }
