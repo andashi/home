@@ -61,4 +61,6 @@ dependencies {
     implementation(project(":core:crashreporter"))
     api(project(":data:customattrs"))
 
+    testImplementation(libs.junit)
+    testImplementation(libs.kotlinx.coroutines.test)
 }
