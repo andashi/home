@@ -11,13 +11,16 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.semantics.SemanticsPropertyKey
+import de.mm20.launcher2.config.GlassDefaults
 import de.mm20.launcher2.glass.Contrast
+import de.mm20.launcher2.glass.GlassLook
 import de.mm20.launcher2.glass.GlassInputs
 import de.mm20.launcher2.glass.GlassStyle
 import de.mm20.launcher2.glass.ResolvedGlass
@@ -26,7 +29,9 @@ import de.mm20.launcher2.glass.ResolvedGlass
 val LocalGlassStyle = staticCompositionLocalOf { DefaultStyle }
 
 /** `appearance.glass` at its defaults (ADR 0002, "Glass"). */
-internal val DefaultStyle = GlassStyle.resolve(GlassInputs(24f, 0.35f, 28f, Contrast.Medium))
+internal val DefaultStyle = GlassStyle.resolve(
+    GlassInputs(GlassDefaults.Blur, GlassDefaults.Tint, GlassDefaults.Radius, Contrast.Medium)
+)
 
 /** What a glass surface drew, for tests: the tint alpha, the corner radius, the scrim, pill or card. */
 data class GlassSurfaceInfo(
@@ -57,13 +62,13 @@ fun GlassSurface(
     val style = LocalGlassStyle.current
     val shape = if (pill) RoundedCornerShape(percent = 50) else RoundedCornerShape(style.radiusDp.dp)
     val tint = MaterialTheme.colorScheme.surface.copy(alpha = style.tint)
-    val info = GlassSurfaceInfo(style.tint, style.radiusDp, style.scrimAlpha, pill)
+    val info = GlassSurfaceInfo(style.tint, style.radiusDp, style.scrimAlpha, pill, lens = true, rim = true)
     Box(
         modifier = modifier
             .semantics { this[GlassSurfaceKey] = info }
             .clip(shape)
             // Drawn first: the blurred wallpaper under this surface.
-            .glassBackdrop()
+            .glassBackdrop(lens = true, cornerRadius = style.radiusDp.dp, pill = pill)
             .drawBehind {
                 drawRect(tint)
                 if (style.scrimAlpha > 0f) drawRect(Color.Black.copy(alpha = style.scrimAlpha))
@@ -79,8 +84,9 @@ fun GlassSurface(
                     size = Size(size.width, height),
                 )
             }
-            // The 1 dp inner highlight, following the shape.
-            .border(1.dp, Color.White.copy(alpha = HighlightAlpha), shape),
+            // The rim: light from the top-left, a weaker reflection at the
+            // bottom-right, faint along the sides (#82).
+            .border(GlassLook.RimWidthDp.dp, RimBrush, shape),
         propagateMinConstraints = true,
     ) {
         CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onSurface) {
@@ -91,4 +97,8 @@ fun GlassSurface(
 
 private val SpecularHeight = 24.dp
 private const val SpecularAlpha = 0.18f
-private const val HighlightAlpha = 0.16f
+private val RimBrush = Brush.linearGradient(
+    colorStops = GlassLook.RimStops.map { (at, alpha) -> at to Color.White.copy(alpha = alpha) }.toTypedArray(),
+    start = Offset.Zero,
+    end = Offset.Infinite,
+)

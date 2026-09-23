@@ -31,6 +31,7 @@ fun ConfigState.toLauncherConfig(): LauncherConfig {
                 tint = glassTint,
                 radius = glassRadius,
                 contrast = glassContrast,
+                wallpaperBlur = glassWallpaperBlur,
             ),
             // Only while a managed wallpaper is in effect; a generated config
             // without the key must compare equal to the read-back.

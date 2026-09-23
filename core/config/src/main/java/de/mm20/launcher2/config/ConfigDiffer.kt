@@ -116,8 +116,15 @@ object ConfigDiffer {
             val tint = glass.tint?.takeIf { it != current.glassTint }
             val radius = glass.radius?.takeIf { it != current.glassRadius }
             val contrast = glass.contrast?.takeIf { it != current.glassContrast }
-            if (blur != null || tint != null || radius != null || contrast != null) {
-                mutations += ConfigMutation.SetGlass(blur = blur, tint = tint, radius = radius, contrast = contrast)
+            val wallpaperBlur = glass.wallpaperBlur?.takeIf { it != current.glassWallpaperBlur }
+            if (blur != null || tint != null || radius != null || contrast != null || wallpaperBlur != null) {
+                mutations += ConfigMutation.SetGlass(
+                    blur = blur,
+                    tint = tint,
+                    radius = radius,
+                    contrast = contrast,
+                    wallpaperBlur = wallpaperBlur,
+                )
             }
         }
 

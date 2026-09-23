@@ -360,7 +360,7 @@ class UiSettings internal constructor(
      */
     val glass: Flow<GlassSettings>
         get() = launcherDataStore.data.map {
-            GlassSettings(it.glassBlur, it.glassTint, it.glassRadius, it.glassContrast)
+            GlassSettings(it.glassBlur, it.glassTint, it.glassRadius, it.glassContrast, it.glassWallpaperBlur)
         }.distinctUntilChanged()
 
     /** Whether the grid was given its first content (the default favorites row, or a config); see HomeGridDefaults. */

@@ -171,7 +171,7 @@ kover {
         }
         verify {
             rule("line coverage of app/ui launcher.grid") {
-                minBound(83)
+                minBound(84)
             }
         }
     }

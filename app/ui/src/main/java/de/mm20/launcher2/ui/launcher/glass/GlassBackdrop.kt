@@ -15,6 +15,8 @@ import androidx.compose.ui.composed
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.ShaderBrush
+import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
@@ -23,6 +25,8 @@ import androidx.compose.ui.semantics.SemanticsPropertyKey
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import de.mm20.launcher2.glass.BackdropCache
 import de.mm20.launcher2.glass.BackdropGeometry
@@ -31,11 +35,15 @@ import de.mm20.launcher2.glass.BackdropKey
 import de.mm20.launcher2.glass.BackdropPipeline
 import de.mm20.launcher2.glass.GlassBackdropSource
 import de.mm20.launcher2.glass.GlassInputs
+import de.mm20.launcher2.glass.GlassLook
 import de.mm20.launcher2.glass.GlassStyle
 import de.mm20.launcher2.glass.ResolvedGlass
 import de.mm20.launcher2.glass.PixelRect
 import de.mm20.launcher2.glass.RenderedBackdrop
 import de.mm20.launcher2.glass.WindowInputs
+import android.graphics.BitmapShader
+import android.graphics.RuntimeShader
+import android.graphics.Shader
 import android.util.Log
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
@@ -62,7 +70,7 @@ class GlassBackdropController(
     render: suspend (BackdropImage, BackdropKey) -> ImageBitmap?,
 ) {
     /** `appearance.glass.wallpaperBlur` (#82). */
-    val wallpaperBlur: StateFlow<Boolean> = MutableStateFlow(false)
+    val wallpaperBlur: StateFlow<Boolean> = wallpaperBlur.stateIn(scope, SharingStarted.Eagerly, true)
 
     private val window = MutableStateFlow<WindowInputs?>(null)
 
@@ -122,19 +130,28 @@ fun ProvideGlassBackdrop(controller: GlassBackdropController, content: @Composab
     }
     val backdrop by controller.backdrop.collectAsState()
     val style by controller.style.collectAsState()
+    val wallpaperBlur by controller.wallpaperBlur.collectAsState()
     CompositionLocalProvider(
         LocalGlassBackdrop provides backdrop,
         LocalGlassStyle provides style,
+        LocalGlassWallpaperBlur provides wallpaperBlur,
         content = content,
     )
 }
 
 /**
  * Draws the part of the backdrop that lies under this node, behind its
- * content, stretched from backdrop pixels to the node's size. Without a
- * backdrop it is a no-op, so a surface degrades to tint only.
+ * content, stretched from backdrop pixels to the node's size. With [lens],
+ * the region is drawn through the edge lens (#82) for a rounded rectangle of
+ * [cornerRadius], or a pill; where AGSL is not available (the JVM tests) the
+ * plain region is drawn. Without a backdrop it is a no-op, so a surface
+ * degrades to tint only.
  */
-fun Modifier.glassBackdrop(): Modifier = composed {
+fun Modifier.glassBackdrop(
+    lens: Boolean = false,
+    cornerRadius: Dp = 0.dp,
+    pill: Boolean = false,
+): Modifier = composed {
     val backdrop = LocalGlassBackdrop.current
     var bounds by remember { mutableStateOf<Rect?>(null) }
     val positioned = Modifier.onGloballyPositioned { bounds = it.boundsInWindow() }
@@ -146,14 +163,45 @@ fun Modifier.glassBackdrop(): Modifier = composed {
         backdrop.key.windowWidthPx, backdrop.key.windowHeightPx,
         box.left, box.top, box.right, box.bottom,
     )
+    val lensShader = if (lens) rememberLens() else null
+    val bitmapShader = remember(bitmap, lensShader) {
+        lensShader?.let {
+            BitmapShader(bitmap.asAndroidBitmap(), Shader.TileMode.CLAMP, Shader.TileMode.CLAMP)
+                .apply { filterMode = BitmapShader.FILTER_MODE_LINEAR }
+        }
+    }
     positioned
         .semantics { this[GlassBackdropRegion] = region }
         .drawBehind {
-            drawImage(
-                image = bitmap,
-                srcOffset = IntOffset(region.left, region.top),
-                srcSize = IntSize(region.width, region.height),
-                dstSize = IntSize(size.width.roundToInt(), size.height.roundToInt()),
-            )
+            if (lensShader != null && bitmapShader != null) {
+                val radius = if (pill) size.minDimension / 2f else cornerRadius.toPx()
+                GlassLens.configure(
+                    lensShader, bitmapShader,
+                    width = size.width, height = size.height, radius = radius,
+                    regionLeft = region.left.toFloat(), regionTop = region.top.toFloat(),
+                    regionWidth = region.width.toFloat(), regionHeight = region.height.toFloat(),
+                    strength = GlassLook.LensStrengthDp.dp.toPx(),
+                    band = GlassLook.LensBandDp.dp.toPx(),
+                )
+                drawRect(ShaderBrush(lensShader))
+            } else {
+                drawImage(
+                    image = bitmap,
+                    srcOffset = IntOffset(region.left, region.top),
+                    srcSize = IntSize(region.width, region.height),
+                    dstSize = IntSize(size.width.roundToInt(), size.height.roundToInt()),
+                )
+            }
         }
+}
+
+/** One compiled lens per surface; null where the platform cannot compile AGSL. */
+@Composable
+private fun rememberLens(): RuntimeShader? = remember {
+    try {
+        GlassLens.compile()
+    } catch (e: Throwable) {
+        Log.w("GlassBackdrop", "edge lens unavailable: ${e.javaClass.simpleName}")
+        null
+    }
 }

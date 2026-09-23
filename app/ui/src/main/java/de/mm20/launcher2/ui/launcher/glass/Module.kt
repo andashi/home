@@ -19,6 +19,7 @@ val glassModule = module {
                 GlassInputs(it.blur, it.tint, it.radius, it.contrast.toGlass())
             },
             scope = CoroutineScope(SupervisorJob() + Dispatchers.Default),
+            wallpaperBlur = get<UiSettings>().glass.map { it.wallpaperBlur },
             render = AndroidBackdropRenderer::render,
         )
     }

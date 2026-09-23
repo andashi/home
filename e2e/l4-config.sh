@@ -256,7 +256,7 @@ cat > "$VALID_CONFIG" <<'EOF'
   },
   "appearance": {
     // Not the defaults, so applying it is a real change.
-    "glass": { "blur": 16, "tint": 0.5, "radius": 20, "contrast": "high" },
+    "glass": { "blur": 16, "tint": 0.5, "radius": 20, "contrast": "high", "wallpaperBlur": false },
   },
   "home": {
     "searchBar": { "position": "bottom" },
@@ -289,7 +289,7 @@ cat > "$UNKNOWN_KEYS_CONFIG" <<'EOF'
   },
   "appearance": {
     // Not the defaults, so applying it is a real change.
-    "glass": { "blur": 16, "tint": 0.5, "radius": 20, "contrast": "high" },
+    "glass": { "blur": 16, "tint": 0.5, "radius": 20, "contrast": "high", "wallpaperBlur": false },
   },
   "home": {
     "searchBar": { "position": "bottom" },
@@ -321,7 +321,7 @@ cat > "$CHANGED_CONFIG" <<'EOF'
     "enforceThemed": false,
   },
   "appearance": {
-    "glass": { "blur": 32, "tint": 0.2, "radius": 12, "contrast": "low" },
+    "glass": { "blur": 32, "tint": 0.2, "radius": 12, "contrast": "low", "wallpaperBlur": true },
   },
   "home": {
     "searchBar": { "position": "top" },
@@ -352,7 +352,7 @@ cat > "$WALLPAPER_CONFIG" <<'EOF'
   "schemaVersion": 2,
   "icons": { "themed": true, "enforceThemed": true },
   "appearance": {
-    "glass": { "blur": 16, "tint": 0.5, "radius": 20, "contrast": "high" },
+    "glass": { "blur": 16, "tint": 0.5, "radius": 20, "contrast": "high", "wallpaperBlur": false },
     "wallpaper": { "image": "l4.png", "target": "both" },
   },
   "home": {
@@ -407,7 +407,7 @@ EFFECTIVE_FILTER='
   .schemaVersion == 2
   and .icons.themed == true
   and .icons.enforceThemed == true
-  and .appearance.glass == {"blur":16.0,"tint":0.5,"radius":20.0,"contrast":"high"}
+  and .appearance.glass == {"blur":16.0,"tint":0.5,"radius":20.0,"contrast":"high","wallpaperBlur":false}
   and (.appearance | has("transparency") | not)
   and .home.searchBar.position == "bottom"
   and .home.favorites == []
@@ -422,7 +422,7 @@ CHANGED_FILTER='
   .schemaVersion == 2
   and .icons.themed == false
   and .icons.enforceThemed == false
-  and .appearance.glass == {"blur":32.0,"tint":0.2,"radius":12.0,"contrast":"low"}
+  and .appearance.glass == {"blur":32.0,"tint":0.2,"radius":12.0,"contrast":"low","wallpaperBlur":true}
   and .home.searchBar.position == "top"
   and .home.favorites == []
   and .home.widgets.enabled == false
@@ -611,7 +611,7 @@ assert_jq "$LAST_REPORT" \
   '[.diagnostics[] | select(.code == "inert-key" and .path == "appearance.transparency")] | length == 1' \
   "a file that still carries transparency gets exactly one inert-key diagnostic"
 assert_jq "$effective" \
-  '.appearance.glass == {"blur":16.0,"tint":0.5,"radius":20.0,"contrast":"high"} and (.appearance | has("transparency") | not)' \
+  '.appearance.glass == {"blur":16.0,"tint":0.5,"radius":20.0,"contrast":"high","wallpaperBlur":false} and (.appearance | has("transparency") | not)' \
   "transparency has no effect: glass unchanged, transparency not served"
 ok "transparency: reported inert, no effect, not served back"
 

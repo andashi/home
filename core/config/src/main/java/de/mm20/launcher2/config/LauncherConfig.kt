@@ -96,7 +96,8 @@ internal object GlassContrastSerializer : KSerializer<GlassContrast> {
 /** The one place the glass defaults live; state, settings and read-back use it. */
 object GlassDefaults {
     const val Blur = 24f
-    const val Tint = 0.35f
+    /** Lowered from 0.35 when the frosted look became liquid (#82). */
+    const val Tint = 0.12f
     const val Radius = 28f
     val Contrast = GlassContrast.Medium
     const val WallpaperBlur = true
