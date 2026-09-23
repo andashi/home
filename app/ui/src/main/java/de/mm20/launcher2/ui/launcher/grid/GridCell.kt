@@ -34,6 +34,8 @@ import de.mm20.launcher2.homegrid.HomeGridItem
 import de.mm20.launcher2.ui.R
 import de.mm20.launcher2.ui.component.Banner
 import de.mm20.launcher2.ui.component.LauncherCard
+import de.mm20.launcher2.ui.launcher.glass.GlassBackdropHook
+import de.mm20.launcher2.ui.launcher.glass.glassBackdrop
 import de.mm20.launcher2.ui.launcher.sheets.WidgetPickerSheet
 import de.mm20.launcher2.ui.launcher.widgets.external.AppWidgetHost
 import de.mm20.launcher2.ui.locals.LocalDarkTheme
@@ -110,8 +112,12 @@ internal fun GridCard(
         if (transparent) 0f else MaterialTheme.transparency.surface,
         label = "gridCellBackgroundOpacity",
     )
+    val context = LocalContext.current
+    val backdropHook = remember { GlassBackdropHook.enabled(context) }
     LauncherCard(
-        modifier = modifier.fillMaxSize(),
+        modifier = modifier
+            .fillMaxSize()
+            .then(if (backdropHook) Modifier.glassBackdrop() else Modifier),
         backgroundOpacity = backgroundOpacity,
         content = content,
     )

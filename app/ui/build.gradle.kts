@@ -129,6 +129,7 @@ dependencies {
     implementation(project(":data:homegrid"))
     implementation(project(":core:grid"))
     implementation(project(":core:glass"))
+    implementation(project(":core:config"))
     implementation(project(":data:searchable"))
     implementation(project(":data:themes"))
     implementation(project(":services:badges"))

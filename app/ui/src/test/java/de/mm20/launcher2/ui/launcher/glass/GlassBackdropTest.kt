@@ -31,12 +31,14 @@ import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.robolectric.annotation.GraphicsMode
 
 /**
  * The assertion behind ADR 0004's sentence, in the composition: the blur runs
  * once for N recompositions and M surfaces.
  */
 @RunWith(AndroidJUnit4::class)
+@GraphicsMode(GraphicsMode.Mode.NATIVE)
 class GlassBackdropTest {
 
     @get:Rule

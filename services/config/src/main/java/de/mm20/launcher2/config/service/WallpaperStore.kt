@@ -155,7 +155,25 @@ class DefaultWallpaperStore(
     override val image: StateFlow<BackdropImage?> = backdrop.asStateFlow()
 
     override suspend fun refresh() {
-        TODO()
+        withContext(Dispatchers.IO) { mutex.withLock { publishBackdrop() } }
+    }
+
+    /** Called with [mutex] held, after every write of the record and on [refresh]. */
+    private fun publishBackdrop() {
+        backdrop.value = readBackdrop()
+    }
+
+    private fun readBackdrop(): BackdropImage? {
+        val applied = readApplied() ?: return null
+        if (applied.pending || applied.target == WallpaperTarget.Lock) return null
+        val file = ConfigLocation.wallpaperFile(appContext, applied.image) ?: return null
+        if (!file.isFile || file.readBytes().sha256Hex() != applied.sha256) return null
+        val ids = try {
+            applier.currentIds()
+        } catch (e: Exception) {
+            return null
+        }
+        return if (applied.holds(ids)) BackdropImage(file.absolutePath, applied.sha256) else null
     }
     private val stateFile = File(appContext.filesDir, "config/wallpaper-state.json")
 
@@ -199,7 +217,9 @@ class DefaultWallpaperStore(
     }
 
     override suspend fun apply(image: String, target: WallpaperTarget): List<Diagnostic> =
-        withContext(Dispatchers.IO) { mutex.withLock { applyLocked(image, target) } }
+        withContext(Dispatchers.IO) {
+            mutex.withLock { applyLocked(image, target).also { publishBackdrop() } }
+        }
 
     private fun applyLocked(image: String, target: WallpaperTarget): List<Diagnostic> {
         run {
@@ -335,6 +355,7 @@ class DefaultWallpaperStore(
             val reapplied = applied.copy(systemId = ids.system, lockId = ids.lock, pending = false)
             writeApplied(reapplied)
             lastReapply = reapplied to elapsedRealtime()
+            publishBackdrop()
             true
         }
     }

@@ -35,7 +35,7 @@ kover {
     reports {
         verify {
             rule("line coverage of :core:glass") {
-                minBound(90)
+                minBound(100)
             }
         }
     }

@@ -50,6 +50,8 @@ import de.mm20.launcher2.ui.launcher.scaffold.ScaffoldAnimation
 import de.mm20.launcher2.ui.launcher.scaffold.ScaffoldConfiguration
 import de.mm20.launcher2.ui.launcher.scaffold.ScaffoldGesture
 import de.mm20.launcher2.ui.launcher.scaffold.SearchBarPosition
+import de.mm20.launcher2.ui.launcher.glass.ProvideGlassBackdrop
+import org.koin.compose.koinInject
 import de.mm20.launcher2.ui.launcher.grid.HomeGridComponent
 import de.mm20.launcher2.ui.launcher.scaffold.components.DismissComponent
 import de.mm20.launcher2.ui.launcher.scaffold.components.FeedComponent
@@ -381,18 +383,20 @@ abstract class SharedLauncherActivity(
                                 }
                             }
 
-                            LauncherScaffold(
-                                config = config,
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .graphicsLayer {
-                                        scaleX =
-                                            0.5f + enterTransitionProgress.value * 0.005f
-                                        scaleY =
-                                            0.5f + enterTransitionProgress.value * 0.005f
-                                        alpha = enterTransitionProgress.value * 0.01f
-                                    }
-                            )
+                            ProvideGlassBackdrop(koinInject()) {
+                                LauncherScaffold(
+                                    config = config,
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .graphicsLayer {
+                                            scaleX =
+                                                0.5f + enterTransitionProgress.value * 0.005f
+                                            scaleY =
+                                                0.5f + enterTransitionProgress.value * 0.005f
+                                            alpha = enterTransitionProgress.value * 0.01f
+                                        }
+                                )
+                            }
 
                             SnackbarHost(
                                 snackbarHostState,

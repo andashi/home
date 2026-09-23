@@ -355,7 +355,9 @@ class UiSettings internal constructor(
      * settings screen writes it. Emits again only when a value changes.
      */
     val glass: Flow<GlassSettings>
-        get() = TODO()
+        get() = launcherDataStore.data.map {
+            GlassSettings(it.glassBlur, it.glassTint, it.glassRadius, it.glassContrast)
+        }.distinctUntilChanged()
 
     /** Whether the grid was given its first content (the default favorites row, or a config); see HomeGridDefaults. */
     val homeGridInitialized

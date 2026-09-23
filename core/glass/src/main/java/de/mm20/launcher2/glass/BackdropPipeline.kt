@@ -1,6 +1,10 @@
 package de.mm20.launcher2.glass
 
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.mapLatest
 
 /** A blurred backdrop and what it was made for. */
 data class RenderedBackdrop<B : Any>(val key: BackdropKey, val bitmap: B)
@@ -18,5 +22,16 @@ class BackdropPipeline<B : Any>(
     private val cache: BackdropCache<B> = BackdropCache(),
     private val render: suspend (BackdropImage, BackdropKey) -> B?,
 ) {
-    val backdrop: Flow<RenderedBackdrop<B>?> = TODO()
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val backdrop: Flow<RenderedBackdrop<B>?> =
+        combine(image, glass, window) { image, glass, window ->
+            if (image == null || window == null) null
+            else image to BackdropGeometry.key(image, window, glass)
+        }
+            .distinctUntilChanged()
+            .mapLatest { target ->
+                target?.let { (image, key) ->
+                    cache.get(key) { render(image, key) }?.let { RenderedBackdrop(key, it) }
+                }
+            }
 }

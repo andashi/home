@@ -81,8 +81,8 @@ class BackdropPipelineTest {
         collect()
         assertNull(latest)
 
-        image.value = BackdropImage("/w/zone.jpg", "sha1")
         window.value = null
+        image.value = BackdropImage("/w/zone.jpg", "sha1")
         assertNull(latest)
         assertEquals(0, rendered.size)
     }

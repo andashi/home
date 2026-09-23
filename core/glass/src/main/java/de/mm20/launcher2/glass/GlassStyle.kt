@@ -25,5 +25,21 @@ data class ResolvedGlass(
  * scale, not a theme. The goldens pin these numbers.
  */
 object GlassStyle {
-    fun resolve(inputs: GlassInputs): ResolvedGlass = TODO()
+    private class Scale(val blur: Float, val tint: Float, val scrim: Float)
+
+    private val scales = mapOf(
+        Contrast.Low to Scale(blur = 0.75f, tint = -0.10f, scrim = 0f),
+        Contrast.Medium to Scale(blur = 1f, tint = 0f, scrim = 0f),
+        Contrast.High to Scale(blur = 1.25f, tint = 0.15f, scrim = 0.12f),
+    )
+
+    fun resolve(inputs: GlassInputs): ResolvedGlass {
+        val scale = scales.getValue(inputs.contrast)
+        return ResolvedGlass(
+            blurDp = inputs.blurDp * scale.blur,
+            tint = (inputs.tint + scale.tint).coerceIn(0f, 1f),
+            radiusDp = inputs.radiusDp,
+            scrimAlpha = scale.scrim,
+        )
+    }
 }
