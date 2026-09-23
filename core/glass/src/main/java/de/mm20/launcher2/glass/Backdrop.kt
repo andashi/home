@@ -125,7 +125,7 @@ object BackdropGeometry {
             for (tx in 0 until width) {
                 val x0 = crop.left + tx * crop.width / width
                 val x1 = maxOf(x0 + 1, crop.left + (tx + 1) * crop.width / width)
-                var a = 0L; var r = 0L; var g = 0L; var b = 0L
+                var a = 0; var r = 0; var g = 0; var b = 0
                 for (y in y0 until y1) {
                     val row = y * image.width
                     for (x in x0 until x1) {
@@ -133,19 +133,14 @@ object BackdropGeometry {
                         a += p ushr 24; r += p shr 16 and 0xFF; g += p shr 8 and 0xFF; b += p and 0xFF
                     }
                 }
-                val n = (y1 - y0).toLong() * (x1 - x0)
-                out[ty * width + tx] = pack(a, r, g, b, n)
+                val n = (y1 - y0) * (x1 - x0)
+                val half = n / 2
+                out[ty * width + tx] = (((a + half) / n) shl 24) or (((r + half) / n) shl 16) or
+                        (((g + half) / n) shl 8) or ((b + half) / n)
             }
         }
         return Pixels(width, height, out)
     }
-}
-
-/** Mean of summed channels over [n] samples, rounded, as one ARGB int. */
-internal fun pack(a: Long, r: Long, g: Long, b: Long, n: Long): Int {
-    val half = n / 2
-    return (((a + half) / n).toInt() shl 24) or (((r + half) / n).toInt() shl 16) or
-            (((g + half) / n).toInt() shl 8) or ((b + half) / n).toInt()
 }
 
 /** A separable box blur, three passes, which approximates a Gaussian. */
@@ -154,39 +149,60 @@ object BoxBlur {
 
     fun blur(pixels: Pixels, radius: Int): Pixels {
         if (radius <= 0) return pixels
+        val width = pixels.width
+        val height = pixels.height
+        val n = 2 * radius + 1
+        // Rounded division by n for every possible channel sum: the hot loop
+        // then has no division at all. On the device this runs in a debuggable
+        // build too, where the loop is interpreted and a division per channel
+        // per sample was most of the cost (measured, #74).
+        val divide = IntArray(256 * n) { (it + n / 2) / n }
+        val rowIndex = clampedIndices(width, radius)
+        val columnIndex = clampedIndices(height, radius)
         var current = pixels.argb.copyOf()
-        var scratch = IntArray(current.size)
+        val scratch = IntArray(current.size)
         repeat(Passes) {
-            pass(current, scratch, pixels.width, pixels.height, radius, horizontal = true)
-            pass(scratch, current, pixels.width, pixels.height, radius, horizontal = false)
+            pass(current, scratch, lines = height, length = width, lineStep = width, step = 1, rowIndex, radius, divide)
+            pass(scratch, current, lines = width, length = height, lineStep = 1, step = width, columnIndex, radius, divide)
         }
-        return Pixels(pixels.width, pixels.height, current)
+        return Pixels(width, height, current)
     }
 
     /**
-     * One box pass along rows or columns, as a sliding sum over 2r+1
-     * samples; indices outside the image clamp to the edge, so a uniform
-     * image stays uniform and a radius larger than the image is harmless.
+     * For position i in -radius..length+radius (stored at i + radius) the
+     * index it reads, clamped to the edge: a uniform image stays uniform and a
+     * radius larger than the image is harmless.
      */
-    private fun pass(src: IntArray, dst: IntArray, width: Int, height: Int, radius: Int, horizontal: Boolean) {
-        val lines = if (horizontal) height else width
-        val length = if (horizontal) width else height
-        val n = (2L * radius + 1)
+    private fun clampedIndices(length: Int, radius: Int) =
+        IntArray(length + 2 * radius + 1) { (it - radius).coerceIn(0, length - 1) }
+
+    /** One box pass along rows (step 1) or columns (step = width), as a sliding sum. */
+    private fun pass(
+        src: IntArray,
+        dst: IntArray,
+        lines: Int,
+        length: Int,
+        lineStep: Int,
+        step: Int,
+        index: IntArray,
+        radius: Int,
+        divide: IntArray,
+    ) {
+        val window = 2 * radius + 1
         for (line in 0 until lines) {
-            fun at(i: Int): Int {
-                val c = i.coerceIn(0, length - 1)
-                return if (horizontal) src[line * width + c] else src[c * width + line]
-            }
-            var a = 0L; var r = 0L; var g = 0L; var b = 0L
-            for (i in -radius..radius) {
-                val p = at(i)
+            val base = line * lineStep
+            var a = 0
+            var r = 0
+            var g = 0
+            var b = 0
+            for (k in 0 until window) {
+                val p = src[base + index[k] * step]
                 a += p ushr 24; r += p shr 16 and 0xFF; g += p shr 8 and 0xFF; b += p and 0xFF
             }
             for (i in 0 until length) {
-                val index = if (horizontal) line * width + i else i * width + line
-                dst[index] = pack(a, r, g, b, n)
-                val add = at(i + radius + 1)
-                val sub = at(i - radius)
+                dst[base + i * step] = (divide[a] shl 24) or (divide[r] shl 16) or (divide[g] shl 8) or divide[b]
+                val add = src[base + index[i + window] * step]
+                val sub = src[base + index[i] * step]
                 a += (add ushr 24) - (sub ushr 24)
                 r += (add shr 16 and 0xFF) - (sub shr 16 and 0xFF)
                 g += (add shr 8 and 0xFF) - (sub shr 8 and 0xFF)
