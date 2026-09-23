@@ -20,12 +20,7 @@ class ConfigParserTest {
             "pack": "app.lawnchair.lawnicons"
           },
           "appearance": {
-            "transparency": {
-              "name": "liquid-glass",
-              "background": 0.31,
-              "surface": 0.31,
-              "elevatedSurface": 0.31
-            },
+            "glass": { "blur": 20, "tint": 0.4, "radius": 24, "contrast": "high" },
             "wallpaper": { "image": "home.jpg", "target": "lock" }
           },
           "home": {
@@ -39,6 +34,7 @@ class ConfigParserTest {
             "grid": {
               "columns": 4,
               "locked": false,
+              "labels": false,
               "layouts": {
                 "phone": {
                   "items": [
@@ -60,14 +56,19 @@ class ConfigParserTest {
         val result = ConfigParser.parse(fullConfig)
 
         assertTrue(result.isSuccess)
-        assertEquals(emptyList<Diagnostic>(), result.diagnostics)
+        // Nothing renders glass or labels yet (#73), so the only diagnostics
+        // are the two inert-key warnings that say so.
+        assertEquals(
+            listOf("appearance.glass", "home.grid.labels"),
+            result.diagnostics.map { it.path },
+        )
+        assertTrue(result.diagnostics.all { it.code == "inert-key" })
         val config = result.config!!
         assertEquals(2, config.schemaVersion)
         assertEquals(true, config.icons?.themed)
         assertEquals(true, config.icons?.enforceThemed)
         assertEquals("app.lawnchair.lawnicons", config.icons?.pack)
-        assertEquals("liquid-glass", config.appearance?.transparency?.name)
-        assertEquals(0.31f, config.appearance?.transparency?.background)
+        assertEquals(GlassConfig(20f, 0.4f, 24f, GlassContrast.High), config.appearance?.glass)
         assertEquals(WallpaperConfig("home.jpg", WallpaperTarget.Lock), config.appearance?.wallpaper)
         assertEquals(SearchBarPosition.Bottom, config.home?.searchBar?.position)
         assertEquals(
@@ -82,6 +83,7 @@ class ConfigParserTest {
         val grid = config.home?.grid!!
         assertEquals(4, grid.columns)
         assertEquals(false, grid.locked)
+        assertEquals(false, grid.labels)
         assertEquals(setOf("phone", "fold"), grid.layouts?.keys)
         assertEquals(
             listOf(
@@ -291,33 +293,108 @@ class ConfigParserTest {
         assertTrue(ok.diagnostics.none { it.code == "invalid-wallpaper-image" })
     }
 
+    // ---- appearance.glass (#73) ----
+
+    private fun glass(body: String) = ConfigParser.parse(
+        """{ "schemaVersion": 2, "appearance": { "glass": { $body } } }"""
+    )
+
     @Test
-    fun `invalid transparency values are reported`() {
-        val input = """
+    fun `all four glass keys parse`() {
+        val result = glass(""""blur": 0, "tint": 1, "radius": 64, "contrast": "low"""")
+
+        assertTrue(result.isSuccess)
+        assertEquals(GlassConfig(0f, 1f, 64f, GlassContrast.Low), result.config?.appearance?.glass)
+    }
+
+    @Test
+    fun `a glass key that is left out stays unmanaged`() {
+        val result = glass(""""tint": 0.2""")
+
+        assertEquals(GlassConfig(tint = 0.2f), result.config?.appearance?.glass)
+    }
+
+    @Test
+    fun `a float blur or radius parses, so a generator writing 24_0 does not lose the zone`() {
+        val result = glass(""""blur": 24.0, "radius": 27.5""")
+
+        assertTrue(result.isSuccess)
+        assertEquals(24f, result.config?.appearance?.glass?.blur)
+        assertEquals(27.5f, result.config?.appearance?.glass?.radius)
+    }
+
+    @Test
+    fun `out of range glass values are rejected with the field in the path`() {
+        val cases = mapOf(
+            """"tint": 1.2""" to "appearance.glass.tint",
+            """"tint": -0.1""" to "appearance.glass.tint",
+            """"blur": -1""" to "appearance.glass.blur",
+            """"blur": 65""" to "appearance.glass.blur",
+            """"radius": -1""" to "appearance.glass.radius",
+            """"radius": 65""" to "appearance.glass.radius",
+        )
+        for ((body, path) in cases) {
+            val result = glass(body)
+            val invalid = result.diagnostics.filter { it.code == "invalid-glass" }
+            assertEquals(body, listOf(path), invalid.map { it.path })
+            assertEquals(body, Severity.Error, invalid.single().severity)
+            assertTrue(body, invalid.single().message.contains(path.substringAfterLast('.')))
+            assertFalse(body, result.isSuccess)
+        }
+    }
+
+    @Test
+    fun `NaN glass values are rejected`() {
+        // JSON cannot spell NaN, so this guards the validator itself.
+        val config = LauncherConfig(
+            schemaVersion = 2,
+            appearance = AppearanceConfig(glass = GlassConfig(blur = Float.NaN, tint = Float.NaN, radius = Float.NaN)),
+        )
+
+        assertEquals(
+            listOf("appearance.glass.blur", "appearance.glass.tint", "appearance.glass.radius"),
+            ConfigValidator.validate(config).filter { it.code == "invalid-glass" }.map { it.path },
+        )
+    }
+
+    @Test
+    fun `an unknown contrast is rejected and the message names the field`() {
+        val result = glass(""""contrast": "extreme"""")
+
+        assertNull(result.config)
+        val failure = result.diagnostics.single { it.code == "decode-failed" }
+        assertTrue(failure.message, failure.message.contains("appearance.glass.contrast"))
+    }
+
+    @Test
+    fun `a misspelled key inside glass is an unknown key`() {
+        val result = glass(""""blurr": 10""")
+
+        assertEquals(
+            listOf("unknown-key"),
+            result.diagnostics.filter { it.path == "appearance.glass.blurr" }.map { it.code },
+        )
+    }
+
+    @Test
+    fun `transparency is reported once as inert and the file still applies`() {
+        val result = ConfigParser.parse(
+            """
             {
-              "schemaVersion": 1,
+              "schemaVersion": 2,
               "appearance": {
-                "transparency": {
-                  "background": 1.5,
-                  "surface": -0.1,
-                  "elevatedSurface": 0.5
-                }
+                "transparency": { "name": "liquid-glass", "background": 0.31, "surface": 7, "typo": 1 }
               }
             }
-        """.trimIndent()
-
-        val result = ConfigParser.parse(input)
-
-        assertNotNull(result.config)
-        val invalid = result.diagnostics.filter { it.code == "invalid-transparency" }
-        assertEquals(2, invalid.size)
-        assertEquals(
-            setOf(
-                "appearance.transparency.background",
-                "appearance.transparency.surface",
-            ),
-            invalid.map { it.path }.toSet(),
+            """.trimIndent()
         )
+
+        assertTrue(result.isSuccess)
+        // One diagnostic for the section: its sub-keys, even a bad value or a
+        // typo, no longer mean anything, so they are not validated either.
+        assertEquals(listOf("inert-key"), result.diagnostics.map { it.code })
+        assertEquals("appearance.transparency", result.diagnostics.single().path)
+        assertTrue(result.diagnostics.single().message.contains("appearance.glass"))
     }
 
     @Test
@@ -371,25 +448,6 @@ class ConfigParserTest {
         val duplicates = result.diagnostics.filter { it.code == "duplicate-favorite" }
         assertEquals(1, duplicates.size)
         assertEquals("home.favorites[2]", duplicates.single().path)
-    }
-
-    @Test
-    fun `blank and oversized names are reported`() {
-        val input = """
-            {
-              "schemaVersion": 1,
-              "appearance": { "transparency": { "name": "   " } }
-            }
-        """.trimIndent()
-
-        val blank = ConfigParser.parse(input)
-        assertTrue(blank.diagnostics.any { it.code == "invalid-name" && it.path == "appearance.transparency.name" })
-
-        val longName = "n".repeat(ConfigValidator.MaxNameLength + 1)
-        val oversized = ConfigParser.parse(
-            """{ "schemaVersion": 1, "appearance": { "transparency": { "name": "$longName" } } }"""
-        )
-        assertTrue(oversized.diagnostics.any { it.code == "invalid-name" })
     }
 
     @Test
@@ -798,13 +856,22 @@ class ConfigParserTest {
         assertEquals(listOf("unknown-key"), codes)
     }
 
+    /**
+     * The glass keys are stored and served back but not rendered until #75,
+     * and `transparency` left the contract (#73). Each switch back to
+     * [KeyEffect.Applied] happens in the PR that makes it true and updates
+     * this list; a key that becomes inert by accident fails here.
+     */
     @Test
-    fun `the current contract has no inert key`() {
+    fun `the inert keys of the current contract are the unrendered glass keys and transparency`() {
         val inert = ConfigParser.keyEffects.flatMap { (path, keys) ->
             keys.filter { it.value is KeyEffect.Inert }.map { "$path.${it.key}" }
         }
 
-        assertEquals(emptyList<String>(), inert)
+        assertEquals(
+            setOf("appearance.transparency", "appearance.glass", "home.grid.labels"),
+            inert.toSet(),
+        )
     }
 
     /**
@@ -819,12 +886,7 @@ class ConfigParserTest {
             schemaVersion = 2,
             icons = IconsConfig(themed = true, enforceThemed = true, pack = "com.example.pack"),
             appearance = AppearanceConfig(
-                transparency = TransparencyConfig(
-                    name = "glass",
-                    background = 0.5f,
-                    surface = 0.5f,
-                    elevatedSurface = 0.5f,
-                ),
+                glass = GlassConfig(blur = 10f, tint = 0.5f, radius = 12f, contrast = GlassContrast.High),
                 wallpaper = WallpaperConfig(image = "w.jpg", target = WallpaperTarget.Both),
             ),
             home = HomeConfig(
@@ -834,6 +896,7 @@ class ConfigParserTest {
                 grid = GridConfig(
                     columns = 5,
                     locked = true,
+                    labels = false,
                     layouts = mapOf(
                         "phone" to GridLayoutConfig(
                             listOf(GridItemConfig(id = "dock", widget = "favorites", x = 0, y = 5, w = 4, h = 1)),

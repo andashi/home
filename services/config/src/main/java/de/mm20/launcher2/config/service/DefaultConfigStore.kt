@@ -519,5 +519,6 @@ private val ConfigMutation.isSettingsBacked: Boolean
         is ConfigMutation.SetTransparency,
         is ConfigMutation.SetFavorites,
         is ConfigMutation.SetWallpaper,
+        is ConfigMutation.SetGlass,
         -> false
     }

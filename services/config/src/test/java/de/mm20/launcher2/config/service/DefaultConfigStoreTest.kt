@@ -11,6 +11,7 @@ import androidx.test.core.app.ApplicationProvider
 import de.mm20.launcher2.applications.AppRepository
 import de.mm20.launcher2.config.WallpaperTarget
 import de.mm20.launcher2.config.ConfigMutation
+import de.mm20.launcher2.config.GlassContrast
 import de.mm20.launcher2.config.GridItemConfig
 import de.mm20.launcher2.config.GridLayoutConfig
 import de.mm20.launcher2.grid.CellSize
@@ -135,17 +136,17 @@ class DefaultConfigStoreTest {
     // ----- readState -----
 
     @Test
-    fun `readState combines settings transparency grid layouts and favorites`() = runTest {
-        val theme = Transparencies(
-            id = UUID.randomUUID(),
-            name = "glass",
-            background = 0.5f,
-            surface = 0.6f,
-            elevatedSurface = 0.7f,
+    fun `readState combines settings glass grid layouts and favorites`() = runTest {
+        settings.state = ConfigState(
+            themedIcons = true,
+            gridColumns = 5,
+            gridLocked = true,
+            gridLabels = false,
+            glassBlur = 12f,
+            glassTint = 0.6f,
+            glassRadius = 20f,
+            glassContrast = GlassContrast.High,
         )
-        transparenciesRepository.upsert(theme)
-        settings.state = ConfigState(themedIcons = true, gridColumns = 5, gridLocked = true)
-        settings.transparenciesId = theme.id
         homeGridRepository.layouts["phone"] = listOf(
             HomeGridItem(layout = "phone", id = "dock", widget = "favorites", x = 0, y = 5, w = 4, h = 1, position = 0),
             HomeGridItem(
@@ -164,10 +165,11 @@ class DefaultConfigStoreTest {
         assertTrue(state.themedIcons)
         assertEquals(5, state.gridColumns)
         assertEquals(true, state.gridLocked)
-        assertEquals("glass", state.transparencyName)
-        assertEquals(0.5f, state.transparencyBackground)
-        assertEquals(0.6f, state.transparencySurface)
-        assertEquals(0.7f, state.transparencyElevatedSurface)
+        assertEquals(false, state.gridLabels)
+        assertEquals(12f, state.glassBlur)
+        assertEquals(0.6f, state.glassTint)
+        assertEquals(20f, state.glassRadius)
+        assertEquals(GlassContrast.High, state.glassContrast)
         assertEquals(
             listOf(
                 Favorite("com.example.a", ConfigProfile.Personal),
@@ -204,98 +206,6 @@ class DefaultConfigStoreTest {
         val state = store.readState()
 
         assertEquals(emptyList<Favorite>(), state.favorites)
-    }
-
-    // ----- transparency -----
-
-    @Test
-    fun `SetTransparency creates a new scheme and selects it`() = runTest {
-        val diagnostics = store.apply(
-            listOf(ConfigMutation.SetTransparency(name = "glass", background = 0.5f))
-        )
-
-        assertEquals(emptyList<Diagnostic>(), diagnostics)
-        val theme = transparenciesRepository.findByName("glass")
-        assertEquals(0.5f, theme!!.background)
-        assertNull(theme.surface)
-        assertEquals(theme.id, settings.transparenciesId)
-    }
-
-    @Test
-    fun `SetTransparency without a name derives from the default when the selected scheme is gone`() = runTest {
-        settings.transparenciesId = UUID.randomUUID() // deleted user scheme
-
-        val diagnostics = store.apply(
-            listOf(ConfigMutation.SetTransparency(background = 0.5f))
-        )
-
-        assertEquals(emptyList<Diagnostic>(), diagnostics)
-        val selected = transparenciesRepository.getOnce(settings.transparenciesId)
-        assertEquals(0.5f, selected!!.background)
-        assertEquals(false, selected.builtIn)
-    }
-
-    @Test
-    fun `SetTransparency preserves unspecified values and stays idempotent`() = runTest {
-        store.apply(
-            listOf(
-                ConfigMutation.SetTransparency(
-                    name = "glass",
-                    background = 0.5f,
-                    surface = 0.6f,
-                    elevatedSurface = 0.7f,
-                )
-            )
-        )
-        val created = transparenciesRepository.findByName("glass")!!
-
-        store.apply(listOf(ConfigMutation.SetTransparency(name = "glass", background = 0.2f)))
-
-        val updated = transparenciesRepository.findByName("glass")!!
-        assertEquals(created.id, updated.id)
-        assertEquals(0.2f, updated.background)
-        assertEquals(0.6f, updated.surface)
-        assertEquals(0.7f, updated.elevatedSurface)
-        assertEquals(1, database.themeDao().getAllTransparencies().first().size)
-        assertEquals(updated.id, settings.transparenciesId)
-    }
-
-    @Test
-    fun `SetTransparency selects a built-in scheme without creating a row`() = runTest {
-        val defaultName = context.getString(R.string.preference_transparencies_default)
-
-        store.apply(listOf(ConfigMutation.SetTransparency(name = defaultName)))
-
-        assertEquals(DefaultThemeId, settings.transparenciesId)
-        assertTrue(database.themeDao().getAllTransparencies().first().isEmpty())
-    }
-
-    @Test
-    fun `SetTransparency with values derives a user scheme from a built-in`() = runTest {
-        settings.transparenciesId = DefaultThemeId
-
-        store.apply(listOf(ConfigMutation.SetTransparency(background = 0.3f)))
-
-        assertNotEquals(DefaultThemeId, settings.transparenciesId)
-        val derived = transparenciesRepository.getOnce(settings.transparenciesId)!!
-        assertEquals(context.getString(R.string.preference_transparencies_default), derived.name)
-        assertEquals(0.3f, derived.background)
-
-        // The derived scheme shadows the built-in name, so a follow-up
-        // mutation by name updates it instead of deriving another scheme.
-        store.apply(
-            listOf(
-                ConfigMutation.SetTransparency(
-                    name = derived.name,
-                    surface = 0.4f,
-                )
-            )
-        )
-        assertEquals(1, database.themeDao().getAllTransparencies().first().size)
-        val updated = transparenciesRepository.findByName(derived.name)!!
-        assertEquals(derived.id, updated.id)
-        assertEquals(0.3f, updated.background)
-        assertEquals(0.4f, updated.surface)
     }
 
     // ----- grid -----
@@ -585,14 +495,18 @@ class DefaultConfigStoreTest {
         store.apply(
             listOf(
                 ConfigMutation.SetIcons(themed = true),
-                ConfigMutation.SetGrid(columns = 5, locked = true),
+                ConfigMutation.SetGlass(tint = 0.1f, contrast = GlassContrast.Low),
+                ConfigMutation.SetGrid(columns = 5, locked = true, labels = false),
                 ConfigMutation.SetWidgetsEnabled(true),
                 ConfigMutation.SetFavorites(emptyList()),
             )
         )
 
         assertEquals(1, settings.applyCalls.size)
-        assertEquals(3, settings.applyCalls[0].size)
+        assertEquals(4, settings.applyCalls[0].size)
+        assertEquals(0.1f, settings.state.glassTint)
+        assertEquals(GlassContrast.Low, settings.state.glassContrast)
+        assertEquals(false, settings.state.gridLabels)
         assertTrue(settings.state.themedIcons)
         assertEquals(5, settings.state.gridColumns)
         assertTrue(settings.state.gridLocked)
@@ -628,6 +542,15 @@ class DefaultConfigStoreTest {
                         state = state.copy(
                             gridColumns = mutation.columns ?: state.gridColumns,
                             gridLocked = mutation.locked ?: state.gridLocked,
+                            gridLabels = mutation.labels ?: state.gridLabels,
+                        )
+
+                    is ConfigMutation.SetGlass ->
+                        state = state.copy(
+                            glassBlur = mutation.blur ?: state.glassBlur,
+                            glassTint = mutation.tint ?: state.glassTint,
+                            glassRadius = mutation.radius ?: state.glassRadius,
+                            glassContrast = mutation.contrast ?: state.glassContrast,
                         )
 
                     is ConfigMutation.SetWidgetsEnabled ->

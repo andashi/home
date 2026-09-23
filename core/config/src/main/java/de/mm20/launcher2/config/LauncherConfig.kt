@@ -28,8 +28,50 @@ data class IconsConfig(
 @Serializable
 data class AppearanceConfig(
     val transparency: TransparencyConfig? = null,
+    val glass: GlassConfig? = null,
     val wallpaper: WallpaperConfig? = null,
 )
+
+/**
+ * The glass surfaces of the home screen (ADR 0004, #24): cards, dock and
+ * search pill over the blurred wallpaper. Every field is optional; an absent
+ * one is unmanaged, and the state starts from [GlassDefaults].
+ *
+ * [blur] and [radius] are dp, [tint] is the alpha of the zone's Monet surface
+ * color over the backdrop. [contrast] scales blur and tint rather than
+ * switching to another look. Numbers decode as floats so a generator that
+ * writes `24.0` does not fail the zone's whole document.
+ */
+@Serializable
+data class GlassConfig(
+    val blur: Float? = null,
+    val tint: Float? = null,
+    val radius: Float? = null,
+    val contrast: GlassContrast? = null,
+)
+
+@Serializable
+enum class GlassContrast {
+    @SerialName("low")
+    Low,
+
+    @SerialName("medium")
+    Medium,
+
+    @SerialName("high")
+    High,
+}
+
+/** The one place the glass defaults live; state, settings and read-back use it. */
+object GlassDefaults {
+    const val Blur = 24f
+    const val Tint = 0.35f
+    const val Radius = 28f
+    val Contrast = GlassContrast.Medium
+
+    /** `home.grid.labels`: labels under grid items, never on the dock. */
+    const val Labels = true
+}
 
 /**
  * The wallpaper of this profile. [image] names a file previously uploaded
@@ -178,6 +220,7 @@ data class GridConfig(
     val columns: Int? = null,
     val locked: Boolean? = null,
     val layouts: Map<String, GridLayoutConfig>? = null,
+    val labels: Boolean? = null,
 )
 
 object GridLayouts {

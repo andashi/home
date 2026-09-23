@@ -86,11 +86,11 @@ class ConfigReloaderTest {
         val (reloader, _) = newReloader(store)
 
         val report = reloader.reload(
-            """{"schemaVersion": 1, "appearance": {"transparency": {"background": 2.0}}}"""
+            """{"schemaVersion": 2, "appearance": {"glass": {"tint": 2.0}}}"""
         )
 
         assertFalse(report.success)
-        assertTrue(report.diagnostics.any { it.code == "invalid-transparency" && it.severity == Severity.Error })
+        assertTrue(report.diagnostics.any { it.code == "invalid-glass" && it.severity == Severity.Error })
         assertEquals(0, store.applyCount)
     }
 

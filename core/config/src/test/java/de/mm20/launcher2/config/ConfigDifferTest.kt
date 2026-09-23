@@ -18,10 +18,6 @@ class ConfigDifferTest {
         themedIcons = true,
         enforceThemedIcons = true,
         iconPack = "app.lawnchair.lawnicons",
-        transparencyName = "liquid-glass",
-        transparencyBackground = 0.31f,
-        transparencySurface = 0.31f,
-        transparencyElevatedSurface = 0.31f,
         searchBarPosition = SearchBarPosition.Bottom,
         favorites = listOf(Favorite("com.example.dialer", Profile.Personal)),
         widgetsEnabled = true,
@@ -43,11 +39,11 @@ class ConfigDifferTest {
             pack = "app.lawnchair.lawnicons",
         ),
         appearance = AppearanceConfig(
-            transparency = TransparencyConfig(
-                name = "liquid-glass",
-                background = 0.31f,
-                surface = 0.31f,
-                elevatedSurface = 0.31f,
+            glass = GlassConfig(
+                blur = GlassDefaults.Blur,
+                tint = GlassDefaults.Tint,
+                radius = GlassDefaults.Radius,
+                contrast = GlassDefaults.Contrast,
             ),
             wallpaper = WallpaperConfig(image = "home.jpg", target = WallpaperTarget.Both),
         ),
@@ -58,6 +54,7 @@ class ConfigDifferTest {
             grid = GridConfig(
                 columns = 4,
                 locked = false,
+                labels = true,
                 layouts = mapOf(
                     "phone" to GridLayoutConfig(listOf(dock, clock)),
                     "fold" to GridLayoutConfig(emptyList()),
@@ -65,6 +62,61 @@ class ConfigDifferTest {
             ),
         ),
     )
+
+    // ----- appearance.glass (#73) -----
+
+    @Test
+    fun `each glass key diffs on its own`() {
+        fun diff(glass: GlassConfig) =
+            ConfigDiffer.diff(LauncherConfig(2, appearance = AppearanceConfig(glass = glass)), baseState)
+
+        assertEquals(listOf(ConfigMutation.SetGlass(blur = 0f)), diff(GlassConfig(blur = 0f)))
+        assertEquals(listOf(ConfigMutation.SetGlass(tint = 0.6f)), diff(GlassConfig(tint = 0.6f)))
+        assertEquals(listOf(ConfigMutation.SetGlass(radius = 16f)), diff(GlassConfig(radius = 16f)))
+        assertEquals(
+            listOf(ConfigMutation.SetGlass(contrast = GlassContrast.High)),
+            diff(GlassConfig(contrast = GlassContrast.High)),
+        )
+    }
+
+    @Test
+    fun `a glass section that sets two keys, one already in effect, carries only the other`() {
+        val mutations = ConfigDiffer.diff(
+            LauncherConfig(2, appearance = AppearanceConfig(glass = GlassConfig(blur = GlassDefaults.Blur, tint = 0.1f))),
+            baseState,
+        )
+
+        assertEquals(listOf(ConfigMutation.SetGlass(tint = 0.1f)), mutations)
+    }
+
+    @Test
+    fun `a glass section equal to the state produces nothing`() {
+        val mutations = ConfigDiffer.diff(
+            LauncherConfig(2, appearance = AppearanceConfig(glass = GlassConfig(blur = 12f, contrast = GlassContrast.Low))),
+            baseState.copy(glassBlur = 12f, glassContrast = GlassContrast.Low),
+        )
+
+        assertEquals(emptyList<ConfigMutation>(), mutations)
+    }
+
+    @Test
+    fun `labels diffs as part of the grid section`() {
+        val mutations = ConfigDiffer.diff(
+            LauncherConfig(2, home = HomeConfig(grid = GridConfig(labels = false))),
+            baseState,
+        )
+
+        assertEquals(listOf(ConfigMutation.SetGrid(labels = false)), mutations)
+    }
+
+    @Test
+    fun `a file that still carries transparency produces no mutation`() {
+        val parsed = ConfigParser.parse(
+            """{ "schemaVersion": 2, "appearance": { "transparency": { "name": "x", "background": 0.2 } } }"""
+        ).config!!
+
+        assertEquals(emptyList<ConfigMutation>(), ConfigDiffer.diff(parsed, ConfigState()))
+    }
 
     @Test
     fun `wallpaper differs by image or target, target defaults to both`() {
@@ -135,7 +187,7 @@ class ConfigDifferTest {
             schemaVersion = 2,
             icons = IconsConfig(themed = false),
             appearance = AppearanceConfig(
-                transparency = TransparencyConfig(background = 0.5f)
+                glass = GlassConfig(tint = 0.5f)
             ),
             home = HomeConfig(
                 searchBar = SearchBarConfig(SearchBarPosition.Top),
@@ -150,7 +202,7 @@ class ConfigDifferTest {
         assertEquals(
             listOf(
                 "icons",
-                "appearance.transparency",
+                "appearance.glass",
                 "home.searchBar",
                 "home.favorites",
                 "home.widgets.enabled",
@@ -161,7 +213,7 @@ class ConfigDifferTest {
         assertEquals(
             listOf(
                 ConfigMutation.SetIcons(themed = false),
-                ConfigMutation.SetTransparency(background = 0.5f),
+                ConfigMutation.SetGlass(tint = 0.5f),
                 ConfigMutation.SetSearchBarPosition(SearchBarPosition.Top),
                 ConfigMutation.SetFavorites(listOf(Favorite("com.example.mail", Profile.Work))),
                 ConfigMutation.SetWidgetsEnabled(false),

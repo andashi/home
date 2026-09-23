@@ -1,6 +1,8 @@
 package de.mm20.launcher2.preferences
 
 import android.content.Context
+import de.mm20.launcher2.config.GlassContrast
+import de.mm20.launcher2.config.GlassDefaults
 import de.mm20.launcher2.search.SearchFilters
 import de.mm20.launcher2.serialization.UUIDSerializer
 import kotlinx.serialization.SerialName
@@ -20,6 +22,11 @@ data class LauncherSettingsData internal constructor(
     val uiShapesId: UUID = UUID(0L, 0L),
     @Serializable(with = UUIDSerializer::class)
     val uiTransparenciesId: UUID = UUID(0L, 0L),
+    /** `appearance.glass` (ADR 0004, #24); written only by a config reload. */
+    val glassBlur: Float = GlassDefaults.Blur,
+    val glassTint: Float = GlassDefaults.Tint,
+    val glassRadius: Float = GlassDefaults.Radius,
+    val glassContrast: GlassContrast = GlassDefaults.Contrast,
     @Serializable(with = UUIDSerializer::class)
     val uiTypographyId: UUID = UUID(0L, 0L),
 
@@ -42,6 +49,8 @@ data class LauncherSettingsData internal constructor(
     val homeGridColumns: Int = 4,
     /** `home.grid.locked`: no edit mode, nothing written back (D3). */
     val homeGridLocked: Boolean = false,
+    /** `home.grid.labels`: labels under grid items (ADR 0004, #24). */
+    val homeGridLabels: Boolean = GlassDefaults.Labels,
     /** The one-time conversion of the widget column into grid items ran (ADR 0001 migration). */
     val homeGridInitialized: Boolean = false,
 

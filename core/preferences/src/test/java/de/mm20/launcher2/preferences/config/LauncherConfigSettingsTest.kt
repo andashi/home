@@ -4,6 +4,8 @@ import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import de.mm20.launcher2.config.ConfigMutation
 import de.mm20.launcher2.config.Favorite
+import de.mm20.launcher2.config.GlassContrast
+import de.mm20.launcher2.config.GlassDefaults
 import de.mm20.launcher2.config.GridLayoutConfig
 import de.mm20.launcher2.config.SearchBarPosition
 import de.mm20.launcher2.preferences.LauncherDataStore
@@ -16,7 +18,6 @@ import org.junit.Assert.assertNull
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
-import java.util.UUID
 
 /**
  * Each test seeds the settings file and creates its own [LauncherDataStore]
@@ -35,7 +36,6 @@ class LauncherConfigSettingsTest {
 
     @Test
     fun `readState maps settings fields to ConfigState`() = runTest {
-        val transparenciesId = UUID(1L, 2L)
         val gateway = createGateway(
             LauncherSettingsData(
                 iconsThemed = true,
@@ -45,7 +45,11 @@ class LauncherConfigSettingsTest {
                 homeScreenWidgets = true,
                 homeGridColumns = 5,
                 homeGridLocked = true,
-                uiTransparenciesId = transparenciesId,
+                homeGridLabels = false,
+                glassBlur = 12f,
+                glassTint = 0.6f,
+                glassRadius = 20f,
+                glassContrast = GlassContrast.High,
             )
         )
 
@@ -58,7 +62,51 @@ class LauncherConfigSettingsTest {
         assertEquals(true, result.state.widgetsEnabled)
         assertEquals(5, result.state.gridColumns)
         assertEquals(true, result.state.gridLocked)
-        assertEquals(transparenciesId, result.transparenciesId)
+        assertEquals(false, result.state.gridLabels)
+        assertEquals(12f, result.state.glassBlur)
+        assertEquals(0.6f, result.state.glassTint)
+        assertEquals(20f, result.state.glassRadius)
+        assertEquals(GlassContrast.High, result.state.glassContrast)
+    }
+
+    @Test
+    fun `fresh settings read back the documented glass defaults`() = runTest {
+        val state = createGateway().readState().state
+
+        assertEquals(GlassDefaults.Blur, state.glassBlur)
+        assertEquals(GlassDefaults.Tint, state.glassTint)
+        assertEquals(GlassDefaults.Radius, state.glassRadius)
+        assertEquals(GlassDefaults.Contrast, state.glassContrast)
+        assertEquals(GlassDefaults.Labels, state.gridLabels)
+    }
+
+    @Test
+    fun `apply SetGlass writes only the fields it carries`() = runTest {
+        val gateway = createGateway()
+
+        val tint = gateway.applyAndReturn(listOf(ConfigMutation.SetGlass(tint = 0.1f)))
+        assertEquals(0.1f, tint.glassTint)
+        assertEquals(GlassDefaults.Blur, tint.glassBlur)
+        assertEquals(GlassDefaults.Radius, tint.glassRadius)
+        assertEquals(GlassDefaults.Contrast, tint.glassContrast)
+
+        val rest = gateway.applyAndReturn(
+            listOf(ConfigMutation.SetGlass(blur = 0f, radius = 8f, contrast = GlassContrast.Low))
+        )
+        assertEquals(0.1f, rest.glassTint)
+        assertEquals(0f, rest.glassBlur)
+        assertEquals(8f, rest.glassRadius)
+        assertEquals(GlassContrast.Low, rest.glassContrast)
+    }
+
+    @Test
+    fun `apply SetGrid labels updates homeGridLabels and nothing else`() = runTest {
+        val seed = LauncherSettingsData(homeGridColumns = 5, homeGridLocked = true)
+        val gateway = createGateway(seed)
+
+        val updated = gateway.applyAndReturn(listOf(ConfigMutation.SetGrid(labels = false)))
+
+        assertEquals(seed.copy(homeGridLabels = false), updated)
     }
 
     @Test
@@ -188,24 +236,12 @@ class LauncherConfigSettingsTest {
 
         val updated = gateway.applyAndReturn(
             listOf(
-                ConfigMutation.SetTransparency(name = "scheme", background = 0.5f),
                 ConfigMutation.SetFavorites(listOf(Favorite("com.example.app"))),
                 ConfigMutation.SetWallpaper("w.jpg", de.mm20.launcher2.config.WallpaperTarget.Both),
             )
         )
 
         assertEquals(LauncherSettingsData(homeGridLocked = true), updated)
-    }
-
-    @Test
-    fun `setTransparenciesId selects the transparency scheme`() = runTest {
-        val gateway = createGateway()
-        val id = UUID(3L, 4L)
-
-        val updated = gateway.setTransparenciesIdAndReturn(id)
-
-        assertEquals(id, updated.uiTransparenciesId)
-        assertEquals(id, gateway.readState().transparenciesId)
     }
 
     @Test

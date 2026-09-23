@@ -8,12 +8,17 @@ data class ConfigState(
     val transparencyBackground: Float = 1f,
     val transparencySurface: Float = 1f,
     val transparencyElevatedSurface: Float = 1f,
+    val glassBlur: Float = GlassDefaults.Blur,
+    val glassTint: Float = GlassDefaults.Tint,
+    val glassRadius: Float = GlassDefaults.Radius,
+    val glassContrast: GlassContrast = GlassDefaults.Contrast,
     val searchBarPosition: SearchBarPosition = SearchBarPosition.Top,
     /** The manually pinned apps, in order: `home.favorites`. */
     val favorites: List<Favorite> = emptyList(),
     val widgetsEnabled: Boolean = false,
     val gridColumns: Int = 4,
     val gridLocked: Boolean = false,
+    val gridLabels: Boolean = GlassDefaults.Labels,
     /**
      * The layouts as stored, every item with full geometry. Keyed like
      * `home.grid.layouts`; a layout with no items is an empty list, not an
@@ -51,6 +56,15 @@ sealed class ConfigMutation {
         override val section = "appearance.transparency"
     }
 
+    data class SetGlass(
+        val blur: Float? = null,
+        val tint: Float? = null,
+        val radius: Float? = null,
+        val contrast: GlassContrast? = null,
+    ) : ConfigMutation() {
+        override val section = "appearance.glass"
+    }
+
     data class SetWallpaper(
         val image: String,
         val target: WallpaperTarget,
@@ -85,6 +99,7 @@ sealed class ConfigMutation {
         val columns: Int? = null,
         val locked: Boolean? = null,
         val layouts: Map<String, GridLayoutConfig>? = null,
+        val labels: Boolean? = null,
     ) : ConfigMutation() {
         override val section = "home.grid"
     }
