@@ -1,0 +1,3 @@
+scene	caption	guarded by
+75-fold-cover	Glass on the Fold cover (#75): seven DeskClock widgets and the dock as glass surfaces over provisioning's Mauritius wallpaper, the search pill, labels under the widgets. Taken on emulator-5560 by e2e/measure-glass-frametime.sh (SCREENSHOTS=...).	GlassSurfaceTest; HomeGridGlassTest; HomeGridTest (labels)
+75-fold-inner	The same home screen on the inner display: the fold layout's left four columns, each surface showing the backdrop region under it.	GlassBackdropTest; BackdropRenderTest
