@@ -37,8 +37,9 @@ so this cannot land upstream and defines the fork's core divergence.
 
 Introduce a new home surface, `HomeGrid`, next to the existing scaffold rather than
 rewriting it in place (see ADR 0007 for why this limits merge conflicts). It
-replaced `WidgetsHomeComponent` as the home page in #67; the old widget column
-stays compiled-in for the secondary widget pages reached by gestures.
+replaced `WidgetsHomeComponent` as the home page in #67. The old widget
+column, the widget pages reached by gestures and their `Widget` table were
+removed afterwards (PR 5b, decided 2026-09-22): the launcher has one page.
 
 ### Geometry (D1)
 
@@ -126,16 +127,18 @@ stays compiled-in for the secondary widget pages reached by gestures.
   changes the layout on reload. The mechanics, the self-write rule of the file
   watcher and the pull-before-push rule for provisioning are ADR 0003 section 5.
 
-Migration from the stock model: the old widget column is converted once by a
-seeder on the first render after the upgrade (the cell size is only known on
-screen, so this is not a SQL migration): the favorites row becomes the bottom
-row, every AppWidget a full-width item stacked from the top. Widgets that do
-not fit stay in the old table and are reported, never deleted.
+There is no migration from the stock model. The fork never had a stable
+release whose widget column would need carrying over, so the seeder that
+converted it was withdrawn with the column (PR 5b). The grid has exactly one
+default: a launcher that starts without any config gets the favorites widget
+in the bottom row, full width, once (`HomeGridDefaults`); after that, and
+after any config that applied `home.grid`, an empty layout means empty.
 
 ## Consequences
 
-- `data/database` gains the `HomeGridItem` table (migration 35 -> 36, #65); the
-  `Widget` table stays for the secondary widget pages.
+- `data/database` gains the `HomeGridItem` table (migration 35 -> 36, #65) and
+  loses the `Widget` table (migration 36 -> 37, PR 5b) together with the
+  `data/widgets` module; the AppWidget picker keeps only the provider list.
 - The pure layout engine is `:core:grid` (#64): placement, push-down, clamping,
   fold rule, cover clamp, all pure Kotlin with property tests; it is the fork's
   most-tested component (99 % line coverage gate, ADR 0005).
@@ -147,5 +150,5 @@ not fit stay in the old table and are reported, never deleted.
   migrated on read.
 - Write-back (#68) makes the on-device file the last agreed state between host
   and device (ADR 0002, ADR 0003).
-- The old `WidgetColumn` code path stays compiled-in for the secondary widget
-  pages; the home screen no longer uses it.
+- The old `WidgetColumn` code path is gone (PR 5b): with the widget pages
+  removed there is no secondary surface left that would draw it.

@@ -6,6 +6,7 @@ import de.mm20.launcher2.grid.Span
 import de.mm20.launcher2.homegrid.GridItemLimits
 import de.mm20.launcher2.homegrid.HomeGridCell
 import de.mm20.launcher2.homegrid.HomeGridItem
+import de.mm20.launcher2.homegrid.HomeGridInitLock
 import de.mm20.launcher2.homegrid.HomeGridLayouts
 import de.mm20.launcher2.homegrid.HomeGridWriteBack
 import de.mm20.launcher2.homegrid.HomeGridWriteResult
@@ -13,9 +14,6 @@ import de.mm20.launcher2.homegrid.MeasuredGridRows
 import de.mm20.launcher2.homegrid.FormFactor
 import de.mm20.launcher2.preferences.ui.UiSettings
 import de.mm20.launcher2.ui.settings.KoinSettingsRule
-import de.mm20.launcher2.widgets.Widget
-import de.mm20.launcher2.widgets.WidgetRepository
-import java.util.UUID
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -66,16 +64,6 @@ class HomeGridEditVMTest {
         Dispatchers.resetMain()
     }
 
-    private val emptyColumn = object : WidgetRepository {
-        override fun get(parent: UUID?, limit: Int, offset: Int): Flow<List<Widget>> = flowOf(emptyList())
-        override fun update(widget: Widget) = Unit
-        override fun create(widget: Widget, position: Int, parentId: UUID?) = Unit
-        override fun delete(widget: Widget) = Unit
-        override fun set(widgets: List<Widget>, parentId: UUID?) = Unit
-        override suspend fun setAwaited(widgets: List<Widget>, parentId: UUID?) = Unit
-        override fun exists(type: String): Flow<Boolean> = flowOf(false)
-        override fun count(type: String): Flow<Int> = flowOf(0)
-    }
 
     private val clock = gridItem("clock", 0, 0, 2, 2, position = 0)
     private val note = gridItem("note", 0, 2, 2, 1, position = 1)
@@ -98,7 +86,6 @@ class HomeGridEditVMTest {
         items: List<HomeGridItem> = listOf(clock, note, dock),
         locked: Boolean = false,
         limits: Map<String, SizeLimits> = emptyMap(),
-        leftovers: Int = 0,
         writeBack: FakeWriteBack = FakeWriteBack(),
     ): Fixture {
         val repository = FakeHomeGridRepository(mapOf(HomeGridLayouts.Phone to items))
@@ -109,8 +96,8 @@ class HomeGridEditVMTest {
             uiSettings = uiSettings,
             formFactorDetector = FakeFormFactorDetector(FormFactor.Phone),
             measuredRows = MeasuredGridRows(),
-            seeder = FakeSeeding(leftovers),
-            widgetRepository = emptyColumn,
+            initFlag = FakeInitFlag(initialized = true),
+            initLock = HomeGridInitLock(),
             writeBack = writeBack,
             itemLimits = GridItemLimits { item, _ -> limits[item.id] ?: SizeLimits.Unbounded },
             locked = lockedFlow,
@@ -249,8 +236,8 @@ class HomeGridEditVMTest {
             uiSettings = GlobalContext.get().get(),
             formFactorDetector = FakeFormFactorDetector(FormFactor.Phone),
             measuredRows = MeasuredGridRows(),
-            seeder = FakeSeeding(),
-            widgetRepository = emptyColumn,
+            initFlag = FakeInitFlag(initialized = true),
+            initLock = HomeGridInitLock(),
             writeBack = throwing,
             itemLimits = GridItemLimits.Unbounded,
             locked = f.locked,
@@ -320,8 +307,8 @@ class HomeGridEditVMTest {
             uiSettings = GlobalContext.get().get(),
             formFactorDetector = FakeFormFactorDetector(FormFactor.Phone),
             measuredRows = MeasuredGridRows(),
-            seeder = FakeSeeding(),
-            widgetRepository = emptyColumn,
+            initFlag = FakeInitFlag(initialized = true),
+            initLock = HomeGridInitLock(),
             writeBack = slow,
             itemLimits = GridItemLimits.Unbounded,
             locked = f.locked,
@@ -415,20 +402,6 @@ class HomeGridEditVMTest {
 
         assertEquals(listOf<GridEditEvent>(GridEditEvent.NoRoom), f.events)
         assertEquals(1, f.vm.cells().size)
-    }
-
-    @Test
-    fun `seed leftovers are announced once on the first edit`() = runTest(dispatcher) {
-        val f = fixture(leftovers = 2)
-        f.vm.cells()
-
-        f.vm.enterEdit()
-        f.vm.exitEdit()
-        f.vm.enterEdit()
-        f.vm.exitEdit()
-        dispatcher.scheduler.advanceUntilIdle()
-
-        assertEquals(listOf<GridEditEvent>(GridEditEvent.SeedLeftovers(2)), f.events)
     }
 
     @Test

@@ -156,7 +156,6 @@ dependencies {
     implementation(project(":services:search"))
     implementation(project(":services:tags"))
     implementation(project(":app:ui"))
-    implementation(project(":data:widgets"))
     implementation(project(":data:homegrid"))
     implementation(project(":data:database"))
     implementation(project(":data:search-actions"))

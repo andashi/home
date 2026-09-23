@@ -1,8 +1,5 @@
 package de.mm20.launcher2.homegrid
 
-import de.mm20.launcher2.preferences.WidgetScreenTarget
-import de.mm20.launcher2.widgets.AppWidget
-import de.mm20.launcher2.widgets.WidgetRepository
 import kotlinx.coroutines.flow.first
 
 /**
@@ -41,13 +38,10 @@ data class ReconcileReport(
  * role holder may bind without a dialog), items whose provider is gone are
  * reported so the cell shows the existing "replace or remove" banner, and
  * host ids nothing references any more are released so they do not leak.
- *
- * The widget column's own AppWidgets (secondary widget pages, ADR 0001)
- * share the host, so their ids count as referenced.
+
  */
 class HomeGridReconciler(
     private val homeGridRepository: HomeGridRepository,
-    private val widgetRepository: WidgetRepository,
     private val port: AppWidgetHostPort,
 ) {
     suspend fun reconcile(
@@ -76,20 +70,6 @@ class HomeGridReconciler(
                     referenced += id
                     if (!port.isProviderAvailable(id)) unavailable += item.id
                 }
-            }
-        }
-
-        // The widget column pages keep their AppWidgets in the same host. The
-        // repository pages at PageSize, so every page is read before anything
-        // is released; an id missed here would be released as an orphan.
-        val parents = WidgetScreenTarget.entries.map<WidgetScreenTarget, java.util.UUID?> { it.id } + null
-        for (parent in parents) {
-            var offset = 0
-            while (true) {
-                val page = widgetRepository.get(parent, limit = PageSize, offset = offset).first()
-                referenced += page.filterIsInstance<AppWidget>().map { it.config.widgetId }
-                if (page.size < PageSize) break
-                offset += PageSize
             }
         }
 

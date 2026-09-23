@@ -21,9 +21,9 @@ import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 
 /**
- * The home surface (ADR 0001): one page, the [HomeGrid], nothing else. It
- * replaces `WidgetsHomeComponent`, which stays compiled but unreferenced until
- * the grid has settled (ADR 0001, consequences).
+ * The home surface (ADR 0001): one page, the [HomeGrid], nothing else. The
+ * widget column it replaced, and the widget pages reached by gestures, are
+ * gone (PR 5b).
  *
  * `home.widgets.enabled` still decides whether anything is drawn: the key is
  * part of the public contract (ADR 0002) and also gates gesture targets, so

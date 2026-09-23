@@ -8,7 +8,6 @@ import de.mm20.launcher2.preferences.ScreenOrientation
 import de.mm20.launcher2.preferences.SearchBarColors
 import de.mm20.launcher2.preferences.SearchBarStyle
 import de.mm20.launcher2.preferences.SystemBarColors
-import de.mm20.launcher2.preferences.WidgetScreenTarget
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import java.util.UUID
@@ -348,15 +347,15 @@ class UiSettings internal constructor(
             it.homeGridLocked
         }.distinctUntilChanged()
 
-    /** Whether the widget column was converted into grid items once (ADR 0001 migration). */
-    val homeGridSeeded
+    /** Whether the grid was given its first content (the default favorites row, or a config); see HomeGridDefaults. */
+    val homeGridInitialized
         get() = launcherDataStore.data.map {
-            it.homeGridSeeded
+            it.homeGridInitialized
         }.distinctUntilChanged()
 
-    fun setHomeGridSeeded(seeded: Boolean) {
+    fun setHomeGridInitialized(initialized: Boolean) {
         launcherDataStore.update {
-            it.copy(homeGridSeeded = seeded)
+            it.copy(homeGridInitialized = initialized)
         }
     }
 
@@ -366,13 +365,4 @@ class UiSettings internal constructor(
         }
     }
 
-    /**
-     * Read by the widget column of the secondary widget pages only; the home
-     * grid's edit mode opens on long-press. The settings entry that wrote it
-     * is gone, so the value is whatever the DataStore holds (default true).
-     */
-    val widgetEditButton
-        get() = launcherDataStore.data.map {
-            it.widgetsEditButton
-        }.distinctUntilChanged()
 }

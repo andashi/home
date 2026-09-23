@@ -40,7 +40,6 @@ import de.mm20.launcher2.preferences.GestureAction
 import de.mm20.launcher2.preferences.SearchBarColors
 import de.mm20.launcher2.preferences.SearchBarStyle
 import de.mm20.launcher2.preferences.SystemBarColors
-import de.mm20.launcher2.preferences.WidgetScreenTarget
 import de.mm20.launcher2.search.SavableSearchable
 import de.mm20.launcher2.ui.base.BaseActivity
 import de.mm20.launcher2.ui.base.ProvideCompositionLocals
@@ -63,7 +62,6 @@ import de.mm20.launcher2.ui.launcher.scaffold.components.RecentsComponent
 import de.mm20.launcher2.ui.launcher.scaffold.components.ScreenOffComponent
 import de.mm20.launcher2.ui.launcher.scaffold.components.SearchComponent
 import de.mm20.launcher2.ui.launcher.scaffold.components.SecretComponent
-import de.mm20.launcher2.ui.launcher.scaffold.components.WidgetsComponent
 import de.mm20.launcher2.ui.launcher.sheets.LauncherBottomSheetManager
 import de.mm20.launcher2.ui.launcher.sheets.LauncherBottomSheets
 import de.mm20.launcher2.ui.launcher.sheets.LocalBottomSheetManager
@@ -277,18 +275,6 @@ abstract class SharedLauncherActivity(
                                                     else -> ScaffoldAnimation.Push
                                                 },
                                             )
-
-                                            is GestureAction.Widgets ->
-                                                if (widgetsOnHomeScreen == true && action.target == WidgetScreenTarget.Default) {
-                                                    null
-                                                } else {
-                                                    ScaffoldGesture(
-                                                        component = WidgetsComponent.forTarget(
-                                                            action.target
-                                                        ),
-                                                        animation = if (gesture.orientation == null) ScaffoldAnimation.ZoomIn else ScaffoldAnimation.Push,
-                                                    )
-                                                }
 
                                             is GestureAction.Notifications -> ScaffoldGesture(
                                                 component = NotificationsComponent,

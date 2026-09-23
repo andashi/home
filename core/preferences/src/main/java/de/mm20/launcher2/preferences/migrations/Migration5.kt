@@ -15,7 +15,8 @@ class Migration5  : DataMigration<LauncherSettingsData>  {
             gesturesSwipeDown = if (currentData.uiBaseLayout == BaseLayout.PullDown) GestureAction.Search else currentData.gesturesSwipeDown,
             gesturesSwipeLeft = if (currentData.uiBaseLayout == BaseLayout.Pager) GestureAction.Search else currentData.gesturesSwipeLeft,
             gesturesSwipeRight = if (currentData.uiBaseLayout == BaseLayout.PagerReversed) GestureAction.Search else currentData.gesturesSwipeRight,
-            gesturesSwipeUp = GestureAction.Widgets(),
+            // Was the widget page; the pages are gone (PR 5b), search is what is left.
+            gesturesSwipeUp = GestureAction.Search,
         )
     }
 

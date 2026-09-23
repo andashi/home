@@ -18,6 +18,8 @@ import de.mm20.launcher2.grid.SizeLimits
 import de.mm20.launcher2.homegrid.GridRowsSource
 import de.mm20.launcher2.homegrid.HomeGridItem
 import de.mm20.launcher2.homegrid.HomeGridItemConfig
+import de.mm20.launcher2.homegrid.HomeGridInitFlag
+import de.mm20.launcher2.homegrid.HomeGridInitLock
 import de.mm20.launcher2.homegrid.HomeGridRepository
 import de.mm20.launcher2.config.ConfigState
 import de.mm20.launcher2.config.Diagnostic
@@ -63,6 +65,8 @@ class DefaultConfigStoreTest {
     private lateinit var transparenciesRepository: TransparenciesRepository
     private lateinit var settings: FakeLauncherConfigSettings
     private lateinit var homeGridRepository: FakeHomeGridRepository
+    private lateinit var initFlag: FakeInitFlag
+    private val initLock = HomeGridInitLock()
     private lateinit var gridLimits: FakeGridLimitsSource
     private lateinit var gridRows: FakeGridRowsSource
     private lateinit var searchableRepository: FakeSavableSearchableRepository
@@ -81,6 +85,7 @@ class DefaultConfigStoreTest {
         transparenciesRepository = TransparenciesRepository(context, database)
         settings = FakeLauncherConfigSettings()
         homeGridRepository = FakeHomeGridRepository()
+        initFlag = FakeInitFlag()
         gridLimits = FakeGridLimitsSource()
         gridRows = FakeGridRowsSource()
         searchableRepository = FakeSavableSearchableRepository()
@@ -94,6 +99,8 @@ class DefaultConfigStoreTest {
             settings,
             transparenciesRepository,
             homeGridRepository,
+            initFlag,
+            initLock,
             gridLimits,
             gridRows,
             searchableRepository,
@@ -297,6 +304,24 @@ class DefaultConfigStoreTest {
 
     private fun grid(vararg items: GridItemConfig, layout: String = "phone") =
         ConfigMutation.SetGrid(layouts = mapOf(layout to GridLayoutConfig(items.toList())))
+
+    @Test
+    fun `SetGrid writes the layout and sets the flag under the init lock`() = runTest {
+        // The default row takes the same lock around its read-and-write, so a
+        // reload and a first start cannot interleave (review on #71).
+        homeGridRepository.onReplace = { homeGridRepository.lockedDuringReplace = initLock.isLocked }
+
+        store.apply(listOf(grid(GridItemConfig(id = "dock", widget = "favorites", x = 0, y = 5, w = 4, h = 1))))
+
+        assertEquals(true, homeGridRepository.lockedDuringReplace)
+    }
+
+    @Test
+    fun `SetGrid marks the grid initialised so the default row never overwrites a configured layout`() = runTest {
+        store.apply(listOf(grid(GridItemConfig(id = "dock", widget = "favorites", x = 0, y = 5, w = 4, h = 1))))
+
+        assertTrue(initFlag.initialized)
+    }
 
     @Test
     fun `SetGrid writes a layout with full geometry in config order`() = runTest {
@@ -618,14 +643,26 @@ class DefaultConfigStoreTest {
         }
     }
 
+    private class FakeInitFlag : HomeGridInitFlag {
+        var initialized = false
+        override suspend fun isInitialized(): Boolean = initialized
+        override suspend fun markInitialized() {
+            initialized = true
+        }
+    }
+
     private class FakeHomeGridRepository : HomeGridRepository {
         val layouts = mutableMapOf<String, List<HomeGridItem>>()
         var replaceCalls = 0
 
         override fun observe(layout: String): Flow<List<HomeGridItem>> = flowOf(layouts[layout] ?: emptyList())
 
+        var lockedDuringReplace: Boolean? = null
+        var onReplace: (suspend () -> Unit)? = null
+
         override suspend fun replace(layout: String, items: List<HomeGridItem>) {
             replaceCalls++
+            onReplace?.invoke()
             layouts[layout] = items
         }
 

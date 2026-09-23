@@ -17,13 +17,11 @@ import de.mm20.launcher2.grid.Span
 import de.mm20.launcher2.homegrid.FormFactorDetector
 import de.mm20.launcher2.homegrid.FormFactor
 import de.mm20.launcher2.homegrid.HomeGridItem
+import de.mm20.launcher2.homegrid.HomeGridInitFlag
 import de.mm20.launcher2.homegrid.HomeGridLayouts
 import de.mm20.launcher2.homegrid.HomeGridRepository
-import de.mm20.launcher2.homegrid.HomeGridSeedFlag
 import de.mm20.launcher2.homegrid.HomeGridWidgets
 import de.mm20.launcher2.homegrid.GridGeometry
-import de.mm20.launcher2.homegrid.HomeGridSeeder
-import de.mm20.launcher2.homegrid.HomeGridSeeding
 import de.mm20.launcher2.homegrid.HomeGridWriteBack
 import de.mm20.launcher2.homegrid.HomeGridWriteResult
 import kotlinx.coroutines.flow.Flow
@@ -71,22 +69,15 @@ class FakeWriteBack(
     }
 }
 
-/** A seeder that seeds nothing and reports the given leftovers. */
-class FakeSeeding(private val leftovers: Int = 0) : HomeGridSeeding {
-    override suspend fun seedIfNeeded(geometry: GridGeometry): HomeGridSeeder.SeedResult =
-        HomeGridSeeder.SeedResult(
-            leftovers = List(leftovers) { HomeGridSeeder.Leftover(appWidgetId = 100 + it, provider = "com.example/.Left$it") },
-        )
-}
-
 class FakeFormFactorDetector(private val formFactor: FormFactor) : FormFactorDetector {
     override fun detect(): FormFactor = formFactor
 }
 
-class FakeSeedFlag(private var seeded: Boolean = false) : HomeGridSeedFlag {
-    override suspend fun isSeeded(): Boolean = seeded
-    override suspend fun markSeeded() {
-        seeded = true
+/** The init flag of HomeGridDefaults; `initialized = true` means "no default row". */
+class FakeInitFlag(var initialized: Boolean = false) : HomeGridInitFlag {
+    override suspend fun isInitialized(): Boolean = initialized
+    override suspend fun markInitialized() {
+        initialized = true
     }
 }
 

@@ -7,7 +7,6 @@ import androidx.room.Query
 import de.mm20.launcher2.database.entities.CustomAttributeEntity
 import de.mm20.launcher2.database.entities.SavedSearchableEntity
 import de.mm20.launcher2.database.entities.SearchActionEntity
-import de.mm20.launcher2.database.entities.WidgetEntity
 
 @Dao
 interface BackupRestoreDao {
@@ -20,15 +19,6 @@ interface BackupRestoreDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun importFavorites(items: List<SavedSearchableEntity>)
-
-    @Query("DELETE FROM Widget")
-    suspend fun wipeWidgets()
-
-    @Query("SELECT * FROM Widget LIMIT :limit OFFSET :offset")
-    suspend fun exportWidgets(limit: Int, offset: Int): List<WidgetEntity>
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun importWidgets(items: List<WidgetEntity>)
 
     @Query("DELETE FROM SearchAction")
     suspend fun wipeSearchActions()

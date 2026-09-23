@@ -42,7 +42,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import de.mm20.launcher2.icons.IconService
 import de.mm20.launcher2.icons.LauncherIcon
 import de.mm20.launcher2.preferences.GestureAction
-import de.mm20.launcher2.preferences.WidgetScreenTarget
 import de.mm20.launcher2.search.SavableSearchable
 import de.mm20.launcher2.ui.R
 import de.mm20.launcher2.ui.common.SearchablePicker
@@ -64,16 +63,9 @@ internal fun GesturePreference(
     onValueChanged: (GestureAction, SavableSearchable?) -> Unit,
     options: Set<KClass<out GestureAction>>,
     shortcutOptions: List<SavableSearchable>,
-    widgetOptions: List<WidgetPageOption>,
 ) {
     var showSheet by remember { mutableStateOf(false) }
 
-    val value =
-        if (value is GestureAction.Widgets && widgetOptions.none { it.id == value.target }) {
-            GestureAction.NoAction
-        } else {
-            value
-        }
 
     val iconService: IconService = koinInject()
     val iconSize = 24.dp.toPixels().toInt()
@@ -167,33 +159,6 @@ internal fun GesturePreference(
                                         showSheet = false
                                     }
                                 )
-                            }
-                            if (options.contains(GestureAction.Widgets::class)) {
-                                for (widget in widgetOptions) {
-                                    GestureItem(
-                                        title = getActionLabel(
-                                            LocalResources.current,
-                                            GestureAction.Widgets(widget.id),
-                                            shortcutOptions
-                                        ),
-                                        icon = R.drawable.widgets_24px,
-                                        selected = value is GestureAction.Widgets && value.target == widget.id,
-                                        onClick = {
-                                            onValueChanged(
-                                                GestureAction.Widgets(widget.id),
-                                                null
-                                            )
-                                            showSheet = false
-                                        },
-                                        summary = if (widget.widgets.isEmpty()) {
-                                            stringResource(R.string.gesture_action_widgets_empty)
-                                        } else {
-                                            ListFormatter.getInstance().format(
-                                                widget.widgets.map { it.getLabel(LocalContext.current) }
-                                            )
-                                        }
-                                    )
-                                }
                             }
                         }
                     }
@@ -412,26 +377,6 @@ private fun getActionLabel(
         GestureAction.ScreenLock -> resources.getString(R.string.gesture_action_lock_screen)
         GestureAction.Search -> resources.getString(R.string.gesture_action_open_search)
         GestureAction.LauncherSettings -> resources.getString(R.string.settings)
-        is GestureAction.Widgets -> {
-            when (action.target) {
-                WidgetScreenTarget.Widgets1 -> resources.getString(R.string.gesture_action_widgets)
-                WidgetScreenTarget.Widgets2 -> resources.getString(
-                    R.string.gesture_action_widgets_indexed,
-                    2
-                )
-
-                WidgetScreenTarget.Widgets3 -> resources.getString(
-                    R.string.gesture_action_widgets_indexed,
-                    3
-                )
-
-                WidgetScreenTarget.Widgets4 -> resources.getString(
-                    R.string.gesture_action_widgets_indexed,
-                    4
-                )
-            }
-        }
-
         else -> resources.getString(R.string.gesture_action_none)
     }
 }

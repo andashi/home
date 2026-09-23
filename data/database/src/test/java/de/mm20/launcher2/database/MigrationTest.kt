@@ -30,6 +30,7 @@ import de.mm20.launcher2.database.migrations.Migration_32_33
 import de.mm20.launcher2.database.migrations.Migration_33_34
 import de.mm20.launcher2.database.migrations.Migration_34_35
 import de.mm20.launcher2.database.migrations.Migration_35_36
+import de.mm20.launcher2.database.migrations.Migration_36_37
 import de.mm20.launcher2.database.migrations.Migration_6_7
 import de.mm20.launcher2.database.migrations.Migration_7_8
 import de.mm20.launcher2.database.migrations.Migration_8_9
@@ -42,7 +43,7 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 
 /**
- * Template for migration tests. Validates the full migration chain 6 -> 36
+ * Template for migration tests. Validates the full migration chain 6 -> 37
  * against the exported schema JSONs in `schemas/` (wired as test assets).
  */
 @RunWith(RobolectricTestRunner::class)
@@ -89,20 +90,21 @@ class MigrationTest {
         Migration_33_34(),
         Migration_34_35(),
         Migration_35_36(),
+        Migration_36_37(),
     )
 
     @Test
-    fun `migrate 6 to 36`() {
+    fun `migrate 6 to 37`() {
         helper.createDatabase(testDb, 6).close()
 
-        val db = helper.runMigrationsAndValidate(testDb, 36, true, *allMigrations)
+        val db = helper.runMigrationsAndValidate(testDb, 37, true, *allMigrations)
 
         assertTrue(db.isOpen)
         db.close()
     }
 
     @Test
-    fun `search action survives migration 24 to 36`() {
+    fun `search action survives migration 24 to 37`() {
         helper.createDatabase(testDb, 24).apply {
             execSQL(
                 "INSERT INTO `SearchAction` (`position`, `type`, `data`, `label`, `icon`, `color`, `customIcon`, `options`) " +
@@ -111,7 +113,7 @@ class MigrationTest {
             close()
         }
 
-        val db = helper.runMigrationsAndValidate(testDb, 36, true, *allMigrations.copyOfRange(18, 30))
+        val db = helper.runMigrationsAndValidate(testDb, 37, true, *allMigrations.copyOfRange(18, 31))
 
         db.query("SELECT `data` FROM `SearchAction` WHERE `position` = 42").use { cursor ->
             assertTrue(cursor.moveToFirst())
@@ -203,6 +205,32 @@ class MigrationTest {
         db.query("SELECT COUNT(*) FROM `Widget`").use { cursor ->
             assertTrue(cursor.moveToFirst())
             assertEquals(1, cursor.getInt(0))
+        }
+        db.close()
+    }
+
+    @Test
+    fun `migration 36 to 37 drops the Widget table and keeps the grid`() {
+        helper.createDatabase(testDb, 36).apply {
+            execSQL(
+                "INSERT INTO `Widget` (`type`, `position`, `id`, `parentId`) VALUES " +
+                        "('favorites', 0, X'00000000000000000000000000000001', X'00000000000000000000000000000001')"
+            )
+            execSQL(
+                "INSERT INTO `HomeGridItem` (`layout`, `id`, `widget`, `x`, `y`, `w`, `h`, `position`) VALUES " +
+                        "('phone', 'dock', 'favorites', 0, 5, 4, 1, 0)"
+            )
+            close()
+        }
+
+        val db = helper.runMigrationsAndValidate(testDb, 37, true, Migration_36_37())
+
+        db.query("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'Widget'").use { cursor ->
+            assertEquals("table Widget should have been dropped", 0, cursor.count)
+        }
+        db.query("SELECT `id` FROM `HomeGridItem` WHERE `layout` = 'phone'").use { cursor ->
+            assertTrue(cursor.moveToFirst())
+            assertEquals("dock", cursor.getString(0))
         }
         db.close()
     }

@@ -33,9 +33,6 @@ class WidgetPickerSheetVM(
 
     val searchQuery = MutableStateFlow("")
 
-    private val enabledWidgets = widgetsService.getWidgets()
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(100), emptyList())
-
     private val allBuiltInWidgets =
         widgetsService.getAvailableBuiltInWidgets()
             .shareIn(viewModelScope, SharingStarted.WhileSubscribed(100))

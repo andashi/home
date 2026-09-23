@@ -1,0 +1,15 @@
+# label: before-widget-column-removal
+# commit: d4fd470ff0826d05bdef365bfb16b387d3674695
+# apk: app-default-debug.apk
+# measured: 2026-09-22T20:28:14Z
+apk.size.file	61387733	bytes
+apk.size.download	22480558	bytes
+apk.size.arsc	1975192	bytes
+apk.size.dex	56180000	bytes
+apk.size.lib	73584	bytes
+apk.size.other	197928	bytes
+apk.size.res	5069989	bytes
+dex.files	25	count
+dex.method_refs	231288	count
+manifest.permissions	12	count
+gradle.modules	35	count

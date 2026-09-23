@@ -43,7 +43,7 @@ data class LauncherSettingsData internal constructor(
     /** `home.grid.locked`: no edit mode, nothing written back (D3). */
     val homeGridLocked: Boolean = false,
     /** The one-time conversion of the widget column into grid items ran (ADR 0001 migration). */
-    val homeGridSeeded: Boolean = false,
+    val homeGridInitialized: Boolean = false,
 
     val favoritesEnabled: Boolean = true,
     val favoritesFrequentlyUsed: Boolean = true,
@@ -110,12 +110,11 @@ data class LauncherSettingsData internal constructor(
     val surfacesOpacity: Float = 1f,
     val surfacesBorderWidth: Int = 0,
 
-    val widgetsEditButton: Boolean = true,
 
     val gesturesSwipeDown: GestureAction = GestureAction.Search,
     val gesturesSwipeLeft: GestureAction = GestureAction.NoAction,
     val gesturesSwipeRight: GestureAction = GestureAction.NoAction,
-    val gesturesSwipeUp: GestureAction = GestureAction.Widgets(),
+    val gesturesSwipeUp: GestureAction = GestureAction.Search,
     val gesturesDoubleTap: GestureAction = GestureAction.ScreenLock,
     val gesturesLongPress: GestureAction = GestureAction.NoAction,
     val gesturesHomeButton: GestureAction = GestureAction.NoAction,
@@ -250,9 +249,16 @@ sealed interface GestureAction {
     @SerialName("search")
     data object Search : GestureAction
 
+    /**
+     * The widget pages reached by gestures are gone (PR 5b). The value stays
+     * decodable so a settings file written before the removal does not trip
+     * the corruption handler and reset every setting; Migration6 rewrites it
+     * to [Search] on the next start, and nothing offers or acts on it.
+     */
     @Serializable
     @SerialName("widgets")
-    data class Widgets(val target: WidgetScreenTarget = WidgetScreenTarget.Default) : GestureAction
+    @Deprecated("The widget pages are gone; Migration6 maps this to Search")
+    data object Widgets : GestureAction
 
     @Serializable
     @SerialName("power_menu")

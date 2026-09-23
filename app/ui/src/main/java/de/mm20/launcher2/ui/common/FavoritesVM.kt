@@ -10,7 +10,6 @@ import de.mm20.launcher2.search.SavableSearchable
 import de.mm20.launcher2.search.Tag
 import de.mm20.launcher2.searchable.PinnedLevel
 import de.mm20.launcher2.services.favorites.FavoritesService
-import de.mm20.launcher2.widgets.WidgetRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -27,7 +26,6 @@ import org.koin.core.component.inject
 abstract class FavoritesVM : ViewModel(), KoinComponent {
 
     private val favoritesService: FavoritesService by inject()
-    internal val widgetRepository: WidgetRepository by inject()
     private val customAttributesRepository: CustomAttributesRepository by inject()
     internal val settings: FavoritesSettings by inject()
 

@@ -3,14 +3,12 @@ package de.mm20.launcher2.ui.launcher.grid
 
 import de.mm20.launcher2.homegrid.FormFactor
 import de.mm20.launcher2.homegrid.GridItemLimits
+import de.mm20.launcher2.homegrid.HomeGridInitLock
 import de.mm20.launcher2.homegrid.HomeGridLayouts
-import de.mm20.launcher2.homegrid.HomeGridSeeder
 import de.mm20.launcher2.homegrid.HomeGridWidgets
 import de.mm20.launcher2.homegrid.MeasuredGridRows
 import de.mm20.launcher2.preferences.ui.UiSettings
 import de.mm20.launcher2.ui.settings.KoinSettingsRule
-import de.mm20.launcher2.widgets.Widget
-import de.mm20.launcher2.widgets.WidgetRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -31,7 +29,6 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.koin.core.context.GlobalContext
 import org.robolectric.RobolectricTestRunner
-import java.util.UUID
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @RunWith(RobolectricTestRunner::class)
@@ -52,32 +49,22 @@ class HomeGridVMTest {
         Dispatchers.resetMain()
     }
 
-    private val emptyColumn = object : WidgetRepository {
-        override fun get(parent: UUID?, limit: Int, offset: Int): Flow<List<Widget>> = flowOf(emptyList())
-        override fun update(widget: Widget) = Unit
-        override fun create(widget: Widget, position: Int, parentId: UUID?) = Unit
-        override fun delete(widget: Widget) = Unit
-        override fun set(widgets: List<Widget>, parentId: UUID?) = Unit
-        override suspend fun setAwaited(widgets: List<Widget>, parentId: UUID?) = Unit
-        override fun exists(type: String): Flow<Boolean> = flowOf(false)
-        override fun count(type: String): Flow<Int> = flowOf(0)
-    }
 
     private fun vm(
         formFactor: FormFactor,
         repository: FakeHomeGridRepository = FakeHomeGridRepository(),
         measuredRows: MeasuredGridRows = MeasuredGridRows(),
-        seeded: Boolean = true,
+        initialized: Boolean = true,
     ): HomeGridVM {
         val uiSettings: UiSettings = GlobalContext.get().get()
-        val flag = FakeSeedFlag(seeded)
+        val flag = FakeInitFlag(initialized)
         return HomeGridVM(
             repository = repository,
             uiSettings = uiSettings,
             formFactorDetector = FakeFormFactorDetector(formFactor),
             measuredRows = measuredRows,
-            seeder = HomeGridSeeder(emptyColumn, repository, flag) { null },
-            widgetRepository = emptyColumn,
+            initFlag = flag,
+            initLock = HomeGridInitLock(),
             writeBack = FakeWriteBack(),
             itemLimits = GridItemLimits.Unbounded,
             locked = flowOf(false),
@@ -159,9 +146,9 @@ class HomeGridVMTest {
     }
 
     @Test
-    fun `an unseeded device gets the dock seeded once the window is known`() = runTest(dispatcher) {
+    fun `a never configured launcher gets the default favorites row once the window is known`() = runTest(dispatcher) {
         val repository = FakeHomeGridRepository()
-        val vm = vm(FormFactor.Phone, repository, seeded = false)
+        val vm = vm(FormFactor.Phone, repository, initialized = false)
 
         vm.onWindowMeasured(396f, 622f)
         val state = vm.state.filterNotNull().first { it.cells.isNotEmpty() }

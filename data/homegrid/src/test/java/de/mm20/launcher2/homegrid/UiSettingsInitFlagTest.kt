@@ -20,7 +20,7 @@ import org.robolectric.RobolectricTestRunner
 import java.io.File
 
 @RunWith(RobolectricTestRunner::class)
-class UiSettingsSeedFlagTest {
+class UiSettingsInitFlagTest {
 
     private val context: Context = ApplicationProvider.getApplicationContext()
 
@@ -46,13 +46,13 @@ class UiSettingsSeedFlagTest {
     @Test
     fun `the flag starts clear and stays set once marked`() = runTest {
         val settings: UiSettings = GlobalContext.get().get()
-        val flag = UiSettingsSeedFlag(settings)
+        val flag = UiSettingsInitFlag(settings)
 
-        assertFalse(flag.isSeeded())
+        assertFalse(flag.isInitialized())
 
-        flag.markSeeded()
+        flag.markInitialized()
 
-        assertTrue(flag.isSeeded())
-        assertTrue(settings.homeGridSeeded.first())
+        assertTrue(flag.isInitialized())
+        assertTrue(settings.homeGridInitialized.first())
     }
 }

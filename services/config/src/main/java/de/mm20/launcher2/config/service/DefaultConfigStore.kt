@@ -28,6 +28,8 @@ import de.mm20.launcher2.searchable.SavableSearchableRepository
 import de.mm20.launcher2.themes.DefaultThemeId
 import de.mm20.launcher2.themes.transparencies.Transparencies
 import de.mm20.launcher2.themes.transparencies.TransparenciesRepository
+import de.mm20.launcher2.homegrid.HomeGridInitFlag
+import de.mm20.launcher2.homegrid.HomeGridInitLock
 import de.mm20.launcher2.homegrid.HomeGridRepository
 import kotlinx.coroutines.flow.first
 import java.util.UUID
@@ -53,6 +55,8 @@ class DefaultConfigStore(
     private val settings: LauncherConfigSettings,
     private val transparenciesRepository: TransparenciesRepository,
     private val homeGridRepository: HomeGridRepository,
+    private val homeGridInitFlag: HomeGridInitFlag,
+    private val homeGridInitLock: HomeGridInitLock,
     private val gridLimits: GridLimitsSource,
     private val gridRows: GridRowsSource,
     private val searchableRepository: SavableSearchableRepository,
@@ -330,31 +334,38 @@ class DefaultConfigStore(
             }
         }
 
-        val existing = homeGridRepository.observe(layoutKey).first().associateBy { it.id }
-        val items = result.items.mapIndexed { position, gridItem ->
-            val config = layout.items[order.getValue(gridItem.id)]
-            val previous = existing[gridItem.id]?.takeIf {
-                it.widget == config.widget && it.profile == config.profile?.serialName()
+        // From the read of what is stored to the flag: one critical section,
+        // shared with the default row (HomeGridDefaults) through the init lock.
+        homeGridInitLock.withLock {
+            val existing = homeGridRepository.observe(layoutKey).first().associateBy { it.id }
+            val items = result.items.mapIndexed { position, gridItem ->
+                val config = layout.items[order.getValue(gridItem.id)]
+                val previous = existing[gridItem.id]?.takeIf {
+                    it.widget == config.widget && it.profile == config.profile?.serialName()
+                }
+                HomeGridItem(
+                    layout = layoutKey,
+                    id = gridItem.id,
+                    widget = config.widget,
+                    profile = config.profile?.serialName(),
+                    x = gridItem.span.x,
+                    y = gridItem.span.y,
+                    w = gridItem.span.w,
+                    h = gridItem.span.h,
+                    appWidgetId = previous?.appWidgetId,
+                    config = HomeGridItemConfig(
+                        borderless = config.borderless ?: false,
+                        background = config.background ?: true,
+                        themeColors = config.themeColors ?: true,
+                    ),
+                    position = position,
+                )
             }
-            HomeGridItem(
-                layout = layoutKey,
-                id = gridItem.id,
-                widget = config.widget,
-                profile = config.profile?.serialName(),
-                x = gridItem.span.x,
-                y = gridItem.span.y,
-                w = gridItem.span.w,
-                h = gridItem.span.h,
-                appWidgetId = previous?.appWidgetId,
-                config = HomeGridItemConfig(
-                    borderless = config.borderless ?: false,
-                    background = config.background ?: true,
-                    themeColors = config.themeColors ?: true,
-                ),
-                position = position,
-            )
+            homeGridRepository.replace(layoutKey, items)
+            // A config that names a layout is the grid's first content as much as
+            // the default row is: from here on an empty layout means empty.
+            homeGridInitFlag.markInitialized()
         }
-        homeGridRepository.replace(layoutKey, items)
         return diagnostics
     }
 

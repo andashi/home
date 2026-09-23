@@ -57,7 +57,6 @@ dependencies {
     implementation(project(":core:ktx"))
     implementation(project(":core:base"))
     implementation(project(":data:database"))
-    implementation(project(":data:widgets"))
     implementation(project(":core:grid"))
     implementation(project(":core:preferences"))
 
