@@ -1,0 +1,31 @@
+rev	c33378d24
+serial	emulator-5560
+runs	15
+cover.off.frames	282
+cover.off.janky	239
+cover.off.p50_ms	93
+cover.off.p90_ms	250
+cover.off.p95_ms	300
+cover.off.p99_ms	950
+inner.off.frames	236
+inner.off.janky	210
+inner.off.p50_ms	133
+inner.off.p90_ms	300
+inner.off.p95_ms	400
+inner.off.p99_ms	450
+backdrop.off.1080x2364	411 ms (135x296, blur 7px; decode 192x344 at 1/8: 93 ms, crop+scale+blur: 318 ms)
+backdrop.off.2076x2152	297 ms (260x269, blur 7px; decode 384x688 at 1/4: 98 ms, crop+scale+blur: 199 ms)
+cover.hook.frames	263
+cover.hook.janky	230
+cover.hook.p50_ms	113
+cover.hook.p90_ms	250
+cover.hook.p95_ms	350
+cover.hook.p99_ms	1050
+inner.hook.frames	233
+inner.hook.janky	219
+inner.hook.p50_ms	150
+inner.hook.p90_ms	350
+inner.hook.p95_ms	400
+inner.hook.p99_ms	450
+backdrop.hook.1080x2364	417 ms (135x296, blur 7px; decode 192x344 at 1/8: 120 ms, crop+scale+blur: 297 ms)
+backdrop.hook.2076x2152	618 ms (260x269, blur 7px; decode 384x688 at 1/4: 224 ms, crop+scale+blur: 394 ms)
