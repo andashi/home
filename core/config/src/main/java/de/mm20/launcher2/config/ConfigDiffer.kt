@@ -11,6 +11,8 @@ data class ConfigState(
     val glassWallpaperBlur: Boolean = GlassDefaults.WallpaperBlur,
     val glassSearchWallpaperBlur: Boolean = GlassDefaults.SearchWallpaperBlur,
     val searchBarPosition: SearchBarPosition = SearchBarPosition.Top,
+    /** `search` (#91). */
+    val search: SearchState = SearchState(),
     /** The manually pinned apps, in order: `home.favorites`. */
     val favorites: List<Favorite> = emptyList(),
     val widgetsEnabled: Boolean = false,
@@ -32,6 +34,21 @@ data class ConfigState(
      */
     val wallpaperImage: String? = null,
     val wallpaperTarget: WallpaperTarget? = null,
+)
+
+/** What `search` reads back as: every key, at its default until a config sets it (#91). */
+data class SearchState(
+    val favorites: Boolean = SearchDefaults.Favorites,
+    val allApps: Boolean = SearchDefaults.AllApps,
+    val layout: SearchResultLayout = SearchDefaults.Layout,
+    val labels: Boolean = SearchDefaults.Labels,
+    val contacts: Boolean = SearchDefaults.Contacts,
+    val shortcuts: Boolean = SearchDefaults.Shortcuts,
+    val filterBar: Boolean = SearchDefaults.FilterBar,
+    val openKeyboard: Boolean = SearchDefaults.OpenKeyboard,
+    val launchOnEnter: Boolean = SearchDefaults.LaunchOnEnter,
+    val reversed: Boolean = SearchDefaults.Reversed,
+    val hiddenItemsButton: Boolean = SearchDefaults.HiddenItemsButton,
 )
 
 sealed class ConfigMutation {
@@ -61,6 +78,11 @@ sealed class ConfigMutation {
         val target: WallpaperTarget,
     ) : ConfigMutation() {
         override val section = "appearance.wallpaper"
+    }
+
+    /** `search` (#91): the keys that differ from the state; null is unchanged. */
+    data class SetSearch(val search: SearchConfig) : ConfigMutation() {
+        override val section = "search"
     }
 
     data class SetSearchBarPosition(

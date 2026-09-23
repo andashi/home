@@ -1,5 +1,6 @@
 package de.mm20.launcher2.config.service
 
+import de.mm20.launcher2.config.SearchConfig
 import android.content.ComponentName
 import android.content.Context
 import android.os.Bundle
@@ -495,6 +496,20 @@ class DefaultConfigStoreTest {
     }
 
     @Test
+    fun `search is settings-backed and applied in the same settings call`() = runTest {
+        store.apply(
+            listOf(
+                ConfigMutation.SetIcons(themed = true),
+                ConfigMutation.SetSearch(SearchConfig(favorites = false)),
+            )
+        )
+
+        assertEquals(1, settings.applyCalls.size)
+        assertEquals(2, settings.applyCalls[0].size)
+        assertEquals(false, settings.state.search.favorites)
+    }
+
+    @Test
     fun `a failed settings write is reported for every settings-backed section, glass included`() = runTest {
         settings.applyFailure = IllegalStateException("datastore gone")
 
@@ -554,6 +569,11 @@ class DefaultConfigStoreTest {
 
                     is ConfigMutation.SetWidgetsEnabled ->
                         state = state.copy(widgetsEnabled = mutation.enabled)
+
+                    is ConfigMutation.SetSearch ->
+                        state = state.copy(
+                            search = state.search.copy(favorites = mutation.search.favorites ?: state.search.favorites),
+                        )
 
                     else -> Unit
                 }

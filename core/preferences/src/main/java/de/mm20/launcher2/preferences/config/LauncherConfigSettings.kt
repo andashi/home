@@ -118,6 +118,7 @@ internal class LauncherConfigSettingsImpl(
 
             is ConfigMutation.SetFavorites,
             is ConfigMutation.SetWallpaper,
+            is ConfigMutation.SetSearch,
             -> this
         }
     }
