@@ -25,8 +25,10 @@ away in search. Design background:
 | `home.grid.labels` | A label under every widget, never under the dock. It shows the app's name | boolean | `true` |
 | `home.grid.layouts` | The layouts, one per form factor (below) | `phone`, `fold` | — |
 
-Rows are not configured. The launcher derives them from the screen height, so
-a cell stays square.
+Rows are not configured. The launcher derives them from the screen, so a cell
+stays square: the phone instance these screenshots come from has 6 rows, the
+Pixel Fold has 7 on both displays. `y` is absolute, so each layout puts its
+bottom row (a bottom dock, say) at its own device's last row.
 
 | Labels on (default) | `labels: false` |
 |---|---|
@@ -82,8 +84,8 @@ never has a label. Its shape is your choice:
 
 | Where | Item |
 |---|---|
-| At the bottom, the traditional dock | `{ "id": "dock", "widget": "favorites", "x": 0, "y": 5, "w": 4, "h": 1 }` |
-| A column on the side | `{ "id": "dock", "widget": "favorites", "x": 3, "y": 0, "w": 1, "h": 6 }` |
+| At the bottom, the traditional dock | `{ "id": "dock", "widget": "favorites", "x": 0, "y": 5, "w": 4, "h": 1 }` (a 6-row phone; `"y": 6, "w": 8` on the Fold) |
+| A column on the side | `{ "id": "dock", "widget": "favorites", "x": 3, "y": 0, "w": 1, "h": 6 }` (`"h": 7` on the Fold) |
 | Two rows | `{ "id": "dock", "widget": "favorites", "x": 0, "y": 4, "w": 4, "h": 2 }` |
 | None | leave the item out |
 
@@ -122,9 +124,12 @@ through search, and edit mode shows how many do not fit.
           { "id": "clock", "widget": "com.android.deskclock/com.android.alarmclock.DigitalAppWidgetProvider", "x": 0, "y": 3, "w": 2, "h": 1 },
           { "id": "bookmarks", "widget": "app.vanadium.browser/com.google.android.apps.chrome.appwidget.bookmarks.BookmarkThumbnailWidgetProvider", "x": 2, "y": 3, "w": 2, "h": 2 },
           { "id": "clock-2", "widget": "com.android.deskclock/com.android.alarmclock.DigitalAppWidgetProvider", "x": 0, "y": 4, "w": 2, "h": 1 },
+          { "id": "clock-3", "widget": "com.android.deskclock/com.android.alarmclock.DigitalAppWidgetProvider", "x": 0, "y": 5, "w": 2, "h": 1 },
+          { "id": "clock-4", "widget": "com.android.deskclock/com.android.alarmclock.DigitalAppWidgetProvider", "x": 2, "y": 5, "w": 2, "h": 1 },
           { "id": "bookmarks-2", "widget": "app.vanadium.browser/com.google.android.apps.chrome.appwidget.bookmarks.BookmarkThumbnailWidgetProvider", "x": 4, "y": 0, "w": 4, "h": 3 },
           { "id": "messages-2", "widget": "com.android.messaging/com.android.messaging.widget.BugleWidgetProvider", "x": 4, "y": 3, "w": 4, "h": 2 },
-          { "id": "dock", "widget": "favorites", "x": 0, "y": 5, "w": 8, "h": 1 }
+          { "id": "search-2", "widget": "app.vanadium.browser/org.chromium.chrome.browser.searchwidget.SearchWidgetProvider", "x": 4, "y": 5, "w": 4, "h": 1 },
+          { "id": "dock", "widget": "favorites", "x": 0, "y": 6, "w": 8, "h": 1 }
         ] }
       }
     }
@@ -163,9 +168,11 @@ so the cover's dock shows the first four favorites.
           { "id": "search", "widget": "app.vanadium.browser/org.chromium.chrome.browser.searchwidget.SearchWidgetProvider", "x": 0, "y": 2, "w": 3, "h": 1 },
           { "id": "messages", "widget": "com.android.messaging/com.android.messaging.widget.BugleWidgetProvider", "x": 0, "y": 3, "w": 3, "h": 2 },
           { "id": "clock", "widget": "com.android.deskclock/com.android.alarmclock.DigitalAppWidgetProvider", "x": 0, "y": 5, "w": 3, "h": 1 },
-          { "id": "dock", "widget": "favorites", "x": 3, "y": 0, "w": 1, "h": 6 },
+          { "id": "clock-2", "widget": "com.android.deskclock/com.android.alarmclock.DigitalAppWidgetProvider", "x": 0, "y": 6, "w": 3, "h": 1 },
+          { "id": "dock", "widget": "favorites", "x": 3, "y": 0, "w": 1, "h": 7 },
           { "id": "bookmarks", "widget": "app.vanadium.browser/com.google.android.apps.chrome.appwidget.bookmarks.BookmarkThumbnailWidgetProvider", "x": 4, "y": 0, "w": 4, "h": 3 },
-          { "id": "messages-2", "widget": "com.android.messaging/com.android.messaging.widget.BugleWidgetProvider", "x": 4, "y": 3, "w": 4, "h": 3 }
+          { "id": "messages-2", "widget": "com.android.messaging/com.android.messaging.widget.BugleWidgetProvider", "x": 4, "y": 3, "w": 4, "h": 3 },
+          { "id": "search-2", "widget": "app.vanadium.browser/org.chromium.chrome.browser.searchwidget.SearchWidgetProvider", "x": 4, "y": 6, "w": 4, "h": 1 }
         ] }
       }
     }

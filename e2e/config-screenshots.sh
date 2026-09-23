@@ -85,15 +85,19 @@ $(item clock-2 "$DIGITAL" 0 4 2 1), $(item dock favorites 0 5 4 1)"
 # The same with the dock as a column on the right: one wide, six tall.
 PHONE_SIDE="$(item analog "$ANALOG" 0 0 3 2), $(item search "$SEARCH" 0 2 3 1), \
 $(item messages "$MESSAGES" 0 3 3 2), $(item clock "$DIGITAL" 0 5 3 1), $(item dock favorites 3 0 1 6)"
-# Fold: eight columns inside; the cover shows columns 0-3.
+# Fold: eight columns inside; the cover shows columns 0-3. The Fold has seven
+# rows on both displays, one more than this phone instance, so its dock sits
+# in row 6: y is absolute and each layout places the dock in its own last row.
 FOLD_BOTTOM="$(item analog "$ANALOG" 0 0 2 2), $(item messages "$MESSAGES" 2 0 2 2), \
 $(item search "$SEARCH" 0 2 4 1), $(item clock "$DIGITAL" 0 3 2 1), $(item bookmarks "$BOOKMARKS" 2 3 2 2), \
-$(item clock-2 "$DIGITAL" 0 4 2 1), $(item bookmarks-2 "$BOOKMARKS" 4 0 4 3), \
-$(item messages-2 "$MESSAGES" 4 3 4 2), $(item dock favorites 0 5 8 1)"
+$(item clock-2 "$DIGITAL" 0 4 2 1), $(item clock-3 "$DIGITAL" 0 5 2 1), $(item clock-4 "$DIGITAL" 2 5 2 1), \
+$(item bookmarks-2 "$BOOKMARKS" 4 0 4 3), $(item messages-2 "$MESSAGES" 4 3 4 2), $(item search-2 "$SEARCH" 4 5 4 1), \
+$(item dock favorites 0 6 8 1)"
 # A side dock that both displays show has to sit in column 3.
 FOLD_SIDE="$(item analog "$ANALOG" 0 0 3 2), $(item search "$SEARCH" 0 2 3 1), \
-$(item messages "$MESSAGES" 0 3 3 2), $(item clock "$DIGITAL" 0 5 3 1), $(item dock favorites 3 0 1 6), \
-$(item bookmarks "$BOOKMARKS" 4 0 4 3), $(item messages-2 "$MESSAGES" 4 3 4 3)"
+$(item messages "$MESSAGES" 0 3 3 2), $(item clock "$DIGITAL" 0 5 3 1), $(item clock-2 "$DIGITAL" 0 6 3 1), \
+$(item dock favorites 3 0 1 7), \
+$(item bookmarks "$BOOKMARKS" 4 0 4 3), $(item messages-2 "$MESSAGES" 4 3 4 3), $(item search-2 "$SEARCH" 4 6 4 1)"
 
 # Every scene states the whole baseline plus its one variant. An absent key
 # is "unmanaged" and keeps what the previous scene set, so a partial config
