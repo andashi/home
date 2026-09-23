@@ -1227,6 +1227,7 @@ internal fun LauncherScaffold(
         Box(
             modifier = Modifier
                 .fillMaxSize()
+                .holdImplicitFocus()
                 .hazeSource(hazeState)
                 .nestedScroll(nestedScrollConnection)
                 .draggable2D(
