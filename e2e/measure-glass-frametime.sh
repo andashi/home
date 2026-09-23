@@ -23,7 +23,9 @@
 # the frame; its duration is read from the launcher's own log line.
 #
 # Output: a TSV (metric <TAB> value) under e2e/measurements/, default
-# glass-<variant set>-<git short sha>.tsv, OUT overrides the path.
+# glass-<variant set>-<git short sha>.tsv, OUT overrides the path. With
+# SCREENSHOTS=<dir>, a screencap of each display's home screen lands there
+# (<variant>-<display>.png) before its series starts.
 #
 # Instance: SERIAL + OVERLAY_DIR (default the foldable, emulator-5560 with
 # instances/test-fold), snapshot `clean`, under the instance's device lock.
@@ -186,6 +188,26 @@ series() { # $1 = label
   ok "$1: $total frames, $janky janky, p50 ${p50} ms, p90 ${p90} ms, p99 ${p99} ms"
 }
 
+# A foldable has two physical displays, and a plain `screencap` refuses to
+# pick one. Capture each and keep the one whose size is the current `wm size`
+# (the PNG header carries width and height at bytes 16..23).
+capture() { # $1 = output png
+  local size want id got i
+  # After a posture change the activity is recreated; wait until the grid is
+  # on screen again (the dock cell), or the picture is the blank in between.
+  for i in $(seq 20); do
+    [ -n "$(desc_bounds grid-item:dock 2>/dev/null)" ] && break
+    wake_screen; sleep 1
+  done
+  size="$(adb -s "$SERIAL" shell wm size | tr -d '\r' | awk '/size/ {s=$NF} END {print s}')"
+  for id in $(adb -s "$SERIAL" shell dumpsys SurfaceFlinger --display-id | tr -d '\r' | sed -n 's/^Display \([0-9]*\).*/\1/p'); do
+    adb -s "$SERIAL" exec-out screencap -d "$id" -p > "$WORK/shot.png" 2>/dev/null || continue
+    got="$(python3 -c 'import struct,sys; d=open(sys.argv[1],"rb").read(24); print("%dx%d" % struct.unpack(">II", d[16:24])) if d[:8]==b"\x89PNG\r\n\x1a\n" else print("")' "$WORK/shot.png")"
+    if [ "$got" = "$size" ]; then cp "$WORK/shot.png" "$1"; ok "screenshot $1 (display $id, $got)"; return 0; fi
+  done
+  warn "no display matched $size; no screenshot for $1"
+}
+
 for variant in $VARIANTS; do
   [ "$variant" = glass ] || die "unknown variant $variant"
   # A fresh process, so the backdrop is made (and logged) once per display.
@@ -193,6 +215,10 @@ for variant in $VARIANTS; do
   adb -s "$SERIAL" logcat -c
   for display in cover inner; do
     [ "$display" = cover ] && posture closed || posture opened
+    if [ -n "${SCREENSHOTS:-}" ]; then
+      mkdir -p "$SCREENSHOTS"
+      capture "$SCREENSHOTS/$variant-$display.png"
+    fi
     series "$display.$variant"
   done
   # The blur, once per display and wallpaper, as the renderer logged it.

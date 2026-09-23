@@ -496,7 +496,7 @@ ok "effective config matches (icons, glass, search bar, favorites, widgets, grid
 # Glass and labels are rendered since #75: a valid config carrying them has
 # nothing to report.
 assert_jq "$LAST_REPORT" \
-  '[.diagnostics[] | select(.code == "inert-key")] | length == 0' \
+  '[(.diagnostics // [])[] | select(.code == "inert-key")] | length == 0' \
   "glass and labels are applied, not inert"
 ok "glass and labels applied (no inert-key)"
 
