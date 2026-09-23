@@ -72,6 +72,7 @@ mean anything:
 | cards without glass (#74, `glass-off-hook-c33378d24.tsv`) | 93 ms | 133 ms |
 | + backdrop region on every card (#74, same file) | 113 ms | 150 ms |
 | full stack: lens, rim, tint, wallpaper blur (#77, `glass-glass-a86be0b4d.tsv`) | 150 ms | 300 ms |
+| full stack, emulator on the host GPU (`GPU=host`, cold boot, `glass-glass-gpu-host-f364925e0.tsv`) | 57 ms | 48 ms |
 
 | One-time cost, not a frame time | Cover | Inner |
 |---|---|---|
@@ -80,9 +81,12 @@ mean anything:
 On a software renderer the edge lens is a per-pixel shader on the CPU, and
 the inner display is four times the cover's area. That is where the
 difference comes from. On a GPU the same shader is a trivial load, but that
-has not been measured yet: the numbers with `GPU=host` come with
-andashi/provisioning#4. The blur's time is the debug build's, largely
-interpreted.
+was confirmed once the emulator could use the host GPU (andashi/provisioning#4,
+2026-09-23). The same stack drops to 57 ms on the cover and 48 ms on the inner
+display, with the inner now the faster one. These are still an emulated
+radeonsi on a laptop: they tell which build is slower, not whether a Pixel
+Fold keeps up. The on-device Fold measurement this ADR asks for is still open.
+The blur's time is the debug build's, largely interpreted.
 
 ## Context
 

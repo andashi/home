@@ -46,7 +46,10 @@ SERIAL="${SERIAL:-emulator-5560}"
 export SERIAL
 export OVERLAY_DIR="${OVERLAY_DIR:-$GOS_REPO/emulator/instances/test-fold}"
 LOCK_OWNER="glass-frametime@$SERIAL#$$"
-SNAPSHOT="${SNAPSHOT:-clean}"
+# SNAPSHOT= (empty) cold-boots: the only way under GPU=host, because the
+# clean snapshot was taken in software and a snapshot carries GPU state
+# (andashi/provisioning#4). GPU is read by run.sh from the environment.
+SNAPSHOT="${SNAPSHOT-clean}"
 HERE="$(cd "$(dirname "$0")" && pwd)"
 APK="${1:-$HERE/../app/app/build/outputs/apk/default/debug/app-default-debug.apk}"
 PKG="${PKG:-org.andashi.home.debug}"
@@ -165,6 +168,13 @@ log "booting $SERIAL from snapshot '$SNAPSHOT' (overlays: $OVERLAY_DIR)"
 (cd "$GOS_REPO" && SNAPSHOT="$SNAPSHOT" emulator/run.sh start)
 adb -s "$SERIAL" unroot >/dev/null 2>&1 || true
 adb -s "$SERIAL" wait-for-device
+# A cold boot (SNAPSHOT=) is still booting here; a snapshot load is not.
+booted=0
+for _ in $(seq 180); do
+  [ "$(adb -s "$SERIAL" shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" = 1 ] && { booted=1; break; }
+  sleep 2
+done
+[ "$booted" = 1 ] || die "$SERIAL did not finish booting within 6 minutes"
 [ "$(adb -s "$SERIAL" shell id -u | tr -d '\r')" = "2000" ] || die "adb is not the unrooted shell"
 ok "adb as unrooted shell (uid 2000)"
 
@@ -213,6 +223,8 @@ record rev "$REV"
 record serial "$SERIAL"
 record runs "$RUNS"
 record fixture "$FIXTURE"
+record gpu "${GPU:-auto (software on this host)}"
+record snapshot "${SNAPSHOT:-cold boot}"
 record pack "${PACK:-none}"
 
 series() { # $1 = label
