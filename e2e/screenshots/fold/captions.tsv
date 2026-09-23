@@ -1,0 +1,6 @@
+scene	caption	guarded by
+20-fold-opened	Unfolded: one layout eight columns wide, a widget in the right half, the dock spanning the fold line.	HomeGridFoldTest (L2, foldable AVD); HomeGridScreenshotTest.foldInner
+21-fold-closed	Folded: the cover renders columns 0 to 3 of the same layout; the right-half widget is inner-only, the dock shows its left half.	HomeGridFoldTest.closedShowsTheCover...; HomeGridScreenshotTest.foldCover
+22-fold-half	Half-folded is rendered as opened (D7).	HomeGridFoldTest.halfOpenedRendersAsOpened
+23-fold-side-dock-opened	A side dock on the inner display: one column at the left edge, the only edge that is an edge in both states.	HomeGridArrangementTest; D7
+24-fold-side-dock-closed	The same side dock on the cover, unchanged, next to the three columns that remain.	HomeGridFoldTest; clampToCover
