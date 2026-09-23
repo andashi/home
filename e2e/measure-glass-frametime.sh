@@ -58,6 +58,11 @@ REV="$(git -C "$HERE/.." rev-parse --short HEAD)"
 git -C "$HERE/.." diff --quiet HEAD -- app core services data || REV="$REV-dirty"
 OUT="${OUT:-$HERE/measurements/glass-$(tr ' ' '-' <<<"$VARIANTS")-$REV.tsv}"
 CLOCK="com.android.deskclock/com.android.alarmclock.DigitalAppWidgetProvider"
+# clocks: seven identical clocks, the fixture every frame-time number is
+#   measured with, so the numbers stay comparable across #74, #75 and #77.
+# varied: different widgets and a dock of real apps, for screenshots that
+#   look like a home screen (labels name different apps).
+FIXTURE="${FIXTURE:-clocks}"
 
 c(){ [ -t 1 ] && printf '\033[%sm%s\033[0m\n' "$1" "$2" || printf '%s\n' "$2"; }
 log(){ c '1;34' ":: $*"; }; ok(){ c '1;32' " + $*"; }; warn(){ c '1;33' " ! $*"; }
@@ -99,6 +104,21 @@ items() { # $1 = dock width
   done
   printf '%s{ "id": "dock", "widget": "favorites", "x": 0, "y": 5, "w": %s, "h": 1 }' "$out" "$1"
 }
+varied_items() { # $1 = dock width
+  printf '%s' \
+    '{ "id": "analog", "widget": "com.android.deskclock/com.android.alarmclock.AnalogAppWidgetProvider", "x": 0, "y": 0, "w": 2, "h": 2 },' \
+    '{ "id": "messages", "widget": "com.android.messaging/com.android.messaging.widget.BugleWidgetProvider", "x": 2, "y": 0, "w": 2, "h": 2 },' \
+    '{ "id": "search", "widget": "app.vanadium.browser/org.chromium.chrome.browser.searchwidget.SearchWidgetProvider", "x": 0, "y": 2, "w": 4, "h": 1 },' \
+    '{ "id": "clock", "widget": "com.android.deskclock/com.android.alarmclock.DigitalAppWidgetProvider", "x": 0, "y": 3, "w": 2, "h": 1 },'
+  printf '{ "id": "dock", "widget": "favorites", "x": 0, "y": 5, "w": %s, "h": 1 }' "$1"
+}
+case "$FIXTURE" in
+  clocks) PHONE_ITEMS="$(items 4)"; FOLD_ITEMS="$(items 8)"; FAVORITES='[]' ;;
+  varied)
+    PHONE_ITEMS="$(varied_items 4)"; FOLD_ITEMS="$(varied_items 8)"
+    FAVORITES='["com.android.dialer", "com.android.messaging", "app.vanadium.browser", "app.grapheneos.camera"]' ;;
+  *) die "unknown FIXTURE $FIXTURE (clocks | varied)" ;;
+esac
 CONFIG="$WORK/glass.json"
 cat > "$CONFIG" <<EOF
 {
@@ -108,12 +128,13 @@ cat > "$CONFIG" <<EOF
     "glass": { "blur": 24, "tint": 0.12, "radius": 28, "contrast": "medium", "wallpaperBlur": true }
   },
   "home": {
+    "favorites": $FAVORITES,
     "widgets": { "enabled": true },
     "grid": {
       "columns": 4,
       "layouts": {
-        "phone": { "items": [ $(items 4) ] },
-        "fold": { "items": [ $(items 8) ] }
+        "phone": { "items": [ $PHONE_ITEMS ] },
+        "fold": { "items": [ $FOLD_ITEMS ] }
       }
     }
   }
@@ -154,7 +175,7 @@ sleep 5
 adb -s "$SERIAL" shell content write --uri "content://$PKG.config-ingest/wallpapers/mauritius.jpg" < "$WALLPAPER"
 push_config "$CONFIG" "glass fixture"
 jq -e '.success == true' <<<"$(query_json diagnostics)" >/dev/null || die "fixture did not apply: $(query_json diagnostics)"
-ok "fixture applied: mauritius wallpaper, seven clocks and the dock"
+ok "fixture applied: mauritius wallpaper, $FIXTURE widgets and the dock"
 
 # --- measure ------------------------------------------------------------------
 

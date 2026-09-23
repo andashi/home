@@ -177,7 +177,10 @@ fun Modifier.glassBackdrop(
         }
     }
     positioned
-        .semantics { this[GlassBackdropRegion] = region }
+        .semantics {
+            this[GlassBackdropRegion] = region
+            this[GlassBackdropBlurPx] = backdrop.key.blurPx
+        }
         .drawBehind {
             // RuntimeShader exists only on the hardware renderer; a software
             // canvas (drawToBitmap, some screenshot paths) throws on it, so
