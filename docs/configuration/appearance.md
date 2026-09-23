@@ -83,6 +83,11 @@ shows the wallpaper behind search as the home screen does.
 { "schemaVersion": 2, "appearance": { "glass": { "wallpaperBlur": false, "searchWallpaperBlur": true } } }
 ```
 
+| | Phone | Fold, cover | Fold, inner |
+|---|---|---|---|
+| Home sharp, search blurred | <img alt="search over a sharp home, phone" src="img/search-sharp-home-phone.jpg" width="180"> | <img alt="search over a sharp home, Fold cover" src="img/search-sharp-home-fold-cover.jpg" width="180"> | <img alt="search over a sharp home, Fold inner display" src="img/search-sharp-home-fold-inner.jpg" width="260"> |
+| `searchWallpaperBlur: false` | <img alt="search with a sharp wallpaper, phone" src="img/search-sharp-phone.jpg" width="180"> | <img alt="search with a sharp wallpaper, Fold cover" src="img/search-sharp-fold-cover.jpg" width="180"> | <img alt="search with a sharp wallpaper, Fold inner display" src="img/search-sharp-fold-inner.jpg" width="260"> |
+
 ### Tint and radius
 
 <!-- config -->

@@ -94,8 +94,25 @@ dock item `x: 3, w: 1, h: 6`; see [home-grid](home-grid.md#a-screen-full-of-widg
 
 The baseline with search open on the query "c"; see
 [search-bar](search-bar.md#search-open) for what does not follow the config
-yet (#91).
+yet (#91): the columns and the Fold's two panes.
 
 | Phone | Fold, cover | Fold, inner |
 |---|---|---|
 | <img alt="search open, phone" src="img/search-open-phone.jpg" width="200"> | <img alt="search open, Fold cover" src="img/search-open-fold-cover.jpg" width="200"> | <img alt="search open, Fold inner display" src="img/search-open-fold-inner.jpg" width="300"> |
+
+## Search over a sharp home
+
+`appearance.glass.wallpaperBlur: false`, search open; see
+[appearance](appearance.md#behind-search).
+
+| Phone | Fold, cover | Fold, inner |
+|---|---|---|
+| <img alt="search over a sharp home, phone" src="img/search-sharp-home-phone.jpg" width="200"> | <img alt="search over a sharp home, Fold cover" src="img/search-sharp-home-fold-cover.jpg" width="200"> | <img alt="search over a sharp home, Fold inner display" src="img/search-sharp-home-fold-inner.jpg" width="300"> |
+
+## Search with a sharp wallpaper
+
+`appearance.glass.searchWallpaperBlur: false`, search open.
+
+| Phone | Fold, cover | Fold, inner |
+|---|---|---|
+| <img alt="search with a sharp wallpaper, phone" src="img/search-sharp-phone.jpg" width="200"> | <img alt="search with a sharp wallpaper, Fold cover" src="img/search-sharp-fold-cover.jpg" width="200"> | <img alt="search with a sharp wallpaper, Fold inner display" src="img/search-sharp-fold-inner.jpg" width="300"> |
