@@ -16,6 +16,7 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.ShaderBrush
+import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -173,7 +174,11 @@ fun Modifier.glassBackdrop(
     positioned
         .semantics { this[GlassBackdropRegion] = region }
         .drawBehind {
-            if (lensShader != null && bitmapShader != null) {
+            // RuntimeShader exists only on the hardware renderer; a software
+            // canvas (drawToBitmap, some screenshot paths) throws on it, so
+            // there the plain region is drawn.
+            val hardware = drawContext.canvas.nativeCanvas.isHardwareAccelerated
+            if (hardware && lensShader != null && bitmapShader != null) {
                 val radius = if (pill) size.minDimension / 2f else cornerRadius.toPx()
                 GlassLens.configure(
                     lensShader, bitmapShader,

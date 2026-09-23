@@ -2,9 +2,9 @@ package de.mm20.launcher2.ui.launcher.glass
 
 import android.graphics.Bitmap
 import android.graphics.BitmapShader
-import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.graphics.Picture
 import android.graphics.Shader
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import org.junit.Assert.assertTrue
@@ -31,8 +31,14 @@ class GlassLensTest {
             strength = 20f, band = 30f,
         )
 
-        val out = Bitmap.createBitmap(160, 320, Bitmap.Config.ARGB_8888)
-        Canvas(out).drawRect(0f, 0f, 160f, 320f, Paint().apply { this.shader = shader })
+        // RuntimeShader needs HWUI; a Bitmap-backed Canvas is software and
+        // refuses it. A Picture rendered into a HARDWARE bitmap goes through
+        // the same renderer as the home screen, then is copied to read pixels.
+        val picture = Picture()
+        picture.beginRecording(160, 320).drawRect(0f, 0f, 160f, 320f, Paint().apply { this.shader = shader })
+        picture.endRecording()
+        val out = Bitmap.createBitmap(picture, 160, 320, Bitmap.Config.HARDWARE)
+            .copy(Bitmap.Config.ARGB_8888, false)
 
         val centre = out.getPixel(80, 160)
         val nearEdge = out.getPixel(2, 160)
