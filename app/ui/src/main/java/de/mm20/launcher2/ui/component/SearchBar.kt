@@ -45,6 +45,7 @@ import androidx.compose.ui.unit.dp
 import de.mm20.launcher2.preferences.SearchBarStyle
 import de.mm20.launcher2.ui.R
 import de.mm20.launcher2.ui.layout.BottomReversed
+import de.mm20.launcher2.ui.launcher.glass.GlassSurface
 import de.mm20.launcher2.ui.theme.transparency.transparency
 
 @Composable
@@ -135,12 +136,28 @@ fun SearchBar(
         else 1f
     }
 
-    LauncherCard(
-        modifier = modifier
-            .alpha(opacity),
-        backgroundOpacity = backgroundOpacity,
-        elevation = elevation
-    ) {
+    val container: @Composable (@Composable () -> Unit) -> Unit = if (glass) {
+        { inner ->
+            // A pill while it is a bar; with search open it grows a column of
+            // actions and keeps the glass radius instead.
+            GlassSurface(
+                modifier = modifier.alpha(opacity),
+                pill = level != SearchBarLevel.Active,
+                content = inner,
+            )
+        }
+    } else {
+        { inner ->
+            LauncherCard(
+                modifier = modifier.alpha(opacity),
+                backgroundOpacity = backgroundOpacity,
+                elevation = elevation,
+                content = inner,
+            )
+        }
+    }
+
+    container {
         CompositionLocalProvider(
             LocalContentColor provides contentColor
         ) {

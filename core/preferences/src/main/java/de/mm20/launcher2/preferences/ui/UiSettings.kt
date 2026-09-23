@@ -346,7 +346,7 @@ class UiSettings internal constructor(
 
     /** `home.grid.labels` (ADR 0004): a label under every grid item but the dock. */
     val homeGridLabels: Flow<Boolean>
-        get() = TODO()
+        get() = launcherDataStore.data.map { it.homeGridLabels }.distinctUntilChanged()
 
     /** `home.grid.locked` (D3): edit mode is refused while true. */
     val homeGridLocked

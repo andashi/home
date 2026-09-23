@@ -100,7 +100,8 @@ class HomeGridVM(
     val selectedId: StateFlow<String?> = _selectedId
 
     /** `home.grid.labels`: whether cells other than the dock show a label. */
-    val labels: StateFlow<Boolean> = MutableStateFlow(false)
+    val labels: StateFlow<Boolean> = uiSettings.homeGridLabels
+        .stateIn(viewModelScope, SharingStarted.Eagerly, true)
 
     private val _events = MutableSharedFlow<GridEditEvent>(extraBufferCapacity = 8)
 

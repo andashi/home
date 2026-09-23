@@ -31,6 +31,8 @@ import de.mm20.launcher2.glass.BackdropKey
 import de.mm20.launcher2.glass.BackdropPipeline
 import de.mm20.launcher2.glass.GlassBackdropSource
 import de.mm20.launcher2.glass.GlassInputs
+import de.mm20.launcher2.glass.GlassStyle
+import de.mm20.launcher2.glass.ResolvedGlass
 import de.mm20.launcher2.glass.PixelRect
 import de.mm20.launcher2.glass.RenderedBackdrop
 import de.mm20.launcher2.glass.WindowInputs
@@ -40,6 +42,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -58,6 +61,11 @@ class GlassBackdropController(
     render: suspend (BackdropImage, BackdropKey) -> ImageBitmap?,
 ) {
     private val window = MutableStateFlow<WindowInputs?>(null)
+
+    /** The glass values with contrast applied, for every surface (#75). */
+    val style: StateFlow<ResolvedGlass> = glass
+        .map { GlassStyle.resolve(it) }
+        .stateIn(scope, SharingStarted.Eagerly, DefaultStyle)
 
     val backdrop: StateFlow<RenderedBackdrop<ImageBitmap>?> =
         BackdropPipeline(source.image, glass, window, BackdropCache(), render)
@@ -109,7 +117,12 @@ fun ProvideGlassBackdrop(controller: GlassBackdropController, content: @Composab
         onPauseOrDispose { }
     }
     val backdrop by controller.backdrop.collectAsState()
-    CompositionLocalProvider(LocalGlassBackdrop provides backdrop, content = content)
+    val style by controller.style.collectAsState()
+    CompositionLocalProvider(
+        LocalGlassBackdrop provides backdrop,
+        LocalGlassStyle provides style,
+        content = content,
+    )
 }
 
 /**

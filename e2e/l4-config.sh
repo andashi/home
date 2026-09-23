@@ -493,12 +493,12 @@ effective="$(query_json config)" || die "could not query /config"
 assert_jq "$effective" "$EFFECTIVE_FILTER" "effective config matches pushed fixture"
 ok "effective config matches (icons, glass, search bar, favorites, widgets, grid incl. labels)"
 
-# Nothing renders glass or labels yet (#73): the build must say so on every
-# reload that carries them, as inert-key warnings, and still apply.
+# Glass and labels are rendered since #75: a valid config carrying them has
+# nothing to report.
 assert_jq "$LAST_REPORT" \
-  '([.diagnostics[] | select(.code == "inert-key") | .path] | sort) == ["appearance.glass", "home.grid.labels"]' \
-  "glass and labels are reported as inert until they are rendered"
-ok "glass and labels reported inert (stored and served back, not rendered yet)"
+  '[.diagnostics[] | select(.code == "inert-key")] | length == 0' \
+  "glass and labels are applied, not inert"
+ok "glass and labels applied (no inert-key)"
 
 # --- 5. re-write unchanged config: no mutations -------------------------
 

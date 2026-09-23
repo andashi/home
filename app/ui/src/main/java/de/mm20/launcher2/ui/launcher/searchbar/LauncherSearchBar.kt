@@ -77,6 +77,7 @@ fun LauncherSearchBar(
             },
             reverse = bottomSearchBar,
             darkColors = darkColors,
+            glass = true,
             menu = {
                 AnimatedVisibility(
                     hiddenItemsButtonEnabled && isSearchOpen && hiddenItems.isNotEmpty(),

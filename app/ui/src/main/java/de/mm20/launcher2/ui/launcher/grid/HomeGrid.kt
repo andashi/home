@@ -94,6 +94,7 @@ fun HomeGrid(
 ) {
     val editing by viewModel.editing.collectAsStateWithLifecycle()
     val selectedId by viewModel.selectedId.collectAsStateWithLifecycle()
+    val labels by viewModel.labels.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
     val haptics = LocalHapticFeedback.current
     val snackbar = LocalSnackbarHostState.current
@@ -204,7 +205,7 @@ fun HomeGrid(
                 },
             ) { id ->
                 val cell = cellsById[id] ?: return@HomeGridLayout
-                GridCell(cell = cell, viewModel = viewModel, favoritesContent = favoritesContent)
+                GridCell(cell = cell, viewModel = viewModel, favoritesContent = favoritesContent, showLabel = labels)
             }
         }
 

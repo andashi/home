@@ -11,4 +11,8 @@ internal fun gridItemLabel(
     item: HomeGridItem,
     providerLabel: () -> CharSequence?,
     appLabel: () -> CharSequence?,
-): String? = TODO()
+): String? {
+    if (item.isFavorites) return null
+    return providerLabel()?.toString()?.takeIf { it.isNotBlank() }
+        ?: appLabel()?.toString()?.takeIf { it.isNotBlank() }
+}

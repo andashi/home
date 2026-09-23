@@ -10,11 +10,11 @@
 # themes/mauritius (the reference's own), applied through the config like a
 # zone would.
 #
-# For each display (cover = CLOSED, inner = OPENED) and each variant:
-#
-#   off   the grid as it is, cards without the backdrop
-#   hook  cards draw the backdrop region behind their content, enabled
-#         through the debug-only GlassBackdropHook (run-as, see there)
+# For each display (cover = CLOSED, inner = OPENED) the full glass stack is
+# measured (VARIANTS=glass): backdrop region, tint, highlight and specular on
+# every surface (#75). The backdrop-only number from before #75 is
+# e2e/measurements/glass-off-hook-c33378d24.tsv; that build drew the region
+# through a debug hook that no longer exists.
 #
 # frames come from RUNS transitions home -> search -> home (a swipe up and
 # BACK), which animate the whole home content, so every surface redraws on
@@ -27,9 +27,7 @@
 #
 # Instance: SERIAL + OVERLAY_DIR (default the foldable, emulator-5560 with
 # instances/test-fold), snapshot `clean`, under the instance's device lock.
-# Everything runs as the unrooted shell (uid 2000, asserted), except the one
-# `run-as` that touches the hook file, which runs as the app's uid - possible
-# only because the debug build is debuggable.
+# Everything runs as the unrooted shell (uid 2000, asserted).
 set -euo pipefail
 
 gos_repo_default() {
@@ -51,7 +49,7 @@ HERE="$(cd "$(dirname "$0")" && pwd)"
 APK="${1:-$HERE/../app/app/build/outputs/apk/default/debug/app-default-debug.apk}"
 PKG="${PKG:-org.andashi.home.debug}"
 RUNS="${RUNS:-15}"
-VARIANTS="${VARIANTS:-off hook}"
+VARIANTS="${VARIANTS:-glass}"
 WALLPAPER="${WALLPAPER:-$GOS_REPO/themes/mauritius/tall/wallpaper.jpg}"
 REV="$(git -C "$HERE/.." rev-parse --short HEAD)"
 # The APK is built from the working tree; a dirty tree is recorded as such.
@@ -189,12 +187,8 @@ series() { # $1 = label
 }
 
 for variant in $VARIANTS; do
-  case "$variant" in
-    off) adb -s "$SERIAL" shell run-as "$PKG" rm -f files/glass-backdrop-hook ;;
-    hook) adb -s "$SERIAL" shell run-as "$PKG" touch files/glass-backdrop-hook ;;
-    *) die "unknown variant $variant" ;;
-  esac
-  # The hook is read once per process.
+  [ "$variant" = glass ] || die "unknown variant $variant"
+  # A fresh process, so the backdrop is made (and logged) once per display.
   adb -s "$SERIAL" shell am force-stop "$PKG"
   adb -s "$SERIAL" logcat -c
   for display in cover inner; do
