@@ -148,7 +148,11 @@ variant wallpaper-sharp "$PHONE_BOTTOM" "$FOLD_BOTTOM" 4=false
 variant labels-off "$PHONE_BOTTOM" "$FOLD_BOTTOM" 5=false
 variant icons-themed-off "$PHONE_BOTTOM" "$FOLD_BOTTOM" 6=false
 variant search-bottom "$PHONE_BOTTOM" "$FOLD_BOTTOM" 7=bottom
-ALL_SCENES="full-dock-bottom full-dock-side contrast-low contrast-high blur-0 tint-0-4 radius-8 wallpaper-sharp labels-off icons-themed-off search-bottom"
+# The baseline with search open on a query: shows what of the glass look
+# reaches the search screen.
+variant search-open "$PHONE_BOTTOM" "$FOLD_BOTTOM"
+declare -A SCENE_QUERY=([search-open]=c)
+ALL_SCENES="full-dock-bottom full-dock-side contrast-low contrast-high blur-0 tint-0-4 radius-8 wallpaper-sharp labels-off icons-themed-off search-bottom search-open"
 SCENES="${SCENES:-$ALL_SCENES}"
 
 # --- boot ---------------------------------------------------------------------
@@ -232,6 +236,20 @@ capture() { # $1 = output jpg, $2 = width
   die "no display matched $size"
 }
 
+# Opens search from the launcher's own bar (content-desc "Search"; the grid's
+# search widgets only carry that as text) and types the scene's query.
+open_search() { # $1 = scene
+  local query="${SCENE_QUERY[$1]:-}"
+  [ -n "$query" ] || return 0
+  tap_desc Search
+  sleep 2
+  adb -s "$SERIAL" shell input text "$query"
+  sleep 3
+  # The keyboard would cover the results the picture is about.
+  adb -s "$SERIAL" shell input keyevent KEYCODE_BACK
+  sleep 2
+}
+
 mkdir -p "$OUT"
 for name in $SCENES; do
   cfg="${SCENES_CFG[$name]:-}"
@@ -244,20 +262,27 @@ for name in $SCENES; do
   # picture would then not match the config next to it in the docs.
   # wallpaper-pending-foreground only says the system is still cropping the
   # first wallpaper set in this run; the launcher is in front, so it renders.
-  jq -e '[(.diagnostics // [])[] | select(.code != "wallpaper-pending-foreground")] | length == 0' <<<"$report" >/dev/null \
+  # A phone checks the fold layout against six rows, not the Fold's seven, and
+  # reports its bottom row (#90); that layout is not in this device's picture.
+  jq -e --arg other "home.grid.layouts.$( [ "$FOLDABLE" = 1 ] && echo phone || echo fold )." \
+    '[(.diagnostics // [])[] | select(.code != "wallpaper-pending-foreground")
+      | select((.path // "") | startswith($other) | not)] | length == 0' <<<"$report" >/dev/null \
     || die "$name applied with diagnostics, the picture would not match its config: $(jq -c '.diagnostics' <<<"$report")"
   if [ "$FOLDABLE" = 1 ]; then
     posture closed
     wait_wallpaper
+    open_search "$name"
     capture "$OUT/$name-fold-cover.jpg" 540
     posture opened
     wait_wallpaper
+    open_search "$name"
     capture "$OUT/$name-fold-inner.jpg" 780
   else
     show_home
     wait_grid
     wait_wallpaper
     sleep 3
+    open_search "$name"
     capture "$OUT/$name-phone.jpg" 540
   fi
 done

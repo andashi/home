@@ -89,3 +89,13 @@ dock item `x: 3, w: 1, h: 6`; see [home-grid](home-grid.md#a-screen-full-of-widg
 | Phone | Fold, cover | Fold, inner |
 |---|---|---|
 | <img alt="search bottom, phone" src="img/search-bottom-phone.jpg" width="200"> | <img alt="search bottom, Fold cover" src="img/search-bottom-fold-cover.jpg" width="200"> | <img alt="search bottom, Fold inner display" src="img/search-bottom-fold-inner.jpg" width="300"> |
+
+## Search open
+
+The baseline with search open on the query "c"; see
+[search-bar](search-bar.md#search-open) for what does not follow the config
+yet (#91).
+
+| Phone | Fold, cover | Fold, inner |
+|---|---|---|
+| <img alt="search open, phone" src="img/search-open-phone.jpg" width="200"> | <img alt="search open, Fold cover" src="img/search-open-fold-cover.jpg" width="200"> | <img alt="search open, Fold inner display" src="img/search-open-fold-inner.jpg" width="300"> |
