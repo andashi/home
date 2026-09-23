@@ -128,6 +128,7 @@ dependencies {
     implementation(project(":data:appshortcuts"))
     implementation(project(":data:homegrid"))
     implementation(project(":core:grid"))
+    implementation(project(":core:glass"))
     implementation(project(":data:searchable"))
     implementation(project(":data:themes"))
     implementation(project(":services:badges"))
@@ -156,7 +157,7 @@ dependencies {
 }
 
 // Coverage gate (ADR 0005, AGENTS.md "Test policy"), scoped to the code the
-// fork owns in this module: the home grid package. The rest of app/ui is
+// fork owns in this module: the home grid and glass packages. The rest of app/ui is
 // upstream and stays unmeasured on purpose. Bound = the value the tests
 // reached when the package was created, rounded down; raised as tests land,
 // never lowered.
@@ -164,7 +165,7 @@ kover {
     reports {
         filters {
             includes {
-                classes("de.mm20.launcher2.ui.launcher.grid.*")
+                classes("de.mm20.launcher2.ui.launcher.grid.*", "de.mm20.launcher2.ui.launcher.glass.*")
             }
         }
         verify {

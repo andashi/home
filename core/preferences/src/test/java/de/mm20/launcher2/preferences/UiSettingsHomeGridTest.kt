@@ -2,6 +2,8 @@ package de.mm20.launcher2.preferences
 
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
+import de.mm20.launcher2.config.GlassContrast
+import de.mm20.launcher2.preferences.ui.GlassSettings
 import de.mm20.launcher2.preferences.ui.UiSettings
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
@@ -56,5 +58,22 @@ class UiSettingsHomeGridTest {
 
         assertEquals(4, settings.homeGridColumns.first())
         assertEquals(false, settings.homeGridLocked.first())
+    }
+
+    @Test
+    fun `glass values are exposed with the defaults on fresh settings`() = runTest {
+        assertEquals(
+            GlassSettings(24f, 0.35f, 28f, GlassContrast.Medium),
+            settings(LauncherSettingsData()).glass.first(),
+        )
+    }
+
+    @Test
+    fun `glass follows the settings a config reload wrote`() = runTest {
+        val settings = settings(
+            LauncherSettingsData(glassBlur = 0f, glassTint = 0.6f, glassRadius = 12f, glassContrast = GlassContrast.High)
+        )
+
+        assertEquals(GlassSettings(0f, 0.6f, 12f, GlassContrast.High), settings.glass.first())
     }
 }

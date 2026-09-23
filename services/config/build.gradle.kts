@@ -43,6 +43,7 @@ dependencies {
     implementation(project(":core:base"))
     implementation(project(":core:config"))
     implementation(project(":core:grid"))
+    implementation(project(":core:glass"))
     implementation(project(":core:preferences"))
     implementation(project(":core:profiles"))
     implementation(project(":data:applications"))
