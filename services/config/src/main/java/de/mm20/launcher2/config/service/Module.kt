@@ -1,5 +1,6 @@
 package de.mm20.launcher2.config.service
 
+import de.mm20.launcher2.glass.GlassBackdropSource
 import de.mm20.launcher2.homegrid.HomeGridWriteBack
 import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.module
@@ -17,7 +18,10 @@ import org.koin.dsl.module
 val configModule = module {
     factory<ProfileResolver> { ProfileManagerProfileResolver(get()) }
     single { ForegroundState() }
-    single<WallpaperStore> { DefaultWallpaperStore(androidContext(), AndroidWallpaperApplier(androidContext()), get()) }
+    single { DefaultWallpaperStore(androidContext(), AndroidWallpaperApplier(androidContext()), get()) }
+    single<WallpaperStore> { get<DefaultWallpaperStore>() }
+    // The glass backdrop's source is the managed wallpaper (#74).
+    single<GlassBackdropSource> { get<DefaultWallpaperStore>() }
     factory<GridLimitsSource> { AppWidgetGridLimitsSource(androidContext(), get()) }
     // GridRowsSource comes from homeGridModule: the renderer's measured rows.
     factory<ConfigStore> {

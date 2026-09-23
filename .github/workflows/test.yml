@@ -36,6 +36,7 @@ jobs:
           :core:permissions:testDebugUnitTest
           :core:config:testDebugUnitTest
           :core:grid:test
+          :core:glass:test
           :services:config:testDebugUnitTest
           :data:database:testDebugUnitTest
           :data:searchable:testDebugUnitTest
@@ -50,12 +51,13 @@ jobs:
           ./gradlew
           :core:config:koverVerifyDebug
           :core:grid:koverVerify
+          :core:glass:koverVerify
           :services:config:koverVerifyDebug
           :data:homegrid:koverVerifyDebug
           :app:ui:koverVerifyDebug
       - name: Upload coverage reports on failure
         if: ${{ failure() }}
-        run: ./gradlew :core:config:koverHtmlReportDebug :core:grid:koverHtmlReport :services:config:koverHtmlReportDebug :data:homegrid:koverHtmlReportDebug :app:ui:koverHtmlReportDebug
+        run: ./gradlew :core:config:koverHtmlReportDebug :core:grid:koverHtmlReport :core:glass:koverHtmlReport :services:config:koverHtmlReportDebug :data:homegrid:koverHtmlReportDebug :app:ui:koverHtmlReportDebug
       - uses: actions/upload-artifact@v4
         if: ${{ failure() }}
         with:

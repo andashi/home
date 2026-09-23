@@ -7,7 +7,12 @@ import de.mm20.launcher2.config.ConfigParser
 import de.mm20.launcher2.config.Diagnostic
 import de.mm20.launcher2.config.Severity
 import de.mm20.launcher2.config.WallpaperTarget
+import de.mm20.launcher2.glass.BackdropImage
+import de.mm20.launcher2.glass.GlassBackdropSource
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
@@ -134,8 +139,51 @@ class DefaultWallpaperStore(
     private val foreground: ForegroundState = ForegroundState(),
     /** Monotonic, injectable so the re-apply cooldown is testable. */
     private val elapsedRealtime: () -> Long = { SystemClock.elapsedRealtime() },
-) : WallpaperStore {
+) : WallpaperStore, GlassBackdropSource {
     private val appContext = context.applicationContext
+
+    private val backdrop = MutableStateFlow<BackdropImage?>(null)
+
+    /**
+     * The managed wallpaper as the glass backdrop's source (#74): only while
+     * it is on the home screen as set - target `home` or `both`, handed to the
+     * system (not deferred), the system still holding it and the file
+     * unchanged. Anything else is null and the surfaces draw without a
+     * backdrop; a backdrop that no longer matches what is on screen would be
+     * worse than none.
+     */
+    override val image: StateFlow<BackdropImage?> = backdrop.asStateFlow()
+
+    override suspend fun refresh() {
+        withContext(Dispatchers.IO) { mutex.withLock { publishBackdrop() } }
+    }
+
+    /** Called with [mutex] held, after every write of the record and on [refresh]. */
+    private fun publishBackdrop() {
+        backdrop.value = readBackdrop()
+    }
+
+    private fun readBackdrop(): BackdropImage? {
+        val applied = readApplied() ?: return null
+        if (applied.pending || applied.target == WallpaperTarget.Lock) return null
+        val file = ConfigLocation.wallpaperFile(appContext, applied.image) ?: return null
+        // An upload can replace or remove the file between the check and the
+        // read; that is "no backdrop", never an exception out of apply() or
+        // the resume hook.
+        val hash = try {
+            if (!file.isFile) return null
+            file.readBytes().sha256Hex()
+        } catch (e: IOException) {
+            return null
+        }
+        if (hash != applied.sha256) return null
+        val ids = try {
+            applier.currentIds()
+        } catch (e: Exception) {
+            return null
+        }
+        return if (applied.holds(ids)) BackdropImage(file.absolutePath, applied.sha256) else null
+    }
     private val stateFile = File(appContext.filesDir, "config/wallpaper-state.json")
 
     /** One writer at a time: reloads and the foreground fixer share this store. */
@@ -178,7 +226,9 @@ class DefaultWallpaperStore(
     }
 
     override suspend fun apply(image: String, target: WallpaperTarget): List<Diagnostic> =
-        withContext(Dispatchers.IO) { mutex.withLock { applyLocked(image, target) } }
+        withContext(Dispatchers.IO) {
+            mutex.withLock { applyLocked(image, target).also { publishBackdrop() } }
+        }
 
     private fun applyLocked(image: String, target: WallpaperTarget): List<Diagnostic> {
         run {
@@ -314,6 +364,7 @@ class DefaultWallpaperStore(
             val reapplied = applied.copy(systemId = ids.system, lockId = ids.lock, pending = false)
             writeApplied(reapplied)
             lastReapply = reapplied to elapsedRealtime()
+            publishBackdrop()
             true
         }
     }

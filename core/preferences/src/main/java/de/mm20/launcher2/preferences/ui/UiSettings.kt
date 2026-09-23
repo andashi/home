@@ -1,5 +1,7 @@
 package de.mm20.launcher2.preferences.ui
 
+import de.mm20.launcher2.config.GlassContrast
+
 import de.mm20.launcher2.preferences.ColorScheme
 import de.mm20.launcher2.preferences.GestureAction
 import de.mm20.launcher2.preferences.IconShape
@@ -9,6 +11,7 @@ import de.mm20.launcher2.preferences.SearchBarColors
 import de.mm20.launcher2.preferences.SearchBarStyle
 import de.mm20.launcher2.preferences.SystemBarColors
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import java.util.UUID
 
@@ -347,6 +350,15 @@ class UiSettings internal constructor(
             it.homeGridLocked
         }.distinctUntilChanged()
 
+    /**
+     * `appearance.glass` (ADR 0004, #24). Config-only, like the grid keys: no
+     * settings screen writes it. Emits again only when a value changes.
+     */
+    val glass: Flow<GlassSettings>
+        get() = launcherDataStore.data.map {
+            GlassSettings(it.glassBlur, it.glassTint, it.glassRadius, it.glassContrast)
+        }.distinctUntilChanged()
+
     /** Whether the grid was given its first content (the default favorites row, or a config); see HomeGridDefaults. */
     val homeGridInitialized
         get() = launcherDataStore.data.map {
@@ -366,3 +378,11 @@ class UiSettings internal constructor(
     }
 
 }
+
+/** The glass values in effect; see `appearance.glass` in ADR 0002. */
+data class GlassSettings(
+    val blur: Float,
+    val tint: Float,
+    val radius: Float,
+    val contrast: GlassContrast,
+)

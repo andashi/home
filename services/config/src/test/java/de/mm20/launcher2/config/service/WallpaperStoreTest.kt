@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import de.mm20.launcher2.config.Diagnostic
 import de.mm20.launcher2.config.WallpaperTarget
+import de.mm20.launcher2.glass.BackdropImage
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
@@ -352,5 +353,82 @@ class WallpaperStoreTest {
         store.apply("home.jpg", WallpaperTarget.Both)
 
         assertNull(store.pending())
+    }
+
+    // ----- the glass backdrop's source (#74) -----
+
+    private fun backdropOf(name: String) =
+        BackdropImage(File(dir, name).absolutePath, File(dir, name).readBytes().sha256Hex())
+
+    @Test
+    fun `an applied home wallpaper is the backdrop, without asking`() = runTest {
+        store.apply("home.jpg", WallpaperTarget.Both)
+
+        assertEquals(backdropOf("home.jpg"), store.image.value)
+    }
+
+    @Test
+    fun `a home-only wallpaper is the backdrop, a lock-only one is not`() = runTest {
+        store.apply("home.jpg", WallpaperTarget.Home)
+        assertEquals(backdropOf("home.jpg"), store.image.value)
+
+        store.apply("home.jpg", WallpaperTarget.Lock)
+        assertNull(store.image.value)
+    }
+
+    @Test
+    fun `a deferred wallpaper is not the backdrop until the foreground hook sets it`() = runTest {
+        visible.onPaused()
+        store.apply("home.jpg", WallpaperTarget.Both)
+        assertNull("the screen still shows the previous wallpaper", store.image.value)
+
+        visible.onResumed()
+        store.ensureRendered()
+        assertEquals(backdropOf("home.jpg"), store.image.value)
+    }
+
+    @Test
+    fun `a wallpaper changed by hand drops the backdrop on refresh`() = runTest {
+        store.apply("home.jpg", WallpaperTarget.Both)
+        applier.ids = WallpaperIds(system = 99, lock = 99)
+
+        store.refresh()
+
+        assertNull(store.image.value)
+    }
+
+    @Test
+    fun `a file replaced under the same name drops the backdrop on refresh`() = runTest {
+        store.apply("home.jpg", WallpaperTarget.Both)
+        File(dir, "home.jpg").writeBytes(byteArrayOf(9, 9))
+
+        store.refresh()
+
+        assertNull(store.image.value)
+    }
+
+    @Test
+    fun `refresh restores the backdrop after a process restart`() = runTest {
+        store.apply("home.jpg", WallpaperTarget.Both)
+        val restarted = DefaultWallpaperStore(context, applier, visible) { elapsed }
+        assertNull(restarted.image.value)
+
+        restarted.refresh()
+
+        assertEquals(backdropOf("home.jpg"), restarted.image.value)
+    }
+
+    @Test
+    fun `an unreadable wallpaper file is no backdrop, not an exception`() = runTest {
+        store.apply("home.jpg", WallpaperTarget.Both)
+        val file = File(dir, "home.jpg")
+        check(file.setReadable(false)) { "cannot make the file unreadable here" }
+        try {
+            store.refresh()
+
+            assertNull(store.image.value)
+        } finally {
+            file.setReadable(true)
+        }
     }
 }

@@ -17,6 +17,7 @@ dependencies {
     // module itself, next to the tests that have to reach it.
     kover(project(":core:config"))
     kover(project(":core:grid"))
+    kover(project(":core:glass"))
     kover(project(":services:config"))
     kover(project(":data:homegrid"))
     kover(project(":app:ui"))

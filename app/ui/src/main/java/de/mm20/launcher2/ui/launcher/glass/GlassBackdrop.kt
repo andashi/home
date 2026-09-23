@@ -1,0 +1,142 @@
+package de.mm20.launcher2.ui.launcher.glass
+
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.composed
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.layout.boundsInWindow
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalWindowInfo
+import androidx.compose.ui.semantics.SemanticsPropertyKey
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntSize
+import androidx.lifecycle.compose.LifecycleResumeEffect
+import de.mm20.launcher2.glass.BackdropCache
+import de.mm20.launcher2.glass.BackdropGeometry
+import de.mm20.launcher2.glass.BackdropImage
+import de.mm20.launcher2.glass.BackdropKey
+import de.mm20.launcher2.glass.BackdropPipeline
+import de.mm20.launcher2.glass.GlassBackdropSource
+import de.mm20.launcher2.glass.GlassInputs
+import de.mm20.launcher2.glass.PixelRect
+import de.mm20.launcher2.glass.RenderedBackdrop
+import de.mm20.launcher2.glass.WindowInputs
+import android.util.Log
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
+import kotlin.math.roundToInt
+
+/**
+ * The blurred wallpaper under the home screen's glass surfaces (#74, ADR
+ * 0004): made once per wallpaper, glass setting and window, cached, and read
+ * by every surface. Lives for the process (a Koin single), so an activity
+ * recreation does not re-blur.
+ */
+class GlassBackdropController(
+    private val source: GlassBackdropSource,
+    glass: Flow<GlassInputs>,
+    scope: CoroutineScope,
+    render: suspend (BackdropImage, BackdropKey) -> ImageBitmap?,
+) {
+    private val window = MutableStateFlow<WindowInputs?>(null)
+
+    val backdrop: StateFlow<RenderedBackdrop<ImageBitmap>?> =
+        BackdropPipeline(source.image, glass, window, BackdropCache(), render)
+            .backdrop
+            .stateIn(scope, SharingStarted.Eagerly, null)
+
+    fun setWindow(widthPx: Int, heightPx: Int, density: Float) {
+        window.value = WindowInputs(widthPx, heightPx, density)
+    }
+
+    /**
+     * Asks the source to re-check the wallpaper. Runs from the resume hook,
+     * where an exception would take the launcher down; a failed check keeps
+     * the backdrop as it was and is logged.
+     */
+    suspend fun refresh() {
+        try {
+            source.refresh()
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Log.w("GlassBackdrop", "refresh failed: ${e.javaClass.simpleName}")
+        }
+    }
+}
+
+/** The backdrop surfaces draw from; null without a managed home wallpaper. */
+val LocalGlassBackdrop = staticCompositionLocalOf<RenderedBackdrop<ImageBitmap>?> { null }
+
+/** The backdrop region a surface drew, in backdrop pixels (tests read it). */
+val GlassBackdropRegion = SemanticsPropertyKey<PixelRect>("GlassBackdropRegion")
+
+/**
+ * Provides [LocalGlassBackdrop] for [content]: tells the controller the
+ * window size and asks the source to re-check the wallpaper whenever the
+ * launcher comes to the front, which is when a wallpaper changed elsewhere
+ * would first be seen.
+ */
+@Composable
+fun ProvideGlassBackdrop(controller: GlassBackdropController, content: @Composable () -> Unit) {
+    val size = LocalWindowInfo.current.containerSize
+    val density = LocalDensity.current.density
+    LaunchedEffect(controller, size, density) {
+        if (size.width > 0 && size.height > 0) controller.setWindow(size.width, size.height, density)
+    }
+    val scope = rememberCoroutineScope()
+    LifecycleResumeEffect(controller) {
+        scope.launch { controller.refresh() }
+        onPauseOrDispose { }
+    }
+    val backdrop by controller.backdrop.collectAsState()
+    CompositionLocalProvider(LocalGlassBackdrop provides backdrop, content = content)
+}
+
+/**
+ * Draws the part of the backdrop that lies under this node, behind its
+ * content, stretched from backdrop pixels to the node's size. Without a
+ * backdrop it is a no-op, so a surface degrades to tint only.
+ */
+fun Modifier.glassBackdrop(): Modifier = composed {
+    val backdrop = LocalGlassBackdrop.current
+    var bounds by remember { mutableStateOf<Rect?>(null) }
+    val positioned = Modifier.onGloballyPositioned { bounds = it.boundsInWindow() }
+    val box = bounds
+    if (backdrop == null || box == null) return@composed positioned
+    val bitmap = backdrop.bitmap
+    val region = BackdropGeometry.region(
+        bitmap.width, bitmap.height,
+        backdrop.key.windowWidthPx, backdrop.key.windowHeightPx,
+        box.left, box.top, box.right, box.bottom,
+    )
+    positioned
+        .semantics { this[GlassBackdropRegion] = region }
+        .drawBehind {
+            drawImage(
+                image = bitmap,
+                srcOffset = IntOffset(region.left, region.top),
+                srcSize = IntSize(region.width, region.height),
+                dstSize = IntSize(size.width.roundToInt(), size.height.roundToInt()),
+            )
+        }
+}
