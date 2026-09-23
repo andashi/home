@@ -41,7 +41,7 @@ object ConfigParser {
      * classified [KeyEffect.Applied] so that the section reports once, not
      * five times; the section's own entry carries the truth.
      */
-    private val GlassNotRendered = KeyEffect.Inert("stored and served back; rendered from #75")
+    private val GlassNotRendered = KeyEffect.Inert("stored and served back, but nothing renders it until #75")
 
     private val GridItemKeys: Map<String, KeyEffect> = listOf(
         "id", "widget", "x", "y", "w", "h", "profile", "borderless", "background", "themeColors",
@@ -335,7 +335,7 @@ object ConfigParser {
                                 Severity.Warning,
                                 "inert-key",
                                 path,
-                                "'$path' is accepted but this build does not serve it: ${effect.reason}",
+                                "'$path' is accepted but this build does not act on it as specified: ${effect.reason}",
                             )
 
                             KeyEffect.Applied -> Unit
