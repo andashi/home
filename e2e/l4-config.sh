@@ -535,6 +535,21 @@ settle_then_broadcast "$VALID_CONFIG" "$H_VALID" "change-back-2"
 
 # --- 6b. wallpaper: upload, apply, verify, idempotent -------------------
 
+# Since ba37d7009 the launcher sets a wallpaper only while one of its
+# activities is resumed (the system crops for the current user only, so a
+# background set is deferred and reported as wallpaper-pending-foreground).
+# On the clean snapshot the process runs but no activity does; bring the
+# launcher to the front first, as a user unlocking the phone would.
+log "starting the launcher activity (wallpapers apply only in the foreground)"
+home_activity="$(adb -s "$SERIAL" shell cmd package resolve-activity --brief \
+  -a android.intent.action.MAIN -c android.intent.category.HOME "$PKG" | tr -d '\r' | tail -1)"
+case "$home_activity" in
+  "$PKG"/*) ;;
+  *) die "could not resolve the launcher's HOME activity (got '$home_activity')" ;;
+esac
+adb -s "$SERIAL" shell am start -W -n "$home_activity" >/dev/null || die "am start $home_activity failed"
+ok "launcher in the foreground ($home_activity)"
+
 id_before="$(wallpaper_id)"
 write_wallpaper "$WALLPAPER_IMAGE" "l4.png"
 settle_then_broadcast "$WALLPAPER_CONFIG" "$H_WALLPAPER" "wallpaper"
