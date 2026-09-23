@@ -11,7 +11,6 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -86,7 +85,7 @@ fun GlassSurface(
             }
             // The rim: light from the top-left, a weaker reflection at the
             // bottom-right, faint along the sides (#82).
-            .border(GlassLook.RimWidthDp.dp, RimBrush, shape),
+            .glassRim(shape),
         propagateMinConstraints = true,
     ) {
         CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onSurface) {
@@ -97,8 +96,10 @@ fun GlassSurface(
 
 private val SpecularHeight = 24.dp
 private const val SpecularAlpha = 0.18f
-private val RimBrush = Brush.linearGradient(
+private val RimBrush = Brush.sweepGradient(
     colorStops = GlassLook.RimStops.map { (at, alpha) -> at to Color.White.copy(alpha = alpha) }.toTypedArray(),
-    start = Offset.Zero,
-    end = Offset.Infinite,
 )
+
+/** The directional rim on its own, for tests: the same stroke every surface draws. */
+internal fun Modifier.glassRim(shape: androidx.compose.ui.graphics.Shape): Modifier =
+    border(GlassLook.RimWidthDp.dp, RimBrush, shape)

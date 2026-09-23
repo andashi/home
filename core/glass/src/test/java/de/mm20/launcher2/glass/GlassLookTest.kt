@@ -70,16 +70,23 @@ class GlassLookTest {
         assertTrue(EdgeLens.signedDistance(0f, 0f, w, h, r) > 0f)
     }
 
+    /**
+     * The rim's stops are angles around the surface's centre (0 = 3 o'clock,
+     * clockwise, as a sweep gradient runs), so the light falls the same way
+     * on a square card and on a wide pill.
+     */
     @Test
-    fun `the rim is brightest at the top-left, weaker at the bottom-right, faint in between`() {
+    fun `the rim is brightest at the top-left, weaker at the bottom-right, faint on every side`() {
         val stops = GlassLook.RimStops
+        fun alphaAt(angle: Float) = stops.first { it.first == angle }.second
+        val topLeft = alphaAt(0.625f)      // 225 degrees
+        val bottomRight = alphaAt(0.125f)  // 45 degrees
+        val sides = listOf(0f, 0.25f, 0.5f, 0.75f).map(::alphaAt) // right, bottom, left, top
+        assertTrue(topLeft > bottomRight)
+        assertTrue(sides.all { bottomRight > it })
+        assertEquals("the sweep closes", stops.first().second, stops.last().second)
         assertEquals(0f, stops.first().first)
         assertEquals(1f, stops.last().first)
-        val topLeft = stops.first().second
-        val bottomRight = stops.last().second
-        val middle = stops.filter { it.first in 0.3f..0.7f }.maxOf { it.second }
-        assertTrue(topLeft > bottomRight)
-        assertTrue(bottomRight > middle)
         assertTrue(stops.zipWithNext().all { (a, b) -> a.first < b.first })
         assertTrue(stops.all { it.second in 0f..1f })
     }

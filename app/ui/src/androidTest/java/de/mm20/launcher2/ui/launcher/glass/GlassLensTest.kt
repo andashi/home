@@ -21,7 +21,11 @@ class GlassLensTest {
 
     @Test
     fun theLensCompilesAndDrawsTheBackdrop() {
-        val backdrop = Bitmap.createBitmap(20, 40, Bitmap.Config.ARGB_8888).apply { eraseColor(Color.rgb(20, 120, 200)) }
+        // Red grows from 0 at the left edge: an unbent sample near the edge
+        // reads almost no red, one the lens pulled inwards reads some.
+        val backdrop = Bitmap.createBitmap(20, 40, Bitmap.Config.ARGB_8888).apply {
+            for (x in 0 until width) for (y in 0 until height) setPixel(x, y, Color.rgb(x * 10, 120, 200))
+        }
         val shader = GlassLens.compile()
         GlassLens.configure(
             shader,
@@ -43,6 +47,9 @@ class GlassLensTest {
         val centre = out.getPixel(80, 160)
         val nearEdge = out.getPixel(2, 160)
         assertTrue("centre is the backdrop: ${Integer.toHexString(centre)}", Color.blue(centre) > 150 && Color.alpha(centre) == 255)
-        assertTrue("the edge samples the backdrop too: ${Integer.toHexString(nearEdge)}", Color.alpha(nearEdge) == 255)
+        assertTrue(
+            "the edge samples further inside: ${Integer.toHexString(nearEdge)}",
+            Color.alpha(nearEdge) == 255 && Color.red(nearEdge) > 10,
+        )
     }
 }

@@ -15,15 +15,20 @@ object GlassLook {
     const val RimWidthDp = 1.25f
 
     /**
-     * The rim's alpha along the diagonal from the top-left corner (0) to the
-     * bottom-right one (1): light falls from the top-left, so that corner is
-     * brightest, the far corner catches a weaker reflection, the sides little.
+     * The rim's alpha by angle around the surface's centre, as a sweep
+     * gradient runs: 0 is 3 o'clock, clockwise, 1 closes the circle. Light
+     * falls from the top-left (225 degrees), the bottom-right (45 degrees)
+     * catches a weaker reflection, every side stays faint. Angles, not a
+     * diagonal, so a wide pill is lit like a square card (review on #83).
      */
     val RimStops: List<Pair<Float, Float>> = listOf(
-        0f to 0.55f,
-        0.35f to 0.10f,
-        0.65f to 0.10f,
-        1f to 0.32f,
+        0f to 0.10f, // right
+        0.125f to 0.32f, // bottom-right
+        0.25f to 0.08f, // bottom
+        0.5f to 0.10f, // left
+        0.625f to 0.55f, // top-left
+        0.75f to 0.12f, // top
+        1f to 0.10f, // right again
     )
 
     /** How far the lens pulls the backdrop at the very edge, dp. */
