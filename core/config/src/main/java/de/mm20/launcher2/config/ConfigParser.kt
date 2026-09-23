@@ -66,6 +66,7 @@ object ConfigParser {
             "tint" to KeyEffect.Applied,
             "radius" to KeyEffect.Applied,
             "contrast" to KeyEffect.Applied,
+            "wallpaperBlur" to KeyEffect.Applied,
         ),
         "appearance.wallpaper" to mapOf(
             "image" to KeyEffect.Applied,

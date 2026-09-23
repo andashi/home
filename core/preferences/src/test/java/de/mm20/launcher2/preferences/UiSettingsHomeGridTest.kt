@@ -63,7 +63,7 @@ class UiSettingsHomeGridTest {
     @Test
     fun `glass values are exposed with the defaults on fresh settings`() = runTest {
         assertEquals(
-            GlassSettings(24f, 0.35f, 28f, GlassContrast.Medium),
+            GlassSettings(24f, 0.12f, 28f, GlassContrast.Medium, wallpaperBlur = true),
             settings(LauncherSettingsData()).glass.first(),
         )
     }
@@ -71,10 +71,13 @@ class UiSettingsHomeGridTest {
     @Test
     fun `glass follows the settings a config reload wrote`() = runTest {
         val settings = settings(
-            LauncherSettingsData(glassBlur = 0f, glassTint = 0.6f, glassRadius = 12f, glassContrast = GlassContrast.High)
+            LauncherSettingsData(
+                glassBlur = 0f, glassTint = 0.6f, glassRadius = 12f, glassContrast = GlassContrast.High,
+                glassWallpaperBlur = false,
+            )
         )
 
-        assertEquals(GlassSettings(0f, 0.6f, 12f, GlassContrast.High), settings.glass.first())
+        assertEquals(GlassSettings(0f, 0.6f, 12f, GlassContrast.High, wallpaperBlur = false), settings.glass.first())
     }
 
     @Test

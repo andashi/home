@@ -50,6 +50,7 @@ import de.mm20.launcher2.ui.launcher.scaffold.ScaffoldAnimation
 import de.mm20.launcher2.ui.launcher.scaffold.ScaffoldConfiguration
 import de.mm20.launcher2.ui.launcher.scaffold.ScaffoldGesture
 import de.mm20.launcher2.ui.launcher.scaffold.SearchBarPosition
+import de.mm20.launcher2.ui.launcher.glass.GlassWallpaper
 import de.mm20.launcher2.ui.launcher.glass.ProvideGlassBackdrop
 import org.koin.compose.koinInject
 import de.mm20.launcher2.ui.launcher.grid.HomeGridComponent
@@ -384,6 +385,8 @@ abstract class SharedLauncherActivity(
                             }
 
                             ProvideGlassBackdrop(koinInject()) {
+                                // The home background as the blurred backdrop (#82).
+                                GlassWallpaper()
                                 LauncherScaffold(
                                     config = config,
                                     modifier = Modifier

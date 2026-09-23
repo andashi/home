@@ -105,7 +105,7 @@ cat > "$CONFIG" <<EOF
   "schemaVersion": 2,
   "appearance": {
     "wallpaper": { "image": "mauritius.jpg", "target": "both" },
-    "glass": { "blur": 24, "tint": 0.35, "radius": 28, "contrast": "medium" }
+    "glass": { "blur": 24, "tint": 0.12, "radius": 28, "contrast": "medium", "wallpaperBlur": true }
   },
   "home": {
     "widgets": { "enabled": true },

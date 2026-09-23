@@ -26,6 +26,7 @@ class ConfigStateMapperTest {
             glassTint = 0.5f,
             glassRadius = 20f,
             glassContrast = GlassContrast.High,
+            glassWallpaperBlur = false,
             searchBarPosition = SearchBarPosition.Bottom,
             favorites = listOf(
                 Favorite("com.example.app", Profile.Personal),
@@ -45,7 +46,7 @@ class ConfigStateMapperTest {
 
         assertEquals(ConfigMigrations.currentSchemaVersion, config.schemaVersion)
         assertEquals(IconsConfig(true, true, "com.example.icons"), config.icons)
-        assertEquals(GlassConfig(16f, 0.5f, 20f, GlassContrast.High), config.appearance?.glass)
+        assertEquals(GlassConfig(16f, 0.5f, 20f, GlassContrast.High, wallpaperBlur = false), config.appearance?.glass)
         assertEquals(false, config.home?.grid?.labels)
         assertEquals(SearchBarPosition.Bottom, config.home?.searchBar?.position)
         assertEquals(state.favorites, config.home?.favorites)
@@ -73,7 +74,10 @@ class ConfigStateMapperTest {
         // Fully populated with the defaults, so provisioning's read-back can
         // compare field by field without knowing them (#73).
         assertEquals(
-            GlassConfig(GlassDefaults.Blur, GlassDefaults.Tint, GlassDefaults.Radius, GlassDefaults.Contrast),
+            GlassConfig(
+                GlassDefaults.Blur, GlassDefaults.Tint, GlassDefaults.Radius, GlassDefaults.Contrast,
+                GlassDefaults.WallpaperBlur,
+            ),
             config.appearance?.glass,
         )
         assertEquals(GlassDefaults.Labels, config.home?.grid?.labels)
@@ -133,7 +137,9 @@ class ConfigStateMapperTest {
     @Test
     fun `the glass defaults are the documented ones`() {
         assertEquals(24f, GlassDefaults.Blur)
-        assertEquals(0.35f, GlassDefaults.Tint)
+        // Lowered from 0.35 when the frosted look became liquid (#82).
+        assertEquals(0.12f, GlassDefaults.Tint)
+        assertEquals(true, GlassDefaults.WallpaperBlur)
         assertEquals(28f, GlassDefaults.Radius)
         assertEquals(GlassContrast.Medium, GlassDefaults.Contrast)
         assertEquals(true, GlassDefaults.Labels)

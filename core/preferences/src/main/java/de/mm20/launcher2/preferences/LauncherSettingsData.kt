@@ -27,6 +27,7 @@ data class LauncherSettingsData internal constructor(
     val glassTint: Float = GlassDefaults.Tint,
     val glassRadius: Float = GlassDefaults.Radius,
     val glassContrast: GlassContrast = GlassDefaults.Contrast,
+    val glassWallpaperBlur: Boolean = GlassDefaults.WallpaperBlur,
     @Serializable(with = UUIDSerializer::class)
     val uiTypographyId: UUID = UUID(0L, 0L),
 
