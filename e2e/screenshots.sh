@@ -229,6 +229,10 @@ EOF
   show_home; wait_cells 3 60
   long_press "$(free_cell_point "$DOCK_W")"
   sleep 3
+  # The picture must show the absence of the edit bar, so assert it before
+  # capturing; a failed dump is an error, not an absence.
+  bar="$(desc_bounds grid-edit-done)" || die "uiautomator dump failed while checking the locked screen"
+  [ -z "$bar" ] || die "locked layout showed the edit bar after a long press"
   scene 13-locked "locked: true in the config: a long press shows no edit bar and nothing is ever written back." "HomeGridEditModeTest.aLockedLayoutRefusesEditMode; e2e/l4-grid.sh step 7"
 else
   # 20-22: one fold layout, three postures.

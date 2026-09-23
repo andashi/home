@@ -1,11 +1,16 @@
 #!/usr/bin/env python3
 """Builds the feature summary page from e2e/screenshots/{phone,fold}/captions.tsv
 and the PNGs next to them (embedded as data URIs, downscaled to keep the page
-small). Usage: build-summary.py <screenshots-dir> <out.html>"""
-import base64, csv, io, pathlib, sys
+small). Usage: build-summary.py <screenshots-dir> <out.html> [build-label]
+The build label defaults to `git describe --tags --always` of the checkout the
+screenshots were taken from, so a regenerated page names its own build."""
+import base64, csv, io, pathlib, subprocess, sys
 from PIL import Image
 
 root = pathlib.Path(sys.argv[1]); out = pathlib.Path(sys.argv[2])
+build = sys.argv[3] if len(sys.argv) > 3 else subprocess.run(
+    ["git", "describe", "--tags", "--always", "--dirty"], capture_output=True, text=True,
+    cwd=root).stdout.strip() or "unknown build"
 
 def data_uri(png: pathlib.Path, max_h: int) -> tuple[str, int, int]:
     im = Image.open(png).convert("RGB")
@@ -68,10 +73,10 @@ a{{color:var(--accent-ink)}}
 </style>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <div class="wrap">
-  <div class="eyebrow">andashi/home · epic #23 · release v0.4.0</div>
+  <div class="eyebrow">andashi/home · epic #23 · {build}</div>
   <h1>Andashi Home Grid Features</h1>
   <p class="lede">Every feature of the single-page widget grid, photographed on the GrapheneOS emulator by <code>e2e/screenshots.sh</code>: each scene is a config the launcher received through its public surface plus, where it applies, a gesture sent with <code>adb input</code>. Nothing was staged by hand, so the pictures can be regenerated for every release. The look is still the pre-glass one: liquid glass surfaces are the next epic (#24).</p>
-  <div class="meta"><span><b>Build</b> v0.4.0 (main 9f6bbfc1a)</span><span><b>Phone</b> GrapheneOS emulator, 1080×2364</span><span><b>Fold</b> GrapheneOS foldable instance, 2076×2152 inner, 1080×2364 cover</span><span><b>Widgets</b> AOSP DeskClock (digital 3×1, analog 2×2)</span></div>
+  <div class="meta"><span><b>Build</b> {build}</span><span><b>Phone</b> GrapheneOS emulator, 1080×2364</span><span><b>Fold</b> GrapheneOS foldable instance, 2076×2152 inner, 1080×2364 cover</span><span><b>Widgets</b> AOSP DeskClock (digital 3×1, analog 2×2)</span></div>
 
   <h2>Phone</h2>
   <div class="grid">
