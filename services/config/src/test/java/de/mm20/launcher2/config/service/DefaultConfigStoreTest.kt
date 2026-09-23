@@ -6,7 +6,6 @@ import android.os.Bundle
 import android.os.Parcel
 import android.os.Process
 import android.os.UserHandle
-import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import de.mm20.launcher2.applications.AppRepository
 import de.mm20.launcher2.config.WallpaperTarget
@@ -26,10 +25,8 @@ import de.mm20.launcher2.config.ConfigState
 import de.mm20.launcher2.config.Diagnostic
 import de.mm20.launcher2.config.Favorite
 import de.mm20.launcher2.config.Severity
-import de.mm20.launcher2.database.AppDatabase
 import de.mm20.launcher2.icons.StaticLauncherIcon
 import de.mm20.launcher2.preferences.config.LauncherConfigSettings
-import de.mm20.launcher2.preferences.config.SettingsBackedState
 import de.mm20.launcher2.profiles.Profile
 import de.mm20.launcher2.search.Application
 import de.mm20.launcher2.search.SavableSearchable
@@ -37,33 +34,24 @@ import de.mm20.launcher2.search.SearchableSerializer
 import de.mm20.launcher2.searchable.PinnedLevel
 import de.mm20.launcher2.searchable.SavableSearchableRepository
 import de.mm20.launcher2.searchable.VisibilityLevel
-import de.mm20.launcher2.themes.DefaultThemeId
-import de.mm20.launcher2.themes.R
-import de.mm20.launcher2.themes.transparencies.Transparencies
-import de.mm20.launcher2.themes.transparencies.TransparenciesRepository
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
-import org.junit.After
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
-import java.util.UUID
 import de.mm20.launcher2.config.Profile as ConfigProfile
 
 @RunWith(RobolectricTestRunner::class)
 class DefaultConfigStoreTest {
 
     private lateinit var context: Context
-    private lateinit var database: AppDatabase
-    private lateinit var transparenciesRepository: TransparenciesRepository
     private lateinit var settings: FakeLauncherConfigSettings
     private lateinit var homeGridRepository: FakeHomeGridRepository
     private lateinit var initFlag: FakeInitFlag
@@ -82,8 +70,6 @@ class DefaultConfigStoreTest {
     @Before
     fun setUp() {
         context = ApplicationProvider.getApplicationContext()
-        database = Room.inMemoryDatabaseBuilder(context, AppDatabase::class.java).build()
-        transparenciesRepository = TransparenciesRepository(context, database)
         settings = FakeLauncherConfigSettings()
         homeGridRepository = FakeHomeGridRepository()
         initFlag = FakeInitFlag()
@@ -98,7 +84,6 @@ class DefaultConfigStoreTest {
         wallpaperStore = FakeWallpaperStore()
         store = DefaultConfigStore(
             settings,
-            transparenciesRepository,
             homeGridRepository,
             initFlag,
             initLock,
@@ -124,10 +109,6 @@ class DefaultConfigStoreTest {
         assertEquals(listOf("lock.jpg" to WallpaperTarget.Lock), wallpaperStore.applied)
     }
 
-    @After
-    fun tearDown() {
-        database.close()
-    }
 
     private fun app(packageName: String, user: UserHandle): FakeApplication {
         return FakeApplication(ComponentName(packageName, "$packageName.MainActivity"), user)
@@ -513,20 +494,38 @@ class DefaultConfigStoreTest {
         assertTrue(settings.state.widgetsEnabled)
     }
 
+    @Test
+    fun `a failed settings write is reported for every settings-backed section, glass included`() = runTest {
+        settings.applyFailure = IllegalStateException("datastore gone")
+
+        val diagnostics = store.apply(
+            listOf(
+                ConfigMutation.SetIcons(themed = true),
+                ConfigMutation.SetGlass(tint = 0.1f),
+                ConfigMutation.SetFavorites(emptyList()),
+            )
+        )
+
+        assertEquals(
+            listOf("icons", "appearance.glass"),
+            diagnostics.filter { it.code == "apply-failed" }.map { it.path },
+        )
+        assertTrue(diagnostics.all { it.severity == Severity.Error && it.message.contains("datastore gone") })
+    }
+
     // ----- fakes -----
 
     private class FakeLauncherConfigSettings(
         var state: ConfigState = ConfigState(),
-        var transparenciesId: UUID = UUID(0L, 0L),
+        var applyFailure: Exception? = null,
     ) : LauncherConfigSettings {
         val applyCalls = mutableListOf<List<ConfigMutation>>()
 
-        override suspend fun readState(): SettingsBackedState {
-            return SettingsBackedState(state, transparenciesId)
-        }
+        override suspend fun readState(): ConfigState = state
 
         override suspend fun apply(mutations: List<ConfigMutation>) {
             applyCalls += mutations
+            applyFailure?.let { throw it }
             for (mutation in mutations) {
                 when (mutation) {
                     is ConfigMutation.SetIcons -> state = state.copy(
@@ -559,10 +558,6 @@ class DefaultConfigStoreTest {
                     else -> Unit
                 }
             }
-        }
-
-        override suspend fun setTransparenciesId(id: UUID) {
-            transparenciesId = id
         }
     }
 

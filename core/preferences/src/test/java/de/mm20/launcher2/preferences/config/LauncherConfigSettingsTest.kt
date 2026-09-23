@@ -55,23 +55,23 @@ class LauncherConfigSettingsTest {
 
         val result = gateway.readState()
 
-        assertEquals(true, result.state.themedIcons)
-        assertEquals(true, result.state.enforceThemedIcons)
-        assertEquals("com.example.iconpack", result.state.iconPack)
-        assertEquals(SearchBarPosition.Bottom, result.state.searchBarPosition)
-        assertEquals(true, result.state.widgetsEnabled)
-        assertEquals(5, result.state.gridColumns)
-        assertEquals(true, result.state.gridLocked)
-        assertEquals(false, result.state.gridLabels)
-        assertEquals(12f, result.state.glassBlur)
-        assertEquals(0.6f, result.state.glassTint)
-        assertEquals(20f, result.state.glassRadius)
-        assertEquals(GlassContrast.High, result.state.glassContrast)
+        assertEquals(true, result.themedIcons)
+        assertEquals(true, result.enforceThemedIcons)
+        assertEquals("com.example.iconpack", result.iconPack)
+        assertEquals(SearchBarPosition.Bottom, result.searchBarPosition)
+        assertEquals(true, result.widgetsEnabled)
+        assertEquals(5, result.gridColumns)
+        assertEquals(true, result.gridLocked)
+        assertEquals(false, result.gridLabels)
+        assertEquals(12f, result.glassBlur)
+        assertEquals(0.6f, result.glassTint)
+        assertEquals(20f, result.glassRadius)
+        assertEquals(GlassContrast.High, result.glassContrast)
     }
 
     @Test
     fun `fresh settings read back the documented glass defaults`() = runTest {
-        val state = createGateway().readState().state
+        val state = createGateway().readState()
 
         assertEquals(GlassDefaults.Blur, state.glassBlur)
         assertEquals(GlassDefaults.Tint, state.glassTint)
@@ -113,7 +113,7 @@ class LauncherConfigSettingsTest {
     fun `readState maps searchBarBottom false to Top`() = runTest {
         val gateway = createGateway(LauncherSettingsData(searchBarBottom = false))
 
-        assertEquals(SearchBarPosition.Top, gateway.readState().state.searchBarPosition)
+        assertEquals(SearchBarPosition.Top, gateway.readState().searchBarPosition)
     }
 
     @Test
@@ -222,12 +222,12 @@ class LauncherConfigSettingsTest {
         )
 
         val result = gateway.readState()
-        assertEquals(true, result.state.themedIcons)
-        assertEquals("com.example.iconpack", result.state.iconPack)
-        assertEquals(SearchBarPosition.Top, result.state.searchBarPosition)
-        assertEquals(6, result.state.gridColumns)
-        assertEquals(true, result.state.gridLocked)
-        assertEquals(true, result.state.widgetsEnabled)
+        assertEquals(true, result.themedIcons)
+        assertEquals("com.example.iconpack", result.iconPack)
+        assertEquals(SearchBarPosition.Top, result.searchBarPosition)
+        assertEquals(6, result.gridColumns)
+        assertEquals(true, result.gridLocked)
+        assertEquals(true, result.widgetsEnabled)
     }
 
     @Test

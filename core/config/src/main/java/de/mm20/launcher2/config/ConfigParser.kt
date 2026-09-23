@@ -35,6 +35,14 @@ object ConfigParser {
      * `ConfigParserTest`, so a section that gains or loses a mutation cannot
      * drift away from this table unnoticed.
      */
+    /**
+     * `appearance.glass` and `home.grid.labels` are parsed, stored and served
+     * back, but nothing draws them yet (#73). The sub-keys of `glass` are
+     * classified [KeyEffect.Applied] so that the section reports once, not
+     * five times; the section's own entry carries the truth.
+     */
+    private val GlassNotRendered = KeyEffect.Inert("stored and served back; rendered from #75")
+
     private val GridItemKeys: Map<String, KeyEffect> = listOf(
         "id", "widget", "x", "y", "w", "h", "profile", "borderless", "background", "themeColors",
     ).associateWith { KeyEffect.Applied }
@@ -52,14 +60,20 @@ object ConfigParser {
             "pack" to KeyEffect.Applied,
         ),
         "appearance" to mapOf(
-            "transparency" to KeyEffect.Applied,
+            // No sub-table on purpose: its keys mean nothing any more, so
+            // they are neither spell-checked nor validated, and the section
+            // is reported once (#73).
+            "transparency" to KeyEffect.Inert(
+                "replaced by appearance.glass (#24); the file no longer feeds the transparency scheme",
+            ),
+            "glass" to GlassNotRendered,
             "wallpaper" to KeyEffect.Applied,
         ),
-        "appearance.transparency" to mapOf(
-            "name" to KeyEffect.Applied,
-            "background" to KeyEffect.Applied,
-            "surface" to KeyEffect.Applied,
-            "elevatedSurface" to KeyEffect.Applied,
+        "appearance.glass" to mapOf(
+            "blur" to KeyEffect.Applied,
+            "tint" to KeyEffect.Applied,
+            "radius" to KeyEffect.Applied,
+            "contrast" to KeyEffect.Applied,
         ),
         "appearance.wallpaper" to mapOf(
             "image" to KeyEffect.Applied,
@@ -85,6 +99,7 @@ object ConfigParser {
             "columns" to KeyEffect.Applied,
             "locked" to KeyEffect.Applied,
             "layouts" to KeyEffect.Applied,
+            "labels" to GlassNotRendered,
         ),
         "home.grid.layouts" to GridLayouts.All.associateWith { KeyEffect.Applied },
         "home.grid.layouts.phone" to mapOf("items" to KeyEffect.Applied),

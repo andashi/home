@@ -30,12 +30,15 @@ class ConfigReloaderTest {
         var state: ConfigState = ConfigState(),
         var applyDiagnostics: List<Diagnostic> = emptyList(),
         var applyDelayMs: Long = 0,
+        var readFailure: Exception? = null,
+        var applyFailure: Exception? = null,
     ) : ConfigStore {
         val events = Collections.synchronizedList(mutableListOf<String>())
         var applyCount = 0
 
         override suspend fun readState(): ConfigState {
             events += "read"
+            readFailure?.let { throw it }
             return state
         }
 
@@ -43,6 +46,7 @@ class ConfigReloaderTest {
             applyCount++
             events += "apply:${mutations.map { it.section }}"
             if (applyDelayMs > 0) delay(applyDelayMs)
+            applyFailure?.let { throw it }
             return applyDiagnostics
         }
     }
@@ -66,6 +70,35 @@ class ConfigReloaderTest {
         assertEquals(listOf("icons"), report.appliedMutations)
         assertEquals(listOf("read", "apply:[icons]"), store.events)
         assertEquals(report, reportStore.read())
+    }
+
+    @Test
+    fun `a state that cannot be read fails the reload and applies nothing`() = runTest {
+        val store = FakeConfigStore(readFailure = IllegalStateException("datastore gone"))
+        val (reloader, reportStore) = newReloader(store)
+
+        val report = reloader.reload("""{"schemaVersion": 2, "appearance": {"glass": {"tint": 0.2}}}""")
+
+        assertFalse(report.success)
+        // The parse diagnostics survive next to the failure, so the host still
+        // learns that glass is not rendered yet.
+        assertEquals(listOf("inert-key", "read-state-failed"), report.diagnostics.map { it.code })
+        assertTrue(report.errorMessage!!.contains("datastore gone"))
+        assertEquals(0, store.applyCount)
+        assertEquals(report, reportStore.read())
+    }
+
+    @Test
+    fun `a store that throws while applying fails the reload with apply-failed`() = runTest {
+        val store = FakeConfigStore(applyFailure = IllegalStateException("disk full"))
+        val (reloader, _) = newReloader(store)
+
+        val report = reloader.reload("""{"schemaVersion": 2, "icons": {"themed": true}}""")
+
+        assertFalse(report.success)
+        val failure = report.diagnostics.single { it.code == "apply-failed" }
+        assertEquals(Severity.Error, failure.severity)
+        assertTrue(failure.message.contains("disk full"))
     }
 
     @Test

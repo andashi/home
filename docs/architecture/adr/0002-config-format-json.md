@@ -68,12 +68,6 @@ except `schemaVersion` is optional, and an absent key means *unmanaged*, not
   },
 
   "appearance": {
-    "transparency": {
-      "name": "glass",
-      "background": 0.7,
-      "surface": 0.55,
-      "elevatedSurface": 0.65
-    },
     "wallpaper": {
       // Uploaded beforehand to
       // content://<applicationId>.config-ingest/wallpapers/zone.jpg
@@ -167,9 +161,42 @@ is the more dangerous one. The example that motivated the mechanism was
 `home.dock.enabled`: no dock was drawn, because the favorites widget had taken
 that role - but the value still reached the favorite affordances in search
 results. The grid closed that case (#46): the dock *is* the favorites widget on
-the grid, and the key left the contract with schema version 2. No key of the
-current contract is inert; the mechanism stays for the next one, and the test
-that guards it runs against a table of its own.
+the grid, and the key left the contract with schema version 2.
+
+Inert today, each for a stated reason (`ConfigParserTest` pins the list):
+
+- `appearance.glass` and `home.grid.labels`: stored and served back, but
+  nothing draws them until the glass epic's renderer lands (#24, #75). They
+  are `Applied` from the PR that makes them true, and join the example above
+  then.
+- `appearance.transparency`: replaced by `appearance.glass` (#73). The file no
+  longer feeds upstream's transparency schemes, the read-back no longer serves
+  the section, and its sub-keys are neither spell-checked nor validated - one
+  diagnostic for the section, nothing more.
+
+### Glass (ADR 0004, #24)
+
+```jsonc
+"appearance": { "glass": { "blur": 24, "tint": 0.35, "radius": 28, "contrast": "medium" } },
+"home":       { "grid": { "labels": true } }
+```
+
+| Key | Meaning | Accepted | Default |
+|---|---|---|---|
+| `appearance.glass.blur` | backdrop blur radius in dp; `0` is tint only | 0..64 | 24 |
+| `appearance.glass.tint` | alpha of the zone's Monet surface color over the backdrop | 0..1 | 0.35 |
+| `appearance.glass.radius` | corner radius of every glass surface, dp | 0..64 | 28 |
+| `appearance.glass.contrast` | `low` / `medium` / `high`: scales blur and tint, `high` adds a text scrim | enum | `medium` |
+| `home.grid.labels` | labels under grid items; never on the dock | boolean | `true` |
+
+Numbers decode as floats, so a generator that writes `24.0` does not lose the
+zone. A value out of range is an `invalid-glass` error at the field's path; an
+unknown `contrast` fails the document with a message naming
+`appearance.glass.contrast`, like every other enum. The upper bounds exist
+because the file is untrusted input and blur costs GPU time on every surface.
+The read-back always serves `glass` complete, defaults filled in, so a host
+compares field by field without knowing them. There is no icon `style` or
+`shape` key: the fork renders one icon look on one shape (ADR 0004).
 
 ## Consequences
 

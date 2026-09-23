@@ -112,7 +112,12 @@ class Migration1To2Test {
         val result = ConfigParser.parse(text)
 
         assertTrue(result.diagnostics.toString(), result.isSuccess)
-        assertEquals(emptyList<Diagnostic>(), result.diagnostics)
+        // The v1 golden still carries the transparency block, which left the
+        // contract with #73: it is reported, and nothing else is.
+        assertEquals(
+            listOf("inert-key" to "appearance.transparency"),
+            result.diagnostics.map { it.code to it.path },
+        )
         val config = result.config!!
         assertEquals(2, config.schemaVersion)
         assertEquals(
