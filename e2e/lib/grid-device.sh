@@ -75,6 +75,9 @@ node_bounds() { # $1 = attribute (content-desc|text), $2 = value
   adb -s "$SERIAL" shell rm -f /sdcard/grid-dump.xml >/dev/null 2>&1 || true
   adb -s "$SERIAL" shell uiautomator dump /sdcard/grid-dump.xml >/dev/null 2>&1 || return 1
   adb -s "$SERIAL" shell cat /sdcard/grid-dump.xml | tr -d '\r' > "$WORK/dump.xml"
+  # A dump taken while the device is still busy can come back empty; that is
+  # "not on screen yet", for the caller to retry, not a parse error.
+  [ -s "$WORK/dump.xml" ] || return 1
   python3 - "$WORK/dump.xml" "$1" "$2" <<'PY'
 import re, sys
 try:
@@ -125,6 +128,9 @@ dump_cells() {
   adb -s "$SERIAL" shell rm -f /sdcard/grid-dump.xml >/dev/null 2>&1 || true
   adb -s "$SERIAL" shell uiautomator dump /sdcard/grid-dump.xml >/dev/null 2>&1 || { printf "uiautomator dump failed\n" >&2; return 1; }
   adb -s "$SERIAL" shell cat /sdcard/grid-dump.xml | tr -d '\r' > "$WORK/dump.xml"
+  # A dump taken while the device is still busy can come back empty; that is
+  # "not on screen yet", for the caller to retry, not a parse error.
+  [ -s "$WORK/dump.xml" ] || return 1
   python3 - "$WORK/dump.xml" <<'PY'
 import re, sys
 try:
