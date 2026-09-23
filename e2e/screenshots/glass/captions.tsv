@@ -3,3 +3,5 @@ scene	caption	guarded by
 75-fold-inner	The same home screen on the inner display: the fold layout's left four columns, each surface showing the backdrop region under it.	GlassBackdropTest; BackdropRenderTest
 82-fold-cover	The liquid look on the Fold cover (#82): the whole home background is the blurred backdrop (wallpaperBlur), the cards are nearly clear (tint 0.12) with a directional rim and the edge lens, labels carry the app name.	GlassLookTest; GlassSurfaceTest; GlassWallpaperTest; GlassLensTest (L2)
 82-fold-inner	The same on the inner display.	GlassWallpaperTest; BackdropRenderTest
+77-fold-cover	The finished glass home screen on the Fold cover (#77): analog clock, Messaging, the Vanadium search and a digital clock as glass cards labelled with their apps, the dock of real apps as Clear icons (system monochrome layers; Vanadium has none and is the desaturated fallback), the whole background the blurred Mauritius backdrop.	HomeGridScreenshotTest; GlassReloadTest; e2e/l4-config.sh
+77-fold-inner	The same on the inner display.	HomeGridScreenshotTest.foldInner*

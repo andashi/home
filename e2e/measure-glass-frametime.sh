@@ -163,11 +163,19 @@ resolve_postures() {
 }
 resolve_postures
 posture() { # $1 = closed | opened
-  local id; [ "$1" = closed ] && id="$POSTURE_CLOSED" || id="$POSTURE_OPENED"
+  local id i; [ "$1" = closed ] && id="$POSTURE_CLOSED" || id="$POSTURE_OPENED"
   adb -s "$SERIAL" shell cmd device_state state "$id" >/dev/null
   sleep 4
   show_home
-  sleep 3
+  # The activity is recreated on the other display; a series started before
+  # the grid is back measures the blank in between (it did: 2 frames on the
+  # cover). Wait for the dock cell.
+  for i in $(seq 30); do
+    [ -n "$(desc_bounds grid-item:dock 2>/dev/null)" ] && break
+    wake_screen; show_home; sleep 1
+  done
+  [ -n "$(desc_bounds grid-item:dock 2>/dev/null)" ] || die "the grid did not come back after posture $1"
+  sleep 2
 }
 
 show_home
@@ -214,12 +222,7 @@ series() { # $1 = label
 # (the PNG header carries width and height at bytes 16..23).
 capture() { # $1 = output png
   local size want id got i
-  # After a posture change the activity is recreated; wait until the grid is
-  # on screen again (the dock cell), or the picture is the blank in between.
-  for i in $(seq 20); do
-    [ -n "$(desc_bounds grid-item:dock 2>/dev/null)" ] && break
-    wake_screen; sleep 1
-  done
+  # posture() has already waited for the grid to be back.
   size="$(adb -s "$SERIAL" shell wm size | tr -d '\r' | awk '/size/ {s=$NF} END {print s}')"
   for id in $(adb -s "$SERIAL" shell dumpsys SurfaceFlinger --display-id | tr -d '\r' | sed -n 's/^Display \([0-9]*\).*/\1/p'); do
     adb -s "$SERIAL" exec-out screencap -d "$id" -p > "$WORK/shot.png" 2>/dev/null || continue
