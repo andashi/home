@@ -9,5 +9,8 @@ package de.mm20.launcher2.icons
 object DefaultIconPack {
     const val Lawnicons = "app.lawnchair.lawnicons"
 
-    suspend fun effective(configured: String?, isInstalled: suspend (String) -> Boolean): String? = TODO()
+    suspend fun effective(configured: String?, isInstalled: suspend (String) -> Boolean): String? {
+        configured?.takeIf { it.isNotBlank() }?.let { return it }
+        return Lawnicons.takeIf { isInstalled(it) }
+    }
 }

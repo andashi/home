@@ -197,6 +197,14 @@ zone. A value out of range is an `invalid-glass` error at the field's path; an
 unknown `contrast` fails the document with a message naming
 `appearance.glass.contrast`, like every other enum. The upper bounds exist
 because the file is untrusted input and blur costs GPU time on every surface.
+**Icons (#86).** `icons.themed` defaults to `true` in the fork: the Clear look
+is built from monochrome layers and pack glyphs, and without them every icon
+would be the grey fallback. When `icons.pack` is absent (and none was chosen
+in the settings), the launcher uses Lawnicons if it is installed - provisioning
+installs it - and picks it up when it is installed later. The read-back serves
+what is configured, so an absent pack reads back as absent. Lawnicons is not
+bundled: it is 39.5 MB of trademark-derived icons and changes weekly.
+
 The read-back always serves `glass` complete, defaults filled in, so a host
 compares field by field without knowing them. There is no icon `style` or
 `shape` key: the fork renders one icon look on one shape (ADR 0004). Nor is
