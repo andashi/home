@@ -68,13 +68,37 @@ adb -s "$SERIAL" wait-for-device
 [ "$(adb -s "$SERIAL" shell id -u | tr -d '\r')" = "2000" ] || die "adb is not the unrooted shell"
 ok "adb as unrooted shell (uid 2000)"
 adb -s "$SERIAL" install -r "$APK" | grep -q Success || die "launcher install failed"
-adb -s "$SERIAL" shell cmd role add-role-holder android.app.role.HOME "$PKG" >/dev/null 2>&1 || true
+# The Home-button step needs this launcher to be home: in another launcher
+# it would pass without testing anything.
+adb -s "$SERIAL" shell cmd role add-role-holder android.app.role.HOME "$PKG" >/dev/null 2>&1 \
+  || die "could not grant the HOME role to $PKG"
+roles="$(adb -s "$SERIAL" shell dumpsys role 2>/dev/null | tr -d '\r')"
+grep -A2 'android.app.role.HOME' <<<"$roles" | grep -q "holders=$PKG" \
+  || die "$PKG does not hold the HOME role after add-role-holder"
+ok "HOME role granted to $PKG"
 show_home
 wait_desc Search 30 "the launcher's search bar"
 
-# Search is open while its filter button is on screen; the home screen has
-# none.
-search_open() { [ -n "$(desc_bounds 'Show filters')" ]; }
+# What the screen shows, from one valid dump: "search" while search is open
+# (its filter button is on screen), "home" while the launcher's bar is on
+# screen without it, "unknown" for an empty dump or anything else - which is
+# never taken for either, so a failed look cannot pass an exit check.
+screen_state() {
+  local i
+  for i in $(seq 5); do
+    adb -s "$SERIAL" shell rm -f /sdcard/grid-dump.xml >/dev/null 2>&1 || true
+    if adb -s "$SERIAL" shell uiautomator dump /sdcard/grid-dump.xml >/dev/null 2>&1; then
+      adb -s "$SERIAL" shell cat /sdcard/grid-dump.xml | tr -d '\r' > "$WORK/state.xml"
+      if [ -s "$WORK/state.xml" ]; then
+        if grep -q 'content-desc="Show filters"' "$WORK/state.xml"; then echo search; return; fi
+        if grep -q 'content-desc="Search"' "$WORK/state.xml"; then echo home; return; fi
+      fi
+    fi
+    sleep 1
+  done
+  echo unknown
+}
+search_open() { [ "$(screen_state)" = search ]; }
 
 ime_shown() {
   # Captured first: `grep -q` stops at the first match, the writer upstream
@@ -104,12 +128,18 @@ open_search() {
 
 # Home must come back within 5 s and still be there 3 s later: the defect
 # closed search and reopened it within 50 ms, so one early look would pass.
+# Both looks must positively see home.
 assert_home_stays() { # $1 = how search was left
-  local i
-  for i in $(seq 5); do search_open || break; sleep 1; done
-  search_open && die "$1: search is still open"
+  local _ state=unknown
+  for _ in $(seq 5); do
+    state="$(screen_state)"
+    [ "$state" = home ] && break
+    sleep 1
+  done
+  [ "$state" = home ] || die "$1: not back on the home screen (screen: $state)"
   sleep 3
-  search_open && die "$1: search closed and opened again"
+  state="$(screen_state)"
+  [ "$state" = home ] || die "$1: home did not stay (screen: $state)"
   ok "$1: back on the home screen, and it stays"
 }
 
