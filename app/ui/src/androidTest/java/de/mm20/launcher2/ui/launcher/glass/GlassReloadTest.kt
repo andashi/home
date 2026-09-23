@@ -8,7 +8,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -43,11 +45,22 @@ class GlassReloadTest {
     }
     private val glass = MutableStateFlow(GlassInputs(24f, 0.12f, 28f, Contrast.Medium))
     private var renders = 0
+    /** Blur 0 renders red, any other blur blue: the surfaces show which one they drew. */
     private val controller = GlassBackdropController(source, glass, CoroutineScope(Dispatchers.Main.immediate)) { _, key ->
         renders++
         val (w, h) = BackdropGeometry.backdropSize(key.windowWidthPx, key.windowHeightPx)
-        Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888).asImageBitmap()
+        Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888).apply {
+            eraseColor(if (key.blurPx == 0) android.graphics.Color.RED else android.graphics.Color.BLUE)
+        }.asImageBitmap()
     }
+
+    /** Red minus blue at the centre of every surface, as drawn on screen. */
+    private fun drawnRedness(): List<Float> =
+        composeRule.onAllNodes(SemanticsMatcher.keyIsDefined(GlassBackdropBlurPx)).fetchSemanticsNodes().indices.map { i ->
+            val image = composeRule.onAllNodes(SemanticsMatcher.keyIsDefined(GlassBackdropBlurPx))[i].captureToImage().toPixelMap()
+            val c = image[image.width / 2, image.height / 2]
+            c.red - c.blue
+        }
 
     private fun blurs(): List<Int> =
         composeRule.onAllNodes(SemanticsMatcher.keyIsDefined(GlassBackdropBlurPx)).fetchSemanticsNodes()
@@ -70,13 +83,17 @@ class GlassReloadTest {
         val before = blurs().distinct()
         assertEquals(1, before.size)
         assertTrue("24 dp is more than zero backdrop pixels", before.single() > 0)
+        assertTrue("blue backdrop drawn: ${drawnRedness()}", drawnRedness().all { it < 0f })
 
         composeRule.runOnIdle { glass.value = glass.value.copy(blurDp = 0f) }
-        composeRule.waitUntil(5_000) { blurs().all { it == 0 } }
+        // Three surfaces each time: an empty list would satisfy all { } without checking anything.
+        composeRule.waitUntil(5_000) { blurs().let { it.size == 3 && it.all { b -> b == 0 } } }
         assertEquals(2, renders)
+        assertTrue("red backdrop drawn: ${drawnRedness()}", drawnRedness().let { it.size == 3 && it.all { r -> r > 0f } })
 
         composeRule.runOnIdle { glass.value = glass.value.copy(blurDp = 24f) }
-        composeRule.waitUntil(5_000) { blurs().all { it == before.single() } }
+        composeRule.waitUntil(5_000) { blurs().let { it.size == 3 && it.all { b -> b == before.single() } } }
         assertEquals("the way back comes from the cache", 2, renders)
+        assertTrue("blue again: ${drawnRedness()}", drawnRedness().let { it.size == 3 && it.all { r -> r < 0f } })
     }
 }

@@ -209,6 +209,8 @@ record() { printf '%s\t%s\n' "$1" "$2" >> "$WORK/out.tsv"; }
 record rev "$REV"
 record serial "$SERIAL"
 record runs "$RUNS"
+record fixture "$FIXTURE"
+record pack "${PACK:-none}"
 
 series() { # $1 = label
   local size w h i

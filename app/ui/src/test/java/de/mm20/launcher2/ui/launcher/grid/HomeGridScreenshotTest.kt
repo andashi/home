@@ -29,6 +29,8 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.material3.Text
 import de.mm20.launcher2.glass.BackdropGeometry
 import de.mm20.launcher2.glass.BackdropImage
@@ -86,7 +88,8 @@ class HomeGridScreenshotTest {
     private val foldItems = listOf(
         gridItem("weather", 0, 0, 2, 2, HomeGridLayouts.Fold, position = 0),
         gridItem("calendar", 2, 0, 2, 2, HomeGridLayouts.Fold, position = 1),
-        dockItem(0, 5, 4, 1, HomeGridLayouts.Fold),
+        // Eight columns on the inner display; the cover clips it to four.
+        dockItem(0, 5, 8, 1, HomeGridLayouts.Fold),
     )
 
     private val labels = mapOf("weather" to "Weather", "calendar" to "Calendar")
@@ -100,15 +103,18 @@ class HomeGridScreenshotTest {
         square: Boolean,
     ) {
         val context = LocalContext.current
-        val metrics = context.resources.displayMetrics
+        // The window size as production takes it (ProvideGlassBackdrop), so
+        // the backdrop maps to surfaces exactly as it does on a device.
+        val window = LocalWindowInfo.current.containerSize
+        val density = LocalDensity.current.density
         val inputs = GlassInputs(24f, 0.12f, 28f, contrast)
-        val backdrop = remember {
+        val backdrop = remember(window) {
             val blurPx = BackdropGeometry.key(
                 BackdropImage("", "mauritius"),
-                WindowInputs(metrics.widthPixels, metrics.heightPixels, metrics.density),
+                WindowInputs(window.width, window.height, density),
                 inputs,
             ).blurPx
-            mauritiusBackdrop(square, metrics.widthPixels, metrics.heightPixels, blurPx)
+            mauritiusBackdrop(square, window.width, window.height, blurPx)
         }
         val icons = remember { dockIcons(context) }
         MaterialTheme(colorScheme = seed.colorScheme()) {

@@ -72,7 +72,10 @@ mean anything:
 | cards without glass (#74, `glass-off-hook-c33378d24.tsv`) | 93 ms | 133 ms |
 | + backdrop region on every card (#74, same file) | 113 ms | 150 ms |
 | full stack: lens, rim, tint, wallpaper blur (#77, `glass-glass-a86be0b4d.tsv`) | 150 ms | 300 ms |
-| the blur itself, once per wallpaper and display, off the main thread | 323 ms | 351 ms |
+
+| One-time cost, not a frame time | Cover | Inner |
+|---|---|---|
+| making the blurred backdrop, once per wallpaper and display, off the main thread | 323 ms | 351 ms |
 
 On a software renderer the edge lens is a per-pixel shader on the CPU, and
 the inner display is four times the cover's area. That is where the
