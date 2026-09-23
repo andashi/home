@@ -5,3 +5,5 @@ scene	caption	guarded by
 82-fold-inner	The same on the inner display.	GlassWallpaperTest; BackdropRenderTest
 77-fold-cover	The finished glass home screen on the Fold cover (#77): analog clock, Messaging, the Vanadium search and a digital clock as glass cards labelled with their apps, the dock of real apps as Clear icons (system monochrome layers; Vanadium has none and is the desaturated fallback), the whole background the blurred Mauritius backdrop.	HomeGridScreenshotTest; GlassReloadTest; e2e/l4-config.sh
 77-fold-inner	The same on the inner display.	HomeGridScreenshotTest.foldInner*
+77-fold-cover-lawnicons	The same screen with provisioning's Lawnicons installed and named in icons.pack, as a zone does (PACK=lawnicons): the dock's glyphs come from the pack as white line icons, Vanadium included - no fallback left.	ClearIconTest (pack entry); ClearIconDeviceTest
+77-dock-without-and-with-lawnicons	The dock without a pack (top: the system apps' filled monochrome layers, Vanadium as the desaturated fallback) and with Lawnicons (bottom).	ClearIconTest

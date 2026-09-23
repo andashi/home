@@ -63,6 +63,10 @@ CLOCK="com.android.deskclock/com.android.alarmclock.DigitalAppWidgetProvider"
 # varied: different widgets and a dock of real apps, for screenshots that
 #   look like a home screen (labels name different apps).
 FIXTURE="${FIXTURE:-clocks}"
+# PACK=lawnicons installs provisioning's Lawnicons APK before the launcher and
+# names it in icons.pack, as a zone does: the dock's glyphs then come from the
+# pack instead of the apps' own monochrome layers.
+PACK="${PACK:-}"
 
 c(){ [ -t 1 ] && printf '\033[%sm%s\033[0m\n' "$1" "$2" || printf '%s\n' "$2"; }
 log(){ c '1;34' ":: $*"; }; ok(){ c '1;32' " + $*"; }; warn(){ c '1;33' " ! $*"; }
@@ -119,10 +123,19 @@ case "$FIXTURE" in
     FAVORITES='["com.android.dialer", "com.android.messaging", "app.vanadium.browser", "app.grapheneos.camera"]' ;;
   *) die "unknown FIXTURE $FIXTURE (clocks | varied)" ;;
 esac
+ICONS='"icons": { "themed": true },'
+if [ "$PACK" = lawnicons ]; then
+  LAWNICONS_APK="$(ls "$GOS_REPO"/apks/universal/app.lawnchair.lawnicons-*.apk 2>/dev/null | head -1)"
+  [ -n "$LAWNICONS_APK" ] || die "no Lawnicons APK under $GOS_REPO/apks/universal"
+  ICONS='"icons": { "themed": true, "pack": "app.lawnchair.lawnicons" },'
+elif [ -n "$PACK" ]; then
+  die "unknown PACK $PACK (lawnicons)"
+fi
 CONFIG="$WORK/glass.json"
 cat > "$CONFIG" <<EOF
 {
   "schemaVersion": 2,
+  $ICONS
   "appearance": {
     "wallpaper": { "image": "mauritius.jpg", "target": "both" },
     "glass": { "blur": 24, "tint": 0.12, "radius": 28, "contrast": "medium", "wallpaperBlur": true }
@@ -152,6 +165,10 @@ adb -s "$SERIAL" wait-for-device
 [ "$(adb -s "$SERIAL" shell id -u | tr -d '\r')" = "2000" ] || die "adb is not the unrooted shell"
 ok "adb as unrooted shell (uid 2000)"
 
+if [ -n "${LAWNICONS_APK:-}" ]; then
+  adb -s "$SERIAL" install -r "$LAWNICONS_APK" | grep -q Success || die "Lawnicons install failed"
+  ok "icon pack installed: $(basename "$LAWNICONS_APK")"
+fi
 adb -s "$SERIAL" install -r "$APK" | grep -q Success || die "install failed"
 adb -s "$SERIAL" shell appwidget grantbind --package "$PKG" --user 0 >/dev/null
 resolve_postures() {
