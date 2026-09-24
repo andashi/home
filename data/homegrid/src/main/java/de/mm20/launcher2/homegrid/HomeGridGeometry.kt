@@ -15,21 +15,22 @@ data class GridGeometry(
     val spec: GridSpec,
     /** Columns drawn in this window: `spec.columns`, or half of them on the cover. */
     val visibleColumns: Int,
-    /** True on a foldable's cover display: the layout is clipped to its left half (D7). */
+    /** True on a foldable's cover display: the layout is clipped to its right half (D7, #93). */
     val isCover: Boolean,
     val cellDp: Float,
     val gapDp: Float,
     /**
-     * The first layout column the cover shows, on a fold: the cover's half
-     * of the inner display. Search puts its apps there (#91), so the apps on
-     * the cover and inside sit in the same half; #93 moves it to the right.
+     * The first layout column the cover shows, on a fold (both displays):
+     * the cover is the right half of the inner display (#93), so this is the
+     * fold column. Search puts its apps there (#91), so the apps on the cover
+     * and inside sit in the same half. 0 on a phone.
      */
     val coverFirstColumn: Int = 0,
 ) {
     val rows: Int get() = spec.rows
 
-    /** The first layout column this window draws; a stub until #93. */
-    val firstVisibleColumn: Int get() = 0
+    /** The first layout column this window draws: the cover's on the cover, else 0. */
+    val firstVisibleColumn: Int get() = if (isCover) coverFirstColumn else 0
 
     /** The layout columns this window draws. */
     val visibleRange: IntRange get() = firstVisibleColumn until firstVisibleColumn + visibleColumns
@@ -55,7 +56,8 @@ object HomeGridGeometry {
      * Invariants: `cellDp * visibleColumns + gap * (visibleColumns - 1) == widthDp`;
      * `rows >= 1`; on a fold `spec.columns == 2 * columns` and
      * `spec.foldColumn == columns`; `isCover` only on a fold whose window is
-     * narrower than [CoverMaxWidthDp].
+     * narrower than [CoverMaxWidthDp]; on a fold the cover shows columns
+     * `columns until 2 * columns` (#93).
      */
     fun derive(
         formFactor: FormFactor,
@@ -81,6 +83,7 @@ object HomeGridGeometry {
             isCover = isCover,
             cellDp = cellDp,
             gapDp = gapDp,
+            coverFirstColumn = if (folds) columns else 0,
         )
     }
 }

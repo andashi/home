@@ -338,6 +338,12 @@ class GridLayoutTest {
         assertEquals(Span(6, 0, 2, 1), placed?.span)
     }
 
+    /** An item wider than the window does not fit on the cover at all. */
+    @Test
+    fun `place reports no room for an item wider than the window`() {
+        assertEquals(null, GridLayout.place(Fold, emptyList(), item("wide", 0, 0, 5, 1), columns = 4 until 8))
+    }
+
     /** Control: without a window the whole grid is searched from the top left. */
     @Test
     fun `place without a window starts at the top left`() {

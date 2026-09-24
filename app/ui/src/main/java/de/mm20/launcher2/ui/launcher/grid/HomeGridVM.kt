@@ -245,8 +245,11 @@ class HomeGridVM(
             is LayoutIssue.BelowMinimum -> this.id == id
             is LayoutIssue.Overflow -> this.id == id
         }
+        // Only the columns this window shows: on the cover the item comes
+        // back where the user can see it (#93).
+        val window = geometry.visibleRange
         search@ for (y in item.y until spec.rows) {
-            for (x in 0..(spec.columns - item.w)) {
+            for (x in window.first..(window.last + 1 - item.w)) {
                 val span = Span(x, y, item.w, item.h)
                 val issues = GridLayout.validate(spec, others + candidate.copy(span = span))
                 if (issues.none { it.involves(item.id) }) {
@@ -255,7 +258,7 @@ class HomeGridVM(
                 }
             }
         }
-        val span = found ?: GridLayout.place(spec, others, candidate)?.span
+        val span = found ?: GridLayout.place(spec, others, candidate, columns = window)?.span
         if (span == null) {
             _events.tryEmit(GridEditEvent.NoRoom)
             return
@@ -281,6 +284,8 @@ class HomeGridVM(
             geometry.spec,
             items.map { it.toGridItem(geometry) },
             GridItem(id, Span(0, 0, default.w, default.h), limits, mayCrossFold = false),
+            // On the cover, where the user can see it (#93).
+            columns = geometry.visibleRange,
         )
         if (placed == null) {
             _events.tryEmit(GridEditEvent.NoRoom)

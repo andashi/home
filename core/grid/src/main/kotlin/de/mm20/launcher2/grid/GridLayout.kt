@@ -37,8 +37,10 @@ object GridLayout {
      * Finds the first position in reading order (row by row, left to right)
      * where [newItem] fits with its current size, or returns null when the
      * grid has no room. The size is clamped to the item's limits and the grid
-     * first. Invariant: the returned item overlaps nothing in [items], lies
-     * inside the grid and respects the fold rule; [items] is not modified.
+     * first. [columns] limits the search to the columns a window shows (the
+     * cover, #93). Invariant: the returned item overlaps nothing in [items],
+     * lies inside the grid and [columns], and respects the fold rule; [items]
+     * is not modified.
      */
     fun place(
         spec: GridSpec,
@@ -49,7 +51,7 @@ object GridLayout {
         val w = clampWidth(spec, newItem, newItem.span.w)
         val h = clampHeight(spec, newItem, newItem.span.h)
         val occupied = items.filter { it.id != newItem.id }.map { it.span }
-        val span = firstFree(spec, occupied, w, h, newItem.mayCrossFold) ?: return null
+        val span = firstFree(spec, occupied, w, h, newItem.mayCrossFold, columns) ?: return null
         return newItem.copy(span = span)
     }
 
@@ -175,21 +177,23 @@ object GridLayout {
     }
 
     /**
-     * The fold layout as seen on the cover display: only items whose left edge
-     * lies in the first [columns] columns, and any of them reaching past that
-     * edge (the favorites widget spanning the fold) clipped to it.
-     * Invariant: every result item fits in [columns] columns.
+     * The layout as seen through a window of [columns] (layout coordinates):
+     * on a fold's cover, the right half (#93). Items outside the window are
+     * left out; an item reaching past its edge (the favorites widget spanning
+     * the fold) is clipped to it. Spans stay in layout coordinates.
+     * Invariant: every result item lies inside [columns].
      */
-    fun clampToWindow(items: List<GridItem>, columns: IntRange): List<GridItem> =
-        clampToCover(items, columns.last + 1)
-
-    fun clampToCover(items: List<GridItem>, columns: Int): List<GridItem> {
+    fun clampToWindow(items: List<GridItem>, columns: IntRange): List<GridItem> {
+        val start = columns.first
+        val end = columns.last + 1
         return items.mapNotNull { item ->
             val span = item.span
+            val left = maxOf(span.x, start)
+            val right = minOf(span.right, end)
             when {
-                span.x >= columns -> null
-                span.right > columns -> item.copy(span = span.copy(w = columns - span.x))
-                else -> item
+                right <= left -> null
+                left == span.x && right == span.right -> item
+                else -> item.copy(span = span.copy(x = left, w = right - left))
             }
         }
     }
@@ -228,9 +232,18 @@ object GridLayout {
         }
     }
 
-    private fun firstFree(spec: GridSpec, occupied: Collection<Span>, w: Int, h: Int, mayCrossFold: Boolean): Span? {
-        if (w > spec.columns || h > spec.rows) return null
-        for (y in 0..spec.rows - h) for (x in 0..spec.columns - w) {
+    private fun firstFree(
+        spec: GridSpec,
+        occupied: Collection<Span>,
+        w: Int,
+        h: Int,
+        mayCrossFold: Boolean,
+        columns: IntRange,
+    ): Span? {
+        val start = maxOf(columns.first, 0)
+        val end = minOf(columns.last + 1, spec.columns)
+        if (w > end - start || h > spec.rows) return null
+        for (y in 0..spec.rows - h) for (x in start..end - w) {
             val candidate = Span(x, y, w, h)
             if (!mayCrossFold && crossesFold(spec, candidate)) continue
             if (occupied.none { it.overlaps(candidate) }) return candidate

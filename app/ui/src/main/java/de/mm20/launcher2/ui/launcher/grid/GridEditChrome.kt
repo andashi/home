@@ -111,7 +111,7 @@ internal fun GridCellEditOverlay(
                 detectDragGestures(
                     onDragStart = {
                         viewModel.beginDrag(id)
-                        val origin = cellTopLeft(span, pitchPx - gapPx, gapPx)
+                        val origin = cellTopLeft(span, pitchPx - gapPx, gapPx, geometry.firstVisibleColumn)
                         visual.ghostLeftPx = origin.x.toFloat()
                         visual.ghostTopPx = origin.y.toFloat()
                         visual.draggedId = id
@@ -120,8 +120,11 @@ internal fun GridCellEditOverlay(
                         change.consume()
                         visual.ghostLeftPx += amount.x
                         visual.ghostTopPx += amount.y
-                        val targetX = (visual.ghostLeftPx / pitchPx).roundToInt()
-                            .coerceIn(0, (geometry.visibleColumns - span.w).coerceAtLeast(0))
+                        // Layout columns: the window starts at its first
+                        // visible one (the cover's right half, #93).
+                        val first = geometry.firstVisibleColumn
+                        val targetX = ((visual.ghostLeftPx / pitchPx).roundToInt() + first)
+                            .coerceIn(first, (geometry.visibleRange.last + 1 - span.w).coerceAtLeast(first))
                         val targetY = (visual.ghostTopPx / pitchPx).roundToInt()
                             .coerceIn(0, (geometry.rows - span.h).coerceAtLeast(0))
                         if (targetX != span.x || targetY != span.y) {
@@ -161,7 +164,7 @@ internal fun GridCellEditOverlay(
             if (current.w > limits.minW) {
                 ResizeButton("grid-resize-narrower", "W−") { viewModel.resize(id, current.w - 1, current.h) }
             }
-            if (current.w < limits.maxW && current.x + current.w < geometry.visibleColumns) {
+            if (current.w < limits.maxW && current.x + current.w < geometry.visibleRange.last + 1) {
                 ResizeButton("grid-resize-wider", "W+") { viewModel.resize(id, current.w + 1, current.h) }
             }
             if (current.h > limits.minH) {
@@ -187,7 +190,9 @@ internal fun GridCellEditOverlay(
                             change.consume()
                             dragW += amount.x
                             dragH += amount.y
-                            val w = (span.w + (dragW / pitchPx).roundToInt()).coerceIn(limits.minW, limits.maxW)
+                            // Not past the window's last column (#93).
+                            val maxW = minOf(limits.maxW, geometry.visibleRange.last + 1 - span.x).coerceAtLeast(limits.minW)
+                            val w = (span.w + (dragW / pitchPx).roundToInt()).coerceIn(limits.minW, maxW)
                             val h = (span.h + (dragH / pitchPx).roundToInt()).coerceIn(limits.minH, limits.maxH)
                             if (w != span.w || h != span.h) {
                                 dragW -= (w - span.w) * pitchPx

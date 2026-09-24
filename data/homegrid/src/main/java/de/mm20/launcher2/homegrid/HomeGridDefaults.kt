@@ -15,8 +15,9 @@ interface HomeGridInitFlag {
 
 /**
  * The only default the grid has (decided 2026-09-22, PR 5b): a launcher
- * that starts without any config shows the favorites widget in the bottom
- * row, full width, so the screen is not empty. There is no migration of an
+ * that starts without any config shows the favorites widget, so the screen
+ * is not empty: on a phone the bottom row, full width; on the fold the right
+ * edge column, full height (decided 2026-09-24, #93). There is no migration of an
  * older widget column because there was never a stable release to migrate
  * from.
  */
@@ -47,14 +48,18 @@ object HomeGridDefaults {
             flag.markInitialized()
             return@withLock emptyList()
         }
+        // The phone's dock is the bottom row. The fold's is the right edge,
+        // full height (#93): the right edge of both displays, in the same
+        // place when the device opens; its favorites are centred (#111).
+        val fold = layout == HomeGridLayouts.Fold
         val dock = HomeGridItem(
             layout = layout,
             id = FavoritesId,
             widget = HomeGridWidgets.Favorites,
-            x = 0,
-            y = (rows - 1).coerceAtLeast(0),
-            w = columns,
-            h = 1,
+            x = if (fold) (columns - 1).coerceAtLeast(0) else 0,
+            y = if (fold) 0 else (rows - 1).coerceAtLeast(0),
+            w = if (fold) 1 else columns,
+            h = if (fold) rows.coerceAtLeast(1) else 1,
             position = 0,
         )
         repository.replace(layout, listOf(dock))

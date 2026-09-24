@@ -19,14 +19,15 @@ data class HomeGridArrangementResult(
  * Turns what the repository holds into what one window draws: the layout is
  * normalised against the device's [GridGeometry.spec] (nothing overlaps,
  * nothing sticks out, nothing but the favorites widget crosses the fold), and
- * on the cover clipped to the left half.
+ * on the cover clipped to the right half (#93). Spans stay in layout
+ * coordinates; the grid draws them from [GridGeometry.firstVisibleColumn].
  */
 object HomeGridArrangement {
     /**
-     * Invariants: no two result cells overlap; every cell fits in
-     * [GridGeometry.visibleColumns] x rows; on the cover no cell starts at or
-     * beyond the fold column; the favorites widget is the only cell allowed to
-     * span the fold and is clipped, not dropped, on the cover.
+     * Invariants: no two result cells overlap; every cell lies in
+     * [GridGeometry.visibleRange] x rows; on the cover no cell starts left of
+     * the fold column; the favorites widget is the only cell allowed to span
+     * the fold and is clipped, not dropped, on the cover.
      */
     fun arrange(geometry: GridGeometry, items: List<HomeGridItem>): HomeGridArrangementResult {
         val byId = items.associateBy { it.id }
@@ -42,7 +43,7 @@ object HomeGridArrangement {
         }
         val normalized = GridLayout.normalize(geometry.spec, gridItems)
         val visible = if (geometry.isCover) {
-            GridLayout.clampToCover(normalized.items, geometry.visibleColumns)
+            GridLayout.clampToWindow(normalized.items, geometry.visibleRange)
         } else {
             normalized.items
         }
