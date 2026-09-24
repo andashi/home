@@ -193,6 +193,7 @@ class DefaultConfigStoreTest {
     // ----- grid -----
 
     private val clockWidget = "com.android.deskclock/.DigitalAppWidgetProvider"
+    private val tallWidget = "com.example.notes/.TallWidgetProvider"
 
     private fun grid(vararg items: GridItemConfig, layout: String = "phone") =
         ConfigMutation.SetGrid(layouts = mapOf(layout to GridLayoutConfig(items.toList())))
@@ -364,6 +365,37 @@ class DefaultConfigStoreTest {
         assertEquals(emptyList<Diagnostic>(), diagnostics)
         val dock = homeGridRepository.layouts["fold"]!!.single { it.id == "dock" }
         assertEquals(listOf(0, 6, 8, 1), listOf(dock.x, dock.y, dock.w, dock.h))
+    }
+
+    @Test
+    fun `a phone keeps room for an unplaced widget of its provider's default height`() = runTest {
+        gridRows.own = "phone"
+        gridLimits.limits[tallWidget] = ProviderLimits(default = CellSize(2, 3), limits = SizeLimits(1, 3, 4, 4))
+
+        val diagnostics = store.apply(
+            listOf(
+                grid(
+                    GridItemConfig(id = "dock", widget = "favorites", x = 0, y = 0, w = 8, h = 6),
+                    GridItemConfig(id = "tall", widget = tallWidget),
+                    layout = "fold",
+                )
+            )
+        )
+
+        assertEquals(emptyList<Diagnostic>(), diagnostics)
+        val tall = homeGridRepository.layouts["fold"]!!.single { it.id == "tall" }
+        assertEquals(listOf(0, 6, 2, 3), listOf(tall.x, tall.y, tall.w, tall.h))
+    }
+
+    @Test
+    fun `a phone keeps room below a placed widget enlarged to its minimum height`() = runTest {
+        gridRows.own = "phone"
+        gridLimits.limits[tallWidget] = ProviderLimits(default = CellSize(2, 3), limits = SizeLimits(1, 3, 4, 4))
+
+        store.apply(listOf(grid(GridItemConfig(id = "tall", widget = tallWidget, x = 0, y = 5, w = 2, h = 1), layout = "fold")))
+
+        val tall = homeGridRepository.layouts["fold"]!!.single()
+        assertEquals(listOf(0, 5, 2, 3), listOf(tall.x, tall.y, tall.w, tall.h))
     }
 
     /** Control: the layout this device renders is still bounded by its rows. */

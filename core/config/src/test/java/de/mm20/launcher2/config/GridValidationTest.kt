@@ -92,7 +92,7 @@ class GridValidationTest {
     }
 
     @Test
-    fun `geometry must be non-negative positions and positive sizes`() {
+    fun `geometry must be positions from 0 and sizes from 1, up to the bound`() {
         fun geometry(x: Int?, y: Int?, w: Int?, h: Int?): List<Diagnostic> {
             val fields = listOfNotNull(
                 x?.let { "\"x\": $it" }, y?.let { "\"y\": $it" }, w?.let { "\"w\": $it" }, h?.let { "\"h\": $it" },
@@ -109,6 +109,12 @@ class GridValidationTest {
         assertEquals(1, geometry(0, 0, 1, 0).size)
         assertEquals("home.grid.layouts.phone.items[0]", geometry(0, 0, 1, 0).single().path)
         assertEquals(0, geometry(0, 0, 1, 1).size)
+        assertEquals(1, geometry(65, 0, 1, 1).size)
+        assertEquals(1, geometry(0, 65, 1, 1).size)
+        assertEquals(1, geometry(0, 0, 65, 1).size)
+        assertEquals(1, geometry(0, 0, 1, 65).size)
+        assertEquals("no Int overflow past the bound", 1, geometry(0, Int.MAX_VALUE, 1, Int.MAX_VALUE).size)
+        assertEquals(0, geometry(64, 64, 64, 64).size)
         assertEquals("absent fields are fine", 0, geometry(null, null, 2, null).size)
     }
 
