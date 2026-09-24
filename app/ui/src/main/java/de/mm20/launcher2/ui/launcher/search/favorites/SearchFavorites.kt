@@ -21,6 +21,13 @@ import de.mm20.launcher2.ui.launcher.search.common.grid.SearchResultGrid
 import de.mm20.launcher2.ui.layout.BottomReversed
 import de.mm20.launcher2.ui.launcher.glass.GlassSurface
 
+/** Whether the favorites card has anything to show (#105); a stub until the fix. */
+internal fun showFavoritesCard(
+    favorites: List<SavableSearchable>,
+    pinnedTags: List<Tag>,
+    selectedTag: String?,
+): Boolean = true
+
 fun LazyListScope.SearchFavorites(
     favorites: List<SavableSearchable>,
     pinnedTags: List<Tag>,
