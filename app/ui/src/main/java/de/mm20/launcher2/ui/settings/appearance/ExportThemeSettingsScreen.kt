@@ -53,11 +53,10 @@ fun ExportThemeSettingsScreen() {
     val colorSchemes by viewModel.colorSchemes.collectAsState(emptyList())
     val typographyThemes by viewModel.typographySchemes.collectAsState(emptyList())
     val shapeThemes by viewModel.shapeSchemes.collectAsState(emptyList())
-    val transparencySchemes by viewModel.transparencySchemes.collectAsState(emptyList())
 
     val isValidSelection by remember {
         derivedStateOf {
-            viewModel.colorScheme != null || viewModel.typographyScheme != null || viewModel.shapeScheme != null || viewModel.transparencyScheme != null
+            viewModel.colorScheme != null || viewModel.typographyScheme != null || viewModel.shapeScheme != null
         }
     }
 
@@ -125,17 +124,6 @@ fun ExportThemeSettingsScreen() {
                     },
                     onValueChanged = { newValue ->
                         viewModel.setShapeScheme(newValue)
-                    }
-                )
-                ListPreference(
-                    stringResource(R.string.preference_screen_transparencies),
-                    icon = R.drawable.opacity_24px,
-                    value = viewModel.transparencyScheme,
-                    items = listOf(stringResource(R.string.no_selection) to null) + transparencySchemes.map {
-                        it.name to it
-                    },
-                    onValueChanged = { newValue ->
-                        viewModel.setTransparencyScheme(newValue)
                     }
                 )
             }

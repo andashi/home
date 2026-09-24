@@ -46,7 +46,6 @@ import de.mm20.launcher2.preferences.SearchBarStyle
 import de.mm20.launcher2.ui.R
 import de.mm20.launcher2.ui.layout.BottomReversed
 import de.mm20.launcher2.ui.launcher.glass.GlassSurface
-import de.mm20.launcher2.ui.theme.transparency.transparency
 
 @Composable
 fun SearchBar(
@@ -105,7 +104,8 @@ fun SearchBar(
             }
         }) {
         when {
-            it == SearchBarLevel.Active -> MaterialTheme.transparency.surface
+            // Opaque: the scheme's default surface alpha was 1 (#97).
+            it == SearchBarLevel.Active -> 1f
             style != SearchBarStyle.Transparent -> 1f
             it == SearchBarLevel.Resting -> 0f
             else -> 1f

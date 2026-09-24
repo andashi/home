@@ -216,9 +216,6 @@
     <string name="preference_gesture_double_tap">Atingeți de două ori</string>
     <string name="preference_gesture_long_press">Apăsare lungă</string>
     <string name="preference_search_result_ordering_weight_factor_high">Variabilă</string>
-    <string name="preference_screen_transparencies">Transparenţă</string>
-    <string name="preference_transparencies_default">Default</string>
-    <string name="preference_transparencies_semi_transparent">Semitransparent</string>
     <string name="search_action_message">Mesaj</string>
     <string name="missing_permission_accessibility_gesture_settings">Această acțiune necesită activarea serviciului de accesibilitate al lansatorului.</string>
     <string name="widget_config_appwidget_configure">Configurați widgetul</string>

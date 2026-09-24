@@ -94,9 +94,6 @@
     <string name="preference_shapes_rect">مستطيل</string>
     <string name="preference_shapes_base">الشكل الأساسي</string>
     <string name="preference_screen_typography">أنماط الخطوط</string>
-    <string name="preference_screen_transparencies">الشفافية</string>
-    <string name="preference_transparencies_default">افتراضي</string>
-    <string name="preference_transparencies_semi_transparent">شفاف جزئياً</string>
     <string name="preference_debug_cleanup_database_summary">ازالة المدخلات المعطلة والغير مستخدمة من قاعدة بيانات المشغل</string>
     <string name="preference_debug_dump_heap_summary">يلتقط لقطة لتحليل استخدام الذاكرة. سيتجمد التطبيق حتى تكتمل هذا العملية.</string>
     <string name="preference_debug_dump_heap_in_progress">يتم أخذ لقطة للذاكرة…</string>
@@ -284,7 +281,6 @@
     <string name="widget_config_appwidget_configure">تكوين الأداة</string>
     <string name="confirmation_delete_color_scheme">هل تريد حقًا حذف نظام الألوان %1$s؟</string>
     <string name="confirmation_delete_shapes_scheme">هل تريد حقًا حذف نظام الأشكال %1$s؟</string>
-    <string name="confirmation_delete_transparencies_scheme">هل تريد حقًا حذف نظام الشفافية %1$s؟</string>
     <string name="import_theme_apply">تطبيق السمة</string>
     <string name="import_theme_error">تعذر قراءة الملف المحدد. يرجى التأكد من أنك حددت ملف سمة صالح (*.kvtheme)، وأن الملف غير تالف.</string>
     <string name="shortcut_unavailable_description">هذا الاختصار غير متوفر لأن %1$s ليس المشغل الافتراضي</string>
@@ -445,7 +441,6 @@
     <string name="gesture_action_category_system">إجراءات النظام</string>
     <string name="preference_create_shapes">مخطط للأشكال جديدة</string>
     <string name="preference_create_typography">مخطط طباعي جديد</string>
-    <string name="preference_create_transparency">مخطط جديد للشفافية</string>
     <string name="preference_create_colors">نظام ألوان جديد</string>
     <string name="gesture_action_category_launcher">صفحات المشغل</string>
 </resources>

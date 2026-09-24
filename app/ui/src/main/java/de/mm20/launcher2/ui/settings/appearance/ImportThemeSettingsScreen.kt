@@ -58,13 +58,9 @@ import de.mm20.launcher2.ui.component.preferences.PreferenceCategory
 import de.mm20.launcher2.ui.component.preferences.PreferenceScreen
 import de.mm20.launcher2.ui.component.preferences.SwitchPreference
 import de.mm20.launcher2.ui.locals.LocalDarkTheme
-import de.mm20.launcher2.ui.settings.transparencies.checkerboard
 import de.mm20.launcher2.ui.theme.colorscheme.darkColorSchemeOf
 import de.mm20.launcher2.ui.theme.colorscheme.lightColorSchemeOf
 import de.mm20.launcher2.ui.theme.shapes.shapesOf
-import de.mm20.launcher2.ui.theme.transparency.LocalTransparencyScheme
-import de.mm20.launcher2.ui.theme.transparency.transparency
-import de.mm20.launcher2.ui.theme.transparency.transparencySchemeOf
 import de.mm20.launcher2.ui.theme.typography.typographyOf
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
@@ -123,17 +119,10 @@ fun ImportThemeSettingsScreen(
                     typography = themeBundle.typography?.let { typographyOf(it) }
                         ?: MaterialTheme.typography,
                 ) {
-                    val transparencies =
-                        themeBundle.transparencies?.let { transparencySchemeOf(it) }
-                            ?: MaterialTheme.transparency
-                    CompositionLocalProvider(
-                        LocalTransparencyScheme provides transparencies
-                    ) {
-                        ThemePreview(
-                            darkMode = darkModePreview,
-                            onDarkModeChanged = { darkModePreview = it }
-                        )
-                    }
+                    ThemePreview(
+                        darkMode = darkModePreview,
+                        onDarkModeChanged = { darkModePreview = it }
+                    )
                 }
             }
             item {
@@ -174,21 +163,6 @@ fun ImportThemeSettingsScreen(
                             title = stringResource(R.string.preference_screen_shapes),
                             summary = themeBundle.shapes?.name,
                             controls = if (viewModel.shapesExists) {
-                                {
-                                    Icon(
-                                        painterResource(R.drawable.change_circle_24px),
-                                        stringResource(R.string.import_theme_exists)
-                                    )
-                                }
-                            } else null,
-                        )
-                    }
-                    if (themeBundle.transparencies != null) {
-                        Preference(
-                            icon = R.drawable.opacity_24px,
-                            title = stringResource(R.string.preference_screen_transparencies),
-                            summary = themeBundle.transparencies?.name,
-                            controls = if (viewModel.transparenciesExists) {
                                 {
                                     Icon(
                                         painterResource(R.drawable.change_circle_24px),
@@ -259,7 +233,8 @@ private fun ThemePreview(
                 12.dp,
             )
             .background(
-                MaterialTheme.colorScheme.surfaceContainer.copy(alpha = MaterialTheme.transparency.background),
+                // The page background as the launcher draws it (#97).
+                MaterialTheme.colorScheme.surfaceContainer.copy(alpha = PreviewBackgroundAlpha),
                 MaterialTheme.shapes.medium
             )
             .innerShadow(
@@ -289,7 +264,7 @@ private fun ThemePreview(
                 .fillMaxWidth()
                 .padding(top = 12.dp, start = 12.dp, end = 12.dp)
                 .background(
-                    MaterialTheme.colorScheme.surface.copy(alpha = MaterialTheme.transparency.surface),
+                    MaterialTheme.colorScheme.surface,
                     MaterialTheme.shapes.medium
                 )
                 .padding(12.dp)
@@ -410,3 +385,5 @@ private fun ThemePreviewPreview() {
         onDarkModeChanged = {}
     )
 }
+/** The alpha of a page background in the launcher, which the preview imitates. */
+private const val PreviewBackgroundAlpha = 0.85f

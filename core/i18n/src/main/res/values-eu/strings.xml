@@ -311,9 +311,6 @@
     <string name="preference_shapes_rect">Laukizuzena</string>
     <string name="preference_shapes_base">Oinarrizko forma</string>
     <string name="preference_screen_typography">Letra-tipoa</string>
-    <string name="preference_screen_transparencies">Gardentasuna</string>
-    <string name="preference_transparencies_default">Lehenetsia</string>
-    <string name="preference_transparencies_semi_transparent">Erdi-gardena</string>
     <string name="preference_debug_dump_heap_summary">Atera argazki bat memoriaren erabilera aztertzeko. Aplikazioa blokeatuta egongo da prozesu hau amaitu arte.</string>
     <string name="preference_debug_dump_heap_in_progress">Argazkia ateratzen…</string>
     <string name="preference_icon_shape_squircle">Squircle</string>
@@ -330,7 +327,6 @@
     <string name="preference_gesture_swipe_up">Gora irristatu</string>
     <string name="gesture_action_widgets">Trepetak</string>
     <string name="confirmation_delete_shapes_scheme">Benetan %1$s forma-eskema ezabatu nahi duzu?</string>
-    <string name="confirmation_delete_transparencies_scheme">Benetan %1$s gardentasun eskema ezabatu nahi duzu?</string>
     <string name="new_theme_name">(izengabea)</string>
     <string name="import_theme_contents">Edukia</string>
     <string name="import_theme_exists">Gaia dagoeneko existitzen da eta eguneratuko da</string>

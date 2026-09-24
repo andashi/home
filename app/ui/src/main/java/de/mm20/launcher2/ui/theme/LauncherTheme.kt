@@ -13,8 +13,6 @@ import de.mm20.launcher2.ui.locals.LocalDarkTheme
 import de.mm20.launcher2.ui.theme.colorscheme.darkColorSchemeOf
 import de.mm20.launcher2.ui.theme.colorscheme.lightColorSchemeOf
 import de.mm20.launcher2.ui.theme.shapes.shapesOf
-import de.mm20.launcher2.ui.theme.transparency.LocalTransparencyScheme
-import de.mm20.launcher2.ui.theme.transparency.transparencySchemeOf
 import de.mm20.launcher2.ui.theme.typography.typographyOf
 import kotlinx.coroutines.flow.flatMapLatest
 import org.koin.compose.koinInject
@@ -46,19 +44,13 @@ fun LauncherTheme(
         }
     }.collectAsState(null)
 
-    val themeTransparencies by remember {
-        uiSettings.transparenciesId.flatMapLatest {
-            themeRepository.transparencies.getOrDefault(it)
-        }
-    }.collectAsState(null)
-
     val colorSchemePref by remember { uiSettings.colorScheme }.collectAsState(
         ColorSchemePref.System
     )
     val darkTheme =
         colorSchemePref == ColorSchemePref.Dark || colorSchemePref == ColorSchemePref.System && isSystemInDarkTheme()
 
-    if (themeColors == null || themeShapes == null || themeTransparencies == null || themeTypography == null) {
+    if (themeColors == null || themeShapes == null || themeTypography == null) {
         return
     }
 
@@ -71,12 +63,8 @@ fun LauncherTheme(
     val shapes = shapesOf(themeShapes!!)
     val typography = typographyOf(themeTypography!!)
 
-    val transparencyScheme = transparencySchemeOf(themeTransparencies!!)
-
-
     CompositionLocalProvider(
         LocalDarkTheme provides darkTheme,
-        LocalTransparencyScheme provides transparencyScheme,
     ) {
         MaterialExpressiveTheme(
             colorScheme = colorScheme,

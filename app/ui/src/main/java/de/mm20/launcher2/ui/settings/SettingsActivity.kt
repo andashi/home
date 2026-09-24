@@ -97,10 +97,6 @@ import de.mm20.launcher2.ui.settings.shapes.ShapeSchemesSettingsRoute
 import de.mm20.launcher2.ui.settings.shapes.ShapeSchemesSettingsScreen
 import de.mm20.launcher2.ui.settings.tags.TagsSettingsRoute
 import de.mm20.launcher2.ui.settings.tags.TagsSettingsScreen
-import de.mm20.launcher2.ui.settings.transparencies.TransparencySchemeSettingsRoute
-import de.mm20.launcher2.ui.settings.transparencies.TransparencySchemeSettingsScreen
-import de.mm20.launcher2.ui.settings.transparencies.TransparencySchemesSettingsRoute
-import de.mm20.launcher2.ui.settings.transparencies.TransparencySchemesSettingsScreen
 import de.mm20.launcher2.ui.settings.typography.TypographiesSettingsRoute
 import de.mm20.launcher2.ui.settings.typography.TypographiesSettingsScreen
 import de.mm20.launcher2.ui.settings.typography.TypographySettingsRoute
@@ -151,12 +147,6 @@ class SettingsActivity : BaseActivity() {
                 ShapeSchemeSettingsScreen(it.id)
             }
 
-            entry<TransparencySchemesSettingsRoute> {
-                TransparencySchemesSettingsScreen()
-            }
-            entry<TransparencySchemeSettingsRoute> {
-                TransparencySchemeSettingsScreen(it.id)
-            }
             entry<TypographiesSettingsRoute> {
                 TypographiesSettingsScreen()
             }

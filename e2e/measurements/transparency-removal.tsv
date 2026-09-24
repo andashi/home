@@ -1,0 +1,15 @@
+# label: transparency-removal
+# commit: 4de6e3f664209d09eb22cc8701dc08249304a62b
+# apk: app-default-debug.apk
+# measured: 2026-09-24T03:11:13Z
+apk.size.file	62793694	bytes
+apk.size.download	22263347	bytes
+apk.size.arsc	1960880	bytes
+apk.size.dex	55521820	bytes
+apk.size.lib	73584	bytes
+apk.size.other	197922	bytes
+apk.size.res	5062691	bytes
+dex.files	25	count
+dex.method_refs	228995	count
+manifest.permissions	12	count
+gradle.modules	35	count

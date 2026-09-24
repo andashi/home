@@ -20,8 +20,6 @@ data class LauncherSettingsData internal constructor(
     val uiColorsId: UUID = UUID(0L, 0L),
     @Serializable(with = UUIDSerializer::class)
     val uiShapesId: UUID = UUID(0L, 0L),
-    @Serializable(with = UUIDSerializer::class)
-    val uiTransparenciesId: UUID = UUID(0L, 0L),
     /** `appearance.glass` (ADR 0004, #24); written only by a config reload. */
     val glassBlur: Float = GlassDefaults.Blur,
     val glassTint: Float = GlassDefaults.Tint,

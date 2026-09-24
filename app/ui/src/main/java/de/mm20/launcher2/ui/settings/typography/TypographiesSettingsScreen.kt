@@ -242,7 +242,7 @@ fun TypographiesSettingsScreen() {
             text = {
                 Text(
                     stringResource(
-                        R.string.confirmation_delete_transparencies_scheme,
+                        R.string.confirmation_delete_typography_scheme,
                         deleteTypography!!.name
                     )
                 )

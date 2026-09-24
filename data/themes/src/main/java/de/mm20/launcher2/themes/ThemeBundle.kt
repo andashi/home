@@ -10,7 +10,6 @@ import de.mm20.launcher2.themes.colors.DefaultDarkColorScheme
 import de.mm20.launcher2.themes.colors.DefaultLightColorScheme
 import de.mm20.launcher2.themes.colors.EmptyCorePalette
 import de.mm20.launcher2.themes.shapes.Shapes
-import de.mm20.launcher2.themes.transparencies.Transparencies
 import de.mm20.launcher2.themes.typography.Typography
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
@@ -29,7 +28,6 @@ data class ThemeBundle(
     val colors: Colors? = null,
     val typography: Typography? = null,
     val shapes: Shapes? = null,
-    val transparencies: Transparencies? = null,
     /**
      * The file version, always 2 for the new theme format.
      */

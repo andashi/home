@@ -45,13 +45,6 @@ class AppearanceSettingsScreenVM : ViewModel(), KoinComponent {
     }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), null)
 
-    val transparencyThemeName = uiSettings.transparenciesId.flatMapLatest {
-        themeRepository.transparencies.getOrDefault(it)
-    }.map {
-        it.name
-    }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), null)
-
     val compatModeColors = uiSettings.compatModeColors
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), false)
 

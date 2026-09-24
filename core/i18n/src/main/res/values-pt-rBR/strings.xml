@@ -370,11 +370,6 @@
         <item quantity="other">%1$s endereços postais</item>
     </plurals>
     <string name="preference_create_typography">Novo esquema de tipografia</string>
-    <string name="preference_screen_transparencies">Transparência</string>
-    <string name="preference_create_transparency">Novo esquema de transparência</string>
-    <string name="preference_transparencies_default">Padrão</string>
-    <string name="preference_transparencies_semi_transparent">Semi-transparente</string>
-    <string name="confirmation_delete_transparencies_scheme">Tem certeza que deseja excluir o esquema de transparência %1$s?</string>
     <string name="new_theme_name">(sem título)</string>
     <string name="theme_bundle_name">Nome</string>
     <plurals name="contact_phone_numbers">

@@ -349,10 +349,6 @@
     <string name="gesture_action_widgets">组件页</string>
     <string name="confirmation_delete_shapes_scheme">删除形状预设“%1$s”吗？</string>
     <string name="bad_configuration_summary">你探索出了一套访问不了搜索和设置的配置，使你无法进入设置 — 让启动器桌面变成了启动弃</string>
-    <string name="preference_transparencies_default">默认</string>
-    <string name="preference_screen_transparencies">透明度</string>
-    <string name="preference_transparencies_semi_transparent">半透明</string>
-    <string name="confirmation_delete_transparencies_scheme">删除透明度预设“%1$s”吗？</string>
     <string name="no_selection">未选</string>
     <string name="save_as_file">保存为文件</string>
     <string name="theme_bundle_name">名称</string>
@@ -399,7 +395,6 @@
     <string name="preference_create_colors">新建配色方案</string>
     <string name="preference_create_shapes">新建形状方案</string>
     <string name="preference_create_typography">新建排版方案</string>
-    <string name="preference_create_transparency">新建透明度方案</string>
     <string name="add_font_style">添加字体样式</string>
     <string name="remove_font_style">移除此字体样式</string>
     <string name="typo_preview_short1">文A</string>

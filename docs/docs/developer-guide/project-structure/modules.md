@@ -35,7 +35,7 @@ The project consists of multiple Gradle modules. This is the current structure:
     - `:notifications`: APIs to read notifications. Contains the app's `NotificationListenerService`
     - `:search-actions`: Implements search actions (call, message, web search, ...)
     - `:searchable`: Persistence for searchable items
-    - `:themes`: Colors, shapes, transparencies and typography
+    - `:themes`: Colors, shapes and typography
     - `:widgets`: CRUD operations to store and retrieve widgets in/from the database
 - `:core`
     - `:base`: Interface definitions for the most commonly used data types. Commonly used data

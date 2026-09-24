@@ -392,10 +392,6 @@
     <string name="theme_bundle_author">Créé par</string>
     <string name="theme_import_title">Importer le thème</string>
     <string name="preference_colors_high_contrast">Contraste élevé</string>
-    <string name="preference_screen_transparencies">Transparence</string>
-    <string name="preference_transparencies_default">Par défaut</string>
-    <string name="preference_transparencies_semi_transparent">Semi-transparent</string>
-    <string name="confirmation_delete_transparencies_scheme">Voulez-vous réellement supprimer le schéma de transparence %1$s ?</string>
     <string name="new_theme_name">(sans titre)</string>
     <string name="widget_name_apps">Applications</string>
     <string name="preference_screen_typography">Typographie</string>
@@ -438,7 +434,6 @@
     <string name="preference_create_colors">Nouvelle palette de couleurs</string>
     <string name="preference_create_shapes">Nouvelle palette de formes</string>
     <string name="preference_create_typography">Nouvelle palette typographique</string>
-    <string name="preference_create_transparency">Nouvelle palette de transparence</string>
     <string name="gesture_action_widgets_indexed">Widgets (%1$d)</string>
     <string name="add_font_style">Ajouter un style de police</string>
     <string name="remove_font_style">Retirer ce style de police</string>
