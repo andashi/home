@@ -289,10 +289,15 @@ class GridLayoutTest {
         assertEquals(listOf("z", "a", "m"), GridLayout.normalize(Phone, items).items.map { it.id })
     }
 
-    // --- clampToCover ---------------------------------------------------
+    // --- clampToWindow ---------------------------------------------------
 
+    /**
+     * #93: the cover is the right half of the fold layout. Items in columns
+     * 4..7 stay where they are (layout coordinates), items on the left are
+     * not on the cover, and the favorites strip is clipped to the window.
+     */
     @Test
-    fun `clampToCover keeps the left half and clips the favorites strip`() {
+    fun `clampToWindow keeps the right half and clips the favorites strip`() {
         val items = listOf(
             item("a", 0, 0, 2, 2),
             item("b", 4, 0, 2, 2),
@@ -300,11 +305,50 @@ class GridLayoutTest {
             favorites(0, 5, 8, 1),
             item("d", 2, 3, 3, 1, mayCrossFold = true),
         )
-        val cover = GridLayout.clampToCover(items, 4)
+        val cover = GridLayout.clampToWindow(items, 4 until 8)
+        assertEquals(listOf("b", "favorites", "d"), cover.map { it.id })
+        assertEquals(Span(4, 0, 2, 2), cover.spanOf("b"))
+        assertEquals(Span(4, 5, 4, 1), cover.spanOf("favorites"))
+        assertEquals(Span(4, 3, 1, 1), cover.spanOf("d"))
+        assertInsideColumns(4 until 8, 6, cover)
+    }
+
+    /** Control: a window on the left half is what the cover used to show. */
+    @Test
+    fun `clampToWindow on the left half keeps the left half`() {
+        val items = listOf(
+            item("a", 0, 0, 2, 2),
+            item("b", 4, 0, 2, 2),
+            item("c", 3, 2, 1, 1),
+            favorites(0, 5, 8, 1),
+            item("d", 2, 3, 3, 1, mayCrossFold = true),
+        )
+        val cover = GridLayout.clampToWindow(items, 0 until 4)
         assertEquals(listOf("a", "c", "favorites", "d"), cover.map { it.id })
         assertEquals(Span(0, 5, 4, 1), cover.spanOf("favorites"))
         assertEquals(Span(2, 3, 2, 1), cover.spanOf("d"))
         assertInside(GridSpec(4, 6), cover)
+    }
+
+    /** #93: something added on the cover lands on the cover. */
+    @Test
+    fun `place inside a window puts the item in its columns`() {
+        val items = listOf(item("a", 4, 0, 2, 1))
+        val placed = GridLayout.place(Fold, items, item("new", 0, 0, 2, 1), columns = 4 until 8)
+        assertEquals(Span(6, 0, 2, 1), placed?.span)
+    }
+
+    /** An item wider than the window does not fit on the cover at all. */
+    @Test
+    fun `place reports no room for an item wider than the window`() {
+        assertEquals(null, GridLayout.place(Fold, emptyList(), item("wide", 0, 0, 5, 1), columns = 4 until 8))
+    }
+
+    /** Control: without a window the whole grid is searched from the top left. */
+    @Test
+    fun `place without a window starts at the top left`() {
+        val items = listOf(item("a", 4, 0, 2, 1))
+        assertEquals(Span(0, 0, 2, 1), GridLayout.place(Fold, items, item("new", 0, 0, 2, 1))?.span)
     }
 
     @Test

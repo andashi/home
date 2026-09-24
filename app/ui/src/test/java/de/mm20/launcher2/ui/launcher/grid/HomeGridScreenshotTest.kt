@@ -86,8 +86,9 @@ class HomeGridScreenshotTest {
     )
 
     private val foldItems = listOf(
-        gridItem("weather", 0, 0, 2, 2, HomeGridLayouts.Fold, position = 0),
-        gridItem("calendar", 2, 0, 2, 2, HomeGridLayouts.Fold, position = 1),
+        // The cover is the right half (#93): what it shows sits in columns 4-7.
+        gridItem("weather", 4, 0, 2, 2, HomeGridLayouts.Fold, position = 0),
+        gridItem("calendar", 6, 0, 2, 2, HomeGridLayouts.Fold, position = 1),
         // Eight columns on the inner display; the cover clips it to four.
         dockItem(0, 5, 8, 1, HomeGridLayouts.Fold),
     )

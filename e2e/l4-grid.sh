@@ -32,10 +32,10 @@
 # FOLD=1 runs on a foldable instance (the GrapheneOS one is SERIAL=emulator-5560,
 # OVERLAY_DIR=.../instances/test-fold; posture ids are resolved by name, since
 # they differ between foldables): the fixtures carry a `fold` layout
-# eight columns wide with an item in the right half, step 2 folds and
-# unfolds between its checks (D7: the cover shows columns 0-3, the right
+# eight columns wide with an item in the left half, step 2 folds and
+# unfolds between its checks (D7, #93: the cover shows columns 4-7, the left
 # item is absent, the dock is clipped to four columns), and the phone-only
-# steps 5 to 7 are skipped.
+# steps 5 to 7 are skipped. The fold's default dock is the right edge column.
 #
 # Cells are found by their content description "grid-item:<id>", which the
 # renderer sets on every cell. The favorites row anchors the geometry: it
@@ -409,7 +409,8 @@ dock = cells.get("dock"); dock_exp = expected.get("dock")
 if dock is None or dock_exp is None:
     sys.exit(f"{what}: the favorites row must be on screen and expected")
 pitch = (dock[2] - dock[0] + gap) / dock_exp[2]
-left, dock_top = dock[0], dock[1]
+# The dock need not start at column 0 (the fold's default is the right edge).
+left, dock_top = dock[0] - dock_exp[0] * pitch, dock[1]
 tol = gap  # one gap of slack for rounding and the card's shadow
 bad = []
 for cid, (x, y, w, h) in expected.items():
@@ -489,11 +490,12 @@ cat > "$GRID_CONFIG" <<EOF
           { "id": "analog", "widget": "$ANALOG_CLOCK", "x": 0, "y": 1, "w": 2, "h": 2 },
           { "id": "dock", "widget": "favorites", "x": 0, "y": 5, "w": 4, "h": 1 },
         ] },
-        // Eight columns wide (D7); "right" lives in the half only the inner display shows.
+        // Eight columns wide (D7); the cover is the right half (#93), so the
+        // clocks sit there and "left" lives in the half only the inner display shows.
         "fold": { "items": [
-          { "id": "digital", "widget": "$DIGITAL_CLOCK", "x": 0, "y": 0, "w": 3, "h": 1 },
-          { "id": "analog", "widget": "$ANALOG_CLOCK", "x": 0, "y": 1, "w": 2, "h": 2 },
-          { "id": "right", "widget": "$DIGITAL_CLOCK", "x": 5, "y": 0, "w": 3, "h": 1 },
+          { "id": "digital", "widget": "$DIGITAL_CLOCK", "x": 5, "y": 0, "w": 3, "h": 1 },
+          { "id": "analog", "widget": "$ANALOG_CLOCK", "x": 6, "y": 1, "w": 2, "h": 2 },
+          { "id": "left", "widget": "$DIGITAL_CLOCK", "x": 0, "y": 0, "w": 3, "h": 1 },
           { "id": "dock", "widget": "favorites", "x": 0, "y": 5, "w": 8, "h": 1 },
         ] },
       },
@@ -590,12 +592,19 @@ wait_until '(.home.grid.layouts.'"$LAYOUT"'.items | length) > 0' 60 "the default
 effective="$LAST_CONFIG"
 assert_jq "$effective" '.schemaVersion == 2 and .home.favorites == [] and (.home | has("dock") | not)' \
   "v1 file migrated to the v2 shape"
-assert_jq "$effective" \
-  '[.home.grid.layouts.'"$LAYOUT"'.items[] | select(.widget == "favorites" and .x == 0 and .w == '"$DOCK_W"' and .h == 1 and .y >= 4)] | length == 1' \
-  "the default favorites row sits full width in the bottom row"
+if [ "$FOLD" = 1 ]; then
+  # #93: the fold's default dock is the right edge column, full height.
+  assert_jq "$effective" \
+    '[.home.grid.layouts.fold.items[] | select(.widget == "favorites" and .x == 7 and .y == 0 and .w == 1 and .h >= 6)] | length == 1' \
+    "the default favorites dock is the right edge column"
+else
+  assert_jq "$effective" \
+    '[.home.grid.layouts.'"$LAYOUT"'.items[] | select(.widget == "favorites" and .x == 0 and .w == '"$DOCK_W"' and .h == 1 and .y >= 4)] | length == 1' \
+    "the default favorites row sits full width in the bottom row"
+fi
 ok "v1 file migrated, default favorites row written"
 wake_screen
-assert_cells "dock 0 $(jq -r '.home.grid.layouts.'"$LAYOUT"'.items[] | select(.widget == "favorites") | .y' <<<"$effective") $DOCK_W 1" \
+assert_cells "dock $(jq -r '.home.grid.layouts.'"$LAYOUT"'.items[] | select(.widget == "favorites") | "\(.x) \(.y) \(.w) \(.h)"' <<<"$effective")" \
   "default grid on screen"
 ok "default favorites row measured on screen"
 
@@ -609,26 +618,27 @@ if [ "$HAVE_CLOCK" = 1 ]; then
   if [ "$FOLD" = 1 ]; then
     assert_jq "$effective" \
       '(.home.grid.layouts.fold.items | map({id, x, y, w, h})) ==
-       [{"id":"digital","x":0,"y":0,"w":3,"h":1},{"id":"analog","x":0,"y":1,"w":2,"h":2},
-        {"id":"right","x":5,"y":0,"w":3,"h":1},{"id":"dock","x":0,"y":5,"w":8,"h":1}]' \
+       [{"id":"digital","x":5,"y":0,"w":3,"h":1},{"id":"analog","x":6,"y":1,"w":2,"h":2},
+        {"id":"left","x":0,"y":0,"w":3,"h":1},{"id":"dock","x":0,"y":5,"w":8,"h":1}]' \
       "read-back fold grid equals the pushed file"
     resolve_postures
     posture opened
-    assert_cells $'digital 0 0 3 1\nanalog 0 1 2 2\nright 5 0 3 1\ndock 0 5 8 1' "configured grid on the inner display"
+    assert_cells $'digital 5 0 3 1\nanalog 6 1 2 2\nleft 0 0 3 1\ndock 0 5 8 1' "configured grid on the inner display"
     assert_bound "$DIGITAL_CLOCK" "$ANALOG_CLOCK"
-    ok "fold, opened: eight columns, the right-half item on screen, both widgets bound"
-    # Closed: the cover renders columns 0..3 of the same layout (D7). The
-    # dock line says 4 wide, so the pitch is measured from four columns.
+    ok "fold, opened: eight columns, the left-half item on screen, both widgets bound"
+    # Closed: the cover renders columns 4..7 of the same layout (D7, #93),
+    # so on screen layout column 5 is the cover's second. The dock line says
+    # 4 wide, so the pitch is measured from four columns.
     posture closed
     DOCK_W=4
-    assert_cells $'digital 0 0 3 1\nanalog 0 1 2 2\ndock 0 5 4 1' "the cover clips the fold layout"
-    [ -z "$(dump_cells | awk '$1 == "right"')" ] || die "the right-half item is on the cover"
-    ok "fold, closed: four columns, the right-half item absent, the dock clipped"
+    assert_cells $'digital 1 0 3 1\nanalog 2 1 2 2\ndock 0 5 4 1' "the cover shows the right half"
+    [ -z "$(dump_cells | awk '$1 == "left"')" ] || die "the left-half item is on the cover"
+    ok "fold, closed: four columns, the right half, the left-half item absent, the dock clipped"
     posture half
     DOCK_W=8
-    assert_cells $'digital 0 0 3 1\nanalog 0 1 2 2\nright 5 0 3 1\ndock 0 5 8 1' "half-opened renders as opened"
+    assert_cells $'digital 5 0 3 1\nanalog 6 1 2 2\nleft 0 0 3 1\ndock 0 5 8 1' "half-opened renders as opened"
     posture opened
-    assert_cells $'digital 0 0 3 1\nanalog 0 1 2 2\nright 5 0 3 1\ndock 0 5 8 1' "opened again"
+    assert_cells $'digital 5 0 3 1\nanalog 6 1 2 2\nleft 0 0 3 1\ndock 0 5 8 1' "opened again"
     ok "fold, half-opened and opened again: the inner layout is back"
   else
     assert_jq "$effective" \
@@ -681,7 +691,7 @@ PY
     "the read-back holds the hand-moved clock"
   wake_screen
   if [ "$FOLD" = 1 ]; then
-    assert_cells $'digital 0 3 3 1\nanalog 0 1 2 2\nright 5 0 3 1\ndock 0 5 8 1' "the moved clock on screen"
+    assert_cells $'digital 5 3 3 1\nanalog 6 1 2 2\nleft 0 0 3 1\ndock 0 5 8 1' "the moved clock on screen"
   else
     assert_cells $'digital 0 3 3 1\nanalog 0 1 2 2\ndock 0 5 4 1' "the moved clock on screen"
   fi

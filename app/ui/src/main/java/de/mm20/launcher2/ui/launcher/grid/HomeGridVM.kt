@@ -245,17 +245,31 @@ class HomeGridVM(
             is LayoutIssue.BelowMinimum -> this.id == id
             is LayoutIssue.Overflow -> this.id == id
         }
-        search@ for (y in item.y until spec.rows) {
-            for (x in 0..(spec.columns - item.w)) {
-                val span = Span(x, y, item.w, item.h)
-                val issues = GridLayout.validate(spec, others + candidate.copy(span = span))
-                if (issues.none { it.involves(item.id) }) {
-                    found = span
-                    break@search
+        fun fits(span: Span) = GridLayout.validate(spec, others + candidate.copy(span = span))
+            .none { it.involves(item.id) }
+        // Its own cells first, checked against the whole layout: a dock that
+        // spans the fold comes back as it was, the cover only clips it
+        // (review on #114).
+        val original = Span(item.x, item.y, item.w, item.h)
+        if (fits(original)) found = original
+        // Else only the columns this window shows: on the cover the item
+        // comes back where the user can see it (#93).
+        val window = geometry.visibleRange
+        if (found == null) {
+            search@ for (y in item.y until spec.rows) {
+                for (x in window.first..(window.last + 1 - item.w)) {
+                    val span = Span(x, y, item.w, item.h)
+                    if (fits(span)) {
+                        found = span
+                        break@search
+                    }
                 }
             }
         }
-        val span = found ?: GridLayout.place(spec, others, candidate)?.span
+        val span = found
+            ?: GridLayout.place(spec, others, candidate, columns = window)?.span
+            // Wider than the window: anywhere in the layout, clipped on the cover.
+            ?: GridLayout.place(spec, others, candidate)?.span
         if (span == null) {
             _events.tryEmit(GridEditEvent.NoRoom)
             return
@@ -281,6 +295,8 @@ class HomeGridVM(
             geometry.spec,
             items.map { it.toGridItem(geometry) },
             GridItem(id, Span(0, 0, default.w, default.h), limits, mayCrossFold = false),
+            // On the cover, where the user can see it (#93).
+            columns = geometry.visibleRange,
         )
         if (placed == null) {
             _events.tryEmit(GridEditEvent.NoRoom)

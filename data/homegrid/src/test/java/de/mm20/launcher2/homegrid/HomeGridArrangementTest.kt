@@ -59,7 +59,7 @@ class HomeGridArrangementTest {
     }
 
     @Test
-    fun `the cover draws only the left half and clips the favorites strip`() {
+    fun `the cover draws only the right half and clips the favorites strip`() {
         val items = listOf(
             item("a", 0, 0, 2, 2, HomeGridLayouts.Fold),
             item("right", 5, 0, 2, 2, HomeGridLayouts.Fold),
@@ -68,9 +68,11 @@ class HomeGridArrangementTest {
 
         val result = HomeGridArrangement.arrange(cover, items)
 
-        assertEquals(listOf("a", "dock"), result.cells.map { it.item.id })
-        assertEquals(Span(0, 5, 4, 1), result.cells.spanOf("dock"))
-        assertTrue(result.cells.all { it.span.x + it.span.w <= cover.visibleColumns })
+        // #93: layout coordinates; the cover shows columns 4..7.
+        assertEquals(listOf("right", "dock"), result.cells.map { it.item.id })
+        assertEquals(Span(5, 0, 2, 2), result.cells.spanOf("right"))
+        assertEquals(Span(4, 5, 4, 1), result.cells.spanOf("dock"))
+        assertTrue(result.cells.all { it.span.x >= 4 && it.span.x + it.span.w <= 8 })
     }
 
     @Test

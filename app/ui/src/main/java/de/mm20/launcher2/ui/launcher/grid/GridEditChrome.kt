@@ -95,6 +95,8 @@ internal fun GridCellEditOverlay(
     val span by rememberUpdatedState(cell.span)
     val limits = remember(id, selected) { viewModel.limitsOf(id) }
     val isFavorites = cell.item.isFavorites
+    // Clipped on this window: moved and resized on the inner display (#114 review).
+    val geometryEditable = !extendsPastWindow(cell.item, geometry)
 
     Box(
         modifier = Modifier
@@ -107,11 +109,12 @@ internal fun GridCellEditOverlay(
                     },
                 )
             }
-            .pointerInput(id, pitchPx) {
+            .pointerInput(id, pitchPx, geometryEditable) {
+                if (!geometryEditable) return@pointerInput
                 detectDragGestures(
                     onDragStart = {
                         viewModel.beginDrag(id)
-                        val origin = cellTopLeft(span, pitchPx - gapPx, gapPx)
+                        val origin = cellTopLeft(span, pitchPx - gapPx, gapPx, geometry.firstVisibleColumn)
                         visual.ghostLeftPx = origin.x.toFloat()
                         visual.ghostTopPx = origin.y.toFloat()
                         visual.draggedId = id
@@ -120,8 +123,11 @@ internal fun GridCellEditOverlay(
                         change.consume()
                         visual.ghostLeftPx += amount.x
                         visual.ghostTopPx += amount.y
-                        val targetX = (visual.ghostLeftPx / pitchPx).roundToInt()
-                            .coerceIn(0, (geometry.visibleColumns - span.w).coerceAtLeast(0))
+                        // Layout columns: the window starts at its first
+                        // visible one (the cover's right half, #93).
+                        val first = geometry.firstVisibleColumn
+                        val targetX = ((visual.ghostLeftPx / pitchPx).roundToInt() + first)
+                            .coerceIn(first, (geometry.visibleRange.last + 1 - span.w).coerceAtLeast(first))
                         val targetY = (visual.ghostTopPx / pitchPx).roundToInt()
                             .coerceIn(0, (geometry.rows - span.h).coerceAtLeast(0))
                         if (targetX != span.x || targetY != span.y) {
@@ -157,11 +163,13 @@ internal fun GridCellEditOverlay(
             Icon(painterResource(R.drawable.close_20px), contentDescription = stringResource(R.string.widget_action_remove))
         }
 
+        if (!geometryEditable) return@Box
+
         Row(modifier = Modifier.align(Alignment.BottomStart).padding(2.dp)) {
             if (current.w > limits.minW) {
                 ResizeButton("grid-resize-narrower", "W−") { viewModel.resize(id, current.w - 1, current.h) }
             }
-            if (current.w < limits.maxW && current.x + current.w < geometry.visibleColumns) {
+            if (current.w < limits.maxW && current.x + current.w < geometry.visibleRange.last + 1) {
                 ResizeButton("grid-resize-wider", "W+") { viewModel.resize(id, current.w + 1, current.h) }
             }
             if (current.h > limits.minH) {
@@ -187,7 +195,9 @@ internal fun GridCellEditOverlay(
                             change.consume()
                             dragW += amount.x
                             dragH += amount.y
-                            val w = (span.w + (dragW / pitchPx).roundToInt()).coerceIn(limits.minW, limits.maxW)
+                            // Not past the window's last column (#93).
+                            val maxW = minOf(limits.maxW, geometry.visibleRange.last + 1 - span.x).coerceAtLeast(limits.minW)
+                            val w = (span.w + (dragW / pitchPx).roundToInt()).coerceIn(limits.minW, maxW)
                             val h = (span.h + (dragH / pitchPx).roundToInt()).coerceIn(limits.minH, limits.maxH)
                             if (w != span.w || h != span.h) {
                                 dragW -= (w - span.w) * pitchPx
@@ -218,4 +228,15 @@ private fun ResizeButton(description: String, label: String, onClick: () -> Unit
     ) {
         Text(label, style = MaterialTheme.typography.labelSmall)
     }
+}
+
+/**
+ * Whether [item]'s stored span reaches past the columns [geometry] draws: on
+ * the cover such a cell (the eight-wide dock) is drawn clipped, and moving or
+ * resizing the clipped span would misplace the stored item, so its geometry
+ * is edited on the inner display (review on #114).
+ */
+internal fun extendsPastWindow(item: HomeGridItem, geometry: GridGeometry): Boolean {
+    val window = geometry.visibleRange
+    return item.x < window.first || item.x + item.w > window.last + 1
 }

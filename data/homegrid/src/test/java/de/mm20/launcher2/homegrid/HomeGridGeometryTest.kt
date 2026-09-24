@@ -39,8 +39,13 @@ class HomeGridGeometryTest {
     }
 
     @Test
-    fun `a fold's cover shows the left half of the same layout`() {
+    fun `a fold's cover shows the right half of the same layout`() {
         val g = HomeGridGeometry.derive(FormFactor.Fold, columns = 4, widthDp = 396f, heightDp = 800f)
+
+        // #93: the cover is the right half of the inner display.
+        assertEquals(4, g.coverFirstColumn)
+        assertEquals(4, g.firstVisibleColumn)
+        assertEquals(4 until 8, g.visibleRange)
 
         assertEquals(HomeGridLayouts.Fold, g.layout)
         assertEquals(8, g.spec.columns)
@@ -49,6 +54,25 @@ class HomeGridGeometryTest {
         assertTrue(g.isCover)
         // Cells are sized to the four visible columns, the same as a phone.
         assertEquals(93f, g.cellDp, 0.001f)
+    }
+
+    /** The inner display draws everything; it still knows which half the cover is. */
+    @Test
+    fun `the inner display draws all columns and knows the cover's half`() {
+        val g = HomeGridGeometry.derive(FormFactor.Fold, columns = 4, widthDp = 774f, heightDp = 800f)
+
+        assertEquals(4, g.coverFirstColumn)
+        assertEquals(0, g.firstVisibleColumn)
+        assertEquals(0 until 8, g.visibleRange)
+    }
+
+    /** Control: a phone draws all its columns from 0. */
+    @Test
+    fun `a phone draws its columns from zero`() {
+        val g = HomeGridGeometry.derive(FormFactor.Phone, columns = 4, widthDp = 396f, heightDp = 800f)
+
+        assertEquals(0, g.firstVisibleColumn)
+        assertEquals(0 until 4, g.visibleRange)
     }
 
     @Test

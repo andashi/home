@@ -243,8 +243,8 @@ data class WidgetsConfig(
  * The single-page home grid (ADR 0001, revised 2026-09-22).
  *
  * [columns] is the column count of one cover-width page; the `fold` layout
- * is twice as wide and the cover display renders its columns `0 until
- * columns` (D7). Rows are derived from the screen, not configured (D1).
+ * is twice as wide and the cover display renders its columns `columns until
+ * 2 * columns`, the right half (D7, #93). Rows are derived from the screen, not configured (D1).
  * [locked] forbids edit mode, so nothing is ever written back for a locked
  * profile (D3). [layouts] is keyed by [GridLayouts.Phone] or
  * [GridLayouts.Fold]; a device uses exactly one of them.

@@ -28,11 +28,11 @@ class SearchLayoutTest {
         val half = g.cellDp * 4 + g.gapDp * 3
 
         assertEquals(4, layout.columns)
-        // The apps pane is the cover's half, exactly four home cells wide.
-        assertEquals(SearchLayout.Pane(0f, half), layout.apps)
-        // The results pane starts one gap after the seam and ends at the edge.
-        assertEquals(half + g.gapDp, layout.results.startDp, 0.001f)
-        assertEquals(774f, layout.results.endDp, 0.001f)
+        // #93: the apps pane is the cover's half, the right one, exactly four
+        // home cells wide; the results pane is the left half.
+        assertEquals(SearchLayout.Pane(0f, half), layout.results)
+        assertEquals(half + g.gapDp, layout.apps.startDp, 0.001f)
+        assertEquals(774f, layout.apps.endDp, 0.001f)
     }
 
     @Test
@@ -41,20 +41,19 @@ class SearchLayoutTest {
         val layout = SearchLayout.from(g) as SearchLayout.TwoPane
         val seam = g.cellDp * 4 + g.gapDp * 3 + g.gapDp / 2
 
-        assertTrue(layout.apps.endDp <= seam)
-        assertTrue(layout.results.startDp >= seam)
+        assertTrue(layout.results.endDp <= seam)
+        assertTrue(layout.apps.startDp >= seam)
     }
 
+    /** Control: a geometry whose cover were the left half puts the apps there. */
     @Test
-    fun `the apps pane follows the cover to the right half`() {
-        // #93: the cover shows columns 4-7; the apps go with it.
-        val g = geometry(FormFactor.Fold, 774f).copy(coverFirstColumn = 4)
+    fun `the apps pane follows the cover's half`() {
+        val g = geometry(FormFactor.Fold, 774f).copy(coverFirstColumn = 0)
         val layout = SearchLayout.from(g) as SearchLayout.TwoPane
         val half = g.cellDp * 4 + g.gapDp * 3
 
-        assertEquals(SearchLayout.Pane(0f, half), layout.results)
-        assertEquals(half + g.gapDp, layout.apps.startDp, 0.001f)
-        assertEquals(774f, layout.apps.endDp, 0.001f)
+        assertEquals(SearchLayout.Pane(0f, half), layout.apps)
+        assertEquals(half + g.gapDp, layout.results.startDp, 0.001f)
     }
 
     @Test

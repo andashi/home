@@ -310,7 +310,7 @@ fun HomeGridLayout(
     val previousRects = remember { mutableMapOf<String, IntOffset>() }
     LaunchedEffect(cells, cellPx, gapPx) {
         for ((id, span) in cells) {
-            val rect = cellTopLeft(span, cellPx, gapPx)
+            val rect = cellTopLeft(span, cellPx, gapPx, geometry.firstVisibleColumn)
             val previous = previousRects[id]
             previousRects[id] = rect
             if (previous == null || previous == rect || visual?.draggedId == id) continue
@@ -348,10 +348,14 @@ fun HomeGridLayout(
 
 private const val SlideMillis = 180
 
-/** Top-left of a span's rectangle in px, rounded from the accumulated float position. */
-internal fun cellTopLeft(span: Span, cellPx: Float, gapPx: Float): IntOffset {
+/**
+ * Top-left of a span's rectangle in px, rounded from the accumulated float
+ * position. Spans are in layout coordinates; [firstColumn] is the first one
+ * the window draws (the cover's, #93).
+ */
+internal fun cellTopLeft(span: Span, cellPx: Float, gapPx: Float, firstColumn: Int = 0): IntOffset {
     val pitch = cellPx + gapPx
-    return IntOffset((span.x * pitch).roundToInt(), (span.y * pitch).roundToInt())
+    return IntOffset(((span.x - firstColumn) * pitch).roundToInt(), (span.y * pitch).roundToInt())
 }
 
 /**
@@ -371,13 +375,15 @@ internal fun gridMeasurePolicy(
 ): MeasurePolicy {
     val pitch = cellPx + gapPx
     val spansById = cells.toMap()
+    // Spans are layout columns; the cover draws from its first one (#93).
+    val first = geometry.firstVisibleColumn
     return MeasurePolicy { measurables, constraints ->
         val placed = measurables.map { measurable ->
             val id = measurable.layoutId as String
             val span = spansById.getValue(id)
-            val left = (span.x * pitch).roundToInt()
+            val left = ((span.x - first) * pitch).roundToInt()
             val top = (span.y * pitch).roundToInt()
-            val right = (span.right * pitch - gapPx).roundToInt()
+            val right = ((span.right - first) * pitch - gapPx).roundToInt()
             val bottom = (span.bottom * pitch - gapPx).roundToInt()
             val placeable = measurable.measure(
                 Constraints.fixed(

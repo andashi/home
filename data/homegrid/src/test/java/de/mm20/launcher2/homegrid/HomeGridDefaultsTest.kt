@@ -67,11 +67,16 @@ class HomeGridDefaultsTest {
         assertEquals(1, flag.marks)
     }
 
+    /**
+     * #93: on the fold the dock is a column on the right edge, full height:
+     * the right edge of both displays, in the same place when the device
+     * opens.
+     */
     @Test
-    fun `on the fold layout the row spans all columns`() = runBlocking {
+    fun `on the fold layout the dock is the right edge column`() = runBlocking {
         val written = HomeGridDefaults.ensureFavoritesRow(grid, FakeInitFlag(), lock, HomeGridLayouts.Fold, columns = 8, rows = 7)
 
-        assertEquals(listOf(0, 6, 8, 1), written.single().let { listOf(it.x, it.y, it.w, it.h) })
+        assertEquals(listOf(7, 0, 1, 7), written.single().let { listOf(it.x, it.y, it.w, it.h) })
     }
 
     @Test

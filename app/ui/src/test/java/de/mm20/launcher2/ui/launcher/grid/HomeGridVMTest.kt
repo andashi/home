@@ -1,9 +1,13 @@
 package de.mm20.launcher2.ui.launcher.grid
 
 
+import de.mm20.launcher2.grid.CellSize
+import de.mm20.launcher2.grid.SizeLimits
+import de.mm20.launcher2.grid.Span
 import de.mm20.launcher2.homegrid.FormFactor
 import de.mm20.launcher2.homegrid.GridItemLimits
 import de.mm20.launcher2.homegrid.HomeGridInitLock
+import de.mm20.launcher2.homegrid.HomeGridDefaults
 import de.mm20.launcher2.homegrid.HomeGridLayouts
 import de.mm20.launcher2.homegrid.HomeGridWidgets
 import de.mm20.launcher2.homegrid.MeasuredGridRows
@@ -14,6 +18,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.resetMain
@@ -88,7 +93,7 @@ class HomeGridVMTest {
     }
 
     @Test
-    fun `a fold's cover clamps the fold layout to its left half`() = runTest(dispatcher) {
+    fun `a fold's cover shows the right half of the fold layout`() = runTest(dispatcher) {
         val repository = FakeHomeGridRepository(
             mapOf(
                 HomeGridLayouts.Fold to listOf(
@@ -106,8 +111,58 @@ class HomeGridVMTest {
         assertTrue(state.geometry.isCover)
         assertEquals(4, state.geometry.visibleColumns)
         assertEquals(8, state.geometry.spec.columns)
-        assertEquals(listOf("left", "dock"), state.cells.map { it.item.id })
-        assertEquals(4, state.cells.first { it.item.isFavorites }.span.w)
+        // #93: the right half, in layout coordinates.
+        assertEquals(listOf("right", "dock"), state.cells.map { it.item.id })
+        assertEquals(Span(4, 5, 4, 1), state.cells.first { it.item.isFavorites }.span)
+    }
+
+    /** #93: something added on the cover lands in the columns the cover shows. */
+    @Test
+    fun `a widget added on the cover lands on the cover`() = runTest(dispatcher) {
+        val repository = FakeHomeGridRepository(
+            mapOf(HomeGridLayouts.Fold to listOf(gridItem("right", 4, 0, 2, 2, HomeGridLayouts.Fold, position = 0))),
+        )
+        val vm = vm(FormFactor.Fold, repository)
+        vm.onWindowMeasured(396f, 622f)
+        vm.state.filterNotNull().first()
+        vm.enterEdit()
+
+        assertTrue(vm.addWidget("com.example/.New", null, null, CellSize(2, 1), SizeLimits.Unbounded))
+
+        val state = vm.state.filterNotNull().first { s -> s.cells.any { it.item.widget == "com.example/.New" } }
+        assertEquals(Span(6, 0, 2, 1), state.cells.first { it.item.widget == "com.example/.New" }.span)
+    }
+
+    /**
+     * #114 review: undoing the removal of the eight-wide dock on the cover puts
+     * it back where it was; it may span the fold, the cover only clips it.
+     */
+    @Test
+    fun `undo on the cover restores a dock wider than the cover`() = runTest(dispatcher) {
+        val repository = FakeHomeGridRepository(
+            mapOf(
+                HomeGridLayouts.Fold to listOf(
+                    gridItem("right", 5, 0, 2, 2, HomeGridLayouts.Fold, position = 0),
+                    dockItem(0, 5, 8, 1, HomeGridLayouts.Fold),
+                ),
+            ),
+        )
+        val vm = vm(FormFactor.Fold, repository)
+        // Collected, as the composable does: the state is shared while subscribed.
+        backgroundScope.launch { vm.state.collect {} }
+        vm.onWindowMeasured(396f, 622f)
+        vm.state.filterNotNull().first()
+        vm.enterEdit()
+
+        val removed = vm.removeEditing(HomeGridDefaults.FavoritesId)!!
+        dispatcher.scheduler.advanceUntilIdle()
+        assertTrue(vm.state.value!!.cells.none { it.item.isFavorites })
+
+        vm.restore(removed)
+        dispatcher.scheduler.advanceUntilIdle()
+
+        val dock = vm.state.value!!.cells.firstOrNull { it.item.isFavorites }?.item
+        assertEquals(listOf(0, 5, 8, 1), dock?.let { listOf(it.x, it.y, it.w, it.h) })
     }
 
     @Test

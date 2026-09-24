@@ -235,29 +235,29 @@ EOF
   [ -z "$bar" ] || die "locked layout showed the edit bar after a long press"
   scene 13-locked "locked: true in the config: a long press shows no edit bar and nothing is ever written back." "HomeGridEditModeTest.aLockedLayoutRefusesEditMode; e2e/l4-grid.sh step 7"
 else
-  # 20-22: one fold layout, three postures.
-  config_with_grid "$WORK/20.jsonc" "        { \"id\": \"digital\", \"widget\": \"$DIGITAL\", \"x\": 0, \"y\": 0, \"w\": 3, \"h\": 1 },
-        { \"id\": \"analog\", \"widget\": \"$ANALOG\", \"x\": 0, \"y\": 1, \"w\": 2, \"h\": 2 },
-        { \"id\": \"right\", \"widget\": \"$DIGITAL\", \"x\": 5, \"y\": 0, \"w\": 3, \"h\": 1 },
+  # 20-22: one fold layout, three postures. The cover is the right half (#93).
+  config_with_grid "$WORK/20.jsonc" "        { \"id\": \"digital\", \"widget\": \"$DIGITAL\", \"x\": 5, \"y\": 0, \"w\": 3, \"h\": 1 },
+        { \"id\": \"analog\", \"widget\": \"$ANALOG\", \"x\": 6, \"y\": 1, \"w\": 2, \"h\": 2 },
+        { \"id\": \"left\", \"widget\": \"$DIGITAL\", \"x\": 0, \"y\": 0, \"w\": 3, \"h\": 1 },
         { \"id\": \"dock\", \"widget\": \"favorites\", \"x\": 0, \"y\": 5, \"w\": 8, \"h\": 1 },"
   push_config "$WORK/20.jsonc" "fold"
   posture opened; wait_cells 4 60
-  scene 20-fold-opened "Unfolded: one layout eight columns wide, a widget in the right half, the dock spanning the fold line." "HomeGridFoldTest (L2, foldable AVD); HomeGridScreenshotTest.foldInner"
+  scene 20-fold-opened "Unfolded: one layout eight columns wide, a widget in the left half, the dock spanning the fold line." "HomeGridFoldTest (L2, foldable AVD); HomeGridScreenshotTest.foldInner"
   posture closed; wait_cells 3 60
-  scene 21-fold-closed "Folded: the cover renders columns 0 to 3 of the same layout; the right-half widget is inner-only, the dock shows its left half." "HomeGridFoldTest.closedShowsTheCover...; HomeGridScreenshotTest.foldCover"
+  scene 21-fold-closed "Folded: the cover renders columns 4 to 7 of the same layout, where they were on the inner display; the left-half widget is inner-only, the dock shows its right half." "HomeGridFoldTest.closedShowsTheCoverAsTheRightHalf...; HomeGridScreenshotTest.foldCover"
   posture half; wait_cells 4 60
   scene 22-fold-half "Half-folded is rendered as opened (D7)." "HomeGridFoldTest.halfOpenedRendersAsOpened"
 
-  # 23-24: side dock on both displays.
-  config_with_grid "$WORK/23.jsonc" "        { \"id\": \"dock\", \"widget\": \"favorites\", \"x\": 0, \"y\": 0, \"w\": 1, \"h\": 6 },
-        { \"id\": \"digital\", \"widget\": \"$DIGITAL\", \"x\": 1, \"y\": 0, \"w\": 3, \"h\": 1 },
-        { \"id\": \"analog\", \"widget\": \"$ANALOG\", \"x\": 1, \"y\": 1, \"w\": 2, \"h\": 2 },
-        { \"id\": \"right\", \"widget\": \"$DIGITAL\", \"x\": 5, \"y\": 0, \"w\": 3, \"h\": 1 },"
+  # 23-24: side dock on both displays: the right edge (#93).
+  config_with_grid "$WORK/23.jsonc" "        { \"id\": \"dock\", \"widget\": \"favorites\", \"x\": 7, \"y\": 0, \"w\": 1, \"h\": 6 },
+        { \"id\": \"digital\", \"widget\": \"$DIGITAL\", \"x\": 4, \"y\": 0, \"w\": 3, \"h\": 1 },
+        { \"id\": \"analog\", \"widget\": \"$ANALOG\", \"x\": 4, \"y\": 1, \"w\": 2, \"h\": 2 },
+        { \"id\": \"left\", \"widget\": \"$DIGITAL\", \"x\": 0, \"y\": 0, \"w\": 3, \"h\": 1 },"
   push_config "$WORK/23.jsonc" "fold-side-dock"
   posture opened; wait_cells 4 60
-  scene 23-fold-side-dock-opened "A side dock on the inner display: one column at the left edge, the only edge that is an edge in both states." "HomeGridArrangementTest; D7"
+  scene 23-fold-side-dock-opened "A side dock on the inner display: one column at the right edge, the edge that is an edge in both states." "HomeGridArrangementTest; D7, #93"
   posture closed; wait_cells 3 60
-  scene 24-fold-side-dock-closed "The same side dock on the cover, unchanged, next to the three columns that remain." "HomeGridFoldTest; clampToCover"
+  scene 24-fold-side-dock-closed "The same side dock on the cover, unchanged and in the same place, next to the three columns that remain." "HomeGridFoldTest; clampToWindow"
   posture opened
 fi
 
