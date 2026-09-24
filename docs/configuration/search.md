@@ -29,7 +29,7 @@
 
 | Key | What it does | Accepted | Default |
 |---|---|---|---|
-| `search.favorites` | The favorites row at the top of search, with its tag chips. While nothing is pinned or used often (and no tag is pinned), the row is not shown either way | boolean | `true` |
+| `search.favorites` | The favorites row at the top of search, with its tag chips. It is not shown while there are no favorites, no pinned tags and no selected tag | boolean | `true` |
 | `search.allApps` | All apps while the query is empty; off, an empty query shows only favorites | boolean | `true` |
 | `search.layout` | App results as icons in the home grid's columns, or as a list | `grid`, `list` | `grid` |
 | `search.labels` | Labels under app icons in search (the dock never has labels) | boolean | `true` |
@@ -70,9 +70,12 @@ on the device. The read-back always serves every key.
 The favorites row shows while the query is empty, so these pictures are of
 search opened without typing.
 
-`search.favorites: false` turns the row off for good. With it on, a zone where
-nothing is pinned, nothing is used often yet and no tag is pinned also shows no
-row, so search starts with the apps; the row appears with the first favorite.
+`search.favorites: false` turns the row off for good. With it on, the row is
+hidden only while all three are absent: no favorites (nothing pinned or used
+often yet), no pinned tags and no selected tag. Search then starts with the
+apps. A favorite or a pinned tag brings the row back; a selected tag keeps it,
+showing "There are no items with this tag" when the tag is empty, so there is
+a way back.
 
 ## On the Fold
 
