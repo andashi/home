@@ -8,14 +8,17 @@ content, then the displays switch - a run of black frames - then the inner
 display. The script reports, relative to the first black frame:
 
   inner   the first inner frame that is not black (the display is on)
-  bar     the search bar region matches the settled last frame
+  bar     the search bar region matches the settled state
   col7    the right-edge column (the fold dock) matches it
   col3    a mid-screen column matches it
   full    the whole frame matches it
   letterboxed  inner frames that show a cover-sized buffer between black bands
 
-"Matches the settled last frame" is an absolute reference: a launcher that is
+"Matches the settled state" is an absolute reference: a launcher that is
 complete in the first inner frame reports the same time for inner and full.
+The settled state is the per-pixel median of the last second (one late
+artefact does not define it), and the status bar is left out (its clock can
+turn over during the recording).
 The first version of this script (provisioning's, 2026-09-24) compared
 against the first inner frame instead, which reports "never arrived" for
 exactly that case.
@@ -34,12 +37,17 @@ import numpy as np
 
 W, H = 2076, 2152
 COL = W / 8
+STATUS_BAR = 120  # rows of the status bar on the inner display
 REGIONS = {
     "bar": (60, 1960, W - 60, 2090),
     "col7": (int(7 * COL) + 10, 120, W - 10, 1300),
     "col3": (int(3 * COL) + 10, 120, int(4 * COL) - 10, 1300),
-    "full": (0, 0, W, H),
+    # Below the status bar: its clock can turn over during a recording, and
+    # then every earlier frame differs from the settled state (provisioning
+    # hit an 8.8 s "settle" that way, 2026-09-24).
+    "full": (0, STATUS_BAR, W, H),
 }
+SETTLED = 24      # the settled state: the per-pixel median of the last second
 BLACK = 30.0      # mean luma below this is a display that is off
 MATCH = 4.0       # mean abs luma difference to the last frame that counts as settled
 SCALE = 4         # regions are compared at a quarter of the resolution
@@ -83,10 +91,14 @@ def analyse(path):
     on = off + int(lit[0])
     if np.any(mean[on:] < BLACK):
         raise SystemExit(f"{path}: a second black run after the inner display came on")
-    last = f[-1]
-    # The last frame has to be settled, or "matches the last frame" means nothing.
-    if np.abs(f[-6:] - last).mean(axis=(1, 2)).max() > MATCH / 2:
-        raise SystemExit(f"{path}: the last frames still change - record longer")
+    if len(f) - on < 2 * SETTLED:
+        raise SystemExit(f"{path}: under two seconds after the switch - record longer")
+    # A median, so one late artefact does not define "settled" for the run.
+    last = np.median(f[-SETTLED:], axis=0)
+    # The end has to be settled, or "matches the settled state" means nothing.
+    below = STATUS_BAR // SCALE
+    if np.abs(f[-SETTLED:, below:] - last[below:]).mean(axis=(1, 2)).max() > MATCH / 2:
+        raise SystemExit(f"{path}: the last second still changes - record longer")
     out = {"inner": ts[on] - ts[off], "gap_frames": on - off}
     # The cover's buffer shown centred on the inner display, black on both
     # sides: frames at the old window size (seen once on the fold emulator).
