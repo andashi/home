@@ -174,14 +174,19 @@ class GlassSearchTest {
             }
         }
         composeRule.waitForIdle()
+        val before = composeRule.onNodeWithTag("moved", useUnmergedTree = true).fetchSemanticsNode().positionOnScreen.y
         // Move the window: the content inside it stays where it is.
-        composeRule.runOnIdle { popupY += (windowHeight * 0.4f).toInt() }
+        val move = (windowHeight * 0.4f).toInt()
+        composeRule.runOnIdle { popupY += move }
         composeRule.waitForIdle()
         Thread.sleep(500)
         composeRule.waitForIdle()
 
         val screen = InstrumentationRegistry.getInstrumentation().uiAutomation.takeScreenshot()
         val semantics = composeRule.onNodeWithTag("moved", useUnmergedTree = true).fetchSemanticsNode()
+        // Without this a popup that never moved passes too: both sides of the
+        // check below follow the node's own position.
+        assertEquals("the popup moved on screen", move.toFloat(), semantics.positionOnScreen.y - before, 2f)
         val centreX = semantics.positionOnScreen.x + semantics.size.width / 2f
         val centreY = semantics.positionOnScreen.y + semantics.size.height / 2f
         val expected = (centreY - hostTop) / windowHeight
@@ -196,6 +201,7 @@ class GlassSearchTest {
         // #113: what the node saw, in order, so a failure says which input was off.
         val events = java.util.Collections.synchronizedList(mutableListOf<String>())
         fun event(what: String) = events.add("${android.os.SystemClock.uptimeMillis()} $what")
+        fun eventLog() = synchronized(events) { events.toList() }.joinToString("\n")
         val controller = GlassBackdropController(
             source,
             MutableStateFlow(GlassInputs(24f, 0f, 28f, Contrast.Medium)),
@@ -277,13 +283,13 @@ class GlassSearchTest {
             val region = semantics.config.getOrNull(GlassBackdropRegion)
             val evidence = "on screen ${semantics.positionOnScreen}, size ${semantics.size}, host top $hostTop, " +
                 "window height $windowHeight, region $region, drawn 100 ms later $later\n" +
-                events.joinToString("\n")
+                eventLog()
             android.util.Log.e("GlassSearchTest", "$tag failed:\n$evidence")
             assertEquals("$tag: backdrop row drawn vs where it is on screen; $evidence", expected, drawn, 0.03f)
         }
         check("window")
         check("popup")
-        android.util.Log.i("GlassSearchTest", events.joinToString("\n"))
+        android.util.Log.i("GlassSearchTest", eventLog())
     }
 
 }
