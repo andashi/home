@@ -346,9 +346,6 @@
     <string name="preference_colors_high_contrast">Высокі кантраст</string>
     <string name="preference_shapes_default">Прадвызначаныя</string>
     <string name="preference_grid_list_style">Паказваць праграмы спісам</string>
-    <string name="preference_transparencies_default">Прадвызначана</string>
-    <string name="preference_transparencies_semi_transparent">Паўпразрыста</string>
-    <string name="preference_screen_transparencies">Празрыстасць</string>
     <string name="no_selection">Не выбрана</string>
     <string name="save_as_file">Захаваць у файл</string>
     <string name="preference_screen_typography">Тыпаграфія</string>
@@ -359,7 +356,6 @@
     <string name="import_theme_contents">Змесціва</string>
     <string name="bad_configuration_title">Віншую, вы закрылі самі сябе!</string>
     <string name="preference_contacts_call_on_tap_summary">Выклікаць без папярэджання адразу пасля націскання на нумар</string>
-    <string name="confirmation_delete_transparencies_scheme">Вы сапраўды хочаце выдаліць схему празрыстасці «%1$s»?</string>
     <string name="new_theme_name">(без назвы)</string>
     <string name="theme_export_title">Экспартаваць тэму</string>
     <string name="theme_bundle_name">Назва</string>
@@ -389,7 +385,6 @@
     <string name="preference_create_colors">Новая колеравая схема</string>
     <string name="preference_create_shapes">Новая схема Shapes</string>
     <string name="preference_create_typography">Новая тыпаграфічная схема</string>
-    <string name="preference_create_transparency">Новая схема празрыстасці</string>
     <string name="preference_clockwidget_dock_rows">Радкі дока</string>
     <string name="preference_search_apps">Праграмы</string>
     <string name="preference_search_apps_summary">Паказваць усе праграмы калі поле пошуку пустое</string>

@@ -1,4 +1,4 @@
-package de.mm20.launcher2.ui.settings.transparencies
+package de.mm20.launcher2.ui.settings.appearance
 
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind

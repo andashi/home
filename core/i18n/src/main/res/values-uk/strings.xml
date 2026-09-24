@@ -101,9 +101,6 @@
     <string name="action_quit">Вийти</string>
     <string name="widget_name_apps">Застосунки</string>
     <string name="preference_screen_typography">Топографія</string>
-    <string name="preference_create_transparency">Нова схема прозорості</string>
-    <string name="preference_transparencies_default">За замовчуванням</string>
-    <string name="preference_transparencies_semi_transparent">Напівпрозорий</string>
     <string name="preference_version">Версія</string>
     <string name="preference_category_links">Посилання</string>
     <string name="preference_category_licenses">Ліцензії з відкритим кодом</string>

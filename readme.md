@@ -33,18 +33,24 @@ Each zone gets its own `launcher.json`. That is the whole configuration story.
 
 ```jsonc
 {
-  "schemaVersion": 1,
-  "icons": { "themed": true, "enforceThemed": true, "pack": "app.lawnchair.lawnicons" },
+  "schemaVersion": 2,
+  "icons": { "themed": true, "pack": "app.lawnchair.lawnicons" },
   "appearance": {
-    "transparency": { "name": "fold-glass", "background": 0.31, "surface": 0.31, "elevatedSurface": 0.31 },
+    "glass": { "blur": 24, "tint": 0.12, "radius": 28, "contrast": "medium", "wallpaperBlur": false, "searchWallpaperBlur": true },
     "wallpaper": { "image": "home.jpg", "target": "both" },
   },
   "home": {
-    "searchBar": { "position": "bottom" },
-    "dock": { "enabled": true, "favorites": [{ "packageName": "org.thoughtcrime.securesms" }] },
-    "widgets": { "enabled": true, "widgets": ["weather", "calendar"] },
-    "clock": { "style": "digital1", "fillHeight": true },
+    "searchBar": { "position": "top" },
+    "favorites": ["org.thoughtcrime.securesms", "app.vanadium.browser"],
+    "widgets": { "enabled": true },
+    "grid": {
+      "columns": 4,
+      "layouts": {
+        "phone": { "items": [ { "id": "dock", "widget": "favorites", "x": 0, "y": 5, "w": 4, "h": 1 } ] },
+      },
+    },
   },
+  "search": { "layout": "grid", "contacts": false },
 }
 ```
 
@@ -97,28 +103,29 @@ Built for GrapheneOS and held to its standards:
 
 | Section | Keys |
 |---|---|
-| `icons` | themed icons, enforce themed, icon pack |
-| `appearance.transparency` | scheme name, background, surface, elevated surface |
+| `icons` | themed icons, enforce themed, icon pack (Lawnicons by default when installed) |
+| `appearance.glass` | blur, tint, radius, contrast, wallpaper blur on home and behind search |
 | `appearance.wallpaper` | image (uploaded via `wallpapers/<name>`), target home, lock or both |
 | `home.searchBar` | position |
-| `home.dock` | enabled, ordered favorites (package plus profile) |
-| `home.widgets` | enabled, ordered built-in widgets (weather, music, calendar, apps, notes) |
-| `home.clock` | style, fill height |
+| `home.favorites` | the pinned apps, per profile |
+| `home.widgets`, `home.grid` | the widget grid: columns, lock, labels, phone and fold layouts, the dock as a grid item |
+| `search` | favorites row, all apps, grid or list, labels, contacts, shortcuts, filter bar, keyboard, Enter, order, hidden items |
 
-Coverage of every remaining deterministic setting is tracked in
-[#3](https://github.com/andashi/home/issues/3). The single-page grid with
-placed widgets ([#23](https://github.com/andashi/home/issues/23)) and the glass
-surfaces ([#24](https://github.com/andashi/home/issues/24)) are the next visible
-steps.
+Every key, with screenshots on a phone and a Pixel Fold, is in
+[docs/configuration](docs/configuration/README.md). Coverage of the remaining
+deterministic settings is tracked in
+[#3](https://github.com/andashi/home/issues/3).
 
 ## Status
 
-Early. The configuration system is complete for provisioning parity and
-verified end to end on a GrapheneOS emulator, as the unrooted shell, across six
-profiles. The launcher still looks like its origin; the new home surface is not
-built yet. Signing, release publishing and the first run on real hardware are
-the open items before daily use
-([#21](https://github.com/andashi/home/issues/21)).
+The configuration system is complete for provisioning parity and verified end
+to end on a GrapheneOS emulator, as the unrooted shell, across six profiles.
+The home screen is a single-page widget grid
+([#23](https://github.com/andashi/home/issues/23)) in a liquid-glass look
+([#24](https://github.com/andashi/home/issues/24)), and search matches it
+([#91](https://github.com/andashi/home/issues/91)). Releases are signed and
+published from annotated tags. The frame-time measurement on a real Pixel
+Fold (ADR 0004) is still open.
 
 ## Building and testing
 

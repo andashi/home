@@ -300,17 +300,6 @@ class UiSettings internal constructor(
         }
     }
 
-    val transparenciesId
-        get() = launcherDataStore.data.map {
-            it.uiTransparenciesId
-        }.distinctUntilChanged()
-
-    fun setTransparenciesId(transparenciesId: UUID) {
-        launcherDataStore.update {
-            it.copy(uiTransparenciesId = transparenciesId)
-        }
-    }
-
     val typographyId
         get() = launcherDataStore.data.map {
             it.uiTypographyId

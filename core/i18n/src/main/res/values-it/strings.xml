@@ -364,10 +364,6 @@
     <string name="theme_import_title">Importa tema</string>
     <string name="import_theme_contents">Contenuto</string>
     <string name="preference_colors_high_contrast">Contrasto elevato</string>
-    <string name="preference_screen_transparencies">Trasparenza</string>
-    <string name="preference_transparencies_semi_transparent">Semi-trasparente</string>
-    <string name="preference_transparencies_default">Predefinito</string>
-    <string name="confirmation_delete_transparencies_scheme">Vuoi davvero eliminare lo schema di trasparenza %1$s?</string>
     <string name="new_theme_name">(senza titolo)</string>
     <string name="preference_screen_typography">Tipografia</string>
     <string name="preference_typography_fonts">Stili del font</string>
@@ -417,7 +413,6 @@
     <string name="preference_create_colors">Nuova combinazione di colori</string>
     <string name="preference_create_shapes">Nuova combinazione di forme</string>
     <string name="preference_create_typography">Nuovo combinazione tipografica</string>
-    <string name="preference_create_transparency">Nuovo combinazione di trasparenza</string>
     <string name="add_font_style">Aggiungi stile del font</string>
     <string name="remove_font_style">Rimuovi questo stile del font</string>
     <string name="preference_category_donate">Sostieni lo sviluppo</string>

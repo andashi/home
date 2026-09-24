@@ -15,8 +15,8 @@ import de.mm20.launcher2.config.Diagnostic
 interface ConfigStore {
 
     /**
-     * Reads the current effective state across settings, transparency
-     * schemes, root widgets and manually pinned dock favorites.
+     * Reads the current effective state across settings, the home grid,
+     * the pinned favorites and the managed wallpaper.
      */
     suspend fun readState(): ConfigState
 

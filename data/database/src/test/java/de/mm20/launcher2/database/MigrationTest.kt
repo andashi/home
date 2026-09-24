@@ -92,13 +92,14 @@ class MigrationTest {
         Migration_34_35(),
         Migration_35_36(),
         Migration_36_37(),
+        Migration_37_38(),
     )
 
     @Test
-    fun `migrate 6 to 37`() {
+    fun `migrate 6 to 38`() {
         helper.createDatabase(testDb, 6).close()
 
-        val db = helper.runMigrationsAndValidate(testDb, 37, true, *allMigrations)
+        val db = helper.runMigrationsAndValidate(testDb, 38, true, *allMigrations)
 
         assertTrue(db.isOpen)
         db.close()

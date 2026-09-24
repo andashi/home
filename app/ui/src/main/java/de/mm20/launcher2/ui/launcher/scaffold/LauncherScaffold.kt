@@ -1707,8 +1707,9 @@ private fun Modifier.searchBarAnimation(
         ?: modifier) then Modifier.padding(insets)
 }
 /**
- * The flat background of a page that asks for one (upstream's transparency
- * scheme default). Search draws none (#91); the other secondary pages keep it.
+ * The flat background of a page that asks for one: the alpha upstream's
+ * transparency scheme defaulted to, before #97 removed the scheme. Search
+ * draws none (#91); the other secondary pages keep it.
  */
 private const val PageBackgroundAlpha = 0.85f
 

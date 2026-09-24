@@ -52,8 +52,6 @@
     <string name="preference_shapes_extra_round">Eriti ümar</string>
     <string name="preference_shapes_rect">Nelinurkne</string>
     <string name="preference_shapes_base">Põhikujund</string>
-    <string name="preference_transparencies_default">Vaikimisi</string>
-    <string name="preference_transparencies_semi_transparent">Pool-läbipaistev</string>
     <string name="preference_screen_about">Info</string>
     <string name="preference_version">Versioon</string>
     <string name="preference_category_licenses">Avatud koodiga litsentsid</string>
@@ -219,7 +217,6 @@
     <string name="websearch_dialog_query_encoding_none">Pole</string>
     <string name="edit">Muuda</string>
     <string name="help">Abiinfo</string>
-    <string name="preference_screen_transparencies">Läbipaistvus</string>
     <string name="preference_grid_list_style">Näita rakendusi nimekirjana</string>
     <string name="websearch_dialog_delete_icon">Kustuta ikoon</string>
     <string name="edit_favorites_dialog_tags">Sildid</string>

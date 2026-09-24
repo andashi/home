@@ -352,7 +352,6 @@
     <string name="no_selection">Sin selección</string>
     <string name="save_as_file">Guardar como archivo</string>
     <string name="preference_shapes_rect">Rectangular</string>
-    <string name="preference_screen_transparencies">Transparencia</string>
     <string name="preference_search_bar_style_transparent">Transparente</string>
     <string name="preference_search_bar_style_solid">Sólido</string>
     <string name="preference_search_bar_style_hidden">Escondida</string>
@@ -360,15 +359,12 @@
     <string name="preference_shapes_extra_round">Muy redondo</string>
     <string name="preference_shapes_base">Forma base</string>
     <string name="preference_colors_high_contrast">Alto contraste</string>
-    <string name="preference_transparencies_semi_transparent">Semitransparente</string>
-    <string name="preference_transparencies_default">Predeterminado</string>
     <string name="new_theme_name">(sin título)</string>
     <string name="theme_import_title">Importar tema</string>
     <string name="theme_bundle_author">Autor</string>
     <string name="preference_screen_typography">Tipografía</string>
     <string name="theme_export_title">Exportar tema</string>
     <string name="theme_bundle_name">Nombre</string>
-    <string name="confirmation_delete_transparencies_scheme">¿Realmente deseas eliminar el esquema de transparencia %1$s?</string>
     <string name="preference_clockwidget_dock_rows">Filas de barra de inicio</string>
     <string name="confirmation_delete_shapes_scheme">¿Realmente deseas eliminar el esquema de forma %1$s?</string>
     <string name="preference_typography_fonts">Estilos de fuente</string>
@@ -403,7 +399,6 @@
     <string name="preference_create_colors">Nuevo esquema de color</string>
     <string name="preference_create_shapes">Nuevo esquema de formas</string>
     <string name="preference_create_typography">Nuevo esquema tipográfico</string>
-    <string name="preference_create_transparency">Nuevo esquema de transparencia</string>
     <string name="preference_category_feed_provider">Proveedor de feeds</string>
     <string name="preference_feed_enable_summary">Desliza hacia la derecha en la pantalla de inicio para abrir el feed</string>
     <string name="create_search_action_title">Nueva acción rápida</string>

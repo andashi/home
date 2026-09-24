@@ -35,9 +35,6 @@ class ImportThemeSettingsScreenVM : ViewModel(), KoinComponent {
     var shapesExists by mutableStateOf(false)
         private set
 
-    var transparenciesExists by mutableStateOf(false)
-        private set
-
     var loading by mutableStateOf(false)
         private set
 
@@ -63,13 +60,10 @@ class ImportThemeSettingsScreenVM : ViewModel(), KoinComponent {
                             theme.typography?.id?.let { themeRepository.typographies.get(it) }?.first()
                         val shapes =
                             theme.shapes?.id?.let { themeRepository.shapes.get(it) }?.first()
-                        val transparencies =
-                            theme.transparencies?.id?.let { themeRepository.transparencies.get(it) }?.first()
 
                         colorsExists = colors != null
                         typographyExists = typography != null
                         shapesExists = shapes != null
-                        transparenciesExists = transparencies != null
                         themeBundle = theme
                         loading = false
                     } else {
@@ -89,11 +83,9 @@ class ImportThemeSettingsScreenVM : ViewModel(), KoinComponent {
         val colors = themeBundle.colors
         val typography = themeBundle.typography
         val shapes = themeBundle.shapes
-        val transparencies = themeBundle.transparencies
 
         val colorsExist = this.colorsExists
         val shapesExist = this.shapesExists
-        val transparenciesExist = this.transparenciesExists
 
         loading = true
         return viewModelScope.launch {
@@ -125,16 +117,6 @@ class ImportThemeSettingsScreenVM : ViewModel(), KoinComponent {
                 }
                 if (applyTheme) {
                     uiSettings.setShapesId(shapes.id)
-                }
-            }
-            if (transparencies != null) {
-                if (transparenciesExist) {
-                    themeRepository.transparencies.update(transparencies)
-                } else {
-                    themeRepository.transparencies.create(transparencies)
-                }
-                if (applyTheme) {
-                    uiSettings.setTransparenciesId(transparencies.id)
                 }
             }
             loading = false

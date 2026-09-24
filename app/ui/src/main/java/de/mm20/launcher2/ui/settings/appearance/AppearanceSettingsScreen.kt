@@ -19,7 +19,6 @@ import de.mm20.launcher2.ui.locals.LocalBackStack
 import de.mm20.launcher2.ui.locals.LocalBackStack
 import de.mm20.launcher2.ui.settings.colorscheme.ColorSchemesSettingsRoute
 import de.mm20.launcher2.ui.settings.shapes.ShapeSchemesSettingsRoute
-import de.mm20.launcher2.ui.settings.transparencies.TransparencySchemesSettingsRoute
 import de.mm20.launcher2.ui.settings.typography.TypographiesSettingsRoute
 import kotlinx.serialization.Serializable
 
@@ -33,7 +32,6 @@ fun AppearanceSettingsScreen() {
     val colorThemeName by viewModel.colorThemeName.collectAsStateWithLifecycle(null)
     val typographyThemeName by viewModel.typographyThemeName.collectAsStateWithLifecycle(null)
     val shapeThemeName by viewModel.shapeThemeName.collectAsStateWithLifecycle(null)
-    val transparencyThemeName by viewModel.transparencyThemeName.collectAsStateWithLifecycle(null)
     val compatModeColors by viewModel.compatModeColors.collectAsState()
 
     val importLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) {
@@ -87,14 +85,6 @@ fun AppearanceSettingsScreen() {
                         backStack.add(ShapeSchemesSettingsRoute)
                     },
                     icon = R.drawable.crop_square_24px,
-                )
-                Preference(
-                    title = stringResource(id = R.string.preference_screen_transparencies),
-                    summary = transparencyThemeName,
-                    onClick = {
-                        backStack.add(TransparencySchemesSettingsRoute)
-                    },
-                    icon = R.drawable.opacity_24px,
                 )
             }
         }

@@ -346,10 +346,6 @@
     <string name="bad_configuration_summary">您成功的找到了能讓搜尋與設定同時不可取用的設定組合—讓您成功地鎖在啟動器外</string>
     <string name="preference_shapes_rect">正方形</string>
     <string name="confirmation_delete_shapes_scheme">確定要刪除形狀設定「%1$s」嗎？</string>
-    <string name="preference_screen_transparencies">透明度</string>
-    <string name="preference_transparencies_default">預設</string>
-    <string name="preference_transparencies_semi_transparent">半透明</string>
-    <string name="confirmation_delete_transparencies_scheme">確定要刪除透明度設定「%1$s」嗎？</string>
     <string name="new_theme_name">（無標題）</string>
     <string name="no_selection">尚未選擇</string>
     <string name="save_as_file">匯出為檔案</string>
@@ -399,7 +395,6 @@
     <string name="preference_create_colors">新顏色設定</string>
     <string name="preference_create_shapes">新形狀設定</string>
     <string name="preference_create_typography">新排版設定</string>
-    <string name="preference_create_transparency">新透明度設定</string>
     <string name="create_search_action_title">新快速操作</string>
     <string name="edit_search_action_title">編輯快速操作</string>
     <string name="typo_preview_extra_short"/>

@@ -264,9 +264,6 @@
     <string name="preference_shapes_rect">Dikdörtgen</string>
     <string name="preference_shapes_base">Temel şekil</string>
     <string name="preference_screen_typography">Tipografi</string>
-    <string name="preference_screen_transparencies">Şeffaflık</string>
-    <string name="preference_transparencies_default">Varsayılan</string>
-    <string name="preference_transparencies_semi_transparent">Yarı şeffaf</string>
     <string name="preference_screen_about">Hakkında</string>
     <string name="preference_version">Sürüm</string>
     <string name="preference_category_links">Bağlantılar</string>
@@ -489,7 +486,6 @@
     <string name="app_widget_loading_failed">Uygulama widget\'ı yüklenemedi</string>
     <string name="confirmation_delete_color_scheme">%1$s renk şemasını gerçekten silmek istiyor musunuz?</string>
     <string name="confirmation_delete_shapes_scheme">%1$s şekil şemasını gerçekten silmek istiyor musunuz?</string>
-    <string name="confirmation_delete_transparencies_scheme">%1$s şeffaflık şemasını gerçekten silmek istiyor musunuz?</string>
     <string name="new_theme_name">(isimsiz)</string>
     <string name="preference_use_system_default">Sistem varsayılanını kullan</string>
     <string name="theme_color_scheme_autogenerate">Ana renkten</string>
@@ -588,7 +584,6 @@
     <string name="preference_create_colors">Yeni renk şeması</string>
     <string name="preference_create_shapes">Yeni şekil temaları</string>
     <string name="preference_create_typography">Yeni yazım şemaları</string>
-    <string name="preference_create_transparency">Yeni şeffaflık şeması</string>
     <string name="create_search_action_title">Yeni hızlı hareket</string>
     <string name="edit_search_action_title">hızlı hareketi düzenle</string>
     <string name="tag_name_empty_error">İsim bölümü boş kalamaz</string>

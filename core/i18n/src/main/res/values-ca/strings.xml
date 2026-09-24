@@ -350,15 +350,11 @@
     <string name="preference_grid_list_icons_summary">Mostra les icones a la vista de llista</string>
     <string name="preference_grid_list_icons">Mostra les icones de les aplicacions a la llista</string>
     <string name="preference_grid_list_style">Mostrar aplicacions en una llista</string>
-    <string name="preference_transparencies_default">Per defecte</string>
-    <string name="preference_transparencies_semi_transparent">Semitransparent</string>
-    <string name="preference_screen_transparencies">Transparència</string>
     <string name="preference_grid_list_style_summary">Mostra les aplicacions en una llista en comptes d\'una quadrícula</string>
     <string name="save_as_file">Desa com a fitxer</string>
     <string name="no_selection">Sense selecció</string>
     <string name="import_theme_exists">El tema ja existeix i s\'actualitzarà</string>
     <string name="preference_screen_typography">Tipografia</string>
-    <string name="confirmation_delete_transparencies_scheme">De veritat voleu suprimir l\'esquema de transparència %1$s?</string>
     <string name="new_theme_name">(sense títol)</string>
     <string name="preference_typography_fonts">Fonts</string>
     <string name="theme_export_title">Exporta el tema</string>
