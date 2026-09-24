@@ -76,6 +76,8 @@ class OffscreenPagesTest {
         composeRule.onRoot().captureToImage()
         side = 200.dp
         composeRule.onRoot().captureToImage()
+        composeRule.mainClock.advanceTimeBy(OffscreenPagesSettleMillis)
+        composeRule.onRoot().captureToImage()
         val expected = with(composeRule.density) { 200.dp.roundToPx() }
         composeRule.runOnIdle {
             assertEquals("laid out at the new size", expected, measured.width)
