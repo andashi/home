@@ -1,5 +1,9 @@
 package de.mm20.launcher2.ui.launcher.scaffold.components
 
+import de.mm20.launcher2.ui.launcher.search.searchScroll
+import de.mm20.launcher2.ui.launcher.search.PaneScroll
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.getValue
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -51,23 +55,38 @@ internal class SearchComponent(
     ) {
         val searchVM = viewModel<SearchVM>()
         val lazyListState = rememberLazyListState()
+        // The results pane on a fold's inner display (#91); idle in one column.
+        val resultsState = rememberLazyListState()
 
         LaunchedEffect(isActive) {
             if (!isActive) {
                 searchVM.reset()
                 lazyListState.scrollToItem(0, 0)
+                resultsState.scrollToItem(0, 0)
             }
         }
 
         LaunchedEffect(searchVM.searchQuery.value, searchVM.filters.value) {
             lazyListState.requestScrollToItem(0, 0)
+            resultsState.requestScrollToItem(0, 0)
         }
 
-        LaunchedEffect(lazyListState.canScrollForward, lazyListState.canScrollBackward) {
+        var twoPane by remember { mutableStateOf(false) }
+        // At the top or bottom only when every shown pane is: the search bar
+        // and the system-bar strips follow the content that is still
+        // scrolled. A results pane that is gone keeps a stale state.
+        val scroll = searchScroll(
+            apps = PaneScroll(lazyListState.canScrollForward, lazyListState.canScrollBackward),
+            results = PaneScroll(resultsState.canScrollForward, resultsState.canScrollBackward),
+            twoPane = twoPane,
+        )
+        val canScrollForward = scroll.forward
+        val canScrollBackward = scroll.backward
+        LaunchedEffect(canScrollForward, canScrollBackward) {
             isAtBottom.value =
-                !lazyListState.canScrollForward && !reverse || !lazyListState.canScrollBackward && reverse
+                !canScrollForward && !reverse || !canScrollBackward && reverse
             isAtTop.value =
-                !lazyListState.canScrollForward && reverse || !lazyListState.canScrollBackward && !reverse
+                !canScrollForward && reverse || !canScrollBackward && !reverse
         }
 
 
@@ -98,6 +117,8 @@ internal class SearchComponent(
                     modifier = Modifier.nestedScroll(scrollConnection).widthIn(max = 916.dp).fillMaxHeight(),
                     paddingValues = insets,
                     state = lazyListState,
+                    resultsState = resultsState,
+                    onTwoPaneChange = { twoPane = it },
                     reverse = reverse,
                     userScrollEnabled = !state.isDragged,
                     onHideKeyboard = {

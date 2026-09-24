@@ -1,5 +1,19 @@
 package de.mm20.launcher2.ui.launcher.grid
 
+import androidx.compose.ui.Alignment
+import de.mm20.launcher2.ui.launcher.search.SearchPanes
+import de.mm20.launcher2.homegrid.SearchLayout
+import de.mm20.launcher2.homegrid.HomeGridGeometry
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.test.onRoot
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.BoxWithConstraints
 import android.content.pm.ActivityInfo
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -228,5 +242,56 @@ class HomeGridFoldTest {
         waitForColumns(vm, 4)
         composeRule.onNodeWithContentDescription("grid-item:phone-only").assertDoesNotExist()
         assertEquals(HomeGridLayouts.Fold, vm.state.value!!.geometry.layout)
+    }
+
+    /**
+     * Search on the inner display (#91): the apps and the other results meet
+     * at the fold line - the window's middle, where the home grid's fold
+     * column is - and nothing crosses it; on the cover, one column.
+     */
+    @Test
+    fun searchPanesMeetAtTheFoldLineAndTheCoverHasOneColumn() {
+        var layout: SearchLayout? = null
+        composeRule.setContent {
+            MaterialTheme {
+                BoxWithConstraints(Modifier.fillMaxSize().padding(horizontal = 8.dp)) {
+                    val current = SearchLayout.from(
+                        HomeGridGeometry.derive(FormFactor.Fold, 4, maxWidth.value, maxHeight.value)
+                    )
+                    layout = current
+                    // Centered, as SearchComponent places search.
+                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    SearchPanes(
+                        layout = current,
+                        appsState = rememberLazyListState(),
+                        resultsState = rememberLazyListState(),
+                        contentPadding = PaddingValues(),
+                        reverse = false,
+                        userScrollEnabled = true,
+                        apps = { item { Box(Modifier.fillMaxWidth().height(96.dp).semantics { contentDescription = "search-apps" }) } },
+                        results = { item { Box(Modifier.fillMaxWidth().height(96.dp).semantics { contentDescription = "search-results" }) } },
+                    )
+                    }
+                }
+            }
+        }
+        composeRule.waitUntil(90_000) { layout is SearchLayout.TwoPane }
+
+        val window = composeRule.onRoot().fetchSemanticsNode().boundsInWindow
+        val foldLine = window.center.x
+        val apps = composeRule.onNodeWithContentDescription("search-apps").fetchSemanticsNode().boundsInWindow
+        val results = composeRule.onNodeWithContentDescription("search-results").fetchSemanticsNode().boundsInWindow
+        assertTrue("apps end ${apps.right} before the fold line $foldLine", apps.right <= foldLine)
+        assertTrue("results start ${results.left} after the fold line $foldLine", results.left >= foldLine)
+
+        posture(postures.closed)
+        val deadline = System.currentTimeMillis() + 90_000
+        while (layout !is SearchLayout.Single && System.currentTimeMillis() < deadline) {
+            shell("input keyevent KEYCODE_WAKEUP")
+            shell("wm dismiss-keyguard")
+            composeRule.waitForIdle()
+            Thread.sleep(1_000)
+        }
+        assertEquals(SearchLayout.Single(4), layout)
     }
 }

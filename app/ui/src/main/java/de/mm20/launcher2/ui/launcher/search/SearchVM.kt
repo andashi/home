@@ -1,5 +1,8 @@
 package de.mm20.launcher2.ui.launcher.search
 
+import de.mm20.launcher2.preferences.ui.UiSettings
+import de.mm20.launcher2.homegrid.FormFactorDetector
+import de.mm20.launcher2.homegrid.FormFactor
 import android.content.Context
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.mutableIntStateOf
@@ -54,6 +57,12 @@ class SearchVM : ViewModel(), KoinComponent {
     private val shortcutSearchSettings: ShortcutSearchSettings by inject()
     private val searchUiSettings: SearchUiSettings by inject()
     private val searchFilterSettings: SearchFilterSettings by inject()
+    private val uiSettings: UiSettings by inject()
+    private val formFactorDetector: FormFactorDetector by inject()
+
+    /** The device's form factor and the home grid's columns: search lays out on the home grid (#91). */
+    val formFactor: FormFactor by lazy { formFactorDetector.detect() }
+    val homeGridColumns = uiSettings.homeGridColumns
 
     val launchOnEnter = searchUiSettings.launchOnEnter
         .stateIn(viewModelScope, SharingStarted.Eagerly, false)

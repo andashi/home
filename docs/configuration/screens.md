@@ -92,9 +92,9 @@ dock item `x: 3, w: 1, h: 6`; see [home-grid](home-grid.md#a-screen-full-of-widg
 
 ## Search open
 
-The baseline with search open on the query "c"; see
-[search-bar](search-bar.md#search-open) for what does not follow the config
-yet (#91): the columns and the Fold's two panes.
+The baseline with search open on the query "c": the home grid's columns,
+and on the Fold's inner display two panes at the fold line; see
+[search-bar](search-bar.md#search-open).
 
 | Phone | Fold, cover | Fold, inner |
 |---|---|---|
