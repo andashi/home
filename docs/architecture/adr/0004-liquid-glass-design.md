@@ -88,6 +88,32 @@ radeonsi on a laptop: they tell which build is slower, not whether a Pixel
 Fold keeps up. The on-device Fold measurement this ADR asks for is still open.
 The blur's time is the debug build's, largely interpreted.
 
+**Search in glass (#91).** Making every surface on the search screen glass
+first made the same transition slower on the cover. Measured as above
+(`GPU=host`, cold boot, Lawnicons, 15 transitions), series interleaved with
+`main` so host drift hits both; `glass-search-gpu-host-<rev>[-runN].tsv`:
+
+| Frame time p50, cover / inner | Series |
+|---|---|
+| `main` before #91 (8880f6a92) | 36/34, 36/48, 36/40, 36/32, 36/32, 36/32 ms |
+| every search surface glass (51c0bbdb3) | 57/48, 57/48, 57/65 ms |
+| + the lens drawn only in its ring (ac80b5f6a) | 57/48, 57/48, 57/48 ms |
+| + `glassBackdrop` as a modifier node (3e2333777) | 36/32, 36/32 ms |
+
+The frame phases (`dumpsys gfxinfo framestats`, medians of 120 frames on
+the cover) located it. Without the lens the glass build drew at 37.7 ms, so
+the lens was the cost - but drawing the shader only where it bends changed
+nothing, so it was not per pixel. The time sat in the start delay: on this
+emulator the UI thread already needs about 18 ms a frame, and every surface
+kept its position as Compose state, so each moving surface recomposed and
+rebuilt its lens every frame. As a modifier node a moving surface only
+redraws; its recomposition phase dropped below `main`'s (7.3 ms against 9.4
+ms), the frame time is back at `main`'s, and there are fewer janky frames
+(190 and 195 against 248 on the cover). The lens is also drawn only in its
+ring now, and surfaces reuse compiled lenses from a pool instead of compiling
+the source each: both keep the pixels identical and save work, neither was
+the fix.
+
 ## Context
 
 The reference is the iOS home screen: frosted, translucent widget cards with

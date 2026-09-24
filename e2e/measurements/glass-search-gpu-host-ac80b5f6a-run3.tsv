@@ -1,0 +1,21 @@
+rev	ac80b5f6a
+serial	emulator-5560
+runs	15
+fixture	clocks
+gpu	host
+snapshot	cold boot
+pack	lawnicons
+cover.glass.frames	620
+cover.glass.janky	305
+cover.glass.p50_ms	57
+cover.glass.p90_ms	93
+cover.glass.p95_ms	113
+cover.glass.p99_ms	129
+inner.glass.frames	615
+inner.glass.janky	307
+inner.glass.p50_ms	48
+inner.glass.p90_ms	81
+inner.glass.p95_ms	117
+inner.glass.p99_ms	133
+backdrop.glass.1080x2364	73 ms (135x296, blur 7px; decode 192x344 at 1/8: 38 ms, crop+scale+blur: 35 ms)
+backdrop.glass.2076x2152	105 ms (260x269, blur 7px; decode 384x688 at 1/4: 36 ms, crop+scale+blur: 68 ms)

@@ -1,0 +1,21 @@
+rev	51c0bbdb3
+serial	emulator-5560
+runs	15
+fixture	clocks
+gpu	host
+snapshot	cold boot
+pack	lawnicons
+cover.glass.frames	392
+cover.glass.janky	229
+cover.glass.p50_ms	57
+cover.glass.p90_ms	150
+cover.glass.p95_ms	150
+cover.glass.p99_ms	150
+inner.glass.frames	460
+inner.glass.janky	322
+inner.glass.p50_ms	65
+inner.glass.p90_ms	133
+inner.glass.p95_ms	150
+inner.glass.p99_ms	150
+backdrop.glass.1080x2364	103 ms (135x296, blur 7px; decode 192x344 at 1/8: 57 ms, crop+scale+blur: 46 ms)
+backdrop.glass.2076x2152	131 ms (260x269, blur 7px; decode 384x688 at 1/4: 50 ms, crop+scale+blur: 81 ms)
