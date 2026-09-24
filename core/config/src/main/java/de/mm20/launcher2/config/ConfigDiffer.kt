@@ -156,6 +156,24 @@ object ConfigDiffer {
             }
         }
 
+        desired.search?.let { search ->
+            val current = current.search
+            val changed = SearchConfig(
+                favorites = search.favorites?.takeIf { it != current.favorites },
+                allApps = search.allApps?.takeIf { it != current.allApps },
+                layout = search.layout?.takeIf { it != current.layout },
+                labels = search.labels?.takeIf { it != current.labels },
+                contacts = search.contacts?.takeIf { it != current.contacts },
+                shortcuts = search.shortcuts?.takeIf { it != current.shortcuts },
+                filterBar = search.filterBar?.takeIf { it != current.filterBar },
+                openKeyboard = search.openKeyboard?.takeIf { it != current.openKeyboard },
+                launchOnEnter = search.launchOnEnter?.takeIf { it != current.launchOnEnter },
+                reversed = search.reversed?.takeIf { it != current.reversed },
+                hiddenItemsButton = search.hiddenItemsButton?.takeIf { it != current.hiddenItemsButton },
+            )
+            if (changed != SearchConfig()) mutations += ConfigMutation.SetSearch(changed)
+        }
+
         desired.appearance?.wallpaper?.image?.let { image ->
             val target = desired.appearance.wallpaper.target ?: WallpaperTarget.Both
             if (image != current.wallpaperImage || target != current.wallpaperTarget) {

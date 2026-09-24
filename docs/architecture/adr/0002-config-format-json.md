@@ -212,6 +212,44 @@ compares field by field without knowing them. There is no icon `style` or
 there one for the edge lens or the rim that make the glass liquid rather
 than frosted (#82): one look, its constants in `:core:glass` (`GlassLook`).
 
+### Search (#91)
+
+```jsonc
+"search": {
+  "favorites": true, "allApps": true, "layout": "grid", "labels": true,
+  "contacts": true, "shortcuts": true, "filterBar": true, "openKeyboard": true,
+  "launchOnEnter": true, "reversed": false, "hiddenItemsButton": false
+}
+```
+
+A top-level section, because search is an overlay above every page and not
+part of `home`. It holds search's **behavior**; its look is `appearance.glass`
+(including `searchWallpaperBlur`) and its columns are `home.grid.columns`, so
+nothing about search's appearance is configured twice.
+
+| Key | Meaning | Default |
+|---|---|---|
+| `search.favorites` | the favorites row at the top of search | `true` |
+| `search.allApps` | all apps while the query is empty | `true` |
+| `search.layout` | `grid` or `list` for app results | `grid` |
+| `search.labels` | labels under app icons in search | `true` |
+| `search.contacts` | contacts in the results | `true` |
+| `search.shortcuts` | app shortcuts in the results | `true` |
+| `search.filterBar` | the filter bar above the keyboard | `true` |
+| `search.openKeyboard` | the keyboard opens with search | `true` |
+| `search.launchOnEnter` | Enter launches the best match | `true` |
+| `search.reversed` | results from the bottom up | `false` |
+| `search.hiddenItemsButton` | a button in the bar that shows hidden items | `false` |
+
+The defaults are the launcher's behavior before the section existed, so a
+file without `search` changes nothing. Each key writes one of upstream's own
+settings, the ones the search UI already reads. `contacts` switches only the
+device's own contact provider and leaves any other alone. It grants no
+permission: with contacts on and the permission missing, search shows the
+existing permission banner. An unknown `layout` fails the document with a
+message naming `search.layout`, like every other enum. The read-back serves
+`search` complete, defaults filled in.
+
 ## Consequences
 
 - One serialization stack everywhere: app settings, config file, schema, tests.

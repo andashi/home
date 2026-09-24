@@ -20,6 +20,20 @@ package de.mm20.launcher2.config
 fun ConfigState.toLauncherConfig(): LauncherConfig {
     return LauncherConfig(
         schemaVersion = ConfigMigrations.currentSchemaVersion,
+        // Always complete, so a host compares it key by key (#91).
+        search = SearchConfig(
+            favorites = search.favorites,
+            allApps = search.allApps,
+            layout = search.layout,
+            labels = search.labels,
+            contacts = search.contacts,
+            shortcuts = search.shortcuts,
+            filterBar = search.filterBar,
+            openKeyboard = search.openKeyboard,
+            launchOnEnter = search.launchOnEnter,
+            reversed = search.reversed,
+            hiddenItemsButton = search.hiddenItemsButton,
+        ),
         icons = IconsConfig(
             themed = themedIcons,
             enforceThemed = enforceThemedIcons,
