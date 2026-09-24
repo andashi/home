@@ -1,5 +1,13 @@
 package de.mm20.launcher2.ui.launcher.glass
 
+import de.mm20.launcher2.glass.LensIdentityArea
+import androidx.compose.ui.graphics.drawscope.clipPath
+import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.RoundRect
+import androidx.compose.ui.graphics.PathOperation
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -209,19 +217,46 @@ fun Modifier.glassBackdrop(
             this[GlassBackdropRegion] = region
             this[GlassBackdropBlurPx] = backdrop.key.blurPx
         }
-        .drawBehind {
-            // RuntimeShader exists only on the hardware renderer; a software
-            // canvas (drawToBitmap, some screenshot paths) throws on it, so
-            // there the plain region is drawn.
-            val hardware = drawContext.canvas.nativeCanvas.isHardwareAccelerated
-            if (hardware && lensShader != null && bitmapShader != null) {
-                val radius = if (pill) size.minDimension / 2f else cornerRadius.toPx()
-                val band = GlassLook.LensBandDp.dp.toPx()
-                // A segment's lens reaches past its open edges, so a seam is
-                // not bent (#91); the region grows by the same amount.
-                val frame = EdgeLens.frame(
-                    size.height, band, GlassEdge.Top in openEdges, GlassEdge.Bottom in openEdges,
-                )
+        .drawWithCache {
+            val radius = if (pill) size.minDimension / 2f else cornerRadius.toPx()
+            val band = GlassLook.LensBandDp.dp.toPx()
+            // A segment's lens reaches past its open edges, so a seam is not
+            // bent (#91); the region grows by the same amount.
+            val frame = EdgeLens.frame(
+                size.height, band, GlassEdge.Top in openEdges, GlassEdge.Bottom in openEdges,
+            )
+            // The lens is the identity deeper than its band, so it is drawn
+            // only in the ring along the outline; the plain region below
+            // covers the rest with the same pixels (#91). Null: the band
+            // covers the whole surface.
+            val area = EdgeLens.identityArea(size.width, frame.height, radius, band)
+            // The two parts must not overlap at the outline, or its
+            // anti-aliased pixels are blended twice: the ring is the lens
+            // rectangle minus the area, the plain part the area widened by a
+            // pixel, so their shared edge - where both give the same pixels -
+            // leaves no seam.
+            val ring = area?.let {
+                Path().apply {
+                    addRect(Rect(0f, 0f, size.width, frame.height))
+                    op(this, it.path(0f), PathOperation.Difference)
+                }
+            }
+            val plain = area?.path(1f)
+            fun DrawScope.drawPlain() = drawImage(
+                image = bitmap,
+                srcOffset = IntOffset(region.left, region.top),
+                srcSize = IntSize(region.width, region.height),
+                dstSize = IntSize(size.width.roundToInt(), size.height.roundToInt()),
+            )
+            onDrawBehind {
+                // RuntimeShader exists only on the hardware renderer; a
+                // software canvas (drawToBitmap, some screenshot paths)
+                // throws on it, so there the plain region is the whole draw.
+                val hardware = drawContext.canvas.nativeCanvas.isHardwareAccelerated
+                if (!hardware || lensShader == null || bitmapShader == null) {
+                    drawPlain()
+                    return@onDrawBehind
+                }
                 val scale = region.height / size.height
                 GlassLens.configure(
                     lensShader, bitmapShader,
@@ -232,15 +267,13 @@ fun Modifier.glassBackdrop(
                     band = band,
                 )
                 translate(top = -frame.offsetY) {
-                    drawRect(ShaderBrush(lensShader), size = Size(size.width, frame.height))
+                    if (ring == null || plain == null) {
+                        drawRect(ShaderBrush(lensShader), size = Size(size.width, frame.height))
+                    } else {
+                        clipPath(plain) { translate(top = frame.offsetY) { drawPlain() } }
+                        drawPath(ring, ShaderBrush(lensShader))
+                    }
                 }
-            } else {
-                drawImage(
-                    image = bitmap,
-                    srcOffset = IntOffset(region.left, region.top),
-                    srcSize = IntSize(region.width, region.height),
-                    dstSize = IntSize(size.width.roundToInt(), size.height.roundToInt()),
-                )
             }
         }
 }
@@ -277,4 +310,11 @@ private tailrec fun android.content.Context.findActivity(): android.app.Activity
     is android.app.Activity -> this
     is android.content.ContextWrapper -> baseContext.findActivity()
     else -> null
+}
+
+/** The area as a path, widened by [outset] px on every side. */
+private fun LensIdentityArea.path(outset: Float): Path = Path().apply {
+    addRoundRect(
+        RoundRect(left - outset, top - outset, right + outset, bottom + outset, CornerRadius(radius + outset)),
+    )
 }

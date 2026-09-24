@@ -67,10 +67,10 @@ import org.robolectric.annotation.GraphicsMode
  * image that pins the scrim.
  *
  * Cells are placeholders: Roborazzi cannot host real AppWidgets, so the
- * goldens pin the geometry and the glass, not a provider's pixels. The edge
- * lens needs the hardware renderer, which Robolectric does not have; the
- * goldens show the plain backdrop region and GlassLensTest (L2) covers the
- * lens.
+ * goldens pin the geometry and the glass, not a provider's pixels.
+ * Robolectric's native graphics report a hardware canvas and compile the
+ * AGSL edge lens, so the goldens include it (measured for #91);
+ * GlassLensTest (L2) pins it on a device.
  */
 @RunWith(AndroidJUnit4::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)

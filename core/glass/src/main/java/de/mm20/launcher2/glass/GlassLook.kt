@@ -98,7 +98,12 @@ object EdgeLens {
      * The [LensIdentityArea] of a [width] x [height] lens rectangle with
      * corner [radius]; null when the band covers all of it.
      */
-    fun identityArea(width: Float, height: Float, radius: Float, band: Float): LensIdentityArea? = null
+    fun identityArea(width: Float, height: Float, radius: Float, band: Float): LensIdentityArea? {
+        if (width <= 2 * band || height <= 2 * band) return null
+        // The outline's radius as the distance field clamps it.
+        val r = min(radius, min(width, height) / 2f)
+        return LensIdentityArea(band, band, width - band, height - band, max(r - band, 0f))
+    }
 
     fun frame(height: Float, band: Float, openTop: Boolean, openBottom: Boolean): LensFrame {
         val above = if (openTop) band else 0f

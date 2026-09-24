@@ -47,6 +47,8 @@ class SearchScreenGlassGuardTest {
         "an opaque LauncherCard" to Regex("""\bLauncherCard\("""),
         "an opaque surfaceContainer color" to Regex("""\bsurfaceContainer\w*"""),
         "an opaque elevated surface color" to Regex("""\bsurfaceColorAtElevation\("""),
+        // onSurfaceVariant (text) is fine; the opaque container is not.
+        "an opaque surfaceVariant layer" to Regex("""\bsurfaceVariant\b"""),
         "a Material chip" to Regex("""\b(AssistChip|FilterChip|InputChip|SuggestionChip|ElevatedAssistChip|ElevatedFilterChip)\("""),
         "a Material card" to Regex("""(?<![A-Za-z])(Card|OutlinedCard|ElevatedCard)\("""),
         "a Material menu container" to Regex("""\bDropdownMenuGroup\("""),

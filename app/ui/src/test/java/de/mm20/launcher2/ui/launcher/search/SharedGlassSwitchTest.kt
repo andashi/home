@@ -1,5 +1,9 @@
 package de.mm20.launcher2.ui.launcher.search
 
+import de.mm20.launcher2.ui.launcher.glass.resultHighlight
+import de.mm20.launcher2.ui.launcher.glass.LocalClearIcons
+import androidx.compose.material3.lightColorScheme
+import androidx.compose.ui.graphics.Color
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -54,5 +58,21 @@ class SharedGlassSwitchTest {
     @Test
     fun `a banner elsewhere stays a Material card`() {
         assertEquals(0, glassSurfaces(onGlass = false) { banner() })
+    }
+
+    @Test
+    fun `the best match's highlight is a state layer on glass and upstream's color elsewhere`() {
+        var onGlass = Color.Unspecified
+        var elsewhere = Color.Unspecified
+        var scheme = lightColorScheme()
+        composeRule.setContent {
+            MaterialTheme(colorScheme = scheme) {
+                CompositionLocalProvider(LocalClearIcons provides true) { onGlass = resultHighlight() }
+                CompositionLocalProvider(LocalClearIcons provides false) { elsewhere = resultHighlight() }
+            }
+        }
+        composeRule.waitForIdle()
+        assertEquals(scheme.onSurface.copy(alpha = 0.12f), onGlass)
+        assertEquals(scheme.surfaceVariant, elsewhere)
     }
 }

@@ -1,5 +1,6 @@
 package de.mm20.launcher2.ui.launcher.search.common.grid
 
+import de.mm20.launcher2.ui.launcher.glass.resultHighlight
 import de.mm20.launcher2.ui.component.SquircleShape
 import de.mm20.launcher2.ui.launcher.glass.LocalClearIcons
 import androidx.activity.compose.BackHandler
@@ -156,8 +157,7 @@ fun GridItem(
             modifier = if (highlight) {
                 Modifier
                     .background(
-                        if (clear) MaterialTheme.colorScheme.surface.copy(alpha = HighlightAlpha)
-                        else MaterialTheme.colorScheme.surfaceVariant,
+                        resultHighlight(),
                         iconShape
                     )
             } else Modifier then if (showLabels) Modifier else Modifier
@@ -350,6 +350,3 @@ private fun lerp(start: Float, stop: Float, fraction: Float): Float {
 private fun lerp(start: Int, stop: Int, fraction: Float): Int {
     return start + (fraction * (stop - start)).toInt()
 }
-
-/** The best match's layer behind a Clear icon. */
-private const val HighlightAlpha = 0.35f
