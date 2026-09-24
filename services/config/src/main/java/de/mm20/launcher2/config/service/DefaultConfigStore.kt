@@ -75,6 +75,7 @@ class DefaultConfigStore(
             gridLayouts = GridLayouts.All.associateWith { layout ->
                 GridLayoutConfig(homeGridRepository.observe(layout).first().map { it.toConfig() })
             },
+            gridInitialized = homeGridInitFlag.isInitialized(),
             wallpaperImage = wallpaper?.image,
             wallpaperTarget = wallpaper?.target,
         )

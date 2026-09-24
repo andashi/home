@@ -211,7 +211,7 @@ object ConfigDiffer {
             val locked = grid.locked?.takeIf { it != current.gridLocked }
             val labels = grid.labels?.takeIf { it != current.gridLabels }
             val layouts = grid.layouts?.filter { (key, layout) ->
-                !layout.matches(current.gridLayouts[key])
+                !current.gridInitialized || !layout.matches(current.gridLayouts[key])
             }?.takeIf { it.isNotEmpty() }
             if (columns != null || locked != null || layouts != null || labels != null) {
                 mutations += ConfigMutation.SetGrid(
