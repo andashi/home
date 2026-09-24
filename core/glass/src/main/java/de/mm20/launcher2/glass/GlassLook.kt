@@ -94,6 +94,12 @@ object EdgeLens {
      * reaches [band] past the edge, so the pull there is zero and stacked
      * segments bend only at the card's outer edges.
      */
+    /**
+     * The [LensIdentityArea] of a [width] x [height] lens rectangle with
+     * corner [radius]; null when the band covers all of it.
+     */
+    fun identityArea(width: Float, height: Float, radius: Float, band: Float): LensIdentityArea? = null
+
     fun frame(height: Float, band: Float, openTop: Boolean, openBottom: Boolean): LensFrame {
         val above = if (openTop) band else 0f
         val below = if (openBottom) band else 0f
@@ -103,3 +109,18 @@ object EdgeLens {
 
 /** The lens rectangle: starts [offsetY] above the surface's top, [height] tall. */
 data class LensFrame(val offsetY: Float, val height: Float)
+
+/**
+ * Where [EdgeLens] changes nothing, in the lens rectangle's coordinates: the
+ * points at least `band` inside the outline - again a rounded rectangle,
+ * inset by the band, its corners rounded by what is left of the radius.
+ * Drawing the plain backdrop there and the lens only in the ring around it
+ * gives the same pixels at a fraction of the shader work (#91).
+ */
+data class LensIdentityArea(
+    val left: Float,
+    val top: Float,
+    val right: Float,
+    val bottom: Float,
+    val radius: Float,
+)
