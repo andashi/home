@@ -370,8 +370,17 @@ class GlassSearchTest {
             Thread.sleep(100)
             val later = drawnAt(uiAutomation.takeScreenshot(), centreX, centreY)
             val region = semantics.config.getOrNull(GlassBackdropRegion)
+            // Where the glass really is in the screenshot: the backdrop has no
+            // green, the window around it does. Region right but pixels wrong
+            // would mean the window is shown elsewhere than it reports (#113).
+            val glassRows = (0 until screen.height).filter { y ->
+                val p = screen.getPixel(centreX.toInt(), y)
+                android.graphics.Color.green(p) < 16 &&
+                    android.graphics.Color.red(p) + android.graphics.Color.blue(p) > 200
+            }
             val evidence = "on screen ${semantics.positionOnScreen}, size ${semantics.size}, host top $hostTop, " +
-                "window height $windowHeight, region $region, drawn 100 ms later $later\n" +
+                "window height $windowHeight, region $region, drawn 100 ms later $later, " +
+                "glass in the screenshot at x ${centreX.toInt()}: y ${glassRows.firstOrNull()}..${glassRows.lastOrNull()}\n" +
                 eventLog()
             android.util.Log.e("GlassSearchTest", "$tag failed:\n$evidence")
             assertEquals("$tag: backdrop row drawn vs where it is on screen; $evidence", expected, drawn, 0.03f)
