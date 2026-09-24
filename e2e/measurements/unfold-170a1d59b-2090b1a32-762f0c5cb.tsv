@@ -1,10 +1,11 @@
+# revisions are the branch's after a comment-only rebase; the APKs were built from 743a4271b / db8bb8fa9 / 3fb1b3315, whose app sources are identical
 # emulator-5562, instances/test-fold-gpu (foldable, GPU=host since its first start), adb as the unrooted shell (uid 2000)
 # release-like builds (assembleDefaultRelease, debug-signed); one snapshot per build, same fixture
 # unfold = hinge sensor swept 0->180 deg in 10 deg steps; ms from the display-state request;
 # frametimeline + logcat (Perfetto) and gfxinfo framestats (first frame after the switch), e2e/measure-unfold.sh
 # unfold-ready-main = rev 170a1d59b, apk sha256 d90092aaf9b6116ddb9a370f1448de8945e80e5091aa423786e4f87534410042
-# unfold-ready-rim = rev 743a4271b, apk sha256 9f514dddcf4f6d164ccd21cdcbf4fb1ef50e89816cb3662f8c213f810646119c
-# unfold-ready-settle = rev 3fb1b3315, apk sha256 4a09fdbaa633c97f853b95a5c6ec9153c9f9bf77b086ca333a30d55d3396165d
+# unfold-ready-rim = rev 2090b1a32, apk sha256 9f514dddcf4f6d164ccd21cdcbf4fb1ef50e89816cb3662f8c213f810646119c
+# unfold-ready-settle = rev 762f0c5cb, apk sha256 4a09fdbaa633c97f853b95a5c6ec9153c9f9bf77b086ca333a30d55d3396165d
 snapshot	run	hostload	config_ms	frame_start_ms	frame_end_ms	frame_ms	screen_on_ms	delay	anim	layout	record	sync	issue	swap	total
 unfold-ready-main	1	3.65	86.400000	122.700000	240.100000	117.400000	279.800000	0.2	6.7	60.1	35.3	1.0	3.6	14.8	122.4
 unfold-ready-rim	1	2.89	45.300000	184.500000	217.600000	33.100000	254.200000	0.4	0.4	0.6	7.9	0.2	4.2	16.1	30.4

@@ -1,10 +1,11 @@
+# revisions are the branch's after a comment-only rebase; the APKs were built from 743a4271b / db8bb8fa9 / 3fb1b3315, whose app sources are identical
 # emulator-5562, instances/test-fold-gpu (foldable, GPU=host since its first start), adb as the unrooted shell (uid 2000)
 # release-like builds (assembleDefaultRelease, debug-signed); one snapshot per build, same fixture
 # unfold = hinge sensor swept 0->180 deg in 10 deg steps; ms from the display-state request;
 # frametimeline + logcat (Perfetto) and gfxinfo framestats (first frame after the switch), e2e/measure-unfold.sh
-# db8bb8fa9 is the superseded two-frame deferral: more launcher frames inside the display switch
+# 19ea40319 is the superseded two-frame deferral: more launcher frames inside the display switch
 # unfold-ready-main = rev 170a1d59b, apk sha256 d90092aaf9b6116ddb9a370f1448de8945e80e5091aa423786e4f87534410042
-# unfold-ready-defer = rev db8bb8fa9, apk sha256 77319c7f0f4b0eef0e96f9bc2d889ff151d0288150ee022a917c17be923addb5
+# unfold-ready-defer = rev 19ea40319, apk sha256 77319c7f0f4b0eef0e96f9bc2d889ff151d0288150ee022a917c17be923addb5
 snapshot	run	hostload	config_ms	frame_start_ms	frame_end_ms	frame_ms	screen_on_ms	delay	anim	layout	record	sync	issue	swap	total
 unfold-ready-main	1	1.03	17.300000	164.200000	214.000000	49.700000	234.000000	0.4	0.6	0.8	21.4	3.4	2.5	11.4	42.8
 unfold-ready-defer	1	1.00	20.900000	104.600000	156.500000	51.900000	222.700000	14.9	1.5	19.1	3.7	0.3	6.2	19.7	65.8
