@@ -157,8 +157,10 @@ object ConfigValidator {
                     "'${action.type}' is not a search action (${SearchActionTypes.Configurable.sorted().joinToString(", ")})"
                 )
             }
+            // Intent actions are the device's own, told apart only by label and
+            // possibly alike: never a duplicate (review on #116).
             val key = listOf(action.type, action.url.orEmpty(), action.packageName.orEmpty()).joinToString("|")
-            if (!seen.add(key)) {
+            if (action.type != SearchActionTypes.Intent && !seen.add(key)) {
                 out += Diagnostic(Severity.Error, "duplicate-search-action", path, "the same action is listed twice")
             }
         }

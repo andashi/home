@@ -93,7 +93,7 @@ except ImportError:
 root = ET.parse(sys.argv[1]).getroot()
 labels = set()
 for row in root.iter("node"):
-    if row.get("content-desc") == "search-actions":
+    if row.get("resource-id") == "search-actions":
         labels |= {n.get("text") for n in row.iter("node") if n.get("text")}
 print(" | ".join(sorted(labels)))
 PY
