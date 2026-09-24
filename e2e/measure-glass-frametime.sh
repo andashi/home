@@ -224,10 +224,10 @@ posture() { # $1 = closed | opened
   # the grid is back measures the blank in between (it did: 2 frames on the
   # cover). Wait for the dock cell.
   for i in $(seq 30); do
-    [ -n "$(desc_bounds grid-item:dock 2>/dev/null)" ] && break
+    [ -n "$(id_bounds grid-item:dock 2>/dev/null)" ] && break
     wake_screen; show_home; sleep 1
   done
-  [ -n "$(desc_bounds grid-item:dock 2>/dev/null)" ] || die "the grid did not come back after posture $1"
+  [ -n "$(id_bounds grid-item:dock 2>/dev/null)" ] || die "the grid did not come back after posture $1"
   sleep 2
 }
 

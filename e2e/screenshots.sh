@@ -178,7 +178,7 @@ EOF
   # 07: remove with undo.
   tap_bounds "$(cell_center analog | awk '{print $1, $2, $1, $2}')"
   sleep 1
-  tap_desc grid-remove
+  tap_id grid-remove
   sleep 1
   scene 07-remove-undo "Remove shows a snackbar with Undo; the AppWidget host id is released only after it expires." "HomeGridEditModeTest.removeThenUndoRestoresTheItem"
   tap_text "Undo" 2>/dev/null || tap_text "UNDO" 2>/dev/null || warn "no Undo action on screen"
@@ -192,7 +192,7 @@ EOF
   sleep 1
 
   # 09: Done writes back.
-  tap_desc grid-edit-done
+  tap_id grid-edit-done
   sleep 3
   scene 09-after-done "Done leaves edit mode and writes home.grid back into launcher.json on the device; the file is pulled next to this picture." "GridWriteBackTest; e2e/l4-grid.sh steps 3 and 4"
   adb -s "$SERIAL" pull "$DEVICE_CONFIG" "$OUT/09-launcher.json" >/dev/null 2>&1 || warn "could not pull launcher.json"
@@ -231,7 +231,7 @@ EOF
   sleep 3
   # The picture must show the absence of the edit bar, so assert it before
   # capturing; a failed dump is an error, not an absence.
-  bar="$(desc_bounds grid-edit-done)" || die "uiautomator dump failed while checking the locked screen"
+  bar="$(id_bounds grid-edit-done)" || die "uiautomator dump failed while checking the locked screen"
   [ -z "$bar" ] || die "locked layout showed the edit bar after a long press"
   scene 13-locked "locked: true in the config: a long press shows no edit bar and nothing is ever written back." "HomeGridEditModeTest.aLockedLayoutRefusesEditMode; e2e/l4-grid.sh step 7"
 else

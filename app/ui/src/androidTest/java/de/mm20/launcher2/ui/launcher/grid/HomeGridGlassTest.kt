@@ -6,10 +6,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
-import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import de.mm20.launcher2.glass.Contrast
@@ -61,7 +61,7 @@ class HomeGridGlassTest {
             }
         }
         composeRule.waitUntil(10_000) {
-            composeRule.onAllNodesWithContentDescription("grid-item:dock").fetchSemanticsNodes()
+            composeRule.onAllNodesWithTag("grid-item:dock").fetchSemanticsNodes()
                 .any { it.size.height > 0 }
         }
     }

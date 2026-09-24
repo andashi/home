@@ -71,7 +71,7 @@ show_home() {
 }
 
 # Prints "left top right bottom" of the first node matching the attribute.
-node_bounds() { # $1 = attribute (content-desc|text), $2 = value
+node_bounds() { # $1 = attribute (resource-id|content-desc|text), $2 = value
   adb -s "$SERIAL" shell rm -f /sdcard/grid-dump.xml >/dev/null 2>&1 || true
   adb -s "$SERIAL" shell uiautomator dump /sdcard/grid-dump.xml >/dev/null 2>&1 || return 1
   adb -s "$SERIAL" shell cat /sdcard/grid-dump.xml | tr -d '\r' > "$WORK/dump.xml"
@@ -93,12 +93,25 @@ for node in root.iter("node"):
 PY
 }
 
+# Content descriptions are what TalkBack reads: use them only for real
+# labels ("Search"). The grid's automation hooks are test tags, which its
+# root exposes as resource ids (#117).
 desc_bounds() { node_bounds content-desc "$1"; }
+id_bounds() { node_bounds resource-id "$1"; }
 
 wait_desc() { # $1 = content-desc, $2 = timeout (s), $3 = description
   local elapsed=0
   while [ "$elapsed" -lt "$2" ]; do
     [ -n "$(desc_bounds "$1")" ] && return 0
+    sleep 1; elapsed=$((elapsed + 1))
+  done
+  die "timed out (${2}s) waiting for '$1' on screen: $3"
+}
+
+wait_id() { # $1 = resource-id (test tag), $2 = timeout (s), $3 = description
+  local elapsed=0
+  while [ "$elapsed" -lt "$2" ]; do
+    [ -n "$(id_bounds "$1")" ] && return 0
     sleep 1; elapsed=$((elapsed + 1))
   done
   die "timed out (${2}s) waiting for '$1' on screen: $3"
@@ -112,6 +125,13 @@ tap_bounds() { # $1 = "l t r b"
 tap_desc() { # $1 = content-desc
   local b
   b="$(desc_bounds "$1")"
+  [ -n "$b" ] || die "'$1' is not on screen"
+  tap_bounds "$b"
+}
+
+tap_id() { # $1 = resource-id (test tag)
+  local b
+  b="$(id_bounds "$1")"
   [ -n "$b" ] || die "'$1' is not on screen"
   tap_bounds "$b"
 }
@@ -139,12 +159,12 @@ except ImportError:
     import xml.etree.ElementTree as ET
 root = ET.parse(sys.argv[1]).getroot()
 for node in root.iter("node"):
-    desc = node.get("content-desc", "")
-    if not desc.startswith("grid-item:"):
+    tag = node.get("resource-id", "")
+    if not tag.startswith("grid-item:"):
         continue
     m = re.match(r"\[(\d+),(\d+)\]\[(\d+),(\d+)\]", node.get("bounds", ""))
     if m:
-        print(desc[len("grid-item:"):], *m.groups())
+        print(tag[len("grid-item:"):], *m.groups())
 PY
 }
 

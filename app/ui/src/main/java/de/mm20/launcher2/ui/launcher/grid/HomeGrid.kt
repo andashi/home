@@ -44,8 +44,8 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.SemanticsPropertyKey
-import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
@@ -125,7 +125,12 @@ fun HomeGrid(
         modifier = modifier
             .fillMaxSize()
             .testTag("home-grid")
-            .semantics { this[GridWiggling] = wiggling }
+            // The grid's tags are its automation hooks: uiautomator sees them
+            // as resource ids, and TalkBack never reads them (#117).
+            .semantics {
+                testTagsAsResourceId = true
+                this[GridWiggling] = wiggling
+            }
             // Sits behind the cells: a long press on free cells enters edit
             // mode, and because the down is consumed here the scaffold's
             // configured long-press gesture on the parent never fires. A tap
@@ -286,8 +291,9 @@ private fun WiggleDriver(visual: GridEditVisual) {
  * geometry in pixels is remembered on (geometry, cells) so a recomposition
  * for any other reason does not recompute it.
  *
- * Each child carries `contentDescription = "grid-item:<id>"`, which is how
- * the L4 scenario finds cells through `uiautomator dump`.
+ * Each child carries the test tag `grid-item:<id>`, which the grid root
+ * exposes as a resource id: that is how the L4 scenario finds cells through
+ * `uiautomator dump` (#117).
  *
  * Edit mode's visuals go through the cells' graphics layers, never through
  * relayout: the dragged cell is translated to [GridEditVisual]'s ghost
@@ -356,7 +362,7 @@ fun HomeGridLayout(
                     Box(
                         modifier = Modifier
                             .layoutId(id)
-                            .semantics { contentDescription = "grid-item:$id" },
+                            .testTag("grid-item:$id"),
                     ) {
                         content(id)
                         overlay?.invoke(id)

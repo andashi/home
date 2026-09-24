@@ -13,12 +13,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.longClick
-import androidx.compose.ui.test.onAllNodesWithContentDescription
-import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.onNodeWithText
@@ -91,7 +90,7 @@ class HomeGridEditModeTest {
             }
         }
         composeRule.waitUntil(10_000) {
-            composeRule.onAllNodesWithContentDescription("grid-item:dock").fetchSemanticsNodes()
+            composeRule.onAllNodesWithTag("grid-item:dock").fetchSemanticsNodes()
                 .any { it.size.height > 0 }
         }
     }
@@ -113,7 +112,7 @@ class HomeGridEditModeTest {
 
         longPressEmptyArea()
 
-        composeRule.onNodeWithContentDescription("grid-edit-done").assertIsDisplayed()
+        composeRule.onNodeWithTag("grid-edit-done").assertIsDisplayed()
         assertTrue(vm.editing.value)
         assertFalse(parentLongPressed)
     }
@@ -126,7 +125,7 @@ class HomeGridEditModeTest {
         val geometry = vm.geometry.value!!
         val pitchPx = with(composeRule.density) { (geometry.cellDp + geometry.gapDp).dp.toPx() }
 
-        composeRule.onNodeWithContentDescription("grid-item:clock").performTouchInput {
+        composeRule.onNodeWithTag("grid-item:clock").performTouchInput {
             down(center)
             // Past the touch slop first, then two rows down, in small steps like a finger.
             repeat(10) { moveBy(Offset(0f, pitchPx * 0.2f)) }
@@ -144,18 +143,18 @@ class HomeGridEditModeTest {
         show(vm)
         longPressEmptyArea()
 
-        composeRule.onNodeWithContentDescription("grid-item:clock").performClick()
-        composeRule.onNodeWithContentDescription("grid-resize-wider").performClick()
+        composeRule.onNodeWithTag("grid-item:clock").performClick()
+        composeRule.onNodeWithTag("grid-resize-wider").performClick()
         composeRule.waitForIdle()
         assertEquals(3, vm.spanOf("clock").w)
-        composeRule.onNodeWithContentDescription("grid-resize-wider").assertDoesNotExist()
-        composeRule.onNodeWithContentDescription("grid-resize-taller").assertDoesNotExist()
+        composeRule.onNodeWithTag("grid-resize-wider").assertDoesNotExist()
+        composeRule.onNodeWithTag("grid-resize-taller").assertDoesNotExist()
 
-        composeRule.onNodeWithContentDescription("grid-resize-narrower").performClick()
-        composeRule.onNodeWithContentDescription("grid-resize-narrower").performClick()
+        composeRule.onNodeWithTag("grid-resize-narrower").performClick()
+        composeRule.onNodeWithTag("grid-resize-narrower").performClick()
         composeRule.waitForIdle()
         assertEquals(1, vm.spanOf("clock").w)
-        composeRule.onNodeWithContentDescription("grid-resize-narrower").assertDoesNotExist()
+        composeRule.onNodeWithTag("grid-resize-narrower").assertDoesNotExist()
     }
 
     @Test
@@ -164,8 +163,8 @@ class HomeGridEditModeTest {
         show(vm)
         longPressEmptyArea()
 
-        composeRule.onNodeWithContentDescription("grid-item:note").performClick()
-        composeRule.onNodeWithContentDescription("grid-remove").performClick()
+        composeRule.onNodeWithTag("grid-item:note").performClick()
+        composeRule.onNodeWithTag("grid-remove").performClick()
         composeRule.waitForIdle()
         assertEquals(listOf("clock", "dock"), vm.uiStateNow()!!.cells.map { it.item.id })
 
@@ -182,7 +181,7 @@ class HomeGridEditModeTest {
         show(vm)
         longPressEmptyArea()
 
-        composeRule.onNodeWithContentDescription("grid-item:dock").performClick()
+        composeRule.onNodeWithTag("grid-item:dock").performClick()
         composeRule.waitForIdle()
 
         assertTrue(editFavoritesRequested)
@@ -196,7 +195,7 @@ class HomeGridEditModeTest {
 
         longPressEmptyArea()
 
-        composeRule.onNodeWithContentDescription("grid-edit-done").assertDoesNotExist()
+        composeRule.onNodeWithTag("grid-edit-done").assertDoesNotExist()
         assertFalse(vm.editing.value)
     }
 
@@ -224,11 +223,11 @@ class HomeGridEditModeTest {
         show(vm)
         longPressEmptyArea()
 
-        composeRule.onNodeWithContentDescription("grid-edit-done").performClick()
+        composeRule.onNodeWithTag("grid-edit-done").performClick()
         composeRule.waitForIdle()
         composeRule.waitUntil(5_000) { !vm.editing.value }
 
         assertEquals(1, koin.writeBack.writes.size)
-        composeRule.onNodeWithContentDescription("grid-edit-done").assertDoesNotExist()
+        composeRule.onNodeWithTag("grid-edit-done").assertDoesNotExist()
     }
 }

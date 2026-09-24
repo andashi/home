@@ -5,12 +5,12 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.test.onAllNodesWithTag
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
-import androidx.compose.ui.test.onAllNodesWithContentDescription
-import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.unit.dp
 import androidx.test.core.app.ApplicationProvider
@@ -115,12 +115,12 @@ class HomeGridTest {
         // The state arrives through several Main-dispatcher hops; wait for the
         // placed cell, not for the first idle frame.
         composeRule.waitUntil(5_000) {
-            composeRule.onAllNodesWithContentDescription("grid-item:dock").fetchSemanticsNodes()
+            composeRule.onAllNodesWithTag("grid-item:dock").fetchSemanticsNodes()
                 .any { it.size.height > 0 }
         }
-        composeRule.onNodeWithContentDescription("grid-item:dock").assertIsDisplayed()
+        composeRule.onNodeWithTag("grid-item:dock").assertIsDisplayed()
         composeRule.onNodeWithText("favorites 4x1").assertIsDisplayed()
-        composeRule.onNodeWithContentDescription("grid-item:clock").assertIsDisplayed()
+        composeRule.onNodeWithTag("grid-item:clock").assertIsDisplayed()
         composeRule.onNodeWithText(string(R.string.app_widget_loading_failed)).assertIsDisplayed()
     }
 
@@ -156,7 +156,7 @@ class HomeGridTest {
             }
         }
         composeRule.waitUntil(5_000) {
-            composeRule.onAllNodesWithContentDescription("grid-item:dock").fetchSemanticsNodes()
+            composeRule.onAllNodesWithTag("grid-item:dock").fetchSemanticsNodes()
                 .any { it.size.height > 0 }
         }
     }

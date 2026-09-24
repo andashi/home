@@ -201,7 +201,7 @@ adb -s "$SERIAL" shell content write --uri "content://$PKG.config-ingest/wallpap
 wait_grid() {
   local i
   for i in $(seq 30); do
-    [ -n "$(desc_bounds grid-item:dock 2>/dev/null)" ] && return 0
+    [ -n "$(id_bounds grid-item:dock 2>/dev/null)" ] && return 0
     wake_screen; show_home; sleep 1
   done
   die "the grid is not on screen"

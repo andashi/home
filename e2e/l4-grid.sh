@@ -37,8 +37,8 @@
 # item is absent, the dock is clipped to four columns), and the phone-only
 # steps 5 to 7 are skipped. The fold's default dock is the right edge column.
 #
-# Cells are found by their content description "grid-item:<id>", which the
-# renderer sets on every cell. The favorites row anchors the geometry: it
+# Cells are found by their test tag "grid-item:<id>", which the grid root
+# exposes as a resource id (#117). The favorites row anchors the geometry: it
 # sits at x = 0 in the bottom row, so its bounds give the grid's left edge
 # and the cell pitch, and every other cell is checked relative to it.
 #
@@ -191,9 +191,9 @@ show_home() {
   adb -s "$SERIAL" shell am start -n "$LAUNCHER_ACTIVITY" >/dev/null 2>&1 || true
 }
 
-# Prints "left top right bottom" of the first node with the content
-# description, or nothing.
-desc_bounds() { # $1 = content-desc
+# Prints "left top right bottom" of the first node with the resource id (a
+# test tag the grid root exposes, #117), or nothing.
+id_bounds() { # $1 = resource-id
   adb -s "$SERIAL" shell rm -f /sdcard/l4-grid.xml >/dev/null 2>&1 || true
   adb -s "$SERIAL" shell uiautomator dump /sdcard/l4-grid.xml >/dev/null 2>&1 || return 1
   adb -s "$SERIAL" shell cat /sdcard/l4-grid.xml | tr -d '\r' > "$WORK/dump.xml"
@@ -205,25 +205,25 @@ except ImportError:
     import xml.etree.ElementTree as ET
 root = ET.parse(sys.argv[1]).getroot()
 for node in root.iter("node"):
-    if node.get("content-desc", "") == sys.argv[2]:
+    if node.get("resource-id", "") == sys.argv[2]:
         m = re.match(r"\[(\d+),(\d+)\]\[(\d+),(\d+)\]", node.get("bounds", ""))
         if m:
             print(*m.groups()); break
 PY
 }
 
-wait_desc() { # $1 = content-desc, $2 = timeout (s), $3 = description
+wait_id() { # $1 = resource-id, $2 = timeout (s), $3 = description
   local elapsed=0
   while [ "$elapsed" -lt "$2" ]; do
-    [ -n "$(desc_bounds "$1")" ] && return 0
+    [ -n "$(id_bounds "$1")" ] && return 0
     sleep 1; elapsed=$((elapsed + 1))
   done
   die "timed out (${2}s) waiting for '$1' on screen: $3"
 }
 
-tap_desc() { # $1 = content-desc
+tap_id() { # $1 = resource-id
   local b
-  b="$(desc_bounds "$1")"
+  b="$(id_bounds "$1")"
   [ -n "$b" ] || die "'$1' is not on screen"
   set -- $b
   adb -s "$SERIAL" shell input tap $(( ($1 + $3) / 2 )) $(( ($2 + $4) / 2 ))
@@ -263,7 +263,7 @@ enter_edit_mode() {
   point="$(free_cell_point)" || die "no dock on screen to locate a free cell from"
   set -- $point
   adb -s "$SERIAL" shell input swipe "$1" "$2" "$1" "$2" 900
-  wait_desc grid-edit-done 15 "edit bar after the long press"
+  wait_id grid-edit-done 15 "edit bar after the long press"
 }
 
 # Drags a cell by whole cells with explicit motion events: `input swipe`
@@ -354,12 +354,12 @@ except ImportError:
     import xml.etree.ElementTree as ET
 root = ET.parse(sys.argv[1]).getroot()
 for node in root.iter("node"):
-    desc = node.get("content-desc", "")
-    if not desc.startswith("grid-item:"):
+    tag = node.get("resource-id", "")
+    if not tag.startswith("grid-item:"):
         continue
     m = re.match(r"\[(\d+),(\d+)\]\[(\d+),(\d+)\]", node.get("bounds", ""))
     if m:
-        print(desc[len("grid-item:"):], *m.groups())
+        print(tag[len("grid-item:"):], *m.groups())
 PY
 }
 
@@ -669,7 +669,7 @@ if [ "$HAVE_CLOCK" = 1 ]; then
   ok "edit mode entered by long press"
   drag_cell digital 0 3
   sleep 1
-  tap_desc grid-edit-done
+  tap_id grid-edit-done
   wait_report '.trigger == "self-write" and .success == true' 30 "the launcher's own write-back report"
   H_WRITTEN="$(jq -r '.configSha256' <<<"$LAST_REPORT")"
   [ "$(device_config_sha)" = "$H_WRITTEN" ] || die "the file on the device does not carry the self-write hash"
@@ -751,7 +751,7 @@ PY
   set -- $point
   adb -s "$SERIAL" shell input swipe "$1" "$2" "$1" "$2" 900
   sleep 3
-  [ -z "$(desc_bounds grid-edit-done)" ] || die "a locked layout entered edit mode"
+  [ -z "$(id_bounds grid-edit-done)" ] || die "a locked layout entered edit mode"
   [ "$(device_config_sha)" = "$H_LOCKED" ] || die "the locked file changed on the device"
   ok "locked: the long press shows no edit bar, the file is unchanged"
   fi
