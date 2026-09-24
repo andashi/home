@@ -13,6 +13,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.semantics.SemanticsPropertiesAndroid
+import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsDisplayed
@@ -325,6 +328,46 @@ class HomeGridEditUiTest {
 
         composeRule.onNodeWithContentDescription("grid-edit-done").assertDoesNotExist()
         assertFalse(vm.editing.value)
+    }
+
+    /**
+     * #117: automation hooks are test tags exposed as resource ids, never
+     * content descriptions, which TalkBack reads out untranslated. The
+     * controls a user can act on say what they do, in the user's language.
+     */
+    @Test
+    fun `grid nodes carry test tags and no automation content descriptions`() {
+        val vm = vm()
+        show(vm)
+        longPressEmptyArea()
+        composeRule.runOnIdle { vm.select("clock") }
+        composeRule.waitForIdle()
+
+        val hooks = composeRule.onAllNodes(SemanticsMatcher("any node") { true }, useUnmergedTree = true)
+            .fetchSemanticsNodes()
+            .flatMap { it.config.getOrNull(SemanticsProperties.ContentDescription).orEmpty() }
+            .filter { it.startsWith("grid-") }
+        assertEquals("content descriptions TalkBack would read", emptyList<String>(), hooks)
+
+        composeRule.onNodeWithTag("home-grid")
+            .assert(SemanticsMatcher.expectValue(SemanticsPropertiesAndroid.TestTagsAsResourceId, true))
+        for (tag in listOf(
+            "grid-item:clock", "grid-item:note", "grid-item:dock",
+            "grid-edit-add", "grid-edit-done", "grid-remove",
+            "grid-resize-narrower", "grid-resize-wider", "grid-resize-shorter", "grid-resize-handle",
+        )) {
+            composeRule.onNodeWithTag(tag, useUnmergedTree = true).assertExists("tag $tag")
+        }
+
+        fun spoken(tag: String) = composeRule.onNodeWithTag(tag).fetchSemanticsNode()
+            .config.getOrNull(SemanticsProperties.ContentDescription).orEmpty()
+        assertEquals(listOf(string(R.string.widget_add_widget)), spoken("grid-edit-add"))
+        assertEquals(listOf(string(R.string.action_done)), spoken("grid-edit-done"))
+        assertEquals(listOf(string(R.string.widget_action_remove)), spoken("grid-remove"))
+        assertEquals(listOf(string(R.string.grid_resize_narrower)), spoken("grid-resize-narrower"))
+        assertEquals(listOf(string(R.string.grid_resize_wider)), spoken("grid-resize-wider"))
+        assertEquals(listOf(string(R.string.grid_resize_shorter)), spoken("grid-resize-shorter"))
+        assertEquals(listOf(string(R.string.grid_resize_handle)), spoken("grid-resize-handle"))
     }
 
     @Test
