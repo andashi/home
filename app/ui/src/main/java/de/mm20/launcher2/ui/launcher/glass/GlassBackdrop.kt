@@ -1,5 +1,6 @@
 package de.mm20.launcher2.ui.launcher.glass
 
+import androidx.compose.runtime.DisposableEffect
 import de.mm20.launcher2.glass.LensIdentityArea
 import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.graphics.drawscope.DrawScope
@@ -278,15 +279,24 @@ fun Modifier.glassBackdrop(
         }
 }
 
-/** One compiled lens per surface; null where the platform cannot compile AGSL. */
+/**
+ * The surface's own lens while it is composed, handed back when it leaves
+ * (#91); null where the platform cannot compile AGSL.
+ */
 @Composable
-private fun rememberLens(): RuntimeShader? = remember {
-    try {
-        GlassLens.compile()
-    } catch (e: Throwable) {
-        Log.w("GlassBackdrop", "edge lens unavailable: ${e.javaClass.simpleName}")
-        null
+private fun rememberLens(): RuntimeShader? {
+    val lens = remember {
+        try {
+            GlassLens.acquire()
+        } catch (e: Throwable) {
+            Log.w("GlassBackdrop", "edge lens unavailable: ${e.javaClass.simpleName}")
+            null
+        }
     }
+    DisposableEffect(lens) {
+        onDispose { lens?.let(GlassLens::release) }
+    }
+    return lens
 }
 
 /**

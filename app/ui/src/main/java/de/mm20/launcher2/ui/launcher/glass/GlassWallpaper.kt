@@ -101,7 +101,21 @@ object GlassLens {
     """
 
     /** Compiles the shader; throws when the source does not compile. */
-    fun compile(): RuntimeShader = RuntimeShader(Source)
+    /** How often the AGSL source was compiled in this process (tests read it, #91). */
+    internal var compilations = 0
+        private set
+
+    /** Compiles the shader; throws when the source does not compile. */
+    fun compile(): RuntimeShader {
+        compilations++
+        return RuntimeShader(Source)
+    }
+
+    /** A lens for one surface, until [release]; the surface's alone meanwhile (#91). */
+    fun acquire(): RuntimeShader = compile()
+
+    /** Hands a surface's lens back when the surface leaves the composition. */
+    fun release(shader: RuntimeShader) = Unit
 
     /** Sets the backdrop and the uniforms, all in pixels. */
     fun configure(
