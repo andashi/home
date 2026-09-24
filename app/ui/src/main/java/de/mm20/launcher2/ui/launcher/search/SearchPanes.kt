@@ -90,3 +90,15 @@ private fun Pane(
         content = content,
     )
 }
+
+/** Whether search's lists can scroll further, in either direction (#91). */
+data class PaneScroll(val forward: Boolean, val backward: Boolean)
+
+/**
+ * The scroll state of search as a whole: the apps list, and the results list
+ * while two panes are shown. A results list that is not composed keeps its
+ * last state and must not count (review on #99: after folding to the cover
+ * it held the search bar in the wrong position).
+ */
+fun searchScroll(apps: PaneScroll, results: PaneScroll, twoPane: Boolean): PaneScroll =
+    PaneScroll(apps.forward || results.forward, apps.backward || results.backward)
