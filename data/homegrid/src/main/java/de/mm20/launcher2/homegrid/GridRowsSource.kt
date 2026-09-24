@@ -36,7 +36,8 @@ class MeasuredGridRows(
         measured[layout] = rows
     }
 
-    override fun rows(layout: String): Int? = measured[layout] ?: defaultRows
+    override fun rows(layout: String): Int? =
+        if (ownLayout != null && layout != ownLayout) null else measured[layout] ?: defaultRows
 
     companion object {
         const val DefaultRows = 6

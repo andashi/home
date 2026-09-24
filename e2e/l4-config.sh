@@ -406,6 +406,31 @@ H_CHANGED="$(sha256sum "$CHANGED_CONFIG" | cut -d' ' -f1)"
 H_WALLPAPER="$(sha256sum "$WALLPAPER_CONFIG" | cut -d' ' -f1)"
 H_LEGACY="$(sha256sum "$LEGACY_CONFIG" | cut -d' ' -f1)"
 
+# #90: one file for phones and Folds. The Fold has seven rows, so its layout
+# puts the dock in row 6 with row 5 taken; this phone has six. A phone must
+# store the fold layout as written - no clamping, no grid-overflow.
+FOLD_ROWS_CONFIG="$WORK/fold-rows.jsonc"
+cat > "$FOLD_ROWS_CONFIG" <<'EOF'
+{
+  "schemaVersion": 2,
+  "home": {
+    "grid": {
+      "columns": 4,
+      "layouts": {
+        "phone": { "items": [
+          { "id": "dock", "widget": "favorites", "x": 0, "y": 5, "w": 4, "h": 1 },
+        ] },
+        "fold": { "items": [
+          { "id": "clock", "widget": "com.android.deskclock/com.android.alarmclock.DigitalAppWidgetProvider", "x": 0, "y": 5, "w": 2, "h": 1 },
+          { "id": "dock", "widget": "favorites", "x": 0, "y": 6, "w": 8, "h": 1 },
+        ] },
+      },
+    },
+  },
+}
+EOF
+H_FOLD_ROWS="$(sha256sum "$FOLD_ROWS_CONFIG" | cut -d' ' -f1)"
+
 # The /config read-back is fully populated (ConfigStateMapper), so these are
 # the exact effective values after applying VALID_CONFIG.
 EFFECTIVE_FILTER='
@@ -621,6 +646,18 @@ assert_jq "$effective" \
   '.appearance.glass == {"blur":16.0,"tint":0.5,"radius":20.0,"contrast":"high","wallpaperBlur":false,"searchWallpaperBlur":false} and (.appearance | has("transparency") | not)' \
   "transparency has no effect: glass unchanged, transparency not served"
 ok "transparency: reported inert, no effect, not served back"
+
+# --- 10b. a fold layout with the Fold's seventh row, on a phone (#90) -----
+
+settle_then_broadcast "$FOLD_ROWS_CONFIG" "$H_FOLD_ROWS" "fold-rows"
+assert_jq "$LAST_REPORT" \
+  '.success == true and ([(.diagnostics // [])[] | select(.code | startswith("grid-"))] | length == 0)' \
+  "a fold layout using the Fold's seventh row applies on a phone without a grid diagnostic"
+effective="$(query_json config)" || die "could not query /config"
+assert_jq "$effective" \
+  '[.home.grid.layouts.fold.items[] | select(.id == "dock") | [.x, .y, .w, .h]] == [[0, 6, 8, 1]]' \
+  "the phone stores the fold layout as written: the dock stays in row 6"
+ok "fold layout kept as written on a phone (#90)"
 
 # --- 9. restore a valid config via adb push (interactive dotfile path) ---
 

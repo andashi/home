@@ -158,6 +158,17 @@ class DefaultConfigStore(
         return diagnostics
     }
 
+    /**
+     * Rows for a layout of another form factor: enough for every placed item
+     * where the file puts it, at least the default, and room below for the
+     * items without a position, so nothing is clamped or dropped.
+     */
+    private fun rowsToKeep(layout: GridLayoutConfig): Int {
+        val placedBottom = layout.items.filter { it.hasPosition }.maxOfOrNull { it.y!! + (it.h ?: 1) } ?: 0
+        val unplaced = layout.items.filter { !it.hasPosition }.sumOf { it.h ?: 1 }
+        return maxOf(MeasuredGridRows.DefaultRows, placedBottom) + unplaced
+    }
+
     private class SizedItem(val index: Int, val config: GridItemConfig, val limits: ProviderLimits)
 
     private suspend fun applyLayout(
@@ -170,7 +181,9 @@ class DefaultConfigStore(
         val isFold = layoutKey == GridLayouts.Fold
         val spec = GridSpec(
             columns = if (isFold) columns * 2 else columns,
-            rows = gridRows.rows(layoutKey) ?: MeasuredGridRows.DefaultRows,
+            // A layout this device does not render is kept as written (#90):
+            // its rows are unknown here, so they are as many as the file needs.
+            rows = gridRows.rows(layoutKey) ?: rowsToKeep(layout),
             foldColumn = if (isFold) columns else null,
         )
 
