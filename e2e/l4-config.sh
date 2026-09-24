@@ -259,7 +259,7 @@ cat > "$VALID_CONFIG" <<'EOF'
     "glass": { "blur": 16, "tint": 0.5, "radius": 20, "contrast": "high", "wallpaperBlur": false, "searchWallpaperBlur": false },
   },
   // Four keys away from their defaults (#91), so applying them is a change.
-  "search": { "favorites": false, "layout": "list", "reversed": true, "contacts": false },
+  "search": { "favorites": false, "layout": "list", "reversed": true, "contacts": false, "barPosition": "bottom" },
   "home": {
     "searchBar": { "position": "bottom" },
     // Empty on purpose: favorites reference installed packages.
@@ -294,7 +294,7 @@ cat > "$UNKNOWN_KEYS_CONFIG" <<'EOF'
     "glass": { "blur": 16, "tint": 0.5, "radius": 20, "contrast": "high", "wallpaperBlur": false, "searchWallpaperBlur": false },
   },
   // Four keys away from their defaults (#91), so applying them is a change.
-  "search": { "favorites": false, "layout": "list", "reversed": true, "contacts": false },
+  "search": { "favorites": false, "layout": "list", "reversed": true, "contacts": false, "barPosition": "bottom" },
   "home": {
     "searchBar": { "position": "bottom" },
     "favorites": [],
@@ -327,7 +327,7 @@ cat > "$CHANGED_CONFIG" <<'EOF'
   "appearance": {
     "glass": { "blur": 32, "tint": 0.2, "radius": 12, "contrast": "low", "wallpaperBlur": true, "searchWallpaperBlur": true },
   },
-  "search": { "favorites": true, "layout": "grid", "reversed": false, "contacts": true },
+  "search": { "favorites": true, "layout": "grid", "reversed": false, "contacts": true, "barPosition": "top" },
   "home": {
     "searchBar": { "position": "top" },
     "favorites": [],
@@ -439,7 +439,7 @@ EFFECTIVE_FILTER='
   and .icons.enforceThemed == true
   and .appearance.glass == {"blur":16.0,"tint":0.5,"radius":20.0,"contrast":"high","wallpaperBlur":false,"searchWallpaperBlur":false}
   and (.appearance | has("transparency") | not)
-  and .search == {"favorites":false,"allApps":true,"layout":"list","labels":true,"contacts":false,"shortcuts":true,"filterBar":true,"openKeyboard":true,"launchOnEnter":true,"reversed":true,"hiddenItemsButton":false}
+  and .search == {"favorites":false,"allApps":true,"layout":"list","labels":true,"contacts":false,"shortcuts":true,"filterBar":true,"openKeyboard":true,"launchOnEnter":true,"reversed":true,"hiddenItemsButton":false,"barPosition":"bottom"}
   and .home.searchBar.position == "bottom"
   and .home.favorites == []
   and .home.widgets.enabled == true
@@ -454,7 +454,7 @@ CHANGED_FILTER='
   and .icons.themed == false
   and .icons.enforceThemed == false
   and .appearance.glass == {"blur":32.0,"tint":0.2,"radius":12.0,"contrast":"low","wallpaperBlur":true,"searchWallpaperBlur":true}
-  and .search == {"favorites":true,"allApps":true,"layout":"grid","labels":true,"contacts":true,"shortcuts":true,"filterBar":true,"openKeyboard":true,"launchOnEnter":true,"reversed":false,"hiddenItemsButton":false}
+  and .search == {"favorites":true,"allApps":true,"layout":"grid","labels":true,"contacts":true,"shortcuts":true,"filterBar":true,"openKeyboard":true,"launchOnEnter":true,"reversed":false,"hiddenItemsButton":false,"barPosition":"top"}
   and .home.searchBar.position == "top"
   and .home.favorites == []
   and .home.widgets.enabled == false
