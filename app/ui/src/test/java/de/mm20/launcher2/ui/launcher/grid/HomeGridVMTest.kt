@@ -18,6 +18,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.resetMain
@@ -147,6 +148,8 @@ class HomeGridVMTest {
             ),
         )
         val vm = vm(FormFactor.Fold, repository)
+        // Collected, as the composable does: the state is shared while subscribed.
+        backgroundScope.launch { vm.state.collect {} }
         vm.onWindowMeasured(396f, 622f)
         vm.state.filterNotNull().first()
         vm.enterEdit()
