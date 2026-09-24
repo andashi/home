@@ -408,6 +408,25 @@ class DefaultConfigStoreTest {
         assertEquals(5, homeGridRepository.layouts["phone"]!!.single().y)
     }
 
+    /** #92: the differ applies named layouts on a never-initialised grid; it reads the flag here. */
+    @Test
+    fun `readState reports whether the grid was ever initialised`() = runTest {
+        assertEquals(false, store.readState().gridInitialized)
+
+        initFlag.markInitialized()
+
+        assertEquals(true, store.readState().gridInitialized)
+    }
+
+    /** The applied empty layout sets the flag, as any applied layout does. */
+    @Test
+    fun `an applied empty layout marks the grid initialised`() = runTest {
+        store.apply(listOf(ConfigMutation.SetGrid(layouts = mapOf("phone" to GridLayoutConfig(emptyList())))))
+
+        assertEquals(true, initFlag.isInitialized())
+        assertEquals(emptyList<HomeGridItem>(), homeGridRepository.layouts["phone"])
+    }
+
     @Test
     fun `SetGrid keeps the AppWidget host id of an item that already exists`() = runTest {
         homeGridRepository.layouts["phone"] = listOf(

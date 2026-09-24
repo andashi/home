@@ -450,4 +450,37 @@ class ConfigDifferTest {
             ConfigDiffer.diff(LauncherConfig(2, search = SearchConfig(favorites = false, labels = false)), state),
         )
     }
+
+    // ----- a never-initialised grid (#92) -----
+
+    private val emptyLayouts = mapOf(
+        "phone" to GridLayoutConfig(emptyList()),
+        "fold" to GridLayoutConfig(emptyList()),
+    )
+
+    /**
+     * On a fresh profile the stored layouts are empty too, so `items: []`
+     * produced no mutation, the grid was never marked initialised, and on
+     * first foreground the default row wrote the dock over it.
+     */
+    @Test
+    fun `an empty layout equal to the stored one is applied while the grid was never initialised`() {
+        val mutations = ConfigDiffer.diff(
+            LauncherConfig(2, home = HomeConfig(grid = GridConfig(layouts = emptyLayouts))),
+            baseState.copy(gridLayouts = emptyLayouts, gridInitialized = false),
+        )
+
+        assertEquals(listOf(ConfigMutation.SetGrid(layouts = emptyLayouts)), mutations)
+    }
+
+    /** Control: once initialised, an equal layout is nothing to do, as before. */
+    @Test
+    fun `an equal layout on an initialised grid produces nothing`() {
+        val mutations = ConfigDiffer.diff(
+            LauncherConfig(2, home = HomeConfig(grid = GridConfig(layouts = emptyLayouts))),
+            baseState.copy(gridLayouts = emptyLayouts, gridInitialized = true),
+        )
+
+        assertEquals(emptyList<ConfigMutation>(), mutations)
+    }
 }
