@@ -3,6 +3,7 @@ package de.mm20.launcher2.ui.launcher.grid
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -26,6 +27,7 @@ import de.mm20.launcher2.grid.Span
 import de.mm20.launcher2.homegrid.FormFactor
 import de.mm20.launcher2.homegrid.HomeGridGeometry
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -103,6 +105,59 @@ class HomeGridLayoutTest {
         composeRule.onNodeWithContentDescription("grid-item:dock")
             .assertLeftPositionInRootIsEqualTo(0.dp)
             .assertWidthIsEqualTo(400.dp)
+    }
+
+    /**
+     * #118: a display change (cover to inner) is not a move. The dock at
+     * layout column 7 is three pitches in on the cover and seven inside; the
+     * push-down slide must not animate between those.
+     */
+    @Test
+    fun `a display change places cells at once, without a slide`() {
+        val cover = HomeGridGeometry.derive(FormFactor.Fold, 4, widthDp = 400f, heightDp = 600f)
+        val inner = HomeGridGeometry.derive(FormFactor.Fold, 4, widthDp = 800f, heightDp = 600f)
+        val cells = listOf("dock" to Span(7, 0, 1, 4))
+        var geometry by mutableStateOf(cover)
+        composeRule.setContent {
+            Box(Modifier.requiredSize(800.dp, 600.dp)) {
+                HomeGridLayout(geometry = geometry, cells = cells, modifier = Modifier.fillMaxSize()) { id ->
+                    Box(Modifier.fillMaxSize().testTag("cell-$id"))
+                }
+            }
+        }
+        composeRule.waitForIdle()
+        composeRule.mainClock.autoAdvance = false
+
+        geometry = inner
+        composeRule.mainClock.advanceTimeByFrame()
+        composeRule.mainClock.advanceTimeByFrame()
+
+        val pitch = inner.cellDp + inner.gapDp
+        composeRule.onNodeWithContentDescription("grid-item:dock")
+            .assertLeftPositionInRootIsEqualTo((7 * pitch).dp)
+    }
+
+    /** Control: a move within one geometry still slides (the push-down animation). */
+    @Test
+    fun `a move within one geometry still slides`() {
+        var cells by mutableStateOf(listOf("a" to Span(0, 0, 1, 1)))
+        composeRule.setContent {
+            Box(Modifier.size(400.dp, 600.dp)) {
+                HomeGridLayout(geometry = geometry, cells = cells, modifier = Modifier.fillMaxSize()) { id ->
+                    Box(Modifier.fillMaxSize().testTag("cell-$id"))
+                }
+            }
+        }
+        composeRule.waitForIdle()
+        composeRule.mainClock.autoAdvance = false
+
+        cells = listOf("a" to Span(2, 0, 1, 1))
+        composeRule.mainClock.advanceTimeByFrame()
+        composeRule.mainClock.advanceTimeByFrame()
+
+        val left = composeRule.onNodeWithContentDescription("grid-item:a").fetchSemanticsNode().boundsInRoot.left
+        val target = with(composeRule.density) { (2 * (geometry.cellDp + geometry.gapDp)).dp.toPx() }
+        assertTrue("still sliding: left $left, target $target", left < target - 1f)
     }
 
     @Test
