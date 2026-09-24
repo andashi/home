@@ -274,6 +274,16 @@ internal fun GridItemConfig.matches(stored: GridItemConfig): Boolean {
             same(themeColors, stored.themeColors)
 }
 
+/**
+ * Each action as the store keeps it (review on #116): the default encoding
+ * written out, and the fields a type ignores left out, so a file with a
+ * warning-only extra field still converges instead of rewriting every reload.
+ */
 private fun List<SearchActionConfig>.normalized(): List<SearchActionConfig> = map {
-    if (it.type == SearchActionTypes.Url && it.encoding == null) it.copy(encoding = SearchActionTypes.DefaultEncoding) else it
+    when (it.type) {
+        SearchActionTypes.Url -> it.copy(encoding = it.encoding ?: SearchActionTypes.DefaultEncoding)
+        SearchActionTypes.App -> SearchActionConfig(it.type, it.label, packageName = it.packageName)
+        SearchActionTypes.Intent -> SearchActionConfig(it.type, it.label)
+        else -> SearchActionConfig(it.type)
+    }
 }

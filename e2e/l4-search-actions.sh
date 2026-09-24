@@ -8,7 +8,8 @@
 # 1. push three actions: the neutral web search, a URL search pinned to
 #    Vanadium ("Pinned") and one pinned to Settings, which opens no URL
 #    ("Nowhere"); the read-back serves the list;
-# 2. query: exactly these chips are shown (no YouTube, no Google Play);
+# 2. query: exactly these chips are shown, every label in the row counted
+#    (no YouTube, no Google Play, nothing else);
 # 3. tap "Pinned": Vanadium comes to the front;
 # 4. tap "Nowhere": nothing opens, the launcher stays in front - a pinned
 #    search never falls back to the default browser;
@@ -76,7 +77,9 @@ query() {
   sleep 3
 }
 
-# The chips on screen that this scenario knows, sorted, on one line.
+# Every label in the search-action row, sorted, on one line; empty without
+# the row. All of them, not a list of known names, so an unexpected chip is
+# seen (review on #116).
 chips() {
   adb -s "$SERIAL" shell uiautomator dump /sdcard/a.xml >/dev/null 2>&1 || die "uiautomator dump failed"
   adb -s "$SERIAL" shell cat /sdcard/a.xml | tr -d '\r' > "$WORK/a.xml"
@@ -87,9 +90,12 @@ try:
     import defusedxml.ElementTree as ET
 except ImportError:
     import xml.etree.ElementTree as ET
-names = {"Web search", "Pinned", "Nowhere", "YouTube", "Google Play"}
-found = sorted({n.get("text") for n in ET.parse(sys.argv[1]).getroot().iter("node") if n.get("text") in names})
-print(" | ".join(found))
+root = ET.parse(sys.argv[1]).getroot()
+labels = set()
+for row in root.iter("node"):
+    if row.get("content-desc") == "search-actions":
+        labels |= {n.get("text") for n in row.iter("node") if n.get("text")}
+print(" | ".join(sorted(labels)))
 PY
 }
 

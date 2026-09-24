@@ -4,6 +4,7 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.pm.ResolveInfo
 import android.graphics.Bitmap
 import android.net.Uri
 import androidx.core.graphics.drawable.toBitmap
@@ -105,14 +106,25 @@ internal class SearchActionServiceImpl(
                 Intent(Intent.ACTION_SEARCH).addCategory(Intent.CATEGORY_DEFAULT),
                 PackageManager.GET_META_DATA,
             )
-            resolveInfos.mapNotNull {
-                if (!it.activityInfo.exported || !it.activityInfo.enabled) return@mapNotNull null
-                if (it.activityInfo.permission != null && context.checkSelfPermission(it.activityInfo.permission) != PackageManager.PERMISSION_GRANTED) {
-                    return@mapNotNull null
-                }
-                val componentName = ComponentName(it.activityInfo.packageName, it.activityInfo.name)
-                componentName
-            }
+            resolveInfos.mapNotNull { it.startableSearchActivity(context) }
         }
     }
+}
+
+/**
+ * The search activity in [packageName] the launcher can start, or null: the
+ * same rule the settings use to list searchable apps (exported, enabled, no
+ * permission the launcher lacks), shared with the config store (#116 review).
+ */
+fun searchActivityOf(context: Context, packageName: String): ComponentName? =
+    context.packageManager.queryIntentActivities(
+        Intent(Intent.ACTION_SEARCH).addCategory(Intent.CATEGORY_DEFAULT).setPackage(packageName),
+        PackageManager.GET_META_DATA,
+    ).firstNotNullOfOrNull { it.startableSearchActivity(context) }
+
+private fun ResolveInfo.startableSearchActivity(context: Context): ComponentName? {
+    if (!activityInfo.exported || !activityInfo.enabled) return null
+    val permission = activityInfo.permission
+    if (permission != null && context.checkSelfPermission(permission) != PackageManager.PERMISSION_GRANTED) return null
+    return ComponentName(activityInfo.packageName, activityInfo.name)
 }

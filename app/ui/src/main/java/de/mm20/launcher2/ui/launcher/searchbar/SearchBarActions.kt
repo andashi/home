@@ -23,6 +23,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -43,6 +45,8 @@ fun ColumnScope.SearchBarActions(
     AnimatedVisibility(actions.isNotEmpty()) {
         LazyRow(
             modifier = Modifier
+                // The row as automation finds it, as the grid's cells are (#116 review).
+                .semantics { contentDescription = "search-actions" }
                 .consumeAllScrolling()
                 .height(48.dp)
                 .padding(bottom = if (reverse) 0.dp else 8.dp, top = if (reverse) 8.dp else 0.dp),

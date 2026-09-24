@@ -128,7 +128,21 @@ object ConfigValidator {
                 SearchActionTypes.App -> {
                     if (action.label.isNullOrBlank()) invalid("an app action needs a label")
                     if (action.packageName.isNullOrBlank()) invalid("an app action needs the package to search in")
+                    if (action.url != null || action.encoding != null) {
+                        out += Diagnostic(
+                            Severity.Warning,
+                            "search-action-field-ignored",
+                            path,
+                            "an app action takes a label and a package; its url and encoding are ignored",
+                        )
+                    }
                 }
+                SearchActionTypes.Intent -> out += Diagnostic(
+                    Severity.Warning,
+                    "search-action-read-only",
+                    path,
+                    "an intent action is made on the device; the file keeps it where it is but cannot create or change it",
+                )
                 in SearchActionTypes.BuiltIn -> {
                     if (action.label != null || action.url != null || action.packageName != null || action.encoding != null) {
                         out += Diagnostic(

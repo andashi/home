@@ -15,7 +15,10 @@ import de.mm20.launcher2.searchactions.builders.SetAlarmActionBuilder
 import de.mm20.launcher2.searchactions.builders.ShareActionBuilder
 import de.mm20.launcher2.searchactions.builders.TimerActionBuilder
 import de.mm20.launcher2.searchactions.builders.WebsearchActionBuilder
+import de.mm20.launcher2.crashreporter.CrashReporter
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
@@ -41,6 +44,28 @@ internal class SearchActionRepositoryImpl(
 ) : SearchActionRepository {
 
     private val scope = CoroutineScope(writeContext + SupervisorJob())
+
+    /**
+     * Every write goes through this queue in the order it was made, the
+     * settings' fire-and-forget saves and the config's awaited replace alike,
+     * so a save made just before a replace cannot land after it (#116 review).
+     */
+    private val writes = Channel<Pair<List<SearchActionBuilder>, CompletableDeferred<Unit>?>>(Channel.UNLIMITED)
+
+    init {
+        scope.launch {
+            for ((builders, done) in writes) {
+                try {
+                    database.searchActionDao().replaceAll(
+                        builders.mapIndexed { i, it -> SearchActionBuilder.toDatabaseEntity(it, i) }
+                    )
+                    done?.complete(Unit)
+                } catch (e: Exception) {
+                    done?.completeExceptionally(e) ?: CrashReporter.logException(e)
+                }
+            }
+        }
+    }
     override fun getSearchActionBuilders(): Flow<List<SearchActionBuilder>> {
         val dao = database.searchActionDao()
         return dao.getSearchActions()
@@ -66,18 +91,13 @@ internal class SearchActionRepositoryImpl(
     }
 
     override suspend fun replaceSearchActionBuilders(builders: List<SearchActionBuilder>) {
-        database.searchActionDao().replaceAll(
-            builders.mapIndexed { i, it -> SearchActionBuilder.toDatabaseEntity(it, i) }
-        )
+        val done = CompletableDeferred<Unit>()
+        writes.send(builders to done)
+        done.await()
     }
 
     override fun saveSearchActionBuilders(builders: List<SearchActionBuilder>) {
-        scope.launch {
-            val dao = database.searchActionDao()
-            dao.replaceAll(
-                builders.mapIndexed { i, it -> SearchActionBuilder.toDatabaseEntity(it, i) }
-            )
-        }
+        writes.trySend(builders to null)
     }
 
 }

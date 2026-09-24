@@ -397,6 +397,13 @@ object SearchActionTypes {
     const val App = "app"
     const val WebSearch = "websearch"
 
+    /**
+     * A custom intent action a user made on the device: read back as its type
+     * and label, kept where it is when a pulled file names it, never created
+     * by a file (review on #116).
+     */
+    const val Intent = "intent"
+
     /** The launcher's own actions, by the name the database stores them under. */
     val BuiltIn = setOf(
         "call", "message", "email", "contact", "alarm", "timer", "calendar", "website",

@@ -1,6 +1,5 @@
 package de.mm20.launcher2.config.service
 
-import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import de.mm20.launcher2.config.Diagnostic
@@ -8,6 +7,7 @@ import de.mm20.launcher2.config.SearchActionConfig
 import de.mm20.launcher2.config.SearchActionTypes
 import de.mm20.launcher2.config.Severity
 import de.mm20.launcher2.searchactions.SearchActionRepository
+import de.mm20.launcher2.searchactions.searchActivityOf
 import de.mm20.launcher2.searchactions.builders.AppSearchActionBuilder
 import de.mm20.launcher2.searchactions.builders.CustomIntentActionBuilder
 import de.mm20.launcher2.searchactions.builders.CustomWebsearchActionBuilder
@@ -45,6 +45,11 @@ internal class AndroidSearchActionStore(
     override suspend fun replace(actions: List<SearchActionConfig>, basePath: String): List<Diagnostic> {
         val diagnostics = mutableListOf<Diagnostic>()
         val builtIns = repository.getBuiltinSearchActionBuilders().associateBy { it.key }
+        // A user's own intent actions, kept where a pulled file names them (#116 review).
+        val intents = repository.getSearchActionBuilders().first()
+            .filterIsInstance<CustomIntentActionBuilder>()
+            .groupBy { it.label }
+            .mapValues { it.value.toMutableList() }
         val builders = actions.mapIndexedNotNull { index, action ->
             val path = "$basePath[$index]"
             when (action.type) {
@@ -56,7 +61,7 @@ internal class AndroidSearchActionStore(
                 )
                 SearchActionTypes.App -> {
                     val packageName = action.packageName.orEmpty()
-                    val activity = searchActivityOf(packageName)
+                    val activity = searchActivityOf(context, packageName)
                     if (activity == null) {
                         diagnostics += Diagnostic(
                             Severity.Warning,
@@ -71,6 +76,15 @@ internal class AndroidSearchActionStore(
                             baseIntent = Intent().setComponent(activity),
                         )
                     }
+                }
+                SearchActionTypes.Intent -> intents[action.label]?.removeFirstOrNull() ?: run {
+                    diagnostics += Diagnostic(
+                        Severity.Warning,
+                        "search-action-intent-missing",
+                        path,
+                        "no intent action '${action.label}' on this device; a file cannot create one, it was left out",
+                    )
+                    null
                 }
                 // Validated before: a built-in by its stored key.
                 else -> builtIns[action.type] ?: run {
@@ -88,14 +102,6 @@ internal class AndroidSearchActionStore(
         return diagnostics
     }
 
-    /** The activity that takes ACTION_SEARCH in [packageName], in this profile. */
-    private fun searchActivityOf(packageName: String): ComponentName? =
-        context.packageManager
-            .queryIntentActivities(Intent(Intent.ACTION_SEARCH).setPackage(packageName), 0)
-            .firstOrNull()
-            ?.activityInfo
-            ?.let { ComponentName(it.packageName, it.name) }
-
     private fun SearchActionBuilder.toConfig(): SearchActionConfig = when (this) {
         is CustomWebsearchActionBuilder -> SearchActionConfig(
             type = SearchActionTypes.Url,
@@ -110,7 +116,7 @@ internal class AndroidSearchActionStore(
             packageName = baseIntent.component?.packageName ?: baseIntent.`package`,
         )
         // A user's own intent action: read back as what it is; a file cannot write it.
-        is CustomIntentActionBuilder -> SearchActionConfig(type = "intent", label = label)
+        is CustomIntentActionBuilder -> SearchActionConfig(type = SearchActionTypes.Intent, label = label)
         else -> SearchActionConfig(type = key)
     }
 

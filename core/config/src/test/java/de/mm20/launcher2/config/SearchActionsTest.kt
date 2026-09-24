@@ -155,4 +155,24 @@ class SearchActionsTest {
         assertEquals(Severity.Warning, warning.severity)
         assertEquals("search.actions[0]", warning.path)
     }
+
+    @Test
+    fun `an app action with a url or encoding is a warning`() {
+        val warnings = parse("""[ { "type": "app", "label": "Store", "package": "app.x", "encoding": "form" } ]""").diagnostics
+            .filter { it.code == "search-action-field-ignored" }
+        assertEquals(listOf("search.actions[0]"), warnings.map { it.path })
+        assertEquals(listOf(Severity.Warning), warnings.map { it.severity })
+    }
+
+    /** A pulled read-back with the user's intent action converges: nothing to write. */
+    @Test
+    fun `a read-back intent action converges`() {
+        val mine = SearchActionConfig("intent", "Mine")
+        val state = ConfigState(searchActions = listOf(mine, SearchActionConfig("websearch")))
+
+        assertEquals(
+            emptyList<ConfigMutation>(),
+            ConfigDiffer.diff(LauncherConfig(2, search = SearchConfig(actions = listOf(mine, SearchActionConfig("websearch")))), state),
+        )
+    }
 }

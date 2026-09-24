@@ -142,6 +142,11 @@ read-back serves the list in effect.
 A new install has the built-in actions and one neutral web search; there is
 no YouTube and no Google Play. A pinned `url` action opens only in its app:
 when that app cannot open the URL, nothing opens. An `app` whose package has
-no search is left out with a `search-action-app-not-searchable` warning. An
-action a user made on the device as a custom intent is read back as
-`{ "type": "intent", "label": ... }`; a file cannot write that type.
+no search the launcher can start is left out with a
+`search-action-app-not-searchable` warning. An action a user made on the device
+as a custom intent is read back as `{ "type": "intent", "label": ... }`: a
+pulled file with it applies again (with a `search-action-read-only` warning)
+and keeps that action where the list puts it, but a file cannot create or
+change one; an `intent` the device does not have is left out
+(`search-action-intent-missing`). Fields a type does not use are ignored with
+a warning.
