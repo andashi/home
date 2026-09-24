@@ -40,10 +40,32 @@
 | `search.launchOnEnter` | Enter on the keyboard launches the best match | boolean | `true` |
 | `search.reversed` | Results from the bottom up, the best match nearest a bottom search bar | boolean | `false` |
 | `search.hiddenItemsButton` | A button in the search bar that shows hidden items | boolean | `false` |
+| `search.barPosition` | Where the search bar sits while search is open. Absent, it follows [`home.searchBar.position`](search-bar.md) | `top`, `bottom` | follows the home position |
 
 The defaults are the launcher's behavior before this section existed, so a
 file without `search` changes nothing. A key that is left out stays as it is
-on the device. The read-back always serves every key.
+on the device. The read-back always serves every key, except
+`search.barPosition`, which it serves once a config has set it.
+
+## The search bar in open search
+
+With `home.searchBar.position: bottom`, the bar sits where the thumb is on the
+home screen. With the keyboard open, it then sits in the middle of the screen,
+the best match at the very top and half the screen between them.
+`search.barPosition: top` moves the bar to the top while search is open, next
+to the results:
+
+<!-- config -->
+```json
+{ "schemaVersion": 2, "home": { "searchBar": { "position": "bottom" } }, "search": { "barPosition": "top" } }
+```
+
+The bar moves between the two positions with the search transition, so the
+eye can follow it, and back when search closes; the search-action chips move
+with it. `search.reversed: true` together with `barPosition: top` is applied,
+with a `search-reversed-with-top-bar` warning: reversed results put the best
+match the farthest from a bar at the top. On the Fold the bar keeps spanning
+both panes of the inner display.
 
 ## A list instead of icons
 

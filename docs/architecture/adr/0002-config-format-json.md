@@ -240,6 +240,7 @@ nothing about search's appearance is configured twice.
 | `search.launchOnEnter` | Enter launches the best match | `true` |
 | `search.reversed` | results from the bottom up | `false` |
 | `search.hiddenItemsButton` | a button in the bar that shows hidden items | `false` |
+| `search.barPosition` | the bar's position while search is open (#107); absent, it follows `home.searchBar.position` and is not read back | follows home |
 
 The defaults are the launcher's behavior before the section existed, so a
 file without `search` changes nothing. Each key writes one of upstream's own

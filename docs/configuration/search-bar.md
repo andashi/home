@@ -10,7 +10,7 @@ and contacts. It is configured under `home.searchBar`.
 
 | Key | What it does | Accepted | Default |
 |---|---|---|---|
-| `home.searchBar.position` | Where the pill sits | `top`, `bottom` | `top` |
+| `home.searchBar.position` | Where the pill sits; in open search too, unless [`search.barPosition`](search.md#the-search-bar-in-open-search) sets a position of its own | `top`, `bottom` | `top` |
 
 | `top` | `bottom` |
 |---|---|
