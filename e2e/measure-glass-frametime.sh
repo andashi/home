@@ -98,12 +98,13 @@ trap cleanup EXIT
 
 # --- fixture ----------------------------------------------------------------
 
-# Seven clocks, two per row in the left four columns, plus the dock: the same
-# eight surfaces on the cover (columns 0-3) and on the inner display.
-items() { # $1 = dock width
+# Seven clocks, two per row in the cover's four columns, plus the dock: the
+# same eight surfaces on the cover and on the inner display. The cover is the
+# right half of the fold layout (#93), so there the clocks start at column 4.
+items() { # $1 = dock width, $2 = first column of the cover's half
   local out="" i=0 x y
   for y in 0 1 2 3; do
-    for x in 0 2; do
+    for x in "$2" $(($2 + 2)); do
       [ "$i" -lt 7 ] || break
       out+="{ \"id\": \"clock-$i\", \"widget\": \"$CLOCK\", \"x\": $x, \"y\": $y, \"w\": 2, \"h\": 1 },"
       i=$((i + 1))
@@ -111,18 +112,17 @@ items() { # $1 = dock width
   done
   printf '%s{ "id": "dock", "widget": "favorites", "x": 0, "y": 5, "w": %s, "h": 1 }' "$out" "$1"
 }
-varied_items() { # $1 = dock width
-  printf '%s' \
-    '{ "id": "analog", "widget": "com.android.deskclock/com.android.alarmclock.AnalogAppWidgetProvider", "x": 0, "y": 0, "w": 2, "h": 2 },' \
-    '{ "id": "messages", "widget": "com.android.messaging/com.android.messaging.widget.BugleWidgetProvider", "x": 2, "y": 0, "w": 2, "h": 2 },' \
-    '{ "id": "search", "widget": "app.vanadium.browser/org.chromium.chrome.browser.searchwidget.SearchWidgetProvider", "x": 0, "y": 2, "w": 4, "h": 1 },' \
-    '{ "id": "clock", "widget": "com.android.deskclock/com.android.alarmclock.DigitalAppWidgetProvider", "x": 0, "y": 3, "w": 2, "h": 1 },'
+varied_items() { # $1 = dock width, $2 = first column of the cover's half
+  printf '{ "id": "analog", "widget": "com.android.deskclock/com.android.alarmclock.AnalogAppWidgetProvider", "x": %s, "y": 0, "w": 2, "h": 2 },' "$2"
+  printf '{ "id": "messages", "widget": "com.android.messaging/com.android.messaging.widget.BugleWidgetProvider", "x": %s, "y": 0, "w": 2, "h": 2 },' "$(($2 + 2))"
+  printf '{ "id": "search", "widget": "app.vanadium.browser/org.chromium.chrome.browser.searchwidget.SearchWidgetProvider", "x": %s, "y": 2, "w": 4, "h": 1 },' "$2"
+  printf '{ "id": "clock", "widget": "com.android.deskclock/com.android.alarmclock.DigitalAppWidgetProvider", "x": %s, "y": 3, "w": 2, "h": 1 },' "$2"
   printf '{ "id": "dock", "widget": "favorites", "x": 0, "y": 5, "w": %s, "h": 1 }' "$1"
 }
 case "$FIXTURE" in
-  clocks) PHONE_ITEMS="$(items 4)"; FOLD_ITEMS="$(items 8)"; FAVORITES='[]' ;;
+  clocks) PHONE_ITEMS="$(items 4 0)"; FOLD_ITEMS="$(items 8 4)"; FAVORITES='[]' ;;
   varied)
-    PHONE_ITEMS="$(varied_items 4)"; FOLD_ITEMS="$(varied_items 8)"
+    PHONE_ITEMS="$(varied_items 4 0)"; FOLD_ITEMS="$(varied_items 8 4)"
     FAVORITES='["com.android.dialer", "com.android.messaging", "app.vanadium.browser", "app.grapheneos.camera"]' ;;
   *) die "unknown FIXTURE $FIXTURE (clocks | varied)" ;;
 esac
