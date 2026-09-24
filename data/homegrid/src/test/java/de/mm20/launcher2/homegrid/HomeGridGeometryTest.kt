@@ -102,4 +102,26 @@ class HomeGridGeometryTest {
         assertEquals(100f, g.cellDp, 0.001f)
         assertEquals(0f, g.gapDp, 0f)
     }
+
+    /**
+     * #118: the grid is told its window a frame or two before the geometry
+     * for it arrives; drawn meanwhile with the old display's geometry, the
+     * dock showed mid-screen on unfold. The geometry knows its window.
+     */
+    @Test
+    fun `a geometry is for the window it was derived from, not another`() {
+        val cover = HomeGridGeometry.derive(FormFactor.Fold, columns = 4, widthDp = 396f, heightDp = 800f)
+
+        assertTrue(cover.isFor(396f, 800f))
+        assertFalse(cover.isFor(790f, 780f))
+        assertFalse(cover.isFor(396f, 700f))
+    }
+
+    /** Sub-pixel noise in the measured size is the same window. */
+    @Test
+    fun `a size within half a dp is the same window`() {
+        val g = HomeGridGeometry.derive(FormFactor.Phone, columns = 4, widthDp = 396f, heightDp = 800f)
+
+        assertTrue(g.isFor(396.3f, 799.8f))
+    }
 }

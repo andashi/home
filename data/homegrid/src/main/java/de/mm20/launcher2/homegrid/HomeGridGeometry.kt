@@ -26,7 +26,13 @@ data class GridGeometry(
      * and inside sit in the same half. 0 on a phone.
      */
     val coverFirstColumn: Int = 0,
+    /** The window this geometry was derived from, in dp; NaN when built by hand. */
+    val windowWidthDp: Float = Float.NaN,
+    val windowHeightDp: Float = Float.NaN,
 ) {
+    /** Whether this geometry is the one for a [widthDp] x [heightDp] window. Stub until #118's fix. */
+    fun isFor(widthDp: Float, heightDp: Float): Boolean = true
+
     val rows: Int get() = spec.rows
 
     /** The first layout column this window draws: the cover's on the cover, else 0. */
