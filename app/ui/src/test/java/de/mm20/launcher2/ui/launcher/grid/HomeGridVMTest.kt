@@ -7,6 +7,7 @@ import de.mm20.launcher2.grid.Span
 import de.mm20.launcher2.homegrid.FormFactor
 import de.mm20.launcher2.homegrid.GridItemLimits
 import de.mm20.launcher2.homegrid.HomeGridInitLock
+import de.mm20.launcher2.homegrid.HomeGridDefaults
 import de.mm20.launcher2.homegrid.HomeGridLayouts
 import de.mm20.launcher2.homegrid.HomeGridWidgets
 import de.mm20.launcher2.homegrid.MeasuredGridRows
@@ -129,6 +130,36 @@ class HomeGridVMTest {
 
         val state = vm.state.filterNotNull().first { s -> s.cells.any { it.item.widget == "com.example/.New" } }
         assertEquals(Span(6, 0, 2, 1), state.cells.first { it.item.widget == "com.example/.New" }.span)
+    }
+
+    /**
+     * #114 review: undoing the removal of the eight-wide dock on the cover puts
+     * it back where it was; it may span the fold, the cover only clips it.
+     */
+    @Test
+    fun `undo on the cover restores a dock wider than the cover`() = runTest(dispatcher) {
+        val repository = FakeHomeGridRepository(
+            mapOf(
+                HomeGridLayouts.Fold to listOf(
+                    gridItem("right", 5, 0, 2, 2, HomeGridLayouts.Fold, position = 0),
+                    dockItem(0, 5, 8, 1, HomeGridLayouts.Fold),
+                ),
+            ),
+        )
+        val vm = vm(FormFactor.Fold, repository)
+        vm.onWindowMeasured(396f, 622f)
+        vm.state.filterNotNull().first()
+        vm.enterEdit()
+
+        val removed = vm.removeEditing(HomeGridDefaults.FavoritesId)!!
+        dispatcher.scheduler.advanceUntilIdle()
+        assertTrue(vm.state.value!!.cells.none { it.item.isFavorites })
+
+        vm.restore(removed)
+        dispatcher.scheduler.advanceUntilIdle()
+
+        val dock = vm.state.value!!.cells.firstOrNull { it.item.isFavorites }?.item
+        assertEquals(listOf(0, 5, 8, 1), dock?.let { listOf(it.x, it.y, it.w, it.h) })
     }
 
     @Test

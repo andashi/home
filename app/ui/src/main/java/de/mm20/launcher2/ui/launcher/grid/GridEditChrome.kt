@@ -224,3 +224,6 @@ private fun ResizeButton(description: String, label: String, onClick: () -> Unit
         Text(label, style = MaterialTheme.typography.labelSmall)
     }
 }
+
+/** Whether [item]'s stored span reaches past the columns [geometry] draws. Stub until the fix. */
+internal fun extendsPastWindow(item: HomeGridItem, geometry: GridGeometry): Boolean = false
