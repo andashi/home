@@ -38,4 +38,13 @@ class MeasuredGridRowsTest {
     fun `a custom default is honoured`() {
         assertEquals(4, MeasuredGridRows(defaultRows = 4).rows(HomeGridLayouts.Phone))
     }
+
+    /** #90: a phone does not know the Fold's rows and must not guess six. */
+    @Test
+    fun `a layout this device does not render has no rows`() {
+        val rows = MeasuredGridRows(ownLayout = HomeGridLayouts.Phone)
+
+        assertEquals(6, rows.rows(HomeGridLayouts.Phone))
+        assertEquals(null, rows.rows(HomeGridLayouts.Fold))
+    }
 }

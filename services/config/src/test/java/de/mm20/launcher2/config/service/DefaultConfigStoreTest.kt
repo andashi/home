@@ -340,6 +340,42 @@ class DefaultConfigStoreTest {
         assertEquals(listOf("grid-crosses-fold"), diagnostics.map { it.code })
     }
 
+    /**
+     * #90: a phone checked the fold layout against its own six rows, so the
+     * Fold's seventh row was clamped to the sixth and, with that row taken,
+     * the item dropped with grid-overflow. The phone never shows that layout;
+     * it stores it as written.
+     */
+    @Test
+    fun `a phone stores the fold layout as written, its seventh row included`() = runTest {
+        settings.state = ConfigState(gridColumns = 4)
+        gridRows.own = "phone"
+
+        val diagnostics = store.apply(
+            listOf(
+                grid(
+                    GridItemConfig(id = "clock", widget = clockWidget, x = 0, y = 5, w = 2, h = 1),
+                    GridItemConfig(id = "dock", widget = "favorites", x = 0, y = 6, w = 8, h = 1),
+                    layout = "fold",
+                )
+            )
+        )
+
+        assertEquals(emptyList<Diagnostic>(), diagnostics)
+        val dock = homeGridRepository.layouts["fold"]!!.single { it.id == "dock" }
+        assertEquals(listOf(0, 6, 8, 1), listOf(dock.x, dock.y, dock.w, dock.h))
+    }
+
+    /** Control: the layout this device renders is still bounded by its rows. */
+    @Test
+    fun `the layout this device renders is still bounded by its own rows`() = runTest {
+        gridRows.own = "phone"
+
+        store.apply(listOf(grid(GridItemConfig(id = "dock", widget = "favorites", x = 0, y = 6, w = 4, h = 1))))
+
+        assertEquals(5, homeGridRepository.layouts["phone"]!!.single().y)
+    }
+
     @Test
     fun `SetGrid keeps the AppWidget host id of an item that already exists`() = runTest {
         homeGridRepository.layouts["phone"] = listOf(
@@ -623,8 +659,9 @@ class DefaultConfigStoreTest {
         override fun lookup(widget: String, profile: ConfigProfile?, columns: Int): ProviderLimits? = limits[widget]
     }
 
-    private class FakeGridRowsSource(var rows: Int = 6) : GridRowsSource {
-        override fun rows(layout: String): Int = rows
+    /** [own] is the layout this device renders; null answers for every layout. */
+    private class FakeGridRowsSource(var rows: Int = 6, var own: String? = null) : GridRowsSource {
+        override fun rows(layout: String): Int? = if (own == null || layout == own) rows else null
     }
 
     private class FakeSavableSearchableRepository : SavableSearchableRepository {

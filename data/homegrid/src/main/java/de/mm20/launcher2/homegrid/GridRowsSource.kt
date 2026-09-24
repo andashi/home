@@ -8,7 +8,12 @@ import java.util.concurrent.ConcurrentHashMap
  * config store asks here instead of guessing.
  */
 interface GridRowsSource {
-    fun rows(layout: String): Int
+    /**
+     * The rows [layout] has on this device, or null when this device does
+     * not render that layout (a phone and the `fold` layout): only the
+     * device that shows a layout knows its rows (#90).
+     */
+    fun rows(layout: String): Int?
 }
 
 /**
@@ -20,6 +25,8 @@ interface GridRowsSource {
  */
 class MeasuredGridRows(
     private val defaultRows: Int = DefaultRows,
+    /** The layout this device renders; null answers for every layout. */
+    private val ownLayout: String? = null,
 ) : GridRowsSource {
 
     private val measured = ConcurrentHashMap<String, Int>()
@@ -29,7 +36,7 @@ class MeasuredGridRows(
         measured[layout] = rows
     }
 
-    override fun rows(layout: String): Int = measured[layout] ?: defaultRows
+    override fun rows(layout: String): Int? = measured[layout] ?: defaultRows
 
     companion object {
         const val DefaultRows = 6

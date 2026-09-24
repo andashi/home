@@ -15,6 +15,7 @@ import de.mm20.launcher2.grid.GridSpec
 import de.mm20.launcher2.grid.LayoutIssue
 import de.mm20.launcher2.grid.SizeLimits
 import de.mm20.launcher2.homegrid.GridRowsSource
+import de.mm20.launcher2.homegrid.MeasuredGridRows
 import de.mm20.launcher2.grid.Span
 import de.mm20.launcher2.homegrid.HomeGridItem
 import de.mm20.launcher2.homegrid.HomeGridItemConfig
@@ -169,7 +170,7 @@ class DefaultConfigStore(
         val isFold = layoutKey == GridLayouts.Fold
         val spec = GridSpec(
             columns = if (isFold) columns * 2 else columns,
-            rows = gridRows.rows(layoutKey),
+            rows = gridRows.rows(layoutKey) ?: MeasuredGridRows.DefaultRows,
             foldColumn = if (isFold) columns else null,
         )
 
