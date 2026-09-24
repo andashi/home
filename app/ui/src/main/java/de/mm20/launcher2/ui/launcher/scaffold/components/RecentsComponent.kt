@@ -22,6 +22,7 @@ import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.Density
@@ -85,12 +86,14 @@ internal object RecentsComponent : ScaffoldComponent(), KoinComponent {
         defaultModifier: Modifier
     ): Modifier = Modifier.composed {
         val rtl = LocalLayoutDirection.current == LayoutDirection.Rtl
-        // Re-read when the configuration changes: the activity survives fold
-        // and unfold (#120), and the cover and the inner display have
-        // different corners.
+        // Re-read when the configuration or the window's size changes: the
+        // activity survives fold and unfold (#120), the cover and the inner
+        // display have different corners, and the new insets are in place
+        // before the window is measured at its new size (review on #121).
         val view = LocalView.current
         val configuration = LocalConfiguration.current
-        val insets = remember(configuration) { view.rootWindowInsets }
+        val windowSize = LocalWindowInfo.current.containerSize
+        val insets = remember(configuration, windowSize) { view.rootWindowInsets }
         val shape = if (insets != null) {
             RoundedCornerShape(
                 topStart = insets.getRoundedCorner(if (rtl) RoundedCorner.POSITION_TOP_RIGHT else RoundedCorner.POSITION_TOP_LEFT)?.radius?.toFloat()
