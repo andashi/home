@@ -1,5 +1,6 @@
 package de.mm20.launcher2.ui.launcher.glass
 
+import android.graphics.BitmapShader
 import android.graphics.RuntimeShader
 import android.graphics.Shader
 import androidx.compose.foundation.layout.Box
@@ -111,11 +112,34 @@ object GlassLens {
         return RuntimeShader(Source)
     }
 
-    /** A lens for one surface, until [release]; the surface's alone meanwhile (#91). */
-    fun acquire(): RuntimeShader = compile()
+    /**
+     * Lenses of surfaces that left the composition, for the next ones.
+     * Compiling the source per surface put a compilation on the UI thread for
+     * every card segment, chip and banner entering search, on every search
+     * open (#91). Surfaces are composed and disposed on the main thread only.
+     */
+    private val pool = ArrayDeque<RuntimeShader>()
 
-    /** Hands a surface's lens back when the surface leaves the composition. */
-    fun release(shader: RuntimeShader) = Unit
+    /** A lens for one surface, until [release]; the surface's alone meanwhile (#91). */
+    fun acquire(): RuntimeShader = pool.removeLastOrNull() ?: compile()
+
+    /**
+     * Hands a surface's lens back when the surface leaves the composition.
+     * Its input is swapped for an empty one, so a pooled lens does not keep
+     * an old wallpaper's backdrop alive; the next surface sets its own.
+     */
+    fun release(shader: RuntimeShader) {
+        shader.setInputShader("backdrop", emptyInput)
+        pool.addLast(shader)
+    }
+
+    private val emptyInput by lazy {
+        BitmapShader(
+            android.graphics.Bitmap.createBitmap(1, 1, android.graphics.Bitmap.Config.ARGB_8888),
+            Shader.TileMode.CLAMP,
+            Shader.TileMode.CLAMP,
+        )
+    }
 
     /** Sets the backdrop and the uniforms, all in pixels. */
     fun configure(
