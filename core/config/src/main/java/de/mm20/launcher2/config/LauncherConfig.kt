@@ -331,7 +331,33 @@ data class SearchConfig(
     val reversed: Boolean? = null,
     /** A button in the search bar that shows hidden items. */
     val hiddenItemsButton: Boolean? = null,
+    /**
+     * Where the search bar sits while search is open (#107); absent, it
+     * follows `home.searchBar.position`.
+     */
+    @Serializable(with = SearchBarPositionInSearchSerializer::class)
+    val barPosition: SearchBarPosition? = null,
 )
+
+/** Decodes `search.barPosition` with an error that names the field, as [SearchResultLayoutSerializer] does. */
+internal object SearchBarPositionInSearchSerializer : KSerializer<SearchBarPosition> {
+    private const val Path = "search.barPosition"
+    private val names = SearchBarPosition.entries.associateBy { it.name.lowercase() }
+
+    override val descriptor: SerialDescriptor =
+        PrimitiveSerialDescriptor("de.mm20.launcher2.config.SearchBarPositionInSearch", PrimitiveKind.STRING)
+
+    override fun serialize(encoder: Encoder, value: SearchBarPosition) {
+        encoder.encodeString(value.name.lowercase())
+    }
+
+    override fun deserialize(decoder: Decoder): SearchBarPosition {
+        val name = decoder.decodeString()
+        return names[name] ?: throw SerializationException(
+            "'$name' is not a valid value for $Path (${names.keys.joinToString(", ")})"
+        )
+    }
+}
 
 @Serializable(with = SearchResultLayoutSerializer::class)
 enum class SearchResultLayout {

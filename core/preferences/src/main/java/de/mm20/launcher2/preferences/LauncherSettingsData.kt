@@ -92,6 +92,8 @@ data class LauncherSettingsData internal constructor(
     val searchBarKeyboard: Boolean = true,
     val searchLaunchOnEnter: Boolean = true,
     val searchBarBottom: Boolean = false,
+    /** The search bar while search is open (#107): null follows [searchBarBottom]. */
+    val searchBarBottomInSearch: Boolean? = null,
     val searchBarFixed: Boolean = false,
 
     val searchResultsReversed: Boolean = false,

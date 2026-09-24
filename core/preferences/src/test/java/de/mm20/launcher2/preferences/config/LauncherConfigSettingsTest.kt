@@ -341,4 +341,31 @@ class LauncherConfigSettingsTest {
         val on = gateway.applyAndReturn(listOf(ConfigMutation.SetSearch(SearchConfig(contacts = true))))
         assertEquals(setOf("other", "local"), on.contactSearchProviders)
     }
+
+    // ---- search.barPosition (#107) ----
+
+    @Test
+    fun `readState maps the search bar position in search, null while it follows home`() = runTest {
+        assertEquals(null, createGateway().readState().search.barPosition)
+        assertEquals(
+            SearchBarPosition.Top,
+            createGateway(LauncherSettingsData(searchBarBottomInSearch = false)).readState().search.barPosition,
+        )
+        assertEquals(
+            SearchBarPosition.Bottom,
+            createGateway(LauncherSettingsData(searchBarBottomInSearch = true)).readState().search.barPosition,
+        )
+    }
+
+    @Test
+    fun `apply SetSearch barPosition writes searchBarBottomInSearch and nothing else`() = runTest {
+        val seed = LauncherSettingsData(searchBarBottom = true)
+        val gateway = createGateway(seed)
+
+        val updated = gateway.applyAndReturn(
+            listOf(ConfigMutation.SetSearch(SearchConfig(barPosition = SearchBarPosition.Top)))
+        )
+
+        assertEquals(seed.copy(searchBarBottomInSearch = false), updated)
+    }
 }

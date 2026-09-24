@@ -979,4 +979,48 @@ class ConfigParserTest {
         assertTrue(!result.isSuccess)
         assertTrue(result.diagnostics.any { it.code == "decode-failed" && it.message.contains("search.layout") })
     }
+
+    // ----- search.barPosition (#107) -----
+
+    @Test
+    fun `search barPosition parses with nothing to report`() {
+        val result = ConfigParser.parse("""{ "schemaVersion": 2, "search": { "barPosition": "top" } }""")
+
+        assertEquals(emptyList<Diagnostic>(), result.diagnostics)
+        assertEquals(SearchBarPosition.Top, result.config?.search?.barPosition)
+    }
+
+    @Test
+    fun `an unknown search bar position fails with the field in the message`() {
+        val result = ConfigParser.parse("""{ "schemaVersion": 2, "search": { "barPosition": "middle" } }""")
+
+        assertTrue(!result.isSuccess)
+        assertTrue(result.diagnostics.any { it.code == "decode-failed" && it.message.contains("search.barPosition") })
+    }
+
+    /**
+     * Reversed results put the best match at the bottom; with the bar at the
+     * top in search it is the farthest from the field. Applied, but said.
+     */
+    @Test
+    fun `reversed results with a top bar in search are a warning`() {
+        val result = ConfigParser.parse(
+            """{ "schemaVersion": 2, "search": { "barPosition": "top", "reversed": true } }"""
+        )
+
+        assertTrue(result.isSuccess)
+        val warning = result.diagnostics.single { it.code == "search-reversed-with-top-bar" }
+        assertEquals(Severity.Warning, warning.severity)
+        assertEquals("search.reversed", warning.path)
+    }
+
+    /** Control: reversed with the bar at the bottom is the combination it is for. */
+    @Test
+    fun `reversed results with a bottom bar in search are fine`() {
+        val result = ConfigParser.parse(
+            """{ "schemaVersion": 2, "search": { "barPosition": "bottom", "reversed": true } }"""
+        )
+
+        assertEquals(emptyList<Diagnostic>(), result.diagnostics)
+    }
 }

@@ -165,7 +165,12 @@ kover {
     reports {
         filters {
             includes {
-                classes("de.mm20.launcher2.ui.launcher.grid.*", "de.mm20.launcher2.ui.launcher.glass.*")
+                classes(
+                    "de.mm20.launcher2.ui.launcher.grid.*",
+                    "de.mm20.launcher2.ui.launcher.glass.*",
+                    // #107: the search bar's movement between home and search.
+                    "de.mm20.launcher2.ui.launcher.scaffold.SearchBarPlacement*",
+                )
             }
         }
         verify {
