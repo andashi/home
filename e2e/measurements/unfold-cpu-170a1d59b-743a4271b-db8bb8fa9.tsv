@@ -1,0 +1,17 @@
+# emulator-5562, instances/test-fold-gpu (foldable, GPU=host since its first start), adb as the unrooted shell (uid 2000)
+# release-like builds (assembleDefaultRelease, debug-signed); one snapshot per build, same fixture
+# simpleperf -g -f 4000 --clockid monotonic over the unfold, as ROOT (profiling only, not a timing);
+# main-thread CPU ms in the slowest frame's phases; see ADR 0004 for the first-frame reading
+# unfold-ready-main = rev 170a1d59b, apk sha256 d90092aaf9b6116ddb9a370f1448de8945e80e5091aa423786e4f87534410042
+# unfold-ready-rim = rev 743a4271b, apk sha256 9f514dddcf4f6d164ccd21cdcbf4fb1ef50e89816cb3662f8c213f810646119c
+# unfold-ready-defer = rev db8bb8fa9, apk sha256 77319c7f0f4b0eef0e96f9bc2d889ff151d0288150ee022a917c17be923addb5
+snapshot	run	hostload	frame_ms	before_cpu	anim_cpu	layout_cpu	record_cpu	border_ms
+unfold-ready-main	1	6.28	226.5	81.5	13.2	0.0	39.5	27.5
+unfold-ready-rim	1	4.78	40.4	61.2	1.0	0.8	11.0	0.0
+unfold-ready-defer	1	4.23	170.7	27.8	4.2	0.0	10.2	0.0
+unfold-ready-main	2	3.65	57.9	73.2	0.8	0.5	27.5	17.0
+unfold-ready-rim	2	3.37	59.8	85.8	0.8	0.0	1.5	0.0
+unfold-ready-defer	2	2.92	88.2	59.5	0.0	0.2	17.8	0.0
+unfold-ready-main	3	3.09	69.7	100.8	0.2	0.2	1.0	0.0
+unfold-ready-rim	3	2.55	45.3	76.8	0.8	0.5	10.2	0.0
+unfold-ready-defer	3	2.14	124.7	38.5	2.0	0.0	1.2	0.0
