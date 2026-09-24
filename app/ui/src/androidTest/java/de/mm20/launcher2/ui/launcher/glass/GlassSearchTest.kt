@@ -13,6 +13,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.ui.Alignment
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
@@ -121,6 +124,72 @@ class GlassSearchTest {
      * drew; that row must be where the surface really is on screen, in the
      * window the backdrop was made for.
      */
+    /**
+     * #113: moving a popup's window changes where it is on screen but not
+     * where it is inside its window, so a region computed only on layout
+     * stayed at the old place - the same offset every time the first layout
+     * ran before the window had its final position. Moved on purpose here.
+     */
+    @Test
+    fun aGlassSurfaceInAMovedPopupFollowsTheWindow() {
+        val controller = GlassBackdropController(
+            source,
+            MutableStateFlow(GlassInputs(24f, 0f, 28f, Contrast.Medium)),
+            CoroutineScope(Dispatchers.Main.immediate),
+        ) { _, key ->
+            val (w, h) = BackdropGeometry.backdropSize(key.windowWidthPx, key.windowHeightPx)
+            Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888).apply {
+                for (y in 0 until h) {
+                    val red = (255f * y / (h - 1)).toInt()
+                    for (x in 0 until w) setPixel(x, y, android.graphics.Color.rgb(red, 0, 255 - red))
+                }
+            }.asImageBitmap()
+        }
+        var windowHeight = 0
+        var hostTop = 0f
+        var popupY by mutableIntStateOf(0)
+        composeRule.setContent {
+            val view = LocalView.current
+            windowHeight = LocalWindowInfo.current.containerSize.height
+            val density = LocalDensity.current
+            if (popupY == 0) popupY = with(density) { 200.dp.roundToPx() }
+            MaterialTheme {
+                ProvideGlassBackdrop(controller) {
+                    Box(
+                        Modifier
+                            .fillMaxSize()
+                            .onGloballyPositioned {
+                                val origin = IntArray(2)
+                                view.rootView.getLocationOnScreen(origin)
+                                hostTop = origin[1].toFloat()
+                            }
+                    ) {
+                        val offset = IntOffset(with(density) { 120.dp.roundToPx() }, popupY)
+                        Popup(offset = offset) {
+                            GlassMenuGroup(Modifier.size(120.dp).testTag("moved")) {}
+                        }
+                    }
+                }
+            }
+        }
+        composeRule.waitForIdle()
+        // Move the window: the content inside it stays where it is.
+        composeRule.runOnIdle { popupY += (windowHeight * 0.4f).toInt() }
+        composeRule.waitForIdle()
+        Thread.sleep(500)
+        composeRule.waitForIdle()
+
+        val screen = InstrumentationRegistry.getInstrumentation().uiAutomation.takeScreenshot()
+        val semantics = composeRule.onNodeWithTag("moved", useUnmergedTree = true).fetchSemanticsNode()
+        val centreX = semantics.positionOnScreen.x + semantics.size.width / 2f
+        val centreY = semantics.positionOnScreen.y + semantics.size.height / 2f
+        val expected = (centreY - hostTop) / windowHeight
+        val pixel = screen.getPixel(centreX.toInt(), centreY.toInt())
+        val red = android.graphics.Color.red(pixel).toFloat()
+        val blue = android.graphics.Color.blue(pixel).toFloat()
+        assertEquals("moved popup: backdrop row drawn vs where it is on screen", expected, red / (red + blue), 0.03f)
+    }
+
     @Test
     fun aGlassSurfaceInAPopupDrawsTheBackdropUnderItOnScreen() {
         val controller = GlassBackdropController(
