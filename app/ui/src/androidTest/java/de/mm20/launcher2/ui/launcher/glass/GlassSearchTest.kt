@@ -2,6 +2,7 @@ package de.mm20.launcher2.ui.launcher.glass
 
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionOnScreen
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.platform.LocalView
 import android.graphics.Bitmap
@@ -192,11 +193,15 @@ class GlassSearchTest {
 
     @Test
     fun aGlassSurfaceInAPopupDrawsTheBackdropUnderItOnScreen() {
+        // #113: what the node saw, in order, so a failure says which input was off.
+        val events = java.util.Collections.synchronizedList(mutableListOf<String>())
+        fun event(what: String) = events.add("${android.os.SystemClock.uptimeMillis()} $what")
         val controller = GlassBackdropController(
             source,
             MutableStateFlow(GlassInputs(24f, 0f, 28f, Contrast.Medium)),
             CoroutineScope(Dispatchers.Main.immediate),
         ) { _, key ->
+            event("backdrop for window ${key.windowWidthPx}x${key.windowHeightPx}")
             val (w, h) = BackdropGeometry.backdropSize(key.windowWidthPx, key.windowHeightPx)
             Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888).apply {
                 for (y in 0 until h) {
@@ -219,6 +224,7 @@ class GlassSearchTest {
                                 val origin = IntArray(2)
                                 view.rootView.getLocationOnScreen(origin)
                                 hostTop = origin[1].toFloat()
+                                event("host origin ${origin.toList()} window height $windowHeight")
                             }
                     ) {
                         GlassSurface(Modifier.offset(16.dp, 200.dp).size(120.dp).testTag("window")) {}
@@ -226,7 +232,17 @@ class GlassSearchTest {
                         // it would move the content out of its window.
                         val offset = with(LocalDensity.current) { IntOffset(200.dp.roundToPx(), 420.dp.roundToPx()) }
                         Popup(offset = offset) {
-                            GlassMenuGroup(Modifier.size(120.dp).testTag("popup")) {}
+                            val popupView = LocalView.current
+                            GlassMenuGroup(
+                                Modifier
+                                    .size(120.dp)
+                                    .testTag("popup")
+                                    .onGloballyPositioned {
+                                        val host = IntArray(2).also(view.rootView::getLocationOnScreen)
+                                        val popup = IntArray(2).also(popupView.rootView::getLocationOnScreen)
+                                        event("popup laid out: on screen ${it.positionOnScreen()}, popup window ${popup.toList()}, host ${host.toList()}")
+                                    }
+                            ) {}
                         }
                     }
                 }
@@ -236,21 +252,38 @@ class GlassSearchTest {
 
         // The screen as the user sees it: a popup is a window of its own,
         // and capturing its node alone comes back blank.
-        val screen = InstrumentationRegistry.getInstrumentation().uiAutomation.takeScreenshot()
+        val uiAutomation = InstrumentationRegistry.getInstrumentation().uiAutomation
+        val screen = uiAutomation.takeScreenshot()
+        event("screenshot")
+
+        fun drawnAt(image: Bitmap, x: Float, y: Float): Float {
+            val pixel = image.getPixel(x.toInt(), y.toInt())
+            val red = android.graphics.Color.red(pixel).toFloat()
+            val blue = android.graphics.Color.blue(pixel).toFloat()
+            return red / (red + blue)
+        }
 
         fun check(tag: String) {
             val semantics = composeRule.onNodeWithTag(tag, useUnmergedTree = true).fetchSemanticsNode()
             val centreX = semantics.positionOnScreen.x + semantics.size.width / 2f
             val centreY = semantics.positionOnScreen.y + semantics.size.height / 2f
             val expected = (centreY - hostTop) / windowHeight
-            val pixel = screen.getPixel(centreX.toInt(), centreY.toInt())
-            val red = android.graphics.Color.red(pixel).toFloat()
-            val blue = android.graphics.Color.blue(pixel).toFloat()
-            val drawn = red / (red + blue)
-            assertEquals("$tag: backdrop row drawn vs where it is on screen", expected, drawn, 0.03f)
+            val drawn = drawnAt(screen, centreX, centreY)
+            android.util.Log.i("GlassSearchTest", "$tag: expected $expected, drawn $drawn")
+            if (kotlin.math.abs(expected - drawn) <= 0.03f) return
+            // First frame or for good? Look again 100 ms later (#113).
+            Thread.sleep(100)
+            val later = drawnAt(uiAutomation.takeScreenshot(), centreX, centreY)
+            val region = semantics.config.getOrNull(GlassBackdropRegion)
+            val evidence = "on screen ${semantics.positionOnScreen}, size ${semantics.size}, host top $hostTop, " +
+                "window height $windowHeight, region $region, drawn 100 ms later $later\n" +
+                events.joinToString("\n")
+            android.util.Log.e("GlassSearchTest", "$tag failed:\n$evidence")
+            assertEquals("$tag: backdrop row drawn vs where it is on screen; $evidence", expected, drawn, 0.03f)
         }
         check("window")
         check("popup")
+        android.util.Log.i("GlassSearchTest", events.joinToString("\n"))
     }
 
 }
