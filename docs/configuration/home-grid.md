@@ -43,7 +43,9 @@ bottom row (a bottom dock, say) at its own device's last row.
   shows columns 0 to 3 only.**
 
 A device uses exactly one of them. A layout the file does not name is left as
-it is on the device. A layout key other than `phone` or `fold` is reported
+it is on the device. `"items": []` is an empty screen, even when the config
+arrives before the launcher was ever opened: a fresh launcher puts a default
+dock on the grid only if no config has named a layout. A layout key other than `phone` or `fold` is reported
 (`unknown-layout`) and ignored.
 
 Each layout is `home.grid.layouts.<layout>.items`, a list of up to 32 items:
