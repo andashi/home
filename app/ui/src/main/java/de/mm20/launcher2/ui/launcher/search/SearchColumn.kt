@@ -64,6 +64,8 @@ fun SearchColumn(
     state: LazyListState = rememberLazyListState(),
     /** The results pane's list on a fold's inner display (#91); unused in one column. */
     resultsState: LazyListState = rememberLazyListState(),
+    /** Whether two panes are shown, so the caller counts [resultsState] only then. */
+    onTwoPaneChange: (Boolean) -> Unit = {},
     reverse: Boolean = false,
     userScrollEnabled: Boolean = true,
     onHideKeyboard: () -> Unit = {},
@@ -155,6 +157,7 @@ fun SearchColumn(
             )
         }
         val twoPane = layout is SearchLayout.TwoPane
+        LaunchedEffect(twoPane) { onTwoPaneChange(twoPane) }
         // The panes are placed in the grid area; the vertical insets stay
         // content padding, so results scroll under the system bars.
         val verticalPadding = PaddingValues(

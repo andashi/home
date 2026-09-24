@@ -101,4 +101,5 @@ data class PaneScroll(val forward: Boolean, val backward: Boolean)
  * it held the search bar in the wrong position).
  */
 fun searchScroll(apps: PaneScroll, results: PaneScroll, twoPane: Boolean): PaneScroll =
-    PaneScroll(apps.forward || results.forward, apps.backward || results.backward)
+    if (!twoPane) apps
+    else PaneScroll(apps.forward || results.forward, apps.backward || results.backward)
