@@ -138,10 +138,9 @@ fun GlassSurface(
             // A closed surface keeps Modifier.border (the home screen's
             // pixels are unchanged); a segment strokes around its seams.
             .then(
-                if (openEdges.isEmpty()) {
-                    Modifier.glassRim(outline)
-                } else {
-                    Modifier.drawWithContent {
+                when (glassRimKind(outline, openEdges)) {
+                    GlassRimKind.Border -> Modifier.glassRim(outline)
+                    GlassRimKind.Stroke -> Modifier.drawWithContent {
                         drawContent()
                         drawGlassRim(outline, openEdges)
                     }
@@ -160,6 +159,19 @@ private const val SpecularAlpha = 0.18f
 internal val RimBrush = Brush.sweepGradient(
     colorStops = GlassLook.RimStops.map { (at, alpha) -> at to Color.White.copy(alpha = alpha) }.toTypedArray(),
 )
+
+/** How a surface draws its rim (#122). */
+internal enum class GlassRimKind {
+    /** Modifier.border: a rounded rectangle or a pill, drawn directly. */
+    Border,
+
+    /** A stroke of the outline, clipped to the surface ([drawGlassRim]). */
+    Stroke,
+}
+
+/** The rim for [shape]: a segment strokes around its seams (#91), a closed surface keeps the border. */
+internal fun glassRimKind(shape: Shape, openEdges: Set<GlassEdge>): GlassRimKind =
+    if (openEdges.isEmpty()) GlassRimKind.Border else GlassRimKind.Stroke
 
 /** The directional rim on its own, for tests: the same stroke every surface draws. */
 internal fun Modifier.glassRim(shape: androidx.compose.ui.graphics.Shape): Modifier =
