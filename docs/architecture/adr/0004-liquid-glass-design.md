@@ -114,6 +114,25 @@ ring now, and surfaces reuse compiled lenses from a pool instead of compiling
 the source each: both keep the pixels identical and save work, neither was
 the fix.
 
+**The search bar's own position in search (#107, 2026-09-24).** The bar
+moves between the home and the search position with the transition, a
+vertical bias read at placement only, so the move re-places the bar and does
+not recompose it. Interleaved series on test-fold, `GPU=host`, cold boot,
+RUNS=15, each build from a pinned worktree (`e2e/measurements/bar-position-*`):
+
+| Build | Cover: p50 / p90 / p99, janky | Inner: p50 / p90 / p99, janky |
+|---|---|---|
+| `main` (df1989c26), 3 series | 36 / 113 / 129-150 ms; 153, 156, 153 of about 248 | 32 / 117 / 133 ms; 175, 173, 180 of about 265 |
+| #107 (7e2ad7d74), no position keys, 3 series | 36 / 113 / 129 ms; 159, 163, 157 | 32 / 117 / 133 ms; 178, 176, 176 |
+| #107, bar bottom on home and top in search (BAR=bottom-top), 2 series | 36 / 113 / 129 ms; 158, 160 | 32 / 117 / 133 ms; 174, 177 |
+
+The frame time is unchanged, also with the bar crossing the screen on every
+transition. On the cover the branch had a few more janky frames in each of
+the three pairs (about 160 against 154 of 248, some 2 percentage points); the
+inner display shows no difference. Emulated numbers, and within the spread of
+earlier series here; recorded rather than explained away, to look at again on
+a real Pixel Fold.
+
 ## Context
 
 The reference is the iOS home screen: frosted, translucent widget cards with
