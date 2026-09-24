@@ -56,6 +56,8 @@ data class SearchState(
     val launchOnEnter: Boolean = SearchDefaults.LaunchOnEnter,
     val reversed: Boolean = SearchDefaults.Reversed,
     val hiddenItemsButton: Boolean = SearchDefaults.HiddenItemsButton,
+    /** Null while search follows the home position (#107); read back only when set. */
+    val barPosition: SearchBarPosition? = null,
 )
 
 sealed class ConfigMutation {
@@ -177,6 +179,7 @@ object ConfigDiffer {
                 launchOnEnter = search.launchOnEnter?.takeIf { it != current.launchOnEnter },
                 reversed = search.reversed?.takeIf { it != current.reversed },
                 hiddenItemsButton = search.hiddenItemsButton?.takeIf { it != current.hiddenItemsButton },
+                barPosition = search.barPosition?.takeIf { it != current.barPosition },
             )
             if (changed != SearchConfig()) mutations += ConfigMutation.SetSearch(changed)
         }

@@ -451,6 +451,20 @@ class ConfigDifferTest {
         )
     }
 
+    @Test
+    fun `search barPosition diffs on its own and not when equal`() {
+        val set = SearchConfig(barPosition = SearchBarPosition.Top)
+
+        assertEquals(listOf(ConfigMutation.SetSearch(set)), ConfigDiffer.diff(LauncherConfig(2, search = set), baseState))
+        assertEquals(
+            emptyList<ConfigMutation>(),
+            ConfigDiffer.diff(
+                LauncherConfig(2, search = set),
+                baseState.copy(search = SearchState(barPosition = SearchBarPosition.Top)),
+            ),
+        )
+    }
+
     // ----- a never-initialised grid (#92) -----
 
     private val emptyLayouts = mapOf(

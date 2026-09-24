@@ -67,6 +67,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.composed
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
@@ -130,6 +131,29 @@ enum class ScaffoldAnimation {
     ZoomIn,
 }
 
+/**
+ * The search bar's position on the page of [component]: search's own on the
+ * search page (#107), the home position on every other page.
+ */
+internal fun ScaffoldConfiguration.searchBarPositionOf(component: ScaffoldComponent?): SearchBarPosition =
+    if (component is SearchComponent) searchPageSearchBarPosition else searchBarPosition
+
+/**
+ * Places the child at [bias] of the free height (-1 top, 1 bottom), centred
+ * horizontally, and takes the whole space. [bias] is read while placing, so
+ * a moving bar only re-places (#107; a recomposition per frame is what cost
+ * #91 its frame time).
+ */
+private fun Modifier.verticalBias(bias: () -> Float): Modifier = layout { measurable, constraints ->
+    val placeable = measurable.measure(constraints.copy(minWidth = 0, minHeight = 0))
+    val width = constraints.maxWidth
+    val height = constraints.maxHeight
+    layout(width, height) {
+        val y = ((height - placeable.height) * (1f + bias()) / 2f).roundToInt()
+        placeable.placeRelative((width - placeable.width) / 2, y)
+    }
+}
+
 internal data class ScaffoldGesture(
     val component: ScaffoldComponent,
     val animation: ScaffoldAnimation,
@@ -160,6 +184,12 @@ internal data class ScaffoldConfiguration(
      * Position of the search bar
      */
     val searchBarPosition: SearchBarPosition = SearchBarPosition.Top,
+    /**
+     * Position of the search bar while search is open (#107,
+     * `search.barPosition`); the bar moves between the two with the search
+     * transition. Defaults to [searchBarPosition].
+     */
+    val searchPageSearchBarPosition: SearchBarPosition = searchBarPosition,
     val searchBarStyle: SearchBarStyle = SearchBarStyle.Hidden,
     /**
      * If true, the search bar does not scroll out of view
@@ -319,6 +349,24 @@ internal class LauncherScaffoldState(
         }
         base + if (currentAnimation == ScaffoldAnimation.Rubberband && !isOpeningSearch) currentOffset.y else 0f
     }
+    /** The bar's vertical bias between the home and the current page's position (#107). */
+    val searchBarBias by derivedStateOf {
+        SearchBarPlacement.bias(
+            config.searchBarPositionOf(config.homeComponent),
+            config.searchBarPositionOf(currentComponent ?: config.homeComponent),
+            currentProgress,
+        )
+    }
+
+    /** The position the bar counts as now: the current page's from halfway (#107). */
+    val searchBarPositionNow by derivedStateOf {
+        SearchBarPlacement.positionAt(
+            config.searchBarPositionOf(config.homeComponent),
+            config.searchBarPositionOf(currentComponent ?: config.homeComponent),
+            currentProgress,
+        )
+    }
+
     private var homePageSearchBarOffset by mutableFloatStateOf(0f)
     private var secondaryPageSearchBarOffset by mutableFloatStateOf(0f)
 
@@ -380,7 +428,7 @@ internal class LauncherScaffoldState(
     val searchBarLevel by derivedStateOf {
         val component = currentComponent
 
-        val homeLevel = if (config.searchBarPosition == SearchBarPosition.Top) {
+        val homeLevel = if (config.searchBarPositionOf(config.homeComponent) == SearchBarPosition.Top) {
             when (config.homeComponent.isAtTop.value) {
                 true if config.homeComponent.drawBackground -> SearchBarLevel.Active
                 true -> SearchBarLevel.Resting
@@ -396,7 +444,7 @@ internal class LauncherScaffoldState(
             }
         }
 
-        val secondaryLevel = if (config.searchBarPosition == SearchBarPosition.Top) {
+        val secondaryLevel = if (config.searchBarPositionOf(component) == SearchBarPosition.Top) {
             when (component?.isAtTop?.value) {
                 true if (component.drawBackground) -> SearchBarLevel.Active
                 true -> SearchBarLevel.Resting
@@ -666,13 +714,13 @@ internal class LauncherScaffoldState(
     fun onComponentScroll(delta: Float) {
         if (isSearchBarHidden || config.fixedSearchBar) return
         if (isSettledOnSecondaryPage) {
-            secondaryPageSearchBarOffset = if (config.searchBarPosition == SearchBarPosition.Top) {
+            secondaryPageSearchBarOffset = if (config.searchBarPositionOf(currentComponent) == SearchBarPosition.Top) {
                 (secondaryPageSearchBarOffset - delta).coerceIn(-maxSearchBarOffset, 0f)
             } else {
                 (secondaryPageSearchBarOffset + delta).coerceIn(0f, maxSearchBarOffset)
             }
         } else {
-            homePageSearchBarOffset = if (config.searchBarPosition == SearchBarPosition.Top) {
+            homePageSearchBarOffset = if (config.searchBarPositionOf(config.homeComponent) == SearchBarPosition.Top) {
                 (homePageSearchBarOffset - delta).coerceIn(-maxSearchBarOffset, 0f)
             } else {
                 (homePageSearchBarOffset + delta).coerceIn(0f, maxSearchBarOffset)
@@ -927,7 +975,7 @@ internal class LauncherScaffoldState(
             isSearchBarHidden = true
             searchBarAnimatable.snapTo(currentSearchBarOffset)
             searchBarAnimatable.animateTo(
-                if (config.searchBarPosition == SearchBarPosition.Bottom) maxSearchBarOffset else -maxSearchBarOffset,
+                if (searchBarPositionNow == SearchBarPosition.Bottom) maxSearchBarOffset else -maxSearchBarOffset,
                 tween(500)
             ) {
                 if (isSettledOnSecondaryPage) {
@@ -1006,12 +1054,12 @@ internal fun LauncherScaffold(
         val touchSlop = LocalViewConfiguration.current.touchSlop
         val minFlingVelocity = 125.dp.toPixels()
         val rubberbandThreshold = 64.dp.toPixels()
-        val maxSearchBarOffset = (
-                if (config.searchBarPosition == SearchBarPosition.Top) systemBarInsets.getTop(
-                    density
-                )
+        // The larger of the two positions' insets when search has its own (#107).
+        val maxSearchBarOffset = listOf(config.searchBarPosition, config.searchPageSearchBarPosition)
+            .maxOf {
+                if (it == SearchBarPosition.Top) systemBarInsets.getTop(density)
                 else systemBarInsets.getBottom(density)
-                ) + 128.dp.toPixels()
+            } + 128.dp.toPixels()
 
         val hapticFeedback = LocalHapticFeedback.current
 
@@ -1294,9 +1342,9 @@ internal fun LauncherScaffold(
                         }
                     )
             ) {
-                val searchBarInsets = WindowInsets(
-                    top = if (config.searchBarPosition == SearchBarPosition.Top) searchBarHeight + 8.dp else 8.dp,
-                    bottom = if (config.searchBarPosition == SearchBarPosition.Bottom) searchBarHeight + 8.dp else 8.dp
+                fun searchBarInsets(position: SearchBarPosition) = WindowInsets(
+                    top = if (position == SearchBarPosition.Top) searchBarHeight + 8.dp else 8.dp,
+                    bottom = if (position == SearchBarPosition.Bottom) searchBarHeight + 8.dp else 8.dp
                 )
 
                 val filterBarInsets = WindowInsets(
@@ -1353,7 +1401,7 @@ internal fun LauncherScaffold(
                             .let { if (config.homeComponent.hasIme) it.union(WindowInsets.ime) else it }
                             .let {
                                 if (config.searchBarStyle == SearchBarStyle.Hidden) it else it.add(
-                                    searchBarInsets
+                                    searchBarInsets(config.searchBarPositionOf(config.homeComponent))
                                 )
                             }
                             .asPaddingValues(),
@@ -1368,7 +1416,7 @@ internal fun LauncherScaffold(
                         .fillMaxSize(),
                     insets = systemBarInsets
                         .let { if (state.currentComponent?.hasIme == true) it.union(WindowInsets.ime) else it }
-                        .add(searchBarInsets).add(filterBarInsets)
+                        .add(searchBarInsets(config.searchBarPositionOf(state.currentComponent))).add(filterBarInsets)
                         .asPaddingValues(),
                 )
 
@@ -1386,17 +1434,17 @@ internal fun LauncherScaffold(
                 ) {
                     LauncherSearchBar(
                         modifier = Modifier
-                            .widthIn(max = 916.dp)
-                            .align(
-                                if (config.searchBarPosition == SearchBarPosition.Top) Alignment.TopCenter
-                                else Alignment.BottomCenter
-                            ),
+                            // Between the home and the search position with
+                            // the transition (#107); read at placement only,
+                            // so the move does not recompose the bar.
+                            .verticalBias { state.searchBarBias }
+                            .widthIn(max = 916.dp),
                         searchBarOffset = { state.currentSearchBarOffset.roundToInt() },
                         style = config.searchBarStyle,
                         focused = state.isSearchBarFocused,
                         actions = searchActions,
                         level = { state.searchBarLevel },
-                        bottomSearchBar = config.searchBarPosition == SearchBarPosition.Bottom,
+                        bottomSearchBar = state.searchBarPositionNow == SearchBarPosition.Bottom,
                         onFocusChange = {
                             if (it) {
                                 scope.launch { state.onSearchBarTap() }
@@ -1676,8 +1724,6 @@ private fun Modifier.searchBarAnimation(
     config: ScaffoldConfiguration,
     insets: PaddingValues,
 ): Modifier {
-    val offsetFactor = if (config.searchBarPosition == SearchBarPosition.Top) -1f else 1f
-
     val component = state.currentComponent
     val anim = state.currentAnimation
 
@@ -1687,11 +1733,14 @@ private fun Modifier.searchBarAnimation(
         state.currentProgress
     }
 
-    val systemBarInset =
-        if (config.searchBarPosition == SearchBarPosition.Top) insets.calculateTopPadding() else insets.calculateBottomPadding()
-
+    // Continuous while the bar moves between the edges (#107, #115 review).
     val offset = if (config.searchBarStyle == SearchBarStyle.Hidden) {
-        offsetFactor * (1 - progress).pow(2) * (128.dp + systemBarInset)
+        SearchBarPlacement.hiddenOffset(
+            bias = state.searchBarBias,
+            progress = progress,
+            topInset = insets.calculateTopPadding().value,
+            bottomInset = insets.calculateBottomPadding().value,
+        ).dp
     } else {
         0.dp
     }

@@ -168,6 +168,16 @@ class ConfigStateMapperTest {
         assertEquals(true, set?.reversed)
     }
 
+    /** #107: absent while search follows the home position, served once set. */
+    @Test
+    fun `search barPosition is served only when set`() {
+        assertEquals(null, ConfigState().toLauncherConfig().search?.barPosition)
+        assertEquals(
+            SearchBarPosition.Bottom,
+            ConfigState(search = SearchState(barPosition = SearchBarPosition.Bottom)).toLauncherConfig().search?.barPosition,
+        )
+    }
+
     /** Today's behavior: a file without `search` changes nothing (#91). */
     @Test
     fun `the search defaults are today's behavior`() {

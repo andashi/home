@@ -240,6 +240,12 @@ class UiSettings internal constructor(
         }
     }
 
+    /** The search bar while search is open (#107): null follows [bottomSearchBar]. */
+    val bottomSearchBarInSearch
+        get() = launcherDataStore.data.map {
+            it.searchBarBottomInSearch
+        }.distinctUntilChanged()
+
     val reverseSearchResults
         get() = launcherDataStore.data.map {
             it.searchResultsReversed

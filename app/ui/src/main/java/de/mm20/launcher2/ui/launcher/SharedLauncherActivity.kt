@@ -137,6 +137,7 @@ abstract class SharedLauncherActivity(
                         val hideStatus by viewModel.hideStatusBar.collectAsState()
                         val hideNav by viewModel.hideNavBar.collectAsState()
                         val bottomSearchBar by viewModel.bottomSearchBar.collectAsState()
+                        val bottomSearchBarInSearch by viewModel.bottomSearchBarInSearch.collectAsState()
                         val reverseSearchResults by viewModel.reverseSearchResults.collectAsState()
                         val fixedSearchBar by viewModel.fixedSearchBar.collectAsState()
                         val gestures by viewModel.gestureState.collectAsState()
@@ -222,6 +223,7 @@ abstract class SharedLauncherActivity(
                                 mode,
                                 reverseSearchResults,
                                 bottomSearchBar,
+                                bottomSearchBarInSearch,
                                 fixedSearchBar,
                                 gestures,
                                 searchBarStyle,
@@ -255,6 +257,10 @@ abstract class SharedLauncherActivity(
                                         fixedSearchBar = fixedSearchBar,
                                         searchBarStyle = SearchBarStyle.Solid,
                                         searchBarPosition = if (bottomSearchBar) SearchBarPosition.Bottom else SearchBarPosition.Top,
+                                        searchPageSearchBarPosition = when (bottomSearchBarInSearch ?: bottomSearchBar) {
+                                            true -> SearchBarPosition.Bottom
+                                            false -> SearchBarPosition.Top
+                                        },
                                         finishOnBack = true,
                                         backgroundColor = backgroundColor,
                                     )
@@ -370,6 +376,10 @@ abstract class SharedLauncherActivity(
                                         fixedSearchBar = fixedSearchBar,
                                         searchBarStyle = searchBarStyle,
                                         searchBarPosition = if (bottomSearchBar) SearchBarPosition.Bottom else SearchBarPosition.Top,
+                                        searchPageSearchBarPosition = when (bottomSearchBarInSearch ?: bottomSearchBar) {
+                                            true -> SearchBarPosition.Bottom
+                                            false -> SearchBarPosition.Top
+                                        },
                                         darkStatusBarIcons = lightStatus,
                                         darkNavBarIcons = lightNav,
                                         backgroundColor = backgroundColor,

@@ -18,7 +18,8 @@
 #
 # frames come from RUNS transitions home -> search -> home (a swipe up and
 # BACK), which animate the whole home content, so every surface redraws on
-# every frame. `dumpsys gfxinfo` is reset before and read after each series.
+# every frame. BAR=bottom-top also moves the search bar across the screen on
+# every transition (#107). `dumpsys gfxinfo` is reset before and read after each series.
 # The blur itself happens once per wallpaper, glass setting and display, off
 # the frame; its duration is read from the launcher's own log line.
 #
@@ -56,9 +57,19 @@ PKG="${PKG:-org.andashi.home.debug}"
 RUNS="${RUNS:-15}"
 VARIANTS="${VARIANTS:-glass}"
 WALLPAPER="${WALLPAPER:-$GOS_REPO/themes/mauritius/tall/wallpaper.jpg}"
-REV="$(git -C "$HERE/.." rev-parse --short HEAD)"
-# The APK is built from the working tree; a dirty tree is recorded as such.
-git -C "$HERE/.." diff --quiet HEAD -- app core services data || REV="$REV-dirty"
+# The revision of the build measured. Without an APK argument the APK is
+# built from the working tree, whose HEAD (and dirt) is recorded; with one,
+# REV=<sha> names the revision it was built from (review on #115: a pinned
+# worktree's APK is not the checkout's HEAD). The APK's hash is recorded too.
+if [ -n "${REV:-}" ]; then
+  :
+elif [ -n "${1:-}" ]; then
+  REV="unknown (pass REV= for a given APK)"
+else
+  REV="$(git -C "$HERE/.." rev-parse --short HEAD)"
+  # Staged, unstaged and untracked build inputs alike (review on #115).
+  [ -z "$(git -C "$HERE/.." status --porcelain -- app core services data)" ] || REV="$REV-dirty"
+fi
 OUT="${OUT:-$HERE/measurements/glass-$(tr ' ' '-' <<<"$VARIANTS")-$REV.tsv}"
 CLOCK="com.android.deskclock/com.android.alarmclock.DigitalAppWidgetProvider"
 # clocks: seven identical clocks, the fixture every frame-time number is
@@ -137,16 +148,28 @@ case "$PACK" in
     if [ "$PACK" = lawnicons ]; then ICONS='"icons": { "themed": true, "pack": "app.lawnchair.lawnicons" },'; else ICONS=''; fi ;;
   *) die "unknown PACK $PACK (lawnicons | lawnicons-default)" ;;
 esac
+# BAR=bottom-top: the bar at the bottom on home and at the top in search
+# (#107), so every transition moves it; default: no position keys at all.
+BAR_HOME=''; BAR_SEARCH=''
+case "${BAR:-}" in
+  "") ;;
+  bottom-top)
+    BAR_HOME='"searchBar": { "position": "bottom" },'
+    BAR_SEARCH='"search": { "barPosition": "top" },' ;;
+  *) die "unknown BAR $BAR (bottom-top)" ;;
+esac
 CONFIG="$WORK/glass.json"
 cat > "$CONFIG" <<EOF
 {
   "schemaVersion": 2,
   $ICONS
+  $BAR_SEARCH
   "appearance": {
     "wallpaper": { "image": "mauritius.jpg", "target": "both" },
     "glass": { "blur": 24, "tint": 0.12, "radius": 28, "contrast": "medium", "wallpaperBlur": true }
   },
   "home": {
+    $BAR_HOME
     "favorites": $FAVORITES,
     "widgets": { "enabled": true },
     "grid": {
@@ -220,6 +243,7 @@ ok "fixture applied: mauritius wallpaper, $FIXTURE widgets and the dock"
 : > "$WORK/out.tsv"
 record() { printf '%s\t%s\n' "$1" "$2" >> "$WORK/out.tsv"; }
 record rev "$REV"
+record apk_sha256 "$(sha256sum "$APK" | cut -d' ' -f1)"
 record serial "$SERIAL"
 record runs "$RUNS"
 record fixture "$FIXTURE"

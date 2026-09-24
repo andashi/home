@@ -55,6 +55,8 @@ class LauncherScaffoldVM : ViewModel(), KoinComponent {
 
     val bottomSearchBar = uiSettings.bottomSearchBar
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), false)
+    val bottomSearchBarInSearch = uiSettings.bottomSearchBarInSearch
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), null)
     val reverseSearchResults = uiSettings.reverseSearchResults
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), false)
     val fixedSearchBar = uiSettings.fixedSearchBar
