@@ -76,6 +76,9 @@ internal class LauncherConfigSettingsImpl(
                 launchOnEnter = data.searchLaunchOnEnter,
                 reversed = data.searchResultsReversed,
                 hiddenItemsButton = data.hiddenItemsShowButton,
+                barPosition = data.searchBarBottomInSearch?.let {
+                    if (it) SearchBarPosition.Bottom else SearchBarPosition.Top
+                },
             ),
             searchBarPosition = if (data.searchBarBottom) {
                 SearchBarPosition.Bottom
@@ -151,6 +154,8 @@ internal class LauncherConfigSettingsImpl(
                     searchLaunchOnEnter = launchOnEnter ?: searchLaunchOnEnter,
                     searchResultsReversed = reversed ?: searchResultsReversed,
                     hiddenItemsShowButton = hiddenItemsButton ?: hiddenItemsShowButton,
+                    searchBarBottomInSearch = barPosition?.let { it == SearchBarPosition.Bottom }
+                        ?: searchBarBottomInSearch,
                 )
             }
 

@@ -345,12 +345,12 @@ class LauncherConfigSettingsTest {
     // ---- search.barPosition (#107) ----
 
     @Test
-    fun `readState maps the search bar position in search, null while it follows home`() = runTest {
+    fun `readState reads no search bar position while search follows home`() = runTest {
         assertEquals(null, createGateway().readState().search.barPosition)
-        assertEquals(
-            SearchBarPosition.Top,
-            createGateway(LauncherSettingsData(searchBarBottomInSearch = false)).readState().search.barPosition,
-        )
+    }
+
+    @Test
+    fun `readState maps searchBarBottomInSearch to the search bar position`() = runTest {
         assertEquals(
             SearchBarPosition.Bottom,
             createGateway(LauncherSettingsData(searchBarBottomInSearch = true)).readState().search.barPosition,

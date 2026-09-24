@@ -179,6 +179,7 @@ object ConfigDiffer {
                 launchOnEnter = search.launchOnEnter?.takeIf { it != current.launchOnEnter },
                 reversed = search.reversed?.takeIf { it != current.reversed },
                 hiddenItemsButton = search.hiddenItemsButton?.takeIf { it != current.hiddenItemsButton },
+                barPosition = search.barPosition?.takeIf { it != current.barPosition },
             )
             if (changed != SearchConfig()) mutations += ConfigMutation.SetSearch(changed)
         }

@@ -47,10 +47,11 @@ object ConfigParser {
             "home" to KeyEffect.Applied,
             "search" to KeyEffect.Applied,
         ),
-        // #91: search's behavior; its look is appearance.glass.
+        // #91: search's behavior; its look is appearance.glass. #107: barPosition.
         "search" to listOf(
             "favorites", "allApps", "layout", "labels", "contacts", "shortcuts",
             "filterBar", "openKeyboard", "launchOnEnter", "reversed", "hiddenItemsButton",
+            "barPosition",
         ).associateWith { KeyEffect.Applied },
         "icons" to mapOf(
             "themed" to KeyEffect.Applied,

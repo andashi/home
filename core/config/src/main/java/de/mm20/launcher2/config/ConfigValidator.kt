@@ -29,6 +29,20 @@ object ConfigValidator {
             validatePackageName(pack, "icons.pack", diagnostics)
         }
 
+        // #107: reversed results put the best match at the bottom, the
+        // farthest from a bar at the top. Applied anyway; the config decides.
+        config.search?.let { search ->
+            if (search.barPosition == SearchBarPosition.Top && search.reversed == true) {
+                diagnostics += Diagnostic(
+                    Severity.Warning,
+                    "search-reversed-with-top-bar",
+                    "search.reversed",
+                    "reversed results with search.barPosition top put the best match the farthest from the " +
+                            "search bar; applied as written",
+                )
+            }
+        }
+
         config.appearance?.glass?.let { glass ->
             validateGlass(glass.blur, 0f, MaxGlassBlur, "appearance.glass.blur", "dp", diagnostics)
             validateGlass(glass.tint, 0f, 1f, "appearance.glass.tint", "", diagnostics)

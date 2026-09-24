@@ -33,6 +33,8 @@ fun ConfigState.toLauncherConfig(): LauncherConfig {
             launchOnEnter = search.launchOnEnter,
             reversed = search.reversed,
             hiddenItemsButton = search.hiddenItemsButton,
+            // Only once set (#107): absent, search follows the home position.
+            barPosition = search.barPosition,
         ),
         icons = IconsConfig(
             themed = themedIcons,
