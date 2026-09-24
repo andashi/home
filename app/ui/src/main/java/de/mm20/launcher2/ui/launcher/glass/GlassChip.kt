@@ -66,3 +66,6 @@ fun GlassChip(
 
 /** A selected chip over an unselected one: clearly stronger at every contrast (#91). */
 internal const val SelectedTintBoost = 0.2f
+
+/** The check a selected chip shows; a test tag, so tests can find it. */
+internal const val GlassChipCheckTag = "glass-chip-check"
