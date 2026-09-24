@@ -52,10 +52,10 @@ Each layout is `home.grid.layouts.<layout>.items`, a list of up to 32 items:
 |---|---|---|
 | `home.grid.layouts.<layout>.items[].id` | A stable name for the item; write-back and edit mode match on it | lowercase letters, digits, `-`; starts with a letter or digit; up to 32; unique in the layout |
 | `home.grid.layouts.<layout>.items[].widget` | `favorites` for the dock, or a widget provider as `package/class` | |
-| `home.grid.layouts.<layout>.items[].x` | Column of the top-left cell, from 0 | ≥ 0 |
-| `home.grid.layouts.<layout>.items[].y` | Row of the top-left cell, from 0 | ≥ 0 |
-| `home.grid.layouts.<layout>.items[].w` | Width in cells | ≥ 1 |
-| `home.grid.layouts.<layout>.items[].h` | Height in cells | ≥ 1 |
+| `home.grid.layouts.<layout>.items[].x` | Column of the top-left cell, from 0 | 0 to 64 |
+| `home.grid.layouts.<layout>.items[].y` | Row of the top-left cell, from 0 | 0 to 64 |
+| `home.grid.layouts.<layout>.items[].w` | Width in cells | 1 to 64 |
+| `home.grid.layouts.<layout>.items[].h` | Height in cells | 1 to 64 |
 | `home.grid.layouts.<layout>.items[].profile` | Which profile's widget: `personal`, `work`, `private` | enum, default `personal` |
 | `home.grid.layouts.<layout>.items[].borderless` | Draw the widget without the card's padding | boolean |
 | `home.grid.layouts.<layout>.items[].background` | `false`: no glass surface behind the widget at all | boolean, default `true` |
