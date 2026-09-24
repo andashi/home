@@ -67,7 +67,8 @@ elif [ -n "${1:-}" ]; then
   REV="unknown (pass REV= for a given APK)"
 else
   REV="$(git -C "$HERE/.." rev-parse --short HEAD)"
-  git -C "$HERE/.." diff --quiet HEAD -- app core services data || REV="$REV-dirty"
+  # Staged, unstaged and untracked build inputs alike (review on #115).
+  [ -z "$(git -C "$HERE/.." status --porcelain -- app core services data)" ] || REV="$REV-dirty"
 fi
 OUT="${OUT:-$HERE/measurements/glass-$(tr ' ' '-' <<<"$VARIANTS")-$REV.tsv}"
 CLOCK="com.android.deskclock/com.android.alarmclock.DigitalAppWidgetProvider"
