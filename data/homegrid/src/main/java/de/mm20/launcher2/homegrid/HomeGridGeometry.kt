@@ -2,6 +2,7 @@ package de.mm20.launcher2.homegrid
 
 import de.mm20.launcher2.grid.CellMath
 import de.mm20.launcher2.grid.GridSpec
+import kotlin.math.abs
 import kotlin.math.floor
 
 /**
@@ -30,8 +31,14 @@ data class GridGeometry(
     val windowWidthDp: Float = Float.NaN,
     val windowHeightDp: Float = Float.NaN,
 ) {
-    /** Whether this geometry is the one for a [widthDp] x [heightDp] window. Stub until #118's fix. */
-    fun isFor(widthDp: Float, heightDp: Float): Boolean = true
+    /**
+     * Whether this geometry is the one for a [widthDp] x [heightDp] window
+     * (half a dp of measuring noise allowed). The grid learns its window a
+     * frame or two before the geometry for it arrives; it draws nothing
+     * rather than draw another window's geometry (#118).
+     */
+    fun isFor(widthDp: Float, heightDp: Float): Boolean =
+        abs(windowWidthDp - widthDp) <= 0.5f && abs(windowHeightDp - heightDp) <= 0.5f
 
     val rows: Int get() = spec.rows
 
@@ -90,6 +97,8 @@ object HomeGridGeometry {
             cellDp = cellDp,
             gapDp = gapDp,
             coverFirstColumn = if (folds) columns else 0,
+            windowWidthDp = widthDp,
+            windowHeightDp = heightDp,
         )
     }
 }

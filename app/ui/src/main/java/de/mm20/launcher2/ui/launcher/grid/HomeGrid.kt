@@ -150,6 +150,10 @@ fun HomeGrid(
 
         val state by viewModel.state.collectAsStateWithLifecycle()
         val uiState = state ?: return@BoxWithConstraints
+        // The window changed (unfold, fold, rotation) and the geometry for it
+        // has not arrived yet: draw nothing rather than the old display's
+        // cells at the wrong place (#118).
+        if (!uiState.geometry.isFor(widthDp, heightDp)) return@BoxWithConstraints
 
         val host = LocalAppWidgetHost.current
         val profileManager: ProfileManager = koinInject()
