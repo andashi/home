@@ -227,7 +227,7 @@ enter_edit_mode() { # $1 = dock width in cells
   local point
   point="$(free_cell_point "$1")" || die "no dock on screen to locate a free cell from"
   long_press "$point"
-  wait_desc grid-edit-done 15 "edit bar after the long press"
+  wait_id grid-edit-done 15 "edit bar after the long press"
 }
 
 # Drag with explicit motion events (input swipe lands short of the target).
