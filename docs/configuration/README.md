@@ -22,8 +22,8 @@ Fold (cover and inner display).
 
 ## The file
 
-The top level has four keys: `schemaVersion` (required, currently `2`),
-`icons`, `appearance` and `home`. Everything else is optional, and **an absent
+The top level has five keys: `schemaVersion` (required, currently `2`),
+`icons`, `appearance`, `home` and `search`. Everything else is optional, and **an absent
 key means "unmanaged", not "off"**: the launcher leaves whatever is set on the
 device. Comments and trailing commas are allowed (JSONC).
 
