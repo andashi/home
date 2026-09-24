@@ -50,7 +50,8 @@ fun DockIcons(
         val placeables = measurables.take(placements.size).map { it.measure(cell) }
         layout(width, height) {
             for (p in placements) {
-                placeables[p.index].place((p.column * cellWidth).roundToInt(), (p.row * cellHeight).roundToInt())
+                // Relative: right to left, the first favorite is on the right, as a Row puts it.
+                placeables[p.index].placeRelative((p.column * cellWidth).roundToInt(), (p.row * cellHeight).roundToInt())
             }
         }
     }
