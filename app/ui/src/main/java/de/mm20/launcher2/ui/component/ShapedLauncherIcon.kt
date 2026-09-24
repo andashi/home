@@ -478,9 +478,12 @@ private val TriangleShape: Shape
         close()
     }
 
-/** The Clear icon chip's outline (#76); the best-match highlight uses it too (#91). */
-internal val SquircleShape: Shape
-    get() = GenericShape { size, _ ->
+/**
+ * The Clear icon chip's outline (#76); the best-match highlight uses it too
+ * (#91). One instance (#122): a new shape per access made every clip and rim
+ * cache keyed on it see a different shape on each recomposition.
+ */
+internal val SquircleShape: Shape = GenericShape { size, _ ->
         val radius = size.width / 2f
         val radiusToPow = radius.pow(3f).toDouble()
         moveTo(-radius, 0f)
