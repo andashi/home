@@ -106,10 +106,6 @@
     <string name="favorites_empty_tag">Δεν υπάρχουν στοιχεία με αυτήν την ετικέτα</string>
     <string name="frequently_used_show_in_favorites">Εμφάνιση στα αγαπημένα</string>
     <string name="frequently_used_rows">Αριθμός σειρών</string>
-    <string name="default_websearch_2_name">YouTube</string>
-    <string name="default_websearch_2_url">https://www.youtube.com/results\?search_query=${1}</string>
-    <string name="default_websearch_3_name">Google Play</string>
-    <string name="default_websearch_3_url">https://play.google.com/store/search\?q=${1}</string>
     <string name="save">Αποθήκευση</string>
     <string name="turn_off">Απενεργοποίηση</string>
     <string name="websearch_dialog_custom_icon">Προσαρμογή εικονιδίου</string>

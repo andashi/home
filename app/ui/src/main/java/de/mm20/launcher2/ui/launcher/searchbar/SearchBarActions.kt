@@ -23,6 +23,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.semantics.testTagsAsResourceId
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -32,6 +36,7 @@ import de.mm20.launcher2.ui.component.SearchActionIcon
 import de.mm20.launcher2.ui.modifier.consumeAllScrolling
 import de.mm20.launcher2.ui.settings.SettingsActivity
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun ColumnScope.SearchBarActions(
     modifier: Modifier = Modifier,
@@ -43,6 +48,10 @@ fun ColumnScope.SearchBarActions(
     AnimatedVisibility(actions.isNotEmpty()) {
         LazyRow(
             modifier = Modifier
+                // The row as automation finds it: a test tag exposed as its
+                // resource id, silent to screen readers (#116 review).
+                .semantics { testTagsAsResourceId = true }
+                .testTag("search-actions")
                 .consumeAllScrolling()
                 .height(48.dp)
                 .padding(bottom = if (reverse) 0.dp else 8.dp, top = if (reverse) 8.dp else 0.dp),

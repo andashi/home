@@ -21,10 +21,6 @@
     <string name="help">Дапамога</string>
     <string name="wallpaper">Шпалеры</string>
     <string name="alert_delete_shortcut">Ярлык «%1$s» будзе назаўжды выдалены. Працягнуць?</string>
-    <string name="default_websearch_2_url">https://www.youtube.com/results?search_query=${1}</string>
-    <string name="default_websearch_3_name">Google Play Store</string>
-    <string name="default_websearch_3_url">https://play.google.com/store/search?q=${1}</string>
-    <string name="default_websearch_2_name">YouTube</string>
     <string name="action_done">Гатова</string>
     <string name="action_more_actions">Больш дзеянняў</string>
     <string name="action_clear">Ачысціць</string>

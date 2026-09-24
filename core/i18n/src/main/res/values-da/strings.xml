@@ -68,14 +68,12 @@
     <string name="menu_launch">Start</string>
     <string name="menu_customize">Tilpas</string>
     <string name="app_info_version">Version %1$s</string>
-    <string name="default_websearch_2_name">YouTube</string>
     <string name="menu_share_store_link">%1$s-link</string>
     <string name="edit">Redigér</string>
     <string name="menu_contacts_open_externally">Åbn i kontakter-app</string>
     <string name="edit_favorites_dialog_unpinned">Ikke fastgjort – bruges ofte</string>
     <string name="edit_favorites_dialog_tag_section_empty">Fastgjorte tags vises her</string>
     <string name="missing_permission_appshortcuts_search_settings">%1$s skal indstilles som standardstartapp for at søge i app-genveje</string>
-    <string name="default_websearch_3_name">Google Play</string>
     <string name="shortcut_summary">Af %1$s</string>
     <string name="websearch_dialog_delete_icon">Slet ikon</string>
     <string name="edit_favorites_dialog_pinned_unsorted">Fastgjort – sorteret automatisk</string>
@@ -270,9 +268,7 @@
     <string name="search_action_contact">Føj til kontakter</string>
     <string name="import_theme_error">Den valgte fil kunne ikke læses. Sørg venligst for, at du har valgt en gyldig temafil (*.kvtheme), og at filen ikke er beskadiget.</string>
     <string name="websearch_dialog_query_encoding_form">application/x-www-form-urlencoded</string>
-    <string name="default_websearch_3_url">https://play.google.com/store/search?q=${1}</string>
     <string name="shortcut_unavailable_description">Denne genvej er utilgængelig, fordi %1$s ikke er din standard launcher</string>
-    <string name="default_websearch_2_url">https://www.youtube.com/results?search_query=${1}</string>
     <string name="widget_use_theme_colors">Brug temafarve</string>
     <string name="unavailable_searchable">Dette element findes ikke længere.</string>
     <string name="widget_pick_widget">Vælg widget</string>

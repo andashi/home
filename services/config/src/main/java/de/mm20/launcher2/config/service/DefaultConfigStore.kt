@@ -43,6 +43,7 @@ import de.mm20.launcher2.config.Profile as ConfigProfile
  * - Grid layouts (`home.grid.layouts`) are normalised through the layout
  *   engine and written to [HomeGridRepository]; `columns` and `locked` are
  *   settings-backed.
+ * - Search actions (`search.actions`, #106) go through [SearchActionStore].
  * - Favorites are resolved from `{packageName, profile}` pairs via
  *   [AppRepository] + [ProfileResolver] and written with
  *   [SavableSearchableRepository.updateFavoritesAwaited]. User serials never
@@ -59,6 +60,7 @@ class DefaultConfigStore(
     private val appRepository: AppRepository,
     private val profileResolver: ProfileResolver,
     private val wallpapers: WallpaperStore,
+    private val searchActions: SearchActionStore,
 ) : ConfigStore {
 
     override suspend fun readState(): ConfigState {
@@ -83,6 +85,7 @@ class DefaultConfigStore(
             favorites = favorites,
             gridLayouts = gridLayouts,
             gridInitialized = gridInitialized,
+            searchActions = searchActions.read(),
             wallpaperImage = wallpaper?.image,
             wallpaperTarget = wallpaper?.target,
         )
@@ -112,6 +115,12 @@ class DefaultConfigStore(
 
                 is ConfigMutation.SetFavorites -> try {
                     diagnostics += applyFavorites(mutation)
+                } catch (e: Exception) {
+                    diagnostics += mutation.applyFailed(e)
+                }
+
+                is ConfigMutation.SetSearchActions -> try {
+                    diagnostics += searchActions.replace(mutation.actions, "search.actions")
                 } catch (e: Exception) {
                     diagnostics += mutation.applyFailed(e)
                 }
@@ -474,6 +483,7 @@ private val ConfigMutation.isSettingsBacked: Boolean
         -> true
 
         is ConfigMutation.SetFavorites,
+        is ConfigMutation.SetSearchActions,
         is ConfigMutation.SetWallpaper,
         -> false
     }

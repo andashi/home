@@ -4,7 +4,6 @@
     <string name="preference_about_license">此应用是自由软件。</string>
     <string name="preference_search_bar_style_summary">自定义搜索栏外观</string>
     <string name="menu_share_store_link">链接 %1$s</string>
-    <string name="default_websearch_3_name">Google Play商店</string>
     <string name="edit_favorites_dialog_unpinned">未固定 – 常用</string>
     <string name="menu_share">分享</string>
     <string name="menu_share_apk_file">安装包</string>
@@ -20,9 +19,6 @@
     <string name="app_info_version">版本 %1$s</string>
     <string name="settings">设置</string>
     <string name="wallpaper">壁纸</string>
-    <string name="default_websearch_2_name">YouTube</string>
-    <string name="default_websearch_2_url">https://www.youtube.com/results\?search_query=${1}</string>
-    <string name="default_websearch_3_url">https://play.google.com/store/search\?q=${1}</string>
     <string name="websearch_dialog_url_error">此 URL 中缺少占位符’${1}‘</string>
     <string name="websearch_dialog_replace_icon">替换图标</string>
     <string name="websearch_dialog_delete_icon">删除图标</string>

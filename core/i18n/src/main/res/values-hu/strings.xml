@@ -20,7 +20,6 @@
     <string name="wallpaper">Háttérkép</string>
     <string name="menu_share_store_link">%1$s hivatkozás</string>
     <string name="alert_delete_shortcut">A(z) %1$s parancsikon véglegesen el lesz távolítva. Folytatja?</string>
-    <string name="default_websearch_3_url">https://play.google.com/store/search\?q=${1}</string>
     <string name="websearch_dialog_replace_icon">Ikon cseréje</string>
     <string name="websearch_dialog_delete_icon">Ikon törlése</string>
     <string name="websearch_dialog_custom_icon">Egyéni ikon</string>
@@ -34,9 +33,6 @@
     <string name="turn_off">Kikapcsolás</string>
     <string name="widget_action_remove">Eltávolítás</string>
     <string name="menu_item_edit_favs">Kedvencek módosítása</string>
-    <string name="default_websearch_2_name">YouTube</string>
-    <string name="default_websearch_2_url">https://www.youtube.com/results\?search_query=${1}</string>
-    <string name="default_websearch_3_name">Google Play</string>
     <string name="close">Bezárás</string>
     <string name="websearch_dialog_query_encoding">Lekérdezés kódolása</string>
     <string name="websearch_dialog_query_encoding_url">Százalékos-kódolás</string>

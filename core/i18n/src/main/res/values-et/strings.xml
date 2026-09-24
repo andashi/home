@@ -238,14 +238,10 @@
     <string name="icon_picker_default_icon">Vaikeväärtus</string>
     <string name="widget_config_appwidget_configure">Seadista vidinat</string>
     <string name="item_visibility_search_only">Otsingutulemused</string>
-    <string name="default_websearch_2_name">YouTube</string>
-    <string name="default_websearch_3_url">https://play.google.com/store/search?q=${1}</string>
     <string name="theme_color_scheme_palette_color">Palett</string>
     <string name="import_theme_apply">Rakenda teema</string>
     <string name="theme_export_title">Ekspordi teema</string>
     <string name="preference_suspended_badges">Peatatud rakendused</string>
-    <string name="default_websearch_2_url">https://www.youtube.com/results?search_query=${1}</string>
-    <string name="default_websearch_3_name">Google Play</string>
     <string name="preference_use_system_default">Kasuta süsteemi vaikeväärtust</string>
     <string name="item_visibility_calendar_default">Kalendri vidin ja otsingutulemused</string>
     <string name="import_theme_exists">Teema on juba olemas ja seda uuendatakse</string>

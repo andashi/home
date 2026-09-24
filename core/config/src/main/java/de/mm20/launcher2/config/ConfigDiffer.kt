@@ -15,6 +15,8 @@ data class ConfigState(
     val search: SearchState = SearchState(),
     /** The manually pinned apps, in order: `home.favorites`. */
     val favorites: List<Favorite> = emptyList(),
+    /** The search actions in effect, in order: `search.actions` (#106); null when unknown. */
+    val searchActions: List<SearchActionConfig>? = null,
     val widgetsEnabled: Boolean = false,
     val gridColumns: Int = 4,
     val gridLocked: Boolean = false,
@@ -104,6 +106,12 @@ sealed class ConfigMutation {
         val favorites: List<Favorite>,
     ) : ConfigMutation() {
         override val section = "home.favorites"
+    }
+
+    data class SetSearchActions(
+        val actions: List<SearchActionConfig>,
+    ) : ConfigMutation() {
+        override val section = "search.actions"
     }
 
     data class SetWidgetsEnabled(
@@ -197,6 +205,13 @@ object ConfigDiffer {
             }
         }
 
+        desired.search?.actions?.let { actions ->
+            // The default encoding written or not is the same action (#106).
+            if (actions.normalized() != current.searchActions?.normalized()) {
+                mutations += ConfigMutation.SetSearchActions(actions)
+            }
+        }
+
         desired.home?.favorites?.let { favorites ->
             if (favorites != current.favorites) {
                 mutations += ConfigMutation.SetFavorites(favorites)
@@ -257,4 +272,18 @@ internal fun GridItemConfig.matches(stored: GridItemConfig): Boolean {
             same(profile, stored.profile) &&
             same(borderless, stored.borderless) && same(background, stored.background) &&
             same(themeColors, stored.themeColors)
+}
+
+/**
+ * Each action as the store keeps it (review on #116): the default encoding
+ * written out, and the fields a type ignores left out, so a file with a
+ * warning-only extra field still converges instead of rewriting every reload.
+ */
+private fun List<SearchActionConfig>.normalized(): List<SearchActionConfig> = map {
+    when (it.type) {
+        SearchActionTypes.Url -> it.copy(encoding = it.encoding ?: SearchActionTypes.DefaultEncoding)
+        SearchActionTypes.App -> SearchActionConfig(it.type, it.label, packageName = it.packageName)
+        SearchActionTypes.Intent -> SearchActionConfig(it.type, it.label)
+        else -> SearchActionConfig(it.type)
+    }
 }

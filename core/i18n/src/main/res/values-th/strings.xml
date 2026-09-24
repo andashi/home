@@ -13,7 +13,6 @@
     <string name="app_info_version">เวอร์ชั่น %1$s</string>
     <string name="help">ช่วยเหลือ</string>
     <string name="wallpaper">ภาพพื้นหลัง</string>
-    <string name="default_websearch_2_name">YouTube</string>
     <string name="websearch_dialog_url_error">ลิงก์นี้ขาดตัวยึดนำแหน่ง \'${1}\'</string>
     <string name="websearch_dialog_custom_icon">ไอคอนแบบกำหนดเอง</string>
     <string name="websearch_dialog_advanced">ขั้นสูง</string>
@@ -180,10 +179,7 @@
     <string name="preference_enforce_icon_shape_summary">บังคับให้ไอคอนทั้งหมดใช้รูปร่างนี้ ถึงแม้ว่าตัวไอคอนจะไม่รองรับก็ตาม</string>
     <string name="preference_grid_icon_size">ขนาดไอคอน</string>
     <string name="preference_grid_labels_summary">แสดงชื่อแอปใต้ไอคอน</string>
-    <string name="default_websearch_2_url">https://www.youtube.com/results\?search_query=${1}</string>
-    <string name="default_websearch_3_name">Google Play</string>
     <string name="preference_debug_cleanup_database_summary">ลบรายการที่เสียและไม่จำเป็นออกจากฐานข้อมูลของลอนเชอร์</string>
-    <string name="default_websearch_3_url">https://play.google.com/store/search\?q=${1}</string>
     <string name="missing_permission_accessibility_gesture_failed">จำเป็นต้องเปิดใช้งานสิทธิ์การเข้าถึงของลอนเชอร์จึงจะสามารถดำเนินการนี้ได้</string>
     <string name="websearch_dialog_query_encoding_url">เข้ารหัสแบบเปอร์เซ็นต์</string>
     <string name="missing_permission_accessibility_gesture_settings">การดำเนินการนี้ต้องการสิทธิ์การเข้าถึงของลอนเชอร์</string>

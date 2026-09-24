@@ -49,6 +49,7 @@ dependencies {
     implementation(project(":data:applications"))
     implementation(project(":data:searchable"))
     implementation(project(":data:homegrid"))
+    implementation(project(":data:search-actions"))
 
     testImplementation(libs.bundles.tests)
     testImplementation(libs.robolectric)

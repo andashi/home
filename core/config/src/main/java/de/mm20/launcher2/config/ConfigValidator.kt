@@ -6,6 +6,7 @@ object ConfigValidator {
     const val MaxPackageNameLength = 256
     const val MaxFavorites = 64
     const val MaxGridItems = 32
+    const val MaxSearchActions = 32
     const val MinGridColumns = 2
     const val MaxGridColumns = 8
     /** Upper bound for x, y, w and h: past any real grid, and far from Int overflow. */
@@ -42,6 +43,8 @@ object ConfigValidator {
                 )
             }
         }
+
+        config.search?.actions?.let { validateSearchActions(it, diagnostics) }
 
         config.appearance?.glass?.let { glass ->
             validateGlass(glass.blur, 0f, MaxGlassBlur, "appearance.glass.blur", "dp", diagnostics)
@@ -91,6 +94,78 @@ object ConfigValidator {
     }
 
     /** `home.grid` (D5): every violation is an Error at the item's path. */
+    /**
+     * `search.actions` (#106): a known type, the fields it needs, valid
+     * package names, no duplicates, and at most [MaxSearchActions].
+     */
+    private fun validateSearchActions(actions: List<SearchActionConfig>, out: MutableList<Diagnostic>) {
+        if (actions.size > MaxSearchActions) {
+            out += Diagnostic(
+                Severity.Error,
+                "too-many-search-actions",
+                "search.actions",
+                "at most $MaxSearchActions search actions, got ${actions.size}",
+            )
+        }
+        val seen = mutableSetOf<String>()
+        actions.forEachIndexed { index, action ->
+            val path = "search.actions[$index]"
+            fun invalid(message: String) {
+                out += Diagnostic(Severity.Error, "invalid-search-action", path, message)
+            }
+            action.packageName?.let { validatePackageName(it, "$path.package", out) }
+            when (action.type) {
+                SearchActionTypes.Url -> {
+                    if (action.label.isNullOrBlank()) invalid("a url action needs a label")
+                    val url = action.url
+                    if (url.isNullOrBlank()) invalid("a url action needs a url")
+                    else if ("\${1}" !in url) invalid("the url needs \${1} where the query goes")
+                    val encoding = action.encoding
+                    if (encoding != null && encoding !in SearchActionTypes.Encodings) {
+                        invalid("'$encoding' is not an encoding (${SearchActionTypes.Encodings.joinToString(", ")})")
+                    }
+                }
+                SearchActionTypes.App -> {
+                    if (action.label.isNullOrBlank()) invalid("an app action needs a label")
+                    if (action.packageName.isNullOrBlank()) invalid("an app action needs the package to search in")
+                    if (action.url != null || action.encoding != null) {
+                        out += Diagnostic(
+                            Severity.Warning,
+                            "search-action-field-ignored",
+                            path,
+                            "an app action takes a label and a package; its url and encoding are ignored",
+                        )
+                    }
+                }
+                SearchActionTypes.Intent -> out += Diagnostic(
+                    Severity.Warning,
+                    "search-action-read-only",
+                    path,
+                    "an intent action is made on the device; the file keeps it where it is but cannot create or change it",
+                )
+                in SearchActionTypes.BuiltIn -> {
+                    if (action.label != null || action.url != null || action.packageName != null || action.encoding != null) {
+                        out += Diagnostic(
+                            Severity.Warning,
+                            "search-action-field-ignored",
+                            path,
+                            "'${action.type}' is a built-in action; its label, url, package and encoding are ignored",
+                        )
+                    }
+                }
+                else -> invalid(
+                    "'${action.type}' is not a search action (${SearchActionTypes.Configurable.sorted().joinToString(", ")})"
+                )
+            }
+            // Intent actions are the device's own, told apart only by label and
+            // possibly alike: never a duplicate (review on #116).
+            val key = listOf(action.type, action.url.orEmpty(), action.packageName.orEmpty()).joinToString("|")
+            if (action.type != SearchActionTypes.Intent && !seen.add(key)) {
+                out += Diagnostic(Severity.Error, "duplicate-search-action", path, "the same action is listed twice")
+            }
+        }
+    }
+
     private fun validateGrid(grid: GridConfig, out: MutableList<Diagnostic>) {
         grid.columns?.let { columns ->
             if (columns !in MinGridColumns..MaxGridColumns) {

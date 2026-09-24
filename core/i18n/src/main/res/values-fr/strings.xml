@@ -58,10 +58,6 @@
     <string name="preference_icon_shape_circle">Cercle</string>
     <string name="preference_category_searchbar">Barre de recherche</string>
     <string name="preference_theme_system">Suivre le système</string>
-    <string name="default_websearch_2_name">YouTube</string>
-    <string name="default_websearch_3_name">Google Play</string>
-    <string name="default_websearch_2_url">https://www.youtube.com/results?search_query=${1}</string>
-    <string name="default_websearch_3_url">https://play.google.com/store/search?q=${1}</string>
     <string name="websearch_dialog_url_error">Le terme \'${1}\' est manquant dans cette URL</string>
     <string name="websearch_dialog_replace_icon">Remplacer l\'icône</string>
     <string name="websearch_dialog_delete_icon">Supprimer l\'icône</string>

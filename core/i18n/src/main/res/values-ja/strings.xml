@@ -17,7 +17,6 @@
     <string name="menu_contacts_open_externally">連絡先アプリで開く</string>
     <string name="menu_remove">削除</string>
     <string name="app_info_version">バージョン %1$s</string>
-    <string name="default_websearch_2_name">YouTube</string>
     <string name="preference_screen_appearance">外観</string>
     <string name="preference_colors_bw">黒と白</string>
     <string name="preference_category_links">リンク</string>
@@ -28,14 +27,11 @@
     <string name="preference_grid_icon_size">アイコンのサイズ</string>
     <string name="search_action_email">メール</string>
     <string name="search_bar_placeholder">検索</string>
-    <string name="default_websearch_3_url">https://play.google.com/store/search\?q=${1}</string>
-    <string name="default_websearch_3_name">Play ストア</string>
     <string name="preference_icon_shape">形</string>
     <string name="preference_icon_shape_squircle">スクワークル</string>
     <string name="preference_category_wallpaper">壁紙</string>
     <string name="preference_icon_shape_pentagon">五角形</string>
     <string name="help">ヘルプ</string>
-    <string name="default_websearch_2_url">https://www.youtube.com/results\?search_query=${1}</string>
     <string name="preference_icon_shape_rounded_square">角丸</string>
     <string name="preference_icon_shape_square">スクエア</string>
     <string name="alert_delete_shortcut">ショートカット %1$s は永久に削除されます。続行しますか？</string>

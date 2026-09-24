@@ -19,10 +19,6 @@
     <string name="settings">সেটিংস</string>
     <string name="help">সাহায্য</string>
     <string name="wallpaper">ওয়ালপেপার</string>
-    <string name="default_websearch_2_name">ইউটিউব</string>
-    <string name="default_websearch_2_url">https://www.youtube.com/results?search_query=${1}</string>
-    <string name="default_websearch_3_name">প্লে স্টোর</string>
-    <string name="default_websearch_3_url">https://play.google.com/store/search?q=${1}</string>
     <string name="websearch_dialog_url_error">এই লিংকে স্থানধারক \'${1}\' অনুপস্থিত</string>
     <string name="websearch_dialog_replace_icon">আইকন পরিবর্তন</string>
     <string name="websearch_dialog_delete_icon">আইকন সরানো</string>

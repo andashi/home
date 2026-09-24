@@ -14,7 +14,6 @@
     <string name="search_bar_placeholder">Pesquisar</string>
     <string name="app_info_version">Versão %1$s</string>
     <string name="help">Ajuda</string>
-    <string name="default_websearch_3_name">Google Play</string>
     <string name="websearch_dialog_url_error">\'${1}\' está em falta no URL</string>
     <string name="websearch_dialog_replace_icon">Substituir ícone</string>
     <string name="websearch_dialog_delete_icon">Eliminar ícone</string>
@@ -46,9 +45,6 @@
     <string name="settings">Definições</string>
     <string name="menu_share">Partilhar</string>
     <string name="menu_contacts_open_externally">Abrir nos contactos</string>
-    <string name="default_websearch_2_url">https://www.youtube.com/results?search_query=${1}</string>
-    <string name="default_websearch_3_url">https://play.google.com/store/search?q=${1}</string>
-    <string name="default_websearch_2_name">YouTube</string>
     <string name="alert_delete_shortcut">O atalho %1$s será eliminado permanentemente. Continuar?</string>
     <string name="websearch_dialog_query_encoding_form">application/x-www-form-urlencoded</string>
     <string name="edit_favorites_dialog_unpinned">Não afixados - usados frequentemente</string>

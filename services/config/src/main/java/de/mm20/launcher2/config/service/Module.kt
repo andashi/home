@@ -36,8 +36,10 @@ val configModule = module {
             appRepository = get(),
             profileResolver = get(),
             wallpapers = get(),
+            searchActions = get(),
         )
     }
+    factory<SearchActionStore> { AndroidSearchActionStore(androidContext(), get()) }
     single { ReloadReportStore(androidContext()) }
     // One lock around launcher.json: reloads (watcher, receiver) and the
     // edit-mode write-back must serialize on it.

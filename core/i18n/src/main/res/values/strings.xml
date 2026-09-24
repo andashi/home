@@ -106,46 +106,6 @@
     <string name="alert_delete_shortcut">The shortcut %1$s will be removed permanently. Proceed\?</string>
     <!-- A somewhat generic error message that is shown when something (a file of a specific file, an app, …)
     could not be opened because there was no app installed that could handle the request  -->
-    <!--
-        When the app is first launched, three web search shortcuts will be pre-created (can later be customized by user)
-        This is the name of the first one. Must be in sync with [default_websearch_1_url].
-        Usually Google, but can be substituted with something else if Google is not available in
-        the region of the language or not commonly used.
-       -->
-    <!--
-        When the app is first launched, three web search shortcuts will be pre-created (can later be customized by user)
-        This is the URL of the first one. Must be in sync with [default_websearch_1_name].
-        Usually Google, but can be substituted with something else if Google is not available in
-        the region of the language or not commonly used.
-       -->
-    <!--
-        When the app is first launched, three web search shortcuts will be pre-created (can later be customized by user)
-        This is the name of the second one. Must be in sync with [default_websearch_2_url].
-        Usually YouTube, but can be substituted with something else if YouTube is not available in
-        the region of the language or not commonly used.
-       -->
-    <string name="default_websearch_2_name">YouTube</string>
-    <!--
-        When the app is first launched, three web search shortcuts will be pre-created (can later be customized by user)
-        This is the URL of the second one. Must be in sync with [default_websearch_2_name].
-        Usually YouTube, but can be substituted with something else if YouTube is not available in
-        the region of the language or not commonly used.
-       -->
-    <string name="default_websearch_2_url">https://www.youtube.com/results\?search_query=${1}</string>
-    <!--
-        When the app is first launched, three web search shortcuts will be pre-created (can later be customized by user)
-        This is the name of the third one. Must be in sync with [default_websearch_3_url].
-        Usually Google Play, but can be substituted with something else if Google Play is not available in
-        the region of the language or not commonly used.
-       -->
-    <string name="default_websearch_3_name">Google Play</string>
-    <!--
-        When the app is first launched, three web search shortcuts will be pre-created (can later be customized by user)
-        This is the URL of the third one. Must be in sync with [default_websearch_3_name].
-        Usually Google Play, but can be substituted with something else if Google Play is not available in
-        the region of the language or not commonly used.
-       -->
-    <string name="default_websearch_3_url">https://play.google.com/store/search\?q=${1}</string>
     <string name="websearch_dialog_url_error">The placeholder \'${1}\' is missing in this URL</string>
     <string name="websearch_dialog_replace_icon">Replace icon</string>
     <string name="websearch_dialog_delete_icon">Delete icon</string>

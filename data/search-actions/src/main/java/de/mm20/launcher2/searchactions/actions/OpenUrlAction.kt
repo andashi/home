@@ -12,6 +12,8 @@ data class OpenUrlAction(
     override val icon: SearchActionIcon = SearchActionIcon.Website,
     override val iconColor: Int = 0,
     override val customIcon: String? = null,
+    /** The app that opens [url] (#106); null for the default browser. */
+    val packageName: String? = null,
 ) : SearchAction {
 
 
@@ -19,6 +21,8 @@ data class OpenUrlAction(
         val intent = Intent(Intent.ACTION_VIEW).apply {
             data = url
             flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            // Pinned (#106): only that app, never a fallback to another browser.
+            packageName?.let { setPackage(it) }
         }
         context.tryStartActivity(intent)
     }
