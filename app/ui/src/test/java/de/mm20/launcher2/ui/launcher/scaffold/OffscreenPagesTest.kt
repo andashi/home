@@ -83,6 +83,42 @@ class OffscreenPagesTest {
         }
     }
 
+    /**
+     * The frame in which the window changes size - the first frame after an
+     * unfold - lays out only what can be seen. A page nobody can see keeps
+     * its size for that frame and takes the new one in a later frame (#122).
+     */
+    @Test
+    fun `a window size change reaches the page after the frame of the change`() {
+        var side by mutableStateOf(100.dp)
+        var window = IntSize.Zero
+        var measured = IntSize.Zero
+        composeRule.mainClock.autoAdvance = false
+        composeRule.setContent {
+            Box(Modifier.size(side).onSizeChanged { window = it }) {
+                OffscreenPages(offsetX = { 1000 }) {
+                    Box(Modifier.fillMaxSize().onSizeChanged { measured = it })
+                }
+            }
+        }
+        val before = with(composeRule.density) { 100.dp.roundToPx() }
+        val after = with(composeRule.density) { 200.dp.roundToPx() }
+        composeRule.mainClock.advanceTimeByFrame()
+        composeRule.runOnIdle { assertEquals("first layout at its size", before, measured.width) }
+
+        side = 200.dp
+        // Frame by frame up to the one in which the window has the new size.
+        var frames = 0
+        while (composeRule.runOnIdle { window.width } != after) {
+            check(++frames < 10) { "the window never changed size" }
+            composeRule.mainClock.advanceTimeByFrame()
+        }
+        composeRule.runOnIdle { assertEquals("the frame of the change", before, measured.width) }
+
+        repeat(3) { composeRule.mainClock.advanceTimeByFrame() }
+        composeRule.runOnIdle { assertEquals("a later frame", after, measured.width) }
+    }
+
     /** Control: the same page in the viewport is drawn, so a zero above is not a test that sees nothing. */
     @Test
     fun `the same page in the viewport is drawn`() {
