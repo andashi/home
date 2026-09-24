@@ -18,7 +18,8 @@
 #
 # frames come from RUNS transitions home -> search -> home (a swipe up and
 # BACK), which animate the whole home content, so every surface redraws on
-# every frame. `dumpsys gfxinfo` is reset before and read after each series.
+# every frame. BAR=bottom-top also moves the search bar across the screen on
+# every transition (#107). `dumpsys gfxinfo` is reset before and read after each series.
 # The blur itself happens once per wallpaper, glass setting and display, off
 # the frame; its duration is read from the launcher's own log line.
 #
@@ -137,16 +138,28 @@ case "$PACK" in
     if [ "$PACK" = lawnicons ]; then ICONS='"icons": { "themed": true, "pack": "app.lawnchair.lawnicons" },'; else ICONS=''; fi ;;
   *) die "unknown PACK $PACK (lawnicons | lawnicons-default)" ;;
 esac
+# BAR=bottom-top: the bar at the bottom on home and at the top in search
+# (#107), so every transition moves it; default: no position keys at all.
+BAR_HOME=''; BAR_SEARCH=''
+case "${BAR:-}" in
+  "") ;;
+  bottom-top)
+    BAR_HOME='"searchBar": { "position": "bottom" },'
+    BAR_SEARCH='"search": { "barPosition": "top" },' ;;
+  *) die "unknown BAR $BAR (bottom-top)" ;;
+esac
 CONFIG="$WORK/glass.json"
 cat > "$CONFIG" <<EOF
 {
   "schemaVersion": 2,
   $ICONS
+  $BAR_SEARCH
   "appearance": {
     "wallpaper": { "image": "mauritius.jpg", "target": "both" },
     "glass": { "blur": 24, "tint": 0.12, "radius": 28, "contrast": "medium", "wallpaperBlur": true }
   },
   "home": {
+    $BAR_HOME
     "favorites": $FAVORITES,
     "widgets": { "enabled": true },
     "grid": {
