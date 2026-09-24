@@ -60,8 +60,10 @@ trap cleanup EXIT
 
 # The package of the activity in front.
 front_package() {
-  adb -s "$SERIAL" shell dumpsys activity activities | tr -d '\r' \
-    | awk '/topResumedActivity|mResumedActivity/ { for (i = 1; i <= NF; i++) if ($i ~ /\//) { split($i, a, "/"); print a[1]; exit } }'
+  # Captured first: awk stops early, which under pipefail would fail the pipe.
+  local activities
+  activities="$(adb -s "$SERIAL" shell dumpsys activity activities | tr -d '\r')"
+  awk '/topResumedActivity|mResumedActivity/ { for (i = 1; i <= NF; i++) if ($i ~ /\//) { split($i, a, "/"); print a[1]; exit } }' <<<"$activities"
 }
 
 # Opens search from the home screen and types $1.
