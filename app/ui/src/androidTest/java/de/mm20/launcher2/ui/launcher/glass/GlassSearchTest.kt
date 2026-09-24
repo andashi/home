@@ -248,12 +248,13 @@ class GlassSearchTest {
         composeRule.runOnIdle {
             val window = generateSequence(compose.context) { (it as? android.content.ContextWrapper)?.baseContext }
                 .filterIsInstance<android.app.Activity>().first().window
+            val initialY = window.attributes.y
             window.addFlags(android.view.WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
             window.attributes = window.attributes.apply {
                 gravity = android.view.Gravity.TOP or android.view.Gravity.START
                 width = host.width
                 height = host.height
-                y = shift
+                y = initialY + shift
             }
         }
         composeRule.waitForIdle()
