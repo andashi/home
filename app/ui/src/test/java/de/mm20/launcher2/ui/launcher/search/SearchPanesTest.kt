@@ -1,5 +1,6 @@
 package de.mm20.launcher2.ui.launcher.search
 
+import androidx.compose.ui.Alignment
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -56,7 +57,9 @@ class SearchPanesTest {
 
     private fun showPanes(layout: SearchLayout, widthDp: Float) {
         composeRule.setContent {
-            Box(Modifier.width(widthDp.dp)) {
+            // Centered, as SearchComponent places search: the panes must fill
+            // the grid area, not shrink to one pane and be centered (#91).
+            Box(Modifier.width(widthDp.dp), contentAlignment = Alignment.Center) {
                 SearchPanes(
                     layout = layout,
                     appsState = rememberLazyListState(),

@@ -1,5 +1,6 @@
 package de.mm20.launcher2.ui.launcher.grid
 
+import androidx.compose.ui.Alignment
 import de.mm20.launcher2.ui.launcher.search.SearchPanes
 import de.mm20.launcher2.homegrid.SearchLayout
 import de.mm20.launcher2.homegrid.HomeGridGeometry
@@ -258,6 +259,8 @@ class HomeGridFoldTest {
                         HomeGridGeometry.derive(FormFactor.Fold, 4, maxWidth.value, maxHeight.value)
                     )
                     layout = current
+                    // Centered, as SearchComponent places search.
+                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     SearchPanes(
                         layout = current,
                         appsState = rememberLazyListState(),
@@ -268,6 +271,7 @@ class HomeGridFoldTest {
                         apps = { item { Box(Modifier.fillMaxWidth().height(96.dp).semantics { contentDescription = "search-apps" }) } },
                         results = { item { Box(Modifier.fillMaxWidth().height(96.dp).semantics { contentDescription = "search-results" }) } },
                     )
+                    }
                 }
             }
         }
