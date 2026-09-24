@@ -21,6 +21,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.withContext
 
 interface SearchActionRepository {
@@ -35,10 +36,11 @@ interface SearchActionRepository {
 
 internal class SearchActionRepositoryImpl(
     private val context: Context,
-    private val database: AppDatabase
+    private val database: AppDatabase,
+    writeContext: CoroutineContext = Dispatchers.Default,
 ) : SearchActionRepository {
 
-    private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+    private val scope = CoroutineScope(writeContext + SupervisorJob())
     override fun getSearchActionBuilders(): Flow<List<SearchActionBuilder>> {
         val dao = database.searchActionDao()
         return dao.getSearchActions()

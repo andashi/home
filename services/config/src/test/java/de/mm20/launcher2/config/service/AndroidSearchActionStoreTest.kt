@@ -4,6 +4,8 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.pm.ActivityInfo
+import android.content.pm.ApplicationInfo
 import androidx.test.core.app.ApplicationProvider
 import de.mm20.launcher2.config.Diagnostic
 import de.mm20.launcher2.config.SearchActionConfig
@@ -46,10 +48,21 @@ class AndroidSearchActionStoreTest {
     private val repository = FakeRepository(context)
     private val store = AndroidSearchActionStore(context, repository)
 
-    private fun makeSearchable(component: ComponentName) {
+    private fun makeSearchable(component: ComponentName, exported: Boolean = true) {
         val pm = shadowOf(context.packageManager)
-        pm.addActivityIfNotPresent(component)
-        pm.addIntentFilterForActivity(component, IntentFilter(Intent.ACTION_SEARCH))
+        pm.addOrUpdateActivity(
+            ActivityInfo().apply {
+                packageName = component.packageName
+                name = component.className
+                this.exported = exported
+                enabled = true
+                applicationInfo = ApplicationInfo().apply { packageName = component.packageName }
+            }
+        )
+        pm.addIntentFilterForActivity(
+            component,
+            IntentFilter(Intent.ACTION_SEARCH).apply { addCategory(Intent.CATEGORY_DEFAULT) },
+        )
     }
 
     @Test
@@ -138,5 +151,40 @@ class AndroidSearchActionStoreTest {
             listOf(actions[0], actions[1].copy(encoding = "url"), actions[2]),
             store.read(),
         )
+    }
+
+    /** #116 review: an activity the launcher may not start is not a search it can offer. */
+    @Test
+    fun `an app whose search activity is not exported is left out`() = runTest {
+        makeSearchable(storeSearch, exported = false)
+
+        val reports = store.replace(listOf(SearchActionConfig("app", "Store", packageName = "app.grapheneos.apps")), "search.actions")
+
+        assertEquals(emptyList<SearchActionBuilder>(), repository.stored.value)
+        assertEquals(listOf("search-action-app-not-searchable"), reports.map { it.code })
+    }
+
+    /** #116 review: a pulled read-back keeps the user's intent action where it was. */
+    @Test
+    fun `a read-back intent action keeps the device's action at its place`() = runTest {
+        val mine = CustomIntentActionBuilder("Mine", queryKey = "q", baseIntent = Intent("com.example.SEARCH"))
+        repository.stored.value = listOf(mine, WebsearchActionBuilder(context))
+
+        val reports = store.replace(
+            listOf(SearchActionConfig("websearch"), SearchActionConfig("intent", "Mine")),
+            "search.actions",
+        )
+
+        assertEquals(emptyList<Diagnostic>(), reports)
+        assertEquals(listOf("websearch", mine.key), repository.stored.value.map { it.key })
+    }
+
+    @Test
+    fun `an intent action the device does not have is left out and reported`() = runTest {
+        val reports = store.replace(listOf(SearchActionConfig("intent", "Gone")), "search.actions")
+
+        assertEquals(emptyList<SearchActionBuilder>(), repository.stored.value)
+        assertEquals(listOf("search-action-intent-missing"), reports.map { it.code })
+        assertEquals(listOf("search.actions[0]"), reports.map { it.path })
     }
 }

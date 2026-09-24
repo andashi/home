@@ -4,9 +4,12 @@ import android.content.Context
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import de.mm20.launcher2.database.AppDatabase
+import de.mm20.launcher2.searchactions.builders.CallActionBuilder
 import de.mm20.launcher2.searchactions.builders.CustomWebsearchActionBuilder
 import de.mm20.launcher2.searchactions.builders.WebsearchActionBuilder
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -22,13 +25,27 @@ class SearchActionRepositoryTest {
     private val database = Room.inMemoryDatabaseBuilder(context, AppDatabase::class.java)
         .allowMainThreadQueries()
         .build()
-    private val repository = SearchActionRepositoryImpl(context, database)
+    private val writes = StandardTestDispatcher()
+    private val repository = SearchActionRepositoryImpl(context, database, writes)
 
     @After
     fun close() = database.close()
 
+    /**
+     * #116 review: a settings save made just before a config replace must
+     * not land after it: writes happen in the order they were made.
+     */
     @Test
-    fun `replace writes before it returns, in order`() = runTest {
+    fun `a settings save made before a replace does not overwrite it`() = runTest(writes) {
+        repository.saveSearchActionBuilders(listOf(CallActionBuilder(context)))
+        repository.replaceSearchActionBuilders(listOf(WebsearchActionBuilder(context)))
+        advanceUntilIdle()
+
+        assertEquals(listOf("websearch"), repository.getSearchActionBuilders().first().map { it.key })
+    }
+
+    @Test
+    fun `replace writes before it returns, in order`() = runTest(writes) {
         val builders = listOf(
             CustomWebsearchActionBuilder("Docs", "https://example.org/?q=\${1}", packageName = "org.example.browser"),
             WebsearchActionBuilder(context),
@@ -41,7 +58,7 @@ class SearchActionRepositoryTest {
     }
 
     @Test
-    fun `replace with nothing leaves nothing`() = runTest {
+    fun `replace with nothing leaves nothing`() = runTest(writes) {
         repository.replaceSearchActionBuilders(listOf(WebsearchActionBuilder(context)))
         repository.replaceSearchActionBuilders(emptyList())
 

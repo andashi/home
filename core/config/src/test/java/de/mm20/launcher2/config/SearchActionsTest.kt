@@ -123,4 +123,36 @@ class SearchActionsTest {
         val actions = listOf(SearchActionConfig("websearch"))
         assertEquals(actions, ConfigState(searchActions = actions).toLauncherConfig().search?.actions)
     }
+
+    /**
+     * #116 review: fields the store ignores must not keep the lists apart,
+     * or every reload would rewrite the table.
+     */
+    @Test
+    fun `ignored fields do not keep the lists from converging`() {
+        val state = ConfigState(
+            searchActions = listOf(SearchActionConfig("call"), SearchActionConfig("app", "Store", packageName = "app.x")),
+        )
+        val file = listOf(
+            SearchActionConfig("call", label = "Ring"),
+            SearchActionConfig("app", "Store", url = "https://x/${'$'}{1}", packageName = "app.x", encoding = "form"),
+        )
+
+        assertEquals(emptyList<ConfigMutation>(), ConfigDiffer.diff(LauncherConfig(2, search = SearchConfig(actions = file)), state))
+    }
+
+    /**
+     * #116 review: a custom intent action a user made on the device reads
+     * back as {type: intent, label}. A pulled read-back must apply again, so
+     * the type is accepted, with a warning: the file keeps it, it cannot make one.
+     */
+    @Test
+    fun `a read-back intent action is a warning, not an error`() {
+        val result = parse("""[ { "type": "intent", "label": "Mine" }, { "type": "websearch" } ]""")
+
+        assertTrue(result.isSuccess)
+        val warning = result.diagnostics.single { it.code == "search-action-read-only" }
+        assertEquals(Severity.Warning, warning.severity)
+        assertEquals("search.actions[0]", warning.path)
+    }
 }
