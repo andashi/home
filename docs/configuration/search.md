@@ -41,6 +41,7 @@
 | `search.reversed` | Results from the bottom up, the best match nearest a bottom search bar | boolean | `false` |
 | `search.hiddenItemsButton` | A button in the search bar that shows hidden items | boolean | `false` |
 | `search.barPosition` | Where the search bar sits while search is open. Absent, it follows [`home.searchBar.position`](search-bar.md) | `top`, `bottom` | follows the home position |
+| `search.actions` | The search actions: the chips under the search bar and the recognisers for numbers, addresses and times, in order ([below](#search-actions)) | list | the device's own |
 
 The defaults are the launcher's behavior before this section existed, so a
 file without `search` changes nothing. A key that is left out stays as it is
@@ -105,3 +106,42 @@ On the cover, search uses the home grid's four columns. On the inner display
 it has two panes that meet at the fold line: favorites and apps in the half
 the cover shows (the right one), at the home grid's pitch, and shortcuts,
 contacts and the filters in the left half. Nothing crosses the hinge.
+
+## Search actions
+
+`search.actions` is the list of search actions, in order. Each one either
+appears as a chip under the search bar for any query (a web search, a search
+inside an app) or when the query looks like something (a phone number, an
+address, a time). When a file has the key, the list replaces the device's; `[]`
+means no actions at all; without the key the device keeps its own. The
+read-back serves the list in effect.
+
+<!-- config -->
+```json
+{
+  "schemaVersion": 2,
+  "search": {
+    "actions": [
+      { "type": "call" },
+      { "type": "websearch" },
+      { "type": "url", "label": "Tor search", "url": "https://duckduckgo.com/?q=${1}", "package": "org.torproject.torbrowser" },
+      { "type": "app", "label": "App Store", "package": "app.grapheneos.apps" }
+    ]
+  }
+}
+```
+
+| Key | What it does | Accepted |
+|---|---|---|
+| `search.actions[].type` | `websearch`: search the web with the browser's own engine. `url`: open a URL with the query in it. `app`: search inside an app. Or a built-in by name: `call`, `message`, `email`, `contact`, `alarm`, `timer`, `calendar`, `website`, `share`, `private_space` | one of these |
+| `search.actions[].label` | The chip's text; `url` and `app` need one | text |
+| `search.actions[].url` | For `url`: the address, with `${1}` where the query goes | a URL containing `${1}` |
+| `search.actions[].package` | For `url`: the app that opens the URL, so the query never reaches another browser (Tor Browser in a zone meant for Tor). For `app`: the app to search in | a package name |
+| `search.actions[].encoding` | For `url`: how the query is put into it | `url` (default), `form`, `none` |
+
+A new install has the built-in actions and one neutral web search; there is
+no YouTube and no Google Play. A pinned `url` action opens only in its app:
+when that app cannot open the URL, nothing opens. An `app` whose package has
+no search is left out with a `search-action-app-not-searchable` warning. An
+action a user made on the device as a custom intent is read back as
+`{ "type": "intent", "label": ... }`; a file cannot write that type.
