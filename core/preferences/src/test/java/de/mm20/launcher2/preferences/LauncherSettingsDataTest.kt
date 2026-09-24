@@ -49,6 +49,28 @@ class LauncherSettingsDataTest {
         assertEquals(data, decoded)
     }
 
+    /**
+     * #108: files written before `SearchFilters.categories` became a getter
+     * carry the list; they still read, the other settings survive, and the
+     * category checks follow the booleans, not the stale list.
+     */
+    @Test
+    fun `a file with the old categories list still reads and follows the booleans`() = runTest {
+        val out = ByteArrayOutputStream()
+        serializer.writeTo(LauncherSettingsData(gridColumnCount = 7), out)
+        val old = out.toString(Charsets.UTF_8).replace(
+            Regex(""""searchFilter":\{[^}]*\}"""),
+            """"searchFilter":{"hiddenItems":false,"apps":true,"shortcuts":false,"contacts":true,""" +
+                    """"categories":[false,false,false,false,false,false,false,false,false]}""",
+        )
+        assertTrue(old, old.contains("categories"))
+
+        val decoded = serializer.readFrom(ByteArrayInputStream(old.toByteArray()))
+
+        assertEquals(7, decoded.gridColumnCount)
+        assertEquals(2, decoded.searchFilter.enabledCategories)
+    }
+
     @Test
     fun `schema version is pinned`() = runTest {
         val out = ByteArrayOutputStream()

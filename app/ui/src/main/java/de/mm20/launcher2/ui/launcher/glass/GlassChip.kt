@@ -15,6 +15,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import de.mm20.launcher2.ui.R
@@ -30,28 +31,30 @@ fun GlassChip(
     trailingIcon: (@Composable () -> Unit)? = null,
 ) {
     GlassSurface(
-        modifier = modifier
-            .heightIn(min = 32.dp)
-            .semantics { this.selected = selected },
+        modifier = modifier.heightIn(min = 32.dp),
         pill = true,
         tintBoost = if (selected) SelectedTintBoost else 0f,
     ) {
         Row(
             Modifier
                 .clickable(onClick = onClick)
+                // On the node you tap, which merges the label: TalkBack and
+                // uiautomator read the state from there (#108).
+                .semantics { this.selected = selected }
                 .padding(horizontal = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             when {
-                leadingIcon != null -> leadingIcon()
-                // A selected chip says so without its color: a check, as a
-                // Material filter chip does.
+                // A selected chip says so without its color: a check, in place
+                // of its icon, as a Material filter chip does. The tint alone
+                // was a shade too faint to see (#108).
                 selected && label != null -> Icon(
                     painterResource(R.drawable.check_20px),
                     contentDescription = null,
-                    modifier = Modifier.size(18.dp),
+                    modifier = Modifier.size(18.dp).testTag(GlassChipCheckTag),
                 )
+                leadingIcon != null -> leadingIcon()
             }
             if (label != null) Text(
                 label,
