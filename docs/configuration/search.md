@@ -81,5 +81,5 @@ a way back.
 
 On the cover, search uses the home grid's four columns. On the inner display
 it has two panes that meet at the fold line: favorites and apps in the half
-the cover shows, at the home grid's pitch, and shortcuts, contacts and the
-filters in the other half. Nothing crosses the hinge.
+the cover shows (the right one), at the home grid's pitch, and shortcuts,
+contacts and the filters in the left half. Nothing crosses the hinge.

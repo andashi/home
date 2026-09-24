@@ -12,7 +12,7 @@ the defaults, `home.grid.labels: true`; see [home-grid](home-grid.md#a-screen-fu
 
 ## A screen full of widgets, dock as a side column
 
-dock item `x: 3, w: 1, h: 6`; see [home-grid](home-grid.md#a-screen-full-of-widgets-the-dock-on-the-side).
+dock item `x: 3, w: 1, h: 6` (`x: 7, h: 7` on the Fold); see [home-grid](home-grid.md#a-screen-full-of-widgets-the-dock-on-the-side).
 
 | Phone | Fold, cover | Fold, inner |
 |---|---|---|

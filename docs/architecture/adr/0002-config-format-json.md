@@ -108,7 +108,7 @@ except `schemaVersion` is optional, and an absent key means *unmanaged*, not
               "x": 0, "y": 0, "w": 4, "h": 2 }
           ]
         },
-        // 8 columns wide; the cover display renders columns 0 to 3.
+        // 8 columns wide; the cover display renders columns 4 to 7 (#93).
         "fold": { "items": [] }
       }
     }

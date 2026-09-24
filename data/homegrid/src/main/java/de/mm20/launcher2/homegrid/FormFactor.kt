@@ -3,7 +3,7 @@ package de.mm20.launcher2.homegrid
 /**
  * Which of the two layouts a device uses (ADR 0001, D7): a candybar phone
  * draws the `phone` layout; a foldable draws the `fold` layout, whole on the
- * inner display and clipped to its left half on the cover.
+ * inner display and clipped to its right half on the cover (#93).
  */
 enum class FormFactor(val layout: String) {
     Phone(HomeGridLayouts.Phone),

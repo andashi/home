@@ -40,7 +40,9 @@ bottom row (a bottom dock, say) at its own device's last row.
 - `home.grid.layouts.phone`: used by phones.
 - `home.grid.layouts.fold`: used by foldables. It is twice as wide (8
   columns with the default 4). The inner display shows all of it; **the cover
-  shows columns 0 to 3 only.**
+  shows columns 4 to 7 only**, the right half, where they are on the inner
+  display: opening the device adds the left half, and what is on the cover
+  stays where it was.
 
 A device uses exactly one of them. A layout the file does not name is left as
 it is on the device. `"items": []` is an empty screen, even when the config
@@ -86,8 +88,8 @@ never has a label. Its shape is your choice:
 
 | Where | Item |
 |---|---|
-| At the bottom, the traditional dock | `{ "id": "dock", "widget": "favorites", "x": 0, "y": 5, "w": 4, "h": 1 }` (a 6-row phone; `"y": 6, "w": 8` on the Fold) |
-| A column on the side | `{ "id": "dock", "widget": "favorites", "x": 3, "y": 0, "w": 1, "h": 6 }` (`"h": 7` on the Fold) |
+| At the bottom, the traditional dock | `{ "id": "dock", "widget": "favorites", "x": 0, "y": 5, "w": 4, "h": 1 }` (a 6-row phone; `"x": 4, "y": 6` on the Fold, the right half both displays show) |
+| A column on the side | `{ "id": "dock", "widget": "favorites", "x": 3, "y": 0, "w": 1, "h": 6 }` (`"x": 7, "h": 7` on the Fold, the right edge of both displays; the Fold's default) |
 | Two rows | `{ "id": "dock", "widget": "favorites", "x": 0, "y": 4, "w": 4, "h": 2 }` |
 | None | leave the item out |
 
@@ -126,18 +128,18 @@ through search, and edit mode shows how many do not fit.
           { "id": "dock", "widget": "favorites", "x": 0, "y": 5, "w": 4, "h": 1 }
         ] },
         "fold": { "items": [
-          { "id": "analog", "widget": "com.android.deskclock/com.android.alarmclock.AnalogAppWidgetProvider", "x": 0, "y": 0, "w": 2, "h": 2 },
-          { "id": "messages", "widget": "com.android.messaging/com.android.messaging.widget.BugleWidgetProvider", "x": 2, "y": 0, "w": 2, "h": 2 },
-          { "id": "search", "widget": "app.vanadium.browser/org.chromium.chrome.browser.searchwidget.SearchWidgetProvider", "x": 0, "y": 2, "w": 4, "h": 1 },
-          { "id": "clock", "widget": "com.android.deskclock/com.android.alarmclock.DigitalAppWidgetProvider", "x": 0, "y": 3, "w": 2, "h": 1 },
-          { "id": "bookmarks", "widget": "app.vanadium.browser/com.google.android.apps.chrome.appwidget.bookmarks.BookmarkThumbnailWidgetProvider", "x": 2, "y": 3, "w": 2, "h": 2 },
-          { "id": "clock-2", "widget": "com.android.deskclock/com.android.alarmclock.DigitalAppWidgetProvider", "x": 0, "y": 4, "w": 2, "h": 1 },
-          { "id": "clock-3", "widget": "com.android.deskclock/com.android.alarmclock.DigitalAppWidgetProvider", "x": 0, "y": 5, "w": 2, "h": 1 },
-          { "id": "clock-4", "widget": "com.android.deskclock/com.android.alarmclock.DigitalAppWidgetProvider", "x": 2, "y": 5, "w": 2, "h": 1 },
-          { "id": "bookmarks-2", "widget": "app.vanadium.browser/com.google.android.apps.chrome.appwidget.bookmarks.BookmarkThumbnailWidgetProvider", "x": 4, "y": 0, "w": 4, "h": 3 },
-          { "id": "messages-2", "widget": "com.android.messaging/com.android.messaging.widget.BugleWidgetProvider", "x": 4, "y": 3, "w": 4, "h": 2 },
-          { "id": "search-2", "widget": "app.vanadium.browser/org.chromium.chrome.browser.searchwidget.SearchWidgetProvider", "x": 4, "y": 5, "w": 4, "h": 1 },
-          { "id": "dock", "widget": "favorites", "x": 0, "y": 6, "w": 8, "h": 1 }
+          { "id": "analog", "widget": "com.android.deskclock/com.android.alarmclock.AnalogAppWidgetProvider", "x": 4, "y": 0, "w": 2, "h": 2 },
+          { "id": "messages", "widget": "com.android.messaging/com.android.messaging.widget.BugleWidgetProvider", "x": 6, "y": 0, "w": 2, "h": 2 },
+          { "id": "search", "widget": "app.vanadium.browser/org.chromium.chrome.browser.searchwidget.SearchWidgetProvider", "x": 4, "y": 2, "w": 4, "h": 1 },
+          { "id": "clock", "widget": "com.android.deskclock/com.android.alarmclock.DigitalAppWidgetProvider", "x": 4, "y": 3, "w": 2, "h": 1 },
+          { "id": "bookmarks", "widget": "app.vanadium.browser/com.google.android.apps.chrome.appwidget.bookmarks.BookmarkThumbnailWidgetProvider", "x": 6, "y": 3, "w": 2, "h": 2 },
+          { "id": "clock-2", "widget": "com.android.deskclock/com.android.alarmclock.DigitalAppWidgetProvider", "x": 4, "y": 4, "w": 2, "h": 1 },
+          { "id": "clock-3", "widget": "com.android.deskclock/com.android.alarmclock.DigitalAppWidgetProvider", "x": 4, "y": 5, "w": 2, "h": 1 },
+          { "id": "clock-4", "widget": "com.android.deskclock/com.android.alarmclock.DigitalAppWidgetProvider", "x": 6, "y": 5, "w": 2, "h": 1 },
+          { "id": "bookmarks-2", "widget": "app.vanadium.browser/com.google.android.apps.chrome.appwidget.bookmarks.BookmarkThumbnailWidgetProvider", "x": 0, "y": 0, "w": 4, "h": 3 },
+          { "id": "messages-2", "widget": "com.android.messaging/com.android.messaging.widget.BugleWidgetProvider", "x": 0, "y": 3, "w": 4, "h": 2 },
+          { "id": "search-2", "widget": "app.vanadium.browser/org.chromium.chrome.browser.searchwidget.SearchWidgetProvider", "x": 0, "y": 5, "w": 4, "h": 1 },
+          { "id": "dock", "widget": "favorites", "x": 4, "y": 6, "w": 4, "h": 1 }
         ] }
       }
     }
@@ -145,8 +147,9 @@ through search, and edit mode shows how many do not fit.
 }
 ```
 
-On the Fold the dock is eight wide. The cover shows its first four columns,
-so the cover's dock shows the first four favorites.
+On the Fold the dock is the right half's four columns, so the cover and the
+inner display show the same dock in the same place. An eight-wide dock is
+possible too; the cover then shows its right half.
 
 ### A screen full of widgets, the dock on the side
 
@@ -172,15 +175,15 @@ so the cover's dock shows the first four favorites.
           { "id": "dock", "widget": "favorites", "x": 3, "y": 0, "w": 1, "h": 6 }
         ] },
         "fold": { "items": [
-          { "id": "analog", "widget": "com.android.deskclock/com.android.alarmclock.AnalogAppWidgetProvider", "x": 0, "y": 0, "w": 3, "h": 2 },
-          { "id": "search", "widget": "app.vanadium.browser/org.chromium.chrome.browser.searchwidget.SearchWidgetProvider", "x": 0, "y": 2, "w": 3, "h": 1 },
-          { "id": "messages", "widget": "com.android.messaging/com.android.messaging.widget.BugleWidgetProvider", "x": 0, "y": 3, "w": 3, "h": 2 },
-          { "id": "clock", "widget": "com.android.deskclock/com.android.alarmclock.DigitalAppWidgetProvider", "x": 0, "y": 5, "w": 3, "h": 1 },
-          { "id": "clock-2", "widget": "com.android.deskclock/com.android.alarmclock.DigitalAppWidgetProvider", "x": 0, "y": 6, "w": 3, "h": 1 },
-          { "id": "dock", "widget": "favorites", "x": 3, "y": 0, "w": 1, "h": 7 },
-          { "id": "bookmarks", "widget": "app.vanadium.browser/com.google.android.apps.chrome.appwidget.bookmarks.BookmarkThumbnailWidgetProvider", "x": 4, "y": 0, "w": 4, "h": 3 },
-          { "id": "messages-2", "widget": "com.android.messaging/com.android.messaging.widget.BugleWidgetProvider", "x": 4, "y": 3, "w": 4, "h": 3 },
-          { "id": "search-2", "widget": "app.vanadium.browser/org.chromium.chrome.browser.searchwidget.SearchWidgetProvider", "x": 4, "y": 6, "w": 4, "h": 1 }
+          { "id": "analog", "widget": "com.android.deskclock/com.android.alarmclock.AnalogAppWidgetProvider", "x": 4, "y": 0, "w": 3, "h": 2 },
+          { "id": "search", "widget": "app.vanadium.browser/org.chromium.chrome.browser.searchwidget.SearchWidgetProvider", "x": 4, "y": 2, "w": 3, "h": 1 },
+          { "id": "messages", "widget": "com.android.messaging/com.android.messaging.widget.BugleWidgetProvider", "x": 4, "y": 3, "w": 3, "h": 2 },
+          { "id": "clock", "widget": "com.android.deskclock/com.android.alarmclock.DigitalAppWidgetProvider", "x": 4, "y": 5, "w": 3, "h": 1 },
+          { "id": "clock-2", "widget": "com.android.deskclock/com.android.alarmclock.DigitalAppWidgetProvider", "x": 4, "y": 6, "w": 3, "h": 1 },
+          { "id": "dock", "widget": "favorites", "x": 7, "y": 0, "w": 1, "h": 7 },
+          { "id": "bookmarks", "widget": "app.vanadium.browser/com.google.android.apps.chrome.appwidget.bookmarks.BookmarkThumbnailWidgetProvider", "x": 0, "y": 0, "w": 4, "h": 3 },
+          { "id": "messages-2", "widget": "com.android.messaging/com.android.messaging.widget.BugleWidgetProvider", "x": 0, "y": 3, "w": 4, "h": 3 },
+          { "id": "search-2", "widget": "app.vanadium.browser/org.chromium.chrome.browser.searchwidget.SearchWidgetProvider", "x": 0, "y": 6, "w": 4, "h": 1 }
         ] }
       }
     }
@@ -188,10 +191,11 @@ so the cover's dock shows the first four favorites.
 }
 ```
 
-**On the Fold, a side dock that both displays show has to sit in column 3**,
-because the cover shows columns 0 to 3. On the inner display it then stands in
-the middle, with more widgets to its right. A dock in column 7 sits at the
-inner display's right edge but is not on the cover at all.
+**On the Fold, a side dock that both displays show sits in column 7**: the
+cover shows columns 4 to 7, so column 7 is the right edge of both displays and
+the dock does not move when the device opens. This is the Fold's default dock.
+A dock in column 3 would stand in the middle of the inner display and not be
+on the cover at all.
 
 ## Editing on the device
 

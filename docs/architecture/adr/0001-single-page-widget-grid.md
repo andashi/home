@@ -109,8 +109,17 @@ removed afterwards (PR 5b, decided 2026-09-22): the launcher has one page.
   separate inner layout; every item has one position and size, the same folded
   and unfolded (Apple's relocating dock is deliberately not reproduced).
 - Items may not cross the fold line, except the favorites widget, which may span
-  all columns and shows its left half folded. A config that asks for a crossing
+  all columns and shows its cover half folded. A config that asks for a crossing
   gets `grid-crosses-fold` and the item is nudged to one side.
+- **Amended 2026-09-24 (#93): the cover is the right half.** The cover renders
+  columns `columns .. 2*columns-1` (4 to 7), not the left half: on the Pixel
+  Fold the right half of the inner display is the part that stays in the hand,
+  so what is on the cover stays in the same physical place when the device
+  opens, and opening adds a screen on the left. Everything in the right half
+  is on both displays; the left half is inner-only. The default fold dock is
+  the right edge column (`x 7, y 0, w 1`, full height), the one edge that is
+  an edge in both states. Stored layouts were not migrated; provisioning
+  mirrored its fold layouts in the same release.
 - Half-folded and landscape are treated as fully open; rotation keeps the grid,
   rows clamped. A foldable is detected by the hinge feature or by two built-in
   displays (the GrapheneOS emulator instance has the displays but not the
