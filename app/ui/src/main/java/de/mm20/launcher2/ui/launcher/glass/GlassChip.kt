@@ -27,6 +27,8 @@ fun GlassChip(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     selected: Boolean = false,
+    /** A stronger tint without being a selection, e.g. the best match (#108). */
+    highlighted: Boolean = false,
     leadingIcon: (@Composable () -> Unit)? = null,
     trailingIcon: (@Composable () -> Unit)? = null,
 ) {
