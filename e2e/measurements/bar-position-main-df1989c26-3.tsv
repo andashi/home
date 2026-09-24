@@ -1,4 +1,5 @@
-rev	780a1a777
+rev	df1989c26
+apk_sha256	d1860c365b92cec1dc4ddb174d3864fb752ef64c42584d8218f6a8c493b5910c
 serial	emulator-5560
 runs	15
 fixture	clocks

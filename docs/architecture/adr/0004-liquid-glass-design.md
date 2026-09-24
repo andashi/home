@@ -118,7 +118,10 @@ the fix.
 moves between the home and the search position with the transition, a
 vertical bias read at placement only, so the move re-places the bar and does
 not recompose it. Interleaved series on test-fold, `GPU=host`, cold boot,
-RUNS=15, each build from a pinned worktree (`e2e/measurements/bar-position-*`):
+RUNS=15, each build from a pinned worktree (`e2e/measurements/bar-position-*`;
+each file records the build's revision and the APK's SHA-256 - the first
+recording named the measuring worktree's HEAD, 780a1a777, and was corrected
+from the APKs' provenance: main at df1989c26, the branch at 7e2ad7d74):
 
 | Build | Cover: p50 / p90 / p99, janky | Inner: p50 / p90 / p99, janky |
 |---|---|---|
