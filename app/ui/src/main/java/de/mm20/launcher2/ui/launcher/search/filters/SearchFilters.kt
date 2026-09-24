@@ -46,7 +46,13 @@ fun SearchFilters(
         // would be a hole down to the wallpaper and its selected state too
         // faint (review on #98): glass only on the search screen.
         if (LocalOnGlass.current) {
-            GlassChip(selected = filters.hiddenItems, onClick = toggle, leadingIcon = icon, label = label)
+            GlassChip(
+                selected = filters.hiddenItems,
+                onClick = toggle,
+                // Selected, the chip shows its check instead (#108).
+                leadingIcon = if (filters.hiddenItems) null else icon,
+                label = label,
+            )
         } else {
             FilterChip(
                 selected = filters.hiddenItems,

@@ -52,7 +52,8 @@ fun ColumnScope.SearchBarActions(
             items(actions) {
                 GlassChip(
                     modifier = Modifier.padding(4.dp),
-                    selected = it == highlightedAction,
+                    // The best match: Enter starts it. A highlight, not a selection.
+                    highlighted = it == highlightedAction,
                     onClick = {
                         it.start(context)
                     },

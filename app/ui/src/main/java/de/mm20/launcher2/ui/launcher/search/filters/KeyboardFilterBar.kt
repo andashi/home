@@ -67,18 +67,22 @@ fun KeyboardFilterBar(
                             .padding(end = 8.dp)
                     )
                 }
+                val selected = filters.isSelected(item)
                 GlassChip(
                     modifier = Modifier.padding(end = if (i == items.lastIndex) 0.dp else 8.dp),
-                    selected = filters.isSelected(item),
+                    selected = selected,
                     onClick = {
                         onFiltersChange(filters.toggle(item))
                     },
-                    leadingIcon = {
-                        Icon(
-                            painter = painterResource(item.iconMedium),
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp)
-                        )
+                    // Selected, the chip shows its check instead (#108).
+                    leadingIcon = if (selected) null else {
+                        {
+                            Icon(
+                                painter = painterResource(item.iconMedium),
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
                     },
                     label = item.getLabel(context),
                 )

@@ -10,7 +10,10 @@ data class SearchFilters(
     val shortcuts: Boolean = true,
     val contacts: Boolean = true,
 ) {
-    private val categories = listOf(apps, shortcuts, contacts)
+    // Computed, not stored: a stored list was serialized into the settings
+    // file and read back as-is, out of step with the booleans (#108).
+    private val categories
+        get() = listOf(apps, shortcuts, contacts)
 
     val allCategoriesEnabled
         get() = categories.all { it }
