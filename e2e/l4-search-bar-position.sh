@@ -9,8 +9,11 @@
 #    the read-back serves both;
 # 2. on the home screen the bar sits in the bottom quarter;
 # 3. open search and type: the bar sits in the top quarter, and the best
-#    match is right below it (no more than two rows of space between them);
+#    match is right below it: from the field's bottom to the best match's
+#    label there is at most the chip row and one app row (200 dp);
 # 4. back to home: the bar is at the bottom again.
+#
+# SHOTS=<dir> saves home.png and search.png there.
 #
 # Runs as the unrooted shell (uid 2000, asserted), under the device lock.
 set -euo pipefail
@@ -104,6 +107,7 @@ sleep 2
 read -r home_y _ _ <<<"$(node_y Search)"
 [ "$home_y" -gt $((H * 3 / 4)) ] || die "home: the bar is at y $home_y of $H, not in the bottom quarter"
 ok "home: the bar is at y $home_y of $H (bottom quarter)"
+[ -z "${SHOTS:-}" ] || adb -s "$SERIAL" exec-out screencap -p > "$SHOTS/home.png"
 
 log "opening search"
 tap_desc Search
@@ -117,8 +121,10 @@ ok "search: the bar is at y $bar_y of $H (top quarter)"
 read -r _ _ match_top <<<"$(node_y Settings)"
 [ -n "${match_top:-}" ] || die "search: the best match (Settings) is not on screen"
 gap=$((match_top - bar_bottom))
-[ "$gap" -lt $((H / 6)) ] || die "search: $gap px between the bar and the best match"
-ok "search: the best match starts $gap px below the bar"
+limit="$(awk -v s="$(density_scale)" 'BEGIN { printf "%d", 200 * s }')"
+[ "$gap" -le "$limit" ] || die "search: $gap px between the field and the best match's label (limit $limit px, 200 dp)"
+ok "search: the best match's label is $gap px below the field (limit $limit px)"
+[ -z "${SHOTS:-}" ] || adb -s "$SERIAL" exec-out screencap -p > "$SHOTS/search.png"
 
 log "closing search"
 adb -s "$SERIAL" shell input keyevent KEYCODE_BACK
