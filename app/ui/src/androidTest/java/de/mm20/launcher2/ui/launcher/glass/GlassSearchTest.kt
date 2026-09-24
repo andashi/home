@@ -196,6 +196,95 @@ class GlassSearchTest {
         assertEquals("moved popup: backdrop row drawn vs where it is on screen", expected, red / (red + blue), 0.03f)
     }
 
+    /**
+     * #113: the launcher window moves after a popup is placed. The popup's
+     * glass maps its position on screen into the launcher window through the
+     * launcher window's origin, so when that origin changes the drawn row
+     * must follow it - also when nothing inside the popup's own window moved.
+     */
+    @Test
+    fun aGlassSurfaceInAPopupFollowsAMovedHostWindow() {
+        val controller = GlassBackdropController(
+            source,
+            MutableStateFlow(GlassInputs(24f, 0f, 28f, Contrast.Medium)),
+            CoroutineScope(Dispatchers.Main.immediate),
+        ) { _, key ->
+            val (w, h) = BackdropGeometry.backdropSize(key.windowWidthPx, key.windowHeightPx)
+            Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888).apply {
+                for (y in 0 until h) {
+                    val red = (255f * y / (h - 1)).toInt()
+                    for (x in 0 until w) setPixel(x, y, android.graphics.Color.rgb(red, 0, 255 - red))
+                }
+            }.asImageBitmap()
+        }
+        var windowHeight = 0
+        lateinit var host: android.view.View
+        lateinit var compose: android.view.View
+        composeRule.setContent {
+            compose = LocalView.current
+            host = compose.rootView
+            windowHeight = LocalWindowInfo.current.containerSize.height
+            MaterialTheme {
+                ProvideGlassBackdrop(controller) {
+                    Box(Modifier.fillMaxSize()) {
+                        val offset = with(LocalDensity.current) { IntOffset(200.dp.roundToPx(), 420.dp.roundToPx()) }
+                        Popup(offset = offset) {
+                            GlassMenuGroup(Modifier.size(120.dp).testTag("popup")) {}
+                        }
+                    }
+                }
+            }
+        }
+        composeRule.waitForIdle()
+        fun hostTop() = IntArray(2).also(host::getLocationOnScreen)[1]
+        val topBefore = hostTop()
+        fun popupNode() = composeRule.onNodeWithTag("popup", useUnmergedTree = true).fetchSemanticsNode()
+        val popupBefore = popupNode().positionOnScreen
+        val regionBefore = popupNode().config.getOrNull(GlassBackdropRegion)
+
+        // Move the launcher window down, same size: its content, the popup's
+        // anchor included, stays where it is inside it.
+        val shift = (windowHeight * 0.15f).toInt()
+        composeRule.runOnIdle {
+            val window = generateSequence(compose.context) { (it as? android.content.ContextWrapper)?.baseContext }
+                .filterIsInstance<android.app.Activity>().first().window
+            window.addFlags(android.view.WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
+            window.attributes = window.attributes.apply {
+                gravity = android.view.Gravity.TOP or android.view.Gravity.START
+                width = host.width
+                height = host.height
+                y = shift
+            }
+        }
+        composeRule.waitForIdle()
+        Thread.sleep(500)
+        composeRule.waitForIdle()
+
+        val topAfter = hostTop()
+        android.util.Log.i(
+            "GlassSearchTest",
+            "host move: host $topBefore -> $topAfter, popup $popupBefore -> ${popupNode().positionOnScreen}, " +
+                "region $regionBefore -> ${popupNode().config.getOrNull(GlassBackdropRegion)}",
+        )
+        // Without this a host that never moved passes too.
+        assertEquals("the launcher window moved on screen", shift.toFloat(), (topAfter - topBefore).toFloat(), 2f)
+
+        val screen = InstrumentationRegistry.getInstrumentation().uiAutomation.takeScreenshot()
+        val semantics = composeRule.onNodeWithTag("popup", useUnmergedTree = true).fetchSemanticsNode()
+        val centreX = semantics.positionOnScreen.x + semantics.size.width / 2f
+        val centreY = semantics.positionOnScreen.y + semantics.size.height / 2f
+        val expected = (centreY - topAfter) / windowHeight
+        val pixel = screen.getPixel(centreX.toInt(), centreY.toInt())
+        val red = android.graphics.Color.red(pixel).toFloat()
+        val blue = android.graphics.Color.blue(pixel).toFloat()
+        assertEquals(
+            "popup after the host moved: backdrop row drawn vs where it is on screen " +
+                "(host top $topBefore -> $topAfter, popup on screen ${semantics.positionOnScreen}, " +
+                "region ${semantics.config.getOrNull(GlassBackdropRegion)})",
+            expected, red / (red + blue), 0.03f,
+        )
+    }
+
     @Test
     fun aGlassSurfaceInAPopupDrawsTheBackdropUnderItOnScreen() {
         // #113: what the node saw, in order, so a failure says which input was off.
