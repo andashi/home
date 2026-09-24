@@ -11,6 +11,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.Snapshot
@@ -68,9 +69,11 @@ import org.robolectric.annotation.GraphicsMode
 
 /**
  * #118: on unfold the grid shows the dock at its place on the inner display
- * in the first frame after the window changed - not missing, not at the
- * cover's column window mid-screen. With the real view model: the round trip
- * through it took frames, which is what provisioning recorded.
+ * in the first frame - not missing, not at the cover's column window
+ * mid-screen. The device recreates the activity on fold and unfold (measured:
+ * wm_relaunch_resume_activity, config changes 0xd00), so the grid's
+ * composition is thrown away and built anew at the new size with the same,
+ * retained view model; this test does the same (the key below).
  */
 @RunWith(AndroidJUnit4::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
@@ -89,7 +92,7 @@ class HomeGridUnfoldTest {
     }
 
     @Test
-    fun `the first frame after unfolding shows the dock at column 7`() {
+    fun `the first frame of the recreated grid on the inner display shows the dock at column 7`() {
         val repository = FakeHomeGridRepository(
             mapOf(HomeGridLayouts.Fold to listOf(dockItem(7, 0, 1, 6, HomeGridLayouts.Fold))),
         )
@@ -108,8 +111,11 @@ class HomeGridUnfoldTest {
         composeRule.setContent {
             MaterialTheme {
                 ProvideAppWidgetHost {
-                    Box(Modifier.requiredSize(width, 700.dp)) {
-                        HomeGrid(viewModel = vm, reducedMotion = true) { columns, rows -> Text("favorites ${columns}x$rows") }
+                    // A new composition per window, as the recreated activity has.
+                    key(width) {
+                        Box(Modifier.requiredSize(width, 700.dp)) {
+                            HomeGrid(viewModel = vm, reducedMotion = true) { columns, rows -> Text("favorites ${columns}x$rows") }
+                        }
                     }
                 }
             }

@@ -14,18 +14,22 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import de.mm20.launcher2.grid.Span
-import de.mm20.launcher2.homegrid.FormFactorDetector
 import de.mm20.launcher2.homegrid.FormFactor
-import de.mm20.launcher2.homegrid.HomeGridItem
+import de.mm20.launcher2.homegrid.FormFactorDetector
+import de.mm20.launcher2.homegrid.GridGeometry
+import de.mm20.launcher2.homegrid.HomeGridGeometry
 import de.mm20.launcher2.homegrid.HomeGridInitFlag
+import de.mm20.launcher2.homegrid.HomeGridItem
 import de.mm20.launcher2.homegrid.HomeGridLayouts
 import de.mm20.launcher2.homegrid.HomeGridRepository
 import de.mm20.launcher2.homegrid.HomeGridWidgets
-import de.mm20.launcher2.homegrid.GridGeometry
 import de.mm20.launcher2.homegrid.HomeGridWriteBack
 import de.mm20.launcher2.homegrid.HomeGridWriteResult
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 
 /** In-memory grid table: enough for the view model and layout tests. */
@@ -123,4 +127,25 @@ fun PlaceholderCell(id: String, span: Span) {
             }
         }
     }
+}
+
+/**
+ * Derives the geometry for a [widthDp] x [heightDp] window as the composable
+ * does and hands it to the view model (#118: the composable is its only
+ * source). [columns] is the configured column count.
+ */
+fun HomeGridVM.measure(widthDp: Float, heightDp: Float, columns: Int = 4) {
+    onGeometry(HomeGridGeometry.derive(formFactor, columns, widthDp, heightDp))
+}
+
+/** What the grid draws once the geometry and the items are there (and [predicate] holds). */
+suspend fun HomeGridVM.uiState(predicate: (HomeGridUiState) -> Boolean = { true }): HomeGridUiState =
+    combine(geometry.filterNotNull(), items.filterNotNull()) { g, i -> HomeGridUiState(g, arrange(g, i)) }
+        .first(predicate)
+
+/** What the grid draws now, or null before the geometry or the items are there. */
+fun HomeGridVM.uiStateNow(): HomeGridUiState? {
+    val g = geometry.value ?: return null
+    val i = items.value ?: return null
+    return HomeGridUiState(g, arrange(g, i))
 }

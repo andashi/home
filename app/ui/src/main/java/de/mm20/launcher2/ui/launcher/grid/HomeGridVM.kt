@@ -69,9 +69,11 @@ data class HomeGridUiState(
 )
 
 /**
- * Derives the grid's geometry from the measured window (D1), arranges what
- * the repository holds for it, and gives a never-configured launcher its one
- * default, the favorites row (PR 5b). Constructor-injected so tests build it
+ * Holds what the grid shows and edits it. The geometry comes from the
+ * composable, which derives it from its measured window (D1) in the frame
+ * the window changes (#118); the view model takes it through [onGeometry]
+ * and gives a never-configured launcher its one default, the favorites row
+ * (PR 5b). Constructor-injected so tests build it
  * with fakes; the composable obtains it through [factory].
  */
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -345,41 +347,52 @@ class HomeGridVM(
 
     val formFactor: FormFactor = formFactorDetector.detect()
 
-    /** The usable window in dp, set by the composable once it is measured. */
-    private val window = MutableStateFlow<Pair<Float, Float>?>(null)
+    private val _geometry = MutableStateFlow<GridGeometry?>(null)
 
-    val geometry: StateFlow<GridGeometry?> =
-        combine(window, uiSettings.homeGridColumns) { size, columns ->
-            size?.let { (width, height) ->
-                HomeGridGeometry.derive(formFactor, columns, width, height)
-            }
-        }
-            // The config store derives its `grid-overflow` diagnostics from
-            // the rows this device really has (GridRowsSource).
-            .onEach { geometry ->
-                if (geometry != null) {
-                    measuredRows.update(geometry.layout, geometry.rows)
-                    Log.i(
-                        Tag,
-                        "geometry ${geometry.layout}: ${geometry.spec.columns}x${geometry.rows} " +
-                                "(visible ${geometry.visibleColumns}, cover=${geometry.isCover}, cell ${geometry.cellDp} dp)",
-                    )
-                }
-            }
-            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), null)
+    /**
+     * The geometry the grid is drawn with, handed over by the composable in
+     * the frame it derived it (#118): the composable is its only source, so
+     * edits always work on what the user sees.
+     */
+    val geometry: StateFlow<GridGeometry?> = _geometry
 
-    val state: StateFlow<HomeGridUiState?> = geometry
-        .filterNotNull()
-        .flatMapLatest { geometry ->
-            combine(repository.observe(geometry.layout), working) { stored, edited ->
-                val arranged = HomeGridArrangement.arrange(geometry, edited ?: stored)
-                for (issue in arranged.issues) {
-                    Log.w(Tag, "layout ${geometry.layout}: corrected $issue")
-                }
-                HomeGridUiState(geometry, arranged.cells)
-            }
+    /**
+     * Takes the composable's geometry. The config store derives its
+     * `grid-overflow` diagnostics from the rows this device really has
+     * (GridRowsSource).
+     */
+    fun onGeometry(geometry: GridGeometry) {
+        if (_geometry.value == geometry) return
+        _geometry.value = geometry
+        measuredRows.update(geometry.layout, geometry.rows)
+        Log.i(
+            Tag,
+            "geometry ${geometry.layout}: ${geometry.spec.columns}x${geometry.rows} " +
+                    "(visible ${geometry.visibleColumns}, cover=${geometry.isCover}, cell ${geometry.cellDp} dp)",
+        )
+    }
+
+    /**
+     * What the grid shows, edited or stored, for this device's layout. Kept
+     * for a few seconds without subscribers, so a recreated activity (fold,
+     * unfold) has it in its first frame (#118).
+     */
+    val items: StateFlow<List<HomeGridItem>?> =
+        combine(repository.observe(formFactor.layout), working) { stored, edited -> edited ?: stored }
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+
+    /** The configured columns, for the composable's geometry (#118). */
+    val columns: StateFlow<Int?> = uiSettings.homeGridColumns
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+
+    /** Arranges [items] for [geometry] (pure), logging what the engine corrected. */
+    fun arrange(geometry: GridGeometry, items: List<HomeGridItem>): List<HomeGridCell> {
+        val arranged = HomeGridArrangement.arrange(geometry, items)
+        for (issue in arranged.issues) {
+            Log.w(Tag, "layout ${geometry.layout}: corrected $issue")
         }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), null)
+        return arranged.cells
+    }
 
     init {
         viewModelScope.launch {
@@ -388,22 +401,6 @@ class HomeGridVM(
                 repository, initFlag, initLock, first.layout, columns = first.spec.columns, rows = first.spec.rows,
             )
         }
-    }
-
-    /**
-     * What the grid shows, edited or stored, for this device's layout; the
-     * composable arranges it for its measured window itself (#118).
-     */
-    val items: StateFlow<List<HomeGridItem>?> =
-        combine(repository.observe(formFactor.layout), working) { stored, edited -> edited ?: stored }
-            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), null)
-
-    /** The configured columns, for the composable's own geometry (#118). */
-    val columns: StateFlow<Int?> = uiSettings.homeGridColumns
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), null)
-
-    fun onWindowMeasured(widthDp: Float, heightDp: Float) {
-        window.value = widthDp to heightDp
     }
 
     /** Binds what needs binding and releases what nothing references; see [HomeGridReconciler]. */

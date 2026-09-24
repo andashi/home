@@ -53,7 +53,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import de.mm20.launcher2.grid.Span
 import de.mm20.launcher2.homegrid.HomeGridGeometry
-import de.mm20.launcher2.homegrid.HomeGridArrangement
 import de.mm20.launcher2.homegrid.AndroidGridItemLimits
 import de.mm20.launcher2.homegrid.GridGeometry
 import de.mm20.launcher2.profiles.ProfileManager
@@ -146,29 +145,22 @@ fun HomeGrid(
     ) {
         val widthDp = maxWidth.value
         val heightDp = maxHeight.value
-        LaunchedEffect(widthDp, heightDp) {
-            viewModel.onWindowMeasured(widthDp, heightDp)
-        }
 
-        // The geometry and the arrangement for this window, derived here in
-        // the same frame the window changed (unfold, fold, rotation), with
-        // the same pure functions the view model uses: no round trip through
-        // the view model, so the first frame on the new display is already
-        // right (#118). The view model's own geometry serves edits and the
-        // config store's rows.
-        // Kept subscribed while the grid is shown: edits read the view
-        // model's geometry and the config store its measured rows.
-        viewModel.geometry.collectAsStateWithLifecycle()
+        // The geometry for this window, derived here in the frame the window
+        // changed (unfold, fold, rotation, a recreated activity) and handed to
+        // the view model in the same frame, before layout, draw and input:
+        // one source, so the first frame on a new display is already right and
+        // edits work on what the user sees (#118).
         val items by viewModel.items.collectAsStateWithLifecycle()
         val columns by viewModel.columns.collectAsStateWithLifecycle()
         val gridItems = items ?: return@BoxWithConstraints
         val gridColumns = columns ?: return@BoxWithConstraints
-        val uiState = remember(widthDp, heightDp, gridColumns, gridItems) {
-            val geometry = HomeGridGeometry.derive(viewModel.formFactor, gridColumns, widthDp, heightDp)
-            HomeGridUiState(geometry, HomeGridArrangement.arrange(geometry, gridItems).cells)
+        val geometry = remember(widthDp, heightDp, gridColumns) {
+            HomeGridGeometry.derive(viewModel.formFactor, gridColumns, widthDp, heightDp)
         }
-        // Never another window's geometry (#118).
-        if (!uiState.geometry.isFor(widthDp, heightDp)) return@BoxWithConstraints
+        val cells = remember(geometry, gridItems) { viewModel.arrange(geometry, gridItems) }
+        SideEffect { viewModel.onGeometry(geometry) }
+        val uiState = HomeGridUiState(geometry, cells)
 
         val host = LocalAppWidgetHost.current
         val profileManager: ProfileManager = koinInject()

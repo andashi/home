@@ -81,7 +81,7 @@ class HomeGridVMTest {
         val rows = MeasuredGridRows()
         val vm = vm(FormFactor.Phone, measuredRows = rows)
 
-        vm.onWindowMeasured(396f, 800f)
+        vm.measure(396f, 800f)
         val geometry = vm.geometry.filterNotNull().first()
 
         assertEquals(HomeGridLayouts.Phone, geometry.layout)
@@ -105,8 +105,8 @@ class HomeGridVMTest {
         )
         val vm = vm(FormFactor.Fold, repository)
 
-        vm.onWindowMeasured(396f, 622f)
-        val state = vm.state.filterNotNull().first()
+        vm.measure(396f, 622f)
+        val state = vm.uiState()
 
         assertTrue(state.geometry.isCover)
         assertEquals(4, state.geometry.visibleColumns)
@@ -123,13 +123,13 @@ class HomeGridVMTest {
             mapOf(HomeGridLayouts.Fold to listOf(gridItem("right", 4, 0, 2, 2, HomeGridLayouts.Fold, position = 0))),
         )
         val vm = vm(FormFactor.Fold, repository)
-        vm.onWindowMeasured(396f, 622f)
-        vm.state.filterNotNull().first()
+        vm.measure(396f, 622f)
+        vm.uiState()
         vm.enterEdit()
 
         assertTrue(vm.addWidget("com.example/.New", null, null, CellSize(2, 1), SizeLimits.Unbounded))
 
-        val state = vm.state.filterNotNull().first { s -> s.cells.any { it.item.widget == "com.example/.New" } }
+        val state = vm.uiState { s -> s.cells.any { it.item.widget == "com.example/.New" } }
         assertEquals(Span(6, 0, 2, 1), state.cells.first { it.item.widget == "com.example/.New" }.span)
     }
 
@@ -149,19 +149,19 @@ class HomeGridVMTest {
         )
         val vm = vm(FormFactor.Fold, repository)
         // Collected, as the composable does: the state is shared while subscribed.
-        backgroundScope.launch { vm.state.collect {} }
-        vm.onWindowMeasured(396f, 622f)
-        vm.state.filterNotNull().first()
+        backgroundScope.launch { vm.items.collect {} }
+        vm.measure(396f, 622f)
+        vm.uiState()
         vm.enterEdit()
 
         val removed = vm.removeEditing(HomeGridDefaults.FavoritesId)!!
         dispatcher.scheduler.advanceUntilIdle()
-        assertTrue(vm.state.value!!.cells.none { it.item.isFavorites })
+        assertTrue(vm.uiStateNow()!!.cells.none { it.item.isFavorites })
 
         vm.restore(removed)
         dispatcher.scheduler.advanceUntilIdle()
 
-        val dock = vm.state.value!!.cells.firstOrNull { it.item.isFavorites }?.item
+        val dock = vm.uiStateNow()!!.cells.firstOrNull { it.item.isFavorites }?.item
         assertEquals(listOf(0, 5, 8, 1), dock?.let { listOf(it.x, it.y, it.w, it.h) })
     }
 
@@ -177,8 +177,8 @@ class HomeGridVMTest {
         )
         val vm = vm(FormFactor.Fold, repository)
 
-        vm.onWindowMeasured(790f, 780f)
-        val state = vm.state.filterNotNull().first()
+        vm.measure(790f, 780f)
+        val state = vm.uiState()
 
         assertFalse(state.geometry.isCover)
         assertEquals(8, state.geometry.visibleColumns)
@@ -195,9 +195,9 @@ class HomeGridVMTest {
         )
         val vm = vm(FormFactor.Phone, repository)
 
-        vm.onWindowMeasured(396f, 800f)
+        vm.measure(396f, 800f)
 
-        assertEquals(listOf("p"), vm.state.filterNotNull().first().cells.map { it.item.id })
+        assertEquals(listOf("p"), vm.uiState().cells.map { it.item.id })
     }
 
     @Test
@@ -205,8 +205,8 @@ class HomeGridVMTest {
         val repository = FakeHomeGridRepository()
         val vm = vm(FormFactor.Phone, repository, initialized = false)
 
-        vm.onWindowMeasured(396f, 622f)
-        val state = vm.state.filterNotNull().first { it.cells.isNotEmpty() }
+        vm.measure(396f, 622f)
+        val state = vm.uiState { it.cells.isNotEmpty() }
 
         val dock = state.cells.single()
         assertEquals(HomeGridWidgets.Favorites, dock.item.widget)

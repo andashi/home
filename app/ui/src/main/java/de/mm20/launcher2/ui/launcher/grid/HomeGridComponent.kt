@@ -1,5 +1,6 @@
 package de.mm20.launcher2.ui.launcher.grid
 
+import de.mm20.launcher2.ui.launcher.LauncherScaffoldVM
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
@@ -48,8 +49,11 @@ internal object HomeGridComponent : ScaffoldComponent() {
         insets: PaddingValues,
         state: LauncherScaffoldState,
     ) {
-        val uiSettings: UiSettings = koinInject()
-        val widgetsOnHomeScreen by uiSettings.homeScreenWidgets.collectAsState(null)
+        // The activity's own, retained value: it already waited for it, so a
+        // recreated activity (fold, unfold) has it in the first frame, where
+        // reading the setting afresh cost frames (#118).
+        val scaffoldVM: LauncherScaffoldVM = viewModel()
+        val widgetsOnHomeScreen by scaffoldVM.widgetsOnHomeScreen.collectAsState()
         if (widgetsOnHomeScreen != true) return
 
         val viewModel: HomeGridVM = viewModel(factory = HomeGridVM.factory())
