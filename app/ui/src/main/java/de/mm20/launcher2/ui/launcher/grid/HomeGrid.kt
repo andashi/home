@@ -312,14 +312,15 @@ fun HomeGridLayout(
     // re-run once the entry exists.
     val slides = remember { mutableStateMapOf<String, Animatable<Offset, *>>() }
     val previousRects = remember { mutableMapOf<String, IntOffset>() }
-    // The geometry previousRects were measured in: a display change (cover to
-    // inner, another cell size or first column) is not a move, so the cells
-    // appear at their place instead of sliding from the old display's
-    // pixels (#118).
-    val rectsGeometry = remember { arrayOfNulls<GridGeometry>(1) }
+    // What previousRects were measured in: the geometry and its pixel sizes.
+    // A display change (cover to inner, another cell size or first column) or
+    // a density change is not a move, so the cells appear at their place
+    // instead of sliding from the old pixels (#118, #119 review).
+    val rectsBasis = remember { arrayOfNulls<Any>(1) }
     LaunchedEffect(cells, cellPx, gapPx, geometry) {
-        if (rectsGeometry[0] != geometry) {
-            rectsGeometry[0] = geometry
+        val basis = Triple(geometry, cellPx, gapPx)
+        if (rectsBasis[0] != basis) {
+            rectsBasis[0] = basis
             previousRects.clear()
             for (slide in slides.values) slide.snapTo(Offset.Zero)
         }
