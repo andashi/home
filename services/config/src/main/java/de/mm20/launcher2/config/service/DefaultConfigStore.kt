@@ -442,10 +442,10 @@ private val ConfigMutation.isSettingsBacked: Boolean
         // columns and locked live in settings; layouts are applied below too.
         is ConfigMutation.SetGrid,
         is ConfigMutation.SetGlass,
+        is ConfigMutation.SetSearch,
         -> true
 
         is ConfigMutation.SetFavorites,
         is ConfigMutation.SetWallpaper,
-        is ConfigMutation.SetSearch,
         -> false
     }
