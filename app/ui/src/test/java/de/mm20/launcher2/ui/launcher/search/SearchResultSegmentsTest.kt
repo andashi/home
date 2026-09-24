@@ -113,4 +113,26 @@ class SearchResultSegmentsTest {
         }
         assertEquals(listOf(emptySet<GlassEdge>(), emptySet(), emptySet()), edges)
     }
+
+    /** Review on #98: a header narrower than the list made the card a narrow slice over full rows. */
+    @Test
+    fun `a narrow header segment is as wide as the rows`() {
+        composeRule.setContent {
+            MaterialTheme {
+                LazyColumn {
+                    GridResults(
+                        key = "apps",
+                        items = items(6),
+                        itemContent = { Box(Modifier.size(40.dp)) },
+                        before = { Text("h") },
+                        columns = 4,
+                    )
+                }
+            }
+        }
+        val widths = composeRule.onAllNodes(SemanticsMatcher.keyIsDefined(GlassSurfaceKey))
+            .fetchSemanticsNodes()
+            .map { it.boundsInRoot.width }
+        assertEquals("header and rows: $widths", 1, widths.distinct().size)
+    }
 }

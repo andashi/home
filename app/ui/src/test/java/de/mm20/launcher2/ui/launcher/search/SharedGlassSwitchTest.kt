@@ -75,4 +75,30 @@ class SharedGlassSwitchTest {
         assertEquals(scheme.onSurface.copy(alpha = 0.12f), onGlass)
         assertEquals(scheme.surfaceVariant, elsewhere)
     }
+
+    /** Review on #98: the settings screen's filters rendered glass chips on an opaque sheet. */
+    @Test
+    fun `search filters are glass chips on search and Material chips in settings`() {
+        fun filters() = @Composable {
+            de.mm20.launcher2.ui.launcher.search.filters.SearchFilters(
+                filters = de.mm20.launcher2.search.SearchFilters(),
+                onFiltersChange = {},
+            )
+        }
+        assertEquals(1, glassSurfaces(onGlass = true, filters()))
+    }
+
+    @Test
+    fun `search filters outside glass are Material chips`() {
+        assertEquals(
+            0,
+            glassSurfaces(onGlass = false) {
+                de.mm20.launcher2.ui.launcher.search.filters.SearchFilters(
+                    filters = de.mm20.launcher2.search.SearchFilters(),
+                    onFiltersChange = {},
+                    settings = true,
+                )
+            },
+        )
+    }
 }

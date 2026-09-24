@@ -96,4 +96,24 @@ class GlassSurfaceTest {
         assertEquals(true, info().rim)
         assertEquals(true, info().lens)
     }
+
+    /** Review on #98: a rectangle or a sheet was lensed as a pill, bending its corners. */
+    @Test
+    fun `a custom shape is lensed with its own radius, only the squircle as a pill`() {
+        composeRule.setContent {
+            MaterialTheme {
+                androidx.compose.foundation.layout.Column {
+                    GlassSurface(
+                        Modifier.size(120.dp).testTag("strip"),
+                        shape = androidx.compose.ui.graphics.RectangleShape,
+                        lensRadius = 0.dp,
+                    ) {}
+                    GlassSurface(Modifier.size(52.dp).testTag("chip"), shape = androidx.compose.foundation.shape.CircleShape) {}
+                }
+            }
+        }
+        fun info(tag: String) = composeRule.onNodeWithTag(tag).fetchSemanticsNode().config[GlassSurfaceKey]
+        assertEquals(0f, info("strip").lensRadiusDp)
+        assertEquals(null, info("chip").lensRadiusDp)
+    }
 }

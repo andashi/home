@@ -1,5 +1,6 @@
 package de.mm20.launcher2.ui.launcher.glass
 
+import androidx.compose.ui.unit.Dp
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -49,6 +50,8 @@ data class GlassSurfaceInfo(
     val rim: Boolean = false,
     /** The edges where this segment meets the next one of the same card (#91). */
     val openEdges: Set<GlassEdge> = emptySet(),
+    /** The lens's corner radius in dp; null lenses the surface as a pill (#91). */
+    val lensRadiusDp: Float? = null,
 )
 
 /**
@@ -76,6 +79,12 @@ fun GlassSurface(
     tintBoost: Float = 0f,
     /** Edges that continue into the next segment of the same card (#91). */
     openEdges: Set<GlassEdge> = emptySet(),
+    /**
+     * The lens's corner radius for a custom [shape] that is not the icon
+     * chip's squircle: 0 for a rectangle, the shape's radius otherwise.
+     * Null lenses [shape] as a pill, which is right only for the squircle.
+     */
+    lensRadius: Dp? = null,
     content: @Composable () -> Unit,
 ) {
     val style = LocalGlassStyle.current

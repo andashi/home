@@ -1696,3 +1696,13 @@ private fun Modifier.searchBarAnimation(
  * scheme default). Search draws none (#91); the other secondary pages keep it.
  */
 private const val PageBackgroundAlpha = 0.85f
+
+/**
+ * How far search is open, for the backdrop behind it (#91): the search page's
+ * progress, or fully open when search is the home component (assistant mode).
+ */
+internal fun searchBackdropProgress(
+    homeIsSearch: Boolean,
+    currentIsSearch: Boolean,
+    progress: Float,
+): Float = if (currentIsSearch) progress else 0f
