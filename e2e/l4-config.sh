@@ -258,6 +258,8 @@ cat > "$VALID_CONFIG" <<'EOF'
     // Not the defaults, so applying it is a real change.
     "glass": { "blur": 16, "tint": 0.5, "radius": 20, "contrast": "high", "wallpaperBlur": false, "searchWallpaperBlur": false },
   },
+  // Four keys away from their defaults (#91), so applying them is a change.
+  "search": { "favorites": false, "layout": "list", "reversed": true, "contacts": false },
   "home": {
     "searchBar": { "position": "bottom" },
     // Empty on purpose: favorites reference installed packages.
@@ -291,6 +293,8 @@ cat > "$UNKNOWN_KEYS_CONFIG" <<'EOF'
     // Not the defaults, so applying it is a real change.
     "glass": { "blur": 16, "tint": 0.5, "radius": 20, "contrast": "high", "wallpaperBlur": false, "searchWallpaperBlur": false },
   },
+  // Four keys away from their defaults (#91), so applying them is a change.
+  "search": { "favorites": false, "layout": "list", "reversed": true, "contacts": false },
   "home": {
     "searchBar": { "position": "bottom" },
     "favorites": [],
@@ -323,6 +327,7 @@ cat > "$CHANGED_CONFIG" <<'EOF'
   "appearance": {
     "glass": { "blur": 32, "tint": 0.2, "radius": 12, "contrast": "low", "wallpaperBlur": true, "searchWallpaperBlur": true },
   },
+  "search": { "favorites": true, "layout": "grid", "reversed": false, "contacts": true },
   "home": {
     "searchBar": { "position": "top" },
     "favorites": [],
@@ -409,6 +414,7 @@ EFFECTIVE_FILTER='
   and .icons.enforceThemed == true
   and .appearance.glass == {"blur":16.0,"tint":0.5,"radius":20.0,"contrast":"high","wallpaperBlur":false,"searchWallpaperBlur":false}
   and (.appearance | has("transparency") | not)
+  and .search == {"favorites":false,"allApps":true,"layout":"list","labels":true,"contacts":false,"shortcuts":true,"filterBar":true,"openKeyboard":true,"launchOnEnter":true,"reversed":true,"hiddenItemsButton":false}
   and .home.searchBar.position == "bottom"
   and .home.favorites == []
   and .home.widgets.enabled == true
@@ -423,6 +429,7 @@ CHANGED_FILTER='
   and .icons.themed == false
   and .icons.enforceThemed == false
   and .appearance.glass == {"blur":32.0,"tint":0.2,"radius":12.0,"contrast":"low","wallpaperBlur":true,"searchWallpaperBlur":true}
+  and .search == {"favorites":true,"allApps":true,"layout":"grid","labels":true,"contacts":true,"shortcuts":true,"filterBar":true,"openKeyboard":true,"launchOnEnter":true,"reversed":false,"hiddenItemsButton":false}
   and .home.searchBar.position == "top"
   and .home.favorites == []
   and .home.widgets.enabled == false
@@ -436,7 +443,7 @@ CHANGED_FILTER='
 ALL_SECTIONS_FILTER='
   ((.appliedMutations // []) | sort) ==
   ["appearance.glass", "home.grid", "home.searchBar",
-   "home.widgets.enabled", "icons"]
+   "home.widgets.enabled", "icons", "search"]
 '
 
 # --- 1. boot + install -------------------------------------------------
@@ -514,7 +521,7 @@ settle_then_broadcast "$CHANGED_CONFIG" "$H_CHANGED" "change"
 assert_jq "$LAST_REPORT" '.success == true' "changed config applied"
 effective="$(query_json config)" || die "could not query /config"
 assert_jq "$effective" "$CHANGED_FILTER" "effective config shows the changed values in every section"
-ok "changed config: every section flipped (icons, glass, search bar, widgets, grid)"
+ok "changed config: every section flipped (icons, glass, search, search bar, widgets, grid)"
 
 settle_then_broadcast "$VALID_CONFIG" "$H_VALID" "change-back"
 assert_jq "$LAST_REPORT" '.success == true' "original config re-applied"

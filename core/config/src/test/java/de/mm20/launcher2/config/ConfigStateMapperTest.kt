@@ -150,4 +150,37 @@ class ConfigStateMapperTest {
         assertEquals(GlassContrast.Medium, GlassDefaults.Contrast)
         assertEquals(true, GlassDefaults.Labels)
     }
+
+    /** `search` (#91) is always served complete, so a host compares it key by key. */
+    @Test
+    fun `search is fully populated, defaults and set values alike`() {
+        val defaults = ConfigState().toLauncherConfig().search
+        assertEquals(
+            SearchConfig(
+                favorites = true, allApps = true, layout = SearchResultLayout.Grid, labels = true,
+                contacts = true, shortcuts = true, filterBar = true, openKeyboard = true,
+                launchOnEnter = true, reversed = false, hiddenItemsButton = false,
+            ),
+            defaults,
+        )
+        val set = ConfigState(search = SearchState(layout = SearchResultLayout.List, reversed = true)).toLauncherConfig().search
+        assertEquals(SearchResultLayout.List, set?.layout)
+        assertEquals(true, set?.reversed)
+    }
+
+    /** Today's behavior: a file without `search` changes nothing (#91). */
+    @Test
+    fun `the search defaults are today's behavior`() {
+        assertEquals(true, SearchDefaults.Favorites)
+        assertEquals(true, SearchDefaults.AllApps)
+        assertEquals(SearchResultLayout.Grid, SearchDefaults.Layout)
+        assertEquals(true, SearchDefaults.Labels)
+        assertEquals(true, SearchDefaults.Contacts)
+        assertEquals(true, SearchDefaults.Shortcuts)
+        assertEquals(true, SearchDefaults.FilterBar)
+        assertEquals(true, SearchDefaults.OpenKeyboard)
+        assertEquals(true, SearchDefaults.LaunchOnEnter)
+        assertEquals(false, SearchDefaults.Reversed)
+        assertEquals(false, SearchDefaults.HiddenItemsButton)
+    }
 }

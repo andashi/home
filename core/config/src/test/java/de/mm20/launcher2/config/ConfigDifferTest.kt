@@ -417,4 +417,37 @@ class ConfigDifferTest {
 
         assertEquals(first, second)
     }
+
+    // ----- search (#91) -----
+
+    @Test
+    fun `each search key diffs on its own`() {
+        fun diff(search: SearchConfig) = ConfigDiffer.diff(LauncherConfig(2, search = search), baseState)
+
+        val each = listOf(
+            SearchConfig(favorites = false), SearchConfig(allApps = false),
+            SearchConfig(layout = SearchResultLayout.List), SearchConfig(labels = false),
+            SearchConfig(contacts = false), SearchConfig(shortcuts = false),
+            SearchConfig(filterBar = false), SearchConfig(openKeyboard = false),
+            SearchConfig(launchOnEnter = false), SearchConfig(reversed = true),
+            SearchConfig(hiddenItemsButton = true),
+        )
+        for (search in each) {
+            assertEquals(listOf(ConfigMutation.SetSearch(search)), diff(search))
+        }
+    }
+
+    @Test
+    fun `a search section equal to the state produces nothing, a partly equal one only the rest`() {
+        val state = baseState.copy(search = SearchState(favorites = false, reversed = true))
+
+        assertEquals(
+            emptyList<ConfigMutation>(),
+            ConfigDiffer.diff(LauncherConfig(2, search = SearchConfig(favorites = false, reversed = true)), state),
+        )
+        assertEquals(
+            listOf(ConfigMutation.SetSearch(SearchConfig(labels = false))),
+            ConfigDiffer.diff(LauncherConfig(2, search = SearchConfig(favorites = false, labels = false)), state),
+        )
+    }
 }

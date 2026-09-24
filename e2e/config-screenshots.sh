@@ -102,7 +102,7 @@ $(item bookmarks "$BOOKMARKS" 4 0 4 3), $(item messages-2 "$MESSAGES" 4 3 4 3), 
 # Every scene states the whole baseline plus its one variant. An absent key
 # is "unmanaged" and keeps what the previous scene set, so a partial config
 # would inherit the scene before it (review on #89).
-scene_config() { # blur tint radius contrast wallpaperBlur labels themed position searchWallpaperBlur phone-items fold-items
+scene_config() { # blur tint radius contrast wallpaperBlur labels themed position searchWallpaperBlur searchLayout searchFavorites phone-items fold-items
   cat <<EOF
 {
   "schemaVersion": 2,
@@ -119,17 +119,23 @@ scene_config() { # blur tint radius contrast wallpaperBlur labels themed positio
       "columns": 4,
       "labels": $6,
       "layouts": {
-        "phone": { "items": [ ${10} ] },
-        "fold": { "items": [ ${11} ] }
+        "phone": { "items": [ ${12} ] },
+        "fold": { "items": [ ${13} ] }
       }
     }
+  },
+  "search": {
+    "favorites": ${11}, "allApps": true, "layout": "${10}", "labels": true,
+    "contacts": true, "shortcuts": true, "filterBar": true, "openKeyboard": true,
+    "launchOnEnter": true, "reversed": false, "hiddenItemsButton": false
   }
 }
 EOF
 }
 
 # blur tint radius contrast wallpaperBlur labels themed position searchWallpaperBlur
-BASE=(24 0.12 28 medium true true true top true)
+# searchLayout searchFavorites
+BASE=(24 0.12 28 medium true true true top true grid true)
 variant() { # name, the two layouts, then index=value overrides of BASE
   local name="$1" phone="$2" fold="$3"; shift 3
   local v=("${BASE[@]}") kv
@@ -154,8 +160,13 @@ variant search-open "$PHONE_BOTTOM" "$FOLD_BOTTOM"
 # A sharp home with search blurred behind it, and the reverse (#91).
 variant search-sharp-home "$PHONE_BOTTOM" "$FOLD_BOTTOM" 4=false
 variant search-sharp "$PHONE_BOTTOM" "$FOLD_BOTTOM" 8=false
-declare -A SCENE_QUERY=([search-open]=c [search-sharp-home]=c [search-sharp]=c)
-ALL_SCENES="full-dock-bottom full-dock-side contrast-low contrast-high blur-0 tint-0-4 radius-8 wallpaper-sharp labels-off icons-themed-off search-bottom search-open search-sharp-home search-sharp"
+# search (#91 part 3): app results as a list, and search opened without a
+# query - where the favorites row shows - with the row switched off.
+variant search-list "$PHONE_BOTTOM" "$FOLD_BOTTOM" 9=list
+variant search-no-favorites "$PHONE_BOTTOM" "$FOLD_BOTTOM" 10=false
+# The query a scene types after opening search; @open opens it without one.
+declare -A SCENE_QUERY=([search-open]=c [search-sharp-home]=c [search-sharp]=c [search-list]=c [search-no-favorites]=@open)
+ALL_SCENES="full-dock-bottom full-dock-side contrast-low contrast-high blur-0 tint-0-4 radius-8 wallpaper-sharp labels-off icons-themed-off search-bottom search-open search-sharp-home search-sharp search-list search-no-favorites"
 SCENES="${SCENES:-$ALL_SCENES}"
 
 # --- boot ---------------------------------------------------------------------
@@ -261,7 +272,7 @@ open_search() { # $1 = scene
   tap_desc Search
   for i in $(seq 10); do search_is_open && break; sleep 1; done
   search_is_open || die "$1: tapping the bar did not open search"
-  adb -s "$SERIAL" shell input text "$query"
+  [ "$query" = @open ] || adb -s "$SERIAL" shell input text "$query"
   # The keyboard comes up a moment after the field is focused.
   for i in $(seq 5); do ime_shown && break; sleep 1; done
   if ime_shown; then
