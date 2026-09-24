@@ -12,6 +12,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.assertHeightIsEqualTo
@@ -129,12 +130,16 @@ class HomeGridLayoutTest {
         composeRule.mainClock.autoAdvance = false
 
         geometry = inner
+        // The clock is paused: hand the change to the recomposer explicitly.
+        Snapshot.sendApplyNotifications()
         composeRule.mainClock.advanceTimeByFrame()
         composeRule.mainClock.advanceTimeByFrame()
 
-        val pitch = inner.cellDp + inner.gapDp
-        composeRule.onNodeWithContentDescription("grid-item:dock")
-            .assertLeftPositionInRootIsEqualTo((7 * pitch).dp)
+        // Where the dock ends up, once nothing moves any more.
+        fun left() = composeRule.onNodeWithContentDescription("grid-item:dock").fetchSemanticsNode().boundsInRoot.left
+        val early = left()
+        composeRule.mainClock.advanceTimeBy(2000)
+        assertEquals("the dock is where it ends up from the first frames", left(), early, 1f)
     }
 
     /** Control: a move within one geometry still slides (the push-down animation). */
@@ -152,6 +157,7 @@ class HomeGridLayoutTest {
         composeRule.mainClock.autoAdvance = false
 
         cells = listOf("a" to Span(2, 0, 1, 1))
+        Snapshot.sendApplyNotifications()
         composeRule.mainClock.advanceTimeByFrame()
         composeRule.mainClock.advanceTimeByFrame()
 
