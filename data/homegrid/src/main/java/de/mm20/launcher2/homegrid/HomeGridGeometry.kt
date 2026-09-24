@@ -27,6 +27,12 @@ data class GridGeometry(
     val coverFirstColumn: Int = 0,
 ) {
     val rows: Int get() = spec.rows
+
+    /** The first layout column this window draws; a stub until #93. */
+    val firstVisibleColumn: Int get() = 0
+
+    /** The layout columns this window draws. */
+    val visibleRange: IntRange get() = firstVisibleColumn until firstVisibleColumn + visibleColumns
 }
 
 /**

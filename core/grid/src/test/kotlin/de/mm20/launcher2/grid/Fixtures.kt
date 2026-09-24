@@ -5,7 +5,7 @@ import org.junit.Assert.assertTrue
 /** A 4x6 phone grid, the default of ADR 0001 / D1. */
 val Phone = GridSpec(columns = 4, rows = 6)
 
-/** An 8x6 fold grid, the cover being columns 0..3 (D7). */
+/** An 8x6 fold grid, the cover being columns 4..7 (D7, #93). */
 val Fold = GridSpec(columns = 8, rows = 6, foldColumn = 4)
 
 fun item(
@@ -38,5 +38,13 @@ fun assertNoOverlap(items: List<GridItem>) {
 fun assertInside(spec: GridSpec, items: List<GridItem>) {
     for (it in items) {
         assertTrue("${it.id}@${it.span} leaves the ${spec.columns}x${spec.rows} grid", it.span.fitsIn(spec.columns, spec.rows))
+    }
+}
+
+/** Every item lies in [columns] (layout coordinates) and in [rows] rows. */
+fun assertInsideColumns(columns: IntRange, rows: Int, items: List<GridItem>) {
+    for (item in items) {
+        val s = item.span
+        assertTrue("${item.id} $s outside columns $columns x $rows", s.x >= columns.first && s.right <= columns.last + 1 && s.y >= 0 && s.bottom <= rows)
     }
 }

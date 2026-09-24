@@ -1,6 +1,9 @@
 package de.mm20.launcher2.ui.launcher.grid
 
 
+import de.mm20.launcher2.grid.CellSize
+import de.mm20.launcher2.grid.SizeLimits
+import de.mm20.launcher2.grid.Span
 import de.mm20.launcher2.homegrid.FormFactor
 import de.mm20.launcher2.homegrid.GridItemLimits
 import de.mm20.launcher2.homegrid.HomeGridInitLock
@@ -88,7 +91,7 @@ class HomeGridVMTest {
     }
 
     @Test
-    fun `a fold's cover clamps the fold layout to its left half`() = runTest(dispatcher) {
+    fun `a fold's cover shows the right half of the fold layout`() = runTest(dispatcher) {
         val repository = FakeHomeGridRepository(
             mapOf(
                 HomeGridLayouts.Fold to listOf(
@@ -106,8 +109,26 @@ class HomeGridVMTest {
         assertTrue(state.geometry.isCover)
         assertEquals(4, state.geometry.visibleColumns)
         assertEquals(8, state.geometry.spec.columns)
-        assertEquals(listOf("left", "dock"), state.cells.map { it.item.id })
-        assertEquals(4, state.cells.first { it.item.isFavorites }.span.w)
+        // #93: the right half, in layout coordinates.
+        assertEquals(listOf("right", "dock"), state.cells.map { it.item.id })
+        assertEquals(Span(4, 5, 4, 1), state.cells.first { it.item.isFavorites }.span)
+    }
+
+    /** #93: something added on the cover lands in the columns the cover shows. */
+    @Test
+    fun `a widget added on the cover lands on the cover`() = runTest(dispatcher) {
+        val repository = FakeHomeGridRepository(
+            mapOf(HomeGridLayouts.Fold to listOf(gridItem("right", 4, 0, 2, 2, HomeGridLayouts.Fold, position = 0))),
+        )
+        val vm = vm(FormFactor.Fold, repository)
+        vm.onWindowMeasured(396f, 622f)
+        vm.state.filterNotNull().first()
+        vm.enterEdit()
+
+        assertTrue(vm.addWidget("com.example/.New", null, null, CellSize(2, 1), SizeLimits.Unbounded))
+
+        val state = vm.state.filterNotNull().first { s -> s.cells.any { it.item.widget == "com.example/.New" } }
+        assertEquals(Span(6, 0, 2, 1), state.cells.first { it.item.widget == "com.example/.New" }.span)
     }
 
     @Test

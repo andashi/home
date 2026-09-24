@@ -79,6 +79,32 @@ class HomeGridLayoutTest {
         composeRule.onNodeWithTag("cell-a").assertWidthIsEqualTo(196.dp)
     }
 
+    /**
+     * #93: on the cover the cells keep their layout coordinates (columns
+     * 4..7) and are drawn from the window's first column.
+     */
+    @Test
+    fun `the cover draws layout columns from its first visible column`() {
+        val cover = HomeGridGeometry.derive(FormFactor.Fold, 4, widthDp = 400f, heightDp = 600f)
+        val cells = listOf(
+            "right" to Span(5, 0, 1, 1),
+            "dock" to Span(4, 4, 4, 1),
+        )
+        composeRule.setContent {
+            Box(Modifier.size(400.dp, 600.dp)) {
+                HomeGridLayout(geometry = cover, cells = cells, modifier = Modifier.fillMaxSize()) { id ->
+                    Box(Modifier.fillMaxSize().testTag("cell-$id"))
+                }
+            }
+        }
+
+        composeRule.onNodeWithContentDescription("grid-item:right")
+            .assertLeftPositionInRootIsEqualTo(102.dp) // one pitch from the cover's first column
+        composeRule.onNodeWithContentDescription("grid-item:dock")
+            .assertLeftPositionInRootIsEqualTo(0.dp)
+            .assertWidthIsEqualTo(400.dp)
+    }
+
     @Test
     fun `an unrelated recomposition leaves the grid alone, a cell change recomposes it once`() {
         var recompositions = 0

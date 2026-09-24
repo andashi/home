@@ -157,12 +157,13 @@ class GridLayoutPropertyTest {
     }
 
     @Test
-    fun `clampToCover never produces an item outside the cover`() {
+    fun `clampToWindow never produces an item outside the cover`() {
         forEachCase { _, spec, items, label ->
-            if (spec.foldColumn == null) return@forEachCase
-            val cover = GridLayout.clampToCover(items, spec.foldColumn!!)
+            val fold = spec.foldColumn ?: return@forEachCase
+            val window = fold until spec.columns
+            val cover = GridLayout.clampToWindow(items, window)
             try {
-                assertInside(GridSpec(spec.foldColumn!!, spec.rows), cover)
+                assertInsideColumns(window, spec.rows, cover)
                 assertNoOverlap(cover)
             } catch (e: AssertionError) {
                 throw AssertionError("$label cover=$cover: ${e.message}", e)

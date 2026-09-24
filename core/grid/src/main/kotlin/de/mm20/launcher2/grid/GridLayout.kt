@@ -40,7 +40,12 @@ object GridLayout {
      * first. Invariant: the returned item overlaps nothing in [items], lies
      * inside the grid and respects the fold rule; [items] is not modified.
      */
-    fun place(spec: GridSpec, items: List<GridItem>, newItem: GridItem): GridItem? {
+    fun place(
+        spec: GridSpec,
+        items: List<GridItem>,
+        newItem: GridItem,
+        columns: IntRange = 0 until spec.columns,
+    ): GridItem? {
         val w = clampWidth(spec, newItem, newItem.span.w)
         val h = clampHeight(spec, newItem, newItem.span.h)
         val occupied = items.filter { it.id != newItem.id }.map { it.span }
@@ -175,6 +180,9 @@ object GridLayout {
      * edge (the favorites widget spanning the fold) clipped to it.
      * Invariant: every result item fits in [columns] columns.
      */
+    fun clampToWindow(items: List<GridItem>, columns: IntRange): List<GridItem> =
+        clampToCover(items, columns.last + 1)
+
     fun clampToCover(items: List<GridItem>, columns: Int): List<GridItem> {
         return items.mapNotNull { item ->
             val span = item.span
