@@ -16,6 +16,16 @@ internal object SearchBarPlacement {
     fun positionAt(home: SearchBarPosition, search: SearchBarPosition, progress: Float): SearchBarPosition =
         if (progress < 0.5f) home else search
 
+    /**
+     * The Hidden style's slide-in offset in dp at [progress], toward the edge
+     * the bar is at. Stub until the fix: the edge switches at [bias] 0.
+     */
+    fun hiddenOffset(bias: Float, progress: Float, topInset: Float, bottomInset: Float): Float {
+        val factor = if (bias < 0f) -1f else 1f
+        val inset = if (bias < 0f) topInset else bottomInset
+        return factor * (1f - progress) * (1f - progress) * (128f + inset)
+    }
+
     private val SearchBarPosition.bias: Float
         get() = if (this == SearchBarPosition.Top) -1f else 1f
 }
