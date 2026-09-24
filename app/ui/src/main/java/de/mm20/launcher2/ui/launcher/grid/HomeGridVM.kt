@@ -390,6 +390,18 @@ class HomeGridVM(
         }
     }
 
+    /**
+     * What the grid shows, edited or stored, for this device's layout; the
+     * composable arranges it for its measured window itself (#118).
+     */
+    val items: StateFlow<List<HomeGridItem>?> =
+        combine(repository.observe(formFactor.layout), working) { stored, edited -> edited ?: stored }
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), null)
+
+    /** The configured columns, for the composable's own geometry (#118). */
+    val columns: StateFlow<Int?> = uiSettings.homeGridColumns
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), null)
+
     fun onWindowMeasured(widthDp: Float, heightDp: Float) {
         window.value = widthDp to heightDp
     }

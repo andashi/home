@@ -52,6 +52,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import de.mm20.launcher2.grid.Span
+import de.mm20.launcher2.homegrid.HomeGridGeometry
+import de.mm20.launcher2.homegrid.HomeGridArrangement
 import de.mm20.launcher2.homegrid.AndroidGridItemLimits
 import de.mm20.launcher2.homegrid.GridGeometry
 import de.mm20.launcher2.profiles.ProfileManager
@@ -148,11 +150,24 @@ fun HomeGrid(
             viewModel.onWindowMeasured(widthDp, heightDp)
         }
 
-        val state by viewModel.state.collectAsStateWithLifecycle()
-        val uiState = state ?: return@BoxWithConstraints
-        // The window changed (unfold, fold, rotation) and the geometry for it
-        // has not arrived yet: draw nothing rather than the old display's
-        // cells at the wrong place (#118).
+        // The geometry and the arrangement for this window, derived here in
+        // the same frame the window changed (unfold, fold, rotation), with
+        // the same pure functions the view model uses: no round trip through
+        // the view model, so the first frame on the new display is already
+        // right (#118). The view model's own geometry serves edits and the
+        // config store's rows.
+        // Kept subscribed while the grid is shown: edits read the view
+        // model's geometry and the config store its measured rows.
+        viewModel.geometry.collectAsStateWithLifecycle()
+        val items by viewModel.items.collectAsStateWithLifecycle()
+        val columns by viewModel.columns.collectAsStateWithLifecycle()
+        val gridItems = items ?: return@BoxWithConstraints
+        val gridColumns = columns ?: return@BoxWithConstraints
+        val uiState = remember(widthDp, heightDp, gridColumns, gridItems) {
+            val geometry = HomeGridGeometry.derive(viewModel.formFactor, gridColumns, widthDp, heightDp)
+            HomeGridUiState(geometry, HomeGridArrangement.arrange(geometry, gridItems).cells)
+        }
+        // Never another window's geometry (#118).
         if (!uiState.geometry.isFor(widthDp, heightDp)) return@BoxWithConstraints
 
         val host = LocalAppWidgetHost.current
