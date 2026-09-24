@@ -270,8 +270,9 @@ fun ItemPopup(origin: IntRect, searchable: Searchable, onDismissRequest: () -> U
                         p,
                     )
             ) {
-                // An overlay composes at the host, not here: it opts in itself.
-                CompositionLocalProvider(LocalOnGlass provides true) {
+                // An overlay composes at the host, not here: it opts in itself,
+                // to glass and to Clear icons.
+                CompositionLocalProvider(LocalOnGlass provides true, LocalClearIcons provides true) {
                 when (searchable) {
                     is Application -> {
                         AppItemGridPopup(

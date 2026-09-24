@@ -1,5 +1,6 @@
 package de.mm20.launcher2.ui.launcher
 
+import de.mm20.launcher2.ui.launcher.glass.LocalClearIcons
 import android.app.WallpaperManager
 import android.content.Intent
 import android.content.pm.ActivityInfo
@@ -203,6 +204,11 @@ abstract class SharedLauncherActivity(
                                 }
                         }
 
+                        // Outside the overlay host, so the glass overlays - the
+                        // item popup, the hidden-items sheet - get the backdrop
+                        // too (review on #98); the host composes overlays
+                        // outside its content.
+                        ProvideGlassBackdrop(koinInject()) {
                         OverlayHost(
                             modifier = Modifier
                                 .background(
@@ -378,14 +384,18 @@ abstract class SharedLauncherActivity(
                                 }
                             }
 
-                            ProvideGlassBackdrop(koinInject()) {
-                                // The blurred backdrop behind home and search
-                                // is drawn by the scaffold, which knows the
-                                // search progress (#82, #91).
+                            // Every icon inside the scaffold is Clear (#76); the
+                            // opaque Material sheets keep normal icons, the glass
+                            // overlays opt in themselves.
+                            CompositionLocalProvider(LocalClearIcons provides true) {
+                                // The blurred backdrop behind home and search is
+                                // drawn by the scaffold, which knows the search
+                                // progress (#82, #91); the enter transition scales
+                                // the content only, not that backdrop.
                                 LauncherScaffold(
                                     config = config,
-                                    modifier = Modifier
-                                        .fillMaxSize()
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentModifier = Modifier
                                         .graphicsLayer {
                                             scaleX =
                                                 0.5f + enterTransitionProgress.value * 0.005f
@@ -429,6 +439,7 @@ abstract class SharedLauncherActivity(
                                 }
                             }
                             LauncherBottomSheets()
+                        }
                         }
                     }
                 }

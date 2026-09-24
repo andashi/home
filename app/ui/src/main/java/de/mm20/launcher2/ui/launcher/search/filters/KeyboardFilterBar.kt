@@ -48,6 +48,7 @@ fun KeyboardFilterBar(
             .imePadding()
             .height(50.dp),
         shape = RectangleShape,
+        lensRadius = 0.dp,
     ) {
         Row(
             modifier = Modifier

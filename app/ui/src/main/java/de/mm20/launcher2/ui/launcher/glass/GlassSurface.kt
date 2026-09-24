@@ -91,21 +91,29 @@ fun GlassSurface(
     val outline = glassOutline(style.radiusDp, pill, shape, openEdges)
     val tintAlpha = (style.tint + tintBoost).coerceIn(0f, 1f)
     val tint = MaterialTheme.colorScheme.surface.copy(alpha = tintAlpha)
+    // The lens follows the real outline: the glass radius, the pill, or a
+    // custom shape's own radius; only the icon chip's squircle - and a
+    // custom shape that names none - is lensed as a pill, which it is within
+    // a pixel or two at icon size.
+    val lensAsPill = pill || (shape != null && lensRadius == null)
+    val lensCorner = when {
+        lensAsPill -> null
+        shape != null -> lensRadius
+        else -> style.radiusDp.dp
+    }
     val info = GlassSurfaceInfo(
         tintAlpha, style.radiusDp, style.scrimAlpha, pill, lens = true, rim = true, openEdges = openEdges,
+        lensRadiusDp = lensCorner?.value,
     )
     Box(
         modifier = modifier
             .semantics { this[GlassSurfaceKey] = info }
             .clip(outline)
             // Drawn first: the blurred wallpaper under this surface.
-            // The lens follows a rounded rectangle; a custom shape (the icon
-            // chip's squircle) is lensed as a pill - at icon size the two
-            // outlines are a pixel or two apart.
             .glassBackdrop(
                 lens = true,
-                cornerRadius = style.radiusDp.dp,
-                pill = pill || shape != null,
+                cornerRadius = lensCorner ?: 0.dp,
+                pill = lensAsPill,
                 openEdges = openEdges,
             )
             .drawBehind {

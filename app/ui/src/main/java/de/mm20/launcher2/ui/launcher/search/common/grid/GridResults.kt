@@ -39,7 +39,9 @@ fun <T : SavableSearchable> LazyListScope.GridResults(
             contentType = { "$key-before" },
         ) {
             GlassSurface(
-                modifier = if (segments == 1) lastSpacing else Modifier,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .then(if (segments == 1) lastSpacing else Modifier),
                 openEdges = segmentEdges(0, segments, reverse),
             ) {
                 Box { before() }
@@ -94,7 +96,9 @@ fun <T : SavableSearchable> LazyListScope.GridResults(
             contentType = { "$key-after" },
         ) {
             GlassSurface(
-                modifier = lastSpacing,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .then(lastSpacing),
                 openEdges = segmentEdges(segments - 1, segments, reverse),
             ) {
                 Box { after() }

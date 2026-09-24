@@ -58,7 +58,11 @@ class GlassSurfaceTest {
     fun `a surface draws the resolved glass, no scrim at medium`() {
         show()
         assertEquals(
-            GlassSurfaceInfo(tint = 0.35f, radiusDp = 28f, scrimAlpha = 0f, pill = false, lens = true, rim = true),
+            GlassSurfaceInfo(
+                tint = 0.35f, radiusDp = 28f, scrimAlpha = 0f, pill = false, lens = true, rim = true,
+                // A card is lensed with the glass radius.
+                lensRadiusDp = 28f,
+            ),
             info(),
         )
     }

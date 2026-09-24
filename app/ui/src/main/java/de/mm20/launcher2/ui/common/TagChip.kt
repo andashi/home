@@ -124,6 +124,7 @@ fun TagChip(
         GlassSurface(
             modifier = size.semantics { this.selected = selected },
             shape = shape,
+            lensRadius = TagChipRadius,
             tintBoost = if (selected) SelectedTintBoost else 0f,
         ) {
             row(clicks.padding(start = 4.dp, end = 8.dp))
@@ -205,3 +206,6 @@ private fun TagChipRow(
         }
     }
 }
+
+/** MaterialTheme.shapes.small's corner, the lens radius of a glass tag chip (#91). */
+private val TagChipRadius = 8.dp

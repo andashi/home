@@ -363,8 +363,15 @@ private fun BottomSheetNestedScrollConnection(
 @Composable
 private fun GlassSheetBackground(glass: Boolean, content: @Composable () -> Unit) {
     if (!glass) return content()
-    de.mm20.launcher2.ui.launcher.glass.GlassSurface(shape = BottomSheetDefaults.ExpandedShape) {
-        CompositionLocalProvider(de.mm20.launcher2.ui.launcher.glass.LocalOnGlass provides true) {
+    // The sheet's top corners; its bottom edge is the screen's.
+    de.mm20.launcher2.ui.launcher.glass.GlassSurface(
+        shape = BottomSheetDefaults.ExpandedShape,
+        lensRadius = 28.dp,
+    ) {
+        CompositionLocalProvider(
+            de.mm20.launcher2.ui.launcher.glass.LocalOnGlass provides true,
+            de.mm20.launcher2.ui.launcher.glass.LocalClearIcons provides true,
+        ) {
             content()
         }
     }

@@ -21,6 +21,13 @@ class SearchScreenGlassGuardTest {
     private val ui = File(System.getProperty("user.dir"), "src/main/java/de/mm20/launcher2/ui")
 
     /**
+     * Files in the search packages that the settings screens use too; they
+     * keep a Material branch for those and their glass branch is tested by
+     * behavior in SharedGlassSwitchTest.
+     */
+    private val sharedWithSettings = setOf("launcher/search/filters/SearchFilters.kt")
+
+    /**
      * What draws the search screen and nothing else. Components it shares
      * with the settings screens and the Material sheets (Banner, TagChip,
      * SearchBar) keep a Material branch for those and are tested by
@@ -40,7 +47,8 @@ class SearchScreenGlassGuardTest {
         val file = File(ui, path)
         assertTrue("$path exists - update the guard when a file moves", file.exists())
         if (file.isDirectory) file.walkTopDown().filter { it.extension == "kt" }.toList() else listOf(file)
-    }
+    }.filter { it.relativeTo(ui).path !in sharedWithSettings }
+
 
     private val forbidden = mapOf(
         "the old transparency scheme" to Regex("""\btransparency\b"""),

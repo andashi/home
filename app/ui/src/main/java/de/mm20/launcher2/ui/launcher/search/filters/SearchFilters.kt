@@ -1,5 +1,6 @@
 package de.mm20.launcher2.ui.launcher.search.filters
 
+import de.mm20.launcher2.ui.launcher.glass.LocalOnGlass
 import de.mm20.launcher2.ui.launcher.glass.GlassChip
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
@@ -32,19 +33,27 @@ fun SearchFilters(
         modifier = modifier
             .padding(horizontal = 4.dp),
     ) {
-        GlassChip(
-            selected = filters.hiddenItems,
-            onClick = {
-                onFiltersChange(filters.copy(hiddenItems = !filters.hiddenItems))
-            },
-            leadingIcon = {
-                Icon(
-                    painter = painterResource(R.drawable.visibility_off_20px),
-                    contentDescription = null,
-                    modifier = Modifier.size(18.dp)
-                )
-            },
-            label = stringResource(R.string.preference_hidden_items),
-        )
+        val toggle = { onFiltersChange(filters.copy(hiddenItems = !filters.hiddenItems)) }
+        val icon = @Composable {
+            Icon(
+                painter = painterResource(R.drawable.visibility_off_20px),
+                contentDescription = null,
+                modifier = Modifier.size(FilterChipDefaults.IconSize)
+            )
+        }
+        val label = stringResource(R.string.preference_hidden_items)
+        // Shared with the settings screen's opaque sheet, where a glass chip
+        // would be a hole down to the wallpaper and its selected state too
+        // faint (review on #98): glass only on the search screen.
+        if (LocalOnGlass.current) {
+            GlassChip(selected = filters.hiddenItems, onClick = toggle, leadingIcon = icon, label = label)
+        } else {
+            FilterChip(
+                selected = filters.hiddenItems,
+                onClick = toggle,
+                leadingIcon = icon,
+                label = { Text(label) },
+            )
+        }
     }
 }

@@ -173,8 +173,6 @@ fun ProvideGlassBackdrop(controller: GlassBackdropController, content: @Composab
         LocalGlassStyle provides style,
         LocalGlassWallpaperBlur provides wallpaperBlur,
         LocalGlassSearchWallpaperBlur provides searchWallpaperBlur,
-        // Every icon inside the launcher's scaffold is Clear (#76).
-        LocalClearIcons provides true,
         content = content,
     )
 }
