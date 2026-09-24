@@ -88,3 +88,10 @@ fun gridItem(
 
 fun dockItem(x: Int, y: Int, w: Int, h: Int, layout: String = HomeGridLayouts.Phone, position: Int = 9) =
     HomeGridItem(layout, "dock", HomeGridWidgets.Favorites, x = x, y = y, w = w, h = h, position = position)
+
+/** What the grid draws now, or null before the geometry or the items are there (#118). */
+fun HomeGridVM.uiStateNow(): HomeGridUiState? {
+    val g = geometry.value ?: return null
+    val i = items.value ?: return null
+    return HomeGridUiState(g, arrange(g, i))
+}

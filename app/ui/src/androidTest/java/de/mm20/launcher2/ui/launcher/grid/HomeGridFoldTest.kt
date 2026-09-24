@@ -134,7 +134,7 @@ class HomeGridFoldTest {
         while (true) {
             val settled = runCatching {
                 composeRule.waitUntil(5_000) {
-                    vm.state.value?.geometry?.visibleColumns == columns &&
+                    vm.uiStateNow()?.geometry?.visibleColumns == columns &&
                             composeRule.onAllNodesWithContentDescription("grid-item:dock").fetchSemanticsNodes()
                                 .any { it.size.height > 0 }
                 }
@@ -142,7 +142,7 @@ class HomeGridFoldTest {
             if (settled) return
             if (System.currentTimeMillis() > deadline) {
                 throw AssertionError(
-                    "no $columns-column grid within 90 s; geometry=${vm.state.value?.geometry}",
+                    "no $columns-column grid within 90 s; geometry=${vm.uiStateNow()?.geometry}",
                 )
             }
             shell("input keyevent KEYCODE_WAKEUP")
@@ -150,14 +150,14 @@ class HomeGridFoldTest {
         }
     }
 
-    private fun HomeGridVM.spanOf(id: String) = state.value!!.cells.first { it.item.id == id }.span
+    private fun HomeGridVM.spanOf(id: String) = uiStateNow()!!.cells.first { it.item.id == id }.span
 
     @Test
     fun openedShowsEightColumnsAndTheLeftHalfItem() {
         val vm = koin.viewModel()
         show(vm)
 
-        assertEquals(8, vm.state.value!!.geometry.visibleColumns)
+        assertEquals(8, vm.uiStateNow()!!.geometry.visibleColumns)
         composeRule.onNodeWithContentDescription("grid-item:left").assertIsDisplayed()
         assertEquals(8, vm.spanOf("dock").w)
     }
@@ -176,7 +176,7 @@ class HomeGridFoldTest {
         assertEquals(listOf(4, 4), vm.spanOf("dock").let { listOf(it.x, it.w) })
         // Drawn from the cover's first column: layout column 5 is the cover's second.
         val grid = composeRule.onRoot().fetchSemanticsNode().boundsInWindow
-        val cell = vm.state.value!!.geometry.let { (it.cellDp + it.gapDp) * composeRule.density.density }
+        val cell = vm.uiStateNow()!!.geometry.let { (it.cellDp + it.gapDp) * composeRule.density.density }
         val digitalLeft = composeRule.onNodeWithContentDescription("grid-item:digital").fetchSemanticsNode().boundsInWindow.left
         assertEquals(grid.left + cell, digitalLeft, cell / 4)
     }
@@ -215,7 +215,7 @@ class HomeGridFoldTest {
         waitForColumns(vm, 8)
 
         composeRule.onNodeWithContentDescription("grid-item:left").assertIsDisplayed()
-        assertEquals(8, vm.state.value!!.geometry.visibleColumns)
+        assertEquals(8, vm.uiStateNow()!!.geometry.visibleColumns)
     }
 
     @Test
@@ -229,7 +229,7 @@ class HomeGridFoldTest {
         composeRule.waitForIdle()
         waitForColumns(vm, 8)
 
-        val geometry = vm.state.value!!.geometry
+        val geometry = vm.uiStateNow()!!.geometry
         assertEquals(HomeGridLayouts.Fold, geometry.layout)
         assertEquals(8, geometry.spec.columns)
         assertTrue(geometry.rows >= 1)
@@ -246,7 +246,7 @@ class HomeGridFoldTest {
         posture(postures.closed)
         waitForColumns(vm, 4)
         composeRule.onNodeWithContentDescription("grid-item:phone-only").assertDoesNotExist()
-        assertEquals(HomeGridLayouts.Fold, vm.state.value!!.geometry.layout)
+        assertEquals(HomeGridLayouts.Fold, vm.uiStateNow()!!.geometry.layout)
     }
 
     /**

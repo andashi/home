@@ -22,6 +22,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
@@ -102,11 +104,13 @@ class HomeGridEditVMTest {
             itemLimits = GridItemLimits { item, _ -> limits[item.id] ?: SizeLimits.Unbounded },
             locked = lockedFlow,
         )
-        // A 4x6 phone grid.
-        vm.onWindowMeasured(396f, 622f)
         val events = mutableListOf<GridEditEvent>()
-        backgroundScope.launch { vm.state.collect {} }
+        // Subscribed first, then measured: the order the composable has.
+        backgroundScope.launch { vm.items.collect {} }
         backgroundScope.launch { vm.events.collect { events += it } }
+        testScheduler.advanceUntilIdle()
+        // A 4x6 phone grid.
+        vm.measure(396f, 622f)
         testScheduler.advanceUntilIdle()
         return Fixture(vm, repository, writeBack, lockedFlow, events)
     }
@@ -117,9 +121,9 @@ class HomeGridEditVMTest {
      * values only need the test dispatcher to run.
      */
     private suspend fun HomeGridVM.cells(): List<HomeGridCell> {
-        if (state.value == null) state.filterNotNull().first()
+        if (uiStateNow() == null) uiState()
         dispatcher.scheduler.advanceUntilIdle()
-        return state.value!!.cells
+        return uiStateNow()!!.cells
     }
 
     private suspend fun HomeGridVM.spanOf(id: String) = cells().first { it.item.id == id }.span
@@ -172,10 +176,15 @@ class HomeGridEditVMTest {
         f.vm.cells()
 
         f.vm.enterEdit()
+        // Subscribed at once and awaited in the foreground: advanceUntilIdle
+        // does not run backgroundScope work once only that is left, so the
+        // fixture's background collector cannot be relied on here (the old
+        // fixture passed because a foreground settings flow kept the
+        // scheduler going).
+        val event = async(start = CoroutineStart.UNDISPATCHED) { f.vm.events.first() }
         f.vm.exitEdit()
-        dispatcher.scheduler.advanceUntilIdle()
 
-        assertEquals(listOf(GridEditEvent.WriteBackSkipped("locked", "home.grid.locked is true")), f.events)
+        assertEquals(GridEditEvent.WriteBackSkipped("locked", "home.grid.locked is true"), event.await())
     }
 
     @Test
@@ -242,9 +251,9 @@ class HomeGridEditVMTest {
             itemLimits = GridItemLimits.Unbounded,
             locked = f.locked,
         )
-        vm.onWindowMeasured(396f, 622f)
+        vm.measure(396f, 622f)
         val events = mutableListOf<GridEditEvent>()
-        backgroundScope.launch { vm.state.collect {} }
+        backgroundScope.launch { vm.items.collect {} }
         backgroundScope.launch { vm.events.collect { events += it } }
         vm.cells()
         vm.enterEdit()
@@ -313,8 +322,8 @@ class HomeGridEditVMTest {
             itemLimits = GridItemLimits.Unbounded,
             locked = f.locked,
         )
-        vm.onWindowMeasured(396f, 622f)
-        backgroundScope.launch { vm.state.collect {} }
+        vm.measure(396f, 622f)
+        backgroundScope.launch { vm.items.collect {} }
         vm.cells()
         vm.enterEdit()
 
@@ -334,7 +343,7 @@ class HomeGridEditVMTest {
         // bounds on a four-row window; restore then rejected every cell
         // and put the note at the first free cells in reading order.
         val f = fixture()
-        f.vm.onWindowMeasured(396f, 420f) // 4 rows of 97 dp
+        f.vm.measure(396f, 420f) // 4 rows of 97 dp
         f.vm.cells()
         f.vm.enterEdit()
         val removed = f.vm.removeEditing("note")!!

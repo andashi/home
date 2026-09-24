@@ -104,7 +104,7 @@ class HomeGridEditModeTest {
         composeRule.waitForIdle()
     }
 
-    private fun HomeGridVM.spanOf(id: String) = state.value!!.cells.first { it.item.id == id }.span
+    private fun HomeGridVM.spanOf(id: String) = uiStateNow()!!.cells.first { it.item.id == id }.span
 
     @Test
     fun longPressEntersEditModeAndTheParentGestureDoesNotFire() {
@@ -167,7 +167,7 @@ class HomeGridEditModeTest {
         composeRule.onNodeWithContentDescription("grid-item:note").performClick()
         composeRule.onNodeWithContentDescription("grid-remove").performClick()
         composeRule.waitForIdle()
-        assertEquals(listOf("clock", "dock"), vm.state.value!!.cells.map { it.item.id })
+        assertEquals(listOf("clock", "dock"), vm.uiStateNow()!!.cells.map { it.item.id })
 
         composeRule.onNodeWithText(composeRule.activity.getString(de.mm20.launcher2.ui.R.string.action_undo))
             .performClick()

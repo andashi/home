@@ -28,6 +28,7 @@ import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.unit.dp
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import de.mm20.launcher2.grid.Span
 import de.mm20.launcher2.grid.SizeLimits
 import de.mm20.launcher2.homegrid.FormFactor
 import de.mm20.launcher2.homegrid.GridItemLimits
@@ -156,7 +157,8 @@ class HomeGridEditUiTest {
         composeRule.waitForIdle()
     }
 
-    private fun HomeGridVM.spanOf(id: String) = state.value!!.cells.first { it.item.id == id }.span
+    // What the grid holds (edited or stored); the composable arranges it itself (#118).
+    private fun HomeGridVM.spanOf(id: String) = items.value!!.first { it.id == id }.let { Span(it.x, it.y, it.w, it.h) }
 
     @Test
     fun `a long press enters edit mode and the parent's gesture does not fire`() {
@@ -277,7 +279,7 @@ class HomeGridEditUiTest {
         composeRule.waitForIdle()
         composeRule.onNodeWithContentDescription("grid-remove").performClick()
         composeRule.waitForIdle()
-        assertEquals(listOf("clock", "dock"), vm.state.value!!.cells.map { it.item.id })
+        assertEquals(listOf("clock", "dock"), vm.items.value!!.map { it.id })
 
         composeRule.onNodeWithText(string(R.string.action_undo)).performClick()
         composeRule.waitForIdle()

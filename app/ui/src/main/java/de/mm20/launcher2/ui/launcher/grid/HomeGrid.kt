@@ -52,6 +52,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import de.mm20.launcher2.grid.Span
+import de.mm20.launcher2.homegrid.HomeGridGeometry
 import de.mm20.launcher2.homegrid.AndroidGridItemLimits
 import de.mm20.launcher2.homegrid.GridGeometry
 import de.mm20.launcher2.profiles.ProfileManager
@@ -144,12 +145,22 @@ fun HomeGrid(
     ) {
         val widthDp = maxWidth.value
         val heightDp = maxHeight.value
-        LaunchedEffect(widthDp, heightDp) {
-            viewModel.onWindowMeasured(widthDp, heightDp)
-        }
 
-        val state by viewModel.state.collectAsStateWithLifecycle()
-        val uiState = state ?: return@BoxWithConstraints
+        // The geometry for this window, derived here in the frame the window
+        // changed (unfold, fold, rotation, a recreated activity) and handed to
+        // the view model in the same frame, before layout, draw and input:
+        // one source, so the first frame on a new display is already right and
+        // edits work on what the user sees (#118).
+        val items by viewModel.items.collectAsStateWithLifecycle()
+        val columns by viewModel.columns.collectAsStateWithLifecycle()
+        val gridItems = items ?: return@BoxWithConstraints
+        val gridColumns = columns ?: return@BoxWithConstraints
+        val geometry = remember(widthDp, heightDp, gridColumns) {
+            HomeGridGeometry.derive(viewModel.formFactor, gridColumns, widthDp, heightDp)
+        }
+        val cells = remember(geometry, gridItems) { viewModel.arrange(geometry, gridItems) }
+        SideEffect { viewModel.onGeometry(geometry) }
+        val uiState = HomeGridUiState(geometry, cells)
 
         val host = LocalAppWidgetHost.current
         val profileManager: ProfileManager = koinInject()
@@ -308,7 +319,18 @@ fun HomeGridLayout(
     // re-run once the entry exists.
     val slides = remember { mutableStateMapOf<String, Animatable<Offset, *>>() }
     val previousRects = remember { mutableMapOf<String, IntOffset>() }
-    LaunchedEffect(cells, cellPx, gapPx) {
+    // What previousRects were measured in: the geometry and its pixel sizes.
+    // A display change (cover to inner, another cell size or first column) or
+    // a density change is not a move, so the cells appear at their place
+    // instead of sliding from the old pixels (#118, #119 review).
+    val rectsBasis = remember { arrayOfNulls<Any>(1) }
+    LaunchedEffect(cells, cellPx, gapPx, geometry) {
+        val basis = Triple(geometry, cellPx, gapPx)
+        if (rectsBasis[0] != basis) {
+            rectsBasis[0] = basis
+            previousRects.clear()
+            for (slide in slides.values) slide.snapTo(Offset.Zero)
+        }
         for ((id, span) in cells) {
             val rect = cellTopLeft(span, cellPx, gapPx, geometry.firstVisibleColumn)
             val previous = previousRects[id]
