@@ -70,10 +70,10 @@ import org.robolectric.annotation.GraphicsMode
 /**
  * #118: on unfold the grid shows the dock at its place on the inner display
  * in the first frame - not missing, not at the cover's column window
- * mid-screen. The device recreates the activity on fold and unfold (measured:
- * wm_relaunch_resume_activity, config changes 0xd00), so the grid's
- * composition is thrown away and built anew at the new size with the same,
- * retained view model; this test does the same (the key below).
+ * mid-screen. Two ways the window changes: since #120 the activity survives
+ * fold and unfold, so the same composition is measured anew; a recreated
+ * activity (dark mode, density) builds the grid's composition anew with the
+ * same, retained view model. Both are tested.
  */
 @RunWith(AndroidJUnit4::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
@@ -89,6 +89,57 @@ class HomeGridUnfoldTest {
     @Before
     fun setUp() {
         loadKoinModules(module { single { ProfileManager(androidContext(), get()) } })
+    }
+
+    /** #120: the activity survives unfold; the same composition is measured anew. */
+    @Test
+    fun `the first frame of the same grid measured anew shows the dock at column 7`() {
+        val vm = foldVm()
+        var width by mutableStateOf(396.dp)
+        composeRule.setContent {
+            MaterialTheme {
+                ProvideAppWidgetHost {
+                    Box(Modifier.requiredSize(width, 700.dp)) {
+                        HomeGrid(viewModel = vm, reducedMotion = true) { columns, rows -> Text("favorites ${columns}x$rows") }
+                    }
+                }
+            }
+        }
+        waitForDock()
+        composeRule.mainClock.autoAdvance = false
+
+        width = 790.dp
+        Snapshot.sendApplyNotifications()
+        composeRule.mainClock.advanceTimeByFrame()
+
+        assertDockAtColumn7()
+    }
+
+    private fun foldVm() = HomeGridVM(
+        repository = FakeHomeGridRepository(
+            mapOf(HomeGridLayouts.Fold to listOf(dockItem(7, 0, 1, 6, HomeGridLayouts.Fold))),
+        ),
+        uiSettings = GlobalContext.get().get<UiSettings>(),
+        formFactorDetector = FakeFormFactorDetector(FormFactor.Fold),
+        measuredRows = MeasuredGridRows(),
+        initFlag = FakeInitFlag(initialized = true),
+        initLock = HomeGridInitLock(),
+        writeBack = FakeWriteBack(),
+        itemLimits = GridItemLimits.Unbounded,
+        locked = MutableStateFlow(false),
+    )
+
+    private fun waitForDock() = composeRule.waitUntil(5_000) {
+        composeRule.onAllNodesWithContentDescription("grid-item:dock").fetchSemanticsNodes().any { it.size.height > 0 }
+    }
+
+    private fun assertDockAtColumn7() {
+        val inner = HomeGridGeometry.derive(FormFactor.Fold, 4, 790f, 700f)
+        val grid = composeRule.onNodeWithTag("home-grid").fetchSemanticsNode().boundsInRoot
+        val docks = composeRule.onAllNodesWithContentDescription("grid-item:dock").fetchSemanticsNodes()
+        assertEquals("the dock is on screen in the first frame", 1, docks.size)
+        val expected = grid.left + with(composeRule.density) { (7 * (inner.cellDp + inner.gapDp)).dp.toPx() }
+        assertEquals("at column 7 of the inner display", expected, docks.single().boundsInRoot.left, 1f)
     }
 
     @Test

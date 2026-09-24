@@ -5,7 +5,6 @@ import android.app.WallpaperManager
 import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.content.res.Configuration
-import android.content.res.Resources
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -25,6 +24,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
@@ -102,10 +102,6 @@ abstract class SharedLauncherActivity(
 
         val wallpaperManager = WallpaperManager.getInstance(this)
 
-        val windowSize = Resources.getSystem().displayMetrics.let {
-            Size(it.widthPixels.toFloat(), it.heightPixels.toFloat())
-        }
-
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
         viewModel.setSystemInDarkMode(resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES)
@@ -113,6 +109,12 @@ abstract class SharedLauncherActivity(
         val bottomSheetManager = LauncherBottomSheetManager(this)
 
         setContent {
+            // The window's current size: the activity survives fold, unfold and
+            // rotation (#120), so a size read once in onCreate would go stale.
+            val containerSize = LocalWindowInfo.current.containerSize
+            val windowSize = remember(containerSize) {
+                Size(containerSize.width.toFloat(), containerSize.height.toFloat())
+            }
             val snackbarHostState = remember { SnackbarHostState() }
             val wallpaperColors by wallpaperColorsAsState()
             val dimBackground by viewModel.dimBackground.collectAsState()

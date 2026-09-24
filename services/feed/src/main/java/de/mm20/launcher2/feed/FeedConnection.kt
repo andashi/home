@@ -29,6 +29,9 @@ interface FeedConnection {
     fun restart()
     fun destroy()
 
+    /** Re-sends the window to the overlay after a handled configuration change (#120). */
+    fun onConfigurationChanged()
+
     fun startScroll()
     fun endScroll()
     fun onScroll(progress: Float)
@@ -217,6 +220,20 @@ internal class FeedConnectionImpl(
         isActivityStarted = false
         overlay?.setActivityState(activityState)
 
+    }
+
+    /**
+     * Tells the overlay about the new window after a configuration change
+     * the launcher handles itself (fold, unfold, rotation, #120); Launcher3's
+     * overlay client re-sends its window attributes the same way.
+     */
+    override fun onConfigurationChanged() {
+        if (overlay == null) return
+        try {
+            sendConfig()
+        } catch (e: RemoteException) {
+            CrashReporter.logException(e)
+        }
     }
 
     @Throws(RemoteException::class)

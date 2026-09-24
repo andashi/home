@@ -580,6 +580,10 @@ ok "bind-widget grant given to $PKG (stands in for the always-allow dialog)"
 HAVE_CLOCK=1
 adb -s "$SERIAL" shell pm list packages | tr -d '\r' | grep -x "package:$CLOCK_PKG" >/dev/null \
   || { HAVE_CLOCK=0; warn "$CLOCK_PKG not installed: AppWidget steps are skipped"; }
+# The fold steps (postures, the cover, no relaunch on fold, #120) live in the
+# AppWidget branch; in fold mode a missing clock must not pass silently
+# (review on #121).
+[ "$FOLD" != 1 ] || [ "$HAVE_CLOCK" = 1 ] || die "FOLD=1 needs $CLOCK_PKG: without it the fold and no-relaunch checks would be skipped"
 
 # --- 1. schemaVersion 1 file + the default favorites row ----------------
 
@@ -626,6 +630,9 @@ if [ "$HAVE_CLOCK" = 1 ]; then
     assert_cells $'digital 5 0 3 1\nanalog 6 1 2 2\nleft 0 0 3 1\ndock 0 5 8 1' "configured grid on the inner display"
     assert_bound "$DIGITAL_CLOCK" "$ANALOG_CLOCK"
     ok "fold, opened: eight columns, the left-half item on screen, both widgets bound"
+    # From here on every fold and unfold must keep the same launcher activity
+    # (#120: configChanges); the events log says whether it was relaunched.
+    adb -s "$SERIAL" logcat -b events -c
     # Closed: the cover renders columns 4..7 of the same layout (D7, #93),
     # so on screen layout column 5 is the cover's second. The dock line says
     # 4 wide, so the pitch is measured from four columns.
@@ -640,6 +647,10 @@ if [ "$HAVE_CLOCK" = 1 ]; then
     posture opened
     assert_cells $'digital 5 0 3 1\nanalog 6 1 2 2\nleft 0 0 3 1\ndock 0 5 8 1' "opened again"
     ok "fold, half-opened and opened again: the inner layout is back"
+    events="$(adb -s "$SERIAL" logcat -b events -d | tr -d '\r')"
+    relaunched="$(grep -E 'wm_relaunch_(resume_)?activity|wm_on_create_called' <<<"$events" | grep -F 'LauncherActivity' || true)"
+    [ -z "$relaunched" ] || { printf '%s\n' "$relaunched" >&2; die "the launcher activity was recreated by a fold or unfold"; }
+    ok "fold, closed, half-opened, opened: the same launcher activity throughout, no relaunch (#120)"
   else
     assert_jq "$effective" \
       '(.home.grid.layouts.phone.items | map({id, widget, x, y, w, h})) ==

@@ -64,7 +64,8 @@ internal object PowerMenuComponent : ScaffoldComponent(), KoinComponent {
         val view = LocalView.current
         val rotation = view.display.rotation
 
-        val powerButtonY = remember {
+        // Keyed: the activity survives rotation and fold (#120).
+        val powerButtonY = remember(rotation, view.height) {
             val resources =
                 context.packageManager.getResourcesForApplication("com.android.systemui")
             val resId = resources.getIdentifier(
