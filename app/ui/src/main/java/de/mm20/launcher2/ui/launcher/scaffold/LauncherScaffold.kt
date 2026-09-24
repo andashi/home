@@ -1724,9 +1724,6 @@ private fun Modifier.searchBarAnimation(
     config: ScaffoldConfiguration,
     insets: PaddingValues,
 ): Modifier {
-    val position = state.searchBarPositionNow
-    val offsetFactor = if (position == SearchBarPosition.Top) -1f else 1f
-
     val component = state.currentComponent
     val anim = state.currentAnimation
 
@@ -1736,11 +1733,14 @@ private fun Modifier.searchBarAnimation(
         state.currentProgress
     }
 
-    val systemBarInset =
-        if (position == SearchBarPosition.Top) insets.calculateTopPadding() else insets.calculateBottomPadding()
-
+    // Continuous while the bar moves between the edges (#107, #115 review).
     val offset = if (config.searchBarStyle == SearchBarStyle.Hidden) {
-        offsetFactor * (1 - progress).pow(2) * (128.dp + systemBarInset)
+        SearchBarPlacement.hiddenOffset(
+            bias = state.searchBarBias,
+            progress = progress,
+            topInset = insets.calculateTopPadding().value,
+            bottomInset = insets.calculateBottomPadding().value,
+        ).dp
     } else {
         0.dp
     }

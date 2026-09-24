@@ -18,12 +18,13 @@ internal object SearchBarPlacement {
 
     /**
      * The Hidden style's slide-in offset in dp at [progress], toward the edge
-     * the bar is at. Stub until the fix: the edge switches at [bias] 0.
+     * the bar is at. The bias itself is the signed factor and blends the two
+     * insets, so the offset stays continuous while the bar moves between the
+     * edges (review on #115); at either edge it is what the style always did.
      */
     fun hiddenOffset(bias: Float, progress: Float, topInset: Float, bottomInset: Float): Float {
-        val factor = if (bias < 0f) -1f else 1f
-        val inset = if (bias < 0f) topInset else bottomInset
-        return factor * (1f - progress) * (1f - progress) * (128f + inset)
+        val inset = topInset + (bottomInset - topInset) * (bias + 1f) / 2f
+        return bias * (1f - progress) * (1f - progress) * (128f + inset)
     }
 
     private val SearchBarPosition.bias: Float
