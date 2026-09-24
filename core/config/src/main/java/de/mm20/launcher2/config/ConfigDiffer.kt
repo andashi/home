@@ -26,6 +26,13 @@ data class ConfigState(
      */
     val gridLayouts: Map<String, GridLayoutConfig> = emptyMap(),
     /**
+     * Whether the grid has been given its first content (HomeGridInitFlag).
+     * Until it has, a layout the file names is applied even when it equals
+     * the stored one, so an empty layout counts as content and the default
+     * favorites row does not overwrite it (#92).
+     */
+    val gridInitialized: Boolean = true,
+    /**
      * The wallpaper image (by upload name) and target currently in effect:
      * applied by a config reload, still the system's current wallpaper and
      * the file unchanged since. Null when no config-managed wallpaper is in
@@ -204,7 +211,7 @@ object ConfigDiffer {
             val locked = grid.locked?.takeIf { it != current.gridLocked }
             val labels = grid.labels?.takeIf { it != current.gridLabels }
             val layouts = grid.layouts?.filter { (key, layout) ->
-                !layout.matches(current.gridLayouts[key])
+                !current.gridInitialized || !layout.matches(current.gridLayouts[key])
             }?.takeIf { it.isNotEmpty() }
             if (columns != null || locked != null || layouts != null || labels != null) {
                 mutations += ConfigMutation.SetGrid(

@@ -70,11 +70,19 @@ class DefaultConfigStore(
         ).first().mapNotNull { it.toFavorite() }
         val wallpaper = wallpapers.current()
 
+        // One snapshot of the layouts and the flag, under the lock the default
+        // row writes under: read apart, the row could land in between and look
+        // like an initialised empty grid, and the differ would keep it (#92).
+        val (gridLayouts, gridInitialized) = homeGridInitLock.withLock {
+            GridLayouts.All.associateWith { layout ->
+                GridLayoutConfig(homeGridRepository.observe(layout).first().map { it.toConfig() })
+            } to homeGridInitFlag.isInitialized()
+        }
+
         return settingsState.copy(
             favorites = favorites,
-            gridLayouts = GridLayouts.All.associateWith { layout ->
-                GridLayoutConfig(homeGridRepository.observe(layout).first().map { it.toConfig() })
-            },
+            gridLayouts = gridLayouts,
+            gridInitialized = gridInitialized,
             wallpaperImage = wallpaper?.image,
             wallpaperTarget = wallpaper?.target,
         )
