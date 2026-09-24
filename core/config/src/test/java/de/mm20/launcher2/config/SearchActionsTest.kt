@@ -175,4 +175,13 @@ class SearchActionsTest {
             ConfigDiffer.diff(LauncherConfig(2, search = SearchConfig(actions = listOf(mine, SearchActionConfig("websearch")))), state),
         )
     }
+
+    /** #116 review: a device with two intent actions reads back two entries; the file still applies. */
+    @Test
+    fun `two read-back intent actions are no duplicate`() {
+        val result = parse("""[ { "type": "intent", "label": "Mine" }, { "type": "intent", "label": "Other" } ]""")
+
+        assertTrue(result.isSuccess)
+        assertEquals(emptyList<Diagnostic>(), result.diagnostics.filter { it.code == "duplicate-search-action" })
+    }
 }
