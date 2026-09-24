@@ -14,6 +14,7 @@ import de.mm20.launcher2.config.ConfigMutation
 import de.mm20.launcher2.config.GlassContrast
 import de.mm20.launcher2.config.GridItemConfig
 import de.mm20.launcher2.config.GridLayoutConfig
+import de.mm20.launcher2.config.GridLayouts
 import de.mm20.launcher2.grid.CellSize
 import de.mm20.launcher2.grid.SizeLimits
 import de.mm20.launcher2.homegrid.GridRowsSource
@@ -38,6 +39,7 @@ import de.mm20.launcher2.searchable.VisibilityLevel
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -418,6 +420,22 @@ class DefaultConfigStoreTest {
         assertEquals(true, store.readState().gridInitialized)
     }
 
+    /**
+     * #92 review: the layouts and the flag are one snapshot. Read apart, the
+     * default row could land in between: empty layouts, flag set, and the
+     * differ would drop the file's empty layout and leave the row.
+     */
+    @Test
+    fun `readState reads the layouts and the flag under the init lock`() = runTest {
+        initFlag.lockProbe = { initLock.isLocked }
+        homeGridRepository.lockProbe = { initLock.isLocked }
+
+        store.readState()
+
+        assertEquals(listOf(true), initFlag.lockedDuringRead)
+        assertEquals(GridLayouts.All.map { true }, homeGridRepository.lockedDuringObserve)
+    }
+
     /** The applied empty layout sets the flag, as any applied layout does. */
     @Test
     fun `an applied empty layout marks the grid initialised`() = runTest {
@@ -670,7 +688,13 @@ class DefaultConfigStoreTest {
 
     private class FakeInitFlag : HomeGridInitFlag {
         var initialized = false
-        override suspend fun isInitialized(): Boolean = initialized
+        /** Answers whether the init lock is held; each read of the flag records it. */
+        var lockProbe: (() -> Boolean)? = null
+        val lockedDuringRead = mutableListOf<Boolean>()
+        override suspend fun isInitialized(): Boolean {
+            lockProbe?.let { lockedDuringRead += it() }
+            return initialized
+        }
         override suspend fun markInitialized() {
             initialized = true
         }
@@ -680,7 +704,14 @@ class DefaultConfigStoreTest {
         val layouts = mutableMapOf<String, List<HomeGridItem>>()
         var replaceCalls = 0
 
-        override fun observe(layout: String): Flow<List<HomeGridItem>> = flowOf(layouts[layout] ?: emptyList())
+        /** Answers whether the init lock is held; each collected read records it. */
+        var lockProbe: (() -> Boolean)? = null
+        val lockedDuringObserve = mutableListOf<Boolean>()
+
+        override fun observe(layout: String): Flow<List<HomeGridItem>> = flow {
+            lockProbe?.let { lockedDuringObserve += it() }
+            emit(layouts[layout] ?: emptyList())
+        }
 
         var lockedDuringReplace: Boolean? = null
         var onReplace: (suspend () -> Unit)? = null
