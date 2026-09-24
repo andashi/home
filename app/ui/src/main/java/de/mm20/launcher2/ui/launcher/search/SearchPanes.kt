@@ -1,5 +1,6 @@
 package de.mm20.launcher2.ui.launcher.search
 
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -58,7 +59,10 @@ fun SearchPanes(
             results()
         }
 
-        is SearchLayout.TwoPane -> Box(modifier) {
+        // The whole grid area: the panes are placed by offset, which does not
+        // widen the Box, so a Box sized to its content would be one pane
+        // wide and a centering parent would shift both panes.
+        is SearchLayout.TwoPane -> Box(modifier.fillMaxSize()) {
             Pane(layout.apps, appsState, contentPadding, reverse, userScrollEnabled, apps)
             Pane(layout.results, resultsState, contentPadding, reverse, userScrollEnabled, results)
         }
