@@ -11,11 +11,20 @@ data class DockPlacement(val index: Int, val row: Float, val column: Float)
 
 /**
  * The cells of a [columns] × [rows] dock that [count] favorites take (#111).
- * Today's behavior until the fix: row by row from the top left.
+ * They fill rows of [columns] in order; each row is centred, and the used
+ * rows are centred in the dock's height. A full dock is favorite k in cell
+ * k; beyond `columns × rows`, the rest are not placed (search has them).
  */
 fun dockPlacements(count: Int, columns: Int, rows: Int): List<DockPlacement> {
     val shown = count.coerceIn(0, columns * rows)
-    return (0 until shown).map { DockPlacement(it, (it / columns).toFloat(), (it % columns).toFloat()) }
+    if (shown == 0) return emptyList()
+    val usedRows = (shown + columns - 1) / columns
+    val top = (rows - usedRows) / 2f
+    return (0 until shown).map { index ->
+        val row = index / columns
+        val inRow = minOf(columns, shown - row * columns)
+        DockPlacement(index, top + row, (columns - inRow) / 2f + index % columns)
+    }
 }
 
 /**

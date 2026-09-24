@@ -1,7 +1,6 @@
 package de.mm20.launcher2.ui.launcher.grid
 
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -10,9 +9,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import de.mm20.launcher2.ui.R
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -39,7 +35,8 @@ class FavoritesGridVM : FavoritesVM() {
 
 /**
  * The dock as a widget (D2): the first `columns * rows` pins, laid out in
- * [columns] columns of icons without labels (ADR 0004). What does not fit is
+ * [columns] columns of icons without labels (ADR 0004), centred when they
+ * do not fill it (#111). What does not fit is
  * clipped and stays reachable through search; the overflow count is edit
  * mode's job (PR 5). Icons go through the same [GridItem] as the search
  * results, so launching, badges and the icon cache are shared.
@@ -69,25 +66,22 @@ fun FavoritesGridWidget(
                     .semantics { contentDescription = "grid-favorites-overflow" },
             )
         }
-    Column(modifier = Modifier.fillMaxSize().padding(4.dp)) {
-        for (row in 0 until rows) {
-            Row(modifier = Modifier.fillMaxWidth()) {
-                for (column in 0 until columns) {
-                    val item = shown.getOrNull(row * columns + column)
-                    if (item != null) {
-                        key(item.key) {
-                            GridItem(
-                                modifier = Modifier.weight(1f),
-                                item = item,
-                                showLabels = false,
-                            )
-                        }
-                    } else {
-                        Spacer(modifier = Modifier.weight(1f))
+        // Fewer favorites than cells are centred (#111); every icon keeps one
+        // cell's size and sits in its middle, so a full dock lines up with
+        // the grid cells.
+        DockIcons(
+            count = shown.size,
+            columns = columns,
+            rows = rows,
+            modifier = Modifier.fillMaxSize().padding(4.dp),
+        ) {
+            for (item in shown) {
+                key(item.key) {
+                    Box(contentAlignment = Alignment.Center) {
+                        GridItem(item = item, showLabels = false)
                     }
                 }
             }
         }
-    }
     }
 }
