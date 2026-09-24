@@ -11,8 +11,6 @@
     <string name="app_info_version">Wersja %1$s</string>
     <string name="settings">Ustawienia</string>
     <string name="wallpaper">Tapeta</string>
-    <string name="default_websearch_2_url">https://www.youtube.com/results\?search_query=${1}</string>
-    <string name="default_websearch_3_name">Sklep Play</string>
     <string name="websearch_dialog_delete_icon">Usuń ikonkę</string>
     <string name="websearch_dialog_custom_icon">Niestandardowa ikonka</string>
     <string name="menu_edit_widgets">Edytuj widżety</string>
@@ -69,9 +67,7 @@
     <string name="preference_screen_search">Wyszukiwanie</string>
     <string name="preference_search_favorites">Ulubione</string>
     <string name="preference_search_favorites_summary">Pokazuje przypięte oraz często używane rzeczy nad listą aplikacji</string>
-    <string name="default_websearch_2_name">YouTube</string>
     <string name="preference_category_license">Licencja</string>
-    <string name="default_websearch_3_url">https://play.google.com/store/search\?q=${1}</string>
     <string name="preference_about_license_summary">Licencjonowana pod GNU General Public License 3.0</string>
     <string name="close">Zamknij</string>
     <string name="edit_favorites_dialog_unpinned">Nie przypięte - często używane</string>

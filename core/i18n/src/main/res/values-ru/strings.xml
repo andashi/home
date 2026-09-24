@@ -13,9 +13,6 @@
     <string name="app_info_version">Версия %1$s</string>
     <string name="settings">Настройки</string>
     <string name="wallpaper">Обои</string>
-    <string name="default_websearch_2_name">YouTube</string>
-    <string name="default_websearch_3_name">Google Play</string>
-    <string name="default_websearch_3_url">https://play.google.com/store/search\?q=${1}</string>
     <string name="websearch_dialog_url_error">В этом адресе отсутствует заполнитель \'${1}\'</string>
     <string name="websearch_dialog_replace_icon">Заменить иконку</string>
     <string name="websearch_dialog_delete_icon">Удалить иконку</string>
@@ -52,7 +49,6 @@
     <string name="preference_theme_system">Следовать системе</string>
     <string name="menu_share_store_link">%1$s – ссылка</string>
     <string name="menu_app_info">Информация о приложении</string>
-    <string name="default_websearch_2_url">https://www.youtube.com/results\?search_query=${1}</string>
     <string name="menu_item_edit_favs">Редактировать избранное</string>
     <string name="edit_favorites_dialog_pinned_unsorted">Закреплены — отсортированы автоматически</string>
     <string name="missing_permission_contact_search_settings">Для поиска контактов требуется соответствующее разрешение</string>

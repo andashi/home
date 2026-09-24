@@ -18,9 +18,6 @@
     <string name="help">Laguntza</string>
     <string name="wallpaper">Horma-papera</string>
     <string name="alert_delete_shortcut">%1$s lasterbidea betirako ezabatuko da. Jarraitu nahi duzu\?</string>
-    <string name="default_websearch_2_name">YouTube</string>
-    <string name="default_websearch_3_url">https://play.google.com/store/search\?q=${1}</string>
-    <string name="default_websearch_3_name">Google Play</string>
     <string name="websearch_dialog_replace_icon">Ikonoa ordeztu</string>
     <string name="websearch_dialog_delete_icon">Ikonoa ezabatu</string>
     <string name="websearch_dialog_custom_icon">Ikono pertsonalizatua</string>
@@ -47,7 +44,6 @@
     <string name="edit_favorites_dialog_pinned_unsorted">Ainguratuak – automatikoki ordenatuak</string>
     <string name="menu_app_info">Aplikazioaren informazioa</string>
     <string name="menu_share_store_link">%1$s esteka</string>
-    <string name="default_websearch_2_url">https://www.youtube.es/results\?search_query=${1}</string>
     <string name="websearch_dialog_url_error">\'${1}\' leku-marka falta da URL honetan</string>
     <string name="websearch_dialog_query_encoding_url">Ehuneko-kodeketa</string>
     <string name="show_all">Guztia erakutsi</string>

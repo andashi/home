@@ -52,7 +52,11 @@ object ConfigParser {
             "favorites", "allApps", "layout", "labels", "contacts", "shortcuts",
             "filterBar", "openKeyboard", "launchOnEnter", "reversed", "hiddenItemsButton",
             "barPosition",
+            "actions",
         ).associateWith { KeyEffect.Applied },
+        // #106: one search action.
+        "search.actions[]" to listOf("type", "label", "url", "package", "encoding")
+            .associateWith { KeyEffect.Applied },
         "icons" to mapOf(
             "themed" to KeyEffect.Applied,
             "enforceThemed" to KeyEffect.Applied,

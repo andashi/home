@@ -35,6 +35,8 @@ fun ConfigState.toLauncherConfig(): LauncherConfig {
             hiddenItemsButton = search.hiddenItemsButton,
             // Only once set (#107): absent, search follows the home position.
             barPosition = search.barPosition,
+            // The actions in effect (#106).
+            actions = searchActions,
         ),
         icons = IconsConfig(
             themed = themedIcons,

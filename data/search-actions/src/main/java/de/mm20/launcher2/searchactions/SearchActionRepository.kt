@@ -64,6 +64,9 @@ internal class SearchActionRepositoryImpl(
     }
 
     override suspend fun replaceSearchActionBuilders(builders: List<SearchActionBuilder>) {
+        database.searchActionDao().replaceAll(
+            builders.mapIndexed { i, it -> SearchActionBuilder.toDatabaseEntity(it, i) }
+        )
     }
 
     override fun saveSearchActionBuilders(builders: List<SearchActionBuilder>) {

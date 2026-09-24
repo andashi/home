@@ -205,6 +205,13 @@ object ConfigDiffer {
             }
         }
 
+        desired.search?.actions?.let { actions ->
+            // The default encoding written or not is the same action (#106).
+            if (actions.normalized() != current.searchActions?.normalized()) {
+                mutations += ConfigMutation.SetSearchActions(actions)
+            }
+        }
+
         desired.home?.favorites?.let { favorites ->
             if (favorites != current.favorites) {
                 mutations += ConfigMutation.SetFavorites(favorites)
@@ -265,4 +272,8 @@ internal fun GridItemConfig.matches(stored: GridItemConfig): Boolean {
             same(profile, stored.profile) &&
             same(borderless, stored.borderless) && same(background, stored.background) &&
             same(themeColors, stored.themeColors)
+}
+
+private fun List<SearchActionConfig>.normalized(): List<SearchActionConfig> = map {
+    if (it.type == SearchActionTypes.Url && it.encoding == null) it.copy(encoding = SearchActionTypes.DefaultEncoding) else it
 }

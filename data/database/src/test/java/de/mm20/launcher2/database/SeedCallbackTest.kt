@@ -21,7 +21,7 @@ class SeedCallbackTest {
 
     private val context: Context = ApplicationProvider.getApplicationContext()
     private val database = Room.inMemoryDatabaseBuilder(context, AppDatabase::class.java)
-        .addCallback(SeedCallback(context))
+        .addCallback(SeedCallback())
         .allowMainThreadQueries()
         .build()
 

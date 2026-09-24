@@ -86,7 +86,7 @@ abstract class AppDatabase : RoomDatabase() {
             val instance = _instance
                 ?: Room.databaseBuilder(context.applicationContext, AppDatabase::class.java, "room")
                     //.fallbackToDestructiveMigration()
-                    .addCallback(SeedCallback(context))
+                    .addCallback(SeedCallback())
                     .addMigrations(
                         Migration_6_7(),
                         Migration_7_8(),
@@ -129,9 +129,11 @@ abstract class AppDatabase : RoomDatabase() {
 
 /**
  * Seeds a new database (never an upgraded one) with the launcher's search
- * actions. Stub until #106: today's rows, the upstream web searches included.
+ * actions: the built-ins and one neutral web search, which uses the browser's
+ * own engine. Upstream also seeded YouTube and Google Play; Andashi does not
+ * (decided 2026-09-24, #106). A config can set any list (`search.actions`).
  */
-internal class SeedCallback(private val context: Context) : RoomDatabase.Callback() {
+internal class SeedCallback : RoomDatabase.Callback() {
     override fun onCreate(db: SupportSQLiteDatabase) {
         super.onCreate(db)
         db.execSQL(
@@ -146,29 +148,5 @@ internal class SeedCallback(private val context: Context) : RoomDatabase.Callbac
                     "(7, 'website')," +
                     "(8, 'websearch')"
         )
-
-        db.execSQL(
-            "INSERT INTO `SearchAction` (`position`, `type`, `data`, `label`, `color`, `icon`, `customIcon`, `options`) " +
-                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?, ?, ?)",
-            arrayOf<Any?>(
-                9,
-                "url",
-                context.getString(R.string.default_websearch_2_url),
-                context.getString(R.string.default_websearch_2_name),
-                0,
-                0,
-                null,
-                null,
-                10,
-                "url",
-                context.getString(R.string.default_websearch_3_url),
-                context.getString(R.string.default_websearch_3_name),
-                0,
-                0,
-                null,
-                null,
-            )
-        )
-
     }
 }

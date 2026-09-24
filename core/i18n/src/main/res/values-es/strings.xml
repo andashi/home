@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="default_websearch_3_url">https://play.google.com/store/search\?q=${1}</string>
     <string name="menu_share">Compartir</string>
     <string name="menu_uninstall">Desinstalar</string>
     <string name="menu_back">Atrás</string>
@@ -12,8 +11,6 @@
     <string name="settings">Ajustes</string>
     <string name="wallpaper">Fondo de pantalla</string>
     <string name="menu_share_store_link">Enlace de %1$s</string>
-    <string name="default_websearch_2_name">YouTube</string>
-    <string name="default_websearch_2_url">https://www.youtube.es/results\?search_query=${1}</string>
     <string name="websearch_dialog_replace_icon">Reemplazar icono</string>
     <string name="websearch_dialog_delete_icon">Eliminar icono</string>
     <string name="websearch_dialog_custom_icon">Icono personalizado</string>
@@ -25,7 +22,6 @@
     <string name="widget_action_remove">Eliminar</string>
     <string name="menu_item_edit_favs">Editar favoritos</string>
     <string name="show_all">Mostrar todo</string>
-    <string name="default_websearch_3_name">Google Play</string>
     <string name="grant_permission">Otorgar</string>
     <string name="preference_colors_bw">Blanco y negro</string>
     <string name="missing_permission_contact_search_settings">Se requiere permiso de contactos para buscar contactos</string>

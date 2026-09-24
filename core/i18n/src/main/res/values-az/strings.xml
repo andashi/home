@@ -18,8 +18,6 @@
     <string name="settings">Tənzimləmələr</string>
     <string name="help">Kömək</string>
     <string name="wallpaper">Divar kağızı</string>
-    <string name="default_websearch_3_name">Google Play</string>
-    <string name="default_websearch_3_url">https://play.google.com/store/search?q=${1}</string>
     <string name="websearch_dialog_url_error">Bu URL-də \'${1}\' yer tutucusu yoxdur</string>
     <string name="websearch_dialog_replace_icon">İkonu dəyiş</string>
     <string name="websearch_dialog_custom_icon">Fərdi ikon</string>
@@ -27,9 +25,7 @@
     <string name="websearch_dialog_query_encoding_url">Faiz kodlaşdırması</string>
     <string name="websearch_dialog_query_encoding_form">application/x-www-form-urlencoded</string>
     <string name="alert_delete_shortcut">%1$s qısayolu həmişəlik silinəcək. Davam edilsin?</string>
-    <string name="default_websearch_2_url">https://www.youtube.com/results?search_query=${1}</string>
     <string name="websearch_dialog_query_encoding">Sorğunun kodlaşdırılması</string>
-    <string name="default_websearch_2_name">YouTube</string>
     <string name="websearch_dialog_delete_icon">İkonu sil</string>
     <string name="menu_share_store_link">%1$s linki</string>
     <string name="menu_contacts_open_externally">Kontaktlar tətbiqində aç</string>

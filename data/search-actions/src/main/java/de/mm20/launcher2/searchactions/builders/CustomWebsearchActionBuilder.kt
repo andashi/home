@@ -31,6 +31,7 @@ data class CustomWebsearchActionBuilder(
             icon = icon,
             customIcon = customIcon,
             iconColor = iconColor,
+            packageName = packageName,
         )
     }
 

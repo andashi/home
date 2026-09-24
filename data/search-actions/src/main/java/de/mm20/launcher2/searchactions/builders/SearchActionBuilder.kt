@@ -38,7 +38,8 @@ interface SearchActionBuilder {
                         iconColor = entity.color ?: 0,
                         icon = SearchActionIcon.fromInt(entity.icon),
                         customIcon = entity.customIcon,
-                        encoding = CustomWebsearchActionBuilder.QueryEncoding.fromInt(options?.optInt("encoding"))
+                        encoding = CustomWebsearchActionBuilder.QueryEncoding.fromInt(options?.optInt("encoding")),
+                        packageName = options?.optString("package")?.takeIf { it.isNotBlank() },
                     )
                 }
                 "app" -> {
@@ -88,7 +89,9 @@ interface SearchActionBuilder {
                     customIcon = builder.customIcon,
                     options = jsonObjectOf(
                         "encoding" to builder.encoding.toInt()
-                    ).toString()
+                    ).apply {
+                        builder.packageName?.let { put("package", it) }
+                    }.toString()
                 )
                 is AppSearchActionBuilder -> SearchActionEntity(
                     position = position,

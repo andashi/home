@@ -27,10 +27,6 @@
     <string name="preference_icon_shape_circle">Kreis</string>
     <string name="preference_category_searchbar">Suchleiste</string>
     <string name="preference_theme_system">Systemeinstellung verwenden</string>
-    <string name="default_websearch_2_name">YouTube</string>
-    <string name="default_websearch_3_name">Google Play</string>
-    <string name="default_websearch_2_url">https://www.youtube.com/results\?search_query=${1}</string>
-    <string name="default_websearch_3_url">https://play.google.com/store/search\?q=${1}</string>
     <string name="websearch_dialog_url_error">In dieser URL fehlt der Platzhalter „${1}“</string>
     <string name="websearch_dialog_replace_icon">Icon ersetzen</string>
     <string name="websearch_dialog_delete_icon">Icon löschen</string>

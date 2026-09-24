@@ -21,6 +21,8 @@ data class OpenUrlAction(
         val intent = Intent(Intent.ACTION_VIEW).apply {
             data = url
             flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            // Pinned (#106): only that app, never a fallback to another browser.
+            packageName?.let { setPackage(it) }
         }
         context.tryStartActivity(intent)
     }

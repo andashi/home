@@ -20,9 +20,5 @@
     <string name="settings">Tetapan</string>
     <string name="help">Bantuan</string>
     <string name="wallpaper">Kertas Dinding</string>
-    <string name="default_websearch_2_name">YouTube</string>
-    <string name="default_websearch_2_url">https://www.youtube.com/results?search_query=${1}</string>
-    <string name="default_websearch_3_name">Google Play</string>
     <string name="alert_delete_shortcut">Pintasan %1$s akan dibuang secara kekal. Teruskan?</string>
-    <string name="default_websearch_3_url">https://play.google.com/store/search?q=${1}</string>
 </resources>

@@ -44,10 +44,6 @@
     <string name="settings">設定</string>
     <string name="wallpaper">桌布</string>
     <string name="alert_delete_shortcut">將永久移除捷徑「%1$s」。您要繼續嗎？</string>
-    <string name="default_websearch_2_name">YouTube</string>
-    <string name="default_websearch_2_url">https://www.youtube.com/results\?search_query=${1}</string>
-    <string name="default_websearch_3_name">Google Play</string>
-    <string name="default_websearch_3_url">https://play.google.com/store/search\?q=${1}</string>
     <string name="websearch_dialog_url_error">URL 中缺少預留位置『${1}』</string>
     <string name="websearch_dialog_replace_icon">變更圖示</string>
     <string name="websearch_dialog_delete_icon">刪除圖示</string>

@@ -2,7 +2,6 @@
 <resources>
     <string name="menu_share_store_link">Collegamento a %1$s</string>
     <string name="menu_contacts_open_externally">Apri nell\'app contatti</string>
-    <string name="default_websearch_3_url">https://play.google.com/store/search\?q=${1}</string>
     <string name="missing_permission_contact_search">È richiesta l\'autorizzazione Contatti per cercare i tuoi contatti</string>
     <string name="open_webpage">Apri sito web</string>
     <string name="preference_screen_buildinfo_summary">Maggiori informazioni sulla build di questa app</string>
@@ -27,9 +26,6 @@
     <string name="app_info_version">Versione %1$s</string>
     <string name="settings">Impostazioni</string>
     <string name="wallpaper">Sfondo</string>
-    <string name="default_websearch_2_name">YouTube</string>
-    <string name="default_websearch_2_url">https://www.youtube.com/results\?search_query=${1}</string>
-    <string name="default_websearch_3_name">Google Play</string>
     <string name="websearch_dialog_url_error">Il segnaposto \'${1}\' non è presente in questo URL</string>
     <string name="websearch_dialog_replace_icon">Sostituisci icona</string>
     <string name="websearch_dialog_delete_icon">Elimina icona</string>

@@ -21,7 +21,6 @@
     <string name="action_undo">Peru</string>
     <string name="menu_delete">Poista</string>
     <string name="alert_delete_shortcut">Oikotie %1$s poistetaan lopullisesti. Jatka\?</string>
-    <string name="default_websearch_3_url">https://play.google.com/store/search\?q=${1}</string>
     <string name="websearch_dialog_delete_icon">Poista kuvake</string>
     <string name="websearch_dialog_custom_icon">Mukautettu kuvake</string>
     <string name="websearch_dialog_advanced">Edistyneet</string>
@@ -36,9 +35,6 @@
     <string name="settings">Asetukset</string>
     <string name="help">Ohje</string>
     <string name="wallpaper">Taustakuva</string>
-    <string name="default_websearch_2_name">YouTube</string>
-    <string name="default_websearch_2_url">https://www.youtube.com/results\?search_query=${1}</string>
-    <string name="default_websearch_3_name">Google Play</string>
     <string name="websearch_dialog_replace_icon">Korvaa kuvake</string>
     <string name="websearch_dialog_query_encoding_url">Prosenttikoodaus</string>
     <string name="websearch_dialog_query_encoding_form">application/x-www-form-urlencoded</string>

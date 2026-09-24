@@ -34,10 +34,6 @@
     <string name="menu_contacts_open_externally">연락처 앱으로 열기</string>
     <string name="help">도움말</string>
     <string name="alert_delete_shortcut">%1$s 바로 가기를 영구적으로 제거합니다. 계속하시겠습니까\?</string>
-    <string name="default_websearch_2_name">YouTube</string>
-    <string name="default_websearch_2_url">https://www.youtube.com/results\?search_query=${1}</string>
-    <string name="default_websearch_3_name">Google Play</string>
-    <string name="default_websearch_3_url">https://play.google.com/store/search\?q=${1}</string>
     <string name="websearch_dialog_delete_icon">아이콘 삭제</string>
     <string name="menu_item_edit_favs">즐겨찾기 편집</string>
     <string name="edit_favorites_dialog_tags">태그</string>
