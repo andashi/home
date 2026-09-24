@@ -21,12 +21,17 @@ import de.mm20.launcher2.ui.launcher.search.common.grid.SearchResultGrid
 import de.mm20.launcher2.ui.layout.BottomReversed
 import de.mm20.launcher2.ui.launcher.glass.GlassSurface
 
-/** Whether the favorites card has anything to show (#105); a stub until the fix. */
+/**
+ * Whether the favorites card has anything to show (#105): favorites, pinned
+ * tags to switch between, or a tag the user picked (whose empty banner is the
+ * way back). An empty card is not shown; it appears once something is pinned
+ * or used often.
+ */
 internal fun showFavoritesCard(
     favorites: List<SavableSearchable>,
     pinnedTags: List<Tag>,
     selectedTag: String?,
-): Boolean = true
+): Boolean = favorites.isNotEmpty() || pinnedTags.isNotEmpty() || selectedTag != null
 
 fun LazyListScope.SearchFavorites(
     favorites: List<SavableSearchable>,
@@ -39,6 +44,11 @@ fun LazyListScope.SearchFavorites(
     editButton: Boolean,
     reverse: Boolean,
 ) {
+    if (!showFavoritesCard(favorites, pinnedTags, selectedTag)) {
+        // Empty item to keep the scroll position, as when favorites are off
+        item(key = "favorites") {}
+        return
+    }
     item(
         key = "favorites",
     ) {
