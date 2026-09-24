@@ -6,6 +6,7 @@ object ConfigValidator {
     const val MaxPackageNameLength = 256
     const val MaxFavorites = 64
     const val MaxGridItems = 32
+    const val MaxSearchActions = 32
     const val MinGridColumns = 2
     const val MaxGridColumns = 8
     /** Upper bound for x, y, w and h: past any real grid, and far from Int overflow. */

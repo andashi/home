@@ -28,6 +28,9 @@ interface SearchActionRepository {
     fun getBuiltinSearchActionBuilders(): List<SearchActionBuilder>
 
     fun saveSearchActionBuilders(builders: List<SearchActionBuilder>)
+
+    /** Replaces the stored actions and returns once they are written (#106: the config's read-back). */
+    suspend fun replaceSearchActionBuilders(builders: List<SearchActionBuilder>)
 }
 
 internal class SearchActionRepositoryImpl(
@@ -58,6 +61,9 @@ internal class SearchActionRepositoryImpl(
         )
 
         return allActions
+    }
+
+    override suspend fun replaceSearchActionBuilders(builders: List<SearchActionBuilder>) {
     }
 
     override fun saveSearchActionBuilders(builders: List<SearchActionBuilder>) {

@@ -1,5 +1,6 @@
 package de.mm20.launcher2.config.service
 
+import de.mm20.launcher2.config.SearchActionConfig
 import de.mm20.launcher2.config.SearchConfig
 import android.content.ComponentName
 import android.content.Context
@@ -60,6 +61,7 @@ class DefaultConfigStoreTest {
     private lateinit var initFlag: FakeInitFlag
     private val initLock = HomeGridInitLock()
     private lateinit var gridLimits: FakeGridLimitsSource
+    private lateinit var searchActionStore: FakeSearchActionStore
     private lateinit var gridRows: FakeGridRowsSource
     private lateinit var searchableRepository: FakeSavableSearchableRepository
     private lateinit var appRepository: FakeAppRepository
@@ -85,6 +87,7 @@ class DefaultConfigStoreTest {
             work = Profile(Profile.Type.Work, workHandle, 10),
         )
         wallpaperStore = FakeWallpaperStore()
+        searchActionStore = FakeSearchActionStore()
         store = DefaultConfigStore(
             settings,
             homeGridRepository,
@@ -96,6 +99,7 @@ class DefaultConfigStoreTest {
             appRepository,
             profileResolver,
             wallpaperStore,
+            searchActionStore,
         )
     }
 
@@ -614,6 +618,28 @@ class DefaultConfigStoreTest {
         assertEquals(false, settings.state.search.favorites)
     }
 
+    // ---- search.actions (#106) ----
+
+    @Test
+    fun `readState reports the search actions in effect`() = runTest {
+        searchActionStore.actions = listOf(SearchActionConfig("call"), SearchActionConfig("websearch"))
+
+        assertEquals(searchActionStore.actions, store.readState().searchActions)
+    }
+
+    @Test
+    fun `SetSearchActions replaces the actions, outside the settings call, and passes its reports on`() = runTest {
+        val actions = listOf(SearchActionConfig("url", label = "Docs", url = "https://example.org/?q=\${1}"))
+        val report = Diagnostic(Severity.Warning, "search-action-app-not-searchable", "search.actions[1]", "x")
+        searchActionStore.reports = listOf(report)
+
+        val diagnostics = store.apply(listOf(ConfigMutation.SetSearchActions(actions)))
+
+        assertEquals(listOf(actions to "search.actions"), searchActionStore.replaced)
+        assertEquals(listOf(report), diagnostics)
+        assertEquals(emptyList<List<ConfigMutation>>(), settings.applyCalls)
+    }
+
     @Test
     fun `a failed settings write is reported for every settings-backed section, glass included`() = runTest {
         settings.applyFailure = IllegalStateException("datastore gone")
@@ -935,5 +961,19 @@ class DefaultConfigStoreTest {
     @Test
     fun `nothing pending means nothing extra is reported`() = runTest {
         assertEquals(emptyList<Diagnostic>(), store.apply(emptyList()))
+    }
+
+    private class FakeSearchActionStore : SearchActionStore {
+        var actions: List<SearchActionConfig> = emptyList()
+        var reports: List<Diagnostic> = emptyList()
+        val replaced = mutableListOf<Pair<List<SearchActionConfig>, String>>()
+
+        override suspend fun read(): List<SearchActionConfig> = actions
+
+        override suspend fun replace(actions: List<SearchActionConfig>, basePath: String): List<Diagnostic> {
+            replaced += actions to basePath
+            this.actions = actions
+            return reports
+        }
     }
 }

@@ -337,6 +337,13 @@ data class SearchConfig(
      */
     @Serializable(with = SearchBarPositionInSearchSerializer::class)
     val barPosition: SearchBarPosition? = null,
+    /**
+     * The search actions, in order (#106): the chips under the search bar
+     * and the recognisers for numbers, addresses and the like. Present, it
+     * replaces the device's list; `[]` means none; absent, the device keeps
+     * its own.
+     */
+    val actions: List<SearchActionConfig>? = null,
 )
 
 /** Decodes `search.barPosition` with an error that names the field, as [SearchResultLayoutSerializer] does. */
@@ -366,6 +373,40 @@ enum class SearchResultLayout {
 
     @SerialName("list")
     List,
+}
+
+/**
+ * One search action (#106). [type] is one of [SearchActionTypes.Configurable]:
+ * `url` (a web search by URL template, [label] and [url] with `${'$'}{1}` for the
+ * query, optionally pinned to the app [packageName] and with its [encoding]),
+ * `app` (search inside the app [packageName], shown as [label]) or a built-in
+ * by name, which takes no other field.
+ */
+@Serializable
+data class SearchActionConfig(
+    val type: String,
+    val label: String? = null,
+    val url: String? = null,
+    @SerialName("package")
+    val packageName: String? = null,
+    val encoding: String? = null,
+)
+
+object SearchActionTypes {
+    const val Url = "url"
+    const val App = "app"
+    const val WebSearch = "websearch"
+
+    /** The launcher's own actions, by the name the database stores them under. */
+    val BuiltIn = setOf(
+        "call", "message", "email", "contact", "alarm", "timer", "calendar", "website",
+        WebSearch, "share", "private_space",
+    )
+    val Configurable = BuiltIn + setOf(Url, App)
+
+    /** How a `url` action encodes the query; `url` is the default. */
+    val Encodings = setOf("url", "form", "none")
+    const val DefaultEncoding = "url"
 }
 
 /** Decodes [SearchResultLayout] with an error that names the field, as [GlassContrastSerializer] does. */

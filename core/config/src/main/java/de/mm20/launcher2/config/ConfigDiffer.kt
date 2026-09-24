@@ -15,6 +15,8 @@ data class ConfigState(
     val search: SearchState = SearchState(),
     /** The manually pinned apps, in order: `home.favorites`. */
     val favorites: List<Favorite> = emptyList(),
+    /** The search actions in effect, in order: `search.actions` (#106); null when unknown. */
+    val searchActions: List<SearchActionConfig>? = null,
     val widgetsEnabled: Boolean = false,
     val gridColumns: Int = 4,
     val gridLocked: Boolean = false,
@@ -104,6 +106,12 @@ sealed class ConfigMutation {
         val favorites: List<Favorite>,
     ) : ConfigMutation() {
         override val section = "home.favorites"
+    }
+
+    data class SetSearchActions(
+        val actions: List<SearchActionConfig>,
+    ) : ConfigMutation() {
+        override val section = "search.actions"
     }
 
     data class SetWidgetsEnabled(

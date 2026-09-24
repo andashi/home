@@ -86,47 +86,7 @@ abstract class AppDatabase : RoomDatabase() {
             val instance = _instance
                 ?: Room.databaseBuilder(context.applicationContext, AppDatabase::class.java, "room")
                     //.fallbackToDestructiveMigration()
-                    .addCallback(object : Callback() {
-                        override fun onCreate(db: SupportSQLiteDatabase) {
-                            super.onCreate(db)
-                            db.execSQL(
-                                "INSERT INTO `SearchAction` (`position`, `type`) VALUES" +
-                                        "(0, 'call')," +
-                                        "(1, 'message')," +
-                                        "(2, 'email')," +
-                                        "(3, 'contact')," +
-                                        "(4, 'alarm')," +
-                                        "(5, 'timer')," +
-                                        "(6, 'calendar')," +
-                                        "(7, 'website')," +
-                                        "(8, 'websearch')"
-                            )
-
-                            db.execSQL(
-                                "INSERT INTO `SearchAction` (`position`, `type`, `data`, `label`, `color`, `icon`, `customIcon`, `options`) " +
-                                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?, ?, ?)",
-                                arrayOf<Any?>(
-                                    9,
-                                    "url",
-                                    context.getString(R.string.default_websearch_2_url),
-                                    context.getString(R.string.default_websearch_2_name),
-                                    0,
-                                    0,
-                                    null,
-                                    null,
-                                    10,
-                                    "url",
-                                    context.getString(R.string.default_websearch_3_url),
-                                    context.getString(R.string.default_websearch_3_name),
-                                    0,
-                                    0,
-                                    null,
-                                    null,
-                                )
-                            )
-
-                        }
-                    })
+                    .addCallback(SeedCallback(context))
                     .addMigrations(
                         Migration_6_7(),
                         Migration_7_8(),
@@ -164,5 +124,51 @@ abstract class AppDatabase : RoomDatabase() {
             if (_instance == null) _instance = instance
             return instance
         }
+    }
+}
+
+/**
+ * Seeds a new database (never an upgraded one) with the launcher's search
+ * actions. Stub until #106: today's rows, the upstream web searches included.
+ */
+internal class SeedCallback(private val context: Context) : RoomDatabase.Callback() {
+    override fun onCreate(db: SupportSQLiteDatabase) {
+        super.onCreate(db)
+        db.execSQL(
+            "INSERT INTO `SearchAction` (`position`, `type`) VALUES" +
+                    "(0, 'call')," +
+                    "(1, 'message')," +
+                    "(2, 'email')," +
+                    "(3, 'contact')," +
+                    "(4, 'alarm')," +
+                    "(5, 'timer')," +
+                    "(6, 'calendar')," +
+                    "(7, 'website')," +
+                    "(8, 'websearch')"
+        )
+
+        db.execSQL(
+            "INSERT INTO `SearchAction` (`position`, `type`, `data`, `label`, `color`, `icon`, `customIcon`, `options`) " +
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?, ?, ?)",
+            arrayOf<Any?>(
+                9,
+                "url",
+                context.getString(R.string.default_websearch_2_url),
+                context.getString(R.string.default_websearch_2_name),
+                0,
+                0,
+                null,
+                null,
+                10,
+                "url",
+                context.getString(R.string.default_websearch_3_url),
+                context.getString(R.string.default_websearch_3_name),
+                0,
+                0,
+                null,
+                null,
+            )
+        )
+
     }
 }

@@ -915,7 +915,7 @@ class ConfigParserTest {
                     ),
                 ),
             ),
-            search = SearchConfig(favorites = false),
+            search = SearchConfig(favorites = false, actions = listOf(SearchActionConfig("websearch"))),
         )
 
         val sections = ConfigDiffer.diff(everything, ConfigState()).map { it.section }.distinct()

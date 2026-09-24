@@ -59,6 +59,7 @@ class DefaultConfigStore(
     private val appRepository: AppRepository,
     private val profileResolver: ProfileResolver,
     private val wallpapers: WallpaperStore,
+    private val searchActions: SearchActionStore,
 ) : ConfigStore {
 
     override suspend fun readState(): ConfigState {
@@ -474,6 +475,7 @@ private val ConfigMutation.isSettingsBacked: Boolean
         -> true
 
         is ConfigMutation.SetFavorites,
+        is ConfigMutation.SetSearchActions,
         is ConfigMutation.SetWallpaper,
         -> false
     }

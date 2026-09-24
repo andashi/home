@@ -16,6 +16,8 @@ data class CustomWebsearchActionBuilder(
     override val iconColor: Int = 0,
     override val customIcon: String? = null,
     val encoding: QueryEncoding = QueryEncoding.UrlEncode,
+    /** The app that opens the URL (#106), e.g. Tor Browser; null for the default browser. */
+    val packageName: String? = null,
 ) : CustomizableSearchActionBuilder {
 
     override val key: String

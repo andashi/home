@@ -12,6 +12,8 @@ data class OpenUrlAction(
     override val icon: SearchActionIcon = SearchActionIcon.Website,
     override val iconColor: Int = 0,
     override val customIcon: String? = null,
+    /** The app that opens [url] (#106); null for the default browser. */
+    val packageName: String? = null,
 ) : SearchAction {
 
 
