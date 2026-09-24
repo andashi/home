@@ -50,8 +50,9 @@ internal object HomeGridComponent : ScaffoldComponent() {
         state: LauncherScaffoldState,
     ) {
         // The activity's own, retained value: it already waited for it, so a
-        // recreated activity (fold, unfold) has it in the first frame, where
-        // reading the setting afresh cost frames (#118).
+        // recreated activity (dark mode, density; fold and unfold no longer
+        // recreate it, #120) has it in the first frame, where reading the
+        // setting afresh cost frames (#118).
         val scaffoldVM: LauncherScaffoldVM = viewModel()
         val widgetsOnHomeScreen by scaffoldVM.widgetsOnHomeScreen.collectAsState()
         if (widgetsOnHomeScreen != true) return

@@ -374,8 +374,9 @@ class HomeGridVM(
 
     /**
      * What the grid shows, edited or stored, for this device's layout. Kept
-     * for a few seconds without subscribers, so a recreated activity (fold,
-     * unfold) has it in its first frame (#118).
+     * for a few seconds without subscribers, so a recreated activity (dark
+     * mode, density; not fold or unfold since #120) has it in its first frame
+     * (#118).
      */
     val items: StateFlow<List<HomeGridItem>?> =
         combine(repository.observe(formFactor.layout), working) { stored, edited -> edited ?: stored }

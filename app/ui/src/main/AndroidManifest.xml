@@ -9,6 +9,7 @@
 
         <activity
             android:name=".launcher.LauncherActivity"
+            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboard|keyboardHidden|navigation"
             android:excludeFromRecents="true"
             android:exported="true"
             android:launchMode="singleTask"

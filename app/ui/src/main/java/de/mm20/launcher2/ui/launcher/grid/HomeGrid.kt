@@ -147,7 +147,8 @@ fun HomeGrid(
         val heightDp = maxHeight.value
 
         // The geometry for this window, derived here in the frame the window
-        // changed (unfold, fold, rotation, a recreated activity) and handed to
+        // changed (unfold, fold, rotation, which the activity survives since
+        // #120, or a recreated activity) and handed to
         // the view model in the same frame, before layout, draw and input:
         // one source, so the first frame on a new display is already right and
         // edits work on what the user sees (#118).

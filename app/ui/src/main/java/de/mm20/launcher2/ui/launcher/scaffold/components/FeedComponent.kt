@@ -1,5 +1,7 @@
 package de.mm20.launcher2.ui.launcher.scaffold.components
 
+import androidx.compose.ui.platform.LocalConfiguration
+import android.content.res.Configuration
 import android.annotation.SuppressLint
 import androidx.activity.compose.LocalActivity
 import androidx.appcompat.app.AppCompatActivity
@@ -74,6 +76,17 @@ internal object FeedComponent : ScaffoldComponent(), KoinComponent {
         val feedProgress by remember(feedConnection) {
             feedConnection?.scrollProgress ?: flowOf(0f)
         }.collectAsState(0f)
+
+        // The activity survives fold, unfold and rotation (#120): tell the
+        // overlay about its new window. Not on the first composition, where
+        // the connection sends it itself once connected.
+        val configuration = LocalConfiguration.current
+        val sentConfiguration = remember { arrayOfNulls<Configuration>(1) }
+        LaunchedEffect(feedConnection, configuration) {
+            val previous = sentConfiguration[0]
+            sentConfiguration[0] = Configuration(configuration)
+            if (previous != null && previous != configuration) feedConnection?.onConfigurationChanged()
+        }
 
         val progress = state.currentProgress
 
