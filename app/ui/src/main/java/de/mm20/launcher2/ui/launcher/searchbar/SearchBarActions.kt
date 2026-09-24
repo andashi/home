@@ -1,5 +1,10 @@
 package de.mm20.launcher2.ui.launcher.searchbar
 
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.IconButton
+import androidx.compose.foundation.shape.CircleShape
+import de.mm20.launcher2.ui.launcher.glass.GlassSurface
+import de.mm20.launcher2.ui.launcher.glass.GlassChip
 import android.content.Intent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.ColumnScope
@@ -45,48 +50,38 @@ fun ColumnScope.SearchBarActions(
             contentPadding = PaddingValues(start = 8.dp, end = 4.dp)
         ) {
             items(actions) {
-                AssistChip(
+                GlassChip(
                     modifier = Modifier.padding(4.dp),
-                    colors = if (it == highlightedAction) {
-                        AssistChipDefaults.assistChipColors(
-                            containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                            labelColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                            leadingIconContentColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                            trailingIconContentColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                        )
-                    } else AssistChipDefaults.assistChipColors(),
-                    border = if (it == highlightedAction) {
-                        AssistChipDefaults.assistChipBorder(
-                            true,
-                            borderColor = MaterialTheme.colorScheme.secondary,
-                        )
-                    } else AssistChipDefaults.assistChipBorder(true),
+                    selected = it == highlightedAction,
                     onClick = {
                         it.start(context)
                     },
-                    label = { Text(it.label) },
+                    label = it.label,
                     leadingIcon = {
                         SearchActionIcon(
                             action = it,
-                            size = AssistChipDefaults.IconSize,
+                            size = 18.dp,
                         )
                     }
                 )
             }
             item {
-                SmallFloatingActionButton(
-                    modifier = Modifier.padding(start = 4.dp),
-                    elevation = FloatingActionButtonDefaults.bottomAppBarFabElevation(),
-                    onClick = {
-                        context.startActivity(
-                            Intent(context, SettingsActivity::class.java).apply {
-                                putExtra(SettingsActivity.EXTRA_ROUTE, SettingsActivity.ROUTE_SEARCH_ACTIONS)
-                            }
-                        )
-                    }
+                // The edit button as a round glass chip, like the rest of the row (#91).
+                GlassSurface(
+                    modifier = Modifier.padding(start = 4.dp).size(40.dp),
+                    shape = CircleShape,
                 ) {
-
-                    Icon(painterResource(R.drawable.edit_24px), contentDescription = null)
+                    IconButton(
+                        onClick = {
+                            context.startActivity(
+                                Intent(context, SettingsActivity::class.java).apply {
+                                    putExtra(SettingsActivity.EXTRA_ROUTE, SettingsActivity.ROUTE_SEARCH_ACTIONS)
+                                }
+                            )
+                        }
+                    ) {
+                        Icon(painterResource(R.drawable.edit_24px), contentDescription = null)
+                    }
                 }
             }
         }

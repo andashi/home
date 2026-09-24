@@ -360,7 +360,10 @@ class UiSettings internal constructor(
      */
     val glass: Flow<GlassSettings>
         get() = launcherDataStore.data.map {
-            GlassSettings(it.glassBlur, it.glassTint, it.glassRadius, it.glassContrast, it.glassWallpaperBlur)
+            GlassSettings(
+                it.glassBlur, it.glassTint, it.glassRadius, it.glassContrast,
+                it.glassWallpaperBlur, it.glassSearchWallpaperBlur,
+            )
         }.distinctUntilChanged()
 
     /** Whether the grid was given its first content (the default favorites row, or a config); see HomeGridDefaults. */
@@ -391,4 +394,6 @@ data class GlassSettings(
     val contrast: GlassContrast,
     /** `appearance.glass.wallpaperBlur`: the home background is the blurred backdrop (#82). */
     val wallpaperBlur: Boolean = true,
+    /** `appearance.glass.searchWallpaperBlur`: behind search, whatever [wallpaperBlur] says (#91). */
+    val searchWallpaperBlur: Boolean = true,
 )

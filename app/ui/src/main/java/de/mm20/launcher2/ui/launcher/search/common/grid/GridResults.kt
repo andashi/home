@@ -1,19 +1,17 @@
 package de.mm20.launcher2.ui.launcher.search.common.grid
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import de.mm20.launcher2.search.SavableSearchable
-import de.mm20.launcher2.ui.ktx.withCorners
-import de.mm20.launcher2.ui.theme.transparency.transparency
+import de.mm20.launcher2.ui.launcher.glass.GlassSurface
+import de.mm20.launcher2.ui.launcher.glass.segmentEdges
 import kotlin.math.ceil
 
 fun <T : SavableSearchable> LazyListScope.GridResults(
@@ -25,35 +23,32 @@ fun <T : SavableSearchable> LazyListScope.GridResults(
     columns: Int,
     reverse: Boolean = false,
 ) {
+    // One glass card made of lazily laid out slices (#91): the header, each
+    // row, the footer. A slice is open where it meets the next one.
+    val rows = ceil(items.size / columns.toFloat()).toInt()
+    val first = if (before != null) 1 else 0
+    val segments = first + rows + if (after != null) 1 else 0
+    val lastSpacing = Modifier.padding(
+        top = if (reverse) 8.dp else 0.dp,
+        bottom = if (!reverse) 8.dp else 0.dp,
+    )
+
     if (before != null) {
         item(
             key = "$key-before",
             contentType = { "$key-before" },
         ) {
-            val isTop = !reverse || items.isEmpty() && after == null
-            val isBottom = reverse || items.isEmpty() && after == null
-            Box(
+            GlassSurface(
                 modifier = Modifier
-                    .padding(
-                        top = if (reverse && isTop) 8.dp else 0.dp,
-                        bottom = if (!reverse && isBottom) 8.dp else 0.dp,
-                    )
-                    .background(
-                        MaterialTheme.colorScheme.surface.copy(alpha = MaterialTheme.transparency.surface),
-                        MaterialTheme.shapes.medium.withCorners(
-                            topStart = isTop,
-                            topEnd = isTop,
-                            bottomEnd = isBottom,
-                            bottomStart = isBottom,
-                        )
-                    )
+                    .fillMaxWidth()
+                    .then(if (segments == 1) lastSpacing else Modifier),
+                openEdges = segmentEdges(0, segments, reverse),
             ) {
-                before()
+                Box { before() }
             }
         }
     }
 
-    val rows = ceil(items.size / columns.toFloat()).toInt()
     items(
         rows,
         key = {
@@ -61,35 +56,23 @@ fun <T : SavableSearchable> LazyListScope.GridResults(
         },
         contentType = { key }
     ) {
-
-        val isFirst = it == 0 && before == null
-        val isLast = it == rows - 1 && after == null
+        val segment = first + it
         val isTopRow = if (reverse) it == rows - 1 else it == 0
         val isBottomRow = if (reverse) it == 0 else it == rows - 1
-        Row(
+        GlassSurface(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(
-                    top = if (reverse && isLast) 8.dp else 0.dp,
-                    bottom = if (!reverse && isLast) 8.dp else 0.dp,
-                )
-                .background(
-                    MaterialTheme.colorScheme.surface.copy(alpha = MaterialTheme.transparency.surface),
-                    MaterialTheme.shapes.medium.withCorners(
-                        topStart = isFirst && !reverse || isLast && reverse,
-                        topEnd = isFirst && !reverse || isLast && reverse,
-                        bottomEnd = isLast && !reverse || isFirst && reverse,
-                        bottomStart = isLast && !reverse || isFirst && reverse,
-                    )
-                )
-                .padding(
+                .then(if (segment == segments - 1) lastSpacing else Modifier),
+            openEdges = segmentEdges(segment, segments, reverse),
+        ) {
+            Row(
+                modifier = Modifier.padding(
                     top = if (isTopRow) 8.dp else 0.dp,
                     bottom = if (isBottomRow) 8.dp else 0.dp,
                     start = if (columns == 1) 0.dp else 4.dp,
                     end = if (columns == 1) 0.dp else 4.dp,
                 )
-        ) {
-            Row {
+            ) {
                 for (i in 0 until columns) {
                     val item = items.getOrNull(it * columns + i)
                     if (item != null) {
@@ -102,7 +85,6 @@ fun <T : SavableSearchable> LazyListScope.GridResults(
                     } else {
                         Spacer(modifier = Modifier.weight(1f))
                     }
-
                 }
             }
         }
@@ -113,25 +95,13 @@ fun <T : SavableSearchable> LazyListScope.GridResults(
             key = "$key-after",
             contentType = { "$key-after" },
         ) {
-            val isTop = reverse || items.isEmpty() && before == null
-            val isBottom = !reverse || items.isEmpty() && before == null
-            Box(
+            GlassSurface(
                 modifier = Modifier
-                    .padding(
-                        top = if (reverse) 8.dp else 0.dp,
-                        bottom = if (!reverse) 8.dp else 0.dp,
-                    )
-                    .background(
-                        MaterialTheme.colorScheme.surface.copy(alpha = MaterialTheme.transparency.surface),
-                        MaterialTheme.shapes.medium.withCorners(
-                            topStart = isTop,
-                            topEnd = isTop,
-                            bottomEnd = isBottom,
-                            bottomStart = isBottom,
-                        )
-                    )
+                    .fillMaxWidth()
+                    .then(lastSpacing),
+                openEdges = segmentEdges(segments - 1, segments, reverse),
             ) {
-                after()
+                Box { after() }
             }
         }
     }

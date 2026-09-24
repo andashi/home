@@ -74,8 +74,6 @@ fun HomescreenSettingsScreen() {
     val fixedSearchBar by viewModel.fixedSearchBar.collectAsStateWithLifecycle(null)
     val lightStatusBar by viewModel.statusBarIcons.collectAsStateWithLifecycle(null)
     val dimWallpaper by viewModel.dimWallpaper.collectAsStateWithLifecycle()
-    val blurWallpaper by viewModel.blurWallpaper.collectAsStateWithLifecycle()
-    val blurWallpaperRadius by viewModel.blurWallpaperRadius.collectAsStateWithLifecycle()
     val lightNavBar by viewModel.navBarIcons.collectAsStateWithLifecycle(null)
     val hideStatusBar by viewModel.hideStatusBar.collectAsStateWithLifecycle(null)
     val hideNavBar by viewModel.hideNavBar.collectAsStateWithLifecycle(null)
@@ -164,31 +162,6 @@ fun HomescreenSettingsScreen() {
                         viewModel.setDimWallpaper(it)
                     }
                 )
-                val isBlurSupported = remember { viewModel.isBlurAvailable(context) }
-                SwitchPreference(
-                    title = stringResource(R.string.preference_blur_wallpaper),
-                    summary = stringResource(
-                        if (isBlurSupported) R.string.preference_blur_wallpaper_summary
-                        else R.string.preference_blur_wallpaper_unsupported
-                    ),
-                    value = blurWallpaper && isBlurSupported,
-                    onValueChanged = {
-                        viewModel.setBlurWallpaper(it)
-                    },
-                    enabled = isBlurSupported
-                )
-                AnimatedVisibility(blurWallpaper && isBlurSupported) {
-                    SliderPreference(
-                        title = stringResource(R.string.preference_blur_wallpaper_radius),
-                        value = blurWallpaperRadius,
-                        onValueChanged = {
-                            viewModel.setBlurWallpaperRadius(it)
-                        },
-                        min = 4,
-                        max = 64,
-                        step = 4,
-                    )
-                }
             }
         }
         item {

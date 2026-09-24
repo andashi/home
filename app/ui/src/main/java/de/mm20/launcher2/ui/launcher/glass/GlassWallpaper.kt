@@ -1,5 +1,6 @@
 package de.mm20.launcher2.ui.launcher.glass
 
+import android.graphics.BitmapShader
 import android.graphics.RuntimeShader
 import android.graphics.Shader
 import androidx.compose.foundation.layout.Box
@@ -9,6 +10,8 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.semantics
+import de.mm20.launcher2.glass.GlassWallpaperAlpha
 import androidx.compose.ui.unit.IntSize
 import kotlin.math.roundToInt
 
@@ -18,22 +21,46 @@ const val GlassWallpaperTag = "glass-wallpaper"
 /** `appearance.glass.wallpaperBlur`: whether the home background is the blurred backdrop. */
 val LocalGlassWallpaperBlur = staticCompositionLocalOf { false }
 
+/** `appearance.glass.searchWallpaperBlur`: whether the background behind search is (#91). */
+val LocalGlassSearchWallpaperBlur = staticCompositionLocalOf { true }
+
+/** The alpha the full-window backdrop was drawn with (tests read it, #91). */
+val GlassWallpaperAlphaKey = androidx.compose.ui.semantics.SemanticsPropertyKey<Float>("GlassWallpaperAlpha")
+
 /**
- * The home background as the blurred backdrop, full window (#82), drawn
- * behind the scaffold. Nothing without a backdrop or with `wallpaperBlur`
- * off: the sharp system wallpaper shows through as before.
+ * The background as the blurred backdrop, full window (#82), drawn behind
+ * the scaffold. Home and search each have their own setting (#91); while
+ * search opens, the backdrop fades from the one to the other
+ * ([GlassWallpaperAlpha]). Nothing without a backdrop or where both are off:
+ * the sharp system wallpaper shows through.
  */
 @Composable
-fun GlassWallpaper(modifier: Modifier = Modifier) {
-    val backdrop = LocalGlassBackdrop.current
-    if (!LocalGlassWallpaperBlur.current || backdrop == null) return
+fun GlassWallpaper(
+    modifier: Modifier = Modifier,
+    /** The search page's progress, 0 = home, 1 = search open (#91). */
+    searchProgress: () -> Float = { 0f },
+) {
+    val backdrop = LocalGlassBackdrop.current ?: return
+    val home = LocalGlassWallpaperBlur.current
+    val search = LocalGlassSearchWallpaperBlur.current
+    if (!home && !search) return
+    val alpha = GlassWallpaperAlpha.at(home, search, searchProgress())
+    // Read in composition, so the node leaves the tree when nothing is drawn
+    // (and tests see it); the progress is animated state, so this recomposes
+    // with it.
+    if (alpha <= 0f) return
     val bitmap = backdrop.bitmap
     Box(
         modifier
             .fillMaxSize()
             .testTag(GlassWallpaperTag)
+            .semantics { this[GlassWallpaperAlphaKey] = alpha }
             .drawBehind {
-                drawImage(bitmap, dstSize = IntSize(size.width.roundToInt(), size.height.roundToInt()))
+                drawImage(
+                    bitmap,
+                    dstSize = IntSize(size.width.roundToInt(), size.height.roundToInt()),
+                    alpha = alpha,
+                )
             }
     )
 }
@@ -75,7 +102,44 @@ object GlassLens {
     """
 
     /** Compiles the shader; throws when the source does not compile. */
-    fun compile(): RuntimeShader = RuntimeShader(Source)
+    /** How often the AGSL source was compiled in this process (tests read it, #91). */
+    internal var compilations = 0
+        private set
+
+    /** Compiles the shader; throws when the source does not compile. */
+    fun compile(): RuntimeShader {
+        compilations++
+        return RuntimeShader(Source)
+    }
+
+    /**
+     * Lenses of surfaces that left the composition, for the next ones.
+     * Compiling the source per surface put a compilation on the UI thread for
+     * every card segment, chip and banner entering search, on every search
+     * open (#91). Surfaces are composed and disposed on the main thread only.
+     */
+    private val pool = ArrayDeque<RuntimeShader>()
+
+    /** A lens for one surface, until [release]; the surface's alone meanwhile (#91). */
+    fun acquire(): RuntimeShader = pool.removeLastOrNull() ?: compile()
+
+    /**
+     * Hands a surface's lens back when the surface leaves the composition.
+     * Its input is swapped for an empty one, so a pooled lens does not keep
+     * an old wallpaper's backdrop alive; the next surface sets its own.
+     */
+    fun release(shader: RuntimeShader) {
+        shader.setInputShader("backdrop", emptyInput)
+        pool.addLast(shader)
+    }
+
+    private val emptyInput by lazy {
+        BitmapShader(
+            android.graphics.Bitmap.createBitmap(1, 1, android.graphics.Bitmap.Config.ARGB_8888),
+            Shader.TileMode.CLAMP,
+            Shader.TileMode.CLAMP,
+        )
+    }
 
     /** Sets the backdrop and the uniforms, all in pixels. */
     fun configure(

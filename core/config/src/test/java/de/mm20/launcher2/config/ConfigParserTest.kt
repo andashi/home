@@ -20,7 +20,7 @@ class ConfigParserTest {
             "pack": "app.lawnchair.lawnicons"
           },
           "appearance": {
-            "glass": { "blur": 20, "tint": 0.4, "radius": 24, "contrast": "high", "wallpaperBlur": false },
+            "glass": { "blur": 20, "tint": 0.4, "radius": 24, "contrast": "high", "wallpaperBlur": false, "searchWallpaperBlur": false },
             "wallpaper": { "image": "home.jpg", "target": "lock" }
           },
           "home": {
@@ -63,7 +63,10 @@ class ConfigParserTest {
         assertEquals(true, config.icons?.themed)
         assertEquals(true, config.icons?.enforceThemed)
         assertEquals("app.lawnchair.lawnicons", config.icons?.pack)
-        assertEquals(GlassConfig(20f, 0.4f, 24f, GlassContrast.High, wallpaperBlur = false), config.appearance?.glass)
+        assertEquals(
+            GlassConfig(20f, 0.4f, 24f, GlassContrast.High, wallpaperBlur = false, searchWallpaperBlur = false),
+            config.appearance?.glass,
+        )
         assertEquals(WallpaperConfig("home.jpg", WallpaperTarget.Lock), config.appearance?.wallpaper)
         assertEquals(SearchBarPosition.Bottom, config.home?.searchBar?.position)
         assertEquals(
@@ -300,6 +303,18 @@ class ConfigParserTest {
 
         assertTrue(result.isSuccess)
         assertEquals(GlassConfig(0f, 1f, 64f, GlassContrast.Low), result.config?.appearance?.glass)
+    }
+
+    @Test
+    fun `searchWallpaperBlur parses on its own, independent of wallpaperBlur`() {
+        val result = glass(""""wallpaperBlur": false, "searchWallpaperBlur": true""")
+
+        assertTrue(result.isSuccess)
+        assertEquals(emptyList<Diagnostic>(), result.diagnostics)
+        assertEquals(
+            GlassConfig(wallpaperBlur = false, searchWallpaperBlur = true),
+            result.config?.appearance?.glass,
+        )
     }
 
     @Test
@@ -669,7 +684,10 @@ class ConfigParserTest {
         assertEquals(WallpaperTarget.Both, config.appearance?.wallpaper?.target)
         assertEquals(SearchBarPosition.Bottom, config.home?.searchBar?.position)
         assertEquals(true, config.home?.widgets?.enabled)
-        assertEquals(GlassConfig(24f, 0.12f, 28f, GlassContrast.Medium, wallpaperBlur = true), config.appearance?.glass)
+        assertEquals(
+            GlassConfig(24f, 0.12f, 28f, GlassContrast.Medium, wallpaperBlur = true, searchWallpaperBlur = true),
+            config.appearance?.glass,
+        )
         assertEquals(true, config.home?.grid?.labels)
         // Both spellings, which is the point of showing them.
         assertEquals(

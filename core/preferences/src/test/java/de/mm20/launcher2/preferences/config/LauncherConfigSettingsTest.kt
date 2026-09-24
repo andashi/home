@@ -51,6 +51,7 @@ class LauncherConfigSettingsTest {
                 glassRadius = 20f,
                 glassContrast = GlassContrast.High,
                 glassWallpaperBlur = false,
+                glassSearchWallpaperBlur = false,
             )
         )
 
@@ -69,6 +70,7 @@ class LauncherConfigSettingsTest {
         assertEquals(20f, result.glassRadius)
         assertEquals(GlassContrast.High, result.glassContrast)
         assertEquals(false, result.glassWallpaperBlur)
+        assertEquals(false, result.glassSearchWallpaperBlur)
     }
 
     @Test
@@ -80,6 +82,7 @@ class LauncherConfigSettingsTest {
         assertEquals(GlassDefaults.Radius, state.glassRadius)
         assertEquals(GlassDefaults.Contrast, state.glassContrast)
         assertEquals(GlassDefaults.Labels, state.gridLabels)
+        assertEquals(GlassDefaults.SearchWallpaperBlur, state.glassSearchWallpaperBlur)
     }
 
     @Test
@@ -103,6 +106,12 @@ class LauncherConfigSettingsTest {
         val wallpaper = gateway.applyAndReturn(listOf(ConfigMutation.SetGlass(wallpaperBlur = false)))
         assertEquals(false, wallpaper.glassWallpaperBlur)
         assertEquals(0.1f, wallpaper.glassTint)
+        // Search keeps its own setting: the home one does not carry over (#91).
+        assertEquals(true, wallpaper.glassSearchWallpaperBlur)
+
+        val search = gateway.applyAndReturn(listOf(ConfigMutation.SetGlass(searchWallpaperBlur = false)))
+        assertEquals(false, search.glassSearchWallpaperBlur)
+        assertEquals(false, search.glassWallpaperBlur)
     }
 
     @Test

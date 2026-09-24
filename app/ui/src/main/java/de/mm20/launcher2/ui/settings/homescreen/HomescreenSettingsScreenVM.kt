@@ -40,26 +40,8 @@ class HomescreenSettingsScreenVM(
         uiSettings.setDimWallpaper(dimWallpaper)
     }
 
-    val blurWallpaper = uiSettings.blurWallpaper
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), false)
-
-    fun setBlurWallpaper(blurWallpaper: Boolean) {
-        uiSettings.setBlurWallpaper(blurWallpaper)
-    }
-
-    val blurWallpaperRadius = uiSettings.wallpaperBlurRadius
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), 32)
-
-    fun setBlurWallpaperRadius(blurWallpaperRadius: Int) {
-        uiSettings.setWallpaperBlurRadius(blurWallpaperRadius)
-    }
-
     fun openWallpaperChooser(context: AppCompatActivity) {
         context.startActivity(Intent.createChooser(Intent(Intent.ACTION_SET_WALLPAPER), null))
-    }
-
-    fun isBlurAvailable(context: Context): Boolean {
-        return context.getSystemService<WindowManager>()?.isCrossWindowBlurEnabled == true
     }
 
     val statusBarIcons = uiSettings.statusBarColor

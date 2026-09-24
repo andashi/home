@@ -1,5 +1,6 @@
 package de.mm20.launcher2.ui.launcher.search.common.list
 
+import de.mm20.launcher2.ui.launcher.glass.resultHighlight
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
@@ -56,7 +57,7 @@ fun ListItem(
     }
 
     val background by animateColorAsState(
-        if (highlight && !showDetails) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.surface.copy(
+        if (highlight && !showDetails) resultHighlight() else MaterialTheme.colorScheme.surface.copy(
             alpha = 0f
         )
     )

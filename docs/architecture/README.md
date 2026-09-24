@@ -73,7 +73,7 @@ reload, and integrated into a GrapheneOS multi-profile setup.
    goldens on the reference wallpaper (#77). The contract it added:
 
    ```jsonc
-   "appearance": { "glass": { "blur": 24, "tint": 0.12, "radius": 28, "contrast": "medium", "wallpaperBlur": true } },
+   "appearance": { "glass": { "blur": 24, "tint": 0.12, "radius": 28, "contrast": "medium", "wallpaperBlur": true, "searchWallpaperBlur": true } },
    "home":       { "grid": { "labels": true } }
    ```
 

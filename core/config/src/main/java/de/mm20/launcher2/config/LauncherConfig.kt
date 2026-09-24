@@ -50,6 +50,7 @@ data class GlassConfig(
     val radius: Float? = null,
     val contrast: GlassContrast? = null,
     val wallpaperBlur: Boolean? = null,
+    val searchWallpaperBlur: Boolean? = null,
 )
 
 @Serializable(with = GlassContrastSerializer::class)
@@ -101,6 +102,13 @@ object GlassDefaults {
     const val Radius = 28f
     val Contrast = GlassContrast.Medium
     const val WallpaperBlur = true
+
+    /**
+     * `appearance.glass.searchWallpaperBlur` (#91): search is an overlay, so
+     * the wallpaper behind it is blurred whatever [WallpaperBlur] says for
+     * the home screen.
+     */
+    const val SearchWallpaperBlur = true
 
     /** `home.grid.labels`: labels under grid items, never on the dock. */
     const val Labels = true

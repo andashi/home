@@ -1,5 +1,6 @@
 package de.mm20.launcher2.ui.launcher
 
+import de.mm20.launcher2.ui.launcher.glass.LocalClearIcons
 import android.app.WallpaperManager
 import android.content.Intent
 import android.content.pm.ActivityInfo
@@ -50,7 +51,6 @@ import de.mm20.launcher2.ui.launcher.scaffold.ScaffoldAnimation
 import de.mm20.launcher2.ui.launcher.scaffold.ScaffoldConfiguration
 import de.mm20.launcher2.ui.launcher.scaffold.ScaffoldGesture
 import de.mm20.launcher2.ui.launcher.scaffold.SearchBarPosition
-import de.mm20.launcher2.ui.launcher.glass.GlassWallpaper
 import de.mm20.launcher2.ui.launcher.glass.ProvideGlassBackdrop
 import org.koin.compose.koinInject
 import de.mm20.launcher2.ui.launcher.grid.HomeGridComponent
@@ -144,8 +144,6 @@ abstract class SharedLauncherActivity(
                         val searchBarColor by viewModel.searchBarColor.collectAsState()
                         val searchBarAutofocus by viewModel.autoFocusSearch.collectAsState(false)
                         val widgetsOnHomeScreen by viewModel.widgetsOnHomeScreen.collectAsState()
-                        val wallpaperBlur by viewModel.wallpaperBlur.collectAsState()
-                        val wallpaperBlurRadius by viewModel.wallpaperBlurRadius.collectAsState()
 
                         val fixedRotation by viewModel.fixedRotation.collectAsState()
 
@@ -206,6 +204,11 @@ abstract class SharedLauncherActivity(
                                 }
                         }
 
+                        // Outside the overlay host, so the glass overlays - the
+                        // item popup, the hidden-items sheet - get the backdrop
+                        // too (review on #98); the host composes overlays
+                        // outside its content.
+                        ProvideGlassBackdrop(koinInject()) {
                         OverlayHost(
                             modifier = Modifier
                                 .background(
@@ -230,8 +233,6 @@ abstract class SharedLauncherActivity(
                                 hideNav,
                                 widgetsOnHomeScreen,
                                 searchBarAutofocus,
-                                wallpaperBlur,
-                                wallpaperBlurRadius,
                             ) {
                                 if (mode == LauncherActivityMode.Assistant) {
                                     val searchComponent = SearchComponent(
@@ -375,7 +376,6 @@ abstract class SharedLauncherActivity(
                                         showStatusBar = !hideStatus,
                                         showNavBar = !hideNav,
                                         darkSearchBar = darkSearchBar,
-                                        wallpaperBlurRadius = if (wallpaperBlur) wallpaperBlurRadius.dp else 0.dp,
                                     )
 
                                     if (config.isUseless()) config.copy(
@@ -384,13 +384,18 @@ abstract class SharedLauncherActivity(
                                 }
                             }
 
-                            ProvideGlassBackdrop(koinInject()) {
-                                // The home background as the blurred backdrop (#82).
-                                GlassWallpaper()
+                            // Every icon inside the scaffold is Clear (#76); the
+                            // opaque Material sheets keep normal icons, the glass
+                            // overlays opt in themselves.
+                            CompositionLocalProvider(LocalClearIcons provides true) {
+                                // The blurred backdrop behind home and search is
+                                // drawn by the scaffold, which knows the search
+                                // progress (#82, #91); the enter transition scales
+                                // the content only, not that backdrop.
                                 LauncherScaffold(
                                     config = config,
-                                    modifier = Modifier
-                                        .fillMaxSize()
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentModifier = Modifier
                                         .graphicsLayer {
                                             scaleX =
                                                 0.5f + enterTransitionProgress.value * 0.005f
@@ -434,6 +439,7 @@ abstract class SharedLauncherActivity(
                                 }
                             }
                             LauncherBottomSheets()
+                        }
                         }
                     }
                 }

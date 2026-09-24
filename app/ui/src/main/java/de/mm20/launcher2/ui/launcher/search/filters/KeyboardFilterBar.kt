@@ -1,5 +1,8 @@
 package de.mm20.launcher2.ui.launcher.search.filters
 
+import androidx.compose.ui.graphics.RectangleShape
+import de.mm20.launcher2.ui.launcher.glass.GlassSurface
+import de.mm20.launcher2.ui.launcher.glass.GlassChip
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Column
@@ -37,15 +40,16 @@ fun KeyboardFilterBar(
 ) {
     val context = LocalContext.current
     val allCategoriesEnabled = filters.allCategoriesEnabled
-    Column(
+    // A glass bar over the keyboard (#91): square, as the keyboard's edge is.
+    GlassSurface(
         modifier = Modifier
             .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.surfaceContainerLow)
             .navigationBarsPadding()
             .imePadding()
-            .height(50.dp)
+            .height(50.dp),
+        shape = RectangleShape,
+        lensRadius = 0.dp,
     ) {
-        HorizontalDivider()
         Row(
             modifier = Modifier
                 .consumeAllScrolling()
@@ -63,7 +67,7 @@ fun KeyboardFilterBar(
                             .padding(end = 8.dp)
                     )
                 }
-                FilterChip(
+                GlassChip(
                     modifier = Modifier.padding(end = if (i == items.lastIndex) 0.dp else 8.dp),
                     selected = filters.isSelected(item),
                     onClick = {
@@ -73,13 +77,12 @@ fun KeyboardFilterBar(
                         Icon(
                             painter = painterResource(item.iconMedium),
                             contentDescription = null,
-                            modifier = Modifier.size(FilterChipDefaults.IconSize)
+                            modifier = Modifier.size(18.dp)
                         )
                     },
-                    label = { Text(item.getLabel(context)) }
+                    label = item.getLabel(context),
                 )
             }
         }
-        HorizontalDivider()
     }
 }

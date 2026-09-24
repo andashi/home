@@ -34,16 +34,25 @@ class GlassWallpaperTest {
 
     private val backdrop = RenderedBackdrop(BackdropKey("sha", 1080, 2400, 8), ImageBitmap(135, 300))
 
-    private fun show(blur: Boolean, withBackdrop: Boolean = true) {
+    private fun show(
+        blur: Boolean,
+        withBackdrop: Boolean = true,
+        searchBlur: Boolean = true,
+        searchProgress: Float = 0f,
+    ) {
         composeRule.setContent {
             CompositionLocalProvider(
                 LocalGlassBackdrop provides if (withBackdrop) backdrop else null,
                 LocalGlassWallpaperBlur provides blur,
+                LocalGlassSearchWallpaperBlur provides searchBlur,
             ) {
-                Box(Modifier.size(200.dp)) { GlassWallpaper() }
+                Box(Modifier.size(200.dp)) { GlassWallpaper(searchProgress = { searchProgress }) }
             }
         }
     }
+
+    private fun drawnAlpha() =
+        composeRule.onNodeWithTag(GlassWallpaperTag).fetchSemanticsNode().config[GlassWallpaperAlphaKey]
 
     @Test
     fun `on, with a backdrop, the background is the blurred backdrop`() {
@@ -61,6 +70,54 @@ class GlassWallpaperTest {
     fun `without a backdrop there is nothing to draw`() {
         show(blur = true, withBackdrop = false)
         composeRule.onNodeWithTag(GlassWallpaperTag).assertDoesNotExist()
+    }
+
+    // ---- appearance.glass.searchWallpaperBlur (#91) ----
+
+    @Test
+    fun `sharp home, search half open, the backdrop is half in`() {
+        show(blur = false, searchBlur = true, searchProgress = 0.5f)
+        assertEquals(0.5f, drawnAlpha(), 1e-4f)
+    }
+
+    @Test
+    fun `sharp home, search open, the background is the blurred backdrop`() {
+        show(blur = false, searchBlur = true, searchProgress = 1f)
+        assertEquals(1f, drawnAlpha(), 1e-4f)
+    }
+
+    @Test
+    fun `blurred home, sharp search, search open, the sharp wallpaper shows`() {
+        show(blur = true, searchBlur = false, searchProgress = 1f)
+        composeRule.onNodeWithTag(GlassWallpaperTag).assertDoesNotExist()
+    }
+
+    @Test
+    fun `blurred home, closed search, drawn fully`() {
+        show(blur = true, searchBlur = false, searchProgress = 0f)
+        assertEquals(1f, drawnAlpha(), 1e-4f)
+    }
+
+    @Test
+    fun `the controller follows the search setting on its own`() {
+        val home = MutableStateFlow(false)
+        val search = MutableStateFlow(true)
+        val source = object : GlassBackdropSource {
+            override val image = MutableStateFlow<BackdropImage?>(null)
+            override suspend fun refresh() = Unit
+        }
+        val controller = GlassBackdropController(
+            source,
+            MutableStateFlow(GlassInputs(24f, 0.12f, 28f, Contrast.Medium)),
+            CoroutineScope(Dispatchers.Unconfined),
+            render = { _, _ -> null },
+            wallpaperBlur = home,
+            searchWallpaperBlur = search,
+        )
+        assertEquals(true, controller.searchWallpaperBlur.value)
+        search.value = false
+        assertEquals(false, controller.searchWallpaperBlur.value)
+        assertEquals(false, controller.wallpaperBlur.value)
     }
 
     @Test

@@ -1,5 +1,6 @@
 package de.mm20.launcher2.ui.common
 
+import de.mm20.launcher2.ui.launcher.glass.GlassChip
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.EnterExitState
 import androidx.compose.animation.core.animateFloat
@@ -72,31 +73,19 @@ fun FavoritesTagSelector(
                         .padding(end = 12.dp),
                 ) {
                     if (showFavorites) {
-                        FilterChip(
+                        GlassChip(
                             modifier = Modifier
                                 .padding(start = 16.dp),
                             selected = selectedTag == null,
                             onClick = { onSelectTag(null) },
-                            leadingIcon = if (compact) null else {
-                                {
-                                    Icon(
-                                        painter = painterResource(R.drawable.star_20px_filled),
-                                        contentDescription = null,
-                                        modifier = Modifier.size(FilterChipDefaults.IconSize),
-                                    )
-                                }
+                            leadingIcon = {
+                                Icon(
+                                    painter = painterResource(R.drawable.star_20px_filled),
+                                    contentDescription = null,
+                                    modifier = Modifier.size(18.dp),
+                                )
                             },
-                            label = {
-                                if (compact) {
-                                    Icon(
-                                        painter = painterResource(R.drawable.star_20px_filled),
-                                        contentDescription = null,
-                                        modifier = Modifier.size(FilterChipDefaults.IconSize),
-                                    )
-                                } else {
-                                    Text(stringResource(R.string.favorites))
-                                }
-                            }
+                            label = if (compact) null else stringResource(R.string.favorites),
                         )
                     }
                     for ((i, tag) in tags.withIndex()) {
@@ -152,32 +141,20 @@ fun FavoritesTagSelector(
                         .weight(1f)
                         .padding(end = 12.dp, start = 16.dp),
                 ) {
-                    FilterChip(
-                        modifier = Modifier
+                    GlassChip(
+                            modifier = Modifier
                             .padding(end = 8.dp),
-                        selected = selectedTag == null,
-                        onClick = { onSelectTag(null) },
-                        leadingIcon = if (compact) null else {
-                            {
+                            selected = selectedTag == null,
+                            onClick = { onSelectTag(null) },
+                            leadingIcon = {
                                 Icon(
                                     painter = painterResource(R.drawable.star_20px_filled),
                                     contentDescription = null,
-                                    modifier = Modifier.size(FilterChipDefaults.IconSize),
+                                    modifier = Modifier.size(18.dp),
                                 )
-                            }
-                        },
-                        label = {
-                            if (compact) {
-                                Icon(
-                                    painter = painterResource(R.drawable.star_20px_filled),
-                                    contentDescription = null,
-                                    modifier = Modifier.size(FilterChipDefaults.IconSize),
-                                )
-                            } else {
-                                Text(stringResource(R.string.favorites))
-                            }
-                        }
-                    )
+                            },
+                            label = if (compact) null else stringResource(R.string.favorites),
+                        )
                     for (tag in tags) {
                         TagChip(
                             modifier = Modifier

@@ -20,6 +20,7 @@ val glassModule = module {
             },
             scope = CoroutineScope(SupervisorJob() + Dispatchers.Default),
             wallpaperBlur = get<UiSettings>().glass.map { it.wallpaperBlur },
+            searchWallpaperBlur = get<UiSettings>().glass.map { it.searchWallpaperBlur },
             render = AndroidBackdropRenderer::render,
         )
     }

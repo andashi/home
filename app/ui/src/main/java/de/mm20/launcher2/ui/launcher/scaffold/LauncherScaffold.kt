@@ -1,5 +1,7 @@
 package de.mm20.launcher2.ui.launcher.scaffold
 
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.ui.graphics.RectangleShape
 import android.app.WallpaperManager
 import android.view.animation.PathInterpolator
 import androidx.activity.compose.LocalActivity
@@ -98,21 +100,19 @@ import de.mm20.launcher2.searchactions.actions.SearchAction
 import de.mm20.launcher2.ui.component.SearchBarLevel
 import de.mm20.launcher2.ui.ktx.toPixels
 import de.mm20.launcher2.ui.launcher.SharedLauncherActivity
-import de.mm20.launcher2.ui.launcher.helper.WallpaperBlur
+import de.mm20.launcher2.ui.launcher.glass.GlassEdge
+import de.mm20.launcher2.ui.launcher.glass.GlassSurface
+import de.mm20.launcher2.ui.launcher.glass.GlassWallpaper
+import de.mm20.launcher2.ui.launcher.scaffold.components.SearchComponent
 import de.mm20.launcher2.ui.launcher.scaffold.animation.Offset3D
 import de.mm20.launcher2.ui.launcher.scaffold.animation.PushScaffoldAnimationController
 import de.mm20.launcher2.ui.launcher.scaffold.animation.RubberbandScaffoldAnimationController
 import de.mm20.launcher2.ui.launcher.scaffold.animation.ScaffoldAnimationController
 import de.mm20.launcher2.ui.launcher.scaffold.animation.ZoomInScaffoldAnimationController
 import de.mm20.launcher2.ui.launcher.scaffold.components.ScaffoldComponent
-import de.mm20.launcher2.ui.launcher.scaffold.components.SearchComponent
 import de.mm20.launcher2.ui.launcher.search.SearchVM
 import de.mm20.launcher2.ui.launcher.search.filters.KeyboardFilterBar
 import de.mm20.launcher2.ui.launcher.searchbar.LauncherSearchBar
-import de.mm20.launcher2.ui.theme.transparency.transparency
-import dev.chrisbanes.haze.hazeEffect
-import dev.chrisbanes.haze.hazeSource
-import dev.chrisbanes.haze.rememberHazeState
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.awaitCancellation
@@ -172,7 +172,6 @@ internal data class ScaffoldConfiguration(
     /**
      * Wallpaper blur radius. 0 to disable.
      */
-    val wallpaperBlurRadius: Dp = 32.dp,
     /**
      * Show the navigation bar
      */
@@ -967,6 +966,12 @@ internal class LauncherScaffoldState(
 internal fun LauncherScaffold(
     modifier: Modifier,
     config: ScaffoldConfiguration,
+    /**
+     * Applied to the scaffold's content, not to the backdrop behind it: the
+     * enter-home transition scales and fades the content while the blurred
+     * backdrop stays where the wallpaper is (review on #98).
+     */
+    contentModifier: Modifier = Modifier,
 ) {
     val scope = rememberCoroutineScope()
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -989,7 +994,6 @@ internal fun LauncherScaffold(
     val filterBarItems by searchVM.filterBarItems.collectAsState(emptyList())
     val launchOnEnter by searchVM.launchOnEnter.collectAsState(false)
 
-    val hazeState = rememberHazeState(blurEnabled = true)
 
     BoxWithConstraints(
         modifier = modifier,
@@ -1142,11 +1146,6 @@ internal fun LauncherScaffold(
             }
         }
 
-        if (config.wallpaperBlurRadius > 0.dp) {
-            val maxRadius = config.wallpaperBlurRadius.toPixels()
-            WallpaperBlur { (maxRadius * state.currentProgress).toInt() }
-        }
-
         if (!config.finishOnBack || state.currentProgress > 0) {
             PredictiveBackHandler {
                 try {
@@ -1224,240 +1223,251 @@ internal fun LauncherScaffold(
         }
 
 
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .holdImplicitFocus()
-                .hazeSource(hazeState)
-                .nestedScroll(nestedScrollConnection)
-                .draggable2D(
-                    state = rememberDraggable2DState {
-                        state.onDrag(it)
-                    },
-                    enabled = draggableOrientation == null,
-                    onDragStarted = {
-                        scope.launch {
-                            state.onDragStarted()
-                        }
-                    },
-                    onDragStopped = { velocity ->
-                        scope.launch {
-                            state.onDragStopped(velocity)
-                        }
-                    }
+        // The blurred backdrop behind home and search (#82, #91): with the
+        // search progress it fades between the two settings. Other secondary
+        // pages keep their own background.
+        GlassWallpaper(
+            searchProgress = {
+                searchBackdropProgress(
+                    homeIsSearch = config.homeComponent is SearchComponent,
+                    currentIsSearch = state.currentComponent is SearchComponent,
+                    progress = state.currentProgress,
                 )
-                .draggable(
-                    state = rememberDraggableState {
-                        state.onDrag(Offset(0f, it))
-                    },
-                    orientation = Orientation.Vertical,
-                    enabled = draggableOrientation == Orientation.Vertical,
-                    onDragStarted = {
-                        scope.launch {
-                            state.onDragStarted()
-                        }
-                    },
-                    onDragStopped = { velocity ->
-                        scope.launch {
-                            state.onDragStopped(Velocity(0f, velocity))
-                        }
-                    },
-                )
-                .draggable(
-                    state = rememberDraggableState {
-                        state.onDrag(Offset(it, 0f))
-                    },
-                    orientation = Orientation.Horizontal,
-                    enabled = draggableOrientation == Orientation.Horizontal,
-                    onDragStarted = {
-                        scope.launch {
-                            state.onDragStarted()
-                        }
-                    },
-                    onDragStopped = { velocity ->
-                        scope.launch {
-                            state.onDragStopped(Velocity(velocity, 0f))
-                        }
-                    }
-                )
-        ) {
-            val searchBarInsets = WindowInsets(
-                top = if (config.searchBarPosition == SearchBarPosition.Top) searchBarHeight + 8.dp else 8.dp,
-                bottom = if (config.searchBarPosition == SearchBarPosition.Bottom) searchBarHeight + 8.dp else 8.dp
-            )
+            },
+        )
 
-            val filterBarInsets = WindowInsets(
-                bottom = filterBarHeight
-            )
-
-            val systemGestureBottomInset =
-                WindowInsets.systemGestures.getBottom(LocalDensity.current)
-
-            CompositionLocalProvider(
-                LocalScaffoldPage provides ScaffoldPage.Home,
-            ) {
-                config.homeComponent.Component(
-                    Modifier
-                        .fillMaxSize()
-                        .pointerInput(
-                            wallpaperManager,
-                            config.doubleTap,
-                            config.longPress,
-                            systemGestureBottomInset,
-                        ) {
-                            detectTapGestures(
-                                onDoubleTap = config.doubleTap?.let {
-                                    { scope.launch { state.onDoubleTap() } }
-                                },
-                                onLongPress = config.longPress?.let {
-                                    { offset ->
-                                        if (offset.y < (size.height - systemGestureBottomInset).toFloat()) {
-                                            scope.launch { state.onLongPress() }
-                                        }
-                                    }
-                                },
-                                onTap = {
-                                    wallpaperManager.sendWallpaperCommand(
-                                        view.windowToken,
-                                        WallpaperManager.COMMAND_TAP,
-                                        it.x.toInt(),
-                                        it.y.toInt(),
-                                        0,
-                                        null
-                                    )
-                                }
-                            )
-                        }
-                        .homePageAnimation(
-                            state,
-                            if (config.homeComponent.drawBackground) {
-                                config.backgroundColor.copy(alpha = MaterialTheme.transparency.background)
-                            } else {
-                                Color.Transparent
-                            }
-                        ),
-                    insets = systemBarInsets
-                        .let { if (config.homeComponent.hasIme) it.union(WindowInsets.ime) else it }
-                        .let {
-                            if (config.searchBarStyle == SearchBarStyle.Hidden) it else it.add(
-                                searchBarInsets
-                            )
-                        }
-                        .asPaddingValues(),
-                    state
-                )
-            }
-
-            SecondaryPage(
-                state = state,
-                config = config,
-                modifier = Modifier
-                    .fillMaxSize(),
-                insets = systemBarInsets
-                    .let { if (state.currentComponent?.hasIme == true) it.union(WindowInsets.ime) else it }
-                    .add(searchBarInsets).add(filterBarInsets)
-                    .asPaddingValues(),
-            )
+        Box(Modifier.fillMaxSize().then(contentModifier)) {
 
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .searchBarAnimation(
-                        state,
-                        config,
-                        systemBarInsets
-                            .union(WindowInsets.ime)
-                            .add(filterBarInsets)
-                            .asPaddingValues()
+                    .holdImplicitFocus()
+                    .nestedScroll(nestedScrollConnection)
+                    .draggable2D(
+                        state = rememberDraggable2DState {
+                            state.onDrag(it)
+                        },
+                        enabled = draggableOrientation == null,
+                        onDragStarted = {
+                            scope.launch {
+                                state.onDragStarted()
+                            }
+                        },
+                        onDragStopped = { velocity ->
+                            scope.launch {
+                                state.onDragStopped(velocity)
+                            }
+                        }
+                    )
+                    .draggable(
+                        state = rememberDraggableState {
+                            state.onDrag(Offset(0f, it))
+                        },
+                        orientation = Orientation.Vertical,
+                        enabled = draggableOrientation == Orientation.Vertical,
+                        onDragStarted = {
+                            scope.launch {
+                                state.onDragStarted()
+                            }
+                        },
+                        onDragStopped = { velocity ->
+                            scope.launch {
+                                state.onDragStopped(Velocity(0f, velocity))
+                            }
+                        },
+                    )
+                    .draggable(
+                        state = rememberDraggableState {
+                            state.onDrag(Offset(it, 0f))
+                        },
+                        orientation = Orientation.Horizontal,
+                        enabled = draggableOrientation == Orientation.Horizontal,
+                        onDragStarted = {
+                            scope.launch {
+                                state.onDragStarted()
+                            }
+                        },
+                        onDragStopped = { velocity ->
+                            scope.launch {
+                                state.onDragStopped(Velocity(velocity, 0f))
+                            }
+                        }
                     )
             ) {
-                LauncherSearchBar(
-                    modifier = Modifier
-                        .widthIn(max = 916.dp)
-                        .align(
-                            if (config.searchBarPosition == SearchBarPosition.Top) Alignment.TopCenter
-                            else Alignment.BottomCenter
-                        ),
-                    searchBarOffset = { state.currentSearchBarOffset.roundToInt() },
-                    style = config.searchBarStyle,
-                    focused = state.isSearchBarFocused,
-                    actions = searchActions,
-                    level = { state.searchBarLevel },
-                    bottomSearchBar = config.searchBarPosition == SearchBarPosition.Bottom,
-                    onFocusChange = {
-                        if (it) {
-                            scope.launch { state.onSearchBarTap() }
-                        }
-                        state.isSearchBarFocused = it
-                    },
-                    onKeyboardActionGo = if (launchOnEnter) {
-                        { searchVM.launchBestMatchOrAction(activity) }
-                    } else null,
-                    highlightedAction = highlightedResult as? SearchAction,
-                    darkColors = config.darkSearchBar,
-                    isSearchOpen = state.currentComponent is SearchComponent && state.isSettledOnSecondaryPage ||
-                            config.homeComponent is SearchComponent && !state.isSettledOnSecondaryPage,
+                val searchBarInsets = WindowInsets(
+                    top = if (config.searchBarPosition == SearchBarPosition.Top) searchBarHeight + 8.dp else 8.dp,
+                    bottom = if (config.searchBarPosition == SearchBarPosition.Bottom) searchBarHeight + 8.dp else 8.dp
                 )
-            }
-            if (isFilterBarVisible) {
+
+                val filterBarInsets = WindowInsets(
+                    bottom = filterBarHeight
+                )
+
+                val systemGestureBottomInset =
+                    WindowInsets.systemGestures.getBottom(LocalDensity.current)
+
+                CompositionLocalProvider(
+                    LocalScaffoldPage provides ScaffoldPage.Home,
+                ) {
+                    config.homeComponent.Component(
+                        Modifier
+                            .fillMaxSize()
+                            .pointerInput(
+                                wallpaperManager,
+                                config.doubleTap,
+                                config.longPress,
+                                systemGestureBottomInset,
+                            ) {
+                                detectTapGestures(
+                                    onDoubleTap = config.doubleTap?.let {
+                                        { scope.launch { state.onDoubleTap() } }
+                                    },
+                                    onLongPress = config.longPress?.let {
+                                        { offset ->
+                                            if (offset.y < (size.height - systemGestureBottomInset).toFloat()) {
+                                                scope.launch { state.onLongPress() }
+                                            }
+                                        }
+                                    },
+                                    onTap = {
+                                        wallpaperManager.sendWallpaperCommand(
+                                            view.windowToken,
+                                            WallpaperManager.COMMAND_TAP,
+                                            it.x.toInt(),
+                                            it.y.toInt(),
+                                            0,
+                                            null
+                                        )
+                                    }
+                                )
+                            }
+                            .homePageAnimation(
+                                state,
+                                if (config.homeComponent.drawBackground) {
+                                    config.backgroundColor.copy(alpha = PageBackgroundAlpha)
+                                } else {
+                                    Color.Transparent
+                                }
+                            ),
+                        insets = systemBarInsets
+                            .let { if (config.homeComponent.hasIme) it.union(WindowInsets.ime) else it }
+                            .let {
+                                if (config.searchBarStyle == SearchBarStyle.Hidden) it else it.add(
+                                    searchBarInsets
+                                )
+                            }
+                            .asPaddingValues(),
+                        state
+                    )
+                }
+
+                SecondaryPage(
+                    state = state,
+                    config = config,
+                    modifier = Modifier
+                        .fillMaxSize(),
+                    insets = systemBarInsets
+                        .let { if (state.currentComponent?.hasIme == true) it.union(WindowInsets.ime) else it }
+                        .add(searchBarInsets).add(filterBarInsets)
+                        .asPaddingValues(),
+                )
+
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .offset(y = (1f - imeProgress) * 50.dp)
-                        .alpha(imeProgress),
-                    contentAlignment = Alignment.BottomCenter,
+                        .searchBarAnimation(
+                            state,
+                            config,
+                            systemBarInsets
+                                .union(WindowInsets.ime)
+                                .add(filterBarInsets)
+                                .asPaddingValues()
+                        )
                 ) {
-                    KeyboardFilterBar(
-                        filters = filters,
-                        onFiltersChange = { searchVM.setFilters(it) },
-                        items = filterBarItems
+                    LauncherSearchBar(
+                        modifier = Modifier
+                            .widthIn(max = 916.dp)
+                            .align(
+                                if (config.searchBarPosition == SearchBarPosition.Top) Alignment.TopCenter
+                                else Alignment.BottomCenter
+                            ),
+                        searchBarOffset = { state.currentSearchBarOffset.roundToInt() },
+                        style = config.searchBarStyle,
+                        focused = state.isSearchBarFocused,
+                        actions = searchActions,
+                        level = { state.searchBarLevel },
+                        bottomSearchBar = config.searchBarPosition == SearchBarPosition.Bottom,
+                        onFocusChange = {
+                            if (it) {
+                                scope.launch { state.onSearchBarTap() }
+                            }
+                            state.isSearchBarFocused = it
+                        },
+                        onKeyboardActionGo = if (launchOnEnter) {
+                            { searchVM.launchBestMatchOrAction(activity) }
+                        } else null,
+                        highlightedAction = highlightedResult as? SearchAction,
+                        darkColors = config.darkSearchBar,
+                        isSearchOpen = state.currentComponent is SearchComponent && state.isSettledOnSecondaryPage ||
+                                config.homeComponent is SearchComponent && !state.isSettledOnSecondaryPage,
                     )
                 }
+                if (isFilterBarVisible) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .offset(y = (1f - imeProgress) * 50.dp)
+                            .alpha(imeProgress),
+                        contentAlignment = Alignment.BottomCenter,
+                    ) {
+                        KeyboardFilterBar(
+                            filters = filters,
+                            onFiltersChange = { searchVM.setFilters(it) },
+                            items = filterBarItems
+                        )
+                    }
+                }
             }
-        }
 
 
-        AnimatedVisibility(
-            state.statusBarScrim,
-            enter = fadeIn(),
-            exit = fadeOut(),
-            modifier = Modifier
-                .align(Alignment.TopCenter)
-                .fillMaxWidth()
-        ) {
-            Box(
+            AnimatedVisibility(
+                state.statusBarScrim,
+                enter = fadeIn(),
+                exit = fadeOut(),
                 modifier = Modifier
+                    .align(Alignment.TopCenter)
                     .fillMaxWidth()
-                    .hazeEffect(hazeState) {
-                        blurRadius = 4.dp
-                        backgroundColor = config.backgroundColor
-                    }
-                    .background(
-                        MaterialTheme.colorScheme.surfaceContainer.copy(alpha = MaterialTheme.transparency.background)
-                    )
-                    .statusBarsPadding()
-            )
-        }
-        AnimatedVisibility(
-            state.navBarScrim,
-            enter = fadeIn(),
-            exit = fadeOut(),
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .fillMaxWidth()
-        ) {
-            Box(
+            ) {
+                // A glass strip behind the system bar while content scrolls
+                // under it (#91); no rim along the screen edge.
+                GlassSurface(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RectangleShape,
+                    lensRadius = 0.dp,
+                    openEdges = setOf(GlassEdge.Top),
+                ) {
+                    Spacer(Modifier.fillMaxWidth().statusBarsPadding())
+                }
+            }
+            AnimatedVisibility(
+                state.navBarScrim,
+                enter = fadeIn(),
+                exit = fadeOut(),
                 modifier = Modifier
+                    .align(Alignment.BottomCenter)
                     .fillMaxWidth()
-                    .hazeEffect(hazeState) {
-                        blurRadius = 4.dp
-                        backgroundColor = config.backgroundColor
-                    }
-                    .background(
-                        MaterialTheme.colorScheme.surfaceContainer.copy(alpha = MaterialTheme.transparency.background)
-                    )
-                    .navigationBarsPadding()
-            )
+            ) {
+                // A glass strip behind the system bar while content scrolls
+                // under it (#91); no rim along the screen edge.
+                GlassSurface(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RectangleShape,
+                    lensRadius = 0.dp,
+                    openEdges = setOf(GlassEdge.Bottom),
+                ) {
+                    Spacer(Modifier.fillMaxWidth().navigationBarsPadding())
+                }
+            }
         }
     }
 }
@@ -1502,7 +1512,7 @@ private fun SecondaryPage(
             .fillMaxSize()
             .secondaryPageAnimation(
                 state,
-                config.backgroundColor.copy(alpha = MaterialTheme.transparency.background),
+                config.backgroundColor.copy(alpha = PageBackgroundAlpha),
             )
         val composable = composables[component]
 
@@ -1695,4 +1705,23 @@ private fun Modifier.searchBarAnimation(
 
     return this then (component?.searchBarModifier(state, modifier)
         ?: modifier) then Modifier.padding(insets)
+}
+/**
+ * The flat background of a page that asks for one (upstream's transparency
+ * scheme default). Search draws none (#91); the other secondary pages keep it.
+ */
+private const val PageBackgroundAlpha = 0.85f
+
+/**
+ * How far search is open, for the backdrop behind it (#91): the search page's
+ * progress, or fully open when search is the home component (assistant mode).
+ */
+internal fun searchBackdropProgress(
+    homeIsSearch: Boolean,
+    currentIsSearch: Boolean,
+    progress: Float,
+): Float = when {
+    currentIsSearch -> progress
+    homeIsSearch -> 1f
+    else -> 0f
 }

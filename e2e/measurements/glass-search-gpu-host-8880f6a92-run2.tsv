@@ -1,0 +1,21 @@
+rev	8880f6a92
+serial	emulator-5560
+runs	15
+fixture	clocks
+gpu	host
+snapshot	cold boot
+pack	lawnicons
+cover.glass.frames	706
+cover.glass.janky	279
+cover.glass.p50_ms	36
+cover.glass.p90_ms	93
+cover.glass.p95_ms	113
+cover.glass.p99_ms	150
+inner.glass.frames	642
+inner.glass.janky	310
+inner.glass.p50_ms	48
+inner.glass.p90_ms	101
+inner.glass.p95_ms	133
+inner.glass.p99_ms	200
+backdrop.glass.1080x2364	87 ms (135x296, blur 7px; decode 192x344 at 1/8: 46 ms, crop+scale+blur: 41 ms)
+backdrop.glass.2076x2152	111 ms (260x269, blur 7px; decode 384x688 at 1/4: 34 ms, crop+scale+blur: 77 ms)

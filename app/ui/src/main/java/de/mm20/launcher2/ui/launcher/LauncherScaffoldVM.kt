@@ -68,11 +68,6 @@ class LauncherScaffoldVM : ViewModel(), KoinComponent {
 
     val autoFocusSearch = uiSettings.openKeyboardOnSearch
 
-    val wallpaperBlur = uiSettings.blurWallpaper
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), true)
-    val wallpaperBlurRadius = uiSettings.wallpaperBlurRadius
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), 32)
-
     val fillClockHeight = uiSettings.clockFillScreen
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), true)
     val searchBarColor = uiSettings.searchBarColor

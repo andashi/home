@@ -27,6 +27,7 @@ class ConfigStateMapperTest {
             glassRadius = 20f,
             glassContrast = GlassContrast.High,
             glassWallpaperBlur = false,
+            glassSearchWallpaperBlur = false,
             searchBarPosition = SearchBarPosition.Bottom,
             favorites = listOf(
                 Favorite("com.example.app", Profile.Personal),
@@ -46,7 +47,10 @@ class ConfigStateMapperTest {
 
         assertEquals(ConfigMigrations.currentSchemaVersion, config.schemaVersion)
         assertEquals(IconsConfig(true, true, "com.example.icons"), config.icons)
-        assertEquals(GlassConfig(16f, 0.5f, 20f, GlassContrast.High, wallpaperBlur = false), config.appearance?.glass)
+        assertEquals(
+            GlassConfig(16f, 0.5f, 20f, GlassContrast.High, wallpaperBlur = false, searchWallpaperBlur = false),
+            config.appearance?.glass,
+        )
         assertEquals(false, config.home?.grid?.labels)
         assertEquals(SearchBarPosition.Bottom, config.home?.searchBar?.position)
         assertEquals(state.favorites, config.home?.favorites)
@@ -76,7 +80,7 @@ class ConfigStateMapperTest {
         assertEquals(
             GlassConfig(
                 GlassDefaults.Blur, GlassDefaults.Tint, GlassDefaults.Radius, GlassDefaults.Contrast,
-                GlassDefaults.WallpaperBlur,
+                GlassDefaults.WallpaperBlur, GlassDefaults.SearchWallpaperBlur,
             ),
             config.appearance?.glass,
         )
@@ -140,6 +144,8 @@ class ConfigStateMapperTest {
         // Lowered from 0.35 when the frosted look became liquid (#82).
         assertEquals(0.12f, GlassDefaults.Tint)
         assertEquals(true, GlassDefaults.WallpaperBlur)
+        // Search is an overlay: blurred by default even when home is sharp (#91).
+        assertEquals(true, GlassDefaults.SearchWallpaperBlur)
         assertEquals(28f, GlassDefaults.Radius)
         assertEquals(GlassContrast.Medium, GlassDefaults.Contrast)
         assertEquals(true, GlassDefaults.Labels)

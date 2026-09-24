@@ -478,7 +478,8 @@ private val TriangleShape: Shape
         close()
     }
 
-private val SquircleShape: Shape
+/** The Clear icon chip's outline (#76); the best-match highlight uses it too (#91). */
+internal val SquircleShape: Shape
     get() = GenericShape { size, _ ->
         val radius = size.width / 2f
         val radiusToPow = radius.pow(3f).toDouble()
