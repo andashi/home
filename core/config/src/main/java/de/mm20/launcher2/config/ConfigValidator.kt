@@ -8,6 +8,8 @@ object ConfigValidator {
     const val MaxGridItems = 32
     const val MinGridColumns = 2
     const val MaxGridColumns = 8
+    /** Upper bound for x, y, w and h: past any real grid, and far from Int overflow. */
+    const val MaxGridCoordinate = 64
 
     private val packageNameRegex =
         Regex("^[A-Za-z][A-Za-z0-9_]*(\\.[A-Za-z][A-Za-z0-9_]*)+$")
@@ -133,14 +135,14 @@ object ConfigValidator {
                                 "the item is placed at the first free cells",
                     )
                 }
-                val badPosition = (item.x != null && item.x < 0) || (item.y != null && item.y < 0)
-                val badSize = (item.w != null && item.w < 1) || (item.h != null && item.h < 1)
+                val badPosition = listOf(item.x, item.y).any { it != null && it !in 0..MaxGridCoordinate }
+                val badSize = listOf(item.w, item.h).any { it != null && it !in 1..MaxGridCoordinate }
                 if (badPosition || badSize) {
                     out += Diagnostic(
                         Severity.Error,
                         "invalid-grid-geometry",
                         path,
-                        "x and y must be 0 or more, w and h at least 1, got " +
+                        "x and y must be 0 to $MaxGridCoordinate, w and h 1 to $MaxGridCoordinate, got " +
                                 "x=${item.x} y=${item.y} w=${item.w} h=${item.h}",
                     )
                 }

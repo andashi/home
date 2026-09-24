@@ -15,6 +15,7 @@ import de.mm20.launcher2.grid.GridSpec
 import de.mm20.launcher2.grid.LayoutIssue
 import de.mm20.launcher2.grid.SizeLimits
 import de.mm20.launcher2.homegrid.GridRowsSource
+import de.mm20.launcher2.homegrid.MeasuredGridRows
 import de.mm20.launcher2.grid.Span
 import de.mm20.launcher2.homegrid.HomeGridItem
 import de.mm20.launcher2.homegrid.HomeGridItemConfig
@@ -157,6 +158,22 @@ class DefaultConfigStore(
         return diagnostics
     }
 
+    /**
+     * Rows for a layout of another form factor: enough for every placed item
+     * where the file puts it, at least the default, and room below for the
+     * items without a position, so nothing is clamped or dropped. Heights are
+     * the ones the engine will use: the provider's default for an omitted
+     * one, clamped to the provider's limits. The validator bounds every
+     * coordinate and size, so the sum stays small.
+     */
+    private fun rowsToKeep(sized: List<SizedItem>): Int {
+        fun SizedItem.height() =
+            (config.h ?: limits.default.h).coerceIn(limits.limits.minH, limits.limits.maxH)
+        val placedBottom = sized.filter { it.config.hasPosition }.maxOfOrNull { it.config.y!! + it.height() } ?: 0
+        val unplaced = sized.filter { !it.config.hasPosition }.sumOf { it.height() }
+        return maxOf(MeasuredGridRows.DefaultRows, placedBottom) + unplaced
+    }
+
     private class SizedItem(val index: Int, val config: GridItemConfig, val limits: ProviderLimits)
 
     private suspend fun applyLayout(
@@ -167,18 +184,14 @@ class DefaultConfigStore(
         val diagnostics = mutableListOf<Diagnostic>()
         val basePath = "home.grid.layouts.$layoutKey.items"
         val isFold = layoutKey == GridLayouts.Fold
-        val spec = GridSpec(
-            columns = if (isFold) columns * 2 else columns,
-            rows = gridRows.rows(layoutKey),
-            foldColumn = if (isFold) columns else null,
-        )
+        val specColumns = if (isFold) columns * 2 else columns
 
         // Limits first, then geometry: items with a position keep it, items
         // without one are placed after them, in array order, at the first
         // free cells (D5).
         val sized = layout.items.mapIndexed { index, item ->
             val limits = if (item.isFavorites) {
-                ProviderLimits(default = CellSize(spec.columns, 1), limits = SizeLimits.Unbounded)
+                ProviderLimits(default = CellSize(specColumns, 1), limits = SizeLimits.Unbounded)
             } else {
                 gridLimits.lookup(item.widget, item.profile, columns) ?: run {
                     diagnostics += Diagnostic(
@@ -194,6 +207,13 @@ class DefaultConfigStore(
             }
             SizedItem(index, item, limits)
         }
+        val spec = GridSpec(
+            columns = specColumns,
+            // A layout this device does not render is kept as written (#90):
+            // its rows are unknown here, so they are as many as the file needs.
+            rows = gridRows.rows(layoutKey) ?: rowsToKeep(sized),
+            foldColumn = if (isFold) columns else null,
+        )
 
         // A position anchors the item; a missing size is the provider's
         // default. Items without a position are placed after them.

@@ -303,11 +303,7 @@ for name in $SCENES; do
   # picture would then not match the config next to it in the docs.
   # wallpaper-pending-foreground only says the system is still cropping the
   # first wallpaper set in this run; the launcher is in front, so it renders.
-  # A phone checks the fold layout against six rows, not the Fold's seven, and
-  # reports its bottom row (#90); that layout is not in this device's picture.
-  jq -e --arg other "home.grid.layouts.$( [ "$FOLDABLE" = 1 ] && echo phone || echo fold )." \
-    '[(.diagnostics // [])[] | select(.code != "wallpaper-pending-foreground")
-      | select((.path // "") | startswith($other) | not)] | length == 0' <<<"$report" >/dev/null \
+  jq -e '[(.diagnostics // [])[] | select(.code != "wallpaper-pending-foreground")] | length == 0' <<<"$report" >/dev/null \
     || die "$name applied with diagnostics, the picture would not match its config: $(jq -c '.diagnostics' <<<"$report")"
   if [ "$FOLDABLE" = 1 ]; then
     posture closed

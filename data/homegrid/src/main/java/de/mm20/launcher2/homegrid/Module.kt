@@ -9,7 +9,8 @@ val homeGridModule = module {
     single<FormFactorDetector> { AndroidFormFactorDetector(androidContext()) }
     // One instance: the renderer writes the rows it measured, the config
     // store reads them.
-    single { MeasuredGridRows() }
+    // Only the layout this device renders has rows here (#90).
+    single { MeasuredGridRows(ownLayout = get<FormFactorDetector>().detect().layout) }
     single<GridRowsSource> { get<MeasuredGridRows>() }
     single<HomeGridInitFlag> { UiSettingsInitFlag(get()) }
     // Shared by the default row and the config store; see HomeGridInitLock.
