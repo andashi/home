@@ -28,6 +28,9 @@ card, chip, menu, the keyboard's filter bar and the hidden-items sheet follow
 search has its own setting, `appearance.glass.searchWallpaperBlur` (see
 [appearance](appearance.md#behind-search)).
 
-Not yet (#91, next): the number of app columns does not follow
-`home.grid.columns`, and on the Fold's inner display search runs full width
-across the hinge instead of two panes at the seam.
+Search lays out on the home grid: its app columns are `home.grid.columns`,
+at the home grid's pitch and the dock's icon size, so an app in search sits
+in the column it would have on the home screen. On the Fold's cover that is
+the same four columns; on the inner display search has two panes that meet
+at the fold line - favorites and apps in the half the cover shows, shortcuts,
+contacts and the filters in the other - and nothing crosses the hinge.
