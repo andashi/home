@@ -91,6 +91,12 @@ never has a label. Its shape is your choice:
 | Two rows | `{ "id": "dock", "widget": "favorites", "x": 0, "y": 4, "w": 4, "h": 2 }` |
 | None | leave the item out |
 
+Fewer favorites than cells are **centred**: each row's icons sit in its
+middle, and the used rows sit in the middle of the dock's height. Three
+favorites in a 4-wide dock are centred in the row; three in a 7-high column
+are in the middle of the edge. Each icon keeps the size of one grid cell, so a
+full dock lines up with the grid.
+
 A dock of `w` × `h` cells shows `w × h` favorites. The rest stay reachable
 through search, and edit mode shows how many do not fit.
 
