@@ -31,6 +31,7 @@ import de.mm20.launcher2.database.migrations.Migration_33_34
 import de.mm20.launcher2.database.migrations.Migration_34_35
 import de.mm20.launcher2.database.migrations.Migration_35_36
 import de.mm20.launcher2.database.migrations.Migration_36_37
+import de.mm20.launcher2.database.migrations.Migration_37_38
 import de.mm20.launcher2.database.migrations.Migration_6_7
 import de.mm20.launcher2.database.migrations.Migration_7_8
 import de.mm20.launcher2.database.migrations.Migration_8_9
@@ -231,6 +232,34 @@ class MigrationTest {
         db.query("SELECT `id` FROM `HomeGridItem` WHERE `layout` = 'phone'").use { cursor ->
             assertTrue(cursor.moveToFirst())
             assertEquals("dock", cursor.getString(0))
+        }
+        db.close()
+    }
+
+    /**
+     * #97: nothing on the launcher reads the transparency scheme any more;
+     * its table goes and the other theme tables stay with their rows.
+     */
+    @Test
+    fun `migration 37 to 38 drops the Transparencies table and keeps the other themes`() {
+        val db = helper.createDatabase(testDb, 37).apply {
+            execSQL(
+                "INSERT INTO `Transparencies` (`id`, `name`, `background`, `surface`, `elevatedSurface`) VALUES " +
+                        "(X'00000000000000000000000000000005', 'Glass-era leftover', 0.5, 0.7, 0.9)"
+            )
+            execSQL(
+                "INSERT INTO `Shapes` (`id`, `name`, `baseShape`) VALUES (X'00000000000000000000000000000006', 'Kept', 'Rounded')"
+            )
+        }
+
+        Migration_37_38().migrate(db)
+
+        db.query("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'Transparencies'").use { cursor ->
+            assertEquals("table Transparencies should have been dropped", 0, cursor.count)
+        }
+        db.query("SELECT `name` FROM `Shapes`").use { cursor ->
+            assertTrue(cursor.moveToFirst())
+            assertEquals("Kept", cursor.getString(0))
         }
         db.close()
     }
