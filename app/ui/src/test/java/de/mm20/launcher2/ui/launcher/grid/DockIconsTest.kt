@@ -2,10 +2,13 @@ package de.mm20.launcher2.ui.launcher.grid
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import org.junit.Assert.assertEquals
@@ -23,10 +26,12 @@ class DockIconsTest {
     /** One cell in dp; small enough that the dock fits Robolectric's screen. */
     private val Cell = 50
 
-    private fun show(count: Int, columns: Int, rows: Int) {
+    private fun show(count: Int, columns: Int, rows: Int, direction: LayoutDirection = LayoutDirection.Ltr) {
         composeRule.setContent {
-            DockIcons(count, columns, rows, Modifier.size((columns * Cell).dp, (rows * Cell).dp).testTag("dock")) {
-                repeat(count) { Box(Modifier.testTag("icon$it")) }
+            CompositionLocalProvider(LocalLayoutDirection provides direction) {
+                DockIcons(count, columns, rows, Modifier.size((columns * Cell).dp, (rows * Cell).dp).testTag("dock")) {
+                    repeat(count) { Box(Modifier.testTag("icon$it")) }
+                }
             }
         }
     }
@@ -68,5 +73,22 @@ class DockIconsTest {
 
         assertAt("icon0", 0f, 0f)
         assertAt("icon3", 3f * Cell, 0f)
+    }
+
+    /** Right to left, the first favorite is on the right, as the old row put it. */
+    @Test
+    fun `a right-to-left dock mirrors the order`() {
+        show(4, columns = 4, rows = 1, direction = LayoutDirection.Rtl)
+
+        assertAt("icon0", 3f * Cell, 0f)
+        assertAt("icon3", 0f, 0f)
+    }
+
+    @Test
+    fun `a right-to-left partial row is centred and mirrored`() {
+        show(3, columns = 4, rows = 1, direction = LayoutDirection.Rtl)
+
+        assertAt("icon0", 2.5f * Cell, 0f)
+        assertAt("icon2", 0.5f * Cell, 0f)
     }
 }
