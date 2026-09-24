@@ -37,6 +37,9 @@ import kotlinx.coroutines.flow.filterNotNull
  * A page that opens leaves this box for the scaffold's visible slot and is
  * laid out and drawn there at the window's size, as before.
  */
+/** How long after the window's last size change the pages take it, in ms. */
+internal const val OffscreenPagesSettleMillis = 34L
+
 @Composable
 internal fun OffscreenPages(
     /** How far right the pages sit, in px: the window's width. */

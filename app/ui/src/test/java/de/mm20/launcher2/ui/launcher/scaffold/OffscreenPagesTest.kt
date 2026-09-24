@@ -115,8 +115,15 @@ class OffscreenPagesTest {
         }
         composeRule.runOnIdle { assertEquals("the frame of the change", before, measured.width) }
 
-        repeat(3) { composeRule.mainClock.advanceTimeByFrame() }
-        composeRule.runOnIdle { assertEquals("a later frame", after, measured.width) }
+        // The display switch: the inner display stays dark until every
+        // window has drawn, and a relayout here is another frame it waits
+        // for (#122: two frames later was still inside it, 3-6 launcher
+        // frames before screen-on instead of 1-2).
+        composeRule.mainClock.advanceTimeBy(500)
+        composeRule.runOnIdle { assertEquals("during the display switch", before, measured.width) }
+
+        composeRule.mainClock.advanceTimeBy(OffscreenPagesSettleMillis)
+        composeRule.runOnIdle { assertEquals("after it", after, measured.width) }
     }
 
     /** Control: the same page in the viewport is drawn, so a zero above is not a test that sees nothing. */
