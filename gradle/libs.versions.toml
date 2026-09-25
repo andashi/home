@@ -37,6 +37,9 @@ coil = "2.7.0"
 koin = "4.2.2"
 ktor = "3.5.2"
 junit = "4.13.2"
+# Test scope only: checks the generated JSON Schema against a real
+# implementation (#3 slice 3, ADR 0002). Never on a runtime classpath.
+jsonSchemaValidator = "3.0.7"
 junitVersion = "1.2.1"
 espressoCore = "3.6.1"
 androidx-test = "1.7.0"
@@ -117,6 +120,7 @@ koin-android = { group = "io.insert-koin", name = "koin-android", version.ref = 
 koin-androidxcompose = { group = "io.insert-koin", name = "koin-androidx-compose", version.ref = "koin" }
 
 junit = { group = "junit", name = "junit", version.ref = "junit" }
+json-schema-validator = { group = "com.networknt", name = "json-schema-validator", version.ref = "jsonSchemaValidator" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
 androidx-test-runner = { group = "androidx.test", name = "runner", version.ref = "androidx-test" }

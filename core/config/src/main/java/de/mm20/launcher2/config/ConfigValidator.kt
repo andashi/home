@@ -1,7 +1,22 @@
 package de.mm20.launcher2.config
 
+/**
+ * The contract's limits live here as named constants and patterns, never as
+ * literals in a check, so that everything that states them - this validator,
+ * the JSON Schema (#3 slice 3) - reads the same value.
+ *
+ * Which path gets which limit is declared twice on purpose: here, as checks
+ * with their diagnostic codes, and in ConfigSchema.constraints, as schema
+ * keywords. ConfigSchemaTest breaks every schema limit and fails when this
+ * validator does not object, so the two cannot disagree unnoticed. Driving
+ * both from one table would rewrite the checks and put the diagnostic codes
+ * at risk (invalid-grid-geometry merges four fields); decided against for #3
+ * slice 3. Revisit if write-back (slice 4) or a later section adds many limits.
+ */
 object ConfigValidator {
+    const val MinGlass = 0f
     const val MaxGlassBlur = 64f
+    const val MaxGlassTint = 1f
     const val MaxGlassRadius = 64f
     const val MaxPackageNameLength = 256
     const val MaxFavorites = 64
@@ -11,14 +26,28 @@ object ConfigValidator {
     const val MaxGridColumns = 8
     /** Upper bound for x, y, w and h: past any real grid, and far from Int overflow. */
     const val MaxGridCoordinate = 64
+    /** Lower bound for x and y: the first cell. */
+    const val MinGridPosition = 0
+    /** Lower bound for w and h: one cell. */
+    const val MinGridSpan = 1
 
-    private val packageNameRegex =
+    internal val packageNameRegex =
         Regex("^[A-Za-z][A-Za-z0-9_]*(\\.[A-Za-z][A-Za-z0-9_]*)+$")
 
     /** Item ids (D5): what a hand-written file and a write-back both produce. */
-    val gridItemIdRegex = Regex("^[a-z0-9][a-z0-9-]{0,31}$")
+    internal val gridItemIdRegex = Regex("^[a-z0-9][a-z0-9-]{0,31}$")
 
-    private val classNameRegex = Regex("^\\.?[A-Za-z_][A-Za-z0-9_$]*(\\.[A-Za-z_][A-Za-z0-9_$]*)*$")
+    internal val classNameRegex = Regex("^\\.?[A-Za-z_][A-Za-z0-9_$]*(\\.[A-Za-z_][A-Za-z0-9_$]*)*$")
+
+    /**
+     * `pkg/cls`: a package name of at most [MaxPackageNameLength] and a class
+     * part (a leading '.' is the relative form). Neither part can hold a '/'.
+     */
+    internal val componentNameRegex = Regex(
+        "^(?=[^/]{1,$MaxPackageNameLength}/)" +
+            packageNameRegex.pattern.removePrefix("^").removeSuffix("$") + "/" +
+            classNameRegex.pattern.removePrefix("^").removeSuffix("$") + "$"
+    )
 
     /** Upload names: one path segment, no leading dot, no separators. */
     val imageNameRegex = Regex("^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$")
@@ -48,9 +77,9 @@ object ConfigValidator {
         config.search?.actions?.let { validateSearchActions(it, diagnostics) }
 
         config.appearance?.glass?.let { glass ->
-            validateGlass(glass.blur, 0f, MaxGlassBlur, "appearance.glass.blur", "dp", diagnostics)
-            validateGlass(glass.tint, 0f, 1f, "appearance.glass.tint", "", diagnostics)
-            validateGlass(glass.radius, 0f, MaxGlassRadius, "appearance.glass.radius", "dp", diagnostics)
+            validateGlass(glass.blur, MinGlass, MaxGlassBlur, "appearance.glass.blur", "dp", diagnostics)
+            validateGlass(glass.tint, MinGlass, MaxGlassTint, "appearance.glass.tint", "", diagnostics)
+            validateGlass(glass.radius, MinGlass, MaxGlassRadius, "appearance.glass.radius", "dp", diagnostics)
         }
 
         config.appearance?.wallpaper?.image?.let { image ->
@@ -120,7 +149,9 @@ object ConfigValidator {
                     if (action.label.isNullOrBlank()) invalid("a url action needs a label")
                     val url = action.url
                     if (url.isNullOrBlank()) invalid("a url action needs a url")
-                    else if ("\${1}" !in url) invalid("the url needs \${1} where the query goes")
+                    else if (SearchActionTypes.QueryPlaceholder !in url) {
+                        invalid("the url needs ${SearchActionTypes.QueryPlaceholder} where the query goes")
+                    }
                     val encoding = action.encoding
                     if (encoding != null && encoding !in SearchActionTypes.Encodings) {
                         invalid("'$encoding' is not an encoding (${SearchActionTypes.Encodings.joinToString(", ")})")
@@ -225,8 +256,8 @@ object ConfigValidator {
                                 "the item is placed at the first free cells",
                     )
                 }
-                val badPosition = listOf(item.x, item.y).any { it != null && it !in 0..MaxGridCoordinate }
-                val badSize = listOf(item.w, item.h).any { it != null && it !in 1..MaxGridCoordinate }
+                val badPosition = listOf(item.x, item.y).any { it != null && it !in MinGridPosition..MaxGridCoordinate }
+                val badSize = listOf(item.w, item.h).any { it != null && it !in MinGridSpan..MaxGridCoordinate }
                 if (badPosition || badSize) {
                     out += Diagnostic(
                         Severity.Error,
@@ -240,16 +271,7 @@ object ConfigValidator {
         }
     }
 
-    /** `pkg/cls`: a package name and a non-empty class part (a leading '.' is the relative form). */
-    private fun isComponentName(widget: String): Boolean {
-        val slash = widget.indexOf('/')
-        if (slash <= 0 || slash == widget.lastIndex) return false
-        val packageName = widget.substring(0, slash)
-        val className = widget.substring(slash + 1)
-        return packageNameRegex.matches(packageName) &&
-                packageName.length <= MaxPackageNameLength &&
-                classNameRegex.matches(className)
-    }
+    private fun isComponentName(widget: String): Boolean = componentNameRegex.matches(widget)
 
     /**
      * A glass number in [min]..[max]. Bounded above as well: the file is

@@ -7,7 +7,6 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import kotlinx.serialization.json.JsonObject
-import java.io.File
 
 class ConfigParserTest {
 
@@ -673,8 +672,7 @@ class ConfigParserTest {
      */
     @Test
     fun `the example document in ADR 0002 parses`() {
-        val adr = repoFile("docs/architecture/adr/0002-config-format-json.md")
-        val example = fencedJsonAfter(adr.readText(), marker = "<!-- adr-0002-example -->")
+        val example = fencedJsonAfter(RepoDocs.adr0002, marker = "<!-- adr-0002-example -->")
 
         val result = ConfigParser.parse(example)
 
@@ -717,17 +715,6 @@ class ConfigParserTest {
         assertTrue(phone.any { !it.isFavorites && it.hasGeometry })
     }
 
-    /** The unit test runs with the module directory as its working directory. */
-    private fun repoFile(path: String): File {
-        var dir: File? = File("").absoluteFile
-        while (dir != null) {
-            val candidate = File(dir, path)
-            if (candidate.isFile) return candidate
-            dir = dir.parentFile
-        }
-        throw AssertionError("$path not found above ${File("").absolutePath}")
-    }
-
     /**
      * The fenced block after [marker], by line rather than by substring.
      *
@@ -737,33 +724,6 @@ class ConfigParserTest {
      * block there and hand the parser a prefix, and a guard that reads less
      * than it thinks is the failure this whole test exists to prevent.
      */
-    private fun fencedJsonAfter(markdown: String, marker: String): String {
-        val lines = markdown.lines()
-
-        val markerAt = lines.indexOfFirst { it.trim() == marker }
-        assertTrue("$marker is missing from the ADR", markerAt >= 0)
-
-        val openAt = (markerAt + 1..lines.lastIndex)
-            .firstOrNull { lines[it].trimStart().startsWith("```") }
-        assertNotNull("no fenced block follows $marker", openAt)
-
-        val opener = lines[openAt!!].trim()
-        val fence = opener.takeWhile { it == '`' }
-        assertEquals(
-            "the block after $marker must be tagged json",
-            "json",
-            opener.removePrefix(fence).trim(),
-        )
-
-        val closeAt = (openAt + 1..lines.lastIndex).firstOrNull {
-            val line = lines[it].trim()
-            line.length >= fence.length && line.all { char -> char == '`' }
-        }
-        assertNotNull("the block after $marker is never closed", closeAt)
-
-        return lines.subList(openAt + 1, closeAt!!).joinToString("\n")
-    }
-
     /**
      * What `content://<applicationId>.state/config` hands a host back is the
      * document re-serialised from the decoded model, and the config Json does

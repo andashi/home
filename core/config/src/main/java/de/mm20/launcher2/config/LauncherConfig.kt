@@ -73,33 +73,40 @@ enum class GlassContrast {
 }
 
 /**
- * Decodes [GlassContrast] with an error that names the field. The generated
- * enum serializer reports only the enum's class name, and decoding runs over
- * a JSON tree that carries no path, so a host would read "GlassContrast does
- * not contain element with name 'extreme'" and have to guess where it was.
- * The enum appears in exactly one place in the contract, so the path is
- * known here.
+ * Decodes an enum by its lowercase name with an error that names the field.
+ * The generated enum serializer reports only the enum's class name, and
+ * decoding runs over a JSON tree that carries no path, so a host would read
+ * "GlassContrast does not contain element with name 'extreme'" and have to
+ * guess where it was. Each such enum appears in exactly one place in the
+ * contract, so the path is known here.
  */
-internal object GlassContrastSerializer : KSerializer<GlassContrast> {
-    private const val Path = "appearance.glass.contrast"
-    private val names = GlassContrast.entries.associateBy { it.serialName }
+internal abstract class FieldEnumSerializer<E : Enum<E>>(
+    serialName: String,
+    private val path: String,
+    entries: List<E>,
+) : KSerializer<E> {
+    private val byName = entries.associateBy { it.name.lowercase() }
 
-    override val descriptor: SerialDescriptor =
-        PrimitiveSerialDescriptor("de.mm20.launcher2.config.GlassContrast", PrimitiveKind.STRING)
+    /** The values the contract accepts, as written; the JSON Schema lists these. */
+    val names: List<String> = byName.keys.toList()
 
-    override fun serialize(encoder: Encoder, value: GlassContrast) {
-        encoder.encodeString(value.serialName)
+    override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor(serialName, PrimitiveKind.STRING)
+
+    override fun serialize(encoder: Encoder, value: E) {
+        encoder.encodeString(value.name.lowercase())
     }
 
-    override fun deserialize(decoder: Decoder): GlassContrast {
+    override fun deserialize(decoder: Decoder): E {
         val name = decoder.decodeString()
-        return names[name] ?: throw SerializationException(
-            "'$name' is not a valid value for $Path (${names.keys.joinToString(", ")})"
+        return byName[name] ?: throw SerializationException(
+            "'$name' is not a valid value for $path (${names.joinToString(", ")})"
         )
     }
-
-    private val GlassContrast.serialName: String get() = name.lowercase()
 }
+
+internal object GlassContrastSerializer : FieldEnumSerializer<GlassContrast>(
+    "de.mm20.launcher2.config.GlassContrast", "appearance.glass.contrast", GlassContrast.entries,
+)
 
 /** The one place the glass defaults live; state, settings and read-back use it. */
 object GlassDefaults {
@@ -359,25 +366,9 @@ data class SearchConfig(
  */
 enum class InSearchBarPosition { Top, Bottom, Follow }
 
-/** Decodes `search.barPosition` with an error that names the field, as [SearchResultLayoutSerializer] does. */
-internal object SearchBarPositionInSearchSerializer : KSerializer<InSearchBarPosition> {
-    private const val Path = "search.barPosition"
-    private val names = InSearchBarPosition.entries.associateBy { it.name.lowercase() }
-
-    override val descriptor: SerialDescriptor =
-        PrimitiveSerialDescriptor("de.mm20.launcher2.config.SearchBarPositionInSearch", PrimitiveKind.STRING)
-
-    override fun serialize(encoder: Encoder, value: InSearchBarPosition) {
-        encoder.encodeString(value.name.lowercase())
-    }
-
-    override fun deserialize(decoder: Decoder): InSearchBarPosition {
-        val name = decoder.decodeString()
-        return names[name] ?: throw SerializationException(
-            "'$name' is not a valid value for $Path (${names.keys.joinToString(", ")})"
-        )
-    }
-}
+internal object SearchBarPositionInSearchSerializer : FieldEnumSerializer<InSearchBarPosition>(
+    "de.mm20.launcher2.config.SearchBarPositionInSearch", "search.barPosition", InSearchBarPosition.entries,
+)
 
 @Serializable(with = SearchResultLayoutSerializer::class)
 enum class SearchResultLayout {
@@ -407,6 +398,8 @@ data class SearchActionConfig(
 
 object SearchActionTypes {
     const val Url = "url"
+    /** Where a `url` action's url takes the query. */
+    const val QueryPlaceholder = "\${1}"
     const val App = "app"
     const val WebSearch = "websearch"
 
@@ -429,25 +422,9 @@ object SearchActionTypes {
     const val DefaultEncoding = "url"
 }
 
-/** Decodes [SearchResultLayout] with an error that names the field, as [GlassContrastSerializer] does. */
-internal object SearchResultLayoutSerializer : KSerializer<SearchResultLayout> {
-    private const val Path = "search.layout"
-    private val names = SearchResultLayout.entries.associateBy { it.name.lowercase() }
-
-    override val descriptor: SerialDescriptor =
-        PrimitiveSerialDescriptor("de.mm20.launcher2.config.SearchResultLayout", PrimitiveKind.STRING)
-
-    override fun serialize(encoder: Encoder, value: SearchResultLayout) {
-        encoder.encodeString(value.name.lowercase())
-    }
-
-    override fun deserialize(decoder: Decoder): SearchResultLayout {
-        val name = decoder.decodeString()
-        return names[name] ?: throw SerializationException(
-            "'$name' is not a valid value for $Path (${names.keys.joinToString(", ")})"
-        )
-    }
-}
+internal object SearchResultLayoutSerializer : FieldEnumSerializer<SearchResultLayout>(
+    "de.mm20.launcher2.config.SearchResultLayout", "search.layout", SearchResultLayout.entries,
+)
 
 /** The one place the search defaults live: today's behavior, so a file without `search` changes nothing. */
 object SearchDefaults {
