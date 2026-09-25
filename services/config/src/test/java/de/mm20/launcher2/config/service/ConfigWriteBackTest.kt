@@ -7,6 +7,8 @@ import de.mm20.launcher2.config.Severity
 import de.mm20.launcher2.homegrid.HomeGridItem
 import de.mm20.launcher2.homegrid.HomeGridLayouts
 import de.mm20.launcher2.homegrid.HomeGridWidgets
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -170,6 +172,59 @@ class ConfigWriteBackTest {
             listOf(ConfigWriteBack.SkipCodePrefix + "not-applied-yet"),
             after.diagnostics.filter { it.severity == Severity.Warning }.map { it.code },
         )
+    }
+
+    private val twoSections = """{"schemaVersion":2,"icons":{"themed":false},"search":{"layout":"grid"}}"""
+
+    /**
+     * The comparison half of a device change during a reload: the person
+     * switches themed icons on while the reload applies another section. The
+     * baseline must not take that in as something the file produced, or the
+     * change never reaches the file.
+     */
+    @Test
+    fun `a change made on the device while a reload applies is written back afterwards`() = runBlocking {
+        applied(twoSections)
+        val duringApply = object : ConfigStore by real.store {
+            override suspend fun apply(mutations: List<de.mm20.launcher2.config.ConfigMutation>) =
+                real.store.apply(mutations).also { onDevice("""{"schemaVersion":2,"icons":{"themed":true}}""") }
+        }
+        val newer = twoSections.replace("\"grid\"", "\"list\"")
+        put(newer)
+        ConfigReloader(duringApply, reportStore, lock, baselineStore).reload(file)
+
+        val result = writeBack.write()
+
+        assertTrue(result.toString(), result is WriteBackResult.Written)
+        assertEquals(newer.replace("\"themed\":false", "\"themed\":true"), file.readText())
+    }
+
+    /**
+     * The timing half: a write-back asked for while a reload holds the lock
+     * waits for it, and then finds that the reload's own changes are no
+     * difference - it neither writes the file nor skips.
+     */
+    @Test
+    fun `a write-back asked for during a reload waits for it and finds nothing to write`() = runBlocking {
+        applied(twoSections)
+        val gate = kotlinx.coroutines.CompletableDeferred<Unit>()
+        val slowApply = object : ConfigStore by real.store {
+            override suspend fun apply(mutations: List<de.mm20.launcher2.config.ConfigMutation>) =
+                gate.await().let { real.store.apply(mutations) }
+        }
+        val newer = twoSections.replace("\"grid\"", "\"list\"")
+        put(newer)
+
+        val reload = launch { ConfigReloader(slowApply, reportStore, lock, baselineStore).reload(file) }
+        kotlinx.coroutines.yield()
+        val write = async { writeBack.write() }
+        kotlinx.coroutines.yield()
+        assertTrue("the write-back waits for the reload", write.isActive)
+        gate.complete(Unit)
+        reload.join()
+
+        assertEquals(WriteBackResult.Unchanged, write.await())
+        assertEquals(newer, file.readText())
     }
 
     /**

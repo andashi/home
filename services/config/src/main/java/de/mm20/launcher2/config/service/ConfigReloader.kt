@@ -2,6 +2,7 @@ package de.mm20.launcher2.config.service
 
 import de.mm20.launcher2.config.ConfigDiffer
 import de.mm20.launcher2.config.ConfigParser
+import de.mm20.launcher2.config.ConfigState
 import de.mm20.launcher2.config.Diagnostic
 import de.mm20.launcher2.config.ReloadReport
 import de.mm20.launcher2.config.ReloadTrigger
@@ -114,8 +115,10 @@ class ConfigReloader(
             )
         }
 
+        var before: ConfigState? = null
         val mutations = try {
             val state = configStore.readState()
+            before = state
             ConfigDiffer.diff(config, state)
         } catch (e: Exception) {
             return persist(
@@ -158,7 +161,7 @@ class ConfigReloader(
             .distinct()
             .filter { section -> failedSections.none { it.isInSection(section) } }
 
-        recordBaseline(configSha256)
+        before?.let { recordBaseline(configSha256, it, mutations.map { m -> m.section }) }
         return persist(
             ReloadReport(
                 success = applyDiagnostics.none { it.severity == Severity.Error },
@@ -173,15 +176,23 @@ class ConfigReloader(
 
     /**
      * What this file produced once applied, for a write-back to compare the
-     * device with (#3 slice 4, D). Taken from the device after the apply, so
-     * whatever the apply did differently from the text - a clamp, a skipped
-     * entry - is in it. Recorded after a partial apply too: that is what the
-     * file produced.
+     * device with (#3 slice 4, D): the [applied] sections as the device has
+     * them after the apply, so whatever the apply did differently from the
+     * text - a clamp, a skipped entry - is in it, and every other section as
+     * it was [before], so a change a person made on the device while the
+     * apply ran is not (see [baselineOf]). Recorded after a partial apply too:
+     * that is what the file produced.
      */
-    private suspend fun recordBaseline(configSha256: String) {
+    private suspend fun recordBaseline(configSha256: String, before: ConfigState, applied: List<String>) {
         val store = baselineStore ?: return
         try {
-            store.save(AppliedBaseline(configSha256, ConfigWriteBack.effective(configStore.readState().toLauncherConfig())))
+            val after = configStore.readState()
+            val effective = baselineOf(
+                ConfigWriteBack.effective(before.toLauncherConfig()),
+                ConfigWriteBack.effective(after.toLauncherConfig()),
+                applied,
+            )
+            store.save(AppliedBaseline(configSha256, effective))
         } catch (_: Exception) {
             // Without a baseline a write-back skips and says so; the reload stands.
         }

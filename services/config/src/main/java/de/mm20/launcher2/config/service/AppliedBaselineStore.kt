@@ -6,6 +6,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import java.io.File
 import java.io.IOException
@@ -58,4 +59,51 @@ class AppliedBaselineStore(context: Context) {
             null
         }
     }
+}
+
+/**
+ * Every section a reload applies, by its path in the document
+ * ([de.mm20.launcher2.config.ConfigMutation.section]). BaselineOfTest fails
+ * when a reload can apply one that is missing here.
+ */
+internal val ConfigSections = listOf(
+    "icons",
+    "appearance.glass",
+    "appearance.wallpaper",
+    "search",
+    "search.actions",
+    "home.searchBar",
+    "home.favorites",
+    "home.widgets.enabled",
+    "home.grid",
+)
+
+/**
+ * The baseline of one reload: each section it [applied] as the device has it
+ * after the apply - clamps and skipped entries included - and every other
+ * section as it was before. A section the reload did not change already was
+ * what the file produces; taking it from before keeps out whatever a person
+ * changed on the device while the apply ran, so that change is still written
+ * back. A section inside an applied one that was not itself applied comes
+ * from before as well.
+ */
+internal fun baselineOf(before: JsonObject, after: JsonObject, applied: Collection<String>): JsonObject {
+    var out = before
+    for (section in applied) out = out.with(section.split('.'), after.at(section.split('.')))
+    for (section in ConfigSections) {
+        if (section in applied) continue
+        if (applied.any { section.startsWith("$it.") }) out = out.with(section.split('.'), before.at(section.split('.')))
+    }
+    return out
+}
+
+private fun JsonObject.at(path: List<String>): JsonElement? =
+    path.fold<String, JsonElement?>(this) { node, key -> (node as? JsonObject)?.get(key) }
+
+/** This object with the value at [path] set to [value], or removed when [value] is null. */
+private fun JsonObject.with(path: List<String>, value: JsonElement?): JsonObject {
+    val key = path.first()
+    if (path.size == 1) return JsonObject(if (value == null) this - key else this + (key to value))
+    val child = this[key] as? JsonObject ?: if (value == null) return this else JsonObject(emptyMap())
+    return JsonObject(this + (key to child.with(path.drop(1), value)))
 }
