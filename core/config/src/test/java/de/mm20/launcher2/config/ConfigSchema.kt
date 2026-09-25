@@ -28,29 +28,30 @@ import kotlinx.serialization.json.putJsonObject
  * ([KeyEffect.Inert]) are listed as deprecated, not rejected.
  *
  * A custom serializer has no descriptor that says what it accepts, so every
- * one is named in [custom]; one that is not fails generation, and with it
- * the schema test.
+ * one is named in [fieldEnums] or handled in [typeSchema]; one that is not
+ * fails generation, and with it the schema test.
+ *
+ * Test code: only [ConfigSchemaTest] runs it, to check the file in
+ * docs/configuration against it, so nothing of it ships.
  */
 @OptIn(ExperimentalSerializationApi::class)
 internal object ConfigSchema {
-
-    const val Dialect = "https://json-schema.org/draft/2020-12/schema"
 
     private val pretty = Json { prettyPrint = true }
 
     /** The schema as it is checked in: pretty-printed, stable, one trailing newline. */
     fun text(): String = pretty.encodeToString(JsonObject.serializer(), document()) + "\n"
 
-    fun document(): JsonObject = buildJsonObject {
-        put("\$schema", Dialect)
-        put("title", "launcher.json")
-        put(
-            "description",
-            "The Andashi Home launcher configuration, schemaVersion ${ConfigMigrations.currentSchemaVersion}. " +
-                "Generated from the parser; see docs/configuration and ADR 0002.",
-        )
-        objectSchema(LauncherConfig.serializer().descriptor, "").forEach { (k, v) -> put(k, v) }
-    }
+    fun document(): JsonObject = JsonObject(
+        mapOf(
+            "\$schema" to JsonPrimitive("https://json-schema.org/draft/2020-12/schema"),
+            "title" to JsonPrimitive("launcher.json"),
+            "description" to JsonPrimitive(
+                "The Andashi Home launcher configuration, schemaVersion ${ConfigMigrations.currentSchemaVersion}. " +
+                    "Generated from the parser; see docs/configuration and ADR 0002."
+            ),
+        ) + objectSchema(LauncherConfig.serializer().descriptor, "")
+    )
 
     // ---- structure ----
 
@@ -80,17 +81,13 @@ internal object ConfigSchema {
             val required = names.filterIndexed { i, _ -> !descriptor.isElementOptional(i) }
             if (required.isNotEmpty()) putJsonArray("required") { required.forEach { add(JsonPrimitive(it)) } }
             put("additionalProperties", false)
-            objectRules[section]?.let { put("allOf", it) }
+            // The fields one type of search action needs (ConfigValidator's action checks).
+            if (section == "search.actions[]") putJsonArray("allOf") {
+                add(requiredWhenType(SearchActionTypes.Url, "label", "url"))
+                add(requiredWhenType(SearchActionTypes.App, "label", "package"))
+            }
         }
     }
-
-    /** Fields one type of an object needs (ConfigValidator's search action checks). */
-    private val objectRules: Map<String, JsonElement> = mapOf(
-        "search.actions[]" to buildJsonArray {
-            add(requiredWhenType(SearchActionTypes.Url, "label", "url"))
-            add(requiredWhenType(SearchActionTypes.App, "label", "package"))
-        },
-    )
 
     private fun requiredWhenType(type: String, vararg fields: String) = buildJsonObject {
         putJsonObject("if") {
@@ -101,21 +98,29 @@ internal object ConfigSchema {
     }
 
     private fun propertySchema(path: String, descriptor: SerialDescriptor): JsonObject {
-        replaced[path]?.let { return it }
+        val key = anyLayout(path)
+        replaced[key]?.let { return it }
         val base = typeSchema(path, descriptor)
-        val extra = constraints[path] ?: return base
+        val extra = constraints[key] ?: return base
         return JsonObject(base + extra)
     }
 
     private fun typeSchema(path: String, descriptor: SerialDescriptor): JsonObject {
         val name = descriptor.serialName.removeSuffix("?")
-        custom[name]?.let { return it(path, descriptor) }
+        fieldEnums[name]?.let { return enumOf(it.names) }
+        // A package name for the personal profile, or the object form (FavoriteSerializer).
+        if (name == "Favorite") return buildJsonObject {
+            putJsonArray("oneOf") {
+                add(packageName())
+                add(objectSchema(descriptor, path))
+            }
+        }
         return when (val kind = descriptor.kind) {
             PrimitiveKind.BOOLEAN -> type("boolean")
             PrimitiveKind.INT, PrimitiveKind.LONG -> type("integer")
             PrimitiveKind.FLOAT, PrimitiveKind.DOUBLE -> type("number")
             PrimitiveKind.STRING -> {
-                require(name == "kotlin.String") { "custom serializer $name at $path has no schema entry (ConfigSchema.custom)" }
+                require(name == "kotlin.String") { "custom serializer $name at $path has no schema entry (ConfigSchema)" }
                 type("string")
             }
             SerialKind.ENUM -> enumOf((0 until descriptor.elementsCount).map(descriptor::getElementName))
@@ -140,32 +145,22 @@ internal object ConfigSchema {
         }
     }
 
-    /** The custom serializers, by the serial name of the descriptor they declare. */
-    private val custom: Map<String, (String, SerialDescriptor) -> JsonObject> = mapOf(
-        "de.mm20.launcher2.config.GlassContrast" to { _, _ -> enumOf(GlassContrast.entries.map { it.name.lowercase() }) },
-        "de.mm20.launcher2.config.SearchBarPositionInSearch" to { _, _ ->
-            enumOf(InSearchBarPosition.entries.map { it.name.lowercase() })
-        },
-        "de.mm20.launcher2.config.SearchResultLayout" to { _, _ ->
-            enumOf(SearchResultLayout.entries.map { it.name.lowercase() })
-        },
-        // A package name for the personal profile, or the object form (FavoriteSerializer).
-        "Favorite" to { path, descriptor ->
-            buildJsonObject {
-                putJsonArray("oneOf") {
-                    add(packageName())
-                    add(objectSchema(descriptor, path))
-                }
-            }
-        },
-    )
+    /** The enums with a field-naming serializer, by the serial name of its descriptor; their values come from it. */
+    private val fieldEnums: Map<String, FieldEnumSerializer<*>> =
+        listOf(GlassContrastSerializer, SearchBarPositionInSearchSerializer, SearchResultLayoutSerializer)
+            .associateBy { it.descriptor.serialName }
+
+    /** Every layout has the same items, so their limits are keyed once, under `*`. */
+    private fun anyLayout(path: String) = path.replace(layoutPath, "home.grid.layouts.*.")
+
+    private val layoutPath = Regex("^home\\.grid\\.layouts\\.[^.]+\\.")
 
     // ---- limits, all from ConfigValidator ----
 
     /** Leaves whose schema is not their type's at all. */
-    private val replaced: Map<String, JsonObject> = buildMap {
-        put("schemaVersion", buildJsonObject { put("const", ConfigMigrations.currentSchemaVersion) })
-        put("icons.pack", buildJsonObject {
+    private val replaced: Map<String, JsonObject> = mapOf(
+        "schemaVersion" to buildJsonObject { put("const", ConfigMigrations.currentSchemaVersion) },
+        "icons.pack" to buildJsonObject {
             putJsonArray("oneOf") {
                 add(buildJsonObject {
                     put("const", IconsConfig.NoPack)
@@ -173,45 +168,40 @@ internal object ConfigSchema {
                 })
                 add(packageName())
             }
-        })
-        for (layout in GridLayouts.All) {
-            put("home.grid.layouts.$layout.items[].widget", buildJsonObject {
-                putJsonArray("oneOf") {
-                    add(buildJsonObject { put("const", GridItemConfig.Favorites) })
-                    add(buildJsonObject {
-                        put("type", "string")
-                        put("pattern", "^${body(ConfigValidator.packageNameRegex)}/${body(ConfigValidator.classNameRegex)}$")
-                        put("description", "An AppWidget provider as package/class.")
-                    })
-                }
-            })
-        }
-    }
+        },
+        "home.grid.layouts.*.items[].widget" to buildJsonObject {
+            putJsonArray("oneOf") {
+                add(buildJsonObject { put("const", GridItemConfig.Favorites) })
+                add(buildJsonObject {
+                    put("type", "string")
+                    put("pattern", ConfigValidator.componentNameRegex.pattern)
+                    put("description", "An AppWidget provider as package/class.")
+                })
+            }
+        },
+        "search.actions[].type" to enumOf((SearchActionTypes.Configurable + SearchActionTypes.Intent).sorted()),
+        "search.actions[].encoding" to enumOf(SearchActionTypes.Encodings.sorted()),
+    )
 
-    /** Limits added to a leaf's type. */
-    private val constraints: Map<String, Map<String, JsonElement>> = buildMap {
-        put("appearance.glass.blur", range(ConfigValidator.MinGlass, ConfigValidator.MaxGlassBlur))
-        put("appearance.glass.tint", range(ConfigValidator.MinGlass, ConfigValidator.MaxGlassTint))
-        put("appearance.glass.radius", range(ConfigValidator.MinGlass, ConfigValidator.MaxGlassRadius))
-        put("appearance.wallpaper.image", pattern(ConfigValidator.imageNameRegex))
-        put("home.favorites", mapOf("maxItems" to JsonPrimitive(ConfigValidator.MaxFavorites)))
-        put("home.favorites[].packageName", packageNameLimits())
-        put("home.grid.columns", range(ConfigValidator.MinGridColumns, ConfigValidator.MaxGridColumns))
-        for (layout in GridLayouts.All) {
-            val items = "home.grid.layouts.$layout.items"
-            put(items, mapOf("maxItems" to JsonPrimitive(ConfigValidator.MaxGridItems)))
-            put("$items[].id", pattern(ConfigValidator.gridItemIdRegex))
-            put("$items[].x", range(0, ConfigValidator.MaxGridCoordinate))
-            put("$items[].y", range(0, ConfigValidator.MaxGridCoordinate))
-            put("$items[].w", range(1, ConfigValidator.MaxGridCoordinate))
-            put("$items[].h", range(1, ConfigValidator.MaxGridCoordinate))
-        }
-        put("search.actions", mapOf("maxItems" to JsonPrimitive(ConfigValidator.MaxSearchActions)))
-        put("search.actions[].type", enumOf((SearchActionTypes.Configurable + SearchActionTypes.Intent).sorted()))
-        put("search.actions[].url", mapOf("pattern" to JsonPrimitive("\\$\\{1\\}")))
-        put("search.actions[].package", packageNameLimits())
-        put("search.actions[].encoding", enumOf(SearchActionTypes.Encodings.sorted()))
-    }
+    /** Limits added to a leaf's type; [ConfigSchemaTest] breaks each one and expects the parser to object. */
+    internal val constraints: Map<String, Map<String, JsonElement>> = mapOf(
+        "appearance.glass.blur" to range(ConfigValidator.MinGlass, ConfigValidator.MaxGlassBlur),
+        "appearance.glass.tint" to range(ConfigValidator.MinGlass, ConfigValidator.MaxGlassTint),
+        "appearance.glass.radius" to range(ConfigValidator.MinGlass, ConfigValidator.MaxGlassRadius),
+        "appearance.wallpaper.image" to pattern(ConfigValidator.imageNameRegex),
+        "home.favorites" to maxItems(ConfigValidator.MaxFavorites),
+        "home.favorites[].packageName" to packageNameLimits(),
+        "home.grid.columns" to range(ConfigValidator.MinGridColumns, ConfigValidator.MaxGridColumns),
+        "home.grid.layouts.*.items" to maxItems(ConfigValidator.MaxGridItems),
+        "home.grid.layouts.*.items[].id" to pattern(ConfigValidator.gridItemIdRegex),
+        "home.grid.layouts.*.items[].x" to range(ConfigValidator.MinGridPosition, ConfigValidator.MaxGridCoordinate),
+        "home.grid.layouts.*.items[].y" to range(ConfigValidator.MinGridPosition, ConfigValidator.MaxGridCoordinate),
+        "home.grid.layouts.*.items[].w" to range(ConfigValidator.MinGridSpan, ConfigValidator.MaxGridCoordinate),
+        "home.grid.layouts.*.items[].h" to range(ConfigValidator.MinGridSpan, ConfigValidator.MaxGridCoordinate),
+        "search.actions" to maxItems(ConfigValidator.MaxSearchActions),
+        "search.actions[].url" to mapOf("pattern" to JsonPrimitive(literal(SearchActionTypes.QueryPlaceholder))),
+        "search.actions[].package" to packageNameLimits(),
+    )
 
     // ---- helpers ----
 
@@ -233,9 +223,11 @@ internal object ConfigSchema {
 
     private fun pattern(regex: Regex): Map<String, JsonElement> = mapOf("pattern" to JsonPrimitive(regex.pattern))
 
+    /** [text] as an ECMA-262 pattern that matches it literally; Regex.escape's \Q..\E is Java's only. */
+    private fun literal(text: String) = text.replace(Regex("""[\\^$.|?*+()\[\]{}]""")) { "\\" + it.value }
+
+    private fun maxItems(max: Int): Map<String, JsonElement> = mapOf("maxItems" to JsonPrimitive(max))
+
     private fun range(min: Number, max: Number): Map<String, JsonElement> =
         mapOf("minimum" to JsonPrimitive(min), "maximum" to JsonPrimitive(max))
-
-    /** A pattern without its anchors, to build a larger one from it. */
-    private fun body(regex: Regex): String = regex.pattern.removePrefix("^").removeSuffix("$")
 }

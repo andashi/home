@@ -188,7 +188,7 @@
                                                             },
                                                             {
                                                                 "type": "string",
-                                                                "pattern": "^[A-Za-z][A-Za-z0-9_]*(\\.[A-Za-z][A-Za-z0-9_]*)+/\\.?[A-Za-z_][A-Za-z0-9_$]*(\\.[A-Za-z_][A-Za-z0-9_$]*)*$",
+                                                                "pattern": "^(?=[^/]{1,256}/)[A-Za-z][A-Za-z0-9_]*(\\.[A-Za-z][A-Za-z0-9_]*)+/\\.?[A-Za-z_][A-Za-z0-9_$]*(\\.[A-Za-z_][A-Za-z0-9_$]*)*$",
                                                                 "description": "An AppWidget provider as package/class."
                                                             }
                                                         ]
@@ -264,7 +264,7 @@
                                                             },
                                                             {
                                                                 "type": "string",
-                                                                "pattern": "^[A-Za-z][A-Za-z0-9_]*(\\.[A-Za-z][A-Za-z0-9_]*)+/\\.?[A-Za-z_][A-Za-z0-9_$]*(\\.[A-Za-z_][A-Za-z0-9_$]*)*$",
+                                                                "pattern": "^(?=[^/]{1,256}/)[A-Za-z][A-Za-z0-9_]*(\\.[A-Za-z][A-Za-z0-9_]*)+/\\.?[A-Za-z_][A-Za-z0-9_$]*(\\.[A-Za-z_][A-Za-z0-9_$]*)*$",
                                                                 "description": "An AppWidget provider as package/class."
                                                             }
                                                         ]

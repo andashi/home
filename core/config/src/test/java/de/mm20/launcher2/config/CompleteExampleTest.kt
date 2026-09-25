@@ -5,7 +5,6 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import org.junit.Assert.assertEquals
 import org.junit.Test
-import java.io.File
 
 /**
  * `docs/configuration/complete-example.json` is the one document that sets
@@ -17,8 +16,7 @@ import java.io.File
  */
 class CompleteExampleTest {
 
-    private val text: String =
-        File(System.getProperty("repoRoot"), "docs/configuration/complete-example.json").readText()
+    private val text: String = RepoDocs.completeExample
 
     @Test
     fun `the complete example parses with nothing to report`() {

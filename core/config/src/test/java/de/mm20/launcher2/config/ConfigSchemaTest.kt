@@ -4,10 +4,19 @@ import com.networknt.schema.InputFormat
 import com.networknt.schema.Schema
 import com.networknt.schema.SchemaRegistry
 import com.networknt.schema.SpecificationVersion
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.double
+import kotlinx.serialization.json.int
+import kotlinx.serialization.json.jsonArray
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
+import kotlinx.serialization.json.long
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import java.io.File
 
 /**
  * The checked-in JSON Schema (docs/configuration/launcher.schema.json) is the
@@ -20,8 +29,7 @@ import java.io.File
  */
 class ConfigSchemaTest {
 
-    private val root = File(System.getProperty("repoRoot"))
-    private val schemaFile = File(root, "docs/configuration/launcher.schema.json")
+    private val schemaFile = RepoDocs.schemaFile
 
     /**
      * Fresh: regenerated in memory, it must equal the checked-in file byte for
@@ -55,11 +63,10 @@ class ConfigSchemaTest {
     @Test
     fun `every documented example is valid against the schema`() {
         val examples = buildList {
-            add("ADR 0002" to fencedJsonAfter(File(root, "docs/architecture/adr/0002-config-format-json.md").readText(), "<!-- adr-0002-example -->"))
-            // Every key the contract has, each off its default (CompleteExampleTest).
-            add("complete-example.json" to File(root, "docs/configuration/complete-example.json").readText())
-            File(root, "docs/configuration").listFiles { f -> f.extension == "md" }!!.sortedBy { it.name }.forEach { page ->
-                configExamples(page.readText()).forEachIndexed { i, example -> add("${page.name} #${i + 1}" to example) }
+            add("ADR 0002" to fencedJsonAfter(RepoDocs.adr0002, "<!-- adr-0002-example -->"))
+            add("complete-example.json" to RepoDocs.completeExample)
+            RepoDocs.configurationPages.forEach { (name, page) ->
+                configExamples(page).forEachIndexed { i, example -> add("$name #${i + 1}" to example) }
             }
         }
         assertTrue("no examples found", examples.size > 1)
@@ -99,6 +106,64 @@ class ConfigSchemaTest {
         }
 
         assertEquals("the schema and the parser disagree", emptyList<String>(), disagreements)
+    }
+
+    /**
+     * The other direction, generated rather than listed: every limit the
+     * schema adds ([ConfigSchema.constraints]) is broken once in the complete
+     * example, which is valid as it is, and the parser must report an error.
+     * A limit the schema claims but the validator does not enforce fails here
+     * by its path.
+     */
+    @Test
+    fun `every limit the schema adds is one the parser enforces`() {
+        val base = ConfigParser.json.parseToJsonElement(RepoDocs.completeExample)
+        assertEquals("the complete example is clean", emptyList<Diagnostic>(), ConfigParser.parse(base.toString()).diagnostics)
+
+        val unenforced = ConfigSchema.constraints.flatMap { (path, limits) ->
+            limits.mapNotNull { (keyword, bound) ->
+                val broken = base.changed(path.split('.')) { breaking(keyword, bound, it) }.toString()
+                val parserRejects = ConfigParser.parse(broken).diagnostics.any { it.severity == Severity.Error }
+                val schemaRejects = schemaErrors(broken).isNotEmpty()
+                if (parserRejects && schemaRejects) null else "$path $keyword: parser rejects=$parserRejects, schema rejects=$schemaRejects"
+            }
+        }
+
+        assertEquals("schema limits the parser does not enforce", emptyList<String>(), unenforced)
+    }
+
+    /** A value just past [keyword]'s [bound], in place of [current]. */
+    private fun breaking(keyword: String, bound: JsonElement, current: JsonElement): JsonElement {
+        val limit = bound.jsonPrimitive
+        fun past(step: Int) = if ('.' in limit.content) JsonPrimitive(limit.double + step) else JsonPrimitive(limit.long + step)
+        return when (keyword) {
+            "minimum" -> past(-1)
+            "maximum" -> past(+1)
+            "pattern" -> JsonPrimitive("!")
+            "maxLength" -> JsonPrimitive("a." + "a".repeat(limit.int)) // a package name in form, one too long
+            "maxItems" -> JsonArray(List(limit.int + 1) { current.jsonArray.first() })
+            else -> error("no way to break $keyword")
+        }
+    }
+
+    /**
+     * This element with the value at [segments] replaced. `*` is any key of a
+     * map (the first), `name[]` the first element of a list that has the rest.
+     */
+    private fun JsonElement.changed(segments: List<String>, change: (JsonElement) -> JsonElement): JsonElement {
+        if (segments.isEmpty()) return change(this)
+        val head = segments.first()
+        val rest = segments.drop(1)
+        val obj = jsonObject
+        val key = head.removeSuffix("[]").let { if (it == "*") obj.keys.first() else it }
+        val child = obj[key] ?: throw AssertionError("the complete example has no '$key' for ${segments.joinToString(".")}")
+        val newChild = if (!head.endsWith("[]")) child.changed(rest, change) else {
+            val list = child.jsonArray
+            val at = list.indexOfFirst { rest.isEmpty() || (it is JsonObject && rest.first().removeSuffix("[]") in it) }
+            if (at < 0) throw AssertionError("no element of '$key' has ${rest.first()}")
+            JsonArray(list.toMutableList().also { it[at] = it[at].changed(rest, change) })
+        }
+        return JsonObject(obj + (key to newChild))
     }
 
     /**
