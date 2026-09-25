@@ -991,6 +991,14 @@ class ConfigParserTest {
 
     // ----- search.barPosition (#107) -----
 
+    /** #3 D6: "follow" is how a file returns search to the home bar's position. */
+    @Test
+    fun `search barPosition follow is accepted`() {
+        val result = ConfigParser.parse("""{ "schemaVersion": 2, "search": { "barPosition": "follow" } }""")
+
+        assertEquals(emptyList<Diagnostic>(), result.diagnostics)
+    }
+
     @Test
     fun `search barPosition parses with nothing to report`() {
         val result = ConfigParser.parse("""{ "schemaVersion": 2, "search": { "barPosition": "top" } }""")

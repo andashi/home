@@ -17,6 +17,9 @@ import de.mm20.launcher2.preferences.seedSettingsFile
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
+import de.mm20.launcher2.config.ConfigDiffer
+import de.mm20.launcher2.config.ConfigParser
 import org.junit.Assert.assertNull
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -343,6 +346,19 @@ class LauncherConfigSettingsTest {
     }
 
     // ---- search.barPosition (#107) ----
+
+    /** #3 D6: a file can return search to the home bar's position; absent could not. */
+    @Test
+    fun `a file with barPosition follow returns search to the home position`() = runTest {
+        val gateway = createGateway(LauncherSettingsData(searchBarBottom = true, searchBarBottomInSearch = false))
+        val config = ConfigParser.parse("""{ "schemaVersion": 2, "search": { "barPosition": "follow" } }""").config
+
+        assertNotNull("follow parses", config)
+        val updated = gateway.applyAndReturn(ConfigDiffer.diff(config!!, gateway.readState()))
+
+        assertEquals(null, updated.searchBarBottomInSearch)
+        assertEquals(true, updated.searchBarBottom)
+    }
 
     @Test
     fun `readState reads no search bar position while search follows home`() = runTest {

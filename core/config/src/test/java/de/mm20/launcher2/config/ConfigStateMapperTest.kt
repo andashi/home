@@ -168,6 +168,14 @@ class ConfigStateMapperTest {
         assertEquals(true, set?.reversed)
     }
 
+    /** #3 D6: following is a value now, so the read-back serves it and `search` is complete. */
+    @Test
+    fun `search barPosition reads back follow while search follows the home bar`() {
+        val served = ConfigParser.json.encodeToString(LauncherConfig.serializer(), ConfigState().toLauncherConfig())
+
+        assertTrue(served, Regex(""""barPosition":\s*"follow"""").containsMatchIn(served))
+    }
+
     /** #107: absent while search follows the home position, served once set. */
     @Test
     fun `search barPosition is served only when set`() {
