@@ -153,7 +153,12 @@ ok "idempotence: the written file reloads as a no-op"
 log "switching 'Enforce themed icons' on (not in the file), then the list off again"
 tap_setting "Enforce themed icons"
 tap_setting "Show apps in a list"
-wait_report ".trigger == \"self-write\" and .configSha256 == \"$PUSHED_SHA\"" 30 "the write-back of the list switched off"
+[ -z "${SHOTS:-}" ] || screenshot "$SHOTS/step4.png"
+if ! (wait_report ".trigger == \"self-write\" and .configSha256 == \"$PUSHED_SHA\"" 30 "the write-back of the list switched off"); then
+  printf 'read-back search.layout: %s\n' "$(query_json config | jq -c '.search.layout')" >&2
+  printf 'last report: %s\n' "$(query_json diagnostics | jq -c '{trigger, configSha256, appliedMutations, diagnostics}')" >&2
+  die "the write-back of the list switched off did not arrive"
+fi
 pull_config "$WORK/back.jsonc"
 cmp -s "$WORK/pushed.jsonc" "$WORK/back.jsonc" \
   || { diff "$WORK/pushed.jsonc" "$WORK/back.jsonc" >&2 || true; die "the file is not the pushed one again"; }

@@ -110,6 +110,23 @@ class ConfigWriteBackTest {
         assertEquals(searchFile.replace("\"layout\": \"grid\"", "\"layout\": \"list\""), file.readText())
     }
 
+    /** The L4 write-back scenario's steps 2-4, on the real store: out, reloaded as a no-op, and back. */
+    @Test
+    fun `a change written back, reloaded, and changed back gives the file it started from`() = runBlocking {
+        applied(searchFile)
+        onDevice("""{"schemaVersion":2,"search":{"layout":"list"}}""")
+        assertTrue(writeBack.write() is WriteBackResult.Written)
+        reloader.reload(file)
+        onDevice("""{"schemaVersion":2,"icons":{"enforceThemed":true}}""")
+        assertEquals(WriteBackResult.Unchanged, writeBack.write())
+
+        onDevice("""{"schemaVersion":2,"search":{"layout":"grid"}}""")
+        val result = writeBack.write()
+
+        assertTrue(result.toString(), result is WriteBackResult.Written)
+        assertEquals(searchFile, file.readText())
+    }
+
     @Test
     fun `a key the file leaves out is not added`() = runBlocking {
         applied(searchFile)

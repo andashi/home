@@ -129,9 +129,17 @@ locked, like `home.grid.locked`.
   device, never what the launcher failed to do, so such a value keeps its
   written text. What the file produced is the *baseline*: the effective
   state recorded after each reload and each self-write, tied to the file's
-  hash. Each section the reload applied is taken from after the apply,
-  clamps included; every other section from before it, so a change a person
-  makes while a reload applies is not mistaken for the file's. Without a
+  hash. **One rule for every capture point: a value is taken at the moment
+  it was written, never by a later read.** Each section the reload wrote
+  comes from the write itself - the settings from the DataStore update's own
+  result, the grid, favorites and search actions from what went into their
+  repositories - clamps and skipped entries included; every other section,
+  a failed one included, from the state read before the apply. A self-write
+  records the device state it was computed from, and saves it before its
+  report. So a change a person makes during or right after a reload is
+  never mistaken for the file's. A push through the ingest provider is
+  committed under the same file lock, so it cannot land between a
+  write-back's read and its rename. Without a
   baseline for exactly this file nothing is written - the device state
   cannot be told apart from what the file produced, and guessing is how
   `h: 7` becomes `h: 6` - and the startup check reloads a file whose
@@ -146,7 +154,9 @@ locked, like `home.grid.locked`.
   cannot have removed it; an entry it had and no longer has was removed on
   it. A field an entry leaves out that still has the value it produced
   stays out, which is how the grid-item options keep their absent-means-
-  default exception (ADR 0002). An item written without geometry is placed
+  default exception (ADR 0002). A key inside an entry that the model does not
+  know - a newer field, one written by hand - is the file's and survives.
+  An item written without geometry is placed
   by the launcher, and that placement is what the file produced, so it is
   not written back either; moving the item on the device is.
 - **Every other byte survives.** Each changed value is spliced over its own
