@@ -10,8 +10,10 @@
 # crash lines name that surface, whichever test it lands on. Every logcat
 # line is stamped in seconds since boot, and so are the tests' starts and
 # failures, which is what tells whether the surface comes at a fixed time
-# after boot. Nothing is dismissed or suppressed here: a dialog of the
-# launcher's own must stay as visible as any other.
+# after boot. One dialog is dismissed before the run, and exactly one: the
+# CI emulator's own launcher, named below. Nothing else is touched or
+# suppressed - a dialog of the launcher under test must stay as visible as
+# any other, and the evidence printed on failure is what names it.
 set -uo pipefail
 
 # Sourcing this file defines its functions and runs nothing, so
@@ -46,16 +48,23 @@ clear_stock_launcher_anr() {
   local pkgs; pkgs="$(anr_packages)"
   [ -n "$pkgs" ] || return 0
   printf '::group::#113 ANR windows on screen before the tests\n%s\n::endgroup::\n' "$pkgs"
-  if ! printf '%s\n' "$pkgs" | grep -qx "$STOCK_HOME"; then
+  if ! printf '%s\n' "$pkgs" | grep -Fxq -- "$STOCK_HOME"; then
     printf 'Leaving them: none is %s. The tests will show what they cover.\n' "$STOCK_HOME"
     return 0
   fi
   printf 'Dismissing the stock launcher ANR dialog (%s) so it cannot cover a test.\n' "$STOCK_HOME"
   adb shell am force-stop "$STOCK_HOME"
-  local i=0
+  local i=0 after
   while [ "$i" -lt "$ANR_RECHECK_TRIES" ]; do
     [ "$ANR_RECHECK_SLEEP" = 0 ] || sleep "$ANR_RECHECK_SLEEP"
-    printf '%s\n' "$(anr_packages)" | grep -qx "$STOCK_HOME" || { printf 'Gone.\n'; return 0; }
+    # Split from the declaration: `local after=$(...)` reports the
+    # declaration's status, not the read's, and a screen that could not be
+    # read would then look like an empty one.
+    if ! after="$(anr_packages)"; then
+      printf 'Could not read the window list; not claiming the dialog is gone.\n'
+      return 0
+    fi
+    printf '%s\n' "$after" | grep -Fxq -- "$STOCK_HOME" || { printf 'Gone.\n'; return 0; }
     i=$((i + 1))
   done
   # HOME restarts after a force-stop and can ANR again on a slow boot.

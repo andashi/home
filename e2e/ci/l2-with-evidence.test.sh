@@ -26,7 +26,9 @@ cat > "$WORK/bin/adb" <<'EOF'
 #!/usr/bin/env bash
 work="$ADB_FAKE_WORK"
 case "$*" in
-  *"dumpsys window windows"*) cat "$work/windows" ;;
+  *"dumpsys window windows"*)
+    if [ -e "$work/dumpfail" ] && [ -e "$work/stopped" ]; then exit 1; fi
+    cat "$work/windows" ;;
   *"am force-stop "*) for a in "$@"; do pkg="$a"; done; echo "$pkg" >> "$work/stopped"
     [ -e "$work/sticky" ] || { grep -v "Application Not Responding: $pkg}" "$work/windows" > "$work/w2" || true; mv "$work/w2" "$work/windows"; } ;;
   *"cat /proc/uptime"*) echo "123.45 456.78" ;;
@@ -97,5 +99,31 @@ check "a dialog that survives the dismissal is reported once, not looped on" sur
 
 # The count, not the colour: a suite that reports only its passes hides the
 # checks that never ran (AGENTS.md, test policy).
+# "Named exactly, never a pattern" has to be true of the match as well:
+# grep -x still reads the package as a regex, so every period is a wildcard
+# and a package that differs only in those characters would force-stop the
+# real launcher.
+leaves_a_regex_near_miss_alone() {
+  windows "Application Not Responding: comXandroidXlauncher3"
+  clear_stock_launcher_anr > "$WORK/log" 2>&1 || return 1
+  [ -z "$(stopped)" ]
+}
+check "a package matching only as a regex is left alone" leaves_a_regex_near_miss_alone
+
+# The re-check reads the window list again. If that read fails, an empty
+# result must not read as "no ANR window": claiming the dialog is gone
+# without having seen the screen is the silent direction.
+does_not_claim_gone_when_the_read_fails() {
+  windows "Application Not Responding: com.android.launcher3"
+  : > "$WORK/sticky"; : > "$WORK/dumpfail"
+  clear_stock_launcher_anr > "$WORK/log" 2>&1 || return 1
+  rm -f "$WORK/dumpfail"
+  # Not "gone" as a word - the message for an unreadable screen says the
+  # dialog is not being claimed gone, and contains it. The success line is
+  # what must be absent.
+  ! grep -qx 'Gone\.' "$WORK/log" && grep -q 'Could not read' "$WORK/log"
+}
+check "a failed window read is not reported as the dialog being gone" does_not_claim_gone_when_the_read_fails
+
 printf '%s of %s checks passed\n' "$passed" "$total"
 [ "$passed" -eq "$total" ] || { printf 'FAILED\n'; exit 1; }
