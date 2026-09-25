@@ -190,12 +190,10 @@ HAVE_LOCK=1
 log "booting $SERIAL from snapshot '$SNAPSHOT' (overlays: $OVERLAY_DIR)"
 (cd "$GOS_REPO" && SNAPSHOT="$SNAPSHOT" emulator/run.sh start)
 # A cold boot (SNAPSHOT=) is still booting here; a snapshot load is not.
-booted=0
-for _ in $(seq 180); do
-  [ "$(adb -s "$SERIAL" shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" = 1 ] && { booted=1; break; }
-  sleep 2
-done
-[ "$booted" = 1 ] || die "$SERIAL did not finish booting within 6 minutes"
+# 180 rounds of a getprop were not 6 minutes: a hanging getprop stretched
+# each round. retry_for makes it 6 minutes of wall-clock time.
+boot_completed() { [ "$(adb_t shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" = 1 ]; }
+retry_for 360 boot_completed || die "$SERIAL did not finish booting within 6 minutes"
 # After the boot wait, not before: on a cold boot adbd is not up for a while,
 # and unrooted_shell's deadline is for a device that is up.
 unrooted_shell
