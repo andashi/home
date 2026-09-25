@@ -284,6 +284,27 @@ target `sdk_phone64_x86_64-cur-userdebug`, test-keys), operated via
   the provisioning repo, on every test instance, in the same session
   (procedure in that README). A stale one does not fail runs, because
   `00-profiles.sh` still reconciles, but it makes them slow again.
+- **A release build signed with the debug key breaks every secondary user.**
+  Not the `debug` variant, which carries `applicationIdSuffix = ".debug"` and
+  installs beside the release package rather than over it. The one that does
+  this is a **release** build made without the release keystore: it keeps the
+  `org.andashi.home` application id and falls back to the debug key (#137).
+  The per-user external directory survives the uninstall carrying the ownership
+  of the install that created it, so the new build cannot write into it:
+  `content write` fails with a null `ParcelFileDescriptor` over `IOException:
+  Permission denied` in `ConfigIngestProvider.newTempFile`, permanently rather
+  than as a race (twelve attempts over 24 seconds, identical every time).
+  Repair per user, and the user has to be running first, because `pm clear` on a
+  stopped user prints `Success` and changes nothing:
+
+      adb -s <serial> shell am start-user -w <uid>
+      adb -s <serial> shell pm clear --user <uid> org.andashi.home
+
+  Starting the instance from a snapshot taken before the swap avoids it
+  entirely. Measured 2026-09-25 on this launcher, on this emulator image, for
+  the external files directory the ingest provider uses; the mechanism is
+  generic to Android but has not been tested against another app or a real
+  device. The provisioning repo's README carries the longer version.
 - Known emulator limits: nothing Google-server-side can be validated there
   (sandboxed Play, Play Integrity, push); wallpapers apply only after reboot;
   test-keys mean results do not equal "tested on release GrapheneOS".
