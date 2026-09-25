@@ -34,7 +34,7 @@ object ConfigValidator {
         // #107: reversed results put the best match at the bottom, the
         // farthest from a bar at the top. Applied anyway; the config decides.
         config.search?.let { search ->
-            if (search.barPosition == SearchBarPosition.Top && search.reversed == true) {
+            if (search.barPosition == InSearchBarPosition.Top && search.reversed == true) {
                 diagnostics += Diagnostic(
                     Severity.Warning,
                     "search-reversed-with-top-bar",

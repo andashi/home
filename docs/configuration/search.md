@@ -40,13 +40,13 @@
 | `search.launchOnEnter` | Enter on the keyboard launches the best match | boolean | `true` |
 | `search.reversed` | Results from the bottom up, the best match nearest a bottom search bar | boolean | `false` |
 | `search.hiddenItemsButton` | A button in the search bar that shows hidden items | boolean | `false` |
-| `search.barPosition` | Where the search bar sits while search is open. Absent, it follows [`home.searchBar.position`](search-bar.md) | `top`, `bottom` | follows the home position |
+| `search.barPosition` | Where the search bar sits while search is open. `follow` puts it where [`home.searchBar.position`](search-bar.md) does | `top`, `bottom`, `follow` | `follow` |
 | `search.actions` | The search actions: the chips under the search bar and the recognisers for numbers, addresses and times, in order ([below](#search-actions)) | list | the device's own |
 
 The defaults are the launcher's behavior before this section existed, so a
 file without `search` changes nothing. A key that is left out stays as it is
-on the device. The read-back always serves every key, except
-`search.barPosition`, which it serves once a config has set it.
+on the device. The read-back always serves every key, `search.barPosition`
+included: `follow` while search follows the home position.
 
 ## The search bar in open search
 
@@ -60,6 +60,10 @@ to the results:
 ```json
 { "schemaVersion": 2, "home": { "searchBar": { "position": "bottom" } }, "search": { "barPosition": "top" } }
 ```
+
+`"barPosition": "follow"` puts it back where the home bar is. A file that once
+set a position needs it to undo that: leaving the key out leaves the device's
+value as it is, because an absent key is unmanaged (#3).
 
 The bar moves between the two positions with the search transition, so the
 eye can follow it, and back when search closes; the search-action chips move

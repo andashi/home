@@ -4,6 +4,7 @@ import de.mm20.launcher2.config.SearchState
 import de.mm20.launcher2.config.SearchResultLayout
 import de.mm20.launcher2.config.ConfigMutation
 import de.mm20.launcher2.config.ConfigState
+import de.mm20.launcher2.config.InSearchBarPosition
 import de.mm20.launcher2.config.SearchBarPosition
 import de.mm20.launcher2.preferences.LauncherDataStore
 import de.mm20.launcher2.preferences.LauncherSettingsData
@@ -76,8 +77,10 @@ internal class LauncherConfigSettingsImpl(
                 launchOnEnter = data.searchLaunchOnEnter,
                 reversed = data.searchResultsReversed,
                 hiddenItemsButton = data.hiddenItemsShowButton,
-                barPosition = data.searchBarBottomInSearch?.let {
-                    if (it) SearchBarPosition.Bottom else SearchBarPosition.Top
+                barPosition = when (data.searchBarBottomInSearch) {
+                    true -> InSearchBarPosition.Bottom
+                    false -> InSearchBarPosition.Top
+                    null -> InSearchBarPosition.Follow
                 },
             ),
             searchBarPosition = if (data.searchBarBottom) {
@@ -154,8 +157,12 @@ internal class LauncherConfigSettingsImpl(
                     searchLaunchOnEnter = launchOnEnter ?: searchLaunchOnEnter,
                     searchResultsReversed = reversed ?: searchResultsReversed,
                     hiddenItemsShowButton = hiddenItemsButton ?: hiddenItemsShowButton,
-                    searchBarBottomInSearch = barPosition?.let { it == SearchBarPosition.Bottom }
-                        ?: searchBarBottomInSearch,
+                    searchBarBottomInSearch = when (barPosition) {
+                        InSearchBarPosition.Bottom -> true
+                        InSearchBarPosition.Top -> false
+                        InSearchBarPosition.Follow -> null
+                        null -> searchBarBottomInSearch
+                    },
                 )
             }
 

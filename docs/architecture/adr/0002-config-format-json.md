@@ -243,7 +243,7 @@ nothing about search's appearance is configured twice.
 | `search.launchOnEnter` | Enter launches the best match | `true` |
 | `search.reversed` | results from the bottom up | `false` |
 | `search.hiddenItemsButton` | a button in the bar that shows hidden items | `false` |
-| `search.barPosition` | the bar's position while search is open (#107); absent, it follows `home.searchBar.position` and is not read back | follows home |
+| `search.barPosition` | the bar's position while search is open (#107): `top`, `bottom`, or `follow` `home.searchBar.position`; always read back (#3 D6) | `follow` |
 | `search.actions` | the search actions in order (#106): `websearch`, `url` (label, url with `${1}`, optional package and encoding), `app` (label, package) or a built-in; present replaces the device's list, `[]` is none | the device's own; new installs: built-ins + `websearch` |
 
 The defaults are the launcher's behavior before the section existed, so a

@@ -10,6 +10,7 @@ import de.mm20.launcher2.config.Favorite
 import de.mm20.launcher2.config.GlassContrast
 import de.mm20.launcher2.config.GlassDefaults
 import de.mm20.launcher2.config.GridLayoutConfig
+import de.mm20.launcher2.config.InSearchBarPosition
 import de.mm20.launcher2.config.SearchBarPosition
 import de.mm20.launcher2.preferences.LauncherDataStore
 import de.mm20.launcher2.preferences.LauncherSettingsData
@@ -361,14 +362,14 @@ class LauncherConfigSettingsTest {
     }
 
     @Test
-    fun `readState reads no search bar position while search follows home`() = runTest {
-        assertEquals(null, createGateway().readState().search.barPosition)
+    fun `readState reads follow while search follows home`() = runTest {
+        assertEquals(InSearchBarPosition.Follow, createGateway().readState().search.barPosition)
     }
 
     @Test
     fun `readState maps searchBarBottomInSearch to the search bar position`() = runTest {
         assertEquals(
-            SearchBarPosition.Bottom,
+            InSearchBarPosition.Bottom,
             createGateway(LauncherSettingsData(searchBarBottomInSearch = true)).readState().search.barPosition,
         )
     }
@@ -379,7 +380,7 @@ class LauncherConfigSettingsTest {
         val gateway = createGateway(seed)
 
         val updated = gateway.applyAndReturn(
-            listOf(ConfigMutation.SetSearch(SearchConfig(barPosition = SearchBarPosition.Top)))
+            listOf(ConfigMutation.SetSearch(SearchConfig(barPosition = InSearchBarPosition.Top)))
         )
 
         assertEquals(seed.copy(searchBarBottomInSearch = false), updated)
