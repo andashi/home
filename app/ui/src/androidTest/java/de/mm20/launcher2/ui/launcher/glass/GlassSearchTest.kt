@@ -380,7 +380,11 @@ class GlassSearchTest {
             if (kotlin.math.abs(expected - drawn) <= 0.03f) return
             // First frame or for good? Look again 100 ms later (#113).
             Thread.sleep(100)
-            val later = drawnAt(uiAutomation.takeScreenshot(), centreX, centreY)
+            // The popup's own buffer, taken between the two screenshots, so a
+            // signature below is one observation, not two frames apart.
+            val capture = if (tag == "popup") capturePopupWindow(popupRoot) else null
+            val laterScreen = uiAutomation.takeScreenshot()
+            val later = drawnAt(laterScreen, centreX, centreY)
             val region = semantics.config.getOrNull(GlassBackdropRegion)
             // Where the glass really is in the screenshot: the backdrop has no
             // green, the window around it does. Region right but pixels wrong
@@ -391,24 +395,32 @@ class GlassSearchTest {
                     android.graphics.Color.red(p) + android.graphics.Color.blue(p) > 200
             }
             val onScreenVerdict = discriminate(screen, semantics.positionOnScreen.x, semantics.positionOnScreen.y, semantics.size.width, semantics.size.height)
-            val capture = if (tag == "popup") capturePopupWindow(popupRoot) else null
+            val laterVerdict = discriminate(laterScreen, semantics.positionOnScreen.x, semantics.positionOnScreen.y, semantics.size.width, semantics.size.height)
             val evidence = "on screen ${semantics.positionOnScreen}, size ${semantics.size}, host top $hostTop, " +
-                "window height $windowHeight, region $region, drawn 100 ms later $later, " +
+                "window height $windowHeight, region $region, drawn 100 ms later $later ($laterVerdict), " +
                 "glass in the screenshot at x ${centreX.toInt()}: y ${glassRows.firstOrNull()}..${glassRows.lastOrNull()}, " +
                 onScreenVerdict +
                 (if (tag == "popup") ", " + windowState(popupRoot) + ", " +
                     describeCapture(capture, semantics.positionOnScreen, semantics.size.width, semantics.size.height) else "") + ", " +
                 surroundings(screen, outerBounds(if (tag == "popup") popupRoot else null, semantics.positionOnScreen, semantics.size.width, semantics.size.height)) + "\n" +
                 eventLog()
-            // #113, the stock emulator's signature and nothing wider: the
-            // screen shows a uniform fill over the popup while the popup
-            // window's own buffer holds the backdrop at the expected row. The
-            // launcher drew correctly; what reached the screenshot did not.
-            if (capture != null && onScreenVerdict.endsWith("neither glass nor host")) {
+            // #113, the stock emulator's signature and nothing wider: both
+            // screenshots show a uniform fill over the whole popup interior
+            // while the popup window's own buffer, taken between them, holds
+            // the backdrop at the expected row. The launcher drew correctly;
+            // what reached the screenshot did not.
+            val fill = "neither glass nor host"
+            if (capture != null && onScreenVerdict.endsWith(fill) && laterVerdict.endsWith(fill)) {
                 val (bitmap, origin) = capture
                 val inWindow = drawnAt(bitmap, centreX - origin[0], centreY - origin[1])
                 if (kotlin.math.abs(expected - inWindow) <= 0.03f) {
-                    android.util.Log.w("GlassSearchTest", "$tag: emulator composition signature (#113), window buffer drawn $inWindow:\n$evidence")
+                    android.util.Log.w(
+                        "GlassSearchTest",
+                        "#113 EMULATOR ARTEFACT ACCEPTED - $tag: the screen shows a uniform fill, the popup window's " +
+                            "buffer the backdrop (row $inWindow, expected $expected). If this line appears on hardware, " +
+                            "or often, reopen #113: this is the only thing standing between it and a silently accepted " +
+                            "defect.\n$evidence",
+                    )
                     return
                 }
             }
@@ -433,6 +445,7 @@ class GlassSearchTest {
         var backdrop = 0
         var interiorBackdrop = 0
         var host = 0
+        var interiorHost = 0
         var rim = 0
         var interior = 0
         var other = 0
@@ -452,7 +465,10 @@ class GlassSearchTest {
                     backdrop++
                     if (!inRing) interiorBackdrop++
                 }
-                g > 200 && r < 40 && b < 40 -> host++
+                g > 200 && r < 40 && b < 40 -> {
+                    host++
+                    if (!inRing) interiorHost++
+                }
                 inRing && r >= 48 && g >= 48 && b >= 48 -> rim++
                 !inRing -> { interior++; interiorColors += p }
                 else -> other++
@@ -468,7 +484,7 @@ class GlassSearchTest {
         val centre = image.getPixel((left + width / 2f).toInt().coerceIn(0, image.width - 1), (top + height / 2f).toInt().coerceIn(0, image.height - 1))
         val verdict = when {
             interiorBackdrop > 0 -> "backdrop on screen"
-            uniform && first != null -> "FILL: a uniform #${Integer.toHexString(first)} covers the interior - neither glass nor host"
+            uniform && first != null && interiorHost == 0 -> "FILL: a uniform #${Integer.toHexString(first)} covers the interior - neither glass nor host"
             host > 0 -> "WINDOW: nothing of the surface on screen, the host shows through"
             rim > 0 -> "GLASS: rim/specular along the edges, no backdrop inside"
             else -> "unclassified"
