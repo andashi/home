@@ -394,7 +394,8 @@ class GlassSearchTest {
                 "window height $windowHeight, region $region, drawn 100 ms later $later, " +
                 "glass in the screenshot at x ${centreX.toInt()}: y ${glassRows.firstOrNull()}..${glassRows.lastOrNull()}, " +
                 discriminate(screen, semantics.positionOnScreen.x, semantics.positionOnScreen.y, semantics.size.width, semantics.size.height) +
-                (if (tag == "popup") ", " + windowState(popupRoot) else "") + "\n" +
+                (if (tag == "popup") ", " + windowState(popupRoot) + ", " +
+                    popupWindowCapture(popupRoot, semantics.positionOnScreen, semantics.size.width, semantics.size.height) else "") + "\n" +
                 eventLog()
             android.util.Log.e("GlassSearchTest", "$tag failed:\n$evidence")
             assertEquals("$tag: backdrop row drawn vs where it is on screen; $evidence", expected, drawn, 0.03f)
@@ -405,17 +406,22 @@ class GlassSearchTest {
     }
 
     /**
-     * #113: what the screenshot shows inside a surface's bounds. The rim and
-     * the specular draw even at tint 0, so they tell a surface that is on
-     * screen without its backdrop (glass: the backdrop draw did not reach the
-     * screen) from a surface that is not on screen at all (a window or layer
-     * problem, the green host showing through).
+     * #113: what an image shows inside a surface's bounds. The rim and the
+     * specular draw even at tint 0, but only along the edges: they are
+     * counted in a ring 3 dp inside the bounds, and the interior on its own.
+     * A uniform neutral interior is neither glass (which shows the red/blue
+     * backdrop there) nor the green host: a fill of unknown origin. Counting
+     * every bright pixel as rim, as before, called such a fill "glass".
      */
     private fun discriminate(image: Bitmap, left: Float, top: Float, width: Int, height: Int): String {
+        val ring = (3 * InstrumentationRegistry.getInstrumentation().targetContext.resources.displayMetrics.density).toInt()
         var backdrop = 0
-        var highlight = 0
+        var interiorBackdrop = 0
         var host = 0
+        var rim = 0
+        var interior = 0
         var other = 0
+        val interiorColors = mutableListOf<Int>()
         val x0 = left.toInt().coerceIn(0, image.width - 1)
         val y0 = top.toInt().coerceIn(0, image.height - 1)
         val x1 = (left.toInt() + width).coerceIn(0, image.width)
@@ -425,22 +431,66 @@ class GlassSearchTest {
             val r = android.graphics.Color.red(p)
             val g = android.graphics.Color.green(p)
             val b = android.graphics.Color.blue(p)
+            val inRing = x - x0 < ring || x1 - 1 - x < ring || y - y0 < ring || y1 - 1 - y < ring
             when {
-                g < 16 && r + b > 200 -> backdrop++
+                g < 16 && r + b > 200 -> {
+                    backdrop++
+                    if (!inRing) interiorBackdrop++
+                }
                 g > 200 && r < 40 && b < 40 -> host++
-                r >= 48 && g >= 48 && b >= 48 -> highlight++
+                inRing && r >= 48 && g >= 48 && b >= 48 -> rim++
+                !inRing -> { interior++; interiorColors += p }
                 else -> other++
             }
         }
+        // Uniform: every interior pixel within a few levels of the first.
+        val first = interiorColors.firstOrNull()
+        val uniform = first != null && interiorColors.all { p ->
+            kotlin.math.abs(android.graphics.Color.red(p) - android.graphics.Color.red(first)) <= 6 &&
+                kotlin.math.abs(android.graphics.Color.green(p) - android.graphics.Color.green(first)) <= 6 &&
+                kotlin.math.abs(android.graphics.Color.blue(p) - android.graphics.Color.blue(first)) <= 6
+        }
         val centre = image.getPixel((left + width / 2f).toInt().coerceIn(0, image.width - 1), (top + height / 2f).toInt().coerceIn(0, image.height - 1))
         val verdict = when {
-            backdrop > 0 -> "backdrop on screen"
-            highlight > 0 -> "GLASS: the surface is on screen (rim/specular) but its backdrop is not"
+            interiorBackdrop > 0 -> "backdrop on screen"
+            uniform && first != null -> "FILL: a uniform #${Integer.toHexString(first)} covers the interior - neither glass nor host"
             host > 0 -> "WINDOW: nothing of the surface on screen, the host shows through"
+            rim > 0 -> "GLASS: rim/specular along the edges, no backdrop inside"
             else -> "unclassified"
         }
-        return "pixels in bounds (every 2nd): backdrop $backdrop, rim/specular $highlight, host $host, other $other; " +
-            "centre ARGB #${Integer.toHexString(centre)}; verdict: $verdict"
+        return "pixels in bounds (every 2nd): backdrop $backdrop ($interiorBackdrop inside), host $host, rim ring $rim, interior $interior " +
+            "(uniform $uniform), other $other; centre ARGB #${Integer.toHexString(centre)}; verdict: $verdict"
+    }
+
+    /**
+     * #113: what the popup window itself drew, captured from its own surface,
+     * next to the screenshot of what the screen shows. The backdrop here and a
+     * fill on screen is composition; a fill here too is the popup's own draw.
+     */
+    private fun popupWindowCapture(root: android.view.View?, onScreen: androidx.compose.ui.geometry.Offset, width: Int, height: Int): String {
+        if (root == null) return "popup capture: no popup window"
+        val done = java.util.concurrent.CountDownLatch(1)
+        var captured: Bitmap? = null
+        var status = -1
+        val rootOnScreen = IntArray(2)
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            root.getLocationOnScreen(rootOnScreen)
+            val request = android.view.PixelCopy.Request.Builder.ofWindow(root).build()
+            // A direct executor: no thread to leak when a capture times out.
+            android.view.PixelCopy.request(request, java.util.concurrent.Executor(Runnable::run)) { result ->
+                status = result.status
+                if (result.status == android.view.PixelCopy.SUCCESS) captured = result.bitmap
+                done.countDown()
+            }
+        }
+        if (!done.await(2, java.util.concurrent.TimeUnit.SECONDS)) return "popup capture: timed out"
+        val bitmap = captured ?: return "popup capture: PixelCopy status $status"
+        // The capture's origin is the popup window's, which can be larger
+        // than the node (371 against 315 px in the first local run).
+        val left = onScreen.x - rootOnScreen[0]
+        val top = onScreen.y - rootOnScreen[1]
+        return "popup capture ${bitmap.width}x${bitmap.height}, node at ($left, $top): " +
+            discriminate(bitmap, left, top, width, height)
     }
 
     /** The popup window as the view system sees it at the failure (#113). */
