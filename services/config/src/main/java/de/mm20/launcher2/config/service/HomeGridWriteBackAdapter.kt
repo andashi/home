@@ -14,7 +14,7 @@ class HomeGridWriteBackAdapter(
 ) : HomeGridWriteBack {
     override suspend fun write(layout: String, items: List<HomeGridItem>): HomeGridWriteResult =
         when (val result = writeBack.write(layout, items)) {
-            is WriteBackResult.Written -> HomeGridWriteResult.Written
+            is WriteBackResult.Written, WriteBackResult.Unchanged -> HomeGridWriteResult.Written
             is WriteBackResult.Skipped -> HomeGridWriteResult.Skipped(result.code, result.reason)
         }
 }

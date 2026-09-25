@@ -44,8 +44,10 @@ val configModule = module {
     // One lock around launcher.json: reloads (watcher, receiver) and the
     // edit-mode write-back must serialize on it.
     single { ConfigFileLock() }
-    single { ConfigReloader(get(), get(), get()) }
-    single { GridWriteBack(androidContext(), get(), get(), get(), get()) }
+    single { AppliedBaselineStore(androidContext()) }
+    single { ConfigReloader(get(), get(), get(), get()) }
+    single { ConfigWriteBack(androidContext(), get(), get(), get(), get()) }
+    single { GridWriteBack(androidContext(), get(), get(), get(), get(), engine = get()) }
     // What the grid's edit mode calls on Done (data/homegrid's interface).
     single<HomeGridWriteBack> { HomeGridWriteBackAdapter(get()) }
     single(createdAtStart = true) { ConfigWatcher(androidContext(), get(), get()).also { it.start() } }

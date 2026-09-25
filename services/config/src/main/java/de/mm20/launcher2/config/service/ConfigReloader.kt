@@ -6,6 +6,7 @@ import de.mm20.launcher2.config.Diagnostic
 import de.mm20.launcher2.config.ReloadReport
 import de.mm20.launcher2.config.ReloadTrigger
 import de.mm20.launcher2.config.Severity
+import de.mm20.launcher2.config.toLauncherConfig
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -31,6 +32,7 @@ class ConfigReloader(
     private val configStore: ConfigStore,
     private val reportStore: ReloadReportStore,
     private val lock: ConfigFileLock = ConfigFileLock(),
+    private val baselineStore: AppliedBaselineStore? = null,
 ) {
 
     /**
@@ -156,6 +158,7 @@ class ConfigReloader(
             .distinct()
             .filter { section -> failedSections.none { it.isInSection(section) } }
 
+        recordBaseline(configSha256)
         return persist(
             ReloadReport(
                 success = applyDiagnostics.none { it.severity == Severity.Error },
@@ -166,6 +169,22 @@ class ConfigReloader(
                 trigger = trigger,
             )
         )
+    }
+
+    /**
+     * What this file produced once applied, for a write-back to compare the
+     * device with (#3 slice 4, D). Taken from the device after the apply, so
+     * whatever the apply did differently from the text - a clamp, a skipped
+     * entry - is in it. Recorded after a partial apply too: that is what the
+     * file produced.
+     */
+    private suspend fun recordBaseline(configSha256: String) {
+        val store = baselineStore ?: return
+        try {
+            store.save(AppliedBaseline(configSha256, ConfigWriteBack.effective(configStore.readState().toLauncherConfig())))
+        } catch (_: Exception) {
+            // Without a baseline a write-back skips and says so; the reload stands.
+        }
     }
 
     private suspend fun persist(report: ReloadReport): ReloadReport {
