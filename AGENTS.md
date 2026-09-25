@@ -67,7 +67,11 @@ No output is what a partial pull request should print.
 
 The alternation is fiddly on purpose. GitHub accepts nine keywords - `close`,
 `closes`, `closed`, `fix`, `fixes`, `fixed`, `resolve`, `resolves`, `resolved` -
-and three reference forms: `#123`, `owner/repo#123` and `GH-123`. The first
+and documents two reference forms, `#123` and `owner/repo#123`. `GH-123` is
+matched as well, deliberately: it is an autolink form and whether it closes is
+not documented either way. The costs are not symmetric - a false positive sends
+somebody to look at a line that turns out to be harmless, a false negative lets
+a live issue close on merge - so this pattern errs toward matching. The first
 version of this command in #161 covered neither `fixes #123` nor `closes #123`,
 the two most common of them, so it printed nothing on exactly the mistake it
 exists to catch, while matching `disclose #123`, which closes nothing. It is now
