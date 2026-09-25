@@ -324,6 +324,19 @@ target `sdk_phone64_x86_64-cur-userdebug`, test-keys), operated via
   the external files directory the ingest provider uses; the mechanism is
   generic to Android but has not been tested against another app or a real
   device. The provisioning repo's README carries the longer version.
+- **A launcher process that survived a snapshot load can render wrongly.**
+  From its second window size change on, the dock's icons were composed,
+  placed and drawn per Compose, yet HWUI's overdraw view showed no pixels; a
+  process launched after the load kept them through four fold cycles, and a
+  device never crosses a snapshot's clock jump. This is an **emulator
+  artefact, not a device bug**: #129 was closed as such, not as fixed, and is
+  to be reopened if the symptom ever shows on hardware.
+  So one window size change after a load is fine, but a sequence of more than
+  one size change starts from a freshly launched process, restarted after the
+  restore:
+
+      adb -s <serial> shell am force-stop org.andashi.home
+      adb -s <serial> shell am start -n org.andashi.home/de.mm20.launcher2.ui.launcher.LauncherActivity
 - Known emulator limits: nothing Google-server-side can be validated there
   (sandboxed Play, Play Integrity, push); wallpapers apply only after reboot;
   test-keys mean results do not equal "tested on release GrapheneOS".
