@@ -32,3 +32,21 @@ leaves out a `personal` profile.
 
 An app that is not installed is reported (`favorite-unavailable`) and skipped.
 The rest of the list still applies.
+
+## What the list manages, and what it leaves alone
+
+Search can also pin app shortcuts, tags and contacts. The file names apps
+only, so a present `home.favorites` manages the **app** pins and nothing
+else:
+
+- the apps are pinned in file order; an app that is pinned on the device but
+  not in the list is unpinned;
+- shortcuts, tags and contacts pinned on the device stay pinned, keep their
+  order among themselves, and follow the configured apps;
+- contacts are never named in the file and never touched by it.
+
+So the first reload with this rule can move a contact that was pinned before
+the apps to after them; nothing is lost. The read-back serves the app pins
+only, because it serves what the file can hold. Shortcut and tag entries in
+the list are planned (#3); contacts stay out, because their ids are local to
+the device and they are personal data.

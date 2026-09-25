@@ -125,6 +125,11 @@ them before:
   single bare string failed the decode and took the zone's *entire*
   configuration with it - wallpaper, dock, icons and all. Both decode now, and
   a favorite that is neither still fails loudly.
+- **`home.favorites` manages app pins only** (#3 D4). The apps are pinned in
+  file order. Shortcuts, tags and contacts pinned on the device keep their
+  relative order and follow the app block; contacts are never named in the
+  file. A reload used to unpin all of them, because the file could not name
+  them and the list replaced everything.
 - **Comments and trailing commas are part of the format**, not a courtesy of
   whichever editor wrote the file. The reader above enables both.
 - **A grid item has a stable `id`** (`^[a-z0-9][a-z0-9-]{0,31}$`, unique per

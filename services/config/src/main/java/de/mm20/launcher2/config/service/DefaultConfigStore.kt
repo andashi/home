@@ -387,7 +387,11 @@ class DefaultConfigStore(
     /**
      * Resolves the configured favorites to installed apps and writes them in
      * config order. Unresolvable entries (missing profile, uninstalled app)
-     * produce error diagnostics and are skipped. Automatically pinned
+     * produce error diagnostics and are skipped.
+     *
+     * The file names apps only, so it manages the app pins and nothing else
+     * (#3 D4): shortcuts, tags and contacts pinned on the device keep their
+     * relative order and follow the configured apps. Automatically pinned
      * favorites are outside the config's scope and are preserved.
      */
     private suspend fun applyFavorites(
@@ -428,12 +432,17 @@ class DefaultConfigStore(
             resolved += app
         }
 
+        val unnamed = searchableRepository.get(
+            excludeTypes = listOf(AppDomain),
+            minPinnedLevel = PinnedLevel.ManuallySorted,
+            maxPinnedLevel = PinnedLevel.ManuallySorted,
+        ).first()
         val automatic = searchableRepository.get(
             minPinnedLevel = PinnedLevel.AutomaticallySorted,
             maxPinnedLevel = PinnedLevel.AutomaticallySorted,
         ).first()
         searchableRepository.updateFavoritesAwaited(
-            manuallySorted = resolved,
+            manuallySorted = resolved + unnamed,
             automaticallySorted = automatic,
         )
         return diagnostics
