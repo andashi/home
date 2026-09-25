@@ -4,6 +4,14 @@ package de.mm20.launcher2.config
  * The contract's limits live here as named constants and patterns, never as
  * literals in a check, so that everything that states them - this validator,
  * the JSON Schema (#3 slice 3) - reads the same value.
+ *
+ * Which path gets which limit is declared twice on purpose: here, as checks
+ * with their diagnostic codes, and in ConfigSchema.constraints, as schema
+ * keywords. ConfigSchemaTest breaks every schema limit and fails when this
+ * validator does not object, so the two cannot disagree unnoticed. Driving
+ * both from one table would rewrite the checks and put the diagnostic codes
+ * at risk (invalid-grid-geometry merges four fields); decided against for #3
+ * slice 3. Revisit if write-back (slice 4) or a later section adds many limits.
  */
 object ConfigValidator {
     const val MinGlass = 0f
