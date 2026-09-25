@@ -156,8 +156,10 @@ framestats`, main-thread CPU in the launcher's first frame:
 - **The rim.** `Modifier.border` builds a generic shape's rim with `Path.op`
   and rasterizes it on the CPU, once per size - and on unfold every dock icon
   changes size. The squircle chip's rim is now its outline stroked, built once
-  per size (`glassRimKind`); cards and pills keep the border. Goldens differ
-  only along the chips' rims, by anti-aliasing.
+  per size (`glassRimKind`). Cards and pills keep the border for pixel
+  parity, not for speed: the border draws a corner-based shape directly, and
+  the stroke would draw their corners a little rounder. Goldens differ only
+  along the chips' rims, by anti-aliasing.
 - **Hidden pages.** The scaffold keeps search and the other closed pages
   composed and laid out beyond the viewport. On unfold the hidden search
   page's app grid gained columns and composed them before the home screen's

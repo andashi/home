@@ -14,6 +14,8 @@ import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.util.fastForEach
+import androidx.compose.ui.util.fastMap
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.filterNotNull
@@ -74,9 +76,9 @@ internal fun OffscreenPages(
         latest = constraints
         // As the Box this replaces: the pages without a minimum size.
         val pages = (applied ?: constraints).copy(minWidth = 0, minHeight = 0)
-        val placeables = measurables.map { it.measure(pages) }
+        val placeables = measurables.fastMap { it.measure(pages) }
         layout(constraints.maxWidth, constraints.maxHeight) {
-            placeables.forEach { it.place(0, 0) }
+            placeables.fastForEach { it.place(0, 0) }
         }
     }
 }

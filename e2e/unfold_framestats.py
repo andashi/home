@@ -19,10 +19,9 @@ GPU fence value from another clock (measured on the fold emulator, #122).
 
 Times are CLOCK_MONOTONIC; `vsync_ms` is the frame's intended vsync, so it can be
 lined up with a trace. Frames with flags, or whose timestamps are out of
-order, are left out. Usage: unfold_framestats.py file.framestats [N]
-(N slowest frames; N=first prints the first frame after the reset;
-N=vsync=<id> the frame with that FrameTimelineVsyncId, which is the name
-of its slice in a Perfetto frametimeline).
+order, are left out. Usage: unfold_framestats.py file.framestats [N | vsync=<id>]
+(the N slowest frames, default 5; or the frame with that FrameTimelineVsyncId,
+which is the name of its slice in a Perfetto frametimeline).
 """
 import sys
 
@@ -52,7 +51,6 @@ def ms(a, b):
 def phases(r):
     return {
         "vsync_ms": r["IntendedVsync"] / 1e6,
-        "flags": r["Flags"],
         "delay": ms(r["IntendedVsync"], r["HandleInputStart"]),
         "input": ms(r["HandleInputStart"], r["AnimationStart"]),
         "anim": ms(r["AnimationStart"], r["PerformTraversalsStart"]),
@@ -74,18 +72,15 @@ if __name__ == "__main__":
              and all(r[a] <= r[b] for a, b in zip(order, order[1:]))]
     if not valid:
         raise SystemExit(f"{path}: no valid frames")
-    fr = [phases(r) for r in valid]
-    keys = ["vsync_ms", "flags", "delay", "input", "anim", "layout", "record", "sync", "issue", "swap", "total"]
-    print("\t".join(keys))
     if arg.startswith("vsync="):
         # The frame Perfetto's frametimeline names by this vsync id.
         want = int(arg.split("=", 1)[1])
         chosen = [phases(r) for r in valid if r.get("FrameTimelineVsyncId") == want]
         if not chosen:
             raise SystemExit(f"{path}: no valid frame with vsync id {want}")
-    elif arg == "first":
-        chosen = [min(fr, key=lambda p: p["vsync_ms"])]
     else:
-        chosen = sorted(fr, key=lambda p: -p["total"])[:int(arg)]
+        chosen = sorted((phases(r) for r in valid), key=lambda p: -p["total"])[:int(arg)]
+    keys = list(chosen[0])
+    print("\t".join(keys))
     for p in chosen:
-        print("\t".join(f"{p[k]:.1f}" if isinstance(p[k], float) else str(p[k]) for k in keys))
+        print("\t".join(f"{p[k]:.1f}" for k in keys))

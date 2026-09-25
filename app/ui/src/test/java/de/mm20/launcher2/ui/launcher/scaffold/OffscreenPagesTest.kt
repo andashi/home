@@ -115,12 +115,7 @@ class OffscreenPagesTest {
         composeRule.runOnIdle { assertEquals("first layout at its size", before, measured.width) }
 
         side = 200.dp
-        // Frame by frame up to the one in which the window has the new size.
-        var frames = 0
-        while (composeRule.runOnIdle { window.width } != after) {
-            check(++frames < 10) { "the window never changed size" }
-            composeRule.mainClock.advanceTimeByFrame()
-        }
+        advanceUntil { window.width == after }
         composeRule.runOnIdle { assertEquals("the frame of the change", before, measured.width) }
 
         // The display switch: the inner display stays dark until every
@@ -175,16 +170,25 @@ class OffscreenPagesTest {
         composeRule.mainClock.advanceTimeByFrame()
         side = 100.dp
         val narrow = with(composeRule.density) { 100.dp.roundToPx() }
-        var frames = 0
-        while (composeRule.runOnIdle { window.width } != narrow) {
-            check(++frames < 10) { "the window never changed size" }
-            composeRule.mainClock.advanceTimeByFrame()
-        }
+        advanceUntil { window.width == narrow }
         composeRule.mainClock.advanceTimeBy(500)
         composeRule.runOnIdle {
             assertTrue("the page keeps its size ($width vs ${window.width})", width > window.width)
             val right = left + width
             assertTrue("page $left..$right overlaps the window 0..${window.width}", left >= window.width || right <= 0f)
+        }
+    }
+
+    /**
+     * Frame by frame up to the one in which [done] holds - the window's own
+     * size change, since the test clock needs a frame before a state change
+     * is seen at all.
+     */
+    private fun advanceUntil(done: () -> Boolean) {
+        var frames = 0
+        while (!composeRule.runOnIdle(done)) {
+            check(++frames < 10) { "the window never changed size" }
+            composeRule.mainClock.advanceTimeByFrame()
         }
     }
 

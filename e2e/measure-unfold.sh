@@ -76,9 +76,18 @@ trap cleanup EXIT
 "$LOCK" acquire "$LOCK_OWNER" "$SERIAL" >/dev/null || die "$SERIAL is locked by someone else"
 [ "$(adb -s "$SERIAL" shell id -u | tr -d '\r')" = 2000 ] || die "adb is not the unrooted shell"
 read -r -a revs <<<"${REVS:-}"
+resolve_postures   # POSTURE_CLOSED / POSTURE_OPENED: the ids differ between instances
 
 sh_() { adb -s "$SERIAL" shell "$@"; }
-wake() { sh_ input keyevent KEYCODE_WAKEUP; sh_ wm dismiss-keyguard; }
+rev() { printf '%s' "${revs[$1]:-unknown}"; }
+# A snapshot load can leave the host's adb transport offline for good (seen
+# on emulator-5562 after `run.sh start` plus `adb unroot`); reconnect it.
+restore() {
+  "$RUN" restore "$1" >/dev/null
+  timeout 20 adb -s "$SERIAL" wait-for-device \
+    || { adb reconnect offline >/dev/null; timeout 30 adb -s "$SERIAL" wait-for-device; } \
+    || die "$SERIAL stayed offline after loading $1"
+}
 
 cat > "$WORK/fold.jsonc" <<'EOF'
 {
@@ -119,53 +128,48 @@ from t0, cfg, unb, f;
 EOF
 
 # --- one snapshot per build -------------------------------------------------
-i=0
-for apk in "$@"; do
-  name="unfold-m$i"; names+=("$name")
+apks=("$@")
+for k in "${!apks[@]}"; do
+  apk="${apks[k]}"
+  name="unfold-m$k"; names+=("$name")
   log "preparing $name from $(basename "$apk")"
-  "$RUN" restore clean >/dev/null
-  adb -s "$SERIAL" wait-for-device
+  restore clean
   adb -s "$SERIAL" install -r "$apk" >/dev/null
   sh_ cmd role add-role-holder android.app.role.HOME "$PKG"
-  sh_ svc power stayon true
-  sh_ cmd device_state state 2 >/dev/null
+  sh_ cmd device_state state "$POSTURE_OPENED" >/dev/null
   show_home; sleep 5
   adb -s "$SERIAL" shell content write --uri "content://$PKG.config-ingest/wallpapers/mauritius.jpg" \
     < "$GOS_REPO/themes/mauritius/tall/wallpaper.jpg"
   push_config "$WORK/fold.jsonc" "fold fixture" || push_config "$WORK/fold.jsonc" "fold fixture, again"
-  sh_ cmd device_state state 0 >/dev/null; sleep 3; wake; sleep 1
-  sh_ cmd device_state state 2 >/dev/null; sleep 3; wake; sleep 2
-  sh_ cmd device_state state 0 >/dev/null; sleep 3; wake; show_home; sleep 5
+  sh_ cmd device_state state "$POSTURE_CLOSED" >/dev/null; sleep 3; wake_screen; sleep 1
+  sh_ cmd device_state state "$POSTURE_OPENED" >/dev/null; sleep 3; wake_screen; sleep 2
+  sh_ cmd device_state state "$POSTURE_CLOSED" >/dev/null; sleep 3; show_home; sleep 5
   "$RUN" snapshot "$name" >/dev/null
-  i=$((i + 1))
 done
 
 # --- interleaved unfolds ------------------------------------------------------
 revlist=""
-for ((k = 0; k < $#; k++)); do revlist+="${revs[k]:-unknown}-"; done
+for k in "${!apks[@]}"; do revlist+="$(rev "$k")-"; done
 OUT="${OUT:-$HERE/measurements/unfold-${revlist%-}.tsv}"
 {
   printf '# serial %s, overlay %s, GPU %s, adb uid 2000, runs %s\n' "$SERIAL" "$(basename "$OVERLAY_DIR")" "$GPU" "$RUNS"
-  k=0
-  for apk in "$@"; do
-    printf '# %s = rev %s, apk sha256 %s\n' "${names[k]}" "${revs[k]:-unknown}" "$(sha256sum "$apk" | cut -d' ' -f1)"
-    k=$((k + 1))
+  for k in "${!apks[@]}"; do
+    printf '# %s = rev %s, apk sha256 %s\n' "${names[k]}" "$(rev "$k")" "$(sha256sum "${apks[k]}" | cut -d' ' -f1)"
   done
   printf 'build\trun\thostload\tconfig_ms\tframe_start_ms\tframe_end_ms\tframe_ms\tscreen_on_ms\tdelay\tanim\tlayout\trecord\tsync\tissue\tswap\ttotal\n'
 } > "$OUT"
 
 for run in $(seq "$RUNS"); do
   for name in "${names[@]}"; do
-    "$RUN" restore "$name" >/dev/null
-    adb -s "$SERIAL" wait-for-device
-    sleep 3; wake
+    restore "$name"
+    sleep 3; wake_screen
     # The snapshot was folded with the device-state override; hand the state
     # back to the hinge sensor, folded, before the sweep drives it.
     adb -s "$SERIAL" emu sensor set hinge-angle0 0 >/dev/null
     sh_ cmd device_state state reset >/dev/null
     sleep 1
     state="$(sh_ cmd device_state print-state | tr -d '\r' | tail -1)"
-    [ "$state" = 0 ] || die "$name: not folded under the hinge sensor before the sweep (state $state)"
+    [ "$state" = "$POSTURE_CLOSED" ] || die "$name: not folded under the hinge sensor before the sweep (state $state)"
     sh_ rm -f /data/misc/perfetto-traces/unfold.pftrace
     sh_ dumpsys gfxinfo "$PKG" reset >/dev/null
     adb -s "$SERIAL" shell perfetto --txt -c - -o /data/misc/perfetto-traces/unfold.pftrace --background \
@@ -182,7 +186,7 @@ for run in $(seq "$RUNS"); do
     vsync="${split##*$'\t'}"
     phases="NA"
     if [ -n "$split" ]; then
-      phases="$(python3 "$HERE/unfold_framestats.py" "$WORK/f.framestats" "vsync=$vsync" 2>/dev/null | tail -1 | cut -f3,5-11)" \
+      phases="$(python3 "$HERE/unfold_framestats.py" "$WORK/f.framestats" "vsync=$vsync" 2>/dev/null | tail -1 | cut -f2,4-10)" \
         || phases="NA"
     fi
     printf '%s\t%s\t%s\t%s\t%s\n' "$name" "$run" "$load" "${split%$'\t'*}" "$phases" | tee -a "$OUT"

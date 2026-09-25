@@ -27,6 +27,8 @@ At 24 fps every time is quantised to about 42 ms. The recording says which
 build shows its content in fewer frames; the split between the system and
 the launcher comes from a Perfetto trace, not from here.
 
+A standalone tool, not called by measure-unfold.sh: record with
+`adb emu screenrecord start --time-limit 8 f.webm`, unfold, stop.
 Usage: unfold_measure.py file.webm [file.webm ...]   (one line per file)
 Needs ffmpeg, ffprobe, numpy.
 """
@@ -111,7 +113,8 @@ def analyse(path):
         diff = np.abs(crop(f[on:], r) - ref).mean(axis=(1, 2))
         hit = np.flatnonzero(diff < MATCH)
         out[name] = None if len(hit) == 0 else ts[on + int(hit[0])] - ts[off]
-        out[name + "_first_diff"] = float(diff[0])
+        if name == "full":
+            out["full_first_diff"] = float(diff[0])
     return out
 
 

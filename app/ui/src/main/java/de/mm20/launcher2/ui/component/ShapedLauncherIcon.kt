@@ -484,21 +484,21 @@ private val TriangleShape: Shape
  * cache keyed on it see a different shape on each recomposition.
  */
 internal val SquircleShape: Shape = GenericShape { size, _ ->
-        val radius = size.width / 2f
-        val radiusToPow = radius.pow(3f).toDouble()
-        moveTo(-radius, 0f)
-        for (x in -radius.roundToInt()..radius.roundToInt())
-            lineTo(
-                x.toFloat(),
-                Math.cbrt(radiusToPow - abs(x * x * x)).toFloat()
-            )
-        for (x in radius.roundToInt() downTo -radius.roundToInt())
-            lineTo(
-                x.toFloat(),
-                (-Math.cbrt(radiusToPow - abs(x * x * x))).toFloat()
-            )
-        translate(Offset(size.width / 2f, size.height / 2f))
-    }
+    val radius = size.width / 2f
+    val radiusToPow = radius.pow(3f).toDouble()
+    moveTo(-radius, 0f)
+    for (x in -radius.roundToInt()..radius.roundToInt())
+        lineTo(
+            x.toFloat(),
+            Math.cbrt(radiusToPow - abs(x * x * x)).toFloat()
+        )
+    for (x in radius.roundToInt() downTo -radius.roundToInt())
+        lineTo(
+            x.toFloat(),
+            (-Math.cbrt(radiusToPow - abs(x * x * x))).toFloat()
+        )
+    translate(Offset(size.width / 2f, size.height / 2f))
+}
 
 private val HexagonShape: Shape
     get() = GenericShape { size, _ ->
