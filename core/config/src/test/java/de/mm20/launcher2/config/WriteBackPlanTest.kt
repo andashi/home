@@ -93,6 +93,92 @@ class WriteBackPlanTest {
         assertEquals(emptyList<WriteBackPlan.Change>(), result)
     }
 
+    /** Grid items as the file writes them, what they produced once applied, and the device now. */
+    private fun items(json: String) = """{"schemaVersion":2,"home":{"grid":{"layouts":{"phone":{"items":$json}}}}}"""
+
+    private fun gridChange(literal: String, applied: String, device: String) =
+        WriteBackPlan.changes(tree(items(literal)), tree(items(applied)), tree(items(device)))
+
+    /**
+     * D inside a list: the dock's `h: 7` was clamped to 6 (#140). Moving the
+     * clock rewrites the list, and the dock must keep what the file says.
+     */
+    @Test
+    fun `an element nobody touched keeps its written values when its list is rewritten`() {
+        val result = gridChange(
+            literal = """[{"id":"dock","widget":"favorites","h":7},{"id":"clock","widget":"a.b/.C","x":0}]""",
+            applied = """[{"id":"dock","widget":"favorites","h":6},{"id":"clock","widget":"a.b/.C","x":0}]""",
+            device = """[{"id":"dock","widget":"favorites","h":6},{"id":"clock","widget":"a.b/.C","x":2}]""",
+        )
+
+        assertEquals(
+            ConfigParser.json.parseToJsonElement(
+                """{"phone":{"items":[{"id":"dock","widget":"favorites","h":7},{"id":"clock","widget":"a.b/.C","x":2}]}}"""
+            ),
+            result.single().value,
+        )
+    }
+
+    /** The device lists items in its own order; they are matched by id, never by position. */
+    @Test
+    fun `elements are matched by id, not by position`() {
+        val result = gridChange(
+            literal = """[{"id":"dock","widget":"favorites","h":7},{"id":"clock","widget":"a.b/.C","x":0}]""",
+            applied = """[{"id":"dock","widget":"favorites","h":6},{"id":"clock","widget":"a.b/.C","x":0}]""",
+            device = """[{"id":"clock","widget":"a.b/.C","x":2},{"id":"dock","widget":"favorites","h":6}]""",
+        )
+
+        assertEquals(
+            ConfigParser.json.parseToJsonElement(
+                """{"phone":{"items":[{"id":"clock","widget":"a.b/.C","x":2},{"id":"dock","widget":"favorites","h":7}]}}"""
+            ),
+            result.single().value,
+        )
+    }
+
+    /** The grid-item exception (ADR 0002): an absent option means its default, and stays absent. */
+    @Test
+    fun `an option the file left out stays out while it keeps its default`() {
+        val result = gridChange(
+            literal = """[{"id":"clock","widget":"a.b/.C","x":0}]""",
+            applied = """[{"id":"clock","widget":"a.b/.C","x":0,"borderless":false,"background":true,"themeColors":true}]""",
+            device = """[{"id":"clock","widget":"a.b/.C","x":1,"borderless":false,"background":true,"themeColors":true}]""",
+        )
+
+        assertEquals(
+            ConfigParser.json.parseToJsonElement("""{"phone":{"items":[{"id":"clock","widget":"a.b/.C","x":1}]}}"""),
+            result.single().value,
+        )
+    }
+
+    @Test
+    fun `an option the device changed is written, the others stay out`() {
+        val result = gridChange(
+            literal = """[{"id":"clock","widget":"a.b/.C"}]""",
+            applied = """[{"id":"clock","widget":"a.b/.C","borderless":false,"background":true,"themeColors":true}]""",
+            device = """[{"id":"clock","widget":"a.b/.C","borderless":true,"background":true,"themeColors":true}]""",
+        )
+
+        assertEquals(
+            ConfigParser.json.parseToJsonElement("""{"phone":{"items":[{"id":"clock","widget":"a.b/.C","borderless":true}]}}"""),
+            result.single().value,
+        )
+    }
+
+    @Test
+    fun `an element added on the device is written without its option defaults`() {
+        val result = gridChange(
+            literal = """[]""",
+            applied = """[]""",
+            device = """[{"id":"clock","widget":"a.b/.C","x":0,"y":0,"w":4,"h":2,"borderless":false,"background":true,"themeColors":true}]""",
+        )
+
+        assertEquals(
+            ConfigParser.json.parseToJsonElement("""{"phone":{"items":[{"id":"clock","widget":"a.b/.C","x":0,"y":0,"w":4,"h":2}]}}"""),
+            result.single().value,
+        )
+    }
+
     @Test
     fun `a splice rewrites the changed values and keeps every other byte`() {
         val file = """

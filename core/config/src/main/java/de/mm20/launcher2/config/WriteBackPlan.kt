@@ -48,13 +48,62 @@ object WriteBackPlan {
             val now = device[key]?.takeUnless { it is JsonNull } ?: continue
             val effect = fileEffective?.get(key)?.takeUnless { it is JsonNull } ?: written
             val path = at + key
-            if (written is JsonObject && now is JsonObject) {
+            if (written is JsonObject && now is JsonObject && path !in WholeValues) {
                 collect(written, effect as? JsonObject, now, path)
             } else if (!same(effect, now)) {
-                add(Change(path, now))
+                add(Change(path, merged(written, effect, now)))
             }
         }
     }
+
+    /**
+     * Objects the contract uses as maps, keyed by name: written whole when
+     * present, like a list, because their entries are data rather than keys.
+     * The grid layouts are the only one.
+     */
+    private val WholeValues = setOf(listOf("home", "grid", "layouts"))
+
+    /**
+     * The value to write for a list or map the device changed: D at every
+     * depth. Inside it, what nobody changed keeps its written text - a
+     * clamped `h: 7` stays 7 when its neighbour moves - and a field the file
+     * left out that still has the value it produced stays out, which is the
+     * grid-item exception applied rather than special-cased. Elements are
+     * matched by `id` where they have one, else by position. What the file
+     * has no counterpart for is the device's, without its option defaults.
+     */
+    private fun merged(written: JsonElement?, effect: JsonElement?, now: JsonElement): JsonElement = when {
+        now is JsonObject -> JsonObject(
+            buildMap {
+                for ((key, value) in now) {
+                    val was = (effect as? JsonObject)?.get(key)
+                    val text = (written as? JsonObject)?.get(key)
+                    when {
+                        was != null && same(was, value) -> if (text != null) put(key, text)
+                        written == null && GridItemConfig.OptionDefaults[key]?.let { JsonPrimitive(it) == value } == true -> Unit
+                        else -> put(key, merged(text, was, value))
+                    }
+                }
+            }
+        )
+        now is JsonArray -> JsonArray(
+            now.mapIndexed { index, element ->
+                merged(
+                    (written as? JsonArray)?.counterpart(element, index),
+                    (effect as? JsonArray)?.counterpart(element, index),
+                    element,
+                )
+            }
+        )
+        else -> if (written != null && effect != null && same(effect, now)) written else now
+    }
+
+    /** The element [element] corresponds to: the one with its `id`, or, without one, the one at [index]. */
+    private fun JsonArray.counterpart(element: JsonElement, index: Int): JsonElement? {
+        val id = (element as? JsonObject)?.get("id") ?: return getOrNull(index)
+        return firstOrNull { (it as? JsonObject)?.get("id") == id }
+    }
+
 
     /** Structural equality, with numbers compared by value: `12` and `12.0` are the same setting. */
     private fun same(a: JsonElement, b: JsonElement): Boolean = when {

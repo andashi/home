@@ -318,9 +318,9 @@ class DefaultConfigStore(
                     h = gridItem.span.h,
                     appWidgetId = previous?.appWidgetId,
                     config = HomeGridItemConfig(
-                        borderless = config.borderless ?: false,
-                        background = config.background ?: true,
-                        themeColors = config.themeColors ?: true,
+                        borderless = config.borderless ?: GridItemConfig.OptionDefaults.getValue("borderless"),
+                        background = config.background ?: GridItemConfig.OptionDefaults.getValue("background"),
+                        themeColors = config.themeColors ?: GridItemConfig.OptionDefaults.getValue("themeColors"),
                     ),
                     position = position,
                 )
