@@ -15,6 +15,10 @@ import java.io.OutputStream
 internal class LauncherSettingsDataSerializer(private val context: Context) : Serializer<LauncherSettingsData> {
 
     internal val json = Json {
+        // Load-bearing: it is what makes deleting a field safe. A file written
+        // before the deletion still names the field; without this the read
+        // throws, and the corruption handler replaces every setting the user
+        // has with defaults (DeadSettingsRemovalTest, #3).
         ignoreUnknownKeys = true
         encodeDefaults = true
         coerceInputValues = true
