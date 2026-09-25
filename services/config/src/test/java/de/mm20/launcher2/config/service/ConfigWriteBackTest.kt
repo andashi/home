@@ -257,14 +257,21 @@ class ConfigWriteBackTest {
     @Test
     fun `a setting changed on the device reaches the file without being asked`() = runBlocking {
         applied(searchFile)
+        // Every result, not the last. The trigger's first passes, one per
+        // source it merges, keep arriving for a while after it starts, so a
+        // change made meanwhile gives a Written followed within a millisecond
+        // by an Unchanged pass, and lastResult, a StateFlow, can drop the
+        // Written before a collector sees it. It did under CI load (3 in 40
+        // locally with every core busy); the file was right each time.
+        val results = Channel<WriteBackResult>(Channel.UNLIMITED)
         val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
         try {
-            ConfigWriteBackTrigger(real.store, { writeBack.write() }, scope).start()
-            withTimeout(10_000) { writeBack.lastResult.first { it != null } }
+            ConfigWriteBackTrigger(real.store, { results.send(writeBack.write()) }, scope).start()
+            withTimeout(10_000) { results.receive() }
 
             onDevice("""{"schemaVersion":2,"search":{"layout":"list"}}""")
 
-            withTimeout(10_000) { writeBack.lastResult.first { it is WriteBackResult.Written } }
+            withTimeout(10_000) { while (results.receive() !is WriteBackResult.Written) Unit }
             assertEquals(searchFile.replace("\"layout\": \"grid\"", "\"layout\": \"list\""), file.readText())
         } finally {
             scope.cancel()
