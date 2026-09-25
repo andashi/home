@@ -17,6 +17,11 @@
 #   4. switch "Enforce themed icons" on, a key the file leaves out, then "Show
 #      apps in a list" off again: the next self-write is the pushed file byte
 #      for byte - the key the file left out was not added (W1)
+#   5. push a file with widgets on but no home.grid, move the dock in edit
+#      mode, tap Done: the snackbar says the file does not manage the home
+#      grid and how to make it, the report carries
+#      write-back-skipped:grid-unmanaged, the file is byte for byte as pushed
+#      (W1, (a): the file never grows a section)
 #
 # Everything runs as the unrooted shell, so the result holds for release
 # GrapheneOS.
@@ -101,6 +106,16 @@ wait_text() { # $1 = visible text, $2 = timeout (s)
   done
 }
 
+wait_text_containing() { # $1 = part of a visible text, $2 = timeout (s)
+  local elapsed=0
+  while :; do
+    adb -s "$SERIAL" shell uiautomator dump /sdcard/wb-dump.xml >/dev/null 2>&1 || true
+    adb -s "$SERIAL" shell cat /sdcard/wb-dump.xml 2>/dev/null | tr -d '\r' | grep -qF "$1" && return 0
+    [ "$elapsed" -lt "$2" ] || die "timed out (${2}s) waiting for a text with '$1' on screen"
+    sleep 1; elapsed=$((elapsed + 1))
+  done
+}
+
 pull_config() { # $1 = local file
   adb -s "$SERIAL" pull "$DEVICE_CONFIG" "$1" >/dev/null 2>&1 || die "adb pull of $DEVICE_CONFIG failed"
 }
@@ -164,5 +179,34 @@ cmp -s "$WORK/pushed.jsonc" "$WORK/back.jsonc" \
 config="$(query_json config)" || die "could not read back the config"
 jq -e '.icons.enforceThemed == true' <<<"$config" >/dev/null || die "the device did not keep enforce themed icons"
 ok "the file is the pushed one byte for byte; enforceThemed is on on the device and not in the file"
+
+# --- 5. an edit on a file that does not manage the grid is kept, and said --
+log "pushing a file without home.grid, then moving the dock in edit mode"
+# Widgets on, so the grid and its default dock are on screen; the grid
+# itself is left out, so the file does not manage it.
+cat > "$WORK/nogrid.jsonc" <<'EOF'
+{
+  // this zone does not manage the home grid
+  "schemaVersion": 2,
+  "home": { "widgets": { "enabled": true } }
+}
+EOF
+NOGRID_SHA="$(sha256sum "$WORK/nogrid.jsonc" | cut -d' ' -f1)"
+push_config "$WORK/nogrid.jsonc" "no-grid"
+show_home
+wait_id grid-item:dock 60 "the default dock"
+wake_screen
+enter_edit_mode 4
+drag_cell dock 0 -1 4
+sleep 1
+tap_id grid-edit-done
+wait_text_containing "does not manage the home grid" 15
+[ -z "${SHOTS:-}" ] || screenshot "$SHOTS/grid-unmanaged.png"
+pull_config "$WORK/nogrid-after.jsonc"
+cmp -s "$WORK/nogrid.jsonc" "$WORK/nogrid-after.jsonc" || die "the file without home.grid was changed"
+assert_jq "$(query_json diagnostics)" \
+  '.configSha256 == "'"$NOGRID_SHA"'" and (.diagnostics | any(.code == "write-back-skipped:grid-unmanaged"))' \
+  "the report carries the grid-unmanaged skip for this file"
+ok "grid-unmanaged: said on screen and in the report, the file byte for byte as pushed"
 
 ok "l4-write-back passed"
