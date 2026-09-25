@@ -18,6 +18,12 @@ val LocalBackStack = staticCompositionLocalOf< NavBackStack<NavKey>> { throw Ill
 
 val LocalCardStyle = compositionLocalOf { CardStyle() }
 
+/**
+ * Whether search results offer "Pin to favorites". Always on in the launcher:
+ * pins feed the dock as well as search's favorites row, so hiding that row
+ * (`search.favorites`, #3 D5) must not take the action away. Kept as the
+ * seam a preview or a test can switch off.
+ */
 val LocalFavoritesEnabled = compositionLocalOf { true }
 
 val LocalShowAppDetails = compositionLocalOf { false }

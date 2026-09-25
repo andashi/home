@@ -93,7 +93,9 @@ both panes of the inner display.
 The favorites row shows while the query is empty, so these pictures are of
 search opened without typing.
 
-`search.favorites: false` turns the row off for good. With it on, the row is
+`search.favorites: false` turns the row off for good, and only the row:
+"Pin to favorites" stays on every result, because pins also fill the dock
+(#3 D5). With it on, the row is
 hidden only while all three are absent: no favorites (nothing pinned or used
 often yet), no pinned tags and no selected tag. Search then starts with the
 apps. A favorite or a pinned tag brings the row back; a selected tag keeps it,
