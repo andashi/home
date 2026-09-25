@@ -51,7 +51,11 @@ What the rules above describe, in full. This example is not decoration: it is
 parsed by `ConfigParserTest` on every run, so it cannot drift from the code the
 way the favorites shape once did (#35, andashi/provisioning#1). Everything
 except `schemaVersion` is optional, and an absent key means *unmanaged*, not
-*off*.
+*off*. There is one exception, stated so it is not trusted wrongly: a grid
+item is stored whole, so its `borderless`, `background` and `themeColors`
+take their defaults (`false`, `true`, `true`) when absent and keep them. The
+round-trip test measured it (#3); write-back must treat those three as
+always present.
 
 <!-- adr-0002-example -->
 ```json
