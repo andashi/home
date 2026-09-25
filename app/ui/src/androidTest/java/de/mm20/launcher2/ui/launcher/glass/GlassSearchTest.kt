@@ -375,14 +375,16 @@ class GlassSearchTest {
             val centreX = semantics.positionOnScreen.x + semantics.size.width / 2f
             val centreY = semantics.positionOnScreen.y + semantics.size.height / 2f
             val expected = (centreY - hostTop) / windowHeight
+            fun matches(row: Float) = kotlin.math.abs(expected - row) <= 0.03f
             val drawn = drawnAt(screen, centreX, centreY)
             android.util.Log.i("GlassSearchTest", "$tag: expected $expected, drawn $drawn")
-            if (kotlin.math.abs(expected - drawn) <= 0.03f) return
+            if (matches(drawn)) return
             // First frame or for good? Look again 100 ms later (#113).
             Thread.sleep(100)
             // The popup's own buffer, taken between the two screenshots, so a
             // signature below is one observation, not two frames apart.
-            val capture = if (tag == "popup") capturePopupWindow(popupRoot) else null
+            val popup = popupRoot.takeIf { tag == "popup" }
+            val capture = capturePopupWindow(popup)
             val laterScreen = uiAutomation.takeScreenshot()
             val later = drawnAt(laterScreen, centreX, centreY)
             val region = semantics.config.getOrNull(GlassBackdropRegion)
@@ -394,26 +396,27 @@ class GlassSearchTest {
                 android.graphics.Color.green(p) < 16 &&
                     android.graphics.Color.red(p) + android.graphics.Color.blue(p) > 200
             }
-            val onScreenVerdict = discriminate(screen, semantics.positionOnScreen.x, semantics.positionOnScreen.y, semantics.size.width, semantics.size.height)
-            val laterVerdict = discriminate(laterScreen, semantics.positionOnScreen.x, semantics.positionOnScreen.y, semantics.size.width, semantics.size.height)
+            val onScreen = semantics.positionOnScreen
+            val width = semantics.size.width
+            val height = semantics.size.height
+            val onScreenVerdict = discriminate(screen, onScreen.x, onScreen.y, width, height)
+            val laterVerdict = discriminate(laterScreen, onScreen.x, onScreen.y, width, height)
             val evidence = "on screen ${semantics.positionOnScreen}, size ${semantics.size}, host top $hostTop, " +
                 "window height $windowHeight, region $region, drawn 100 ms later $later ($laterVerdict), " +
                 "glass in the screenshot at x ${centreX.toInt()}: y ${glassRows.firstOrNull()}..${glassRows.lastOrNull()}, " +
                 onScreenVerdict +
-                (if (tag == "popup") ", " + windowState(popupRoot) + ", " +
-                    describeCapture(capture, semantics.positionOnScreen, semantics.size.width, semantics.size.height) else "") + ", " +
-                surroundings(screen, outerBounds(if (tag == "popup") popupRoot else null, semantics.positionOnScreen, semantics.size.width, semantics.size.height)) + "\n" +
+                (if (popup != null) ", " + windowState(popup) + ", " + describeCapture(capture, onScreen, width, height) else "") + ", " +
+                surroundings(screen, outerBounds(popup, onScreen, width, height)) + "\n" +
                 eventLog()
             // #113, the stock emulator's signature and nothing wider: both
             // screenshots show a uniform fill over the whole popup interior
             // while the popup window's own buffer, taken between them, holds
             // the backdrop at the expected row. The launcher drew correctly;
             // what reached the screenshot did not.
-            val fill = "neither glass nor host"
-            if (capture != null && onScreenVerdict.endsWith(fill) && laterVerdict.endsWith(fill)) {
+            if (capture != null && onScreenVerdict.kind == Verdict.Fill && laterVerdict.kind == Verdict.Fill) {
                 val (bitmap, origin) = capture
                 val inWindow = drawnAt(bitmap, centreX - origin[0], centreY - origin[1])
-                if (kotlin.math.abs(expected - inWindow) <= 0.03f) {
+                if (matches(inWindow)) {
                     android.util.Log.w(
                         "GlassSearchTest",
                         "#113 EMULATOR ARTEFACT ACCEPTED - $tag: the screen shows a uniform fill, the popup window's " +
@@ -440,7 +443,14 @@ class GlassSearchTest {
      * backdrop there) nor the green host: a fill of unknown origin. Counting
      * every bright pixel as rim, as before, called such a fill "glass".
      */
-    private fun discriminate(image: Bitmap, left: Float, top: Float, width: Int, height: Int): String {
+    private enum class Verdict { Backdrop, Fill, Window, Glass, Unclassified }
+
+    /** A [Verdict] and the counts behind it, for the evidence. */
+    private class Discrimination(val kind: Verdict, private val text: String) {
+        override fun toString() = text
+    }
+
+    private fun discriminate(image: Bitmap, left: Float, top: Float, width: Int, height: Int): Discrimination {
         val ring = (3 * InstrumentationRegistry.getInstrumentation().targetContext.resources.displayMetrics.density).toInt()
         var backdrop = 0
         var interiorBackdrop = 0
@@ -482,15 +492,18 @@ class GlassSearchTest {
                 kotlin.math.abs(android.graphics.Color.blue(p) - android.graphics.Color.blue(first)) <= 6
         }
         val centre = image.getPixel((left + width / 2f).toInt().coerceIn(0, image.width - 1), (top + height / 2f).toInt().coerceIn(0, image.height - 1))
-        val verdict = when {
-            interiorBackdrop > 0 -> "backdrop on screen"
-            uniform && first != null && interiorHost == 0 -> "FILL: a uniform #${Integer.toHexString(first)} covers the interior - neither glass nor host"
-            host > 0 -> "WINDOW: nothing of the surface on screen, the host shows through"
-            rim > 0 -> "GLASS: rim/specular along the edges, no backdrop inside"
-            else -> "unclassified"
+        val (kind, verdict) = when {
+            interiorBackdrop > 0 -> Verdict.Backdrop to "backdrop on screen"
+            uniform && interiorHost == 0 -> Verdict.Fill to "FILL: a uniform #${Integer.toHexString(first!!)} covers the interior - neither glass nor host"
+            host > 0 -> Verdict.Window to "WINDOW: nothing of the surface on screen, the host shows through"
+            rim > 0 -> Verdict.Glass to "GLASS: rim/specular along the edges, no backdrop inside"
+            else -> Verdict.Unclassified to "unclassified"
         }
-        return "pixels in bounds (every 2nd): backdrop $backdrop ($interiorBackdrop inside), host $host, rim ring $rim, interior $interior " +
-            "(uniform $uniform), other $other; centre ARGB #${Integer.toHexString(centre)}; verdict: $verdict"
+        return Discrimination(
+            kind,
+            "pixels in bounds (every 2nd): backdrop $backdrop ($interiorBackdrop inside), host $host, rim ring $rim, interior $interior " +
+                "(uniform $uniform), other $other; centre ARGB #${Integer.toHexString(centre)}; verdict: $verdict",
+        )
     }
 
     /**
