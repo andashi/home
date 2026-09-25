@@ -324,6 +324,14 @@ target `sdk_phone64_x86_64-cur-userdebug`, test-keys), operated via
   the external files directory the ingest provider uses; the mechanism is
   generic to Android but has not been tested against another app or a real
   device. The provisioning repo's README carries the longer version.
+- **A launcher process that survived a snapshot load can render wrongly.**
+  From its second window size change on, the dock's icons were composed,
+  placed and drawn per Compose, yet HWUI's overdraw view showed no pixels; a
+  process launched after the load kept them through four fold cycles, and a
+  device never crosses a snapshot's clock jump (#129, closed as an artefact).
+  So one size change after a load is fine, but any sequence of more than one
+  starts from a freshly launched process: `am force-stop` and `am start`
+  after the restore.
 - Known emulator limits: nothing Google-server-side can be validated there
   (sandboxed Play, Play Integrity, push); wallpapers apply only after reboot;
   test-keys mean results do not equal "tested on release GrapheneOS".
