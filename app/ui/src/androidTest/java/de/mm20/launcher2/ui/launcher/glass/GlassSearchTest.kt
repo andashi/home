@@ -239,8 +239,9 @@ class GlassSearchTest {
         fun hostTop() = IntArray(2).also(host::getLocationOnScreen)[1]
         val topBefore = hostTop()
         fun popupNode() = composeRule.onNodeWithTag("popup", useUnmergedTree = true).fetchSemanticsNode()
-        val popupBefore = popupNode().positionOnScreen
-        val regionBefore = popupNode().config.getOrNull(GlassBackdropRegion)
+        val before = popupNode()
+        val popupBefore = before.positionOnScreen
+        val regionBefore = before.config.getOrNull(GlassBackdropRegion)
 
         // Move the launcher window down, same size: its content, the popup's
         // anchor included, stays where it is inside it.
@@ -262,9 +263,10 @@ class GlassSearchTest {
         composeRule.waitForIdle()
 
         val topAfter = hostTop()
-        val popupAfter = popupNode().positionOnScreen
+        val after = popupNode()
+        val popupAfter = after.positionOnScreen
         val moves = "asked $shift px; host $topBefore -> $topAfter, popup $popupBefore -> $popupAfter, " +
-            "region $regionBefore -> ${popupNode().config.getOrNull(GlassBackdropRegion)}"
+            "region $regionBefore -> ${after.config.getOrNull(GlassBackdropRegion)}"
         android.util.Log.i("GlassSearchTest", "host move: $moves")
         // Where the window lands is the window manager's call, not the test's:
         // on some CI emulators it lands 128 px past the requested offset (#113),
