@@ -37,4 +37,20 @@ wait_cell_is_bounded() {
 }
 check "wait_cell gives up after its timeout even while the dump hangs" wait_cell_is_bounded
 
+# Control: a device that answers has the cell found at once.
+mkdir -p "$WORK/answers"
+cat > "$WORK/answers/adb" <<'EOF'
+#!/usr/bin/env bash
+case "$*" in
+  *"cat /sdcard/grid-dump.xml"*)
+    echo '<hierarchy><node resource-id="grid-item:analog" bounds="[0,100][200,300]"/></hierarchy>' ;;
+esac
+EOF
+chmod +x "$WORK/answers/adb"
+wait_cell_finds_a_cell() {
+  local start=$SECONDS
+  ( PATH="$WORK/answers:$PATH" wait_cell analog 3 "test" ) && [ $((SECONDS - start)) -le 1 ]
+}
+check "wait_cell returns at once when the cell is on screen" wait_cell_finds_a_cell
+
 exit "$failed"

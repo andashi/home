@@ -146,7 +146,10 @@ tap_text() { # $1 = visible text; returns 1 (no exit) when absent, so callers ca
 # "id left top right bottom" for every grid cell on screen.
 dump_cells() {
   adb -s "$SERIAL" shell rm -f /sdcard/grid-dump.xml >/dev/null 2>&1 || true
-  adb -s "$SERIAL" shell uiautomator dump /sdcard/grid-dump.xml >/dev/null 2>&1 || { printf "uiautomator dump failed\n" >&2; return 1; }
+  # DUMP_TIMEOUT bounds the dump (s): a caller with a deadline passes what
+  # is left of it, so a wedged device cannot hold the caller past it.
+  timeout "${DUMP_TIMEOUT:-60}" adb -s "$SERIAL" shell uiautomator dump /sdcard/grid-dump.xml >/dev/null 2>&1 \
+    || { printf "uiautomator dump failed\n" >&2; return 1; }
   adb -s "$SERIAL" shell cat /sdcard/grid-dump.xml | tr -d '\r' > "$WORK/dump.xml"
   # A dump taken while the device is still busy can come back empty; that is
   # "not on screen yet", for the caller to retry, not a parse error.
@@ -189,11 +192,14 @@ cell_center() { # $1 = id
   printf '%s %s\n' $(( ($2 + $4) / 2 )) $(( ($3 + $5) / 2 ))
 }
 
+# $2 is wall-clock time. Each round dumps the screen, 3.84 s on the emulator
+# (#127), so counting rounds overran it several times over; the dump gets
+# only what is left of the deadline.
 wait_cell() { # $1 = id, $2 = timeout (s), $3 = message
-  local elapsed=0
-  while [ "$elapsed" -lt "$2" ]; do
-    cell_center "$1" >/dev/null 2>&1 && return 0
-    sleep 1; elapsed=$((elapsed + 1))
+  local deadline=$((SECONDS + $2)) left
+  while left=$((deadline - SECONDS)); [ "$left" -gt 0 ]; do
+    DUMP_TIMEOUT="$left" cell_center "$1" >/dev/null 2>&1 && return 0
+    [ $((deadline - SECONDS)) -gt 1 ] && sleep 1 || break
   done
   die "timed out (${2}s) waiting for cell '$1': $3"
 }
