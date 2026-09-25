@@ -71,6 +71,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
@@ -99,15 +100,18 @@ class GlassBackdropController(
 
     private val window = MutableStateFlow<WindowInputs?>(null)
 
+    /**
+     * The glass values, collected once for the style, the pipeline and the
+     * synchronous lookup (#130).
+     */
+    private val glassInputs: StateFlow<GlassInputs?> = glass.stateIn(scope, SharingStarted.Eagerly, null)
+
     /** The glass values with contrast applied, for every surface (#75). */
-    val style: StateFlow<ResolvedGlass> = glass
+    val style: StateFlow<ResolvedGlass> = glassInputs.filterNotNull()
         .map { GlassStyle.resolve(it) }
         .stateIn(scope, SharingStarted.Eagerly, DefaultStyle)
 
-    /** The latest glass values, for a synchronous lookup (#130). */
-    private val glassInputs: StateFlow<GlassInputs?> = glass.stateIn(scope, SharingStarted.Eagerly, null)
-
-    private val pipeline = BackdropPipeline(source.image, glass, window, BackdropCache(), render)
+    private val pipeline = BackdropPipeline(source.image, glassInputs.filterNotNull(), window, BackdropCache(), render)
 
     val backdrop: StateFlow<RenderedBackdrop<ImageBitmap>?> =
         pipeline.backdrop.stateIn(scope, SharingStarted.Eagerly, null)
@@ -117,9 +121,9 @@ class GlassBackdropController(
      * renders and never waits (#130). A composition that sees a new window
      * size draws with it at once instead of with the previous window's.
      */
-    fun cachedBackdropFor(widthPx: Int, heightPx: Int, density: Float): RenderedBackdrop<ImageBitmap>? {
+    fun cachedBackdropFor(window: WindowInputs): RenderedBackdrop<ImageBitmap>? {
         val glass = glassInputs.value ?: return null
-        return pipeline.peek(source.image.value, glass, WindowInputs(widthPx, heightPx, density))
+        return pipeline.peek(source.image.value, glass, window)
     }
 
     fun setWindow(widthPx: Int, heightPx: Int, density: Float) {
@@ -170,8 +174,9 @@ val GlassBackdropBlurPx = SemanticsPropertyKey<Int>("GlassBackdropBlurPx")
 fun ProvideGlassBackdrop(controller: GlassBackdropController, content: @Composable () -> Unit) {
     val size = LocalWindowInfo.current.containerSize
     val density = LocalDensity.current.density
-    LaunchedEffect(controller, size, density) {
-        if (size.width > 0 && size.height > 0) controller.setWindow(size.width, size.height, density)
+    val window = if (size.width > 0 && size.height > 0) WindowInputs(size.width, size.height, density) else null
+    LaunchedEffect(controller, window) {
+        if (window != null) controller.setWindow(window.widthPx, window.heightPx, window.density)
     }
     val scope = rememberCoroutineScope()
     LifecycleResumeEffect(controller) {
@@ -184,9 +189,7 @@ fun ProvideGlassBackdrop(controller: GlassBackdropController, content: @Composab
     // taken from the cache now, so the first frame after a fold or unfold is
     // not drawn with the previous window's (#130). A real miss keeps the
     // previous backdrop until the render arrives through the flow.
-    val cached = remember(controller, size, density, flowed) {
-        if (size.width > 0 && size.height > 0) controller.cachedBackdropFor(size.width, size.height, density) else null
-    }
+    val cached = remember(controller, window, flowed) { window?.let(controller::cachedBackdropFor) }
     val backdrop = cached ?: flowed
     val style by controller.style.collectAsState()
     val wallpaperBlur by controller.wallpaperBlur.collectAsState()

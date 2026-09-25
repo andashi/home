@@ -207,6 +207,18 @@ class GlassBackdropTest {
         }
     }
 
+    /** Unfolds to [Inner], runs frames until [done], and returns the first composition at [Inner]. */
+    private fun firstCompositionAfterResize(
+        window: FakeWindowInfo,
+        seen: MutableList<Pair<Int, Int?>>,
+        done: () -> Boolean,
+    ): Pair<Int, Int?> {
+        composeRule.runOnIdle { seen.clear() }
+        window.size = Inner
+        framesUntil(done)
+        return composeRule.runOnIdle { seen.first { it.first == Inner.width } }
+    }
+
     /**
      * #130: after a fold or unfold the first composition at the new window
      * size must already draw the backdrop made for it when that backdrop is
@@ -227,11 +239,7 @@ class GlassBackdropTest {
         framesUntil { seen.lastOrNull()?.second == Cover.width }
         assertEquals(2, renders)
 
-        composeRule.runOnIdle { seen.clear() }
-        window.size = Inner
-        framesUntil { seen.any { it.first == Inner.width } }
-
-        val first = composeRule.runOnIdle { seen.first { it.first == Inner.width } }
+        val first = firstCompositionAfterResize(window, seen) { seen.any { it.first == Inner.width } }
         assertEquals("the backdrop in the first composition at ${Inner.width} px", Inner.width, first.second)
         assertEquals("from the cache, not re-blurred", 2, renders)
     }
@@ -247,11 +255,7 @@ class GlassBackdropTest {
         setWindowContent(window, seen)
         framesUntil { seen.lastOrNull()?.second == Cover.width }
 
-        composeRule.runOnIdle { seen.clear() }
-        window.size = Inner
-        framesUntil { seen.lastOrNull()?.second == Inner.width }
-
-        val first = composeRule.runOnIdle { seen.first { it.first == Inner.width } }
+        val first = firstCompositionAfterResize(window, seen) { seen.lastOrNull()?.second == Inner.width }
         assertEquals("the previous backdrop in the first composition", Cover.width, first.second)
         assertEquals(2, renders)
     }
