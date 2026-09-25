@@ -271,4 +271,35 @@ a_timeout_says_why() {
 }
 check "a wait_on_home timeout names the focus and leaves a screenshot" a_timeout_says_why
 
+# After a snapshot load the device answers `adb` a moment later than the
+# emulator says it is up; the first `id -u` fails or answers for the wrong
+# user (seen 2026-09-25 on emulator-5560, 22:11). unrooted_shell waits for
+# uid 2000 against a real deadline instead of asserting it once.
+mkdir -p "$WORK/late"
+cat > "$WORK/late/adb" <<EOF
+#!/usr/bin/env bash
+case "\$*" in
+  *"shell id -u"*)
+    n=\$(( \$(cat "$WORK/late/calls" 2>/dev/null || echo 0) + 1 )); echo "\$n" > "$WORK/late/calls"
+    [ "\$n" -ge 3 ] && echo 2000 || exit 1 ;;
+esac
+EOF
+chmod +x "$WORK/late/adb"
+waits_for_the_shell() {
+  rm -f "$WORK/late/calls"
+  ( PATH="$WORK/late:$PATH"; unrooted_shell 10 ) >/dev/null 2>&1
+}
+check "unrooted_shell waits until adb answers as uid 2000" waits_for_the_shell
+cat > "$WORK/late/root" <<'EOF'
+#!/usr/bin/env bash
+case "$*" in *"shell id -u"*) echo 0 ;; esac
+EOF
+mkdir -p "$WORK/rooted"; mv "$WORK/late/root" "$WORK/rooted/adb"; chmod +x "$WORK/rooted/adb"
+refuses_root() {
+  local start=$SECONDS
+  ( PATH="$WORK/rooted:$PATH"; unrooted_shell 3 ) >/dev/null 2>&1 && return 1
+  [ $((SECONDS - start)) -le 6 ]
+}
+check "unrooted_shell refuses a root shell once its timeout is up" refuses_root
+
 exit "$failed"
