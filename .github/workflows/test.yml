@@ -1,14 +1,20 @@
 name: Tests
 
-# L1 (unit) + L3 (screenshot verify) on pull requests and on main.
-# L2 (Compose UI on emulator) on PRs and for every release - it is the slow
-# layer; the fold suite runs on a second, foldable emulator in its own job.
+# L1 (unit), L3 (screenshot verify) and L2 (Compose UI on emulator; the fold
+# suite on a second, foldable emulator in its own job) on pull requests, on
+# every push to main and for every release.
 # L4 stays manual/local: it needs the self-built GrapheneOS emulator (ADR 0005).
 #
-# release.yml calls this workflow with `l2: true` and publishes only when every
-# job here is green (#132). Merges do not run L2 on main, so several PRs merged
-# close together meet for the first time on main without it; the release is
-# where that combination is shipped, so that is where the full suite runs.
+# L2 runs in two places after a merge, and each is there for its own reason (#132):
+# - On main, so a red combination is seen at once. PRs merged close together
+#   meet for the first time on main, each green on its own head. This run
+#   comes after the merge, so it costs runner minutes, not merge latency.
+#   It was not hypothetical: a control test from #123 went red on main and
+#   stayed red through three more merges until someone read a log.
+# - In release.yml, which calls this workflow with `l2: true` and publishes
+#   only when every job is green. A red main run can be ignored and a tag can
+#   name a commit whose main run has not finished (three merges in ten
+#   seconds, the tag minutes later); the release cannot go past a red run.
 # The tag push itself does not trigger this workflow - the call does, so there
 # is one run per release, not two.
 
@@ -118,10 +124,10 @@ jobs:
           retention-days: 14
 
   l2-compose-ui:
-    # In a called run `github.event_name` is the caller's (a tag push), so the
-    # release asks for L2 through the input; on push and pull_request events
-    # `inputs` is empty.
-    if: ${{ github.event_name == 'pull_request' || inputs.l2 }}
+    # In a called run `github.event_name` and `github.ref` are the caller's (a
+    # tag push), so the release asks for L2 through the input; on push and
+    # pull_request events `inputs` is empty.
+    if: ${{ github.event_name != 'push' || github.ref == 'refs/heads/main' || inputs.l2 }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -154,7 +160,7 @@ jobs:
   # itself by assumption on a device without postures, so the phone job above
   # stays green and this job is the one that proves the fold.
   l2-fold:
-    if: ${{ github.event_name == 'pull_request' || inputs.l2 }}
+    if: ${{ github.event_name != 'push' || github.ref == 'refs/heads/main' || inputs.l2 }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
