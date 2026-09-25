@@ -86,22 +86,32 @@ object WriteBackPlan {
      * - What the file has no counterpart for is the device's, without its
      *   option defaults.
      */
-    private fun merged(written: JsonElement?, canon: JsonElement?, effect: JsonElement?, now: JsonElement): JsonElement = when {
-        now is JsonObject -> JsonObject(
-            buildMap {
-                for ((key, value) in now) {
-                    val was = (effect as? JsonObject)?.get(key)
-                    val text = (written as? JsonObject)?.get(key)
-                    when {
-                        was != null && same(was, value) -> if (text != null) put(key, text)
-                        written == null && GridItemConfig.OptionDefaults[key]?.let { JsonPrimitive(it) == value } == true -> Unit
-                        else -> put(key, merged(text, (canon as? JsonObject)?.get(key), was, value))
+    private fun merged(written: JsonElement?, canon: JsonElement?, effect: JsonElement?, now: JsonElement): JsonElement {
+        // Unchanged as a whole: the file's text, in whatever form it wrote it
+        // (a personal favorite as a string, where the device serves an object).
+        if (written != null && effect != null && same(effect, now)) return written
+        return when (now) {
+            is JsonObject -> {
+                // Only an object in the file can leave a key out; an element
+                // written in another form that changed is written whole.
+                val text = written as? JsonObject
+                JsonObject(
+                    buildMap {
+                        for ((key, value) in now) {
+                            val was = (effect as? JsonObject)?.get(key)
+                            val keyText = text?.get(key)
+                            when {
+                                text != null && was != null && same(was, value) -> if (keyText != null) put(key, keyText)
+                                written == null && GridItemConfig.OptionDefaults[key]?.let { JsonPrimitive(it) == value } == true -> Unit
+                                else -> put(key, merged(keyText, (canon as? JsonObject)?.get(key), was, value))
+                            }
+                        }
                     }
-                }
+                )
             }
-        )
-        now is JsonArray -> mergedList(written as? JsonArray, (canon ?: written) as? JsonArray, effect as? JsonArray, now)
-        else -> if (written != null && effect != null && same(effect, now)) written else now
+            is JsonArray -> mergedList(written as? JsonArray, (canon ?: written) as? JsonArray, effect as? JsonArray, now)
+            else -> now
+        }
     }
 
     private fun mergedList(written: JsonArray?, canon: JsonArray?, effect: JsonArray?, now: JsonArray): JsonArray {
@@ -114,8 +124,11 @@ object WriteBackPlan {
         val takenApplied = mutableSetOf<Int>()
         val out = now.map { entry ->
             val j = applied.pair(entry, takenApplied)?.also { takenApplied += it }
-            val i = j?.let { fileOf[it] }
-            merged(i?.let { written?.getOrNull(it) }, i?.let { fileEntries[it] }, j?.let { applied[it] }, entry)
+            // An entry the baseline lacks (its section's apply failed) but the
+            // device has is still the file's own, never a second copy of it.
+            val i = j?.let { fileOf[it] } ?: fileEntries.pair(entry, takenFile)?.also { takenFile += it }
+            val was = j?.let { applied[it] } ?: i?.let { fileEntries[it] }
+            merged(i?.let { written?.getOrNull(it) }, i?.let { fileEntries[it] }, was, entry)
         }.toMutableList()
         // The file's entries that never reached the device, back where they were.
         for (i in fileEntries.indices) {

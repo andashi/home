@@ -119,6 +119,21 @@ class WriteBackPlanTest {
         )
     }
 
+    /** D inside an element: the dock moved, its clamped height did not, and keeps what the file says. */
+    @Test
+    fun `a moved element keeps the written value of a field nobody changed`() {
+        val result = gridChange(
+            literal = """[{"id":"dock","widget":"favorites","x":0,"h":7}]""",
+            applied = """[{"id":"dock","widget":"favorites","x":0,"h":6}]""",
+            device = """[{"id":"dock","widget":"favorites","x":1,"h":6}]""",
+        )
+
+        assertEquals(
+            ConfigParser.json.parseToJsonElement("""{"phone":{"items":[{"id":"dock","widget":"favorites","x":1,"h":7}]}}"""),
+            result.single().value,
+        )
+    }
+
     /** The device lists items in its own order; they are matched by id, never by position. */
     @Test
     fun `elements are matched by id, not by position`() {
@@ -156,6 +171,44 @@ class WriteBackPlanTest {
                 applied = """["org.a.one"]""",
                 device = """["org.a.one","org.a.two"]""",
             ),
+        )
+    }
+
+    /**
+     * A section whose apply failed leaves the baseline without entries the
+     * device still has. An entry the device has is the file's, never a second
+     * copy of it.
+     */
+    @Test
+    fun `an entry the baseline lost but the device has is not written twice`() {
+        assertEquals(
+            ConfigParser.json.parseToJsonElement("""["org.a.one","org.not.here","org.a.two"]"""),
+            favoritesChange(
+                literal = """["org.a.one","org.not.here"]""",
+                applied = """[]""",
+                device = """["org.a.one","org.a.two"]""",
+            ),
+        )
+    }
+
+    /**
+     * As it really is: the file writes personal favorites as strings, the
+     * device serves every favorite as an object. Unchanged entries keep the
+     * string; an entry that changed is written whole, in the device's form.
+     */
+    @Test
+    fun `favorites written as strings keep their form, a changed one is written complete`() {
+        val o = { pkg: String, profile: String -> """{"packageName":"$pkg","profile":"$profile"}""" }
+        val result = WriteBackPlan.changes(
+            literal = tree(favorites("""["org.a.one","org.a.two"]""")),
+            fileEffective = tree(favorites("""[${o("org.a.one", "personal")},${o("org.a.two", "personal")}]""")),
+            device = tree(favorites("""[${o("org.a.one", "personal")},${o("org.a.two", "work")}]""")),
+            canonical = tree(favorites("""[${o("org.a.one", "personal")},${o("org.a.two", "personal")}]""")),
+        )
+
+        assertEquals(
+            ConfigParser.json.parseToJsonElement("""["org.a.one",${o("org.a.two", "work")}]"""),
+            result.single().value,
         )
     }
 
