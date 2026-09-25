@@ -100,11 +100,26 @@ jobs:
   release:
     needs: tests
     if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') }}
-    # The platform-side half of the tag gate. Declared, the environment changes
-    # nothing by itself: without protection rules the job still reads the
-    # repository secrets. Once the four secrets live in it as environment
-    # secrets, with deployments restricted to `v*` tags, GitHub withholds the
-    # key from any other ref, whatever the conditions above say.
+    # Declared in advance: the `release` environment carries NO protection
+    # rules yet, so GitHub enforces nothing about it today, and the job reads
+    # the repository secrets as before.
+    #
+    # What protects the key today, all of it ours and tested: this job alone
+    # carries the secrets, `contents: write` and the tag condition; `dry-run`
+    # has none of them; check-release-gate.py fails CI if a secret-reading job
+    # loses that condition; and a release build without the keystore comes
+    # out unsigned (#137).
+    #
+    # Completing it lets GitHub itself withhold the key from any ref that is
+    # not a `v*` tag. At a keyboard with the original keystore and passwords
+    # (GitHub secrets are write-only, so they cannot be copied from here):
+    #   1. create the environment with deployment branch policy
+    #      `custom_branch_policies`;
+    #   2. add a deployment policy of type `tag`, pattern `v*`;
+    #   3. set the four secrets at environment scope, keep the repository
+    #      copies;
+    #   4. delete the repository copies only after a real `v*` release has
+    #      signed with the environment's.
     environment: release
     runs-on: ubuntu-latest
     permissions:
