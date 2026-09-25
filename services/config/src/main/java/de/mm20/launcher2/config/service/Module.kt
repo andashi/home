@@ -41,8 +41,8 @@ val configModule = module {
     }
     factory<SearchActionStore> { AndroidSearchActionStore(androidContext(), get()) }
     single { ReloadReportStore(androidContext()) }
-    // One lock around launcher.json: reloads (watcher, receiver) and the
-    // edit-mode write-back must serialize on it.
+    // One lock around launcher.json: reloads (watcher, receiver) and every
+    // write-back must serialize on it.
     single { ConfigFileLock() }
     single { AppliedBaselineStore(androidContext()) }
     single { ConfigReloader(get(), get(), get(), get()) }
@@ -50,6 +50,13 @@ val configModule = module {
     single { GridWriteBack(androidContext(), get(), get(), get(), get(), engine = get()) }
     // What the grid's edit mode calls on Done (data/homegrid's interface).
     single<HomeGridWriteBack> { HomeGridWriteBackAdapter(get()) }
-    single(createdAtStart = true) { ConfigWatcher(androidContext(), get(), get()).also { it.start() } }
+    single(createdAtStart = true) {
+        ConfigWatcher(androidContext(), get(), get(), baselineStore = get()).also { it.start() }
+    }
+    // Every change on the device goes back into the file (#3 slice 4).
+    single(createdAtStart = true) {
+        val writeBack = get<ConfigWriteBack>()
+        ConfigWriteBackTrigger(get(), { writeBack.write() }).also { it.start() }
+    }
     single(createdAtStart = true) { WallpaperForegroundFixer(androidContext(), get(), get()).also { it.start() } }
 }

@@ -8,7 +8,10 @@ import de.mm20.launcher2.config.InSearchBarPosition
 import de.mm20.launcher2.config.SearchBarPosition
 import de.mm20.launcher2.preferences.LauncherDataStore
 import de.mm20.launcher2.preferences.LauncherSettingsData
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 
 /**
  * Fork addition (Phase 2): settings-backed projection of [ConfigState] and
@@ -46,11 +49,16 @@ interface LauncherConfigSettings {
      * implementation covariantly returns the updated settings data.
      */
     suspend fun apply(mutations: List<ConfigMutation>)
+
+    /** Emits when the settings change, for write-back to follow (#3 slice 4). */
+    fun changes(): Flow<Unit> = emptyFlow()
 }
 
 internal class LauncherConfigSettingsImpl(
     private val dataStore: LauncherDataStore,
 ) : LauncherConfigSettings {
+
+    override fun changes(): Flow<Unit> = dataStore.data.map { }
 
     override suspend fun readState(): ConfigState {
         val data = dataStore.data.first()

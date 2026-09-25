@@ -29,7 +29,11 @@ import de.mm20.launcher2.searchable.SavableSearchableRepository
 import de.mm20.launcher2.homegrid.HomeGridInitFlag
 import de.mm20.launcher2.homegrid.HomeGridInitLock
 import de.mm20.launcher2.homegrid.HomeGridRepository
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.merge
 import de.mm20.launcher2.config.Profile as ConfigProfile
 
 /**
@@ -63,13 +67,32 @@ class DefaultConfigStore(
     private val searchActions: SearchActionStore,
 ) : ConfigStore {
 
+    private fun favoriteApps() = searchableRepository.get(
+        includeTypes = listOf(AppDomain),
+        minPinnedLevel = PinnedLevel.ManuallySorted,
+        maxPinnedLevel = PinnedLevel.ManuallySorted,
+    )
+
+    /**
+     * Every source [readState] reads, the state read again on each emission,
+     * passed on when it differs - the first one on collection, so a change
+     * made before anyone collected is not lost. The wallpaper is not a
+     * source: a wallpaper picked on the device has no upload name, so it
+     * cannot be written back.
+     */
+    override fun changes(): Flow<Unit> = merge(
+        settings.changes(),
+        favoriteApps().map { },
+        searchActions.changes(),
+        *GridLayouts.All.map { layout -> homeGridRepository.observe(layout).map { } }.toTypedArray(),
+    )
+        .map { readState() }
+        .distinctUntilChanged()
+        .map { }
+
     override suspend fun readState(): ConfigState {
         val settingsState = settings.readState()
-        val favorites = searchableRepository.get(
-            includeTypes = listOf(AppDomain),
-            minPinnedLevel = PinnedLevel.ManuallySorted,
-            maxPinnedLevel = PinnedLevel.ManuallySorted,
-        ).first().mapNotNull { it.toFavorite() }
+        val favorites = favoriteApps().first().mapNotNull { it.toFavorite() }
         val wallpaper = wallpapers.current()
 
         // One snapshot of the layouts and the flag, under the lock the default

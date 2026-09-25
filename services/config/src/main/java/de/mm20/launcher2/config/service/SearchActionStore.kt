@@ -12,7 +12,10 @@ import de.mm20.launcher2.searchactions.builders.AppSearchActionBuilder
 import de.mm20.launcher2.searchactions.builders.CustomIntentActionBuilder
 import de.mm20.launcher2.searchactions.builders.CustomWebsearchActionBuilder
 import de.mm20.launcher2.searchactions.builders.SearchActionBuilder
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 
 /**
  * The device's search actions in the contract's form (#106): what the config
@@ -27,6 +30,9 @@ interface SearchActionStore {
      * device cannot apply is left out and reported at `[basePath][index]`.
      */
     suspend fun replace(actions: List<SearchActionConfig>, basePath: String): List<Diagnostic>
+
+    /** Emits when the actions change, for write-back to follow (#3 slice 4). */
+    fun changes(): Flow<Unit> = emptyFlow()
 }
 
 /**
@@ -41,6 +47,8 @@ internal class AndroidSearchActionStore(
 
     override suspend fun read(): List<SearchActionConfig> =
         repository.getSearchActionBuilders().first().map { it.toConfig() }
+
+    override fun changes(): Flow<Unit> = repository.getSearchActionBuilders().map { }
 
     override suspend fun replace(actions: List<SearchActionConfig>, basePath: String): List<Diagnostic> {
         val diagnostics = mutableListOf<Diagnostic>()

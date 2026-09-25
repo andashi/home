@@ -125,6 +125,41 @@ class ConfigWatcherTest {
         assertEquals(0, store.applyCount)
     }
 
+    /**
+     * #3 slice 4: a write-back needs the baseline of exactly this file. After
+     * an update, or with its data cleared, the report can know the file while
+     * no baseline does; without a reload then, every write-back would skip.
+     */
+    @Test
+    fun `startup check reloads a file the report knows but no baseline does`() = runTest {
+        val store = FakeConfigStore()
+        val reportStore = ReloadReportStore(context)
+        val baselines = AppliedBaselineStore(context).also { File(context.filesDir, "config/applied-baseline.json").delete() }
+        val watcher = ConfigWatcher(context, ConfigReloader(store, reportStore), reportStore, scope = this, baselineStore = baselines)
+        writeConfig()
+        reportStore.save(ReloadReport(success = true, configSha256 = configFile().readBytes().sha256Hex()))
+
+        watcher.startupCheck()!!.join()
+
+        assertEquals(1, store.applyCount)
+    }
+
+    @Test
+    fun `startup check skips the reload when the report and the baseline both know the file`() = runTest {
+        val store = FakeConfigStore()
+        val reportStore = ReloadReportStore(context)
+        val baselines = AppliedBaselineStore(context)
+        val watcher = ConfigWatcher(context, ConfigReloader(store, reportStore), reportStore, scope = this, baselineStore = baselines)
+        writeConfig()
+        val hash = configFile().readBytes().sha256Hex()
+        reportStore.save(ReloadReport(success = true, configSha256 = hash))
+        baselines.save(AppliedBaseline(hash, kotlinx.serialization.json.JsonObject(emptyMap())))
+
+        watcher.startupCheck()!!.join()
+
+        assertEquals(0, store.applyCount)
+    }
+
     @Test
     fun `startup check reloads when the file changed since the last report`() = runTest {
         val store = FakeConfigStore()

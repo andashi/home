@@ -8,6 +8,8 @@ import de.mm20.launcher2.homegrid.HomeGridItem
 import de.mm20.launcher2.homegrid.HomeGridLayouts
 import de.mm20.launcher2.homegrid.HomeGridWidgets
 import kotlinx.coroutines.async
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.junit.After
@@ -174,7 +176,43 @@ class ConfigWriteBackTest {
         )
     }
 
-    private val twoSections = """{"schemaVersion":2,"icons":{"themed":false},"search":{"layout":"grid"}}"""
+    /**
+     * B on the real store: its changes arrive once on collection - which is
+     * the trigger's first write-back, so a change made before it ran is not
+     * lost - and again after a change on the device.
+     */
+    @Test
+    fun `the store's changes arrive on collection and after a change on the device`() = runBlocking {
+        applied(searchFile)
+        val seen = kotlinx.coroutines.channels.Channel<Unit>(kotlinx.coroutines.channels.Channel.UNLIMITED)
+        val collecting = launch(kotlinx.coroutines.Dispatchers.Default) { real.store.changes().collect { seen.send(Unit) } }
+        try {
+            kotlinx.coroutines.withTimeout(10_000) { seen.receive() }
+            onDevice("""{"schemaVersion":2,"search":{"layout":"list"}}""")
+            kotlinx.coroutines.withTimeout(10_000) { seen.receive() }
+        } finally {
+            collecting.cancel()
+        }
+    }
+
+    @Test
+    fun `a setting changed on the device reaches the file without being asked`() = runBlocking {
+        applied(searchFile)
+        val scope = kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.SupervisorJob() + kotlinx.coroutines.Dispatchers.Default)
+        try {
+            ConfigWriteBackTrigger(real.store, { writeBack.write() }, scope).start()
+            kotlinx.coroutines.withTimeout(10_000) { writeBack.lastResult.first { it != null } }
+
+            onDevice("""{"schemaVersion":2,"search":{"layout":"list"}}""")
+
+            kotlinx.coroutines.withTimeout(10_000) { writeBack.lastResult.first { it is WriteBackResult.Written } }
+            assertEquals(searchFile.replace("\"layout\": \"grid\"", "\"layout\": \"list\""), file.readText())
+        } finally {
+            scope.cancel()
+        }
+    }
+
+    private val twoSections ="""{"schemaVersion":2,"icons":{"themed":false},"search":{"layout":"grid"}}"""
 
     /**
      * The comparison half of a device change during a reload: the person

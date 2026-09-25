@@ -37,6 +37,7 @@ class ConfigWatcher(
     private val reportStore: ReloadReportStore,
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO),
     private val debounceMs: Long = DefaultDebounceMs,
+    private val baselineStore: AppliedBaselineStore? = null,
 ) {
     private val appContext = context.applicationContext
 
@@ -148,7 +149,11 @@ class ConfigWatcher(
             val hash = fileHash(file)
             if (hash == null && !file.exists()) return@launch
             val report = reportStore.read()
-            if (report == null || report.configSha256 != hash) {
+            // A write-back needs the baseline of exactly this file (#3 slice 4);
+            // after an update or with cleared data the report can have it while
+            // the baseline does not, and one reload records it.
+            val noBaseline = baselineStore != null && baselineStore.read()?.configSha256 != hash
+            if (report == null || report.configSha256 != hash || noBaseline) {
                 reloader.reload(file, ReloadTrigger.StartupCheck)
             }
         }
