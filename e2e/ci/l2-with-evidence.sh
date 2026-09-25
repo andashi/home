@@ -14,6 +14,14 @@
 # launcher's own must stay as visible as any other.
 set -uo pipefail
 
+# Sourcing this file defines its functions and runs nothing, so
+# l2-with-evidence.test.sh can exercise them with a fake adb. Without the
+# guard, sourcing runs the body, `"$@"` expands to nothing, and the `exit 0`
+# below ends the test file before a single check runs - silently, and
+# looking exactly like a passing suite.
+
+[ "${BASH_SOURCE[0]}" = "$0" ] || return 0
+
 "$@"
 status=$?
 [ "$status" -eq 0 ] && exit 0
