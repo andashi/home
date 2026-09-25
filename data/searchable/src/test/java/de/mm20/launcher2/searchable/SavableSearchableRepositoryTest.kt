@@ -207,11 +207,74 @@ class SavableSearchableRepositoryTest {
         assertEquals(emptyList<String>(), pinnedKeys().first())
     }
 
+    // ----- atomic replacement of one type's manual pins (#3 D4) -----
+
+    private suspend fun pinned(key: String, type: String, pinPosition: Int, serialized: String = key) {
+        database.searchableDao().upsert(
+            SavedSearchableEntity(
+                key = key,
+                type = type,
+                serializedSearchable = serialized,
+                launchCount = 0,
+                pinPosition = pinPosition,
+                visibility = VisibilityLevel.Default.value,
+                weight = 0.0,
+            )
+        )
+    }
+
+    private suspend fun pinPosition(key: String) = database.searchableDao().getByKey(key).first()!!.pinPosition
+
+    @Test
+    fun replaceManuallySortedAwaited_keepsOtherTypesInOrderAfterTheItems() = runBlocking {
+        // Mixed on the device: other types around an app the new list drops.
+        pinned("contact://1", "contact", 6)
+        pinned("app://old", "app", 5)
+        pinned("shortcut://s", "shortcut", 4)
+        pinned("tag://t", "tag", 3)
+        pinned("app://auto", "app", 1)
+
+        repository.replaceManuallySortedAwaited(
+            types = listOf("app"),
+            items = listOf(TestSearchable("app://a", domain = "app"), TestSearchable("app://b", domain = "app")),
+        )
+
+        assertEquals(
+            listOf("app://a", "app://b", "contact://1", "shortcut://s", "tag://t", "app://auto"),
+            pinnedKeys().first(),
+        )
+        assertEquals(0, pinPosition("app://old"))
+        // Automatically sorted pins are not touched.
+        assertEquals(1, pinPosition("app://auto"))
+    }
+
+    @Test
+    fun replaceManuallySortedAwaited_keepsAPinThatNoLongerDeserializes() = runBlocking {
+        // A shortcut whose app is gone: the row stays, it is never deserialized.
+        pinned("shortcut://gone", "shortcut", 2, serialized = "not a shortcut any more")
+
+        repository.replaceManuallySortedAwaited(types = listOf("app"), items = listOf(TestSearchable("app://a", domain = "app")))
+
+        assertEquals(listOf("app://a", "shortcut://gone"), pinnedKeys().first())
+        assertTrue(pinPosition("shortcut://gone") > 1)
+    }
+
+    @Test
+    fun replaceManuallySortedAwaited_withNoItemsUnpinsOnlyThatType() = runBlocking {
+        pinned("app://old", "app", 3)
+        pinned("tag://t", "tag", 2)
+
+        repository.replaceManuallySortedAwaited(types = listOf("app"), items = emptyList())
+
+        assertEquals(0, pinPosition("app://old"))
+        assertEquals(listOf("tag://t"), pinnedKeys().first())
+    }
+
     private class TestSearchable(
         override val key: String,
         var serialized: String = key,
+        override val domain: String = "test",
     ) : SavableSearchable {
-        override val domain: String = "test"
         override val label: String = key
         override val preferDetailsOverLaunch: Boolean = false
 
