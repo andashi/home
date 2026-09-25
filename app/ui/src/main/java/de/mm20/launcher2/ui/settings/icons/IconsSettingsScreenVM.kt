@@ -219,3 +219,6 @@ class IconsSettingsScreenVM(
         )
     }
 }
+/** The pack in effect (#139). Not implemented yet: the stored value, as the screen used to read it. */
+internal suspend fun effectiveIconPack(stored: String?, installed: List<IconPack>): IconPack? =
+    installed.firstOrNull { it.packageName == stored }
