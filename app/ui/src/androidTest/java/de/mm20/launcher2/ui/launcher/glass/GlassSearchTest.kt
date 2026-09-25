@@ -395,7 +395,8 @@ class GlassSearchTest {
                 "glass in the screenshot at x ${centreX.toInt()}: y ${glassRows.firstOrNull()}..${glassRows.lastOrNull()}, " +
                 discriminate(screen, semantics.positionOnScreen.x, semantics.positionOnScreen.y, semantics.size.width, semantics.size.height) +
                 (if (tag == "popup") ", " + windowState(popupRoot) + ", " +
-                    popupWindowCapture(popupRoot, semantics.positionOnScreen, semantics.size.width, semantics.size.height) else "") + "\n" +
+                    popupWindowCapture(popupRoot, semantics.positionOnScreen, semantics.size.width, semantics.size.height) else "") + ", " +
+                surroundings(screen, outerBounds(if (tag == "popup") popupRoot else null, semantics.positionOnScreen, semantics.size.width, semantics.size.height)) + "\n" +
                 eventLog()
             android.util.Log.e("GlassSearchTest", "$tag failed:\n$evidence")
             assertEquals("$tag: backdrop row drawn vs where it is on screen; $evidence", expected, drawn, 0.03f)
@@ -491,6 +492,44 @@ class GlassSearchTest {
         val top = onScreen.y - rootOnScreen[1]
         return "popup capture ${bitmap.width}x${bitmap.height}, node at ($left, $top): " +
             discriminate(bitmap, left, top, width, height)
+    }
+
+    /**
+     * #113: the screen 8 dp outside each edge of a surface. Host green there
+     * with a fill inside means the fill is the popup layer's own; the same
+     * fill outside too means something larger covers that part of the screen
+     * (a system dialog or overlay), and the popup is not the question.
+     */
+    private fun surroundings(image: Bitmap, bounds: android.graphics.RectF): String {
+        val gap = 8 * InstrumentationRegistry.getInstrumentation().targetContext.resources.displayMetrics.density
+        val left = bounds.left
+        val top = bounds.top
+        val cx = bounds.centerX()
+        val cy = bounds.centerY()
+        fun at(x: Float, y: Float): String {
+            val xi = x.toInt()
+            val yi = y.toInt()
+            if (xi !in 0 until image.width || yi !in 0 until image.height) return "off-screen"
+            return "#" + Integer.toHexString(image.getPixel(xi, yi))
+        }
+        return "outside $bounds: above ${at(cx, top - gap)}, below ${at(cx, bounds.bottom + gap)}, " +
+            "left ${at(left - gap, cy)}, right ${at(bounds.right + gap, cy)}"
+    }
+
+    /**
+     * The node's bounds on screen, grown to its popup window's when there is
+     * one: the popup window can be larger than the node (371 against 315 px
+     * on emulator-5562), and a sample inside it would read the popup's own
+     * fill as something larger covering the screen (#157 review).
+     */
+    private fun outerBounds(root: android.view.View?, onScreen: androidx.compose.ui.geometry.Offset, width: Int, height: Int): android.graphics.RectF {
+        val bounds = android.graphics.RectF(onScreen.x, onScreen.y, onScreen.x + width, onScreen.y + height)
+        if (root == null) return bounds
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            val at = IntArray(2).also(root::getLocationOnScreen)
+            bounds.union(at[0].toFloat(), at[1].toFloat(), (at[0] + root.width).toFloat(), (at[1] + root.height).toFloat())
+        }
+        return bounds
     }
 
     /** The popup window as the view system sees it at the failure (#113). */
