@@ -91,6 +91,20 @@ class GlassPopupSequenceTest {
         return screen.getPixel(x, y)
     }
 
+    /**
+     * The centre once [done] holds, or after a second: the render and the
+     * redraw are asynchronous.
+     */
+    private fun centreOnce(done: (Int) -> Boolean): Int {
+        var pixel = centre()
+        repeat(10) {
+            if (done(pixel)) return pixel
+            Thread.sleep(100)
+            pixel = centre()
+        }
+        return pixel
+    }
+
     private fun Int.describe() = "#" + Integer.toHexString(this)
     private fun Int.isHost() = android.graphics.Color.green(this) > 200 &&
         android.graphics.Color.red(this) < 40 && android.graphics.Color.blue(this) < 40
@@ -125,13 +139,7 @@ class GlassPopupSequenceTest {
         composeRule.runOnIdle { source.image.value = BackdropImage("/w/zone.jpg", "sha1") }
         composeRule.waitForIdle()
 
-        // The render and the redraw are asynchronous; give them a second.
-        var after = centre()
-        repeat(10) {
-            if (after.isBackdrop()) return@repeat
-            Thread.sleep(100)
-            after = centre()
-        }
+        val after = centreOnce { it.isBackdrop() }
         assertTrue("after the backdrop arrived: ${after.describe()}, not the backdrop", after.isBackdrop())
     }
 
@@ -150,12 +158,7 @@ class GlassPopupSequenceTest {
         composeRule.runOnIdle { glass.value = glass.value.copy(tint = 1f) }
         composeRule.waitForIdle()
 
-        var after = centre()
-        repeat(10) {
-            if (!after.isHost()) return@repeat
-            Thread.sleep(100)
-            after = centre()
-        }
+        val after = centreOnce { !it.isHost() }
         assertTrue("after the tint changed: still host green ${after.describe()}", !after.isHost())
     }
 }
