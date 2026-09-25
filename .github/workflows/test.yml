@@ -84,6 +84,17 @@ jobs:
             '**/build/reports/kover/html'
           retention-days: 14
 
+  # release.yml's two guarantees (#132): the release needs this whole suite,
+  # and only a tag push touches the release key. A static check, because both
+  # fail silently: a dropped `needs` still publishes, and a branch dispatch
+  # signed with the production key still looks like a release.
+  release-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check release.yml
+        run: python3 .github/scripts/check-release-gate.py .github/workflows/release.yml
+
   l3-screenshots:
     runs-on: ubuntu-latest
     steps:
