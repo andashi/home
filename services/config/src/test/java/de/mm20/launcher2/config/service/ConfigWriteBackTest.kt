@@ -4,6 +4,7 @@ import de.mm20.launcher2.config.ConfigDiffer
 import de.mm20.launcher2.config.ConfigParser
 import de.mm20.launcher2.config.ReloadTrigger
 import de.mm20.launcher2.config.Severity
+import de.mm20.launcher2.config.toLauncherConfig
 import de.mm20.launcher2.homegrid.HomeGridItem
 import de.mm20.launcher2.homegrid.HomeGridLayouts
 import de.mm20.launcher2.homegrid.HomeGridWidgets
@@ -212,7 +213,67 @@ class ConfigWriteBackTest {
         }
     }
 
-    private val twoSections ="""{"schemaVersion":2,"icons":{"themed":false},"search":{"layout":"grid"}}"""
+    /**
+     * The 3a round trip through write-back rather than apply: the complete
+     * example, every key off its default, is applied; the device changes a
+     * list in each section that has one - favorites reordered, a search
+     * action renamed, a grid item moved; the file written back parses clean
+     * and says what the device serves, the grid-item options the file wrote
+     * out included.
+     */
+    private suspend fun roundTrip(example: String): Pair<de.mm20.launcher2.config.LauncherConfig, de.mm20.launcher2.config.LauncherConfig> {
+        real.install("com.example.dialer")
+        real.install("com.example.work.mail", real.work)
+        real.install("com.example.maps")
+        applied(example)
+        val served = ConfigParser.parse(example).config!!
+        onDevice(
+            ConfigParser.json.encodeToString(
+                de.mm20.launcher2.config.LauncherConfig.serializer(),
+                served.copy(
+                    home = served.home!!.copy(
+                        favorites = served.home!!.favorites!!.reversed(),
+                        grid = served.home!!.grid!!.copy(
+                            layouts = served.home!!.grid!!.layouts!!.mapValues { (_, layout) ->
+                                layout.copy(items = layout.items.map { if (it.id == "clock") it.copy(x = 0) else it })
+                            },
+                        ),
+                    ),
+                    search = served.search!!.copy(
+                        actions = served.search!!.actions!!.map { if (it.label == "Wiki") it.copy(label = "Wikipedia") else it },
+                    ),
+                ),
+            )
+        )
+
+        val result = writeBack.write()
+
+        assertTrue(result.toString(), result is WriteBackResult.Written)
+        val written = ConfigParser.parse(file.readText())
+        assertEquals(emptyList<de.mm20.launcher2.config.Diagnostic>(), written.diagnostics)
+        return real.store.readState().toLauncherConfig() to written.config!!
+    }
+
+    private val completeExample: String
+        get() = File(System.getProperty("repoRoot"), "docs/configuration/complete-example.json").readText()
+
+    @Test
+    fun `the complete example goes out through write-back and comes back as the device has it`() = runBlocking {
+        val unlocked = completeExample.replace("\"locked\": true", "\"locked\": false")
+        val (device, written) = roundTrip(unlocked)
+
+        assertEquals(device, written)
+    }
+
+    /** The example as it is locks the grid: the clock the device moved stays where the file has it (W2). */
+    @Test
+    fun `a locked grid comes back as the file has it, everything else as the device has it`() = runBlocking {
+        val (device, written) = roundTrip(completeExample)
+
+        assertEquals(device.copy(home = device.home!!.copy(grid = ConfigParser.parse(completeExample).config!!.home!!.grid)), written)
+    }
+
+    private val twoSections = """{"schemaVersion":2,"icons":{"themed":false},"search":{"layout":"grid"}}"""
 
     /**
      * The comparison half of a device change during a reload: the person
