@@ -170,6 +170,8 @@ kover {
                     "de.mm20.launcher2.ui.launcher.glass.*",
                     // #107: the search bar's movement between home and search.
                     "de.mm20.launcher2.ui.launcher.scaffold.SearchBarPlacement*",
+                    // #122: the pages kept alive out of the viewport.
+                    "de.mm20.launcher2.ui.launcher.scaffold.OffscreenPages*",
                 )
             }
         }

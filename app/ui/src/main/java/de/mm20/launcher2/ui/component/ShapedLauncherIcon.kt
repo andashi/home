@@ -478,24 +478,27 @@ private val TriangleShape: Shape
         close()
     }
 
-/** The Clear icon chip's outline (#76); the best-match highlight uses it too (#91). */
-internal val SquircleShape: Shape
-    get() = GenericShape { size, _ ->
-        val radius = size.width / 2f
-        val radiusToPow = radius.pow(3f).toDouble()
-        moveTo(-radius, 0f)
-        for (x in -radius.roundToInt()..radius.roundToInt())
-            lineTo(
-                x.toFloat(),
-                Math.cbrt(radiusToPow - abs(x * x * x)).toFloat()
-            )
-        for (x in radius.roundToInt() downTo -radius.roundToInt())
-            lineTo(
-                x.toFloat(),
-                (-Math.cbrt(radiusToPow - abs(x * x * x))).toFloat()
-            )
-        translate(Offset(size.width / 2f, size.height / 2f))
-    }
+/**
+ * The Clear icon chip's outline (#76); the best-match highlight uses it too
+ * (#91). One instance (#122): a new shape per access made every clip and rim
+ * cache keyed on it see a different shape on each recomposition.
+ */
+internal val SquircleShape: Shape = GenericShape { size, _ ->
+    val radius = size.width / 2f
+    val radiusToPow = radius.pow(3f).toDouble()
+    moveTo(-radius, 0f)
+    for (x in -radius.roundToInt()..radius.roundToInt())
+        lineTo(
+            x.toFloat(),
+            Math.cbrt(radiusToPow - abs(x * x * x)).toFloat()
+        )
+    for (x in radius.roundToInt() downTo -radius.roundToInt())
+        lineTo(
+            x.toFloat(),
+            (-Math.cbrt(radiusToPow - abs(x * x * x))).toFloat()
+        )
+    translate(Offset(size.width / 2f, size.height / 2f))
+}
 
 private val HexagonShape: Shape
     get() = GenericShape { size, _ ->

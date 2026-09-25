@@ -1,0 +1,23 @@
+# revisions are the branch's after a comment-only rebase; the APKs were built from 743a4271b / db8bb8fa9 / 3fb1b3315, whose app sources are identical
+# emulator-5562, instances/test-fold-gpu (GPU=host), release-like builds, one snapshot per build
+# simpleperf -g -f 4000 --clockid monotonic over a hinge-swept unfold, as ROOT (profiling only, not a timing)
+# the launcher's FIRST frame after the switch (gfxinfo framestats), main-thread CPU ms (4 kHz samples)
+# main = rev 170a1d59b, apk sha256 d90092aaf9b6116ddb9a370f1448de8945e80e5091aa423786e4f87534410042
+# rim = rev 2090b1a32, apk sha256 9f514dddcf4f6d164ccd21cdcbf4fb1ef50e89816cb3662f8c213f810646119c
+# settle = rev 762f0c5cb, apk sha256 4a09fdbaa633c97f853b95a5c6ec9153c9f9bf77b086ca333a30d55d3396165d
+build	profile	frame_wall_ms	before_cpu	anim_cpu	layout_cpu	record_cpu	generic_border_ms	cpu_until_drawn	cpu_whole_unfold
+main	fp1-1	58.6	82.0	1.2	0.5	33.2	19.8	133.2	136.8
+main	fp1-2	151.2	21.5	11.2	31.8	28.8	16.8	97.8	157.2
+main	fp1-3	178.2	8.5	5.5	29.2	31.0	19.2	74.2	164.0
+rim	fp1-1	143.9	11.8	8.0	33.8	10.2	0.0	77.2	110.5
+rim	fp1-2	224.2	11.0	8.5	47.0	12.0	0.0	89.5	139.2
+rim	fp1-3	118.7	8.5	5.5	23.8	10.0	0.0	60.8	93.2
+main	fp2-1	140.7	14.8	7.2	24.0	27.8	16.8	81.2	164.5
+main	fp2-2	57.9	73.2	0.8	0.5	27.5	17.0	113.0	118.5
+main	fp2-3	62.3	66.0	6.8	0.5	29.8	18.0	110.5	117.2
+rim	fp2-1	40.4	61.2	1.0	0.8	11.0	0.0	87.0	90.5
+rim	fp2-2	54.8	61.2	0.5	6.8	18.8	0.0	100.5	107.8
+rim	fp2-3	45.3	76.8	0.8	0.5	10.2	0.0	94.0	98.5
+settle	fp3-1	89.3	3.0	6.0	12.5	2.5	0.0	37.5	128.2
+settle	fp3-2	77.0	13.0	6.0	10.8	4.2	0.0	43.5	106.5
+settle	fp3-3	90.7	4.0	10.5	15.0	7.8	0.0	46.2	106.0

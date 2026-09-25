@@ -55,7 +55,7 @@ class GlassSegmentTest {
     }
 
     private fun rim(openEdges: Set<GlassEdge>) = draw {
-        drawGlassRim(glassOutline(28f, pill = false, shape = null, openEdges = openEdges), openEdges)
+        drawGlassRim(glassRimStroke(glassOutline(28f, pill = false, shape = null, openEdges = openEdges), openEdges, size, layoutDirection, this))
     }
 
     @Test

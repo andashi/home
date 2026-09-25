@@ -1572,11 +1572,7 @@ private fun SecondaryPage(
     }
 
     // Keep other components alive, but out of the viewport
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .offset { IntOffset(x = state.size.width.toInt(), y = 0) }
-    ) {
+    OffscreenPages(offsetX = { state.size.width.toInt() }) {
         for ((k, v) in composables) {
             if (k == component) continue
             v.invoke(modifier, insets, state)

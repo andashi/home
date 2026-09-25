@@ -1,32 +1,39 @@
 package de.mm20.launcher2.ui.launcher.glass
 
-import androidx.compose.ui.unit.Dp
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.shape.CornerBasedShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.draw.drawWithContent
-import androidx.compose.ui.graphics.drawscope.clipRect
-import androidx.compose.ui.graphics.drawscope.translate
+import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.drawOutline
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.clipRect
+import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.semantics.SemanticsPropertyKey
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.dp
 import de.mm20.launcher2.config.GlassDefaults
 import de.mm20.launcher2.glass.Contrast
-import de.mm20.launcher2.glass.GlassLook
 import de.mm20.launcher2.glass.GlassInputs
+import de.mm20.launcher2.glass.GlassLook
 import de.mm20.launcher2.glass.GlassStyle
 import de.mm20.launcher2.glass.ResolvedGlass
 
@@ -135,15 +142,23 @@ fun GlassSurface(
             }
             // The rim: light from the top-left, a weaker reflection at the
             // bottom-right, faint along the sides (#82); not along a seam.
-            // A closed surface keeps Modifier.border (the home screen's
-            // pixels are unchanged); a segment strokes around its seams.
+            // A closed card or pill keeps Modifier.border (#82); a segment
+            // strokes around its seams (#91), a squircle chip is stroked (#122).
             .then(
-                if (openEdges.isEmpty()) {
-                    Modifier.glassRim(outline)
-                } else {
-                    Modifier.drawWithContent {
-                        drawContent()
-                        drawGlassRim(outline, openEdges)
+                when (glassRimKind(outline, openEdges)) {
+                    GlassRimKind.Border -> Modifier.glassRim(outline)
+                    // Built once per size: a generic outline is a new Path
+                    // per call, and a new Path per frame is a new mask.
+                    // Remembered, so a segment's freshly built edge set does
+                    // not throw the cache away on every recomposition.
+                    GlassRimKind.Stroke -> remember(outline, openEdges) {
+                        Modifier.drawWithCache {
+                            val rim = glassRimStroke(outline, openEdges, size, layoutDirection, this)
+                            onDrawWithContent {
+                                drawContent()
+                                drawGlassRim(rim)
+                            }
+                        }
                     }
                 }
             ),
@@ -161,6 +176,29 @@ internal val RimBrush = Brush.sweepGradient(
     colorStops = GlassLook.RimStops.map { (at, alpha) -> at to Color.White.copy(alpha = alpha) }.toTypedArray(),
 )
 
+/** How a surface draws its rim (#122). */
+internal enum class GlassRimKind {
+    /** Modifier.border: a rounded rectangle or a pill, drawn directly. */
+    Border,
+
+    /** A stroke of the outline, clipped to the surface ([drawGlassRim]). */
+    Stroke,
+}
+
+/**
+ * The rim for [shape]. A segment strokes around its seams (#91). A closed
+ * card or pill keeps Modifier.border, which draws a corner-based shape
+ * directly. Any other shape - the icon chip's squircle - is stroked too:
+ * Modifier.border builds a generic shape's rim with Path.op and rasterizes
+ * it on the CPU, again on every size change, and on unfold that was most of
+ * the launcher's first frame (#122).
+ */
+internal fun glassRimKind(shape: Shape, openEdges: Set<GlassEdge>): GlassRimKind = when {
+    openEdges.isNotEmpty() -> GlassRimKind.Stroke
+    shape is CornerBasedShape -> GlassRimKind.Border
+    else -> GlassRimKind.Stroke
+}
+
 /** The directional rim on its own, for tests: the same stroke every surface draws. */
 internal fun Modifier.glassRim(shape: androidx.compose.ui.graphics.Shape): Modifier =
     border(GlassLook.RimWidthDp.dp, RimBrush, shape)
@@ -174,30 +212,40 @@ internal fun glassOutline(radiusDp: Float, pill: Boolean, shape: Shape?, openEdg
     return RoundedCornerShape(topStart = top, topEnd = top, bottomEnd = bottom, bottomStart = bottom)
 }
 
+/** A rim stroke laid out for one size: [glassRimStroke] builds it, [drawGlassRim] draws it. */
+internal class GlassRimStroke(
+    val outline: Outline,
+    val stroke: Stroke,
+    val above: Float,
+)
+
 /**
- * The rim stroke into [this] scope, left out along [openEdges] (tests draw
- * it into a bitmap). On an open edge the outline is stroked as if it went on
- * past the edge and then clipped to the surface: the sides run to the seam
- * without a gap, and the stroke along the seam falls outside.
+ * The rim of [shape] at [size]. On an open edge the outline is stroked as if
+ * it went on past the edge and then clipped to the surface: the sides run to
+ * the seam without a gap, and the stroke along the seam falls outside.
  */
-internal fun androidx.compose.ui.graphics.drawscope.DrawScope.drawGlassRim(
+internal fun glassRimStroke(
     shape: Shape,
     openEdges: Set<GlassEdge>,
-) {
-    val stroke = GlassLook.RimWidthDp.dp.toPx()
+    size: Size,
+    layoutDirection: LayoutDirection,
+    density: Density,
+): GlassRimStroke {
+    val stroke = with(density) { GlassLook.RimWidthDp.dp.toPx() }
     val above = if (GlassEdge.Top in openEdges) stroke * 2 else 0f
     val below = if (GlassEdge.Bottom in openEdges) stroke * 2 else 0f
     // Inset by half the stroke, as Modifier.border does, so the whole rim
     // lies inside the surface's clip.
-    val inset = stroke / 2f
     val extended = Size(size.width - stroke, size.height + above + below - stroke)
+    return GlassRimStroke(shape.createOutline(extended, layoutDirection, density), Stroke(stroke), above)
+}
+
+/** Draws [rim] into this scope, clipped to it (tests draw it into a bitmap). */
+internal fun DrawScope.drawGlassRim(rim: GlassRimStroke) {
+    val inset = rim.stroke.width / 2f
     clipRect {
-        translate(left = inset, top = inset - above) {
-            drawOutline(
-                shape.createOutline(extended, layoutDirection, this),
-                RimBrush,
-                style = androidx.compose.ui.graphics.drawscope.Stroke(stroke),
-            )
+        translate(left = inset, top = inset - rim.above) {
+            drawOutline(rim.outline, RimBrush, style = rim.stroke)
         }
     }
 }

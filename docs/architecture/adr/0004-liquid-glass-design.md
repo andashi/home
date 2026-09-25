@@ -136,6 +136,58 @@ inner display shows no difference. Emulated numbers, and within the spread of
 earlier series here; recorded rather than explained away, to look at again on
 a real Pixel Fold.
 
+**The first frame after unfold (#122, 2026-09-24).** On unfold the inner
+display stays dark until every visible window has drawn at the new size, so
+the launcher's first frame there is on the path to screen-on. Measured on
+emulator-5562 (`instances/test-fold-gpu`, `GPU=host` since its first start),
+release-like builds, one snapshot per build, the hinge sensor swept 0 to 180
+degrees, times from the display-state request (`e2e/measure-unfold.sh`,
+`e2e/measurements/unfold-*.tsv`). The GrapheneOS kernel has no usable ftrace,
+so there are no atrace sections: the costs were located with simpleperf
+(`--clockid monotonic`, as root, profiling only) lined up with `gfxinfo
+framestats`, main-thread CPU in the launcher's first frame:
+
+| First frame after unfold, main thread (median) | CPU until the frame is drawn | of it, the draw | whole unfold |
+|---|---|---|---|
+| `main` (170a1d59b), 6 profiles | 104 ms | 29 ms, 18-20 ms of it the icon chips' rims | 147 ms |
+| + the squircle rim stroked (2090b1a32), 6 | 88 ms | 11 ms | 103 ms |
+| + hidden pages keep their size through the switch (762f0c5cb), 3 | 44 ms | 4 ms | 107 ms |
+
+- **The rim.** `Modifier.border` builds a generic shape's rim with `Path.op`
+  and rasterizes it on the CPU, once per size - and on unfold every dock icon
+  changes size. The squircle chip's rim is now its outline stroked, built once
+  per size (`glassRimKind`). Cards and pills keep the border for pixel
+  parity, not for speed: the border draws a corner-based shape directly, and
+  the stroke would draw their corners a little rounder. Goldens differ only
+  along the chips' rims, by anti-aliasing.
+- **Hidden pages.** The scaffold keeps search and the other closed pages
+  composed and laid out beyond the viewport. On unfold the hidden search
+  page's app grid gained columns and composed them before the home screen's
+  first frame. `OffscreenPages` never draws them and gives them a new window
+  size a second after it settles. Two frames later - the first try,
+  19ea40319 - was still inside the switch: the relayout invalidated the
+  window again, 3-6 launcher frames before screen-on instead of 1-2, and
+  screen-on did not move although the frame's work had halved.
+
+Wall clock, interleaved, 12 rounds (4 per series), host load about 0.9:
+
+| Median, ms from the display-state request | launcher's first frame presented | screen on |
+|---|---|---|
+| `main` (170a1d59b) | 214.5 (series 208 / 211 / 215) | 238.5 (234 / 270 / 223) |
+| rim only (2090b1a32) | 177 (177 / 205 / 169) | 210 (197 / 261 / 206) |
+| rim + hidden pages settle (762f0c5cb) | 167.5 (167 / 168 / 185) | 190 (199 / 187 / 225) |
+
+The launcher's frame is ready about 47 ms earlier in every series; screen-on,
+which also waits for SystemUI and the wallpaper, moved by a median 48 ms, and
+one series of three is a tie. Screen recordings (24 fps) agree: the first
+visible inner frame was the settled home screen in 12 of 13 unfolds with the
+change and 7 of 13 on `main`, where the rest showed the cover's backdrop
+stretched or a glyph missing for a frame. Twice on `main` and once with the
+change the inner display first showed the cover-sized buffer letterboxed for
+4-6 frames - a system behaviour when the dark period is very short, not the
+launcher's. Emulated numbers again: they say which build is faster, not how
+a Pixel Fold feels.
+
 ## Context
 
 The reference is the iOS home screen: frosted, translucent widget cards with
