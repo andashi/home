@@ -31,6 +31,12 @@ name: Release
 # everywhere - and a fork whose `latest` points at something old is a fork
 # whose security updates do not arrive.
 #
+# Nothing is built or published before the full test suite is green on the
+# commit being released (#132): the `tests` job runs test.yml including both
+# emulator suites (L2), and `release` needs it. main only runs L1 and L3 on
+# merge, so without this a tag could ship a combination of PRs no device test
+# has ever seen. It holds for manual runs too.
+#
 # Signing needs four repository secrets: KEYSTORE_BASE64 (the .jks, base64),
 # KEYSTORE_PASSWORD, SIGNING_KEY_ALIAS, SIGNING_KEY_PASSWORD.
 
@@ -41,11 +47,19 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
+  tests:
+    uses: ./.github/workflows/test.yml
+    with:
+      l2: true
+
   release:
+    needs: tests
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
       - name: Set up JDK 21
