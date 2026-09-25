@@ -230,4 +230,23 @@ check "wait_cells gives up after its timeout" bounded wait_cells 1 3
 check "wait_report gives up after its timeout" bounded "wait_report '.success' 3 test"
 check "wait_on_home gives up after its timeout" bounded wait_on_home grid-item:dock 3
 
+# Controls: a device that answers ends each wait at once, so a loop that
+# "passes" the tests above by always giving up would fail here.
+mkdir -p "$WORK/answering"
+cat > "$WORK/answering/adb" <<'EOF'
+#!/usr/bin/env bash
+case "$*" in
+  *"cat /sdcard/grid-dump.xml"*)
+    echo '<hierarchy><node content-desc="Search" bounds="[0,100][200,300]"/></hierarchy>' ;;
+  *"content query"*"/diagnostics"*) echo 'Row: 0 json={"success":true}' ;;
+esac
+EOF
+chmod +x "$WORK/answering/adb"
+answers_at_once() { # $@ = a wait call with a 3 s timeout
+  local start=$SECONDS
+  ( PATH="$WORK/answering:$PATH"; "$@" ) >/dev/null 2>&1 && [ $((SECONDS - start)) -lt 3 ]
+}
+check "wait_desc returns at once when the node is on screen" answers_at_once wait_desc Search 3 test
+check "wait_report returns at once when the report matches" answers_at_once wait_report '.success == true' 3 test
+
 exit "$failed"
