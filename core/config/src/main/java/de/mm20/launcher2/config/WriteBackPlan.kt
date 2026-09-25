@@ -27,6 +27,9 @@ import kotlinx.serialization.json.doubleOrNull
  */
 object WriteBackPlan {
 
+    /** `home.grid.layouts`: the grid layouts by name, the one map in the contract. */
+    val GridLayoutsPath = listOf("home", "grid", "layouts")
+
     /** Rewrite the value at [path] (object keys from the root) with [value]. */
     data class Change(val path: List<String>, val value: JsonElement)
 
@@ -59,7 +62,7 @@ object WriteBackPlan {
             if (written is JsonObject && now is JsonObject && path !in WholeValues) {
                 collect(written, canon as? JsonObject, effect as? JsonObject, now, path)
             } else if (!same(effect, now)) {
-                add(Change(path, merged(written, canon, effect, now)))
+                add(Change(path, merged(written, canon, effect, now, path)))
             }
         }
     }
@@ -69,12 +72,21 @@ object WriteBackPlan {
      * present, like a list, because their entries are data rather than keys.
      * The grid layouts are the only one.
      */
-    private val WholeValues = setOf(listOf("home", "grid", "layouts"))
+    private val WholeValues = setOf(GridLayoutsPath)
+
+
+    /**
+     * Whether [path] holds the items of a grid layout, the one place an
+     * absent option means its default (ADR 0002): `home.grid.layouts.<name>.items`.
+     */
+    private fun isGridItems(path: List<String>) =
+        path.size == GridLayoutsPath.size + 2 && path.take(GridLayoutsPath.size) == GridLayoutsPath && path.last() == "items"
 
     /**
      * The value to write for a list or map the device changed: D at every
      * depth. [written] is the file's text of it, [canon] the same parsed,
-     * [effect] what it produced, [now] the device's.
+     * [effect] what it produced, [now] the device's; [path] is where it sits,
+     * for a list the list's own.
      *
      * - What nobody changed keeps its written text: a clamped `h: 7` stays 7
      *   when its neighbour moves.
@@ -86,7 +98,13 @@ object WriteBackPlan {
      * - What the file has no counterpart for is the device's, without its
      *   option defaults.
      */
-    private fun merged(written: JsonElement?, canon: JsonElement?, effect: JsonElement?, now: JsonElement): JsonElement {
+    private fun merged(
+        written: JsonElement?,
+        canon: JsonElement?,
+        effect: JsonElement?,
+        now: JsonElement,
+        path: List<String>,
+    ): JsonElement {
         // Unchanged as a whole: the file's text, in whatever form it wrote it
         // (a personal favorite as a string, where the device serves an object).
         if (written != null && effect != null && same(effect, now)) return written
@@ -102,19 +120,26 @@ object WriteBackPlan {
                             val keyText = text?.get(key)
                             when {
                                 text != null && was != null && same(was, value) -> if (keyText != null) put(key, keyText)
-                                written == null && GridItemConfig.OptionDefaults[key]?.let { JsonPrimitive(it) == value } == true -> Unit
-                                else -> put(key, merged(keyText, (canon as? JsonObject)?.get(key), was, value))
+                                written == null && isGridItems(path) &&
+                                    GridItemConfig.OptionDefaults[key]?.let { JsonPrimitive(it) == value } == true -> Unit
+                                else -> put(key, merged(keyText, (canon as? JsonObject)?.get(key), was, value, path + key))
                             }
                         }
                     }
                 )
             }
-            is JsonArray -> mergedList(written as? JsonArray, (canon ?: written) as? JsonArray, effect as? JsonArray, now)
+            is JsonArray -> mergedList(written as? JsonArray, (canon ?: written) as? JsonArray, effect as? JsonArray, now, path)
             else -> now
         }
     }
 
-    private fun mergedList(written: JsonArray?, canon: JsonArray?, effect: JsonArray?, now: JsonArray): JsonArray {
+    private fun mergedList(
+        written: JsonArray?,
+        canon: JsonArray?,
+        effect: JsonArray?,
+        now: JsonArray,
+        path: List<String>,
+    ): JsonArray {
         val fileEntries = canon.orEmpty()
         val applied = effect.orEmpty()
         // Which file entry each applied entry came from.
@@ -128,7 +153,7 @@ object WriteBackPlan {
             // device has is still the file's own, never a second copy of it.
             val i = j?.let { fileOf[it] } ?: fileEntries.pair(entry, takenFile)?.also { takenFile += it }
             val was = j?.let { applied[it] } ?: i?.let { fileEntries[it] }
-            merged(i?.let { written?.getOrNull(it) }, i?.let { fileEntries[it] }, was, entry)
+            merged(i?.let { written?.getOrNull(it) }, i?.let { fileEntries[it] }, was, entry, path)
         }.toMutableList()
         // The file's entries that never reached the device, back where they were.
         for (i in fileEntries.indices) {

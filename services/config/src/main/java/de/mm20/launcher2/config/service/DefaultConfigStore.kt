@@ -74,21 +74,21 @@ class DefaultConfigStore(
     )
 
     /**
-     * Every source [readState] reads, the state read again on each emission,
-     * passed on when it differs - the first one on collection, so a change
-     * made before anyone collected is not lost. The wallpaper is not a
-     * source: a wallpaper picked on the device has no upload name, so it
-     * cannot be written back.
+     * Every source [readState] reads, each passing on only a change of what
+     * the config sees of it - the favorites' keys, not a launch count that
+     * moved; the settings the config covers, not every other one - and each
+     * emitting once on collection, so a change made before anyone collected
+     * is not lost. Nothing here reads the whole state: an app launch or an
+     * unrelated setting costs nothing. The wallpaper is not a source: a
+     * wallpaper picked on the device has no upload name, so it cannot be
+     * written back.
      */
     override fun changes(): Flow<Unit> = merge(
         settings.changes(),
-        favoriteApps().map { },
+        favoriteApps().map { apps -> apps.map { it.key } }.distinctUntilChanged().map { },
         searchActions.changes(),
-        *GridLayouts.All.map { layout -> homeGridRepository.observe(layout).map { } }.toTypedArray(),
+        *GridLayouts.All.map { layout -> homeGridRepository.observe(layout).distinctUntilChanged().map { } }.toTypedArray(),
     )
-        .map { readState() }
-        .distinctUntilChanged()
-        .map { }
 
     override suspend fun readState(): ConfigState {
         val settingsState = settings.readState()

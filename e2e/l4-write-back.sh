@@ -69,13 +69,6 @@ trap cleanup EXIT
 
 SETTINGS_ACTIVITY="$PKG/de.mm20.launcher2.ui.settings.SettingsActivity"
 
-assert_jq() { # $1 = json, $2 = jq filter, $3 = description
-  if ! jq -e "$2" >/dev/null 2>&1 <<<"$1"; then
-    printf 'offending json:\n%s\n' "$1" >&2
-    die "assertion failed: $3"
-  fi
-}
-
 # The settings row with this text, scrolled into view: first further down,
 # then back up, since an earlier tap may have left the list scrolled.
 tap_setting() { # $1 = visible text
@@ -98,14 +91,6 @@ open_grid_settings() {
   wait_text "Show apps in a list" 30
 }
 
-wait_text() { # $1 = visible text, $2 = timeout (s)
-  local elapsed=0
-  until [ -n "$(node_bounds text "$1")" ]; do
-    [ "$elapsed" -lt "$2" ] || die "timed out (${2}s) waiting for '$1' on screen"
-    sleep 1; elapsed=$((elapsed + 1))
-  done
-}
-
 wait_text_containing() { # $1 = part of a visible text, $2 = timeout (s)
   local elapsed=0
   while :; do
@@ -114,10 +99,6 @@ wait_text_containing() { # $1 = part of a visible text, $2 = timeout (s)
     [ "$elapsed" -lt "$2" ] || die "timed out (${2}s) waiting for a text with '$1' on screen"
     sleep 1; elapsed=$((elapsed + 1))
   done
-}
-
-pull_config() { # $1 = local file
-  adb -s "$SERIAL" pull "$DEVICE_CONFIG" "$1" >/dev/null 2>&1 || die "adb pull of $DEVICE_CONFIG failed"
 }
 
 (cd "$GOS_REPO" && emulator/device-lock.sh acquire "$LOCK_OWNER" "$SERIAL")

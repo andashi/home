@@ -13,6 +13,7 @@ import de.mm20.launcher2.searchactions.builders.CustomIntentActionBuilder
 import de.mm20.launcher2.searchactions.builders.CustomWebsearchActionBuilder
 import de.mm20.launcher2.searchactions.builders.SearchActionBuilder
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -31,7 +32,7 @@ interface SearchActionStore {
      */
     suspend fun replace(actions: List<SearchActionConfig>, basePath: String): List<Diagnostic>
 
-    /** Emits when the actions change, for write-back to follow (#3 slice 4). */
+    /** Emits once on collection and then whenever the actions change, for write-back to follow (#3 slice 4). */
     fun changes(): Flow<Unit> = emptyFlow()
 }
 
@@ -48,7 +49,8 @@ internal class AndroidSearchActionStore(
     override suspend fun read(): List<SearchActionConfig> =
         repository.getSearchActionBuilders().first().map { it.toConfig() }
 
-    override fun changes(): Flow<Unit> = repository.getSearchActionBuilders().map { }
+    override fun changes(): Flow<Unit> =
+        repository.getSearchActionBuilders().map { builders -> builders.map { it.toConfig() } }.distinctUntilChanged().map { }
 
     override suspend fun replace(actions: List<SearchActionConfig>, basePath: String): List<Diagnostic> {
         val diagnostics = mutableListOf<Diagnostic>()

@@ -10,7 +10,6 @@ import de.mm20.launcher2.config.GridItemConfig
 import de.mm20.launcher2.config.GridLayoutConfig
 import de.mm20.launcher2.config.JsoncObjectSpan
 import de.mm20.launcher2.config.JsoncSpanResult
-import de.mm20.launcher2.config.ReloadReport
 import de.mm20.launcher2.config.ReloadTrigger
 import de.mm20.launcher2.homegrid.HomeGridItem
 import de.mm20.launcher2.homegrid.HomeGridLayouts

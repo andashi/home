@@ -1,18 +1,29 @@
 package de.mm20.launcher2.config.service
 
 import de.mm20.launcher2.config.ConfigDiffer
+import de.mm20.launcher2.config.ConfigMutation
 import de.mm20.launcher2.config.ConfigParser
+import de.mm20.launcher2.config.Diagnostic
+import de.mm20.launcher2.config.LauncherConfig
 import de.mm20.launcher2.config.ReloadTrigger
 import de.mm20.launcher2.config.Severity
 import de.mm20.launcher2.config.toLauncherConfig
 import de.mm20.launcher2.homegrid.HomeGridItem
 import de.mm20.launcher2.homegrid.HomeGridLayouts
 import de.mm20.launcher2.homegrid.HomeGridWidgets
+import java.io.File
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
+import kotlinx.coroutines.yield
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -20,7 +31,6 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
-import java.io.File
 
 /**
  * #3 slice 4: a change made on the device goes back into the keys the file
@@ -185,12 +195,12 @@ class ConfigWriteBackTest {
     @Test
     fun `the store's changes arrive on collection and after a change on the device`() = runBlocking {
         applied(searchFile)
-        val seen = kotlinx.coroutines.channels.Channel<Unit>(kotlinx.coroutines.channels.Channel.UNLIMITED)
-        val collecting = launch(kotlinx.coroutines.Dispatchers.Default) { real.store.changes().collect { seen.send(Unit) } }
+        val seen = Channel<Unit>(Channel.UNLIMITED)
+        val collecting = launch(Dispatchers.Default) { real.store.changes().collect { seen.send(Unit) } }
         try {
-            kotlinx.coroutines.withTimeout(10_000) { seen.receive() }
+            withTimeout(10_000) { seen.receive() }
             onDevice("""{"schemaVersion":2,"search":{"layout":"list"}}""")
-            kotlinx.coroutines.withTimeout(10_000) { seen.receive() }
+            withTimeout(10_000) { seen.receive() }
         } finally {
             collecting.cancel()
         }
@@ -199,14 +209,14 @@ class ConfigWriteBackTest {
     @Test
     fun `a setting changed on the device reaches the file without being asked`() = runBlocking {
         applied(searchFile)
-        val scope = kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.SupervisorJob() + kotlinx.coroutines.Dispatchers.Default)
+        val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
         try {
             ConfigWriteBackTrigger(real.store, { writeBack.write() }, scope).start()
-            kotlinx.coroutines.withTimeout(10_000) { writeBack.lastResult.first { it != null } }
+            withTimeout(10_000) { writeBack.lastResult.first { it != null } }
 
             onDevice("""{"schemaVersion":2,"search":{"layout":"list"}}""")
 
-            kotlinx.coroutines.withTimeout(10_000) { writeBack.lastResult.first { it is WriteBackResult.Written } }
+            withTimeout(10_000) { writeBack.lastResult.first { it is WriteBackResult.Written } }
             assertEquals(searchFile.replace("\"layout\": \"grid\"", "\"layout\": \"list\""), file.readText())
         } finally {
             scope.cancel()
@@ -221,7 +231,7 @@ class ConfigWriteBackTest {
      * and says what the device serves, the grid-item options the file wrote
      * out included.
      */
-    private suspend fun roundTrip(example: String): Pair<de.mm20.launcher2.config.LauncherConfig, de.mm20.launcher2.config.LauncherConfig> {
+    private suspend fun roundTrip(example: String): Pair<LauncherConfig, LauncherConfig> {
         real.install("com.example.dialer")
         real.install("com.example.work.mail", real.work)
         real.install("com.example.maps")
@@ -229,7 +239,7 @@ class ConfigWriteBackTest {
         val served = ConfigParser.parse(example).config!!
         onDevice(
             ConfigParser.json.encodeToString(
-                de.mm20.launcher2.config.LauncherConfig.serializer(),
+                LauncherConfig.serializer(),
                 served.copy(
                     home = served.home!!.copy(
                         favorites = served.home!!.favorites!!.reversed(),
@@ -250,7 +260,7 @@ class ConfigWriteBackTest {
 
         assertTrue(result.toString(), result is WriteBackResult.Written)
         val written = ConfigParser.parse(file.readText())
-        assertEquals(emptyList<de.mm20.launcher2.config.Diagnostic>(), written.diagnostics)
+        assertEquals(emptyList<Diagnostic>(), written.diagnostics)
         return real.store.readState().toLauncherConfig() to written.config!!
     }
 
@@ -285,7 +295,7 @@ class ConfigWriteBackTest {
     fun `a change made on the device while a reload applies is written back afterwards`() = runBlocking {
         applied(twoSections)
         val duringApply = object : ConfigStore by real.store {
-            override suspend fun apply(mutations: List<de.mm20.launcher2.config.ConfigMutation>) =
+            override suspend fun apply(mutations: List<ConfigMutation>) =
                 real.store.apply(mutations).also { onDevice("""{"schemaVersion":2,"icons":{"themed":true}}""") }
         }
         val newer = twoSections.replace("\"grid\"", "\"list\"")
@@ -306,18 +316,18 @@ class ConfigWriteBackTest {
     @Test
     fun `a write-back asked for during a reload waits for it and finds nothing to write`() = runBlocking {
         applied(twoSections)
-        val gate = kotlinx.coroutines.CompletableDeferred<Unit>()
+        val gate = CompletableDeferred<Unit>()
         val slowApply = object : ConfigStore by real.store {
-            override suspend fun apply(mutations: List<de.mm20.launcher2.config.ConfigMutation>) =
+            override suspend fun apply(mutations: List<ConfigMutation>) =
                 gate.await().let { real.store.apply(mutations) }
         }
         val newer = twoSections.replace("\"grid\"", "\"list\"")
         put(newer)
 
         val reload = launch { ConfigReloader(slowApply, reportStore, lock, baselineStore).reload(file) }
-        kotlinx.coroutines.yield()
+        yield()
         val write = async { writeBack.write() }
-        kotlinx.coroutines.yield()
+        yield()
         assertTrue("the write-back waits for the reload", write.isActive)
         gate.complete(Unit)
         reload.join()

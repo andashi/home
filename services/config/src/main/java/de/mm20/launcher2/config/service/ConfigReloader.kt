@@ -115,11 +115,8 @@ class ConfigReloader(
             )
         }
 
-        var before: ConfigState? = null
-        val mutations = try {
-            val state = configStore.readState()
-            before = state
-            ConfigDiffer.diff(config, state)
+        val (before, mutations) = try {
+            configStore.readState().let { it to ConfigDiffer.diff(config, it) }
         } catch (e: Exception) {
             return persist(
                 ReloadReport(
@@ -161,7 +158,7 @@ class ConfigReloader(
             .distinct()
             .filter { section -> failedSections.none { it.isInSection(section) } }
 
-        before?.let { recordBaseline(configSha256, it, mutations.map { m -> m.section }) }
+        recordBaseline(configSha256, before, mutations.map { it.section })
         return persist(
             ReloadReport(
                 success = applyDiagnostics.none { it.severity == Severity.Error },
@@ -188,8 +185,8 @@ class ConfigReloader(
         try {
             val after = configStore.readState()
             val effective = baselineOf(
-                ConfigWriteBack.effective(before.toLauncherConfig()),
-                ConfigWriteBack.effective(after.toLauncherConfig()),
+                effectiveTree(before.toLauncherConfig()),
+                effectiveTree(after.toLauncherConfig()),
                 applied,
             )
             store.save(AppliedBaseline(configSha256, effective))

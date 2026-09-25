@@ -9,6 +9,7 @@ import de.mm20.launcher2.config.SearchBarPosition
 import de.mm20.launcher2.preferences.LauncherDataStore
 import de.mm20.launcher2.preferences.LauncherSettingsData
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -50,7 +51,11 @@ interface LauncherConfigSettings {
      */
     suspend fun apply(mutations: List<ConfigMutation>)
 
-    /** Emits when the settings change, for write-back to follow (#3 slice 4). */
+    /**
+     * Emits once on collection and then whenever the settings-backed state
+     * changes, for write-back to follow (#3 slice 4). A write to a setting the
+     * config does not cover emits nothing.
+     */
     fun changes(): Flow<Unit> = emptyFlow()
 }
 
@@ -58,10 +63,11 @@ internal class LauncherConfigSettingsImpl(
     private val dataStore: LauncherDataStore,
 ) : LauncherConfigSettings {
 
-    override fun changes(): Flow<Unit> = dataStore.data.map { }
+    override fun changes(): Flow<Unit> = dataStore.data.map { stateOf(it) }.distinctUntilChanged().map { }
 
-    override suspend fun readState(): ConfigState {
-        val data = dataStore.data.first()
+    override suspend fun readState(): ConfigState = stateOf(dataStore.data.first())
+
+    private fun stateOf(data: LauncherSettingsData): ConfigState {
         return ConfigState(
             themedIcons = data.iconsThemed,
             enforceThemedIcons = data.iconsForceThemed,

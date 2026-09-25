@@ -278,6 +278,19 @@ class WriteBackPlanTest {
         )
     }
 
+    /** The option defaults are the grid items' exception, not a rule for any key that shares a name. */
+    @Test
+    fun `a new entry outside the grid keeps a value that looks like an option default`() {
+        val file = """{"schemaVersion":2,"search":{"actions":[]}}"""
+        val result = WriteBackPlan.changes(
+            tree(file),
+            tree(file),
+            tree("""{"schemaVersion":2,"search":{"actions":[{"type":"url","background":true}]}}"""),
+        )
+
+        assertEquals(ConfigParser.json.parseToJsonElement("""[{"type":"url","background":true}]"""), result.single().value)
+    }
+
     @Test
     fun `a splice rewrites the changed values and keeps every other byte`() {
         val file = """

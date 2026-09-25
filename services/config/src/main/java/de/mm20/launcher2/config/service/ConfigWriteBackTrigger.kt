@@ -51,8 +51,6 @@ class ConfigWriteBackTrigger(
         job?.cancel()
         job = null
     }
-
-    private companion object {
-        const val TAG = "ConfigWriteBack"
-    }
 }
+
+private const val TAG = "ConfigWriteBack"

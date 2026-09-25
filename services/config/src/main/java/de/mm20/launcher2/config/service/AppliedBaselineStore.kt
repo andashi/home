@@ -6,7 +6,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import java.io.File
 import java.io.IOException
@@ -38,13 +37,7 @@ class AppliedBaselineStore(context: Context) {
     private val file = File(context.filesDir, "config/applied-baseline.json")
 
     suspend fun save(baseline: AppliedBaseline) = withContext(Dispatchers.IO) {
-        file.parentFile?.mkdirs()
-        val tmp = File(file.parentFile, "${file.name}.tmp")
-        tmp.writeText(ConfigParser.json.encodeToString(AppliedBaseline.serializer(), baseline))
-        if (!tmp.renameTo(file)) {
-            tmp.delete()
-            throw IOException("Could not replace ${file.name}")
-        }
+        file.replaceAtomically(ConfigParser.json.encodeToString(AppliedBaseline.serializer(), baseline))
     }
 
     suspend fun read(): AppliedBaseline? = withContext(Dispatchers.IO) {
@@ -95,15 +88,4 @@ internal fun baselineOf(before: JsonObject, after: JsonObject, applied: Collecti
         if (applied.any { section.startsWith("$it.") }) out = out.with(section.split('.'), before.at(section.split('.')))
     }
     return out
-}
-
-private fun JsonObject.at(path: List<String>): JsonElement? =
-    path.fold<String, JsonElement?>(this) { node, key -> (node as? JsonObject)?.get(key) }
-
-/** This object with the value at [path] set to [value], or removed when [value] is null. */
-private fun JsonObject.with(path: List<String>, value: JsonElement?): JsonObject {
-    val key = path.first()
-    if (path.size == 1) return JsonObject(if (value == null) this - key else this + (key to value))
-    val child = this[key] as? JsonObject ?: if (value == null) return this else JsonObject(emptyMap())
-    return JsonObject(this + (key to child.with(path.drop(1), value)))
 }

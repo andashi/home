@@ -9,6 +9,7 @@ import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
+import kotlinx.serialization.json.JsonObject
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
@@ -153,7 +154,7 @@ class ConfigWatcherTest {
         writeConfig()
         val hash = configFile().readBytes().sha256Hex()
         reportStore.save(ReloadReport(success = true, configSha256 = hash))
-        baselines.save(AppliedBaseline(hash, kotlinx.serialization.json.JsonObject(emptyMap())))
+        baselines.save(AppliedBaseline(hash, JsonObject(emptyMap())))
 
         watcher.startupCheck()!!.join()
 

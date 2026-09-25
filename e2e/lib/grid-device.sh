@@ -321,3 +321,22 @@ screenshot() { # $1 = output file
   adb -s "$SERIAL" exec-out screencap -p > "$1" 2>/dev/null
   file "$1" | grep -q 'PNG image' || die "screencap did not produce a PNG for $1"
 }
+
+assert_jq() { # $1 = json, $2 = jq filter, $3 = description
+  if ! jq -e "$2" >/dev/null 2>&1 <<<"$1"; then
+    printf 'offending json:\n%s\n' "$1" >&2
+    die "assertion failed: $3"
+  fi
+}
+
+pull_config() { # $1 = local file
+  adb -s "$SERIAL" pull "$DEVICE_CONFIG" "$1" >/dev/null 2>&1 || die "adb pull of $DEVICE_CONFIG failed"
+}
+
+wait_text() { # $1 = visible text, $2 = timeout (s)
+  local elapsed=0
+  until [ -n "$(node_bounds text "$1")" ]; do
+    [ "$elapsed" -lt "$2" ] || die "timed out (${2}s) waiting for '$1' on screen"
+    sleep 1; elapsed=$((elapsed + 1))
+  done
+}

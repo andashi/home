@@ -5,7 +5,6 @@ import android.util.Log
 import de.mm20.launcher2.config.ConfigMigrations
 import de.mm20.launcher2.config.ConfigParser
 import de.mm20.launcher2.config.Diagnostic
-import de.mm20.launcher2.config.LauncherConfig
 import de.mm20.launcher2.config.ReloadReport
 import de.mm20.launcher2.config.ReloadTrigger
 import de.mm20.launcher2.config.Severity
@@ -15,7 +14,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.intOrNull
@@ -118,11 +116,12 @@ class ConfigWriteBack(
         if (gridEdit && gridLocked) {
             return skipped("locked", "home.grid.locked is true; nothing is written back")
         }
+        val literal = ConfigParser.json.parseToJsonElement(text).jsonObject
         // The parsed config carries the migrated version; the declared one
         // is what is on disk. A v1 file is read through migration but never
         // written: current keys next to v1 keys would be a shape nobody can
         // regenerate from.
-        val declared = declaredSchemaVersion(text)
+        val declared = (literal["schemaVersion"] as? JsonPrimitive)?.intOrNull
         if (declared != null && declared < ConfigMigrations.currentSchemaVersion) {
             return skipped(
                 "schema-version-outdated",
@@ -132,11 +131,10 @@ class ConfigWriteBack(
                     "to enable write-back.",
             )
         }
-        val literal = ConfigParser.json.parseToJsonElement(text).jsonObject
         // W1: the file never grows a section. A grid edit on a file that does
         // not manage the grid stays on the device, and the person is told
         // how to make the file manage it (ADR 0003).
-        if (gridEdit && literal.at("home", "grid", "layouts") == null) {
+        if (gridEdit && literal.at(WriteBackPlan.GridLayoutsPath) == null) {
             return skipped(
                 "grid-unmanaged",
                 "${file.name} does not manage the home grid; add \"layouts\": {} under home.grid " +
@@ -155,8 +153,8 @@ class ConfigWriteBack(
             return skipped("not-applied-yet", "${file.name} changed since it was last applied; it is reloaded first")
         }
 
-        val device = effective(configStore.readState().toLauncherConfig())
-        val changes = WriteBackPlan.changes(literal, baseline.effective, device, canonical = effective(config))
+        val device = effectiveTree(configStore.readState().toLauncherConfig())
+        val changes = WriteBackPlan.changes(literal, baseline.effective, device, canonical = effectiveTree(config))
             // W2: a locked grid is not the device's to change, whatever else is.
             .filterNot { gridLocked && it.path.take(2) == listOf("home", "grid") }
         if (changes.isEmpty()) return WriteBackResult.Unchanged
@@ -174,15 +172,9 @@ class ConfigWriteBack(
             return skipped("write-back-produced-invalid-json", "internal error, nothing was written")
         }
 
-        val tmp = File(file.parentFile, "${file.name}.wb")
         try {
-            tmp.writeText(spliced)
-            if (!tmp.renameTo(file)) {
-                tmp.delete()
-                return skipped("write-failed", "could not replace ${file.name}")
-            }
+            file.replaceAtomically(spliced, tempSuffix = ".wb")
         } catch (e: IOException) {
-            tmp.delete()
             return skipped("write-failed", "could not write ${file.name}: ${e.message}")
         }
 
@@ -211,10 +203,12 @@ class ConfigWriteBack(
     private suspend fun recordSkip(skip: WriteBackResult.Skipped) {
         try {
             val last = reportStore.read() ?: return
+            val code = SkipCodePrefix + skip.code
+            if (last.diagnostics.any { it.code == code && it.message == skip.reason }) return
             val others = last.diagnostics.filterNot { it.code.startsWith(SkipCodePrefix) }
             reportStore.save(
                 last.copy(
-                    diagnostics = others + Diagnostic(Severity.Warning, SkipCodePrefix + skip.code, "", skip.reason),
+                    diagnostics = others + Diagnostic(Severity.Warning, code, "", skip.reason),
                 )
             )
         } catch (e: Exception) {
@@ -224,27 +218,12 @@ class ConfigWriteBack(
 
     private fun skipped(code: String, reason: String) = WriteBackResult.Skipped(code, reason)
 
-    /** The `schemaVersion` as written in the file, before migration. Null when it cannot be read. */
-    private fun declaredSchemaVersion(text: String): Int? = try {
-        (ConfigParser.json.parseToJsonElement(text) as? JsonObject)
-            ?.get("schemaVersion")?.let { it as? JsonPrimitive }?.intOrNull
-    } catch (e: SerializationException) {
-        null
-    } catch (e: IllegalArgumentException) {
-        null
-    }
 
-    private fun JsonObject.at(vararg path: String): Any? =
-        path.fold<String, Any?>(this) { node, key -> (node as? JsonObject)?.get(key) }
 
     companion object {
         private const val TAG = "ConfigWriteBack"
 
         /** A skipped write-back in the reload report: `write-back-skipped:<code>`. */
         const val SkipCodePrefix = "write-back-skipped:"
-
-        /** The effective config as the tree a write-back compares and a baseline records. */
-        fun effective(config: LauncherConfig): JsonObject =
-            ConfigParser.json.encodeToJsonElement(LauncherConfig.serializer(), config).jsonObject
     }
 }

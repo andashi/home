@@ -31,9 +31,10 @@ interface ConfigStore {
     suspend fun apply(mutations: List<ConfigMutation>): List<Diagnostic>
 
     /**
-     * Emits once on collection and then whenever the effective state
-     * changes, whoever changed it - the device or a reload - for write-back
-     * to follow (#3 slice 4).
+     * Emits at least once on collection and then whenever the effective
+     * state changes, whoever changed it - the device or a reload - for
+     * write-back to follow (#3 slice 4). It may emit for a change that turns
+     * out to be none; a write-back then finds nothing to write.
      */
     fun changes(): Flow<Unit> = emptyFlow()
 }
