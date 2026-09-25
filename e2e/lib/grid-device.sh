@@ -41,6 +41,23 @@ retry_for() { # $1 = timeout (s), $2... = command
   return 1
 }
 
+# Runs "$@" up to $1 times, the adb calls of each attempt capped at $2
+# seconds, so the total is bounded by construction (rounds x (cap + 1 s)).
+# For waits whose question is "did it happen", where the cost of asking
+# varies with host load and has nothing to do with the answer. Leaves the
+# attempt count in ROUNDS_USED.
+ROUNDS_USED=0
+retry_rounds() { # $1 = rounds, $2 = cap per round (s), $3... = command
+  local rounds=$1 cap=$2 i
+  shift 2
+  for ((i = 1; i <= rounds; i++)); do
+    ROUNDS_USED=$i
+    ADB_DEADLINE=$((SECONDS + cap)) "$@" && return 0
+    [ "$i" -lt "$rounds" ] && sleep 1
+  done
+  return 1
+}
+
 # Succeeds when "$@" prints anything.
 shows() { [ -n "$("$@" 2>/dev/null)" ]; }
 
@@ -385,30 +402,32 @@ resolve_postures() {
 # on the other display, and a check made before that sees the blank in
 # between (it did: 2 frames on the cover).
 #
-# 30 s by default, derived from a clean measurement on emulator-5560
-# (2026-09-25, 8 posture changes): the dock was back on the first dump after
-# unfolding (2-3 s), and on the first or second after folding (4-5 s or
-# 11 s; the launcher had focus at each miss). One round costs at most about
-# 8 s (dump, wake, home, pause), so 30 s allows three rounds, about 2.7
-# times the worst case seen. A timeout names the rounds and what had focus.
-HOME_ROUNDS=0
-home_shows() {
-  HOME_ROUNDS=$((HOME_ROUNDS + 1))
-  shows id_bounds "$1" && return 0
-  wake_screen; show_home; return 1
-}
-wait_on_home() { # $1 = resource id, $2 = timeout (s)
-  local focus shot="${MISS_DIR:-${TMPDIR:-/tmp}}/wait_on_home-$SERIAL-$(date +%s).png"
-  HOME_ROUNDS=0
-  retry_for "${2:-30}" home_shows "$1" && return 0
+# Bounded by rounds, not seconds (#126). What it waits for costs the device
+# 2-3 s; what varies is the observation, a uiautomator dump, which took about
+# 4 s on an unloaded host and about 15 s with a second emulator running. A
+# wall-clock bound meant 3 rounds on one and 2 on the other, and one dump
+# cannot tell "not yet" from "not coming". So: 3 rounds (the clean
+# measurement on emulator-5560, 8 posture changes, never needed more than 2),
+# each capped by ROUND_CAP through adb_t, so a wedged device still ends after
+# at most 3 x (ROUND_CAP + 1) s. A success logs the rounds and the seconds, so
+# a slow host shows as slow instead of hiding inside a round count. Device
+# runs on one host go one at a time all the same: every cost here assumes an
+# unloaded host.
+home_shows() { shows id_bounds "$1" && return 0; wake_screen; show_home; return 1; }
+wait_on_home() { # $1 = resource id, [$2 = rounds, default 3]
+  local rounds=${2:-3} t0=$SECONDS focus shot="${MISS_DIR:-${TMPDIR:-/tmp}}/wait_on_home-$SERIAL-$(date +%s).png"
+  if retry_rounds "$rounds" "${ROUND_CAP:-20}" home_shows "$1"; then
+    log "'$1' on home after $ROUNDS_USED rounds, $((SECONDS - t0)) s"
+    return 0
+  fi
   # The diagnosis shares 2 s of its own: on a wedged connection it must not
-  # carry the timeout further than the wait did. The picture goes through
+  # carry the wait further than its rounds did. The picture goes through
   # `screenshot`, which picks the display on a foldable, and outside $WORK,
-  # which is gone at exit. A failed picture never masks the timeout.
+  # which is gone at exit. A failed picture never masks the failure.
   local ADB_DEADLINE=$((SECONDS + 2))
   focus="$(adb_t shell dumpsys window 2>/dev/null | tr -d '\r' | awk '/mCurrentFocus/ { print $NF; exit }')"
   ( screenshot "$shot" ) >/dev/null 2>&1 || shot="none"
-  die "'$1' did not come back on the home screen within ${2:-30}s ($HOME_ROUNDS rounds; focus: ${focus:-unknown}; screen: $shot)"
+  die "'$1' did not come back on the home screen after $rounds rounds ($((SECONDS - t0)) s; focus: ${focus:-unknown}; screen: $shot)"
 }
 
 posture() { # $1 = closed | half | opened, [$2 = resource id to wait for on home]

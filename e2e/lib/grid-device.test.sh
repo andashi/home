@@ -228,9 +228,15 @@ check "wait_desc gives up after its timeout" bounded wait_desc Search 3 test
 check "wait_id gives up after its timeout" bounded wait_id grid-edit-done 3 test
 check "wait_cells gives up after its timeout" bounded wait_cells 1 3
 check "wait_report gives up after its timeout" bounded "wait_report '.success' 3 test"
-# wait_on_home is bounded by rounds, each capped through adb_t by ROUND_CAP,
-# so a wedged device ends after rounds x (cap + pause).
-check "wait_on_home gives up after its rounds on a wedged device" bounded ROUND_CAP=1 wait_on_home grid-item:dock 3
+# wait_on_home is bounded by rounds, each capped through adb_t by ROUND_CAP:
+# on a wedged device it ends after rounds x (cap + 1 s pause) plus the
+# diagnosis's own 2 s. 3 rounds at a 1 s cap: 3 x 2 + 2 = 8 s.
+wait_on_home_is_bounded_by_its_rounds() {
+  local start=$SECONDS
+  ( PATH="$WORK/wedged:$PATH" timeout 30 bash -c "$(declare -f); $(declare -p SERIAL PKG WORK STATE_URI 2>/dev/null); ROUND_CAP=1 wait_on_home grid-item:dock 3" ) >/dev/null 2>&1 && return 1
+  [ $((SECONDS - start)) -le $((3 * (1 + 1) + 2)) ]
+}
+check "wait_on_home gives up after its rounds on a wedged device" wait_on_home_is_bounded_by_its_rounds
 
 # Controls: a device that answers ends each wait at once, so a loop that
 # "passes" the tests above by always giving up would fail here.
