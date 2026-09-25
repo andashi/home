@@ -56,6 +56,8 @@ class ConfigSchemaTest {
     fun `every documented example is valid against the schema`() {
         val examples = buildList {
             add("ADR 0002" to fencedJsonAfter(File(root, "docs/architecture/adr/0002-config-format-json.md").readText(), "<!-- adr-0002-example -->"))
+            // Every key the contract has, each off its default (CompleteExampleTest).
+            add("complete-example.json" to File(root, "docs/configuration/complete-example.json").readText())
             File(root, "docs/configuration").listFiles { f -> f.extension == "md" }!!.sortedBy { it.name }.forEach { page ->
                 configExamples(page.readText()).forEachIndexed { i, example -> add("${page.name} #${i + 1}" to example) }
             }
