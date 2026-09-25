@@ -74,17 +74,27 @@ class HomeGridWriteBackAdapterTest {
         assertEquals(listOf(dock), repository.layouts.value[HomeGridLayouts.Phone])
     }
 
+    /** The file applied first, so the write-back has the baseline it needs (#3 slice 4); it has `layouts`, so it manages the grid (W1). */
     @Test
     fun `a written file is reported as written`() = runBlocking {
-        val repository = RecordingRepository()
-        val file = File(context.filesDir, "wb-adapter-test/launcher.json").apply {
-            parentFile!!.mkdirs()
-            writeText("""{ "schemaVersion": 2, "home": { "grid": { "columns": 4 } } }""")
+        val real = RealConfigStore()
+        try {
+            val file = File(context.filesDir, "wb-adapter-test/launcher.json").apply {
+                parentFile!!.mkdirs()
+                writeText("""{ "schemaVersion": 2, "home": { "grid": { "columns": 4, "layouts": { "phone": { "items": [] } } } } }""")
+            }
+            val reportStore = ReloadReportStore(context)
+            val baselines = AppliedBaselineStore(context)
+            val lock = ConfigFileLock()
+            ConfigReloader(real.store, reportStore, lock, baselines).reload(file)
+            val writeBack = GridWriteBack(context, real.grid, real.store, reportStore, lock, fileProvider = { file }, baselineStore = baselines)
+
+            val result = HomeGridWriteBackAdapter(writeBack).write(HomeGridLayouts.Phone, listOf(dock))
+
+            assertEquals(HomeGridWriteResult.Written, result)
+            assertTrue(file.readText().contains("\"dock\""))
+        } finally {
+            real.close()
         }
-
-        val result = adapter(file, repository).write(HomeGridLayouts.Phone, listOf(dock))
-
-        assertEquals(HomeGridWriteResult.Written, result)
-        assertTrue(file.readText().contains("\"layouts\""))
     }
 }

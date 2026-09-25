@@ -140,7 +140,8 @@ class ConfigWriteBack(
             return skipped(
                 "grid-unmanaged",
                 "${file.name} does not manage the home grid; add \"layouts\": {} under home.grid " +
-                    "to keep the arrangement in the file",
+                    "to keep the arrangement in the file (an empty \"grid\": {} is not enough: " +
+                    "only keys the file has are written back)",
             )
         }
 

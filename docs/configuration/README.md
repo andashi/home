@@ -27,8 +27,16 @@ Fold (cover and inner display).
 The top level has five keys: `schemaVersion` (required, currently `2`),
 `icons`, `appearance`, `home` and `search`. Everything else is optional, and **an absent
 key means "unmanaged", not "off"**: the launcher leaves whatever is set on the
-device. One named exception: a grid item's `borderless`, `background` and
-`themeColors` take their defaults when absent ([Home grid](home-grid.md)). Comments and trailing commas are allowed (JSONC).
+device. Comments and trailing commas are allowed (JSONC).
+
+The exceptions, in one place:
+- a grid item's `borderless`, `background` and `themeColors` take their
+  defaults when absent ([Home grid](home-grid.md)), and a write-back leaves
+  them out again while they have their default;
+- the wallpaper is not written back from the device: a wallpaper picked
+  there has no upload name to write ([below](#changes-made-on-the-device));
+- a grid item without geometry is placed by the launcher, and that
+  placement is not written back; moving the item on the device is.
 
 The smallest valid file:
 
@@ -148,8 +156,8 @@ A change stays on the device, and the report says why, when:
   is broken, has errors, or is an older `schemaVersion`; it is never
   overwritten.
 
-The wallpaper is not written back: a wallpaper picked on the device has no
-upload name to write.
+What is never written back is listed with the other exceptions under
+[The file](#the-file).
 
 ## Removed keys
 
