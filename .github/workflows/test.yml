@@ -6,16 +6,9 @@ name: Tests
 # nothing until it has a pull request; see the note on `push` below.
 # L4 stays manual/local: it needs the self-built GrapheneOS emulator (ADR 0005).
 #
-# L2 runs in two places after a merge, and each is there for its own reason (#132):
-# - On main, so a red combination is seen at once. PRs merged close together
-#   meet for the first time on main, each green on its own head. This run
-#   comes after the merge, so it costs runner minutes, not merge latency.
-#   It was not hypothetical: a control test from #123 went red on main and
-#   stayed red through three more merges until someone read a log.
-# - In release.yml, which calls this workflow with `l2: true` and publishes
-#   only when every job is green. A red main run can be ignored and a tag can
-#   name a commit whose main run has not finished (three merges in ten
-#   seconds, the tag minutes later); the release cannot go past a red run.
+# release.yml calls this workflow and builds nothing unless every job is
+# green; why the release repeats what main already ran: AGENTS.md § CI and
+# § Releases (#132).
 # The tag push itself does not trigger this workflow - the call does, so there
 # is one run per release, not two.
 
@@ -32,11 +25,6 @@ on:
     branches: [main]
   pull_request:
   workflow_call:
-    inputs:
-      l2:
-        description: Run the emulator suites (L2) as well.
-        type: boolean
-        default: true
 
 permissions:
   contents: read
@@ -91,10 +79,9 @@ jobs:
             '**/build/reports/kover/html'
           retention-days: 14
 
-  # release.yml's two guarantees (#132): the release needs this whole suite,
-  # and only a tag push touches the release key. A static check, because both
-  # fail silently: a dropped `needs` still publishes, and a branch dispatch
-  # signed with the production key still looks like a release.
+  # release.yml's two guarantees (#132), checked statically because both fail
+  # silently: a dropped `needs` still publishes, and a branch build signed
+  # with the production key still looks like a release.
   release-gate:
     runs-on: ubuntu-latest
     steps:
@@ -125,10 +112,6 @@ jobs:
           retention-days: 14
 
   l2-compose-ui:
-    # In a called run `github.event_name` and `github.ref` are the caller's (a
-    # tag push), so the release asks for L2 through the input; on push and
-    # pull_request events `inputs` is empty.
-    if: ${{ github.event_name != 'push' || github.ref == 'refs/heads/main' || inputs.l2 }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -161,7 +144,6 @@ jobs:
   # itself by assumption on a device without postures, so the phone job above
   # stays green and this job is the one that proves the fold.
   l2-fold:
-    if: ${{ github.event_name != 'push' || github.ref == 'refs/heads/main' || inputs.l2 }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
