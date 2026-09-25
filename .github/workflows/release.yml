@@ -43,7 +43,9 @@ name: Release
 # build (R8, resource shrinking), no key, no upload. A branch build signed with
 # the production key would be downloadable by anyone who can read the
 # repository, and the signer certificate would no longer tell it from a
-# release. .github/scripts/check-release-gate.py enforces both in CI.
+# release. A release also ships launcher.schema.json, the JSON Schema of the
+# config this version reads, hashed in SHA256SUMS (ADR 0002).
+# .github/scripts/check-release-gate.py enforces all three in CI.
 on:
   push:
     tags:
@@ -158,8 +160,13 @@ jobs:
           out=app/app/build/outputs/apk/default/release
           apk="org.andashi.home-${VERSION_NAME_OVERRIDE}.apk"
           mv "$out/app-default-release.apk" "$out/$apk"
+          # The JSON Schema of launcher.json this release parses (ADR 0002),
+          # so an editor or the provisioning host can validate against the
+          # version it deploys. ConfigSchemaTest keeps the checked-in file equal
+          # to the generator, and the tests job above ran it for this commit.
+          cp docs/configuration/launcher.schema.json "$out/launcher.schema.json"
           cd "$out"
-          sha256sum "$apk" > SHA256SUMS
+          sha256sum "$apk" launcher.schema.json > SHA256SUMS
           # The APK must carry the release id and the release key, never the debug key.
           bt="$ANDROID_HOME/build-tools/$(ls "$ANDROID_HOME/build-tools" | sort -V | tail -1)"
           # Captured first: grep -q stops reading early, and under pipefail the
@@ -171,6 +178,7 @@ jobs:
           echo "APK_PATH=$out/$apk" >> "$GITHUB_ENV"
           echo "SUMS_PATH=$out/SHA256SUMS" >> "$GITHUB_ENV"
           echo "CERTS_PATH=$out/CERTS.txt" >> "$GITHUB_ENV"
+          echo "SCHEMA_PATH=$out/launcher.schema.json" >> "$GITHUB_ENV"
 
       - name: Compose release notes
         run: |
@@ -210,6 +218,7 @@ jobs:
               printf 'Security-Fixes: unspecified\n\n'
             fi
             printf 'Signed release build. Verify with SHA256SUMS; signer certificate in CERTS.txt.\n'
+            printf 'launcher.schema.json is the JSON Schema of the launcher.json this version reads.\n'
           } > "$RUNNER_TEMP/notes.md"
 
       - name: Publish GitHub release
@@ -237,4 +246,4 @@ jobs:
             --title "Andashi Home ${VERSION_NAME_OVERRIDE}" \
             --notes-file "$RUNNER_TEMP/notes.md" \
             "${release_flags[@]}" \
-            "$APK_PATH" "$SUMS_PATH" "$CERTS_PATH"
+            "$APK_PATH" "$SUMS_PATH" "$CERTS_PATH" "$SCHEMA_PATH"

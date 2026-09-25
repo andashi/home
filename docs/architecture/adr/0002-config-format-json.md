@@ -41,7 +41,10 @@ Additional rules:
   and checked in as `docs/configuration/launcher.schema.json`; editors get
   completion and validation via `$schema`. A test regenerates it on every run
   and fails when the checked-in copy differs, so it cannot go stale behind a
-  step nobody runs (#3 slice 3).
+  step nobody runs (#3 slice 3). Every release attaches it as
+  `launcher.schema.json`, hashed in `SHA256SUMS`, so a host validates a
+  zone's file against the version it deploys; `check-release-gate.py` fails
+  CI if `release.yml` stops shipping it.
   - It is **strict** (`additionalProperties: false`) while the parser is
     **tolerant** (an unknown key is a warning). That is not a contradiction:
     the schema says what this build understands, so an editor marks a typo
