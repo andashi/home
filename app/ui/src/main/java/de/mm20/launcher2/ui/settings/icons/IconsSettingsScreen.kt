@@ -200,9 +200,7 @@ fun IconsSettingsScreen() {
                         viewModel.setForceThemedIcons(it)
                     }
                 )
-                val iconPack by remember {
-                    derivedStateOf { installedIconPacks.firstOrNull { it.packageName == icons?.iconPack } }
-                }
+                val iconPack by viewModel.effectiveIconPack.collectAsState(null)
                 val items = installedIconPacks.map {
                     it.name to it
                 }

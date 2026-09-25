@@ -2,11 +2,13 @@ package de.mm20.launcher2.ui.settings.icons
 
 import android.content.ComponentName
 import android.content.Context
+import android.os.Process
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import de.mm20.launcher2.applications.AppRepository
 import de.mm20.launcher2.icons.DefaultIconPack
 import de.mm20.launcher2.icons.IconPack
 import de.mm20.launcher2.icons.IconPackManager
@@ -24,6 +26,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.shareIn
@@ -38,6 +41,7 @@ class IconsSettingsScreenVM(
     private val favoritesService: FavoritesService,
     private val permissionsManager: PermissionsManager,
     private val iconPackManager: IconPackManager,
+    private val appRepository: AppRepository,
 ) : ViewModel() {
 
     val grid = uiSettings.gridSettings
@@ -78,6 +82,11 @@ class IconsSettingsScreenVM(
 
     fun setForceThemedIcons(forceThemedIcons: Boolean) {
         iconSettings.setForceThemedIcons(forceThemedIcons)
+    }
+
+    /** The pack the icons come from right now, which is not always the one stored (#139). */
+    val effectiveIconPack: Flow<IconPack?> = combine(iconSettings, iconService.getInstalledIconPacks()) { icons, packs ->
+        effectiveIconPack(icons.iconPack, packs)
     }
 
     val installedIconPacks: Flow<List<IconPack>> = iconService.getInstalledIconPacks().map {
@@ -172,12 +181,20 @@ class IconsSettingsScreenVM(
 
                 if (fallback in usedApps) continue
 
-                val icon = iconPackManager.getIcon(
-                    packageName = fallback.packageName,
-                    activityName = fallback.className,
-                    iconPack = iconPack.packageName,
-                    allowThemed = themed,
-                )
+                val icon = if (iconPack.packageName == DefaultIconPack.None) {
+                    // No favorites to show (a fresh profile): the fallback apps'
+                    // own icons, as the System entry means (#139).
+                    appRepository.findOne(fallback.packageName, Process.myUserHandle()).first()
+                        ?.takeIf { it.componentName == fallback }
+                        ?.loadIcon(context, size, themed)
+                } else {
+                    iconPackManager.getIcon(
+                        packageName = fallback.packageName,
+                        activityName = fallback.className,
+                        iconPack = iconPack.packageName,
+                        allowThemed = themed,
+                    )
+                }
                 if (icon != null) {
                     icons += icon
                     usedApps += fallback
@@ -199,6 +216,7 @@ class IconsSettingsScreenVM(
                     badgeSettings = get(),
                     iconSettings = get(),
                     iconPackManager = get(),
+                    appRepository = get(),
                 )
             }
         }
@@ -219,6 +237,12 @@ class IconsSettingsScreenVM(
         )
     }
 }
-/** The pack in effect (#139). Not implemented yet: the stored value, as the screen used to read it. */
-internal suspend fun effectiveIconPack(stored: String?, installed: List<IconPack>): IconPack? =
-    installed.firstOrNull { it.packageName == stored }
+/**
+ * The pack in effect (#139), by the rule the icon service applies
+ * ([DefaultIconPack.effective]): what the screen names as the current pack.
+ * Null is the apps' own icons, also when the stored pack is not installed.
+ */
+internal suspend fun effectiveIconPack(stored: String?, installed: List<IconPack>): IconPack? {
+    val name = DefaultIconPack.effective(stored) { pack -> installed.any { it.packageName == pack } }
+    return installed.firstOrNull { it.packageName == name }
+}
