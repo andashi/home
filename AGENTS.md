@@ -310,7 +310,7 @@ target `sdk_phone64_x86_64-cur-userdebug`, test-keys), operated via
   | `emulator-5556` | `instances/test` | this repo's L4 scripts (default) |
   | `emulator-5558` | `instances/test-2` | the provisioning repo's own verification runs |
   | `emulator-5560` | `instances/test-fold` | foldable (Pixel Fold profile): Fold L2/L4 work, screenshots |
-  | `emulator-5562` | `instances/test-fold-gpu` | foldable, always `GPU=host`: `e2e/measure-unfold.sh` (default) |
+  | `emulator-5562` | `instances/test-fold-gpu` | foldable, started with `GPU=host` (the default in `e2e/measure-unfold.sh`, which runs on it) |
 
   The L4 scripts take `SERIAL` and `OVERLAY_DIR` from the environment
   (defaults: `emulator-5556`, `instances/test`), so a second session runs
