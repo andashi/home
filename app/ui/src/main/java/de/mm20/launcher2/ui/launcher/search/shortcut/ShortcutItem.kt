@@ -62,7 +62,6 @@ import de.mm20.launcher2.ui.ktx.toPixels
 import de.mm20.launcher2.ui.launcher.search.common.SearchableItemVM
 import de.mm20.launcher2.ui.launcher.search.listItemViewModel
 import de.mm20.launcher2.ui.launcher.sheets.LocalBottomSheetManager
-import de.mm20.launcher2.ui.locals.LocalFavoritesEnabled
 import de.mm20.launcher2.ui.locals.LocalGridSettings
 import kotlin.math.pow
 
@@ -150,25 +149,23 @@ fun AppShortcutItem(
                                             shape = CircleShape,
                                         )
                                     },
-                                    trailingIcon = if (LocalFavoritesEnabled.current) {
-                                        {
-                                            Icon(
-                                                painterResource(if (isPinned) R.drawable.star_20px_filled else R.drawable.star_20px),
-                                                stringResource(if (isPinned) R.string.menu_favorites_unpin else R.string.menu_favorites_pin),
-                                                modifier = Modifier
-                                                    .clip(CircleShape)
-                                                    .requiredSize(InputChipDefaults.IconSize)
-                                                    .clickable {
+                                    trailingIcon = {
+                                        Icon(
+                                            painterResource(if (isPinned) R.drawable.star_20px_filled else R.drawable.star_20px),
+                                            stringResource(if (isPinned) R.string.menu_favorites_unpin else R.string.menu_favorites_pin),
+                                            modifier = Modifier
+                                                .clip(CircleShape)
+                                                .requiredSize(InputChipDefaults.IconSize)
+                                                .clickable {
 
-                                                        if (isPinned) {
-                                                            viewModel.unpinChild(app)
-                                                        } else {
-                                                            viewModel.pinChild(app)
-                                                        }
-                                                    },
-                                            )
-                                        }
-                                    } else null,
+                                                    if (isPinned) {
+                                                        viewModel.unpinChild(app)
+                                                    } else {
+                                                        viewModel.pinChild(app)
+                                                    }
+                                                },
+                                        )
+                                    },
                                 )
 
                             }
@@ -200,26 +197,24 @@ fun AppShortcutItem(
 
                     val toolbarActions = mutableListOf<ToolbarAction>()
 
-                    if (LocalFavoritesEnabled.current) {
-                        val isPinned by viewModel.isPinned.collectAsState(false)
-                        val favAction = if (isPinned) {
-                            DefaultToolbarAction(
-                                label = stringResource(R.string.menu_favorites_unpin),
-                                icon = R.drawable.star_24px_filled,
-                                action = {
-                                    viewModel.unpin()
-                                }
-                            )
-                        } else {
-                            DefaultToolbarAction(
-                                label = stringResource(R.string.menu_favorites_pin),
-                                icon = R.drawable.star_24px,
-                                action = {
-                                    viewModel.pin()
-                                })
-                        }
-                        toolbarActions.add(favAction)
+                    val isPinned by viewModel.isPinned.collectAsState(false)
+                    val favAction = if (isPinned) {
+                        DefaultToolbarAction(
+                            label = stringResource(R.string.menu_favorites_unpin),
+                            icon = R.drawable.star_24px_filled,
+                            action = {
+                                viewModel.unpin()
+                            }
+                        )
+                    } else {
+                        DefaultToolbarAction(
+                            label = stringResource(R.string.menu_favorites_pin),
+                            icon = R.drawable.star_24px,
+                            action = {
+                                viewModel.pin()
+                            })
                     }
+                    toolbarActions.add(favAction)
 
                     val packageName = shortcut.packageName
                     if (packageName != null) {
