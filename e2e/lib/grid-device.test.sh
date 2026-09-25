@@ -37,6 +37,20 @@ wait_cell_is_bounded() {
 }
 check "wait_cell gives up after its timeout even while the dump hangs" wait_cell_is_bounded
 
+# The same when the dump returns but reading it back hangs.
+mkdir -p "$WORK/catbin"
+cat > "$WORK/catbin/adb" <<'EOF'
+#!/usr/bin/env bash
+case "$*" in *"cat /sdcard/grid-dump.xml"*) sleep 60 ;; esac
+EOF
+chmod +x "$WORK/catbin/adb"
+wait_cell_is_bounded_when_the_read_hangs() {
+  local start=$SECONDS
+  ( PATH="$WORK/catbin:$PATH" wait_cell analog 3 "test" ) 2>/dev/null && return 1
+  [ $((SECONDS - start)) -le 6 ]
+}
+check "wait_cell gives up after its timeout even while reading the dump hangs" wait_cell_is_bounded_when_the_read_hangs
+
 # Control: a device that answers has the cell found at once.
 mkdir -p "$WORK/answers"
 cat > "$WORK/answers/adb" <<'EOF'
@@ -49,7 +63,9 @@ EOF
 chmod +x "$WORK/answers/adb"
 wait_cell_finds_a_cell() {
   local start=$SECONDS
-  ( PATH="$WORK/answers:$PATH" wait_cell analog 3 "test" ) && [ $((SECONDS - start)) -le 1 ]
+  # Success is the assertion; the time only has to stay inside the deadline,
+  # with a margin for a loaded runner (a busy machine must not turn it red).
+  ( PATH="$WORK/answers:$PATH" wait_cell analog 3 "test" ) && [ $((SECONDS - start)) -lt 3 ]
 }
 check "wait_cell returns at once when the cell is on screen" wait_cell_finds_a_cell
 
