@@ -32,26 +32,34 @@ object WriteBackPlan {
 
     /**
      * The changes that make [literal] (the file as written) say what [device]
-     * has in effect. [fileEffective] is what the file produces once applied;
-     * where it has no value for a key, the key's literal value stands in.
+     * has in effect. [fileEffective] is what the file produced once applied.
+     * [canonical] is the file parsed and encoded again, the shape the other
+     * two have, which the entries of a list are paired with; it is [literal]
+     * wherever the file already writes the canonical form.
      */
-    fun changes(literal: JsonObject, fileEffective: JsonObject, device: JsonObject): List<Change> =
-        buildList { collect(literal, fileEffective, device, emptyList()) }
+    fun changes(
+        literal: JsonObject,
+        fileEffective: JsonObject,
+        device: JsonObject,
+        canonical: JsonObject = literal,
+    ): List<Change> = buildList { collect(literal, canonical, fileEffective, device, emptyList()) }
 
     private fun MutableList<Change>.collect(
         literal: JsonObject,
+        canonical: JsonObject?,
         fileEffective: JsonObject?,
         device: JsonObject,
         at: List<String>,
     ) {
         for ((key, written) in literal) {
             val now = device[key]?.takeUnless { it is JsonNull } ?: continue
-            val effect = fileEffective?.get(key)?.takeUnless { it is JsonNull } ?: written
+            val canon = canonical?.get(key)?.takeUnless { it is JsonNull } ?: written
+            val effect = fileEffective?.get(key)?.takeUnless { it is JsonNull } ?: canon
             val path = at + key
             if (written is JsonObject && now is JsonObject && path !in WholeValues) {
-                collect(written, effect as? JsonObject, now, path)
+                collect(written, canon as? JsonObject, effect as? JsonObject, now, path)
             } else if (!same(effect, now)) {
-                add(Change(path, merged(written, effect, now)))
+                add(Change(path, merged(written, canon, effect, now)))
             }
         }
     }
@@ -65,14 +73,20 @@ object WriteBackPlan {
 
     /**
      * The value to write for a list or map the device changed: D at every
-     * depth. Inside it, what nobody changed keeps its written text - a
-     * clamped `h: 7` stays 7 when its neighbour moves - and a field the file
-     * left out that still has the value it produced stays out, which is the
-     * grid-item exception applied rather than special-cased. Elements are
-     * matched by `id` where they have one, else by position. What the file
-     * has no counterpart for is the device's, without its option defaults.
+     * depth. [written] is the file's text of it, [canon] the same parsed,
+     * [effect] what it produced, [now] the device's.
+     *
+     * - What nobody changed keeps its written text: a clamped `h: 7` stays 7
+     *   when its neighbour moves.
+     * - A field the file left out that still has the value it produced stays
+     *   out: the grid-item exception applied rather than special-cased.
+     * - A list entry the device could not apply (an app not installed here)
+     *   never reached it, so the device cannot have removed it: it stays,
+     *   where it was. An entry it had and no longer has was removed on it.
+     * - What the file has no counterpart for is the device's, without its
+     *   option defaults.
      */
-    private fun merged(written: JsonElement?, effect: JsonElement?, now: JsonElement): JsonElement = when {
+    private fun merged(written: JsonElement?, canon: JsonElement?, effect: JsonElement?, now: JsonElement): JsonElement = when {
         now is JsonObject -> JsonObject(
             buildMap {
                 for ((key, value) in now) {
@@ -81,29 +95,44 @@ object WriteBackPlan {
                     when {
                         was != null && same(was, value) -> if (text != null) put(key, text)
                         written == null && GridItemConfig.OptionDefaults[key]?.let { JsonPrimitive(it) == value } == true -> Unit
-                        else -> put(key, merged(text, was, value))
+                        else -> put(key, merged(text, (canon as? JsonObject)?.get(key), was, value))
                     }
                 }
             }
         )
-        now is JsonArray -> JsonArray(
-            now.mapIndexed { index, element ->
-                merged(
-                    (written as? JsonArray)?.counterpart(element, index),
-                    (effect as? JsonArray)?.counterpart(element, index),
-                    element,
-                )
-            }
-        )
+        now is JsonArray -> mergedList(written as? JsonArray, (canon ?: written) as? JsonArray, effect as? JsonArray, now)
         else -> if (written != null && effect != null && same(effect, now)) written else now
     }
 
-    /** The element [element] corresponds to: the one with its `id`, or, without one, the one at [index]. */
-    private fun JsonArray.counterpart(element: JsonElement, index: Int): JsonElement? {
-        val id = (element as? JsonObject)?.get("id") ?: return getOrNull(index)
-        return firstOrNull { (it as? JsonObject)?.get("id") == id }
+    private fun mergedList(written: JsonArray?, canon: JsonArray?, effect: JsonArray?, now: JsonArray): JsonArray {
+        val fileEntries = canon.orEmpty()
+        val applied = effect.orEmpty()
+        // Which file entry each applied entry came from.
+        val takenFile = mutableSetOf<Int>()
+        val fileOf = applied.map { entry -> fileEntries.pair(entry, takenFile)?.also { takenFile += it } }
+        // Which applied entry each device entry is.
+        val takenApplied = mutableSetOf<Int>()
+        val out = now.map { entry ->
+            val j = applied.pair(entry, takenApplied)?.also { takenApplied += it }
+            val i = j?.let { fileOf[it] }
+            merged(i?.let { written?.getOrNull(it) }, i?.let { fileEntries[it] }, j?.let { applied[it] }, entry)
+        }.toMutableList()
+        // The file's entries that never reached the device, back where they were.
+        for (i in fileEntries.indices) {
+            if (i in takenFile) continue
+            val text = written?.getOrNull(i) ?: continue
+            out.add(i.coerceAtMost(out.size), text)
+        }
+        return JsonArray(out)
     }
 
+    /** The unpaired entry [entry] is: the one with its `id`, or, without one, the first equal one. */
+    private fun JsonArray.pair(entry: JsonElement, taken: Set<Int>): Int? {
+        val id = (entry as? JsonObject)?.get("id")
+        return indices.firstOrNull { it !in taken && if (id != null) (this[it] as? JsonObject)?.get("id") == id else same(this[it], entry) }
+    }
+
+    private fun JsonArray?.orEmpty(): JsonArray = this ?: JsonArray(emptyList())
 
     /** Structural equality, with numbers compared by value: `12` and `12.0` are the same setting. */
     private fun same(a: JsonElement, b: JsonElement): Boolean = when {

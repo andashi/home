@@ -136,6 +136,52 @@ class WriteBackPlanTest {
         )
     }
 
+    private fun favorites(json: String) = """{"schemaVersion":2,"home":{"favorites":$json}}"""
+
+    private fun favoritesChange(literal: String, applied: String, device: String) =
+        WriteBackPlan.changes(tree(favorites(literal)), tree(favorites(applied)), tree(favorites(device)))
+            .single().value
+
+    /**
+     * An entry the device could not apply (an app not installed here) never
+     * reached it, so the device cannot have removed it: it stays, where it
+     * was, when the list is rewritten for another change.
+     */
+    @Test
+    fun `an entry the device could not apply stays in its rewritten list`() {
+        assertEquals(
+            ConfigParser.json.parseToJsonElement("""["org.a.one","org.not.here","org.a.two"]"""),
+            favoritesChange(
+                literal = """["org.a.one","org.not.here"]""",
+                applied = """["org.a.one"]""",
+                device = """["org.a.one","org.a.two"]""",
+            ),
+        )
+    }
+
+    @Test
+    fun `an entry removed on the device leaves the list`() {
+        assertEquals(
+            ConfigParser.json.parseToJsonElement("""["org.a.one"]"""),
+            favoritesChange(
+                literal = """["org.a.one","org.a.two"]""",
+                applied = """["org.a.one","org.a.two"]""",
+                device = """["org.a.one"]""",
+            ),
+        )
+    }
+
+    /** The file's own spelling of an entry the device kept: here the object form of a personal favorite. */
+    @Test
+    fun `an entry the device kept keeps its written form`() {
+        val literal = tree(favorites("""[{"packageName":"org.a.one"},"org.a.two"]"""))
+        val canonical = tree(favorites("""["org.a.one","org.a.two"]"""))
+
+        val result = WriteBackPlan.changes(literal, tree(favorites("""["org.a.one","org.a.two"]""")), tree(favorites("""["org.a.one"]""")), canonical)
+
+        assertEquals(ConfigParser.json.parseToJsonElement("""[{"packageName":"org.a.one"}]"""), result.single().value)
+    }
+
     /** The grid-item exception (ADR 0002): an absent option means its default, and stays absent. */
     @Test
     fun `an option the file left out stays out while it keeps its default`() {
