@@ -159,7 +159,7 @@ framestats`, main-thread CPU in the launcher's first frame:
   per size (`glassRimKind`); cards and pills keep the border. Goldens differ
   only along the chips' rims, by anti-aliasing.
 - **Hidden pages.** The scaffold keeps search and the other closed pages
-  composed and laid out out of the viewport. On unfold the hidden search
+  composed and laid out beyond the viewport. On unfold the hidden search
   page's app grid gained columns and composed them before the home screen's
   first frame. `OffscreenPages` never draws them and gives them a new window
   size a second after it settles. Two frames later - the first try,

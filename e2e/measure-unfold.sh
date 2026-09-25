@@ -19,7 +19,7 @@
 # framestats`, all in ms from the display-state request:
 #
 #   config_ms       the configuration change reaches activities
-#   frame_start_ms  the launcher's first frame at the new size starts (its vsync)
+#   frame_start_ms  the launcher's first frame after the configuration change starts
 #   frame_end_ms    ... and is presented
 #   frame_ms        its length
 #   screen_on_ms    the display power controller unblocks the inner display
@@ -108,10 +108,11 @@ cat > "$WORK/split.sql" <<'EOF'
 with t0 as (select min(ts) ts from android_logs where msg like 'Requesting Transition to state%'),
      cfg as (select min(l.ts) ts from android_logs l, t0 where l.msg like 'Config changes=%' and l.ts > t0.ts),
      unb as (select min(l.ts) ts from android_logs l, t0 where l.msg like 'Unblocked screen on%' and l.ts > t0.ts),
-     f as (select a.ts, a.dur from actual_frame_timeline_slice a join process p using (upid), t0, cfg
-           where p.name = 'org.andashi.home' and a.ts + a.dur > cfg.ts order by a.ts limit 1)
+     f as (select a.ts, a.dur, a.name from actual_frame_timeline_slice a join process p using (upid), t0, cfg
+           where p.name = 'org.andashi.home' and a.layer_name like '%LauncherActivity%' and a.ts >= cfg.ts
+           order by a.ts limit 1)
 select round((cfg.ts - t0.ts)/1e6,1), round((f.ts - t0.ts)/1e6,1), round((f.ts + f.dur - t0.ts)/1e6,1),
-       round(f.dur/1e6,1), round((unb.ts - t0.ts)/1e6,1)
+       round(f.dur/1e6,1), round((unb.ts - t0.ts)/1e6,1), f.name
 from t0, cfg, unb, f;
 EOF
 
@@ -156,7 +157,13 @@ for run in $(seq "$RUNS"); do
     "$RUN" restore "$name" >/dev/null
     adb -s "$SERIAL" wait-for-device
     sleep 3; wake
-    adb -s "$SERIAL" emu sensor set hinge-angle0 0 >/dev/null; sleep 1
+    # The snapshot was folded with the device-state override; hand the state
+    # back to the hinge sensor, folded, before the sweep drives it.
+    adb -s "$SERIAL" emu sensor set hinge-angle0 0 >/dev/null
+    sh_ cmd device_state state reset >/dev/null
+    sleep 1
+    state="$(sh_ cmd device_state print-state | tr -d '\r' | tail -1)"
+    [ "$state" = 0 ] || die "$name: not folded under the hinge sensor before the sweep (state $state)"
     sh_ rm -f /data/misc/perfetto-traces/unfold.pftrace
     sh_ dumpsys gfxinfo "$PKG" reset >/dev/null
     adb -s "$SERIAL" shell perfetto --txt -c - -o /data/misc/perfetto-traces/unfold.pftrace --background \
@@ -168,9 +175,15 @@ for run in $(seq "$RUNS"); do
     sh_ dumpsys gfxinfo "$PKG" framestats > "$WORK/f.framestats"
     for _ in $(seq 40); do sh_ pidof perfetto >/dev/null 2>&1 || break; sleep 0.5; done
     adb -s "$SERIAL" pull /data/misc/perfetto-traces/unfold.pftrace "$WORK/t.pftrace" >/dev/null 2>&1
-    split="$("$TP" -q "$WORK/split.sql" "$WORK/t.pftrace" 2>/dev/null | tail -n +2 | tr ',' '\t')"
-    phases="$(python3 "$HERE/unfold_framestats.py" "$WORK/f.framestats" first | tail -1 | cut -f3,5-11)"
-    printf '%s\t%s\t%s\t%s\t%s\n' "$name" "$run" "$load" "${split:-NA}" "$phases" | tee -a "$OUT"
+    split="$("$TP" -q "$WORK/split.sql" "$WORK/t.pftrace" 2>/dev/null | tail -n +2 | tr -d '"' | tr ',' '\t')"
+    # The same frame in framestats, by its vsync id (the last column).
+    vsync="${split##*$'\t'}"
+    phases="NA"
+    if [ -n "$split" ]; then
+      phases="$(python3 "$HERE/unfold_framestats.py" "$WORK/f.framestats" "vsync=$vsync" 2>/dev/null | tail -1 | cut -f3,5-11)" \
+        || phases="NA"
+    fi
+    printf '%s\t%s\t%s\t%s\t%s\n' "$name" "$run" "$load" "${split%$'\t'*}" "$phases" | tee -a "$OUT"
   done
 done
 "$RUN" restore clean >/dev/null

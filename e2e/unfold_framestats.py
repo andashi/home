@@ -20,7 +20,9 @@ GPU fence value from another clock (measured on the fold emulator, #122).
 Times are CLOCK_MONOTONIC; `vsync_ms` is the frame's intended vsync, so it can be
 lined up with a trace. Frames with flags, or whose timestamps are out of
 order, are left out. Usage: unfold_framestats.py file.framestats [N]
-(N slowest frames; N=first prints the first frame after the reset).
+(N slowest frames; N=first prints the first frame after the reset;
+N=vsync=<id> the frame with that FrameTimelineVsyncId, which is the name
+of its slice in a Perfetto frametimeline).
 """
 import sys
 
@@ -66,13 +68,24 @@ def phases(r):
 if __name__ == "__main__":
     path = sys.argv[1]
     arg = sys.argv[2] if len(sys.argv) > 2 else "5"
-    valid = [r for r in rows(path) if r["Flags"] == 0 and 0 < r["IntendedVsync"] < r["HandleInputStart"]
-             <= r["DrawStart"] <= r["SyncQueued"] <= r["SyncStart"] <= r["SwapBuffers"] <= r["SwapBuffersCompleted"]]
+    order = ["IntendedVsync", "HandleInputStart", "AnimationStart", "PerformTraversalsStart", "DrawStart",
+             "SyncQueued", "SyncStart", "IssueDrawCommandsStart", "SwapBuffers", "SwapBuffersCompleted"]
+    valid = [r for r in rows(path) if r["Flags"] == 0 and r["IntendedVsync"] > 0
+             and all(r[a] <= r[b] for a, b in zip(order, order[1:]))]
     if not valid:
         raise SystemExit(f"{path}: no valid frames")
     fr = [phases(r) for r in valid]
     keys = ["vsync_ms", "flags", "delay", "input", "anim", "layout", "record", "sync", "issue", "swap", "total"]
     print("\t".join(keys))
-    chosen = [min(fr, key=lambda p: p["vsync_ms"])] if arg == "first" else sorted(fr, key=lambda p: -p["total"])[:int(arg)]
+    if arg.startswith("vsync="):
+        # The frame Perfetto's frametimeline names by this vsync id.
+        want = int(arg.split("=", 1)[1])
+        chosen = [phases(r) for r in valid if r.get("FrameTimelineVsyncId") == want]
+        if not chosen:
+            raise SystemExit(f"{path}: no valid frame with vsync id {want}")
+    elif arg == "first":
+        chosen = [min(fr, key=lambda p: p["vsync_ms"])]
+    else:
+        chosen = sorted(fr, key=lambda p: -p["total"])[:int(arg)]
     for p in chosen:
         print("\t".join(f"{p[k]:.1f}" if isinstance(p[k], float) else str(p[k]) for k in keys))
