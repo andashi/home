@@ -446,7 +446,12 @@
                                     "required": [
                                         "label",
                                         "url"
-                                    ]
+                                    ],
+                                    "properties": {
+                                        "label": {
+                                            "pattern": "\\S"
+                                        }
+                                    }
                                 }
                             },
                             {
@@ -464,7 +469,12 @@
                                     "required": [
                                         "label",
                                         "package"
-                                    ]
+                                    ],
+                                    "properties": {
+                                        "label": {
+                                            "pattern": "\\S"
+                                        }
+                                    }
                                 }
                             }
                         ]

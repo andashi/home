@@ -94,7 +94,14 @@ internal object ConfigSchema {
             putJsonObject("properties") { putJsonObject("type") { put("const", type) } }
             putJsonArray("required") { add(JsonPrimitive("type")) }
         }
-        putJsonObject("then") { putJsonArray("required") { fields.forEach { add(JsonPrimitive(it)) } } }
+        putJsonObject("then") {
+            putJsonArray("required") { fields.forEach { add(JsonPrimitive(it)) } }
+            // The validator wants them non-blank, not only present; url and
+            // package have their own patterns, which a blank value fails.
+            if ("label" in fields) {
+                putJsonObject("properties") { putJsonObject("label") { put("pattern", "\\S") } }
+            }
+        }
     }
 
     private fun propertySchema(path: String, descriptor: SerialDescriptor): JsonObject {

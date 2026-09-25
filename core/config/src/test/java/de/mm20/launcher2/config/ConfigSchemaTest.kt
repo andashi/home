@@ -8,6 +8,7 @@ import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.double
 import kotlinx.serialization.json.int
 import kotlinx.serialization.json.jsonArray
@@ -49,9 +50,15 @@ class ConfigSchemaTest {
         )
     }
 
+    /**
+     * The schema the agreement tests run: the generated one, not the checked-in
+     * file. The freshness test holds the two equal, and with `-PupdateSchema`
+     * the file is rewritten by whichever test runs first - the agreement tests
+     * must not depend on that order (review on #150).
+     */
     private val schema: Schema by lazy {
         SchemaRegistry.withDefaultDialect(SpecificationVersion.DRAFT_2020_12)
-            .getSchema(schemaFile.readText(), InputFormat.JSON)
+            .getSchema(ConfigSchema.text(), InputFormat.JSON)
     }
 
     /** The document as plain JSON: examples may carry comments and trailing commas (JSONC). */
@@ -96,6 +103,10 @@ class ConfigSchemaTest {
             "a grid width of zero" to """{"schemaVersion":2,"home":{"grid":{"layouts":{"phone":{"items":[{"id":"x","widget":"favorites","x":0,"y":0,"w":0,"h":1}]}}}}}""",
             "a url action without its query" to """{"schemaVersion":2,"search":{"actions":[{"type":"url","label":"L","url":"https://example.org/"}]}}""",
             "an app action without its package" to """{"schemaVersion":2,"search":{"actions":[{"type":"app","label":"L"}]}}""",
+            // Review on #150: present is not enough, the validator wants them non-blank.
+            "a url action with a blank label" to """{"schemaVersion":2,"search":{"actions":[{"type":"url","label":"","url":"https://example.org/?q=${'$'}{1}"}]}}""",
+            "an app action with a whitespace label" to """{"schemaVersion":2,"search":{"actions":[{"type":"app","label":"  ","package":"org.example.app"}]}}""",
+            "a grid widget whose package is too long" to """{"schemaVersion":2,"home":{"grid":{"layouts":{"phone":{"items":[{"id":"x","widget":"a.${"b".repeat(ConfigValidator.MaxPackageNameLength)}/.C"}]}}}}}""",
             "an unknown barPosition" to """{"schemaVersion":2,"search":{"barPosition":"middle"}}""",
         )
 
@@ -130,6 +141,58 @@ class ConfigSchemaTest {
         }
 
         assertEquals("schema limits the parser does not enforce", emptyList<String>(), unenforced)
+    }
+
+    /**
+     * The direction the two guards above cannot see: a limit the parser
+     * enforces that the schema never had. Both of them walk the schema's own
+     * limits, so a missing one leaves nothing to break (review on #150: blank
+     * labels, the package part of a component name). Here every string and
+     * number in the complete example is broken the generic ways a limit is
+     * broken - blank, whitespace only, stretched past any length limit,
+     * negative, huge - and wherever the parser rejects the result, the schema
+     * must reject it too.
+     *
+     * What it cannot find: a limit only a value of another shape breaks, or
+     * one across fields. Those stay with the hand-written list in
+     * [`the schema rejects what the parser rejects`]; ADR 0002 says so.
+     */
+    @Test
+    fun `every generic break of the complete example the parser rejects, the schema rejects too`() {
+        val base = ConfigParser.json.parseToJsonElement(RepoDocs.completeExample)
+
+        val missed = leaves(base, emptyList()).flatMap { (path, value) ->
+            breaksOf(value).mapNotNull { broken ->
+                val doc = base.replacedAt(path, broken).toString()
+                val parserRejects = ConfigParser.parse(doc).diagnostics.any { it.severity == Severity.Error }
+                if (parserRejects && schemaErrors(doc).isEmpty()) "${path.joinToString(".")} = ${broken.toString().take(40)}" else null
+            }
+        }
+
+        assertEquals("the parser rejects these and the schema lets them through", emptyList<String>(), missed)
+    }
+
+    /** Every string and number in [element], by its path of keys and list indices. */
+    private fun leaves(element: JsonElement, at: List<Any>): List<Pair<List<Any>, JsonPrimitive>> = when (element) {
+        is JsonObject -> element.flatMap { (key, value) -> leaves(value, at + key) }
+        is JsonArray -> element.flatMapIndexed { i, value -> leaves(value, at + i) }
+        is JsonPrimitive -> if (element is kotlinx.serialization.json.JsonNull || element.booleanOrNull != null) emptyList() else listOf(at to element)
+    }
+
+    private fun breaksOf(value: JsonPrimitive): List<JsonPrimitive> =
+        if (value.isString) {
+            val s = value.content
+            listOf(JsonPrimitive(""), JsonPrimitive("  "), JsonPrimitive(s.take(1) + "a".repeat(300) + s.drop(1)))
+        } else {
+            listOf(JsonPrimitive(-1), JsonPrimitive(1_000_000))
+        }
+
+    private fun JsonElement.replacedAt(path: List<Any>, value: JsonElement): JsonElement {
+        if (path.isEmpty()) return value
+        return when (val step = path.first()) {
+            is String -> JsonObject(jsonObject + (step to jsonObject.getValue(step).replacedAt(path.drop(1), value)))
+            else -> JsonArray(jsonArray.toMutableList().also { it[step as Int] = it[step].replacedAt(path.drop(1), value) })
+        }
     }
 
     /** A value just past [keyword]'s [bound], in place of [current]. */
