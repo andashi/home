@@ -108,4 +108,16 @@
     <string name="hint_drag_and_drop_reorder">アイテムを押しながらドラッグして並べ替えてください</string>
     <string name="action_done">完了</string>
     <string name="action_quit">閉じる</string>
+    <string name="widget_action_allow">許可</string>
+    <string name="grid_edit_title">ホーム画面を編集</string>
+    <string name="grid_write_back_skipped">レイアウトは端末に保存されましたが、launcher.json には保存されていません: %1$s</string>
+    <string name="grid_write_back_failed">レイアウトを保存できませんでした: %1$s。[完了] をタップしてもう一度お試しください。</string>
+    <string name="grid_no_room">このウィジェットを置くスペースがグリッドにありません</string>
+    <string name="grid_favorites_overflow">検索にあと %1$d 件</string>
+    <string name="grid_resize_narrower">幅を狭く</string>
+    <string name="grid_resize_wider">幅を広く</string>
+    <string name="grid_resize_shorter">高さを低く</string>
+    <string name="grid_resize_taller">高さを高く</string>
+    <string name="grid_resize_handle">サイズ変更</string>
+    <string name="grid_locked">ホーム画面のレイアウトは設定によりロックされています</string>
 </resources>

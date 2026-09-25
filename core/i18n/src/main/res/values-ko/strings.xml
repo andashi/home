@@ -216,4 +216,16 @@
     <string name="preference_hidden_items_summary">숨긴 앱 및 검색 결과 관리</string>
     <string name="preference_hidden_items">숨긴 검색 결과</string>
     <string name="missing_permission_call_contacts_settings">전화를 걸기 위해 전화 권한이 필요합니다.</string>
+    <string name="widget_action_allow">허용</string>
+    <string name="grid_edit_title">홈 화면 편집</string>
+    <string name="grid_write_back_skipped">레이아웃이 기기에 저장되었지만 launcher.json에는 저장되지 않았습니다: %1$s</string>
+    <string name="grid_write_back_failed">레이아웃을 저장할 수 없습니다: %1$s. 완료를 탭하여 다시 시도하세요.</string>
+    <string name="grid_no_room">이 위젯을 놓을 공간이 그리드에 없습니다</string>
+    <string name="grid_favorites_overflow">검색에 %1$d개 더</string>
+    <string name="grid_resize_narrower">더 좁게</string>
+    <string name="grid_resize_wider">더 넓게</string>
+    <string name="grid_resize_shorter">더 낮게</string>
+    <string name="grid_resize_taller">더 높게</string>
+    <string name="grid_resize_handle">크기 조절</string>
+    <string name="grid_locked">홈 화면 레이아웃이 구성에 의해 잠겨 있습니다</string>
 </resources>

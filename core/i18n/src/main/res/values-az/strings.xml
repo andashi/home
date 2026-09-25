@@ -29,4 +29,16 @@
     <string name="websearch_dialog_delete_icon">İkonu sil</string>
     <string name="menu_share_store_link">%1$s linki</string>
     <string name="menu_contacts_open_externally">Kontaktlar tətbiqində aç</string>
+    <string name="widget_action_allow">İcazə ver</string>
+    <string name="grid_edit_title">Əsas ekranı redaktə edin</string>
+    <string name="grid_write_back_skipped">Düzüm cihazda saxlanıldı, lakin launcher.json faylında deyil: %1$s</string>
+    <string name="grid_write_back_failed">Düzümü yadda saxlamaq mümkün olmadı: %1$s. Yenidən cəhd etmək üçün Hazırdır düyməsinə toxunun.</string>
+    <string name="grid_no_room">Bu vidcet üçün şəbəkədə yer yoxdur</string>
+    <string name="grid_favorites_overflow">Axtarışda daha %1$d</string>
+    <string name="grid_resize_narrower">Daha dar</string>
+    <string name="grid_resize_wider">Daha geniş</string>
+    <string name="grid_resize_shorter">Daha alçaq</string>
+    <string name="grid_resize_taller">Daha hündür</string>
+    <string name="grid_resize_handle">Ölçünü dəyiş</string>
+    <string name="grid_locked">Əsas ekranın düzümü konfiqurasiya ilə kilidlənib</string>
 </resources>

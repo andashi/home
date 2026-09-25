@@ -14,4 +14,16 @@
     <string name="save">Konservi</string>
     <string name="edit_favorites_dialog_tags">Tagoj</string>
     <string name="preference_search_apps_show_details_summary"></string>
+    <string name="widget_action_allow">Permesi</string>
+    <string name="grid_edit_title">Redakti la hejmekranon</string>
+    <string name="grid_write_back_skipped">Aranĝo konservita en la aparato, sed ne en launcher.json: %1$s</string>
+    <string name="grid_write_back_failed">Ne eblis konservi la aranĝon: %1$s. Tuŝu Farita por reprovi.</string>
+    <string name="grid_no_room">Ne estas loko en la krado por tiu ĉi fenestraĵo</string>
+    <string name="grid_favorites_overflow">+%1$d pliaj en serĉo</string>
+    <string name="grid_resize_narrower">Pli mallarĝa</string>
+    <string name="grid_resize_wider">Pli larĝa</string>
+    <string name="grid_resize_shorter">Pli malalta</string>
+    <string name="grid_resize_taller">Pli alta</string>
+    <string name="grid_resize_handle">Ŝanĝi grandon</string>
+    <string name="grid_locked">La aranĝo de la hejmekrano estas ŝlosita de ĝia agordo</string>
 </resources>

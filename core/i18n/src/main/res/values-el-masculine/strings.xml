@@ -1,3 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="widget_action_allow">Να επιτρέπεται</string>
+    <string name="grid_edit_title">Επεξεργασία αρχικής οθόνης</string>
+    <string name="grid_write_back_skipped">Η διάταξη αποθηκεύτηκε στη συσκευή, αλλά όχι στο launcher.json: %1$s</string>
+    <string name="grid_write_back_failed">Δεν ήταν δυνατή η αποθήκευση της διάταξης: %1$s. Πατήστε Τέλος για να δοκιμάσετε ξανά.</string>
+    <string name="grid_no_room">Δεν υπάρχει χώρος στο πλέγμα για αυτό το widget</string>
+    <string name="grid_favorites_overflow">+%1$d ακόμη στην αναζήτηση</string>
+    <string name="grid_resize_narrower">Στενότερο</string>
+    <string name="grid_resize_wider">Πλατύτερο</string>
+    <string name="grid_resize_shorter">Χαμηλότερο</string>
+    <string name="grid_resize_taller">Ψηλότερο</string>
+    <string name="grid_resize_handle">Αλλαγή μεγέθους</string>
+    <string name="grid_locked">Η διάταξη της αρχικής οθόνης είναι κλειδωμένη από τη διαμόρφωσή της</string>
 </resources>

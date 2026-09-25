@@ -1,3 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    </resources>
+        <string name="widget_action_allow">Permite</string>
+    <string name="grid_edit_title">Editează ecranul de pornire</string>
+    <string name="grid_write_back_skipped">Aspect salvat pe dispozitiv, dar nu în launcher.json: %1$s</string>
+    <string name="grid_write_back_failed">Aspectul nu a putut fi salvat: %1$s. Atinge Gata pentru a încerca din nou.</string>
+    <string name="grid_no_room">Nu este loc în grilă pentru acest widget</string>
+    <string name="grid_favorites_overflow">+%1$d în plus în căutare</string>
+    <string name="grid_resize_narrower">Mai îngust</string>
+    <string name="grid_resize_wider">Mai lat</string>
+    <string name="grid_resize_shorter">Mai scund</string>
+    <string name="grid_resize_taller">Mai înalt</string>
+    <string name="grid_resize_handle">Redimensionează</string>
+    <string name="grid_locked">Aspectul ecranului de pornire este blocat de configurația sa</string>
+</resources>

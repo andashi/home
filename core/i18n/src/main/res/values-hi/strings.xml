@@ -12,4 +12,16 @@
     <string name="action_done">पूर्ण</string>
     <string name="menu_share">भेजें</string>
     <string name="menu_launch">शुरू करें</string>
+    <string name="widget_action_allow">अनुमति दें</string>
+    <string name="grid_edit_title">होम स्क्रीन संपादित करें</string>
+    <string name="grid_write_back_skipped">लेआउट डिवाइस पर सहेजा गया, लेकिन launcher.json में नहीं: %1$s</string>
+    <string name="grid_write_back_failed">लेआउट सहेजा नहीं जा सका: %1$s. फिर से कोशिश करने के लिए हो गया पर टैप करें.</string>
+    <string name="grid_no_room">इस विजेट के लिए ग्रिड में जगह नहीं है</string>
+    <string name="grid_favorites_overflow">खोज में %1$d और</string>
+    <string name="grid_resize_narrower">कम चौड़ा</string>
+    <string name="grid_resize_wider">अधिक चौड़ा</string>
+    <string name="grid_resize_shorter">कम ऊँचा</string>
+    <string name="grid_resize_taller">अधिक ऊँचा</string>
+    <string name="grid_resize_handle">आकार बदलें</string>
+    <string name="grid_locked">होम स्क्रीन का लेआउट उसके कॉन्फ़िगरेशन द्वारा लॉक है</string>
 </resources>

@@ -113,4 +113,16 @@
     <string name="preference_icon_pack">আইকন প্যাক</string>
     <string name="preference_debug_reinstall_iconpacks_summary">আইকন প্যাকের সঞ্চয় পরিষ্কার করুন এবং পুনর্নির্মাণ করুন</string>
     <string name="preference_icon_pack_summary_empty">কোনো আইকন প্যাক ইনস্টল করা নেই</string>
+    <string name="widget_action_allow">অনুমতি দিন</string>
+    <string name="grid_edit_title">হোম স্ক্রিন সম্পাদনা করুন</string>
+    <string name="grid_write_back_skipped">লেআউট ডিভাইসে সংরক্ষিত হয়েছে, কিন্তু launcher.json-এ নয়: %1$s</string>
+    <string name="grid_write_back_failed">লেআউট সংরক্ষণ করা যায়নি: %1$s। আবার চেষ্টা করতে সম্পন্ন-এ ট্যাপ করুন।</string>
+    <string name="grid_no_room">এই উইজেটের জন্য গ্রিডে জায়গা নেই</string>
+    <string name="grid_favorites_overflow">সার্চে আরও %1$d টি</string>
+    <string name="grid_resize_narrower">সরু</string>
+    <string name="grid_resize_wider">চওড়া</string>
+    <string name="grid_resize_shorter">খাটো</string>
+    <string name="grid_resize_taller">লম্বা</string>
+    <string name="grid_resize_handle">আকার পরিবর্তন করুন</string>
+    <string name="grid_locked">হোম স্ক্রিনের লেআউট কনফিগারেশন দ্বারা লক করা আছে</string>
 </resources>

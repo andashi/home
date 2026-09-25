@@ -410,4 +410,16 @@
     <string name="search_query_private_space">私人空間</string>
     <string name="search_action_private_space_lock">鎖定私人空間</string>
     <string name="search_action_private_space_unlock">解鎖私人空間</string>
+    <string name="widget_action_allow">允許</string>
+    <string name="grid_edit_title">編輯主畫面</string>
+    <string name="grid_write_back_skipped">版面配置已儲存至裝置，但未儲存至 launcher.json：%1$s</string>
+    <string name="grid_write_back_failed">無法儲存版面配置：%1$s。輕觸「完成」再試一次。</string>
+    <string name="grid_no_room">格線中沒有空間可放置此小工具</string>
+    <string name="grid_favorites_overflow">搜尋中還有 %1$d 個</string>
+    <string name="grid_resize_narrower">變窄</string>
+    <string name="grid_resize_wider">變寬</string>
+    <string name="grid_resize_shorter">變矮</string>
+    <string name="grid_resize_taller">變高</string>
+    <string name="grid_resize_handle">調整大小</string>
+    <string name="grid_locked">主畫面版面配置已被其設定鎖定</string>
 </resources>

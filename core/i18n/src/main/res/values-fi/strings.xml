@@ -265,4 +265,16 @@
     <string name="missing_permission_accessibility_gesture_settings">Tämä toiminto vaatii käynnistyssovelluksen esteettömyyspalvelun käynnistämisen.</string>
     <string name="preference_search_result_ordering_weight_factor">Sijoittelun joustavuus</string>
     <string name="app_widget_loading_failed">Sovelluksen pienoisohjelmaa ei voitu ladata.</string>
+    <string name="widget_action_allow">Salli</string>
+    <string name="grid_edit_title">Muokkaa aloitusnäyttöä</string>
+    <string name="grid_write_back_skipped">Asettelu tallennettu laitteeseen, mutta ei launcher.json-tiedostoon: %1$s</string>
+    <string name="grid_write_back_failed">Asettelun tallennus epäonnistui: %1$s. Yritä uudelleen napauttamalla Valmis.</string>
+    <string name="grid_no_room">Ruudukossa ei ole tilaa tälle widgetille</string>
+    <string name="grid_favorites_overflow">+%1$d lisää haussa</string>
+    <string name="grid_resize_narrower">Kapeampi</string>
+    <string name="grid_resize_wider">Leveämpi</string>
+    <string name="grid_resize_shorter">Matalampi</string>
+    <string name="grid_resize_taller">Korkeampi</string>
+    <string name="grid_resize_handle">Muuta kokoa</string>
+    <string name="grid_locked">Aloitusnäytön asettelu on lukittu määrityksillä</string>
 </resources>

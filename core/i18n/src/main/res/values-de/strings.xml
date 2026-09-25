@@ -422,4 +422,16 @@
     <string name="search_action_private_space_lock">Vertrauliches Profil sperren</string>
     <string name="search_action_private_space_unlock">Vertrauliches Profil entsperren</string>
     <string name="favorites_skip_rows">Zeilen überspringen</string>
+    <string name="widget_action_allow">Zulassen</string>
+    <string name="grid_edit_title">Startbildschirm bearbeiten</string>
+    <string name="grid_write_back_skipped">Layout auf dem Gerät gespeichert, aber nicht in launcher.json: %1$s</string>
+    <string name="grid_write_back_failed">Das Layout konnte nicht gespeichert werden: %1$s. Tippe auf Fertig, um es erneut zu versuchen.</string>
+    <string name="grid_no_room">Kein Platz im Raster für dieses Widget</string>
+    <string name="grid_favorites_overflow">+%1$d weitere in der Suche</string>
+    <string name="grid_resize_narrower">Schmaler</string>
+    <string name="grid_resize_wider">Breiter</string>
+    <string name="grid_resize_shorter">Niedriger</string>
+    <string name="grid_resize_taller">Höher</string>
+    <string name="grid_resize_handle">Größe ändern</string>
+    <string name="grid_locked">Das Layout des Startbildschirms ist durch die Konfiguration gesperrt</string>
 </resources>

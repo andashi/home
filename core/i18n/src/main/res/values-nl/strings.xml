@@ -421,4 +421,16 @@
     <string name="search_action_private_space_lock">Privégedeelte sluiten</string>
     <string name="search_action_private_space_unlock">Privégedeelte openen</string>
     <string name="favorites_skip_rows">Rijen overslaan</string>
+    <string name="widget_action_allow">Toestaan</string>
+    <string name="grid_edit_title">Startscherm bewerken</string>
+    <string name="grid_write_back_skipped">Indeling opgeslagen op het apparaat, maar niet in launcher.json: %1$s</string>
+    <string name="grid_write_back_failed">De indeling kon niet worden opgeslagen: %1$s. Tik op Klaar om het opnieuw te proberen.</string>
+    <string name="grid_no_room">Geen ruimte op het raster voor deze widget</string>
+    <string name="grid_favorites_overflow">+%1$d meer in zoeken</string>
+    <string name="grid_resize_narrower">Smaller</string>
+    <string name="grid_resize_wider">Breder</string>
+    <string name="grid_resize_shorter">Lager</string>
+    <string name="grid_resize_taller">Hoger</string>
+    <string name="grid_resize_handle">Formaat wijzigen</string>
+    <string name="grid_locked">De indeling van het startscherm is vergrendeld door de configuratie</string>
 </resources>

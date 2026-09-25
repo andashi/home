@@ -329,4 +329,16 @@
     <string name="missing_permission_appshortcuts_search">برای جستجوی میانبرهای برنامه، %1$s را به‌عنوان برنامه پیش‌گزیده خانگی تنظیم کنید.</string>
     <string name="missing_permission_appshortcuts_create">برای ایجاد میانبرها، %1$s را به‌عنوان برنامه پیش‌گزیده خانگی تنظیم کنید.</string>
     <string name="preference_theme">پوسته</string>
+    <string name="widget_action_allow">اجازه دادن</string>
+    <string name="grid_edit_title">ویرایش صفحهٔ اصلی</string>
+    <string name="grid_write_back_skipped">چیدمان روی دستگاه ذخیره شد، اما نه در launcher.json: %1$s</string>
+    <string name="grid_write_back_failed">چیدمان ذخیره نشد: %1$s. برای تلاش دوباره روی «انجام شد» ضربه بزنید.</string>
+    <string name="grid_no_room">جایی در شبکه برای این ابزارک نیست</string>
+    <string name="grid_favorites_overflow">%1$d مورد دیگر در جستجو</string>
+    <string name="grid_resize_narrower">باریک‌تر</string>
+    <string name="grid_resize_wider">پهن‌تر</string>
+    <string name="grid_resize_shorter">کوتاه‌تر</string>
+    <string name="grid_resize_taller">بلندتر</string>
+    <string name="grid_resize_handle">تغییر اندازه</string>
+    <string name="grid_locked">چیدمان صفحهٔ اصلی توسط پیکربندی آن قفل شده است</string>
 </resources>

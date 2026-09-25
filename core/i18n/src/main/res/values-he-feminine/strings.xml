@@ -1,3 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="widget_action_allow">לאפשר</string>
+    <string name="grid_edit_title">עריכת מסך הבית</string>
+    <string name="grid_write_back_skipped">הפריסה נשמרה במכשיר, אך לא ב-launcher.json: %1$s</string>
+    <string name="grid_write_back_failed">לא ניתן היה לשמור את הפריסה: %1$s. יש להקיש על סיום כדי לנסות שוב.</string>
+    <string name="grid_no_room">אין מקום ברשת לווידג׳ט הזה</string>
+    <string name="grid_favorites_overflow">עוד %1$d בחיפוש</string>
+    <string name="grid_resize_narrower">צר יותר</string>
+    <string name="grid_resize_wider">רחב יותר</string>
+    <string name="grid_resize_shorter">נמוך יותר</string>
+    <string name="grid_resize_taller">גבוה יותר</string>
+    <string name="grid_resize_handle">שינוי גודל</string>
+    <string name="grid_locked">פריסת מסך הבית נעולה על ידי ההגדרות שלה</string>
 </resources>

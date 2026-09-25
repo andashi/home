@@ -75,4 +75,16 @@
     <string name="preference_debug_reinstall_iconpacks">Reinstallar pacchettos de icones</string>
     <string name="more_information">Plus de information</string>
     <string name="tag_exists_message">Jam existe un etiquetta con iste nomine. Si tu continua, ambe etiquettas essera fusionate.</string>
+    <string name="widget_action_allow">Permitter</string>
+    <string name="grid_edit_title">Modificar le schermo initial</string>
+    <string name="grid_write_back_skipped">Disposition salveguardate in le apparato, ma non in launcher.json: %1$s</string>
+    <string name="grid_write_back_failed">Le disposition non poteva esser salveguardate: %1$s. Tocca Finite pro reprobar.</string>
+    <string name="grid_no_room">Il non ha spatio in le grillia pro iste widget</string>
+    <string name="grid_favorites_overflow">+%1$d plus in le recerca</string>
+    <string name="grid_resize_narrower">Plus stricte</string>
+    <string name="grid_resize_wider">Plus large</string>
+    <string name="grid_resize_shorter">Plus basse</string>
+    <string name="grid_resize_taller">Plus alte</string>
+    <string name="grid_resize_handle">Cambiar le dimension</string>
+    <string name="grid_locked">Le disposition del schermo initial es serrate per su configuration</string>
 </resources>

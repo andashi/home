@@ -267,4 +267,16 @@
     <string name="preference_use_system_default">Naudokite sistemos numatyta spalva</string>
     <string name="shortcut_label_unavailable">Nepasiekemas</string>
     <string name="shortcut_unavailable_description">Nuoroda nepasiekiama ,nes %1$s nėra numatytoji namų programėlė</string>
+    <string name="widget_action_allow">Leisti</string>
+    <string name="grid_edit_title">Redaguoti pagrindinį ekraną</string>
+    <string name="grid_write_back_skipped">Išdėstymas išsaugotas įrenginyje, bet ne faile launcher.json: %1$s</string>
+    <string name="grid_write_back_failed">Nepavyko išsaugoti išdėstymo: %1$s. Palieskite Atlikta, kad bandytumėte dar kartą.</string>
+    <string name="grid_no_room">Tinklelyje nėra vietos šiam valdikliui</string>
+    <string name="grid_favorites_overflow">Paieškoje dar %1$d</string>
+    <string name="grid_resize_narrower">Siauriau</string>
+    <string name="grid_resize_wider">Plačiau</string>
+    <string name="grid_resize_shorter">Žemiau</string>
+    <string name="grid_resize_taller">Aukščiau</string>
+    <string name="grid_resize_handle">Keisti dydį</string>
+    <string name="grid_locked">Pagrindinio ekrano išdėstymas užrakintas konfigūracijos</string>
 </resources>

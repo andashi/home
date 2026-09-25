@@ -69,3 +69,17 @@ dependencies {
 
     testImplementation(libs.bundles.tests)
 }
+
+// ForkStringsTranslatedTest reads :core:i18n's resources and the fork-owned
+// string list. Gradle cannot infer that, and without the declaration a change
+// to a strings.xml leaves this task UP-TO-DATE and the guard silently stops
+// guarding (AGENTS.md, test policy).
+tasks.withType<Test>().configureEach {
+    systemProperty("repoRoot", rootProject.projectDir.absolutePath)
+    inputs.dir(rootProject.file("core/i18n/src/main/res"))
+        .withPropertyName("i18nResources")
+        .withPathSensitivity(PathSensitivity.RELATIVE)
+    inputs.file(rootProject.file("core/i18n/fork-owned-strings.txt"))
+        .withPropertyName("forkOwnedStrings")
+        .withPathSensitivity(PathSensitivity.RELATIVE)
+}

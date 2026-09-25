@@ -568,4 +568,16 @@
     <string name="gesture_action_category_apps">Uygulamalar ve kısayollar</string>
     <string name="gesture_action_widgets_empty">Boş</string>
     <string name="gesture_action_launch_select_app">Uygulama veya kısayol seç</string>
+    <string name="widget_action_allow">İzin ver</string>
+    <string name="grid_edit_title">Ana ekranı düzenle</string>
+    <string name="grid_write_back_skipped">Düzen cihaza kaydedildi, ancak launcher.json dosyasına kaydedilmedi: %1$s</string>
+    <string name="grid_write_back_failed">Düzen kaydedilemedi: %1$s. Yeniden denemek için Bitti\'ye dokunun.</string>
+    <string name="grid_no_room">Bu widget için ızgarada yer yok</string>
+    <string name="grid_favorites_overflow">Aramada %1$d tane daha</string>
+    <string name="grid_resize_narrower">Daha dar</string>
+    <string name="grid_resize_wider">Daha geniş</string>
+    <string name="grid_resize_shorter">Daha kısa</string>
+    <string name="grid_resize_taller">Daha uzun</string>
+    <string name="grid_resize_handle">Yeniden boyutlandır</string>
+    <string name="grid_locked">Ana ekran düzeni yapılandırması tarafından kilitlendi</string>
 </resources>

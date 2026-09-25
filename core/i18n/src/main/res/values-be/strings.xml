@@ -432,4 +432,16 @@
     <string name="search_query_private_space">Прыватная прастора</string>
     <string name="search_action_private_space_lock">Заблакіраваць прыватную прастору</string>
     <string name="search_action_private_space_unlock">Разблакіраваць прыватную прастору</string>
+    <string name="widget_action_allow">Дазволіць</string>
+    <string name="grid_edit_title">Рэдагаваць галоўны экран</string>
+    <string name="grid_write_back_skipped">Размяшчэнне захавана на прыладзе, але не ў launcher.json: %1$s</string>
+    <string name="grid_write_back_failed">Не ўдалося захаваць размяшчэнне: %1$s. Націсніце «Гатова», каб паўтарыць.</string>
+    <string name="grid_no_room">У сетцы няма месца для гэтага віджэта</string>
+    <string name="grid_favorites_overflow">Яшчэ %1$d у пошуку</string>
+    <string name="grid_resize_narrower">Звузіць</string>
+    <string name="grid_resize_wider">Пашырыць</string>
+    <string name="grid_resize_shorter">Паменшыць вышыню</string>
+    <string name="grid_resize_taller">Павялічыць вышыню</string>
+    <string name="grid_resize_handle">Змяніць памер</string>
+    <string name="grid_locked">Размяшчэнне на галоўным экране заблакіравана канфігурацыяй</string>
 </resources>

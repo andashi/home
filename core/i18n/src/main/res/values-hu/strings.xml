@@ -420,4 +420,16 @@
     <string name="search_query_private_space">Privát tér</string>
     <string name="search_action_private_space_lock">Privát tér zárolása</string>
     <string name="search_action_private_space_unlock">Privát tér feloldása</string>
+    <string name="widget_action_allow">Engedélyezés</string>
+    <string name="grid_edit_title">Kezdőképernyő szerkesztése</string>
+    <string name="grid_write_back_skipped">Az elrendezés mentve az eszközön, de nem a launcher.json fájlba: %1$s</string>
+    <string name="grid_write_back_failed">Az elrendezést nem sikerült menteni: %1$s. Az újrapróbálkozáshoz koppintson a Kész gombra.</string>
+    <string name="grid_no_room">Nincs hely a rácson ennek a modulnak</string>
+    <string name="grid_favorites_overflow">+%1$d további a keresésben</string>
+    <string name="grid_resize_narrower">Keskenyebb</string>
+    <string name="grid_resize_wider">Szélesebb</string>
+    <string name="grid_resize_shorter">Alacsonyabb</string>
+    <string name="grid_resize_taller">Magasabb</string>
+    <string name="grid_resize_handle">Átméretezés</string>
+    <string name="grid_locked">A kezdőképernyő elrendezését a konfigurációja zárolja</string>
 </resources>

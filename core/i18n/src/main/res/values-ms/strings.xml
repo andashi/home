@@ -21,4 +21,16 @@
     <string name="help">Bantuan</string>
     <string name="wallpaper">Kertas Dinding</string>
     <string name="alert_delete_shortcut">Pintasan %1$s akan dibuang secara kekal. Teruskan?</string>
+    <string name="widget_action_allow">Benarkan</string>
+    <string name="grid_edit_title">Edit skrin utama</string>
+    <string name="grid_write_back_skipped">Susun atur disimpan pada peranti, tetapi bukan ke dalam launcher.json: %1$s</string>
+    <string name="grid_write_back_failed">Susun atur tidak dapat disimpan: %1$s. Ketik Selesai untuk mencuba lagi.</string>
+    <string name="grid_no_room">Tiada ruang pada grid untuk widget ini</string>
+    <string name="grid_favorites_overflow">+%1$d lagi dalam carian</string>
+    <string name="grid_resize_narrower">Lebih sempit</string>
+    <string name="grid_resize_wider">Lebih lebar</string>
+    <string name="grid_resize_shorter">Lebih pendek</string>
+    <string name="grid_resize_taller">Lebih tinggi</string>
+    <string name="grid_resize_handle">Ubah saiz</string>
+    <string name="grid_locked">Susun atur skrin utama dikunci oleh konfigurasinya</string>
 </resources>

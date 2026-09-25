@@ -300,4 +300,16 @@
     <string name="item_visibility_hidden">Không bao giờ</string>
     <string name="contact_info_mobile">Di động</string>
     <string name="contact_info_work">Công việc</string>
+    <string name="widget_action_allow">Cho phép</string>
+    <string name="grid_edit_title">Chỉnh sửa màn hình chính</string>
+    <string name="grid_write_back_skipped">Đã lưu bố cục trên thiết bị, nhưng không lưu vào launcher.json: %1$s</string>
+    <string name="grid_write_back_failed">Không thể lưu bố cục: %1$s. Nhấn Xong để thử lại.</string>
+    <string name="grid_no_room">Không còn chỗ trên lưới cho tiện ích này</string>
+    <string name="grid_favorites_overflow">Thêm %1$d trong tìm kiếm</string>
+    <string name="grid_resize_narrower">Hẹp hơn</string>
+    <string name="grid_resize_wider">Rộng hơn</string>
+    <string name="grid_resize_shorter">Thấp hơn</string>
+    <string name="grid_resize_taller">Cao hơn</string>
+    <string name="grid_resize_handle">Đổi kích thước</string>
+    <string name="grid_locked">Bố cục màn hình chính bị khóa bởi cấu hình của nó</string>
 </resources>

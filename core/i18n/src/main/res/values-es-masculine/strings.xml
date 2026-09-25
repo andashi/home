@@ -2,4 +2,16 @@
 <resources>
     <string name="confirmation_delete_color_scheme">¿Estás seguro de que quieres eliminar el esquema de colores %1$s?</string>
     <string name="confirmation_delete_shapes_scheme">¿Estás seguro de que quieres eliminar el esquema de forma %1$s?</string>
+    <string name="widget_action_allow">Permitir</string>
+    <string name="grid_edit_title">Editar la pantalla de inicio</string>
+    <string name="grid_write_back_skipped">Diseño guardado en el dispositivo, pero no en launcher.json: %1$s</string>
+    <string name="grid_write_back_failed">No se pudo guardar el diseño: %1$s. Toca Hecho para volver a intentarlo.</string>
+    <string name="grid_no_room">No hay espacio en la cuadrícula para este widget</string>
+    <string name="grid_favorites_overflow">+%1$d más en la búsqueda</string>
+    <string name="grid_resize_narrower">Más estrecho</string>
+    <string name="grid_resize_wider">Más ancho</string>
+    <string name="grid_resize_shorter">Más bajo</string>
+    <string name="grid_resize_taller">Más alto</string>
+    <string name="grid_resize_handle">Cambiar tamaño</string>
+    <string name="grid_locked">El diseño de la pantalla de inicio está bloqueado por su configuración</string>
 </resources>

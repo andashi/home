@@ -1,3 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="widget_action_allow">Povolit</string>
+    <string name="grid_edit_title">Upravit domovskou obrazovku</string>
+    <string name="grid_write_back_skipped">Rozvržení uloženo v zařízení, ale ne do launcher.json: %1$s</string>
+    <string name="grid_write_back_failed">Rozvržení se nepodařilo uložit: %1$s. Klepnutím na Hotovo to zkuste znovu.</string>
+    <string name="grid_no_room">V mřížce není místo pro tento widget</string>
+    <string name="grid_favorites_overflow">+%1$d dalších ve vyhledávání</string>
+    <string name="grid_resize_narrower">Užší</string>
+    <string name="grid_resize_wider">Širší</string>
+    <string name="grid_resize_shorter">Nižší</string>
+    <string name="grid_resize_taller">Vyšší</string>
+    <string name="grid_resize_handle">Změnit velikost</string>
+    <string name="grid_locked">Rozvržení domovské obrazovky je uzamčeno konfigurací</string>
 </resources>
