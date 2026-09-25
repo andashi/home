@@ -69,18 +69,23 @@ trap cleanup EXIT
 
 SETTINGS_ACTIVITY="$PKG/de.mm20.launcher2.ui.settings.SettingsActivity"
 
-# The settings row with this text, scrolled into view: first further down,
-# then back up, since an earlier tap may have left the list scrolled.
+# The settings row with this text, scrolled until tap_text can reach it
+# (it refuses a row under the app bar or the navigation bar, #155): towards
+# the middle when the row is on screen, else further down, then back up.
 tap_setting() { # $1 = visible text
-  local tries=0
+  local tries=0 bounds
   until tap_text "$1"; do
     tries=$((tries + 1))
-    [ "$tries" -le 8 ] || die "the setting '$1' is not on screen"
-    if [ "$tries" -le 3 ]; then
+    [ "$tries" -le 8 ] || die "the setting '$1' is not where a tap reaches it"
+    bounds="$(node_bounds text "$1")"
+    if [ -n "$bounds" ] && [ "$(awk '{ print int(($2 + $4) / 2) }' <<<"$bounds")" -lt 960 ]; then
+      adb -s "$SERIAL" shell input swipe 540 700 540 1100 300   # high up: bring it down
+    elif [ -n "$bounds" ] || [ "$tries" -le 3 ]; then
       adb -s "$SERIAL" shell input swipe 540 1500 540 700 300
     else
       adb -s "$SERIAL" shell input swipe 540 700 540 1500 300
     fi
+    sleep 1
   done
 }
 

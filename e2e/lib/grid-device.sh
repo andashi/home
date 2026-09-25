@@ -136,10 +136,22 @@ tap_id() { # $1 = resource-id (test tag)
   tap_bounds "$b"
 }
 
-tap_text() { # $1 = visible text; returns 1 (no exit) when absent, so callers can fall back
-  local b
+# tap_text taps a node only where a tap reaches it: its centre below the top
+# 100 dp (status bar and a collapsed top app bar) and above the bottom 48 dp
+# (the navigation bar), measured against this screen's `wm size`. A row
+# scrolled half under the app bar is still in the dump, and a tap at its
+# centre lands on the bar; l4-write-back failed two runs in five on exactly
+# that (#155). Returning 1 then is the same contract as "absent": a caller
+# that scrolls and retries keeps working, and one that took 1 for "absent"
+# now fails loudly instead of tapping the wrong thing.
+tap_text() { # $1 = visible text; returns 1 (no exit) when absent or not where a tap reaches it
+  local b height scale y
   b="$(node_bounds text "$1")"
   [ -n "$b" ] || return 1
+  height="$(adb -s "$SERIAL" shell wm size | tr -d '\r' | awk '/size/ {s=$NF} END {split(s, a, "x"); print a[2]}')"
+  scale="$(density_scale)"
+  y=$(awk '{ print int(($2 + $4) / 2) }' <<<"$b")
+  awk -v y="$y" -v h="$height" -v s="$scale" 'BEGIN { exit !(y > 100 * s && y < h - 48 * s) }' || return 1
   tap_bounds "$b"
 }
 
