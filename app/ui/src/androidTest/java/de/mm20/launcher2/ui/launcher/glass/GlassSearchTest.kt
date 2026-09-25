@@ -401,25 +401,33 @@ class GlassSearchTest {
             val height = semantics.size.height
             val onScreenVerdict = discriminate(screen, onScreen.x, onScreen.y, width, height)
             val laterVerdict = discriminate(laterScreen, onScreen.x, onScreen.y, width, height)
+            val outside = surroundings(screen, outerBounds(popup, onScreen, width, height))
             val evidence = "on screen ${semantics.positionOnScreen}, size ${semantics.size}, host top $hostTop, " +
                 "window height $windowHeight, region $region, drawn 100 ms later $later ($laterVerdict), " +
                 "glass in the screenshot at x ${centreX.toInt()}: y ${glassRows.firstOrNull()}..${glassRows.lastOrNull()}, " +
                 onScreenVerdict +
                 (if (popup != null) ", " + windowState(popup) + ", " + describeCapture(capture, onScreen, width, height) else "") + ", " +
-                surroundings(screen, outerBounds(popup, onScreen, width, height)) + "\n" +
+                outside + (if (popup != null) ", " + windows() else "") + "\n" +
                 eventLog()
-            // #113, the stock emulator's signature and nothing wider: both
-            // screenshots show a uniform fill over the whole popup interior
-            // while the popup window's own buffer, taken between them, holds
-            // the backdrop at the expected row. The launcher drew correctly;
-            // what reached the screenshot did not.
-            if (capture != null && onScreenVerdict.kind == Verdict.Fill && laterVerdict.kind == Verdict.Fill) {
+            // #113, the CI emulator's signature and nothing wider: a system
+            // dialog over the screen. Both screenshots show a uniform fill
+            // over the whole popup interior, the same fill continues left and
+            // right outside the popup window (it is larger than the popup),
+            // and the popup window's own buffer, taken between the
+            // screenshots, holds the backdrop at the expected row. The
+            // launcher drew correctly; something else was in front of it. A
+            // fill confined to the popup layer would be the launcher's and
+            // still fails.
+            val fill = onScreenVerdict.fill
+            if (capture != null && fill != null && laterVerdict.kind == Verdict.Fill &&
+                outside.left.sameAs(fill) && outside.right.sameAs(fill)
+            ) {
                 val (bitmap, origin) = capture
                 val inWindow = drawnAt(bitmap, centreX - origin[0], centreY - origin[1])
                 if (matches(inWindow)) {
                     android.util.Log.w(
                         "GlassSearchTest",
-                        "#113 EMULATOR ARTEFACT ACCEPTED - $tag: the screen shows a uniform fill, the popup window's " +
+                        "#113 EMULATOR ARTEFACT ACCEPTED - $tag: a fill wider than the popup covers the screen, the popup window's " +
                             "buffer the backdrop (row $inWindow, expected $expected). If this line appears on hardware, " +
                             "or often, reopen #113: this is the only thing standing between it and a silently accepted " +
                             "defect.\n$evidence",
@@ -446,7 +454,7 @@ class GlassSearchTest {
     private enum class Verdict { Backdrop, Fill, Window, Glass, Unclassified }
 
     /** A [Verdict] and the counts behind it, for the evidence. */
-    private class Discrimination(val kind: Verdict, private val text: String) {
+    private class Discrimination(val kind: Verdict, private val text: String, val fill: Int? = null) {
         override fun toString() = text
     }
 
@@ -503,6 +511,7 @@ class GlassSearchTest {
             kind,
             "pixels in bounds (every 2nd): backdrop $backdrop ($interiorBackdrop inside), host $host, rim ring $rim, interior $interior " +
                 "(uniform $uniform), other $other; centre ARGB #${Integer.toHexString(centre)}; verdict: $verdict",
+            first.takeIf { kind == Verdict.Fill },
         )
     }
 
@@ -554,20 +563,45 @@ class GlassSearchTest {
      * fill outside too means something larger covers that part of the screen
      * (a system dialog or overlay), and the popup is not the question.
      */
-    private fun surroundings(image: Bitmap, bounds: android.graphics.RectF): String {
+    private class Outside(val bounds: android.graphics.RectF, val above: Int?, val below: Int?, val left: Int?, val right: Int?) {
+        override fun toString(): String {
+            fun hex(p: Int?) = p?.let { "#" + Integer.toHexString(it) } ?: "off-screen"
+            return "outside $bounds: above ${hex(above)}, below ${hex(below)}, left ${hex(left)}, right ${hex(right)}"
+        }
+    }
+
+    private fun surroundings(image: Bitmap, bounds: android.graphics.RectF): Outside {
         val gap = 8 * InstrumentationRegistry.getInstrumentation().targetContext.resources.displayMetrics.density
-        val left = bounds.left
-        val top = bounds.top
-        val cx = bounds.centerX()
-        val cy = bounds.centerY()
-        fun at(x: Float, y: Float): String {
+        fun at(x: Float, y: Float): Int? {
             val xi = x.toInt()
             val yi = y.toInt()
-            if (xi !in 0 until image.width || yi !in 0 until image.height) return "off-screen"
-            return "#" + Integer.toHexString(image.getPixel(xi, yi))
+            return if (xi in 0 until image.width && yi in 0 until image.height) image.getPixel(xi, yi) else null
         }
-        return "outside $bounds: above ${at(cx, top - gap)}, below ${at(cx, bounds.bottom + gap)}, " +
-            "left ${at(left - gap, cy)}, right ${at(bounds.right + gap, cy)}"
+        return Outside(
+            bounds,
+            above = at(bounds.centerX(), bounds.top - gap),
+            below = at(bounds.centerX(), bounds.bottom + gap),
+            left = at(bounds.left - gap, bounds.centerY()),
+            right = at(bounds.right + gap, bounds.centerY()),
+        )
+    }
+
+    /** Within the few levels [discriminate] allows inside a uniform fill. */
+    private fun Int?.sameAs(fill: Int) = this != null &&
+        kotlin.math.abs(android.graphics.Color.red(this) - android.graphics.Color.red(fill)) <= 6 &&
+        kotlin.math.abs(android.graphics.Color.green(this) - android.graphics.Color.green(fill)) <= 6 &&
+        kotlin.math.abs(android.graphics.Color.blue(this) - android.graphics.Color.blue(fill)) <= 6
+
+    /**
+     * #113: the windows on screen and the focus, so a firing names the
+     * dialog in front of the popup instead of leaving it to be inferred.
+     */
+    private fun windows(): String {
+        val out = InstrumentationRegistry.getInstrumentation().uiAutomation.executeShellCommand("dumpsys window windows")
+        val lines = android.os.ParcelFileDescriptor.AutoCloseInputStream(out).bufferedReader().use { it.readLines() }
+        return "windows: " + lines.map { it.trim() }
+            .filter { it.startsWith("Window #") || it.startsWith("mCurrentFocus") || it.startsWith("mFocusedApp") }
+            .joinToString("; ")
     }
 
     /**
