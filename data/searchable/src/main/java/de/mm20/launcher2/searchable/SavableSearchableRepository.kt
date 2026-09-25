@@ -126,9 +126,7 @@ interface SavableSearchableRepository {
      * new ones, so a pin made while a config reload runs is never replaced
      * by a snapshot taken before it.
      */
-    suspend fun replaceManuallySortedAwaited(types: List<String>, items: List<SavableSearchable>) {
-        throw NotImplementedError("replaceManuallySortedAwaited")
-    }
+    suspend fun replaceManuallySortedAwaited(types: List<String>, items: List<SavableSearchable>)
 
     /**
      * Returns the given keys sorted by relevance.
@@ -408,6 +406,40 @@ internal class SavableSearchableRepositoryImpl(
         favoriteWrites.trySend {
             try {
                 updateFavoritesInternal(manuallySorted, automaticallySorted)
+                done.complete(Unit)
+            } catch (e: Throwable) {
+                done.completeExceptionally(e)
+            }
+        }
+        done.await()
+    }
+
+    // Fork addition (#3 D4), see interface. Keys only for the other types:
+    // they are never deserialized, so a pin whose item is gone (an
+    // uninstalled app's shortcut) is kept as it is, not dropped.
+    override suspend fun replaceManuallySortedAwaited(types: List<String>, items: List<SavableSearchable>) {
+        val done = CompletableDeferred<Unit>()
+        favoriteWrites.trySend {
+            try {
+                val dao = database.searchableDao()
+                database.withTransaction {
+                    val others = dao.getManuallySortedKeysExcept(types)
+                    dao.unpinManuallySorted(types)
+                    val total = items.size + others.size
+                    dao.upsert(
+                        items.mapIndexedNotNull { index, searchable ->
+                            SavedSearchableUpdatePinEntity(
+                                key = searchable.key,
+                                type = searchable.domain,
+                                pinPosition = total - index + 1,
+                                serializedSearchable = searchable.serialize() ?: return@mapIndexedNotNull null,
+                            )
+                        }
+                    )
+                    others.forEachIndexed { index, key ->
+                        dao.setPinPosition(key, total - (items.size + index) + 1)
+                    }
+                }
                 done.complete(Unit)
             } catch (e: Throwable) {
                 done.completeExceptionally(e)

@@ -432,19 +432,9 @@ class DefaultConfigStore(
             resolved += app
         }
 
-        val unnamed = searchableRepository.get(
-            excludeTypes = listOf(AppDomain),
-            minPinnedLevel = PinnedLevel.ManuallySorted,
-            maxPinnedLevel = PinnedLevel.ManuallySorted,
-        ).first()
-        val automatic = searchableRepository.get(
-            minPinnedLevel = PinnedLevel.AutomaticallySorted,
-            maxPinnedLevel = PinnedLevel.AutomaticallySorted,
-        ).first()
-        searchableRepository.updateFavoritesAwaited(
-            manuallySorted = resolved + unnamed,
-            automaticallySorted = automatic,
-        )
+        // One transaction reads the other pins and writes the new order, so a
+        // pin made while this reload runs is never replaced by a stale copy.
+        searchableRepository.replaceManuallySortedAwaited(types = listOf(AppDomain), items = resolved)
         return diagnostics
     }
 
