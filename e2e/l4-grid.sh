@@ -223,7 +223,7 @@ wait_id() { # $1 = resource-id, $2 = timeout (s), $3 = description
 
 tap_id() { # $1 = resource-id
   local b
-  b="$(id_bounds "$1")"
+  b="$(id_bounds "$1")" || die "uiautomator dump failed while looking for '$1'"
   [ -n "$b" ] || die "'$1' is not on screen"
   set -- $b
   adb -s "$SERIAL" shell input tap $(( ($1 + $3) / 2 )) $(( ($2 + $4) / 2 ))

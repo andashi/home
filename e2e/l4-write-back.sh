@@ -77,7 +77,7 @@ tap_setting() { # $1 = visible text
   until tap_text "$1"; do
     tries=$((tries + 1))
     [ "$tries" -le 8 ] || die "the setting '$1' is not where a tap reaches it"
-    bounds="$(node_bounds text "$1")"
+    bounds="$(node_bounds text "$1")" || bounds=""   # a failed dump: scroll and retry
     if [ -n "$bounds" ] && [ "$(awk '{ print int(($2 + $4) / 2) }' <<<"$bounds")" -lt 960 ]; then
       adb -s "$SERIAL" shell input swipe 540 700 540 1100 300   # high up: bring it down
     elif [ -n "$bounds" ] || [ "$tries" -le 3 ]; then

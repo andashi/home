@@ -63,8 +63,10 @@ trap cleanup EXIT
 # $1, as "centre bottom"; empty when it is not on screen.
 node_y() { # $1 = content-desc or text
   local b
-  b="$(node_bounds content-desc "$1")"
-  [ -n "$b" ] || b="$(node_bounds text "$1")"
+  # A failed dump is "not on screen" too, for the caller to retry; under
+  # `set -e` a bare assignment from it ended the script with no message.
+  b="$(node_bounds content-desc "$1")" || b=""
+  [ -n "$b" ] || b="$(node_bounds text "$1")" || b=""
   [ -n "$b" ] || return 0
   awk '{ printf "%d %d %d\n", ($2 + $4) / 2, $4, $2 }' <<<"$b"
 }
