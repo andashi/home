@@ -9,12 +9,19 @@ package de.mm20.launcher2.icons
 object DefaultIconPack {
     const val Lawnicons = "app.lawnchair.lawnicons"
 
-    /** Stored and configured as `icons.pack: "none"` (#3 D6). */
+    /**
+     * The apps' own icons, chosen: no pack and no Lawnicons fallback. Stored as
+     * is and written as `icons.pack: "none"` (#3 D6); a package name always has
+     * a dot, so it cannot be one. Not the same as no pack chosen (null), which
+     * falls back to Lawnicons.
+     */
     const val None = "none"
 
-    fun fromPicker(packageName: String): String? = packageName.takeIf { it.isNotBlank() }
+    /** The picker's "System" entry has an empty package name and means [None]. */
+    fun fromPicker(packageName: String): String = packageName.ifBlank { None }
 
     suspend fun effective(configured: String?, isInstalled: suspend (String) -> Boolean): String? {
+        if (configured == None) return null
         configured?.takeIf { it.isNotBlank() }?.let { return it }
         return Lawnicons.takeIf { isInstalled(it) }
     }

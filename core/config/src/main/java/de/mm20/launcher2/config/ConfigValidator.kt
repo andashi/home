@@ -26,7 +26,8 @@ object ConfigValidator {
     fun validate(config: LauncherConfig): List<Diagnostic> {
         val diagnostics = mutableListOf<Diagnostic>()
 
-        config.icons?.pack?.let { pack ->
+        // "none" is the apps' own icons, chosen (#3 D6); anything else names a pack.
+        config.icons?.pack?.takeIf { it != IconsConfig.NoPack }?.let { pack ->
             validatePackageName(pack, "icons.pack", diagnostics)
         }
 

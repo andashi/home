@@ -25,8 +25,14 @@ data class LauncherConfig(
 data class IconsConfig(
     val themed: Boolean? = null,
     val enforceThemed: Boolean? = null,
+    /** A pack's package name, or [NoPack]; absent, the launcher's default (Lawnicons if installed). */
     val pack: String? = null,
-)
+) {
+    companion object {
+        /** The apps' own icons, chosen: no pack and no fallback (#3 D6). */
+        const val NoPack = "none"
+    }
+}
 
 @Serializable
 data class AppearanceConfig(

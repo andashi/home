@@ -202,8 +202,11 @@ because the file is untrusted input and blur costs GPU time on every surface.
 is built from monochrome layers and pack glyphs, and without them every icon
 would be the grey fallback. When `icons.pack` is absent (and none was chosen
 in the settings), the launcher uses Lawnicons if it is installed - provisioning
-installs it - and picks it up when it is installed later. The read-back serves
-what is configured, so an absent pack reads back as absent. Lawnicons is not
+installs it - and picks it up when it is installed later. `"pack": "none"`
+is the apps' own icons, chosen: no pack and no Lawnicons (#3 D6). A file
+cannot reset a value by leaving the key out, because absent means unmanaged,
+so a reset is a word of its own, never `null`. The read-back serves what is
+configured, so an absent pack reads back as absent and `none` as `none`. Lawnicons is not
 bundled: it is 39.5 MB of trademark-derived icons and changes weekly.
 
 The read-back always serves `glass` complete, defaults filled in, so a host

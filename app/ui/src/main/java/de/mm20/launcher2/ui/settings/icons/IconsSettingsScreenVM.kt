@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import de.mm20.launcher2.icons.DefaultIconPack
 import de.mm20.launcher2.icons.IconPack
 import de.mm20.launcher2.icons.IconPackManager
 import de.mm20.launcher2.icons.IconService
@@ -90,8 +91,8 @@ class IconsSettingsScreenVM(
         ) + it
     }
 
-    fun setIconPack(iconPack: String?) {
-        iconSettings.setIconPack(iconPack?.takeIf { it.isNotBlank() })
+    fun setIconPack(iconPack: String) {
+        iconSettings.setIconPack(DefaultIconPack.fromPicker(iconPack))
     }
 
     val hasNotificationsPermission = permissionsManager.hasPermission(PermissionGroup.Notifications)
