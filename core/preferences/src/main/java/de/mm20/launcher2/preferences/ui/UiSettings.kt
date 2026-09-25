@@ -89,26 +89,6 @@ class UiSettings internal constructor(
         }
     }
 
-    val cardStyle
-        get() = launcherDataStore.data.map {
-            CardStyle(
-                opacity = it.surfacesOpacity,
-                borderWidth = it.surfacesBorderWidth,
-            )
-        }
-
-    fun setCardOpacity(opacity: Float) {
-        launcherDataStore.update {
-            it.copy(surfacesOpacity = opacity)
-        }
-    }
-
-    fun setCardBorderWidth(borderWidth: Int) {
-        launcherDataStore.update {
-            it.copy(surfacesBorderWidth = borderWidth)
-        }
-    }
-
     val dimWallpaper
         get() = launcherDataStore.data.map {
             it.wallpaperDim
@@ -117,28 +97,6 @@ class UiSettings internal constructor(
     fun setDimWallpaper(dimWallpaper: Boolean) {
         launcherDataStore.update {
             it.copy(wallpaperDim = dimWallpaper)
-        }
-    }
-
-    val blurWallpaper
-        get() = launcherDataStore.data.map {
-            it.wallpaperBlur
-        }.distinctUntilChanged()
-
-    fun setBlurWallpaper(blurWallpaper: Boolean) {
-        launcherDataStore.update {
-            it.copy(wallpaperBlur = blurWallpaper)
-        }
-    }
-
-    val wallpaperBlurRadius
-        get() = launcherDataStore.data.map {
-            it.wallpaperBlurRadius
-        }.distinctUntilChanged()
-
-    fun setWallpaperBlurRadius(wallpaperBlurRadius: Int) {
-        launcherDataStore.update {
-            it.copy(wallpaperBlurRadius = wallpaperBlurRadius)
         }
     }
 
@@ -322,11 +280,6 @@ class UiSettings internal constructor(
             it.copy(uiColorScheme = colorScheme)
         }
     }
-
-    // `dock`/`dockRows` accessors used to be here. The DataStore fields
-    // `homeScreenDock` and `homeScreenDockRows` stay until a settings
-    // migration drops them; nothing reads or writes them any more (the dock
-    // is the favorites widget on the grid, ADR 0001 revised 2026-09-22, #46).
 
     val homeScreenWidgets
         get() = launcherDataStore.data.map {

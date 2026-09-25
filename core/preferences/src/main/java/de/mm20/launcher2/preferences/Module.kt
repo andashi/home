@@ -4,7 +4,6 @@ import de.mm20.launcher2.preferences.config.LauncherConfigSettings
 import de.mm20.launcher2.preferences.config.LauncherConfigSettingsImpl
 import de.mm20.launcher2.preferences.feed.FeedSettings
 import de.mm20.launcher2.preferences.search.ContactSearchSettings
-import de.mm20.launcher2.preferences.media.MediaSettings
 import de.mm20.launcher2.preferences.search.FavoritesSettings
 import de.mm20.launcher2.preferences.search.RankingSettings
 import de.mm20.launcher2.preferences.search.SearchFilterSettings
@@ -22,7 +21,6 @@ import org.koin.dsl.module
 
 val preferencesModule = module {
     single { LauncherDataStore(androidContext()) }
-    factory { MediaSettings(get()) }
     factory { ContactSearchSettings(get()) }
     factory { BadgeSettings(get()) }
     factory { UiSettings(get()) }

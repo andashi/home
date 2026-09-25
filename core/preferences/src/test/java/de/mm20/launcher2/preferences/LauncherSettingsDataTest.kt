@@ -36,8 +36,6 @@ class LauncherSettingsDataTest {
         val data = LauncherSettingsData(
             gridColumnCount = 7,
             gridIconSize = 42,
-            homeScreenDock = true,
-            homeScreenDockRows = 2,
             gesturesSwipeDown = GestureAction.QuickSettings,
             gesturesLongPress = GestureAction.Launch("app://de.mm20.launcher2"),
             searchBarStyle = SearchBarStyle.Solid,
