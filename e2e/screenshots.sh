@@ -60,9 +60,30 @@ command -v python3 >/dev/null || die "python3 not found"
 
 WORK="$(mktemp -d)"
 HAVE_LOCK=0
+
+# The accessibility "Time to take action" (ms), set for scene 07 only. Its
+# value before is kept so it is restored, not reset to a guess; "null"
+# means it was unset, and restoring deletes it.
+UI_TIMEOUT_KEY=accessibility_interactive_ui_timeout_ms
+UI_TIMEOUT_BEFORE=""
+set_ui_timeout() { # $1 = ms
+  UI_TIMEOUT_BEFORE="$(adb -s "$SERIAL" shell settings get secure "$UI_TIMEOUT_KEY" | tr -d '\r')"
+  adb -s "$SERIAL" shell settings put secure "$UI_TIMEOUT_KEY" "$1"
+}
+restore_ui_timeout() {
+  [ -n "$UI_TIMEOUT_BEFORE" ] || return 0
+  if [ "$UI_TIMEOUT_BEFORE" = "null" ]; then
+    adb -s "$SERIAL" shell settings delete secure "$UI_TIMEOUT_KEY" >/dev/null
+  else
+    adb -s "$SERIAL" shell settings put secure "$UI_TIMEOUT_KEY" "$UI_TIMEOUT_BEFORE"
+  fi
+  UI_TIMEOUT_BEFORE=""
+}
+
 cleanup() {
   local rc=$?
   if [ "$HAVE_LOCK" = 1 ]; then
+    restore_ui_timeout 2>/dev/null || true
     if [ "$rc" -ne 0 ]; then
       printf '\n--- launcher logcat (last 60 lines) ---\n' >&2
       adb -s "$SERIAL" logcat -d -s HomeGridVM:* ConfigReloader:* AndroidRuntime:E 2>/dev/null \
@@ -175,7 +196,16 @@ EOF
   sleep 1
   scene 06-after-drop "Dropped onto the analog clock: the occupant was pushed down, nothing overlaps." "GridLayoutTest (push-down); e2e/l4-grid.sh step 5"
 
-  # 07: remove with undo.
+  # 07: remove with undo. The snackbar is SnackbarDuration.Short, about 4 s,
+  # and on the emulator one uiautomator dump alone takes about 3.8 s. Measured
+  # on 2026-09-25: 1.0 s from the remove to the scene, 3.4 s for the scene,
+  # 3.8 s for the dump that finds Undo. So Undo was gone before it was found
+  # (#127). Waiting longer cannot fix that. What does: the platform's own
+  # "Time to take action" accessibility setting, which Compose's SnackbarHost
+  # honours through calculateRecommendedTimeoutMillis. A user who needs longer
+  # to reach Undo gets the same snackbar for longer. Only scene 07 runs under
+  # it: it is set here and restored right after the tap.
+  set_ui_timeout 30000
   tap_bounds "$(cell_center analog | awk '{print $1, $2, $1, $2}')"
   sleep 1
   tap_id grid-remove
@@ -184,6 +214,7 @@ EOF
   tap_text "Undo" 2>/dev/null || tap_text "UNDO" 2>/dev/null \
     || die "no Undo action on screen: scenes 08 onward would run without the analog clock"
   wait_cell analog 10 "Undo did not restore the analog clock"
+  restore_ui_timeout
 
   # 08: the favorites editor.
   tap_bounds "$(cell_center dock | awk '{print $1, $2, $1, $2}')"

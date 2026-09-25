@@ -6,3 +6,9 @@ scene	caption	guarded by
 05-drag-in-progress	A drag with the finger still down: the digital clock has been carried onto the analog clock's cells and the engine already previews the push-down, the analog clock moved one row down before the drop.	HomeGridEditModeTest.draggingACellOntoAnOccupiedCellPushesTheOccupantDown
 06-after-drop	Dropped onto the analog clock: the occupant was pushed down, nothing overlaps.	GridLayoutTest (push-down); e2e/l4-grid.sh step 5
 07-remove-undo	Remove shows a snackbar with Undo; the AppWidget host id is released only after it expires.	HomeGridEditModeTest.removeThenUndoRestoresTheItem
+08-favorites-editor	Tapping the dock in edit mode opens the favorites editor: reorder, remove, add; it writes the one pin list search uses too.	HomeGridEditModeTest (favorites sheet)
+09-after-done	Done leaves edit mode and writes home.grid back into launcher.json on the device; the file is pulled next to this picture.	GridWriteBackTest; e2e/l4-grid.sh steps 3 and 4
+10-side-dock	The same favorites widget one column wide at the left edge: a side dock, the shape that stays visible on both displays of a fold.	HomeGridArrangementTest; FavoritesGridWidget layout by span
+11-dock-block	Favorites as a 2x2 block next to a widget: the list lays out as w times h icons, the rest stays reachable in search.	FavoritesGridWidget; D2 overflow rule
+12-widget-too-small	The config asked for a one-column digital clock, below its declared minimum: the launcher draws two columns and reports widget-too-small (diagnostics saved next to this picture).	e2e/l4-grid.sh step 6; DefaultConfigStoreTest
+13-locked	locked: true in the config: a long press shows no edit bar and nothing is ever written back.	HomeGridEditModeTest.aLockedLayoutRefusesEditMode; e2e/l4-grid.sh step 7
