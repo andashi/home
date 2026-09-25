@@ -1,7 +1,7 @@
 package de.mm20.launcher2.ui.launcher.scaffold
 
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -66,7 +66,9 @@ internal fun OffscreenPages(
         content = content,
         modifier = Modifier
             .fillMaxSize()
-            .offset { IntOffset(x = offsetX(), y = 0) }
+            // Absolute: right to left a relative offset moves the box left,
+            // and a page still at a wider window's size reaches into view.
+            .absoluteOffset { IntOffset(x = offsetX(), y = 0) }
             .drawWithContent { },
     ) { measurables, constraints ->
         latest = constraints
