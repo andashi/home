@@ -329,9 +329,12 @@ target `sdk_phone64_x86_64-cur-userdebug`, test-keys), operated via
   placed and drawn per Compose, yet HWUI's overdraw view showed no pixels; a
   process launched after the load kept them through four fold cycles, and a
   device never crosses a snapshot's clock jump (#129, closed as an artefact).
-  So one size change after a load is fine, but any sequence of more than one
-  starts from a freshly launched process: `am force-stop` and `am start`
-  after the restore.
+  So one window size change after a load is fine, but a sequence of more than
+  one size change starts from a freshly launched process, restarted after the
+  restore:
+
+      adb -s <serial> shell am force-stop org.andashi.home
+      adb -s <serial> shell am start -n org.andashi.home/de.mm20.launcher2.ui.launcher.LauncherActivity
 - Known emulator limits: nothing Google-server-side can be validated there
   (sandboxed Play, Play Integrity, push); wallpapers apply only after reboot;
   test-keys mean results do not equal "tested on release GrapheneOS".
