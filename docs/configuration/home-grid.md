@@ -21,7 +21,7 @@ away in search. Design background:
 | `home.widgets` | Holds the grid's master switch | object | — |
 | `home.widgets.enabled` | Switches the grid on. Off, the home screen shows only the search bar | boolean | device setting |
 | `home.grid.columns` | Columns of the grid on a phone and on the Fold's cover. The Fold's inner display has twice as many | 2–8 | 4 |
-| `home.grid.locked` | No edit mode on the device, so nothing is ever written back into the file | boolean | `false` |
+| `home.grid.locked` | No edit mode on the device, so the grid is never written back into the file | boolean | `false` |
 | `home.grid.labels` | A label under every widget, never under the dock. It shows the app's name | boolean | `true` |
 | `home.grid.layouts` | The layouts, one per form factor (below) | `phone`, `fold` | — |
 
