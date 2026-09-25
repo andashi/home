@@ -1,9 +1,16 @@
 name: Tests
 
 # L1 (unit) + L3 (screenshot verify) on pull requests and on main.
-# L2 (Compose UI on emulator) on PRs only — it is the slow layer; the fold
-# suite runs on a second, foldable emulator in its own job.
+# L2 (Compose UI on emulator) on PRs and for every release - it is the slow
+# layer; the fold suite runs on a second, foldable emulator in its own job.
 # L4 stays manual/local: it needs the self-built GrapheneOS emulator (ADR 0005).
+#
+# release.yml calls this workflow with `l2: true` and publishes only when every
+# job here is green (#132). Merges do not run L2 on main, so several PRs merged
+# close together meet for the first time on main without it; the release is
+# where that combination is shipped, so that is where the full suite runs.
+# The tag push itself does not trigger this workflow - the call does, so there
+# is one run per release, not two.
 
 # `push` is limited to main on purpose. With a bare `push:` every commit on a
 # PR branch ran this workflow twice - once for the push, once for the pull
@@ -17,6 +24,15 @@ on:
   push:
     branches: [main]
   pull_request:
+  workflow_call:
+    inputs:
+      l2:
+        description: Run the emulator suites (L2) as well.
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
 
 jobs:
   l1-unit:
@@ -91,7 +107,10 @@ jobs:
           retention-days: 14
 
   l2-compose-ui:
-    if: ${{ github.event_name == 'pull_request' }}
+    # In a called run `github.event_name` is the caller's (a tag push), so the
+    # release asks for L2 through the input; on push and pull_request events
+    # `inputs` is empty.
+    if: ${{ github.event_name == 'pull_request' || inputs.l2 }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -124,7 +143,7 @@ jobs:
   # itself by assumption on a device without postures, so the phone job above
   # stays green and this job is the one that proves the fold.
   l2-fold:
-    if: ${{ github.event_name == 'pull_request' }}
+    if: ${{ github.event_name == 'pull_request' || inputs.l2 }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

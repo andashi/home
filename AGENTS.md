@@ -137,8 +137,9 @@ afterthought (see `docs/architecture/adr/0005-testing-strategy.md`):
 ## CI
 
 `.github/workflows/test.yml`: L1 + L3 on every push/PR (JDK 21 — Robolectric
-with SDK 36+ requires >= 21), L2 on PRs via `android-emulator-runner` (stock
-API 36 image). L4 stays manual/local.
+with SDK 36+ requires >= 21), L2 on PRs and on every release via
+`android-emulator-runner` (stock API 36 image, plus a foldable one). A merge to
+`main` does not run L2. L4 stays manual/local.
 
 ## Fork conventions
 
@@ -180,6 +181,16 @@ A release is made by pushing an annotated tag. `.github/workflows/release.yml`
 publishes the annotation verbatim as the release body, so the annotation is
 where the release is described - `git tag -a`, never a lightweight tag (the
 workflow rejects those).
+
+**A tag ships only a commit whose full suite is green, L2 included.** A merge to
+`main` runs L1 and L3 only, so PRs merged close together meet for the first
+time on `main` without any device test: v0.7.2 was tagged from a commit that
+merged three PRs within ten seconds, each green on its own head, and no L2 suite
+had seen them together (#132). `release.yml` therefore runs `test.yml` with both
+emulator suites first and builds nothing unless all of it is green. That is the
+enforcement, not a reason to tag blind: a red release run means the tag names a
+commit that must not ship - fix it on `main` and tag the fix, never re-run until
+a flake lets it through without looking at the failure.
 
 End the annotation with the trailer the provisioning host parses:
 
