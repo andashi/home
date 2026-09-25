@@ -407,6 +407,15 @@ class ConfigParserTest {
         assertTrue(result.diagnostics.single().message.contains("appearance.glass"))
     }
 
+    /** #3 D6: "none" is a value of its own: the apps' own icons, no pack and no fallback. */
+    @Test
+    fun `icons pack none is accepted`() {
+        val result = ConfigParser.parse("""{ "schemaVersion": 2, "icons": { "pack": "none" } }""")
+
+        assertEquals(emptyList<Diagnostic>(), result.diagnostics)
+        assertEquals("none", result.config!!.icons!!.pack)
+    }
+
     @Test
     fun `invalid package names are reported`() {
         val input = """
@@ -982,12 +991,21 @@ class ConfigParserTest {
 
     // ----- search.barPosition (#107) -----
 
+    /** #3 D6: "follow" is how a file returns search to the home bar's position. */
+    @Test
+    fun `search barPosition follow is accepted`() {
+        val result = ConfigParser.parse("""{ "schemaVersion": 2, "search": { "barPosition": "follow" } }""")
+
+        assertEquals(emptyList<Diagnostic>(), result.diagnostics)
+        assertEquals(InSearchBarPosition.Follow, result.config?.search?.barPosition)
+    }
+
     @Test
     fun `search barPosition parses with nothing to report`() {
         val result = ConfigParser.parse("""{ "schemaVersion": 2, "search": { "barPosition": "top" } }""")
 
         assertEquals(emptyList<Diagnostic>(), result.diagnostics)
-        assertEquals(SearchBarPosition.Top, result.config?.search?.barPosition)
+        assertEquals(InSearchBarPosition.Top, result.config?.search?.barPosition)
     }
 
     @Test

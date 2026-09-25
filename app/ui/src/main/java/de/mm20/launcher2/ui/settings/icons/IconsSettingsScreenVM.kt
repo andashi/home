@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import de.mm20.launcher2.icons.DefaultIconPack
 import de.mm20.launcher2.icons.IconPack
 import de.mm20.launcher2.icons.IconPackManager
 import de.mm20.launcher2.icons.IconService
@@ -81,17 +82,19 @@ class IconsSettingsScreenVM(
 
     val installedIconPacks: Flow<List<IconPack>> = iconService.getInstalledIconPacks().map {
         listOf(
+            // The apps' own icons, chosen: stored as is (#3 D6), and the
+            // entry the screen marks when icons.pack is "none".
             IconPack(
                 name = "System",
-                packageName = "",
+                packageName = DefaultIconPack.None,
                 version = "",
                 themed = true,
             )
         ) + it
     }
 
-    fun setIconPack(iconPack: String?) {
-        iconSettings.setIconPack(iconPack?.takeIf { it.isNotBlank() })
+    fun setIconPack(iconPack: String) {
+        iconSettings.setIconPack(iconPack)
     }
 
     val hasNotificationsPermission = permissionsManager.hasPermission(PermissionGroup.Notifications)
@@ -148,7 +151,7 @@ class IconsSettingsScreenVM(
             val usedApps = mutableSetOf<ComponentName>()
 
             for (app in apps) {
-                val icon = if (iconPack.packageName == "") {
+                val icon = if (iconPack.packageName == DefaultIconPack.None) {
                     app.loadIcon(context, size, themed)
                 } else {
                     iconPackManager.getIcon(

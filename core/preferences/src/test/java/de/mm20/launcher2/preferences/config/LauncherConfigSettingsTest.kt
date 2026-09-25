@@ -5,11 +5,14 @@ import de.mm20.launcher2.config.SearchResultLayout
 import de.mm20.launcher2.config.SearchConfig
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
+import de.mm20.launcher2.config.ConfigDiffer
 import de.mm20.launcher2.config.ConfigMutation
+import de.mm20.launcher2.config.ConfigParser
 import de.mm20.launcher2.config.Favorite
 import de.mm20.launcher2.config.GlassContrast
 import de.mm20.launcher2.config.GlassDefaults
 import de.mm20.launcher2.config.GridLayoutConfig
+import de.mm20.launcher2.config.InSearchBarPosition
 import de.mm20.launcher2.config.SearchBarPosition
 import de.mm20.launcher2.preferences.LauncherDataStore
 import de.mm20.launcher2.preferences.LauncherSettingsData
@@ -17,6 +20,7 @@ import de.mm20.launcher2.preferences.seedSettingsFile
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -344,15 +348,28 @@ class LauncherConfigSettingsTest {
 
     // ---- search.barPosition (#107) ----
 
+    /** #3 D6: a file can return search to the home bar's position; absent could not. */
     @Test
-    fun `readState reads no search bar position while search follows home`() = runTest {
-        assertEquals(null, createGateway().readState().search.barPosition)
+    fun `a file with barPosition follow returns search to the home position`() = runTest {
+        val gateway = createGateway(LauncherSettingsData(searchBarBottom = true, searchBarBottomInSearch = false))
+        val config = ConfigParser.parse("""{ "schemaVersion": 2, "search": { "barPosition": "follow" } }""").config
+
+        assertNotNull("follow parses", config)
+        val updated = gateway.applyAndReturn(ConfigDiffer.diff(config!!, gateway.readState()))
+
+        assertEquals(null, updated.searchBarBottomInSearch)
+        assertEquals(true, updated.searchBarBottom)
+    }
+
+    @Test
+    fun `readState reads follow while search follows home`() = runTest {
+        assertEquals(InSearchBarPosition.Follow, createGateway().readState().search.barPosition)
     }
 
     @Test
     fun `readState maps searchBarBottomInSearch to the search bar position`() = runTest {
         assertEquals(
-            SearchBarPosition.Bottom,
+            InSearchBarPosition.Bottom,
             createGateway(LauncherSettingsData(searchBarBottomInSearch = true)).readState().search.barPosition,
         )
     }
@@ -363,7 +380,7 @@ class LauncherConfigSettingsTest {
         val gateway = createGateway(seed)
 
         val updated = gateway.applyAndReturn(
-            listOf(ConfigMutation.SetSearch(SearchConfig(barPosition = SearchBarPosition.Top)))
+            listOf(ConfigMutation.SetSearch(SearchConfig(barPosition = InSearchBarPosition.Top)))
         )
 
         assertEquals(seed.copy(searchBarBottomInSearch = false), updated)

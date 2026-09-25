@@ -33,7 +33,7 @@ fun ConfigState.toLauncherConfig(): LauncherConfig {
             launchOnEnter = search.launchOnEnter,
             reversed = search.reversed,
             hiddenItemsButton = search.hiddenItemsButton,
-            // Only once set (#107): absent, search follows the home position.
+            // Following the home bar is a value too (#3 D6), so `search` stays complete.
             barPosition = search.barPosition,
             // The actions in effect (#106).
             actions = searchActions,

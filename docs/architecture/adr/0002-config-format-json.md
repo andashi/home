@@ -208,8 +208,11 @@ because the file is untrusted input and blur costs GPU time on every surface.
 is built from monochrome layers and pack glyphs, and without them every icon
 would be the grey fallback. When `icons.pack` is absent (and none was chosen
 in the settings), the launcher uses Lawnicons if it is installed - provisioning
-installs it - and picks it up when it is installed later. The read-back serves
-what is configured, so an absent pack reads back as absent. Lawnicons is not
+installs it - and picks it up when it is installed later. `"pack": "none"`
+is the apps' own icons, chosen: no pack and no Lawnicons (#3 D6). A file
+cannot reset a value by leaving the key out, because absent means unmanaged,
+so a reset is a word of its own, never `null`. The read-back serves what is
+configured, so an absent pack reads back as absent and `none` as `none`. Lawnicons is not
 bundled: it is 39.5 MB of trademark-derived icons and changes weekly.
 
 The read-back always serves `glass` complete, defaults filled in, so a host
@@ -246,7 +249,7 @@ nothing about search's appearance is configured twice.
 | `search.launchOnEnter` | Enter launches the best match | `true` |
 | `search.reversed` | results from the bottom up | `false` |
 | `search.hiddenItemsButton` | a button in the bar that shows hidden items | `false` |
-| `search.barPosition` | the bar's position while search is open (#107); absent, it follows `home.searchBar.position` and is not read back | follows home |
+| `search.barPosition` | the bar's position while search is open (#107): `top`, `bottom`, or `follow`, which puts it where `home.searchBar.position` does; always read back (#3 D6) | `follow` |
 | `search.actions` | the search actions in order (#106): `websearch`, `url` (label, url with `${1}`, optional package and encoding), `app` (label, package) or a built-in; present replaces the device's list, `[]` is none | the device's own; new installs: built-ins + `websearch` |
 
 The defaults are the launcher's behavior before the section existed, so a

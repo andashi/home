@@ -453,14 +453,14 @@ class ConfigDifferTest {
 
     @Test
     fun `search barPosition diffs on its own and not when equal`() {
-        val set = SearchConfig(barPosition = SearchBarPosition.Top)
+        val set = SearchConfig(barPosition = InSearchBarPosition.Top)
 
         assertEquals(listOf(ConfigMutation.SetSearch(set)), ConfigDiffer.diff(LauncherConfig(2, search = set), baseState))
         assertEquals(
             emptyList<ConfigMutation>(),
             ConfigDiffer.diff(
                 LauncherConfig(2, search = set),
-                baseState.copy(search = SearchState(barPosition = SearchBarPosition.Top)),
+                baseState.copy(search = SearchState(barPosition = InSearchBarPosition.Top)),
             ),
         )
     }

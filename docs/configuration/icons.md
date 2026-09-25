@@ -14,7 +14,7 @@ icons.
 | Key | What it does | Default |
 |---|---|---|
 | `icons.themed` | Use monochrome glyphs: the app's own monochrome layer or the icon pack's entry. Off: every icon is drawn without color | `true` |
-| `icons.pack` | The package of an icon pack (ADW/Nova format) that supplies glyphs | Lawnicons, when it is installed |
+| `icons.pack` | The package of an icon pack (ADW/Nova format) that supplies glyphs, or `"none"` for the apps' own icons | Lawnicons, when it is installed |
 | `icons.enforceThemed` | Upstream's "force themed icons". In the Clear look an app without a glyph is drawn as its colorless original either way, so this changes nothing visible | `false` |
 
 ## Lawnicons
@@ -24,6 +24,12 @@ installed, and picks it up when it is installed later. Provisioning installs
 it for every zone. Lawnicons covers every dock app the catalog uses. Without
 it, some system apps' own monochrome layers are filled shapes and read as
 white blocks.
+
+`"pack": "none"` is how a file says "no pack": the apps' own icons, and no
+Lawnicons either, even when it is installed. An absent `pack` does not mean
+that; it leaves the choice to the device, which falls back to Lawnicons. The
+same holds in the settings: choosing **System** there stores `none` (#3). The
+read-back serves `none` as written and leaves an unset pack out.
 
 <img src="../../e2e/screenshots/glass/77-dock-without-and-with-lawnicons.jpg" width="440" alt="Two docks: above, filled white icons without a pack; below, white line icons from Lawnicons">
 

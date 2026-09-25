@@ -160,6 +160,7 @@ class ConfigStateMapperTest {
                 favorites = true, allApps = true, layout = SearchResultLayout.Grid, labels = true,
                 contacts = true, shortcuts = true, filterBar = true, openKeyboard = true,
                 launchOnEnter = true, reversed = false, hiddenItemsButton = false,
+                barPosition = InSearchBarPosition.Follow,
             ),
             defaults,
         )
@@ -168,13 +169,20 @@ class ConfigStateMapperTest {
         assertEquals(true, set?.reversed)
     }
 
-    /** #107: absent while search follows the home position, served once set. */
+    /** #3 D6: following is a value now, so the read-back serves it and `search` is complete. */
     @Test
-    fun `search barPosition is served only when set`() {
-        assertEquals(null, ConfigState().toLauncherConfig().search?.barPosition)
+    fun `search barPosition reads back follow while search follows the home bar`() {
+        val served = ConfigParser.json.encodeToString(LauncherConfig.serializer(), ConfigState().toLauncherConfig())
+
+        assertTrue(served, Regex(""""barPosition":\s*"follow"""").containsMatchIn(served))
+    }
+
+    /** #107, #3 D6: a set position is served as set (follow, the default, is checked above). */
+    @Test
+    fun `search barPosition is served as set`() {
         assertEquals(
-            SearchBarPosition.Bottom,
-            ConfigState(search = SearchState(barPosition = SearchBarPosition.Bottom)).toLauncherConfig().search?.barPosition,
+            InSearchBarPosition.Bottom,
+            ConfigState(search = SearchState(barPosition = InSearchBarPosition.Bottom)).toLauncherConfig().search?.barPosition,
         )
     }
 

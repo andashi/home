@@ -58,8 +58,8 @@ data class SearchState(
     val launchOnEnter: Boolean = SearchDefaults.LaunchOnEnter,
     val reversed: Boolean = SearchDefaults.Reversed,
     val hiddenItemsButton: Boolean = SearchDefaults.HiddenItemsButton,
-    /** Null while search follows the home position (#107); read back only when set. */
-    val barPosition: SearchBarPosition? = null,
+    /** Where the bar sits in search (#107); [InSearchBarPosition.Follow] by default, read back always (#3 D6). */
+    val barPosition: InSearchBarPosition = InSearchBarPosition.Follow,
 )
 
 sealed class ConfigMutation {

@@ -26,14 +26,15 @@ object ConfigValidator {
     fun validate(config: LauncherConfig): List<Diagnostic> {
         val diagnostics = mutableListOf<Diagnostic>()
 
-        config.icons?.pack?.let { pack ->
+        // "none" is the apps' own icons, chosen (#3 D6); anything else names a pack.
+        config.icons?.pack?.takeIf { it != IconsConfig.NoPack }?.let { pack ->
             validatePackageName(pack, "icons.pack", diagnostics)
         }
 
         // #107: reversed results put the best match at the bottom, the
         // farthest from a bar at the top. Applied anyway; the config decides.
         config.search?.let { search ->
-            if (search.barPosition == SearchBarPosition.Top && search.reversed == true) {
+            if (search.barPosition == InSearchBarPosition.Top && search.reversed == true) {
                 diagnostics += Diagnostic(
                     Severity.Warning,
                     "search-reversed-with-top-bar",

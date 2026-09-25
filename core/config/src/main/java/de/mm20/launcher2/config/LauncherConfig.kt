@@ -25,8 +25,14 @@ data class LauncherConfig(
 data class IconsConfig(
     val themed: Boolean? = null,
     val enforceThemed: Boolean? = null,
+    /** A pack's package name, or [NoPack]; absent, the launcher's default (Lawnicons if installed). */
     val pack: String? = null,
-)
+) {
+    companion object {
+        /** The apps' own icons, chosen: no pack and no fallback (#3 D6). */
+        const val NoPack = "none"
+    }
+}
 
 @Serializable
 data class AppearanceConfig(
@@ -332,11 +338,11 @@ data class SearchConfig(
     /** A button in the search bar that shows hidden items. */
     val hiddenItemsButton: Boolean? = null,
     /**
-     * Where the search bar sits while search is open (#107); absent, it
-     * follows `home.searchBar.position`.
+     * Where the search bar sits while search is open (#107); `follow` (the
+     * default) puts it where `home.searchBar.position` does (#3 D6).
      */
     @Serializable(with = SearchBarPositionInSearchSerializer::class)
-    val barPosition: SearchBarPosition? = null,
+    val barPosition: InSearchBarPosition? = null,
     /**
      * The search actions, in order (#106): the chips under the search bar
      * and the recognisers for numbers, addresses and the like. Present, it
@@ -346,19 +352,26 @@ data class SearchConfig(
     val actions: List<SearchActionConfig>? = null,
 )
 
+/**
+ * `search.barPosition`: a position of its own, or [Follow] the home bar's.
+ * Separate from [SearchBarPosition] so that `home.searchBar.position` cannot
+ * take `follow`, which would have nothing to follow.
+ */
+enum class InSearchBarPosition { Top, Bottom, Follow }
+
 /** Decodes `search.barPosition` with an error that names the field, as [SearchResultLayoutSerializer] does. */
-internal object SearchBarPositionInSearchSerializer : KSerializer<SearchBarPosition> {
+internal object SearchBarPositionInSearchSerializer : KSerializer<InSearchBarPosition> {
     private const val Path = "search.barPosition"
-    private val names = SearchBarPosition.entries.associateBy { it.name.lowercase() }
+    private val names = InSearchBarPosition.entries.associateBy { it.name.lowercase() }
 
     override val descriptor: SerialDescriptor =
         PrimitiveSerialDescriptor("de.mm20.launcher2.config.SearchBarPositionInSearch", PrimitiveKind.STRING)
 
-    override fun serialize(encoder: Encoder, value: SearchBarPosition) {
+    override fun serialize(encoder: Encoder, value: InSearchBarPosition) {
         encoder.encodeString(value.name.lowercase())
     }
 
-    override fun deserialize(decoder: Decoder): SearchBarPosition {
+    override fun deserialize(decoder: Decoder): InSearchBarPosition {
         val name = decoder.decodeString()
         return names[name] ?: throw SerializationException(
             "'$name' is not a valid value for $Path (${names.keys.joinToString(", ")})"
