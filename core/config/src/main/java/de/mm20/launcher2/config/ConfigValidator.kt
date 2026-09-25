@@ -1,7 +1,14 @@
 package de.mm20.launcher2.config
 
+/**
+ * The contract's limits live here as named constants and patterns, never as
+ * literals in a check, so that everything that states them - this validator,
+ * the JSON Schema (#3 slice 3) - reads the same value.
+ */
 object ConfigValidator {
+    const val MinGlass = 0f
     const val MaxGlassBlur = 64f
+    const val MaxGlassTint = 1f
     const val MaxGlassRadius = 64f
     const val MaxPackageNameLength = 256
     const val MaxFavorites = 64
@@ -12,13 +19,13 @@ object ConfigValidator {
     /** Upper bound for x, y, w and h: past any real grid, and far from Int overflow. */
     const val MaxGridCoordinate = 64
 
-    private val packageNameRegex =
+    internal val packageNameRegex =
         Regex("^[A-Za-z][A-Za-z0-9_]*(\\.[A-Za-z][A-Za-z0-9_]*)+$")
 
     /** Item ids (D5): what a hand-written file and a write-back both produce. */
     val gridItemIdRegex = Regex("^[a-z0-9][a-z0-9-]{0,31}$")
 
-    private val classNameRegex = Regex("^\\.?[A-Za-z_][A-Za-z0-9_$]*(\\.[A-Za-z_][A-Za-z0-9_$]*)*$")
+    internal val classNameRegex = Regex("^\\.?[A-Za-z_][A-Za-z0-9_$]*(\\.[A-Za-z_][A-Za-z0-9_$]*)*$")
 
     /** Upload names: one path segment, no leading dot, no separators. */
     val imageNameRegex = Regex("^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$")
@@ -48,9 +55,9 @@ object ConfigValidator {
         config.search?.actions?.let { validateSearchActions(it, diagnostics) }
 
         config.appearance?.glass?.let { glass ->
-            validateGlass(glass.blur, 0f, MaxGlassBlur, "appearance.glass.blur", "dp", diagnostics)
-            validateGlass(glass.tint, 0f, 1f, "appearance.glass.tint", "", diagnostics)
-            validateGlass(glass.radius, 0f, MaxGlassRadius, "appearance.glass.radius", "dp", diagnostics)
+            validateGlass(glass.blur, MinGlass, MaxGlassBlur, "appearance.glass.blur", "dp", diagnostics)
+            validateGlass(glass.tint, MinGlass, MaxGlassTint, "appearance.glass.tint", "", diagnostics)
+            validateGlass(glass.radius, MinGlass, MaxGlassRadius, "appearance.glass.radius", "dp", diagnostics)
         }
 
         config.appearance?.wallpaper?.image?.let { image ->
