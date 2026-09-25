@@ -1,0 +1,116 @@
+{
+  "schemaVersion": 6,
+  "uiColorScheme": "System",
+  "uiColorsId": "00000000-0000-0000-0000-000000000000",
+  "uiShapesId": "00000000-0000-0000-0000-000000000000",
+  "glassBlur": 12.0,
+  "glassTint": 0.12,
+  "glassRadius": 28.0,
+  "glassContrast": "medium",
+  "glassWallpaperBlur": true,
+  "glassSearchWallpaperBlur": true,
+  "uiTypographyId": "00000000-0000-0000-0000-000000000000",
+  "uiCompatModeColors": false,
+  "uiBaseLayout": "Pager",
+  "uiOrientation": "Auto",
+  "wallpaperDim": true,
+  "wallpaperBlur": false,
+  "wallpaperBlurRadius": 7,
+  "mediaAllowList": [
+    "com.example.player"
+  ],
+  "mediaDenyList": [
+    "com.example.podcast"
+  ],
+  "homeScreenDock": true,
+  "homeScreenDockRows": 3,
+  "homeScreenWidgets": false,
+  "homeGridColumns": 5,
+  "homeGridLocked": false,
+  "homeGridLabels": true,
+  "homeGridInitialized": false,
+  "favoritesEnabled": true,
+  "favoritesFrequentlyUsed": true,
+  "favoritesFrequentlyUsedRows": 1,
+  "favoritesEditButton": true,
+  "favoritesCompactTags": false,
+  "searchAllApps": true,
+  "appsShowDetails": true,
+  "contactSearchEnabled": false,
+  "contactSearchProviders": [],
+  "contactSearchCallOnTap": false,
+  "shortcutSearchEnabled": true,
+  "shortcutSearchBlocklist": [],
+  "badgesNotifications": true,
+  "badgesSuspendedApps": true,
+  "badgesShortcuts": true,
+  "gridColumnCount": 6,
+  "gridIconSize": 56,
+  "gridLabels": true,
+  "gridList": false,
+  "gridListIcons": true,
+  "searchBarStyle": "Transparent",
+  "searchBarColors": "Auto",
+  "searchBarKeyboard": true,
+  "searchLaunchOnEnter": true,
+  "searchBarBottom": false,
+  "searchBarBottomInSearch": null,
+  "searchBarFixed": true,
+  "searchResultsReversed": false,
+  "separateWorkProfile": false,
+  "rankingWeightFactor": "Default",
+  "hiddenItemsShowButton": false,
+  "iconsShape": "Squircle",
+  "iconsAdaptify": false,
+  "iconsThemed": true,
+  "iconsForceThemed": false,
+  "iconsPack": null,
+  "iconsPackThemed": true,
+  "easterEgg": true,
+  "systemBarsHideStatus": false,
+  "systemBarsHideNav": false,
+  "systemBarsStatusColors": "Auto",
+  "systemBarsNavColors": "Auto",
+  "surfacesOpacity": 0.4,
+  "surfacesBorderWidth": 2,
+  "gesturesSwipeDown": {
+    "type": "search"
+  },
+  "gesturesSwipeLeft": {
+    "type": "no_action"
+  },
+  "gesturesSwipeRight": {
+    "type": "no_action"
+  },
+  "gesturesSwipeUp": {
+    "type": "notifications"
+  },
+  "gesturesDoubleTap": {
+    "type": "screen_lock"
+  },
+  "gesturesLongPress": {
+    "type": "no_action"
+  },
+  "gesturesHomeButton": {
+    "type": "no_action"
+  },
+  "stateTagsMultiline": false,
+  "searchFilter": {
+    "hiddenItems": false,
+    "apps": true,
+    "shortcuts": true,
+    "contacts": true
+  },
+  "searchFilterBar": true,
+  "searchFilterBarItems": [
+    "apps",
+    "shortcuts",
+    "contacts",
+    "hidden"
+  ],
+  "localeTimeFormat": "system",
+  "localeTransliterator": "",
+  "localePrimaryCalendar": null,
+  "localeSecondaryCalendar": null,
+  "feedProviderPackage": null
+}
