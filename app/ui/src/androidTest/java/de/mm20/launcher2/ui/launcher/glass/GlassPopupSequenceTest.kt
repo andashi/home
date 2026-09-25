@@ -32,9 +32,9 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 /**
- * A popup's glass on the real renderer, with a backdrop that is not there yet
- * when the popup opens. A popup is its own composition; a backdrop that
- * changes while it is open - the first render, a wallpaper change, a fold -
+ * A popup's glass on the real renderer, with a backdrop or a style that
+ * changes while the popup is open. A popup is its own composition; a change
+ * - the first render, a wallpaper change, a fold, a new tint from the config -
  * has to reach the glass inside it, not only the host's.
  */
 @RunWith(AndroidJUnit4::class)
@@ -48,9 +48,11 @@ class GlassPopupSequenceTest {
         override suspend fun refresh() = Unit
     }
 
+    private val glass = MutableStateFlow(GlassInputs(24f, 0f, 28f, Contrast.Medium))
+
     private val controller = GlassBackdropController(
         source,
-        MutableStateFlow(GlassInputs(24f, 0f, 28f, Contrast.Medium)),
+        glass,
         CoroutineScope(Dispatchers.Main.immediate),
     ) { _, key ->
         val (w, h) = BackdropGeometry.backdropSize(key.windowWidthPx, key.windowHeightPx)
@@ -131,5 +133,29 @@ class GlassPopupSequenceTest {
             after = centre()
         }
         assertTrue("after the backdrop arrived: ${after.describe()}, not the backdrop", after.isBackdrop())
+    }
+
+    /**
+     * The glass style changes while the popup is open - a new tint from the
+     * config - and must reach the popup's glass: at full tint the surface
+     * colour covers the host. With LocalGlassStyle a static local the popup
+     * kept tint 0 and the host green showed through.
+     */
+    @Test
+    fun aStyleChangeWhileThePopupIsOpenReachesItsGlass() {
+        setPopupContent()
+        val before = centre()
+        assertTrue("before the tint: ${before.describe()}, not host green", before.isHost())
+
+        composeRule.runOnIdle { glass.value = glass.value.copy(tint = 1f) }
+        composeRule.waitForIdle()
+
+        var after = centre()
+        repeat(10) {
+            if (!after.isHost()) return@repeat
+            Thread.sleep(100)
+            after = centre()
+        }
+        assertTrue("after the tint changed: still host green ${after.describe()}", !after.isHost())
     }
 }
