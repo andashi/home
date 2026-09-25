@@ -95,4 +95,33 @@ class BackdropPipelineTest {
 
         assertNull(value)
     }
+
+    /**
+     * #130: a window the flow has not reached yet - the composition sees a
+     * new window before the flow does - is looked up from the cache at once.
+     */
+    @Test
+    fun `peek gives the cached backdrop for a window the flow has not reached`() = runTest {
+        collect()
+        val cover = WindowInputs(1080, 2364, 2.625f)
+        val inner = WindowInputs(2076, 2152, 2.625f)
+        window.value = inner
+        window.value = cover
+
+        val found = pipeline.peek(image.value, glass.value, inner)
+
+        assertEquals(2076, found?.key?.windowWidthPx)
+        assertEquals("bitmap-2", found?.bitmap)
+        assertEquals("peek rendered nothing", 2, rendered.size)
+    }
+
+    /** Control: nothing made for that window, nothing found - a real miss stays asynchronous. */
+    @Test
+    fun `peek finds nothing for a window never rendered, or without a wallpaper`() = runTest {
+        collect()
+
+        assertNull(pipeline.peek(image.value, glass.value, WindowInputs(2076, 2152, 2.625f)))
+        assertNull(pipeline.peek(null, glass.value, WindowInputs(1080, 2364, 2.625f)))
+        assertEquals(1, rendered.size)
+    }
 }

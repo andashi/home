@@ -34,4 +34,7 @@ class BackdropPipeline<B : Any>(
                     cache.get(key) { render(image, key) }?.let { RenderedBackdrop(key, it) }
                 }
             }
+
+    /** The cached backdrop for these inputs, or null; never renders (#130). */
+    fun peek(image: BackdropImage?, glass: GlassInputs, window: WindowInputs): RenderedBackdrop<B>? = null
 }

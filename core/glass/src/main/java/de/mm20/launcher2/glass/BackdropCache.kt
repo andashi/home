@@ -24,4 +24,7 @@ class BackdropCache<B : Any>(private val capacity: Int = 3) {
         while (entries.size > capacity) entries.remove(entries.keys.first())
         made
     }
+
+    /** The backdrop for [key] if one is made, without producing or waiting (#130). */
+    fun peek(key: BackdropKey): B? = null
 }
