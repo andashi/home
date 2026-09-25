@@ -31,6 +31,34 @@ because a hook only helps in a clone that enabled it. Both match at line start,
 so prose *about* attribution is fine, and both allow `Co-Authored-By` for
 actual human co-authors.
 
+## Referring to an issue from a pull request
+
+**GitHub's closing-keyword parser ignores negation.** A pull request body saying
+"test-only: it does not fix #NNN" is read as `fix #NNN`, and merging it closes
+that issue. It happened on 2026-09-25: #152 said in its own body that it was
+test-only and denied fixing the issue it referenced, with the keyword sitting
+immediately before the number. GitHub listed the issue under
+`closingIssuesReferences`, and the merge closed it - two minutes after the
+defect had fired again in CI and blocked another pull request's proof run.
+
+So a pull request that does not close an issue writes **`Refs #NNN`**, and never
+puts `close`, `fix` or `resolve` in front of a number, not even inside a
+sentence that denies it. Before merging a partial pull request, check what
+GitHub thinks it closes:
+
+```bash
+gh pr view <n> --json closingIssuesReferences \
+  --jq '[.closingIssuesReferences[].number]'
+```
+
+An empty list is what a partial pull request should print. That command caught
+this very section: the first draft quoted the offending sentence verbatim, so
+the pull request documenting the trap would have closed the issue a second
+time. This text writes `#NNN` rather than a real number for that reason.
+
+A wrongly closed issue is not a bookkeeping problem. It takes a live defect off
+the list everyone reads while it is still failing builds.
+
 ## Feedback loop (no LSP)
 
 LSP is deliberately disabled for this project: Kotlin language servers on a
