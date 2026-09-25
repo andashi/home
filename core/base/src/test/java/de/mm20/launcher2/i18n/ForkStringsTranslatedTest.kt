@@ -4,6 +4,8 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.File
+import javax.xml.parsers.DocumentBuilderFactory
+import org.w3c.dom.Element
 
 /**
  * The fork's own strings must exist in every locale.
@@ -20,14 +22,32 @@ import java.io.File
 class ForkStringsTranslatedTest {
 
     private val res = File(repoRoot(), "core/i18n/src/main/res")
-    private val nameRegex = Regex("""<string\s+name="([^"]+)"""")
 
     private fun repoRoot(): File =
         System.getProperty("repoRoot")?.let(::File)
             ?: error("repoRoot system property missing; see the test task in core/base/build.gradle.kts")
 
-    private fun namesIn(file: File): Set<String> =
-        nameRegex.findAll(file.readText()).map { it.groupValues[1] }.toSet()
+    /**
+     * Parsed, not matched. A locale that comments a string out still contains
+     * its name in the file text, and a regex would count it as translated
+     * while the resource does not exist - the guard would pass on exactly the
+     * gap it is there to catch.
+     */
+    private fun namesIn(file: File): Set<String> {
+        val nodes = documentBuilder().parse(file).getElementsByTagName("string")
+        return (0 until nodes.length)
+            .mapNotNull { (nodes.item(it) as Element).getAttribute("name").takeIf(String::isNotEmpty) }
+            .toSet()
+    }
+
+    // No DOCTYPE means no external entities to resolve, which is the whole of
+    // the exposure here. The XMLConstants properties that would say so more
+    // explicitly are not on the Android stubs this module compiles against.
+    private fun documentBuilder() = DocumentBuilderFactory.newInstance().apply {
+        setFeature("http://apache.org/xml/features/disallow-doctype-decl", true)
+        isExpandEntityReferences = false
+        isNamespaceAware = false
+    }.newDocumentBuilder()
 
     private fun forkOwned(): List<String> =
         File(repoRoot(), "core/i18n/fork-owned-strings.txt")
