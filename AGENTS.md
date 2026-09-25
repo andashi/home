@@ -284,9 +284,13 @@ target `sdk_phone64_x86_64-cur-userdebug`, test-keys), operated via
   the provisioning repo, on every test instance, in the same session
   (procedure in that README). A stale one does not fail runs, because
   `00-profiles.sh` still reconciles, but it makes them slow again.
-- **A debug build over a release-signed one breaks every secondary user.** The
-  per-user external directory survives the uninstall carrying the ownership of
-  the install that created it, so the new build cannot write into it:
+- **A release build signed with the debug key breaks every secondary user.**
+  Not the `debug` variant, which carries `applicationIdSuffix = ".debug"` and
+  installs beside the release package rather than over it. The one that does
+  this is a **release** build made without the release keystore: it keeps the
+  `org.andashi.home` application id and falls back to the debug key (#137).
+  The per-user external directory survives the uninstall carrying the ownership
+  of the install that created it, so the new build cannot write into it:
   `content write` fails with a null `ParcelFileDescriptor` over `IOException:
   Permission denied` in `ConfigIngestProvider.newTempFile`, permanently rather
   than as a race (twelve attempts over 24 seconds, identical every time).
