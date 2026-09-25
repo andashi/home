@@ -189,7 +189,12 @@ fun ProvideGlassBackdrop(controller: GlassBackdropController, content: @Composab
     // taken from the cache now, so the first frame after a fold or unfold is
     // not drawn with the previous window's (#130). A real miss keeps the
     // previous backdrop until the render arrives through the flow.
-    val cached = remember(controller, window, flowed) { window?.let(controller::cachedBackdropFor) }
+    // Looked up in every composition, not remembered: the key also depends
+    // on the glass values, which recompose this through the style below, and
+    // a stale remembered lookup would draw the previous blur for a frame
+    // (#149 review). The lookup is a map read; an equal result does not
+    // change LocalGlassBackdrop.
+    val cached = window?.let(controller::cachedBackdropFor)
     val backdrop = cached ?: flowed
     val style by controller.style.collectAsState()
     val wallpaperBlur by controller.wallpaperBlur.collectAsState()
