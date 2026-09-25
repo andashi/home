@@ -366,9 +366,27 @@ resolve_postures() {
 # re-showing home in between: after a posture change the activity comes back
 # on the other display, and a check made before that sees the blank in
 # between (it did: 2 frames on the cover).
-home_shows() { shows id_bounds "$1" && return 0; wake_screen; show_home; return 1; }
+#
+# 30 s by default, derived from a clean measurement on emulator-5560
+# (2026-09-25, 8 posture changes): the dock was back on the first dump after
+# unfolding (2-3 s), and on the first or second after folding (4-5 s or
+# 11 s; the launcher had focus at each miss). One round costs at most about
+# 8 s (dump, wake, home, pause), so 30 s allows three rounds, about 2.7
+# times the worst case seen. A timeout names the rounds and what had focus.
+HOME_ROUNDS=0
+home_shows() {
+  HOME_ROUNDS=$((HOME_ROUNDS + 1))
+  shows id_bounds "$1" && return 0
+  wake_screen; show_home; return 1
+}
 wait_on_home() { # $1 = resource id, $2 = timeout (s)
-  retry_for "${2:-30}" home_shows "$1" || die "'$1' did not come back on the home screen"
+  local focus
+  HOME_ROUNDS=0
+  retry_for "${2:-30}" home_shows "$1" && return 0
+  # The diagnosis gets 2 s of its own: on a wedged connection it must not
+  # carry the timeout further than the wait did.
+  focus="$(ADB_DEADLINE=$((SECONDS + 2)) adb_t shell dumpsys window 2>/dev/null | tr -d '\r' | awk '/mCurrentFocus/ { print $NF; exit }')"
+  die "'$1' did not come back on the home screen within ${2:-30}s ($HOME_ROUNDS rounds; focus: ${focus:-unknown})"
 }
 
 posture() { # $1 = closed | half | opened, [$2 = resource id to wait for on home]
