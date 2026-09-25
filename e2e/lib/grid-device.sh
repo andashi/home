@@ -1,8 +1,11 @@
 #!/usr/bin/env bash
-# Device helpers shared by the grid scripts (e2e/l4-grid.sh carries its own
-# copy today; e2e/screenshots.sh sources this file). Everything talks to the
-# launcher through its public surface: the ingest provider, the reload
-# broadcast, the read-back provider, `input` and `uiautomator dump`.
+# Device helpers shared by the e2e scripts. Everything talks to the launcher
+# through its public surface: the ingest provider, the reload broadcast, the
+# read-back provider, `input` and `uiautomator dump`.
+#
+# One definition per helper, here (#126): a script that needs different
+# behaviour gets a parameter, or a function under its own name.
+# e2e/check-helpers.sh fails CI when a script redefines one of these.
 #
 # Expects: SERIAL, PKG, WORK (a scratch dir), and the log/die functions.
 
@@ -14,21 +17,33 @@ LAUNCHER_ACTIVITY="$PKG/de.mm20.launcher2.ui.launcher.LauncherActivity"
 DEVICE_CONFIG="/storage/emulated/0/Android/data/$PKG/files/config/launcher.json"
 
 query_json() { # $1 = provider path (config|diagnostics)
-  # The provider answers one row whose json value spans many lines.
-  adb -s "$SERIAL" shell content query --uri "$STATE_URI/$1" 2>/dev/null | tr -d '\r' \
-    | sed '1s/^Row: 0 json=//'
+  # The provider answers one row whose json value spans many lines. Anything
+  # else is an error, never an empty answer: a caller reading "" as "no
+  # config" would pass for the wrong reason.
+  local out
+  out="$(adb -s "$SERIAL" shell content query --uri "$STATE_URI/$1" 2>&1 | tr -d '\r')" \
+    || { printf 'content query failed: %s\n' "$out" >&2; return 1; }
+  case "$out" in
+    "Row: 0 json="*) printf '%s' "${out#Row: 0 json=}" ;;
+    *) printf 'unexpected provider output: %s\n' "$out" >&2; return 1 ;;
+  esac
 }
 
+# Waits for a /diagnostics report matching the jq filter; the match is left in
+# LAST_REPORT for the caller to assert on.
+LAST_REPORT=""
 wait_report() { # $1 = jq filter, $2 = timeout (s), $3 = description
-  local elapsed=0 report
+  local elapsed=0 report=""
   while [ "$elapsed" -lt "$2" ]; do
     if report="$(query_json diagnostics 2>/dev/null)" && [ -n "$report" ] \
       && jq -e "$1" <<<"$report" >/dev/null 2>&1; then
+      LAST_REPORT="$report"
       return 0
     fi
     sleep 1; elapsed=$((elapsed + 1))
   done
-  die "timed out (${2}s) waiting for a report: $3"
+  printf 'last /diagnostics report:\n%s\n' "$report" >&2
+  die "timed out (${2}s) waiting for report: $3"
 }
 
 write_config() { # $1 = local file
@@ -342,10 +357,24 @@ resolve_postures() {
   POSTURE_HALF="$(sed -n "s/.*identifier=\([0-9]*\), name='HALF_OPENED'.*/\1/p" <<<"$states" | sed -n 1p)"
   POSTURE_OPENED="$(sed -n "s/.*identifier=\([0-9]*\), name='OPENED'.*/\1/p" <<<"$states" | sed -n 1p)"
   [ -n "$POSTURE_CLOSED" ] && [ -n "$POSTURE_HALF" ] && [ -n "$POSTURE_OPENED" ] \
-    || die "$SERIAL has no CLOSED/HALF_OPENED/OPENED postures: $states"
+    || die "$SERIAL has no CLOSED/HALF_OPENED/OPENED postures (not a foldable?): $states"
+  log "postures: closed=$POSTURE_CLOSED half=$POSTURE_HALF opened=$POSTURE_OPENED"
 }
 
-posture() { # $1 = closed | half | opened
+# Brings the home screen up and waits until the node with resource id $1 is on
+# it, waking and re-showing home in between: after a posture change the
+# activity comes back on the other display, and a check made before that
+# sees the blank in between (it did: 2 frames on the cover).
+wait_on_home() { # $1 = resource id, $2 = timeout (s)
+  local i
+  for i in $(seq "${2:-30}"); do
+    [ -n "$(id_bounds "$1" 2>/dev/null)" ] && return 0
+    wake_screen; show_home; sleep 1
+  done
+  die "'$1' did not come back on the home screen"
+}
+
+posture() { # $1 = closed | half | opened, [$2 = resource id to wait for on home]
   local id
   case "$1" in
     closed) id="$POSTURE_CLOSED" ;;
@@ -356,6 +385,7 @@ posture() { # $1 = closed | half | opened
   adb -s "$SERIAL" shell cmd device_state state "$id" >/dev/null 2>&1 || die "cmd device_state state $id ($1) failed"
   sleep 4
   show_home
+  [ -z "${2:-}" ] || wait_on_home "$2"
   sleep 3
 }
 

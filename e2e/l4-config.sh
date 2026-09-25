@@ -97,10 +97,6 @@ SNAPSHOT="${SNAPSHOT:-clean}"
 APK="${1:-$(dirname "$0")/../app/app/build/outputs/apk/default/debug/app-default-debug.apk}"
 # Overridable: PKG=org.andashi.home APK=... runs the scenario against the release build.
 PKG="${PKG:-org.andashi.home.debug}"
-RECEIVER="$PKG/de.mm20.launcher2.config.service.ReloadConfigReceiver"
-ACTION="$PKG.action.RELOAD_CONFIG"
-STATE_URI="content://$PKG.state"
-INGEST_URI="content://$PKG.config-ingest/launcher.json"
 WALLPAPER_URI="content://$PKG.config-ingest/wallpapers"
 REMOTE_DIR="/storage/emulated/0/Android/data/$PKG/files/config"
 REMOTE_CONFIG="$REMOTE_DIR/launcher.json"
@@ -139,58 +135,18 @@ cleanup() {
 }
 trap cleanup EXIT
 
+# The device helpers, their constants (STATE_URI, INGEST_URI, ...) and
+# LAST_REPORT live in the shared library (#126).
+# shellcheck source=lib/grid-device.sh
+. "$(dirname "$0")/lib/grid-device.sh"
+
 # --- adb helpers -------------------------------------------------------
-
-# Prints the `json` column of the single row returned by the state provider.
-# The payload is pretty-printed (multi-line) JSON, so everything after the
-# "Row: 0 json=" prefix is the value. No grep -q anywhere in this script:
-# under pipefail, -q exits after the first match and the resulting SIGPIPE
-# makes the producer side of the pipeline fail despite the match.
-query_json() { # $1 = provider path (config|diagnostics)
-  local out
-  out="$(adb -s "$SERIAL" shell content query --uri "$STATE_URI/$1" 2>&1 | tr -d '\r')" \
-    || { printf 'content query failed: %s\n' "$out" >&2; return 1; }
-  case "$out" in
-    "Row: 0 json="*) printf '%s' "${out#Row: 0 json=}" ;;
-    *) printf 'unexpected provider output: %s\n' "$out" >&2; return 1 ;;
-  esac
-}
-
-# Polls /diagnostics until the latest report matches the jq filter.
-# Sets LAST_REPORT on success; fails loudly and prints the last seen report
-# on timeout.
-LAST_REPORT=""
-wait_report() { # $1 = jq filter, $2 = timeout (s), $3 = description
-  local filter="$1" timeout="$2" what="$3" elapsed=0 report=""
-  while [ "$elapsed" -lt "$timeout" ]; do
-    if report="$(query_json diagnostics 2>/dev/null)" && [ -n "$report" ]; then
-      if jq -e "$filter" >/dev/null 2>&1 <<<"$report"; then
-        LAST_REPORT="$report"
-        return 0
-      fi
-    fi
-    sleep 1
-    elapsed=$((elapsed + 1))
-  done
-  printf 'last /diagnostics report:\n%s\n' "$report" >&2
-  die "timed out (${timeout}s) waiting for report: $what"
-}
 
 assert_jq() { # $1 = json, $2 = jq filter, $3 = description
   if ! jq -e "$2" >/dev/null 2>&1 <<<"$1"; then
     printf 'offending json:\n%s\n' "$1" >&2
     die "assertion failed: $3"
   fi
-}
-
-# The provisioning transport: stream the file into the ingest provider.
-# `content write` exits 0 even when the provider throws (it only prints the
-# exception), so any output at all is a failure. adb shell v2 is binary-safe.
-write_config() { # $1 = local file
-  local out
-  out="$(adb -s "$SERIAL" shell content write --uri "$INGEST_URI" < "$1" 2>&1 | tr -d '\r')" \
-    || { printf '%s\n' "$out" >&2; die "content write failed"; }
-  [ -z "$out" ] || { printf '%s\n' "$out" >&2; die "content write reported an error"; }
 }
 
 write_wallpaper() { # $1 = local image, $2 = upload name
@@ -210,20 +166,12 @@ wallpaper_id() {
 }
 
 # The interactive dotfile path (owner only - a secondary user's storage is
-# not reachable for the shell, see ADR 0003 §1a).
-push_config() { # $1 = local file
+# not reachable for the shell, see ADR 0003 §1a). Not the library's
+# push_config, which goes through the ingest provider and waits for the
+# report: this one is `adb push` onto the file, and step 9 waits itself.
+adb_push_config() { # $1 = local file
   adb -s "$SERIAL" shell "mkdir -p '$REMOTE_DIR'" >/dev/null
   adb -s "$SERIAL" push "$1" "$REMOTE_CONFIG" >/dev/null
-}
-
-reload_broadcast() {
-  local out
-  out="$(adb -s "$SERIAL" shell am broadcast -n "$RECEIVER" -a "$ACTION" 2>&1 | tr -d '\r')" \
-    || { printf '%s\n' "$out" >&2; die "am broadcast failed"; }
-  case "$out" in
-    *"Broadcast completed"*) ;;
-    *) printf '%s\n' "$out" >&2; die "am broadcast did not complete" ;;
-  esac
 }
 
 # Pushes a config, waits for the file-watcher to settle (validates the
@@ -662,7 +610,7 @@ ok "fold layout kept as written on a phone (#90)"
 
 # --- 9. restore a valid config via adb push (interactive dotfile path) ---
 
-push_config "$VALID_CONFIG"
+adb_push_config "$VALID_CONFIG"
 log "restore: waiting for file-watcher reload of the pushed file (hash ${H_VALID:0:12}...)"
 wait_report ".success == true and .configSha256 == \"$H_VALID\" and .trigger == \"file-watcher\"" 30 \
   "restore: file-watcher report after adb push"

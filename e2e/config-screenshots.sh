@@ -198,14 +198,7 @@ sleep 5
 wallpaper="$WALLPAPER_TALL"
 adb -s "$SERIAL" shell content write --uri "content://$PKG.config-ingest/wallpapers/mauritius.jpg" < "$wallpaper"
 
-wait_grid() {
-  local i
-  for i in $(seq 30); do
-    [ -n "$(id_bounds grid-item:dock 2>/dev/null)" ] && return 0
-    wake_screen; show_home; sleep 1
-  done
-  die "the grid is not on screen"
-}
+wait_grid() { wait_on_home grid-item:dock; }
 
 # The launcher sets a wallpaper deferred for a profile in the background
 # asynchronously when its activity resumes; foregrounding alone does not
@@ -226,14 +219,6 @@ wait_wallpaper() {
   die "the wallpaper was not rendered within 60 s (system id ${id:-none})"
 }
 
-posture() { # closed | opened
-  local id; [ "$1" = closed ] && id="$POSTURE_CLOSED" || id="$POSTURE_OPENED"
-  adb -s "$SERIAL" shell cmd device_state state "$id" >/dev/null
-  sleep 4
-  show_home
-  wait_grid
-  sleep 3
-}
 
 # Captures the physical display whose size is the current wm size (a
 # foldable has two, and a plain screencap refuses to pick).
@@ -308,12 +293,12 @@ for name in $SCENES; do
   jq -e '[(.diagnostics // [])[] | select(.code != "wallpaper-pending-foreground")] | length == 0' <<<"$report" >/dev/null \
     || die "$name applied with diagnostics, the picture would not match its config: $(jq -c '.diagnostics' <<<"$report")"
   if [ "$FOLDABLE" = 1 ]; then
-    posture closed
+    posture closed grid-item:dock
     wait_wallpaper
     open_search "$name"
     capture "$OUT/$name-fold-cover.jpg" 540
     close_search "$name"
-    posture opened
+    posture opened grid-item:dock
     wait_wallpaper
     open_search "$name"
     capture "$OUT/$name-fold-inner.jpg" 780

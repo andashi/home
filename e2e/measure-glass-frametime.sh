@@ -207,29 +207,7 @@ if [ -n "${LAWNICONS_APK:-}" ]; then
 fi
 adb -s "$SERIAL" install -r "$APK" | grep -q Success || die "install failed"
 adb -s "$SERIAL" shell appwidget grantbind --package "$PKG" --user 0 >/dev/null
-resolve_postures() {
-  local states
-  states="$(adb -s "$SERIAL" shell cmd device_state print-states 2>/dev/null | tr -d '\r')"
-  POSTURE_CLOSED="$(sed -n "s/.*identifier=\([0-9]*\), name='CLOSED'.*/\1/p" <<<"$states" | head -1)"
-  POSTURE_OPENED="$(sed -n "s/.*identifier=\([0-9]*\), name='OPENED'.*/\1/p" <<<"$states" | head -1)"
-  [ -n "$POSTURE_CLOSED" ] && [ -n "$POSTURE_OPENED" ] || die "$SERIAL is not a foldable: $states"
-}
 resolve_postures
-posture() { # $1 = closed | opened
-  local id i; [ "$1" = closed ] && id="$POSTURE_CLOSED" || id="$POSTURE_OPENED"
-  adb -s "$SERIAL" shell cmd device_state state "$id" >/dev/null
-  sleep 4
-  show_home
-  # The activity is recreated on the other display; a series started before
-  # the grid is back measures the blank in between (it did: 2 frames on the
-  # cover). Wait for the dock cell.
-  for i in $(seq 30); do
-    [ -n "$(id_bounds grid-item:dock 2>/dev/null)" ] && break
-    wake_screen; show_home; sleep 1
-  done
-  [ -n "$(id_bounds grid-item:dock 2>/dev/null)" ] || die "the grid did not come back after posture $1"
-  sleep 2
-}
 
 show_home
 sleep 5
@@ -296,7 +274,9 @@ for variant in $VARIANTS; do
   adb -s "$SERIAL" shell am force-stop "$PKG"
   adb -s "$SERIAL" logcat -c
   for display in cover inner; do
-    [ "$display" = cover ] && posture closed || posture opened
+    # Waits for the dock: a series started before the grid is back on the
+    # other display measures the blank in between.
+    [ "$display" = cover ] && posture closed grid-item:dock || posture opened grid-item:dock
     if [ -n "${SCREENSHOTS:-}" ]; then
       mkdir -p "$SCREENSHOTS"
       capture "$SCREENSHOTS/$variant-$display.png"
