@@ -117,6 +117,20 @@ interface SavableSearchableRepository {
     )
 
     /**
+     * Fork addition (#3 D4): makes [items] the manually sorted favorites of
+     * [types], in order. Manually sorted pins of every other type keep their
+     * relative order and follow [items]; automatically sorted pins are not
+     * touched. Returns once committed.
+     *
+     * The current pins are read inside the same transaction that writes the
+     * new ones, so a pin made while a config reload runs is never replaced
+     * by a snapshot taken before it.
+     */
+    suspend fun replaceManuallySortedAwaited(types: List<String>, items: List<SavableSearchable>) {
+        throw NotImplementedError("replaceManuallySortedAwaited")
+    }
+
+    /**
      * Returns the given keys sorted by relevance.
      * The first item in the list is the most relevant.
      * Unknown keys will not be included in the result.
