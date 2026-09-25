@@ -228,7 +228,9 @@ check "wait_desc gives up after its timeout" bounded wait_desc Search 3 test
 check "wait_id gives up after its timeout" bounded wait_id grid-edit-done 3 test
 check "wait_cells gives up after its timeout" bounded wait_cells 1 3
 check "wait_report gives up after its timeout" bounded "wait_report '.success' 3 test"
-check "wait_on_home gives up after its timeout" bounded wait_on_home grid-item:dock 3
+# wait_on_home is bounded by rounds, each capped through adb_t by ROUND_CAP,
+# so a wedged device ends after rounds x (cap + pause).
+check "wait_on_home gives up after its rounds on a wedged device" bounded ROUND_CAP=1 wait_on_home grid-item:dock 3
 
 # Controls: a device that answers ends each wait at once, so a loop that
 # "passes" the tests above by always giving up would fail here.
@@ -301,5 +303,29 @@ refuses_root() {
   [ $((SECONDS - start)) -le 6 ]
 }
 check "unrooted_shell refuses a root shell once its timeout is up" refuses_root
+
+# A loaded host makes each observation slow, not the device: 2 rounds in 30 s
+# on emulator-5560 while a second emulator ran (2026-09-25 22:58). The dock
+# that appears on the third dump must be waited for however long a dump
+# takes, and the success must say what it cost.
+mkdir -p "$WORK/slow"
+cat > "$WORK/slow/adb" <<EOF
+#!/usr/bin/env bash
+case "\$*" in
+  *"uiautomator dump"*) sleep 11 ;;
+  *"cat /sdcard/grid-dump.xml"*)
+    n=\$(( \$(cat "$WORK/slow/dumps" 2>/dev/null || echo 0) + 1 )); echo "\$n" > "$WORK/slow/dumps"
+    [ "\$n" -ge 3 ] && echo '<hierarchy><node resource-id="grid-item:dock" bounds="[0,0][9,9]"/></hierarchy>' \
+      || echo '<hierarchy/>' ;;
+esac
+EOF
+chmod +x "$WORK/slow/adb"
+waits_three_slow_rounds() {
+  local out
+  rm -f "$WORK/slow/dumps"
+  out="$( ( PATH="$WORK/slow:$PATH"; log() { printf '%s\n' "$*"; }; wait_on_home grid-item:dock ) 2>&1 )" || { printf '%s\n' "$out" >&2; return 1; }
+  grep -qE "after 3 rounds, [0-9]+ s" <<<"$out"
+}
+check "wait_on_home waits three rounds on a slow host and says what they cost" waits_three_slow_rounds
 
 exit "$failed"
