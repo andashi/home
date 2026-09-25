@@ -36,7 +36,9 @@
 # Instance: SERIAL + OVERLAY_DIR (default emulator-5562, instances/test-fold-gpu,
 # a foldable that runs GPU=host since its first start), snapshot `clean`,
 # under the instance's device lock. Everything runs as the unrooted shell
-# (uid 2000, asserted). Needs `trace_processor` (TRACE_PROCESSOR, else on PATH).
+# (uid 2000, asserted); `run.sh start` ends with `adb root`, so run
+# `adb -s $SERIAL unroot` after starting the instance. Needs `trace_processor`
+# (TRACE_PROCESSOR, else on PATH).
 set -euo pipefail
 
 HERE="$(cd "$(dirname "$0")" && pwd)"
