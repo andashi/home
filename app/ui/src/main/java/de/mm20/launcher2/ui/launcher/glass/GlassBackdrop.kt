@@ -24,6 +24,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
@@ -155,8 +156,15 @@ class GlassBackdropController(
  */
 val LocalOnGlass = staticCompositionLocalOf { false }
 
-/** The backdrop surfaces draw from; null without a managed home wallpaper. */
-val LocalGlassBackdrop = staticCompositionLocalOf<RenderedBackdrop<ImageBitmap>?> { null }
+/**
+ * The backdrop surfaces draw from; null without a managed home wallpaper.
+ * Dynamic, not static: a static local's change recomposes the provider's
+ * content but did not reach the glass inside a popup, which is its own
+ * composition - a backdrop that arrived while a menu was open never showed
+ * there. A dynamic one invalidates exactly the scopes that read it, the
+ * popup's included, and it changes once per backdrop.
+ */
+val LocalGlassBackdrop = compositionLocalOf<RenderedBackdrop<ImageBitmap>?> { null }
 
 /** The backdrop region a surface drew, in backdrop pixels (tests read it). */
 val GlassBackdropRegion = SemanticsPropertyKey<PixelRect>("GlassBackdropRegion")
