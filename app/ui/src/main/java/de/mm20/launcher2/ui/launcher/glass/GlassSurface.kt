@@ -9,7 +9,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
@@ -37,8 +37,13 @@ import de.mm20.launcher2.glass.GlassLook
 import de.mm20.launcher2.glass.GlassStyle
 import de.mm20.launcher2.glass.ResolvedGlass
 
-/** The glass values surfaces draw with, contrast applied; the contract's defaults until provided. */
-val LocalGlassStyle = staticCompositionLocalOf { DefaultStyle }
+/**
+ * The glass values surfaces draw with, contrast applied; the contract's
+ * defaults until provided. Dynamic for the same reason as
+ * [LocalGlassBackdrop]: a static local's change did not reach the glass
+ * inside a popup, so a menu open across a config change kept the old tint.
+ */
+val LocalGlassStyle = compositionLocalOf { DefaultStyle }
 
 /** `appearance.glass` at its defaults (ADR 0002, "Glass"). */
 internal val DefaultStyle = GlassStyle.resolve(
