@@ -316,4 +316,16 @@
     <string name="import_theme_contents">Innhold</string>
     <string name="import_theme_exists">Temaet eksisterer allerede og vil bli oppdatert</string>
     <string name="shortcut_unavailable_description">Snarveien er utilgjengelig siden %1$s ikke er satt som startapp</string>
+    <string name="widget_action_allow">Tillat</string>
+    <string name="grid_edit_title">Rediger startskjermen</string>
+    <string name="grid_write_back_skipped">Oppsettet er lagret på enheten, men ikke i launcher.json: %1$s</string>
+    <string name="grid_write_back_failed">Oppsettet kunne ikke lagres: %1$s. Trykk Ferdig for å prøve igjen.</string>
+    <string name="grid_no_room">Ikke plass i rutenettet til denne modulen</string>
+    <string name="grid_favorites_overflow">+%1$d flere i søket</string>
+    <string name="grid_resize_narrower">Smalere</string>
+    <string name="grid_resize_wider">Bredere</string>
+    <string name="grid_resize_shorter">Lavere</string>
+    <string name="grid_resize_taller">Høyere</string>
+    <string name="grid_resize_handle">Endre størrelse</string>
+    <string name="grid_locked">Oppsettet for startskjermen er låst av konfigurasjonen</string>
 </resources>

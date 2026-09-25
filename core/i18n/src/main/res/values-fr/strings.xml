@@ -454,4 +454,16 @@
     <string name="search_action_private_space_lock">Verrouiller l\'espace privé</string>
     <string name="search_action_private_space_unlock">Déverrouiller l\'espace privé</string>
     <string name="preference_search_apps_show_details_summary">Afficher la version et le nom de paquet de l\'application dans son menu de contexte</string>
+    <string name="widget_action_allow">Autoriser</string>
+    <string name="grid_edit_title">Modifier l\'écran d\'accueil</string>
+    <string name="grid_write_back_skipped">Disposition enregistrée sur l\'appareil, mais pas dans launcher.json : %1$s</string>
+    <string name="grid_write_back_failed">La disposition n\'a pas pu être enregistrée : %1$s. Appuyez sur Terminé pour réessayer.</string>
+    <string name="grid_no_room">Pas de place sur la grille pour ce widget</string>
+    <string name="grid_favorites_overflow">+%1$d autres dans la recherche</string>
+    <string name="grid_resize_narrower">Plus étroit</string>
+    <string name="grid_resize_wider">Plus large</string>
+    <string name="grid_resize_shorter">Plus court</string>
+    <string name="grid_resize_taller">Plus haut</string>
+    <string name="grid_resize_handle">Redimensionner</string>
+    <string name="grid_locked">La disposition de l\'écran d\'accueil est verrouillée par sa configuration</string>
 </resources>

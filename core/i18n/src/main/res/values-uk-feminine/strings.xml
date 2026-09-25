@@ -1,3 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    </resources>
+        <string name="widget_action_allow">Дозволити</string>
+    <string name="grid_edit_title">Редагувати головний екран</string>
+    <string name="grid_write_back_skipped">Розташування збережено на пристрої, але не в launcher.json: %1$s</string>
+    <string name="grid_write_back_failed">Не вдалося зберегти розташування: %1$s. Натисніть «Готово», щоб повторити.</string>
+    <string name="grid_no_room">У сітці немає місця для цього віджета</string>
+    <string name="grid_favorites_overflow">Ще %1$d у пошуку</string>
+    <string name="grid_resize_narrower">Звузити</string>
+    <string name="grid_resize_wider">Розширити</string>
+    <string name="grid_resize_shorter">Зменшити висоту</string>
+    <string name="grid_resize_taller">Збільшити висоту</string>
+    <string name="grid_resize_handle">Змінити розмір</string>
+    <string name="grid_locked">Розташування на головному екрані заблоковано конфігурацією</string>
+</resources>

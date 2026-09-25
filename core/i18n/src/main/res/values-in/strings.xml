@@ -175,4 +175,16 @@
     <string name="action_more_actions">Lebih banyak tindakan</string>
     <string name="action_clear">Bersihkan</string>
     <string name="preference_icon_shape_squircle">Tupai</string>
+    <string name="widget_action_allow">Izinkan</string>
+    <string name="grid_edit_title">Edit layar utama</string>
+    <string name="grid_write_back_skipped">Tata letak disimpan di perangkat, tetapi tidak ke launcher.json: %1$s</string>
+    <string name="grid_write_back_failed">Tata letak tidak dapat disimpan: %1$s. Ketuk Selesai untuk mencoba lagi.</string>
+    <string name="grid_no_room">Tidak ada ruang di kisi untuk widget ini</string>
+    <string name="grid_favorites_overflow">+%1$d lainnya di penelusuran</string>
+    <string name="grid_resize_narrower">Lebih sempit</string>
+    <string name="grid_resize_wider">Lebih lebar</string>
+    <string name="grid_resize_shorter">Lebih pendek</string>
+    <string name="grid_resize_taller">Lebih tinggi</string>
+    <string name="grid_resize_handle">Ubah ukuran</string>
+    <string name="grid_locked">Tata letak layar utama dikunci oleh konfigurasinya</string>
 </resources>

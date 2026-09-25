@@ -401,4 +401,16 @@
     <string name="preference_screen_locale_summary">Язык, формат времени</string>
     <string name="preference_language">Язык</string>
     <string name="preference_value_system_default">Как в системе</string>
+    <string name="widget_action_allow">Разрешить</string>
+    <string name="grid_edit_title">Изменить главный экран</string>
+    <string name="grid_write_back_skipped">Расположение сохранено на устройстве, но не в launcher.json: %1$s</string>
+    <string name="grid_write_back_failed">Не удалось сохранить расположение: %1$s. Нажмите «Готово», чтобы повторить.</string>
+    <string name="grid_no_room">На сетке нет места для этого виджета</string>
+    <string name="grid_favorites_overflow">Ещё %1$d в поиске</string>
+    <string name="grid_resize_narrower">Сузить</string>
+    <string name="grid_resize_wider">Расширить</string>
+    <string name="grid_resize_shorter">Уменьшить высоту</string>
+    <string name="grid_resize_taller">Увеличить высоту</string>
+    <string name="grid_resize_handle">Изменить размер</string>
+    <string name="grid_locked">Расположение на главном экране заблокировано конфигурацией</string>
 </resources>

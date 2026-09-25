@@ -439,4 +439,16 @@
     <string name="preference_create_typography">مخطط طباعي جديد</string>
     <string name="preference_create_colors">نظام ألوان جديد</string>
     <string name="gesture_action_category_launcher">صفحات المشغل</string>
+    <string name="widget_action_allow">السماح</string>
+    <string name="grid_edit_title">تعديل الشاشة الرئيسية</string>
+    <string name="grid_write_back_skipped">تم حفظ التخطيط على الجهاز، لكن ليس في launcher.json: %1$s</string>
+    <string name="grid_write_back_failed">تعذر حفظ التخطيط: %1$s. اضغط على تم للمحاولة مرة أخرى.</string>
+    <string name="grid_no_room">لا توجد مساحة في الشبكة لهذه الأداة</string>
+    <string name="grid_favorites_overflow">+%1$d المزيد في البحث</string>
+    <string name="grid_resize_narrower">أضيق</string>
+    <string name="grid_resize_wider">أعرض</string>
+    <string name="grid_resize_shorter">أقصر</string>
+    <string name="grid_resize_taller">أطول</string>
+    <string name="grid_resize_handle">تغيير الحجم</string>
+    <string name="grid_locked">تخطيط الشاشة الرئيسية مقفل بواسطة إعداداته</string>
 </resources>

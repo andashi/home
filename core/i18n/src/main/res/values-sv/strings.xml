@@ -108,4 +108,16 @@
     <string name="action_quit">Avsluta</string>
     <string name="menu_remove">Ta bort</string>
     <string name="help">Hjälp</string>
+    <string name="widget_action_allow">Tillåt</string>
+    <string name="grid_edit_title">Redigera startskärmen</string>
+    <string name="grid_write_back_skipped">Layouten sparades på enheten, men inte i launcher.json: %1$s</string>
+    <string name="grid_write_back_failed">Layouten kunde inte sparas: %1$s. Tryck på Klar för att försöka igen.</string>
+    <string name="grid_no_room">Inte plats i rutnätet för den här widgeten</string>
+    <string name="grid_favorites_overflow">+%1$d till i sökningen</string>
+    <string name="grid_resize_narrower">Smalare</string>
+    <string name="grid_resize_wider">Bredare</string>
+    <string name="grid_resize_shorter">Lägre</string>
+    <string name="grid_resize_taller">Högre</string>
+    <string name="grid_resize_handle">Ändra storlek</string>
+    <string name="grid_locked">Startskärmens layout är låst av sin konfiguration</string>
 </resources>

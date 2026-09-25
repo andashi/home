@@ -324,4 +324,16 @@
     <string name="preference_default_filter">Standardfilter</string>
     <string name="preference_default_filter_summary">Tilpas standardfilteret for søgninger</string>
     <string name="preference_filter_bar_summary">Vis hurtige filtre over tastaturet</string>
+    <string name="widget_action_allow">Tillad</string>
+    <string name="grid_edit_title">Rediger startskærmen</string>
+    <string name="grid_write_back_skipped">Layoutet er gemt på enheden, men ikke i launcher.json: %1$s</string>
+    <string name="grid_write_back_failed">Layoutet kunne ikke gemmes: %1$s. Tryk på Udført for at prøve igen.</string>
+    <string name="grid_no_room">Der er ikke plads i gitteret til denne widget</string>
+    <string name="grid_favorites_overflow">+%1$d mere i søgningen</string>
+    <string name="grid_resize_narrower">Smallere</string>
+    <string name="grid_resize_wider">Bredere</string>
+    <string name="grid_resize_shorter">Lavere</string>
+    <string name="grid_resize_taller">Højere</string>
+    <string name="grid_resize_handle">Skift størrelse</string>
+    <string name="grid_locked">Startskærmens layout er låst af sin konfiguration</string>
 </resources>

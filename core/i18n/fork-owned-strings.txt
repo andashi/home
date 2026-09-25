@@ -1,0 +1,22 @@
+# Strings this fork added. Upstream's translation pipeline does not know them,
+# so we translate them ourselves into every locale that has a strings.xml.
+#
+# ForkStringsTranslatedTest (in :core:base) fails when a name listed here is
+# missing from any locale, and when a name in values/strings.xml is missing from
+# every locale but is not listed here - which is what an unregistered fork string
+# looks like.
+#
+# Adding a string to the fork: add its name here and its translation to every
+# values-*/strings.xml. See #124.
+widget_action_allow
+grid_edit_title
+grid_write_back_skipped
+grid_write_back_failed
+grid_no_room
+grid_favorites_overflow
+grid_resize_narrower
+grid_resize_wider
+grid_resize_shorter
+grid_resize_taller
+grid_resize_handle
+grid_locked

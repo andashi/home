@@ -416,4 +416,16 @@
     <string name="create_search_action_title">Nova ação rápida</string>
     <string name="preference_transliteration">Transliteração preferida</string>
     <string name="tag_icon_emoji">Emoji</string>
+    <string name="widget_action_allow">Permitir</string>
+    <string name="grid_edit_title">Editar a tela inicial</string>
+    <string name="grid_write_back_skipped">Layout salvo no dispositivo, mas não no launcher.json: %1$s</string>
+    <string name="grid_write_back_failed">Não foi possível salvar o layout: %1$s. Toque em Concluído para tentar de novo.</string>
+    <string name="grid_no_room">Sem espaço na grade para este widget</string>
+    <string name="grid_favorites_overflow">+%1$d mais na busca</string>
+    <string name="grid_resize_narrower">Mais estreito</string>
+    <string name="grid_resize_wider">Mais largo</string>
+    <string name="grid_resize_shorter">Mais baixo</string>
+    <string name="grid_resize_taller">Mais alto</string>
+    <string name="grid_resize_handle">Redimensionar</string>
+    <string name="grid_locked">O layout da tela inicial está bloqueado pela configuração</string>
 </resources>

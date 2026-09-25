@@ -414,4 +414,16 @@
     <string name="typo_preview_medium2">ถนนจตุรทิศ</string>
     <string name="typo_preview_long">นายสมศักดิ์ ภูมิใจ\nหมายเลขบัตร 124790</string>
     <string name="preference_category_donate">สนับสนุนการพัฒนา</string>
+    <string name="widget_action_allow">อนุญาต</string>
+    <string name="grid_edit_title">แก้ไขหน้าจอหลัก</string>
+    <string name="grid_write_back_skipped">บันทึกเลย์เอาต์ในอุปกรณ์แล้ว แต่ไม่ได้บันทึกใน launcher.json: %1$s</string>
+    <string name="grid_write_back_failed">บันทึกเลย์เอาต์ไม่สำเร็จ: %1$s แตะเสร็จสิ้นเพื่อลองอีกครั้ง</string>
+    <string name="grid_no_room">ไม่มีพื้นที่ในตารางสำหรับวิดเจ็ตนี้</string>
+    <string name="grid_favorites_overflow">อีก %1$d รายการในการค้นหา</string>
+    <string name="grid_resize_narrower">แคบลง</string>
+    <string name="grid_resize_wider">กว้างขึ้น</string>
+    <string name="grid_resize_shorter">เตี้ยลง</string>
+    <string name="grid_resize_taller">สูงขึ้น</string>
+    <string name="grid_resize_handle">ปรับขนาด</string>
+    <string name="grid_locked">เลย์เอาต์หน้าจอหลักถูกล็อกโดยการกำหนดค่า</string>
 </resources>

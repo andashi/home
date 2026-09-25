@@ -1,3 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="widget_action_allow">Consenti</string>
+    <string name="grid_edit_title">Modifica la schermata Home</string>
+    <string name="grid_write_back_skipped">Layout salvato sul dispositivo, ma non in launcher.json: %1$s</string>
+    <string name="grid_write_back_failed">Impossibile salvare il layout: %1$s. Tocca Fine per riprovare.</string>
+    <string name="grid_no_room">Spazio insufficiente nella griglia per questo widget</string>
+    <string name="grid_favorites_overflow">+%1$d altri nella ricerca</string>
+    <string name="grid_resize_narrower">Più stretto</string>
+    <string name="grid_resize_wider">Più largo</string>
+    <string name="grid_resize_shorter">Più basso</string>
+    <string name="grid_resize_taller">Più alto</string>
+    <string name="grid_resize_handle">Ridimensiona</string>
+    <string name="grid_locked">Il layout della schermata Home è bloccato dalla sua configurazione</string>
 </resources>

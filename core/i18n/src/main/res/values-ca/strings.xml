@@ -370,4 +370,16 @@
     <string name="preference_search_bar_style_transparent">Transparent</string>
     <string name="preference_search_bar_style_solid">Sòlid</string>
     <string name="preference_search_bar_style_hidden">Ocult</string>
+    <string name="widget_action_allow">Permet</string>
+    <string name="grid_edit_title">Edita la pantalla d\'inici</string>
+    <string name="grid_write_back_skipped">Disposició desada al dispositiu, però no a launcher.json: %1$s</string>
+    <string name="grid_write_back_failed">No s\'ha pogut desar la disposició: %1$s. Toca Fet per tornar-ho a provar.</string>
+    <string name="grid_no_room">No hi ha espai a la graella per a aquest widget</string>
+    <string name="grid_favorites_overflow">+%1$d més a la cerca</string>
+    <string name="grid_resize_narrower">Més estret</string>
+    <string name="grid_resize_wider">Més ample</string>
+    <string name="grid_resize_shorter">Més baix</string>
+    <string name="grid_resize_taller">Més alt</string>
+    <string name="grid_resize_handle">Canvia la mida</string>
+    <string name="grid_locked">La disposició de la pantalla d\'inici està bloquejada per la configuració</string>
 </resources>

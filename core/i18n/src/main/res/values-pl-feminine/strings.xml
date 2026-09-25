@@ -1,3 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="widget_action_allow">Zezwól</string>
+    <string name="grid_edit_title">Edytuj ekran główny</string>
+    <string name="grid_write_back_skipped">Układ zapisany na urządzeniu, ale nie w launcher.json: %1$s</string>
+    <string name="grid_write_back_failed">Nie udało się zapisać układu: %1$s. Dotknij Gotowe, aby spróbować ponownie.</string>
+    <string name="grid_no_room">Brak miejsca w siatce na ten widżet</string>
+    <string name="grid_favorites_overflow">+%1$d więcej w wyszukiwaniu</string>
+    <string name="grid_resize_narrower">Węższy</string>
+    <string name="grid_resize_wider">Szerszy</string>
+    <string name="grid_resize_shorter">Niższy</string>
+    <string name="grid_resize_taller">Wyższy</string>
+    <string name="grid_resize_handle">Zmień rozmiar</string>
+    <string name="grid_locked">Układ ekranu głównego jest zablokowany przez konfigurację</string>
 </resources>

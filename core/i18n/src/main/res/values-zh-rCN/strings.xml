@@ -414,4 +414,16 @@
     <string name="search_query_private_space">私密空间</string>
     <string name="search_action_private_space_lock">锁定私密空间</string>
     <string name="search_action_private_space_unlock">解锁私密空间</string>
+    <string name="widget_action_allow">允许</string>
+    <string name="grid_edit_title">编辑主屏幕</string>
+    <string name="grid_write_back_skipped">布局已保存到设备，但未保存到 launcher.json：%1$s</string>
+    <string name="grid_write_back_failed">无法保存布局：%1$s。点按“完成”重试。</string>
+    <string name="grid_no_room">网格中没有空间放置此小部件</string>
+    <string name="grid_favorites_overflow">搜索中还有 %1$d 个</string>
+    <string name="grid_resize_narrower">变窄</string>
+    <string name="grid_resize_wider">变宽</string>
+    <string name="grid_resize_shorter">变矮</string>
+    <string name="grid_resize_taller">变高</string>
+    <string name="grid_resize_handle">调整大小</string>
+    <string name="grid_locked">主屏幕布局已被其配置锁定</string>
 </resources>

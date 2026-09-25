@@ -245,4 +245,16 @@
     <string name="preference_use_system_default">Kasuta süsteemi vaikeväärtust</string>
     <string name="item_visibility_calendar_default">Kalendri vidin ja otsingutulemused</string>
     <string name="import_theme_exists">Teema on juba olemas ja seda uuendatakse</string>
+    <string name="widget_action_allow">Luba</string>
+    <string name="grid_edit_title">Muuda avakuva</string>
+    <string name="grid_write_back_skipped">Paigutus salvestati seadmesse, kuid mitte faili launcher.json: %1$s</string>
+    <string name="grid_write_back_failed">Paigutust ei õnnestunud salvestada: %1$s. Uuesti proovimiseks puudutage Valmis.</string>
+    <string name="grid_no_room">Ruudustikus pole selle vidina jaoks ruumi</string>
+    <string name="grid_favorites_overflow">Otsingus veel %1$d</string>
+    <string name="grid_resize_narrower">Kitsam</string>
+    <string name="grid_resize_wider">Laiem</string>
+    <string name="grid_resize_shorter">Madalam</string>
+    <string name="grid_resize_taller">Kõrgem</string>
+    <string name="grid_resize_handle">Muuda suurust</string>
+    <string name="grid_locked">Avakuva paigutus on seadistusega lukustatud</string>
 </resources>

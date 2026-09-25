@@ -378,4 +378,16 @@
     <string name="preference_transliteration_auto">Automatikoa</string>
     <string name="preference_value_disabled">Ezgaitua</string>
     <string name="select_tag">Etiketa hautatu</string>
+    <string name="widget_action_allow">Baimendu</string>
+    <string name="grid_edit_title">Editatu hasierako pantaila</string>
+    <string name="grid_write_back_skipped">Diseinua gailuan gorde da, baina ez launcher.json fitxategian: %1$s</string>
+    <string name="grid_write_back_failed">Ezin izan da diseinua gorde: %1$s. Sakatu Eginda berriro saiatzeko.</string>
+    <string name="grid_no_room">Ez dago lekurik saretan widget honentzat</string>
+    <string name="grid_favorites_overflow">+%1$d gehiago bilaketan</string>
+    <string name="grid_resize_narrower">Estuagoa</string>
+    <string name="grid_resize_wider">Zabalagoa</string>
+    <string name="grid_resize_shorter">Baxuagoa</string>
+    <string name="grid_resize_taller">Altuagoa</string>
+    <string name="grid_resize_handle">Aldatu tamaina</string>
+    <string name="grid_locked">Hasierako pantailaren diseinua konfigurazioak blokeatuta dauka</string>
 </resources>
