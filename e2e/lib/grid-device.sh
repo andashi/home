@@ -146,11 +146,16 @@ tap_text() { # $1 = visible text; returns 1 (no exit) when absent, so callers ca
 # "id left top right bottom" for every grid cell on screen.
 dump_cells() {
   adb -s "$SERIAL" shell rm -f /sdcard/grid-dump.xml >/dev/null 2>&1 || true
-  # DUMP_TIMEOUT bounds the dump (s): a caller with a deadline passes what
-  # is left of it, so a wedged device cannot hold the caller past it.
-  timeout "${DUMP_TIMEOUT:-60}" adb -s "$SERIAL" shell uiautomator dump /sdcard/grid-dump.xml >/dev/null 2>&1 \
+  # DUMP_TIMEOUT bounds the dump and the read-back together (s): a caller
+  # with a deadline passes what is left of it, so a wedged device cannot hold
+  # the caller past it.
+  local end=$((SECONDS + ${DUMP_TIMEOUT:-60}))
+  timeout "$((end - SECONDS))" adb -s "$SERIAL" shell uiautomator dump /sdcard/grid-dump.xml >/dev/null 2>&1 \
     || { printf "uiautomator dump failed\n" >&2; return 1; }
-  adb -s "$SERIAL" shell cat /sdcard/grid-dump.xml | tr -d '\r' > "$WORK/dump.xml"
+  [ "$end" -gt "$SECONDS" ] || { printf "no time left to read the dump\n" >&2; return 1; }
+  timeout "$((end - SECONDS))" adb -s "$SERIAL" shell cat /sdcard/grid-dump.xml > "$WORK/dump.raw" 2>/dev/null \
+    || { printf "reading the dump failed\n" >&2; return 1; }
+  tr -d '\r' < "$WORK/dump.raw" > "$WORK/dump.xml"
   # A dump taken while the device is still busy can come back empty; that is
   # "not on screen yet", for the caller to retry, not a parse error.
   [ -s "$WORK/dump.xml" ] || return 1
