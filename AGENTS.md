@@ -103,6 +103,12 @@ afterthought (see `docs/architecture/adr/0005-testing-strategy.md`):
   over without the change and which are deliberate controls that pass in both
   states - a fix that "passes" by disabling the feature is otherwise
   indistinguishable from one that works.
+- In a shell test this is not optional. `set -e` is ignored inside an `if`
+  condition, even in a subshell, so a test that runs a helper as `if helper;
+  then` cannot see the helper exit on an error: it tests nothing and passes.
+  The first test for a silent `set -e` exit in `e2e/lib/grid-device.sh` did
+  exactly that (#155), until breaking the code showed it green; it now runs
+  the helper in its own `bash` process.
 
 ## Test harness (Phase 1)
 
