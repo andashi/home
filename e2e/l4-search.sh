@@ -63,10 +63,7 @@ trap cleanup EXIT
 HAVE_LOCK=1
 log "booting $SERIAL from snapshot '$SNAPSHOT' (overlays: $OVERLAY_DIR)"
 (cd "$GOS_REPO" && SNAPSHOT="$SNAPSHOT" emulator/run.sh start)
-adb -s "$SERIAL" unroot >/dev/null 2>&1 || true
-adb -s "$SERIAL" wait-for-device
-[ "$(adb -s "$SERIAL" shell id -u | tr -d '\r')" = "2000" ] || die "adb is not the unrooted shell"
-ok "adb as unrooted shell (uid 2000)"
+unrooted_shell
 adb -s "$SERIAL" install -r "$APK" | grep -q Success || die "launcher install failed"
 # The Home-button step needs this launcher to be home: in another launcher
 # it would pass without testing anything.

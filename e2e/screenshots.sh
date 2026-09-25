@@ -153,8 +153,7 @@ EOF
 HAVE_LOCK=1
 log "booting $SERIAL from snapshot '$SNAPSHOT' (overlays: $OVERLAY_DIR)"
 (cd "$GOS_REPO" && SNAPSHOT="$SNAPSHOT" emulator/run.sh start)
-adb -s "$SERIAL" unroot >/dev/null 2>&1 || true
-adb -s "$SERIAL" wait-for-device
+unrooted_shell
 adb -s "$SERIAL" install -r "$APK" 2>&1 | grep -q Success || die "adb install failed"
 adb -s "$SERIAL" shell cmd role add-role-holder android.app.role.HOME "$PKG" >/dev/null 2>&1 || die "HOME role"
 adb -s "$SERIAL" shell appwidget grantbind --package "$PKG" --user 0 >/dev/null 2>&1 || die "grantbind"

@@ -189,8 +189,6 @@ EOF
 HAVE_LOCK=1
 log "booting $SERIAL from snapshot '$SNAPSHOT' (overlays: $OVERLAY_DIR)"
 (cd "$GOS_REPO" && SNAPSHOT="$SNAPSHOT" emulator/run.sh start)
-adb -s "$SERIAL" unroot >/dev/null 2>&1 || true
-adb -s "$SERIAL" wait-for-device
 # A cold boot (SNAPSHOT=) is still booting here; a snapshot load is not.
 booted=0
 for _ in $(seq 180); do
@@ -198,8 +196,9 @@ for _ in $(seq 180); do
   sleep 2
 done
 [ "$booted" = 1 ] || die "$SERIAL did not finish booting within 6 minutes"
-[ "$(adb -s "$SERIAL" shell id -u | tr -d '\r')" = "2000" ] || die "adb is not the unrooted shell"
-ok "adb as unrooted shell (uid 2000)"
+# After the boot wait, not before: on a cold boot adbd is not up for a while,
+# and unrooted_shell's deadline is for a device that is up.
+unrooted_shell
 
 if [ -n "${LAWNICONS_APK:-}" ]; then
   adb -s "$SERIAL" install -r "$LAWNICONS_APK" | grep -q Success || die "Lawnicons install failed"

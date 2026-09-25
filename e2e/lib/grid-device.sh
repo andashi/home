@@ -44,6 +44,24 @@ retry_for() { # $1 = timeout (s), $2... = command
 # Succeeds when "$@" prints anything.
 shows() { [ -n "$("$@" 2>/dev/null)" ]; }
 
+# adb as the unrooted shell (uid 2000), which is what a release build
+# offers. After `run.sh start` loads a snapshot, adbd answers a moment
+# later than the emulator reports up, and `adb unroot` restarts it again;
+# asserting once failed right there (emulator-5560, 2026-09-25 22:11). So
+# it is polled against a real deadline, reconnecting an offline transport
+# in between.
+is_unrooted_shell() {
+  [ "$(adb_t shell id -u 2>/dev/null | tr -d '\r')" = 2000 ] && return 0
+  adb reconnect offline >/dev/null 2>&1 || true
+  return 1
+}
+unrooted_shell() { # [$1 = timeout (s), default 60]
+  adb_t unroot >/dev/null 2>&1 || true
+  retry_for "${1:-60}" is_unrooted_shell \
+    || die "adb is not the unrooted shell (uid 2000) after ${1:-60}s"
+  log "adb as unrooted shell (uid 2000)"
+}
+
 query_json() { # $1 = provider path (config|diagnostics)
   # The provider answers one row whose json value spans many lines. Anything
   # else is an error, never an empty answer: a caller reading "" as "no

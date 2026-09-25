@@ -81,7 +81,7 @@ trap cleanup EXIT
 [ $# -ge 1 ] || die "usage: $0 a.apk [b.apk ...]"
 [ -x "$TP" ] || die "trace_processor not found (TRACE_PROCESSOR)"
 "$LOCK" acquire "$LOCK_OWNER" "$SERIAL" >/dev/null || die "$SERIAL is locked by someone else"
-[ "$(adb -s "$SERIAL" shell id -u | tr -d '\r')" = 2000 ] || die "adb is not the unrooted shell"
+unrooted_shell
 read -r -a revs <<<"${REVS:-}"
 resolve_postures   # POSTURE_CLOSED / POSTURE_OPENED: the ids differ between instances
 

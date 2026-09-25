@@ -429,10 +429,7 @@ log "booting $SERIAL from snapshot '$SNAPSHOT' (overlays: $OVERLAY_DIR)"
 (cd "$GOS_REPO" && SNAPSHOT="$SNAPSHOT" emulator/run.sh start)
 
 # Release GrapheneOS has no adb root; everything below must work as shell.
-adb -s "$SERIAL" unroot >/dev/null 2>&1 || true
-adb -s "$SERIAL" wait-for-device
-[ "$(adb -s "$SERIAL" shell id -u | tr -d '\r')" = "2000" ] || die "adb is not running as shell after unroot"
-ok "adb running as unrooted shell"
+unrooted_shell
 
 log "installing $(basename "$APK")"
 install_out="$(adb -s "$SERIAL" install -r "$APK" 2>&1)" || { printf '%s\n' "$install_out" >&2; die "adb install failed"; }
