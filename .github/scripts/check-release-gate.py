@@ -38,6 +38,12 @@ def reads_secret(node):
     return "secrets." in yaml.safe_dump(node)
 
 
+def executable_lines(run):
+    """The shell lines of a `run` that execute: a commented-out command is
+    still text in the step but ships nothing (#160 review)."""
+    return [line for line in str(run or "").splitlines() if not line.lstrip().startswith("#")]
+
+
 def violations(workflow):
     found = []
     jobs = workflow.get("jobs") or {}
@@ -66,7 +72,11 @@ def violations(workflow):
         if reads_secret(job) and environment != "release":
             found.append(f"jobs.{name} reads a secret outside `environment: release`")
 
-    release_steps = "\n".join(str(step.get("run", "")) for step in (jobs.get("release") or {}).get("steps") or [])
+    release_steps = "\n".join(
+        line
+        for step in (jobs.get("release") or {}).get("steps") or []
+        for line in executable_lines(step.get("run", ""))
+    )
     if "docs/configuration/launcher.schema.json" not in release_steps:
         found.append("jobs.release does not take docs/configuration/launcher.schema.json")
     if "launcher.schema.json > SHA256SUMS" not in release_steps:

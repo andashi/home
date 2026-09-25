@@ -92,6 +92,8 @@ jobs:
       - uses: actions/checkout@v4
       - name: Check release.yml
         run: python3 .github/scripts/check-release-gate.py .github/workflows/release.yml
+      - name: Test the check
+        run: python3 -m unittest discover -s .github/scripts
 
   l3-screenshots:
     runs-on: ubuntu-latest
