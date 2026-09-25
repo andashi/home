@@ -95,6 +95,12 @@ jobs:
   release:
     needs: tests
     if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') }}
+    # The platform-side half of the tag gate. Declared, the environment changes
+    # nothing by itself: without protection rules the job still reads the
+    # repository secrets. Once the four secrets live in it as environment
+    # secrets, with deployments restricted to `v*` tags, GitHub withholds the
+    # key from any other ref, whatever the conditions above say.
+    environment: release
     runs-on: ubuntu-latest
     permissions:
       contents: write
