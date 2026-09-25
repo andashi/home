@@ -33,9 +33,11 @@ name: Release
 #
 # Nothing is built or published before the full test suite is green on the
 # commit being released (#132): the `tests` job runs test.yml including both
-# emulator suites (L2), and `release` needs it. main only runs L1 and L3 on
-# merge, so without this a tag could ship a combination of PRs no device test
-# has ever seen. It holds for manual runs too.
+# emulator suites (L2), and `release` needs it. test.yml also runs the full
+# suite on every push to main, but that run gates nothing: it can be red and
+# ignored, and a tag can name a commit whose main run has not finished. So the
+# release repeats the suite on the tagged commit itself. It holds for manual
+# runs too.
 #
 # Signing needs four repository secrets: KEYSTORE_BASE64 (the .jks, base64),
 # KEYSTORE_PASSWORD, SIGNING_KEY_ALIAS, SIGNING_KEY_PASSWORD. Only a tag push

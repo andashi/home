@@ -136,10 +136,11 @@ afterthought (see `docs/architecture/adr/0005-testing-strategy.md`):
 
 ## CI
 
-`.github/workflows/test.yml`: L1 + L3 on every push/PR (JDK 21 — Robolectric
-with SDK 36+ requires >= 21), and L2 via `android-emulator-runner` (stock API
-36 image, plus a foldable one), on every PR, every push to `main` and every
-release. L4 stays manual/local.
+`.github/workflows/test.yml`: L1 + L3 (JDK 21 — Robolectric with SDK 36+
+requires >= 21) and L2 via `android-emulator-runner` (stock API 36 image, plus
+a foldable one), on every PR, every push to `main` and every release. A push to
+another branch runs nothing until it has a PR: a bare `push:` ran every PR
+commit twice and doubled the flakes. L4 stays manual/local.
 
 **Red on `main` is fixed before the next merge.** A PR is green on its own
 head; the run on `main` is the first to see it combined with whatever merged

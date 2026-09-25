@@ -2,7 +2,8 @@ name: Tests
 
 # L1 (unit), L3 (screenshot verify) and L2 (Compose UI on emulator; the fold
 # suite on a second, foldable emulator in its own job) on pull requests, on
-# every push to main and for every release.
+# every push to main and for every release. A push to any other branch runs
+# nothing until it has a pull request; see the note on `push` below.
 # L4 stays manual/local: it needs the self-built GrapheneOS emulator (ADR 0005).
 #
 # L2 runs in two places after a merge, and each is there for its own reason (#132):
