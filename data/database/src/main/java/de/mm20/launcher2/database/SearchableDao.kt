@@ -198,14 +198,11 @@ interface SearchableDao {
     // Fork addition (#3 D4): the pieces of an atomic replacement of one
     // type's manually sorted pins; see SavableSearchableRepository.
 
-    @Query("SELECT `key` FROM Searchable WHERE pinPosition > 1 AND `type` NOT IN (:types) ORDER BY pinPosition DESC")
-    suspend fun getManuallySortedKeysExcept(types: List<String>): List<String>
+    @Query("SELECT MAX(pinPosition) FROM Searchable WHERE pinPosition > 1 AND `type` NOT IN (:types)")
+    suspend fun getHighestManualPinPositionExcept(types: List<String>): Int?
 
     @Query("UPDATE Searchable SET `pinPosition` = 0 WHERE pinPosition > 1 AND `type` IN (:types)")
     suspend fun unpinManuallySorted(types: List<String>)
-
-    @Query("UPDATE Searchable SET `pinPosition` = :pinPosition WHERE `key` = :key")
-    suspend fun setPinPosition(key: String, pinPosition: Int)
 
     @Query("SELECT `key` FROM Searchable WHERE `key` IN (:keys) AND launchCount > 0 ORDER BY launchCount DESC, pinPosition DESC")
     fun sortByRelevance(keys: List<String>): Flow<List<String>>

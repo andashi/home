@@ -577,44 +577,6 @@ class DefaultConfigStoreTest {
         assertEquals(listOf(automatic), searchableRepository.automaticallySorted)
     }
 
-    /**
-     * A pin made while a reload runs - after the store looked at the
-     * repository, before it wrote - survives. The store used to snapshot the
-     * pins first and write the snapshot back, which dropped it.
-     */
-    @Test
-    fun `a shortcut pinned while the favorites are applied survives`() = runTest {
-        val appA = app("com.example.a", personalHandle)
-        appRepository.apps["com.example.a" to personalHandle] = appA
-        val tag = FakeItem("tag://work", "tag")
-        val pinnedMeanwhile = FakeItem("shortcut://com.example.a/compose", "shortcut")
-        searchableRepository.manuallySorted = listOf(tag)
-        searchableRepository.duringReload = {
-            searchableRepository.manuallySorted = searchableRepository.manuallySorted + pinnedMeanwhile
-        }
-
-        store.apply(listOf(ConfigMutation.SetFavorites(listOf(Favorite("com.example.a", ConfigProfile.Personal)))))
-
-        assertEquals(listOf(appA, tag, pinnedMeanwhile), searchableRepository.manuallySorted)
-    }
-
-    /** The same for a pin made from search, which pins automatically sorted. */
-    @Test
-    fun `an app pinned from search while the favorites are applied survives`() = runTest {
-        val appA = app("com.example.a", personalHandle)
-        appRepository.apps["com.example.a" to personalHandle] = appA
-        val pinnedMeanwhile = app("com.example.c", personalHandle)
-        searchableRepository.duringReloadAfter = PinnedLevel.AutomaticallySorted
-        searchableRepository.duringReload = {
-            searchableRepository.automaticallySorted = searchableRepository.automaticallySorted + pinnedMeanwhile
-        }
-
-        store.apply(listOf(ConfigMutation.SetFavorites(listOf(Favorite("com.example.a", ConfigProfile.Personal)))))
-
-        assertEquals(listOf(appA), searchableRepository.manuallySorted)
-        assertEquals(listOf(pinnedMeanwhile), searchableRepository.automaticallySorted)
-    }
-
     @Test
     fun `readState reports app favorites only, not the pins the file cannot name`() = runTest {
         val appA = app("com.example.a", personalHandle)
@@ -861,17 +823,6 @@ class DefaultConfigStoreTest {
         var manuallySorted: List<SavableSearchable> = emptyList()
         var automaticallySorted: List<SavableSearchable> = emptyList()
 
-        /**
-         * Runs once, right after a read of [duringReloadAfter] pins (or at the
-         * start of the atomic replace): a pin that lands mid-reload.
-         */
-        var duringReload: (() -> Unit)? = null
-        var duringReloadAfter: PinnedLevel = PinnedLevel.ManuallySorted
-        private fun reloadMoment() {
-            duringReload?.invoke()
-            duringReload = null
-        }
-
         override fun get(
             includeTypes: List<String>?,
             excludeTypes: List<String>?,
@@ -889,25 +840,11 @@ class DefaultConfigStoreTest {
                     addAll(automaticallySorted)
                 }
             }
-            val result = items.filter {
-                (includeTypes == null || it.domain in includeTypes) &&
-                    (excludeTypes == null || it.domain !in excludeTypes)
-            }
-            if (minPinnedLevel == duringReloadAfter) reloadMoment()
-            return flowOf(result)
+            return flowOf(items.filter { includeTypes == null || it.domain in includeTypes })
         }
 
-        override suspend fun updateFavoritesAwaited(
-            manuallySorted: List<SavableSearchable>,
-            automaticallySorted: List<SavableSearchable>,
-        ) {
-            this.manuallySorted = manuallySorted
-            this.automaticallySorted = automaticallySorted
-        }
-
-        /** Atomic, like the real one: it reads the pins as they are when it runs. */
+        /** The real one's semantics; its atomicity is the Room transaction, tested there. */
         override suspend fun replaceManuallySortedAwaited(types: List<String>, items: List<SavableSearchable>) {
-            reloadMoment()
             manuallySorted = items + manuallySorted.filter { it.domain !in types }
         }
 

@@ -46,7 +46,7 @@ import de.mm20.launcher2.config.Profile as ConfigProfile
  * - Search actions (`search.actions`, #106) go through [SearchActionStore].
  * - Favorites are resolved from `{packageName, profile}` pairs via
  *   [AppRepository] + [ProfileResolver] and written with
- *   [SavableSearchableRepository.updateFavoritesAwaited]. User serials never
+ *   [SavableSearchableRepository.replaceManuallySortedAwaited]. User serials never
  *   appear in config state or diagnostics.
  */
 class DefaultConfigStore(

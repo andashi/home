@@ -24,7 +24,7 @@ import org.robolectric.RobolectricTestRunner
 
 /**
  * Characterization tests for the existing fire-and-forget favorites API plus
- * tests for the fork's awaited [SavableSearchableRepository.updateFavoritesAwaited].
+ * tests for the fork's awaited [SavableSearchableRepository.replaceManuallySortedAwaited].
  *
  * The repository's deserialization path needs Koin, so read-backs go through the
  * DAO directly; this also asserts on entity columns (pinPosition, launchCount,
@@ -145,66 +145,6 @@ class SavableSearchableRepositoryTest {
         assertEquals(5, entity.launchCount)
         assertEquals(0.5, entity.weight, 0.0)
         assertEquals(1, entity.pinPosition)
-    }
-
-    // ----- awaited fork API -----
-
-    @Test
-    fun updateFavoritesAwaited_writesAreVisibleImmediatelyAfterReturn() = runBlocking {
-        repository.updateFavoritesAwaited(
-            manuallySorted = listOf(TestSearchable("a"), TestSearchable("b")),
-            automaticallySorted = listOf(TestSearchable("c")),
-        )
-        // No polling: the transaction must have committed when the call returns.
-        assertEquals(listOf("a", "b", "c"), pinnedKeys().first())
-    }
-
-    @Test
-    fun updateFavoritesAwaited_unpinsItemsMissingFromNewList() = runBlocking {
-        repository.updateFavoritesAwaited(
-            manuallySorted = listOf(TestSearchable("a")),
-            automaticallySorted = emptyList(),
-        )
-        repository.updateFavoritesAwaited(
-            manuallySorted = listOf(TestSearchable("b")),
-            automaticallySorted = emptyList(),
-        )
-        assertEquals(0, database.searchableDao().getByKey("a").first()!!.pinPosition)
-        assertEquals(2, database.searchableDao().getByKey("b").first()!!.pinPosition)
-    }
-
-    @Test
-    fun updateFavoritesAwaited_preservesLaunchCountWeightAndVisibility() = runBlocking {
-        database.searchableDao().upsert(
-            SavedSearchableEntity(
-                key = "a",
-                type = "test",
-                serializedSearchable = "a",
-                launchCount = 7,
-                pinPosition = 0,
-                visibility = VisibilityLevel.SearchOnly.value,
-                weight = 0.9,
-            )
-        )
-        repository.updateFavoritesAwaited(
-            manuallySorted = listOf(TestSearchable("a")),
-            automaticallySorted = emptyList(),
-        )
-        val entity = database.searchableDao().getByKey("a").first()!!
-        assertEquals(7, entity.launchCount)
-        assertEquals(0.9, entity.weight, 0.0)
-        assertEquals(VisibilityLevel.SearchOnly.value, entity.visibility)
-        assertTrue(entity.pinPosition > 1)
-    }
-
-    @Test
-    fun updateFavoritesAwaited_withEmptyListsClearsAllPins() = runBlocking {
-        repository.updateFavoritesAwaited(
-            manuallySorted = listOf(TestSearchable("a")),
-            automaticallySorted = listOf(TestSearchable("b")),
-        )
-        repository.updateFavoritesAwaited(emptyList(), emptyList())
-        assertEquals(emptyList<String>(), pinnedKeys().first())
     }
 
     // ----- atomic replacement of one type's manual pins (#3 D4) -----
