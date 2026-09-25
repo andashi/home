@@ -314,6 +314,7 @@ class GlassSearchTest {
         }
         var windowHeight = 0
         var hostTop = 0f
+        var popupRoot: android.view.View? = null
         composeRule.setContent {
             val view = LocalView.current
             windowHeight = LocalWindowInfo.current.containerSize.height
@@ -322,6 +323,9 @@ class GlassSearchTest {
                     Box(
                         Modifier
                             .fillMaxSize()
+                            // Pure green: neither backdrop (no green) nor rim or
+                            // specular (bright and neutral) - #113's discriminator.
+                            .background(Color(0xFF00FF00))
                             .onGloballyPositioned {
                                 val origin = IntArray(2)
                                 view.rootView.getLocationOnScreen(origin)
@@ -335,6 +339,7 @@ class GlassSearchTest {
                         val offset = with(LocalDensity.current) { IntOffset(200.dp.roundToPx(), 420.dp.roundToPx()) }
                         Popup(offset = offset) {
                             val popupView = LocalView.current
+                            popupRoot = popupView.rootView
                             GlassMenuGroup(
                                 Modifier
                                     .size(120.dp)
@@ -387,7 +392,9 @@ class GlassSearchTest {
             }
             val evidence = "on screen ${semantics.positionOnScreen}, size ${semantics.size}, host top $hostTop, " +
                 "window height $windowHeight, region $region, drawn 100 ms later $later, " +
-                "glass in the screenshot at x ${centreX.toInt()}: y ${glassRows.firstOrNull()}..${glassRows.lastOrNull()}\n" +
+                "glass in the screenshot at x ${centreX.toInt()}: y ${glassRows.firstOrNull()}..${glassRows.lastOrNull()}, " +
+                discriminate(screen, semantics.positionOnScreen.x, semantics.positionOnScreen.y, semantics.size.width, semantics.size.height) +
+                (if (tag == "popup") ", " + windowState(popupRoot) else "") + "\n" +
                 eventLog()
             android.util.Log.e("GlassSearchTest", "$tag failed:\n$evidence")
             assertEquals("$tag: backdrop row drawn vs where it is on screen; $evidence", expected, drawn, 0.03f)
@@ -395,6 +402,57 @@ class GlassSearchTest {
         check("window")
         check("popup")
         android.util.Log.i("GlassSearchTest", eventLog())
+    }
+
+    /**
+     * #113: what the screenshot shows inside a surface's bounds. The rim and
+     * the specular draw even at tint 0, so they tell a surface that is on
+     * screen without its backdrop (glass: the backdrop draw did not reach the
+     * screen) from a surface that is not on screen at all (a window or layer
+     * problem, the green host showing through).
+     */
+    private fun discriminate(image: Bitmap, left: Float, top: Float, width: Int, height: Int): String {
+        var backdrop = 0
+        var highlight = 0
+        var host = 0
+        var other = 0
+        val x0 = left.toInt().coerceIn(0, image.width - 1)
+        val y0 = top.toInt().coerceIn(0, image.height - 1)
+        val x1 = (left.toInt() + width).coerceIn(0, image.width)
+        val y1 = (top.toInt() + height).coerceIn(0, image.height)
+        for (y in y0 until y1 step 2) for (x in x0 until x1 step 2) {
+            val p = image.getPixel(x, y)
+            val r = android.graphics.Color.red(p)
+            val g = android.graphics.Color.green(p)
+            val b = android.graphics.Color.blue(p)
+            when {
+                g < 16 && r + b > 200 -> backdrop++
+                g > 200 && r < 40 && b < 40 -> host++
+                r >= 48 && g >= 48 && b >= 48 -> highlight++
+                else -> other++
+            }
+        }
+        val centre = image.getPixel((left + width / 2f).toInt().coerceIn(0, image.width - 1), (top + height / 2f).toInt().coerceIn(0, image.height - 1))
+        val verdict = when {
+            backdrop > 0 -> "backdrop on screen"
+            highlight > 0 -> "GLASS: the surface is on screen (rim/specular) but its backdrop is not"
+            host > 0 -> "WINDOW: nothing of the surface on screen, the host shows through"
+            else -> "unclassified"
+        }
+        return "pixels in bounds (every 2nd): backdrop $backdrop, rim/specular $highlight, host $host, other $other; " +
+            "centre ARGB #${Integer.toHexString(centre)}; verdict: $verdict"
+    }
+
+    /** The popup window as the view system sees it at the failure (#113). */
+    private fun windowState(root: android.view.View?): String {
+        if (root == null) return "popup window: none"
+        var state = ""
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            val at = IntArray(2).also(root::getLocationOnScreen)
+            state = "popup window: shown ${root.isShown}, visibility ${root.windowVisibility}, " +
+                "attached ${root.isAttachedToWindow}, size ${root.width}x${root.height}, at ${at.toList()}"
+        }
+        return state
     }
 
 }
