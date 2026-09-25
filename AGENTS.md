@@ -309,6 +309,8 @@ target `sdk_phone64_x86_64-cur-userdebug`, test-keys), operated via
   | `emulator-5554` | none (build tree) | the working instance, interactive |
   | `emulator-5556` | `instances/test` | this repo's L4 scripts (default) |
   | `emulator-5558` | `instances/test-2` | the provisioning repo's own verification runs |
+  | `emulator-5560` | `instances/test-fold` | foldable (Pixel Fold profile): Fold L2/L4 work, screenshots |
+  | `emulator-5562` | `instances/test-fold-gpu` | foldable, always `GPU=host`: `e2e/measure-unfold.sh` (default) |
 
   The L4 scripts take `SERIAL` and `OVERLAY_DIR` from the environment
   (defaults: `emulator-5556`, `instances/test`), so a second session runs
@@ -318,9 +320,10 @@ target `sdk_phone64_x86_64-cur-userdebug`, test-keys), operated via
   `SERIAL`/`ADB_SERIAL`). Never start, stop or adb into an instance another
   session holds. `device-lock.sh status` lists every held instance.
 - Gradle's device tasks are adb commands too, and they fan out:
-  `connectedDebugAndroidTest` (and `install*`) installs and runs on **every**
-  connected device unless `ANDROID_SERIAL` names one. Pin it on every such
-  command, not only the first of a session:
+  `connectedDebugAndroidTest` installs the APKs and runs the instrumentation,
+  and `install*` installs, on **every** connected device unless
+  `ANDROID_SERIAL` names one. Pin it on every such command, not only the
+  first of a session:
 
       ANDROID_SERIAL=emulator-5562 ./gradlew :app:ui:connectedDebugAndroidTest
 
