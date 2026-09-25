@@ -34,6 +34,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      # Seconds, no JDK and no device: the e2e library's own tests, with a
+      # fake adb. Nothing else in CI runs the e2e scripts.
+      - name: e2e library tests
+        run: e2e/lib/grid-device.test.sh
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
