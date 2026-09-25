@@ -109,7 +109,7 @@ sleep 2
 read -r home_y _ _ <<<"$(node_y Search)"
 [ "$home_y" -gt $((H * 3 / 4)) ] || die "home: the bar is at y $home_y of $H, not in the bottom quarter"
 ok "home: the bar is at y $home_y of $H (bottom quarter)"
-[ -z "${SHOTS:-}" ] || adb -s "$SERIAL" exec-out screencap -p > "$SHOTS/home.png"
+[ -z "${SHOTS:-}" ] || screenshot "$SHOTS/home.png"
 
 log "opening search"
 tap_desc Search
@@ -126,7 +126,7 @@ gap=$((match_top - bar_bottom))
 limit="$(awk -v s="$(density_scale)" 'BEGIN { printf "%d", 200 * s }')"
 [ "$gap" -le "$limit" ] || die "search: $gap px between the field and the best match's label (limit $limit px, 200 dp)"
 ok "search: the best match's label is $gap px below the field (limit $limit px)"
-[ -z "${SHOTS:-}" ] || adb -s "$SERIAL" exec-out screencap -p > "$SHOTS/search.png"
+[ -z "${SHOTS:-}" ] || screenshot "$SHOTS/search.png"
 
 log "closing search"
 adb -s "$SERIAL" shell input keyevent KEYCODE_BACK

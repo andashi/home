@@ -249,4 +249,26 @@ answers_at_once() { # $@ = a wait call with a 3 s timeout
 check "wait_desc returns at once when the node is on screen" answers_at_once wait_desc Search 3 test
 check "wait_report returns at once when the report matches" answers_at_once wait_report '.success == true' 3 test
 
+# A timeout on a device that answers, but without the node, names what had
+# focus and leaves a picture of the screen.
+python3 -c 'import base64,sys; sys.stdout.buffer.write(base64.b64decode("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="))' > "$WORK/one.png"
+mkdir -p "$WORK/nodock" "$WORK/shots"
+cat > "$WORK/nodock/adb" <<EOF
+#!/usr/bin/env bash
+case "\$*" in
+  *"cat /sdcard/grid-dump.xml"*) echo '<hierarchy><node resource-id="grid-item:analog" bounds="[0,0][1,1]"/></hierarchy>' ;;
+  *"dumpsys window"*) echo '  mCurrentFocus=Window{1 u0 com.example/.Other}' ;;
+  *"screencap"*) cat "$WORK/one.png" ;;
+esac
+EOF
+chmod +x "$WORK/nodock/adb"
+a_timeout_says_why() {
+  local out shot
+  out="$( ( PATH="$WORK/nodock:$PATH" MISS_DIR="$WORK/shots"; wait_on_home grid-item:dock 3 ) 2>&1 )" && return 1
+  grep -q "focus: com.example/.Other}" <<<"$out" || { printf '%s\n' "$out" >&2; return 1; }
+  shot="$(sed -n 's/.*screen: \([^)]*\)).*/\1/p' <<<"$out")"
+  [ -n "$shot" ] && file "$shot" | grep -q 'PNG image'
+}
+check "a wait_on_home timeout names the focus and leaves a screenshot" a_timeout_says_why
+
 exit "$failed"

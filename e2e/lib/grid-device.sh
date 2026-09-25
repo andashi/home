@@ -380,13 +380,17 @@ home_shows() {
   wake_screen; show_home; return 1
 }
 wait_on_home() { # $1 = resource id, $2 = timeout (s)
-  local focus
+  local focus shot="${MISS_DIR:-${TMPDIR:-/tmp}}/wait_on_home-$SERIAL-$(date +%s).png"
   HOME_ROUNDS=0
   retry_for "${2:-30}" home_shows "$1" && return 0
-  # The diagnosis gets 2 s of its own: on a wedged connection it must not
-  # carry the timeout further than the wait did.
-  focus="$(ADB_DEADLINE=$((SECONDS + 2)) adb_t shell dumpsys window 2>/dev/null | tr -d '\r' | awk '/mCurrentFocus/ { print $NF; exit }')"
-  die "'$1' did not come back on the home screen within ${2:-30}s ($HOME_ROUNDS rounds; focus: ${focus:-unknown})"
+  # The diagnosis shares 2 s of its own: on a wedged connection it must not
+  # carry the timeout further than the wait did. The picture goes through
+  # `screenshot`, which picks the display on a foldable, and outside $WORK,
+  # which is gone at exit. A failed picture never masks the timeout.
+  local ADB_DEADLINE=$((SECONDS + 2))
+  focus="$(adb_t shell dumpsys window 2>/dev/null | tr -d '\r' | awk '/mCurrentFocus/ { print $NF; exit }')"
+  ( screenshot "$shot" ) >/dev/null 2>&1 || shot="none"
+  die "'$1' did not come back on the home screen within ${2:-30}s ($HOME_ROUNDS rounds; focus: ${focus:-unknown}; screen: $shot)"
 }
 
 posture() { # $1 = closed | half | opened, [$2 = resource id to wait for on home]
@@ -408,7 +412,7 @@ posture() { # $1 = closed | half | opened, [$2 = resource id to wait for on home
 active_display() {
   # One DisplayDeviceInfo line per panel; nested braces inside, so match the
   # whole line rather than a brace-delimited run.
-  adb -s "$SERIAL" shell dumpsys display | tr -d '\r' \
+  adb_t shell dumpsys display | tr -d '\r' \
     | grep 'DisplayDeviceInfo{' | grep 'state ON' \
     | sed -n 's/.*uniqueId="local:\([0-9]*\)".*/\1/p' | sed -n 1p
 }
@@ -417,11 +421,11 @@ active_display() {
 screenshot() { # $1 = output file
   local id
   id="$(active_display 2>/dev/null || true)"
-  if [ -n "$id" ] && adb -s "$SERIAL" exec-out screencap -d "$id" -p > "$1" 2>/dev/null \
+  if [ -n "$id" ] && adb_t exec-out screencap -d "$id" -p > "$1" 2>/dev/null \
     && file "$1" | grep -q 'PNG image'; then
     return 0
   fi
-  adb -s "$SERIAL" exec-out screencap -p > "$1" 2>/dev/null
+  adb_t exec-out screencap -p > "$1" 2>/dev/null
   file "$1" | grep -q 'PNG image' || die "screencap did not produce a PNG for $1"
 }
 
