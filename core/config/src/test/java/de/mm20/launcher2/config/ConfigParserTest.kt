@@ -997,6 +997,7 @@ class ConfigParserTest {
         val result = ConfigParser.parse("""{ "schemaVersion": 2, "search": { "barPosition": "follow" } }""")
 
         assertEquals(emptyList<Diagnostic>(), result.diagnostics)
+        assertEquals(InSearchBarPosition.Follow, result.config?.search?.barPosition)
     }
 
     @Test

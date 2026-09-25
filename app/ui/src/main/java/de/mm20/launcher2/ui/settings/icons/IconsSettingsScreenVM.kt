@@ -82,9 +82,11 @@ class IconsSettingsScreenVM(
 
     val installedIconPacks: Flow<List<IconPack>> = iconService.getInstalledIconPacks().map {
         listOf(
+            // The apps' own icons, chosen: stored as is (#3 D6), and the
+            // entry the screen marks when icons.pack is "none".
             IconPack(
                 name = "System",
-                packageName = "",
+                packageName = DefaultIconPack.None,
                 version = "",
                 themed = true,
             )
@@ -92,7 +94,7 @@ class IconsSettingsScreenVM(
     }
 
     fun setIconPack(iconPack: String) {
-        iconSettings.setIconPack(DefaultIconPack.fromPicker(iconPack))
+        iconSettings.setIconPack(iconPack)
     }
 
     val hasNotificationsPermission = permissionsManager.hasPermission(PermissionGroup.Notifications)
@@ -149,7 +151,7 @@ class IconsSettingsScreenVM(
             val usedApps = mutableSetOf<ComponentName>()
 
             for (app in apps) {
-                val icon = if (iconPack.packageName == "") {
+                val icon = if (iconPack.packageName == DefaultIconPack.None) {
                     app.loadIcon(context, size, themed)
                 } else {
                     iconPackManager.getIcon(

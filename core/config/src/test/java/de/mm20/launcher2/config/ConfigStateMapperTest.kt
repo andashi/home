@@ -177,10 +177,9 @@ class ConfigStateMapperTest {
         assertTrue(served, Regex(""""barPosition":\s*"follow"""").containsMatchIn(served))
     }
 
-    /** #107, #3 D6: always served; follow by default, a set position as set. */
+    /** #107, #3 D6: a set position is served as set (follow, the default, is checked above). */
     @Test
-    fun `search barPosition is always served`() {
-        assertEquals(InSearchBarPosition.Follow, ConfigState().toLauncherConfig().search?.barPosition)
+    fun `search barPosition is served as set`() {
         assertEquals(
             InSearchBarPosition.Bottom,
             ConfigState(search = SearchState(barPosition = InSearchBarPosition.Bottom)).toLauncherConfig().search?.barPosition,

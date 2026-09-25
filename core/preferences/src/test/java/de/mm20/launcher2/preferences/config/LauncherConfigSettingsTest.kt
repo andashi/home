@@ -5,7 +5,9 @@ import de.mm20.launcher2.config.SearchResultLayout
 import de.mm20.launcher2.config.SearchConfig
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
+import de.mm20.launcher2.config.ConfigDiffer
 import de.mm20.launcher2.config.ConfigMutation
+import de.mm20.launcher2.config.ConfigParser
 import de.mm20.launcher2.config.Favorite
 import de.mm20.launcher2.config.GlassContrast
 import de.mm20.launcher2.config.GlassDefaults
@@ -19,8 +21,6 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
-import de.mm20.launcher2.config.ConfigDiffer
-import de.mm20.launcher2.config.ConfigParser
 import org.junit.Assert.assertNull
 import org.junit.Test
 import org.junit.runner.RunWith

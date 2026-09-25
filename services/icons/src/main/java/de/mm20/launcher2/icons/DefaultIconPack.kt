@@ -1,5 +1,7 @@
 package de.mm20.launcher2.icons
 
+import de.mm20.launcher2.config.IconsConfig
+
 /**
  * The icon pack in effect (#86): the one configured (`icons.pack`, or chosen
  * in the settings), else Lawnicons when it is installed - provisioning
@@ -15,10 +17,7 @@ object DefaultIconPack {
      * a dot, so it cannot be one. Not the same as no pack chosen (null), which
      * falls back to Lawnicons.
      */
-    const val None = "none"
-
-    /** The picker's "System" entry has an empty package name and means [None]. */
-    fun fromPicker(packageName: String): String = packageName.ifBlank { None }
+    const val None = IconsConfig.NoPack
 
     suspend fun effective(configured: String?, isInstalled: suspend (String) -> Boolean): String? {
         if (configured == None) return null
