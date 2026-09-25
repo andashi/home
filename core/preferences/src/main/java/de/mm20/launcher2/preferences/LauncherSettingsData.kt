@@ -13,6 +13,8 @@ import java.util.UUID
 @Serializable
 @ConsistentCopyVisibility
 data class LauncherSettingsData internal constructor(
+    // No migration keys on it any more: Migration4 and Migration5, the ones
+    // that did, were deleted (#3), and Migration6 is keyed on content.
     val schemaVersion: Int = 6,
 
     val uiColorScheme: ColorScheme = ColorScheme.System,
@@ -101,8 +103,6 @@ data class LauncherSettingsData internal constructor(
     val systemBarsHideNav: Boolean = false,
     val systemBarsStatusColors: SystemBarColors = SystemBarColors.Auto,
     val systemBarsNavColors: SystemBarColors = SystemBarColors.Auto,
-
-
 
     val gesturesSwipeDown: GestureAction = GestureAction.Search,
     val gesturesSwipeLeft: GestureAction = GestureAction.NoAction,

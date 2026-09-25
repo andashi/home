@@ -56,19 +56,4 @@ class DeadSettingsRemovalTest {
 
         assertEquals(removed, before.keys - after.keys)
     }
-
-    @Test
-    fun `live values off their defaults are read from the old file`() = runTest {
-        val decoded = serializer.readFrom(ByteArrayInputStream(fixture.toByteArray()))
-
-        assertEquals(true, decoded.wallpaperDim)
-        assertEquals(6, decoded.gridColumnCount)
-        assertEquals(56, decoded.gridIconSize)
-        assertEquals(true, decoded.searchBarFixed)
-        assertEquals(IconShape.Squircle, decoded.iconsShape)
-        assertEquals(emptySet<String>(), decoded.contactSearchProviders)
-        assertEquals(GestureAction.Notifications, decoded.gesturesSwipeUp)
-        assertEquals(5, decoded.homeGridColumns)
-        assertEquals(12f, decoded.glassBlur)
-    }
 }

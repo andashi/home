@@ -31,9 +31,6 @@ data class GridSettings(
 class UiSettings internal constructor(
     private val launcherDataStore: LauncherDataStore,
 ) {
-    // `|| it.homeScreenDock` used to be here: the dead dock flag switched on
-    // the favorite affordances in search results, an effect its name never
-    // promised (#46). The grid replaced the dock; the flag is a leftover.
     val favoritesEnabled
         get() = launcherDataStore.data.map { it.favoritesEnabled }
 
