@@ -317,6 +317,18 @@ target `sdk_phone64_x86_64-cur-userdebug`, test-keys), operated via
 - Respect `device-lock.sh`: the lock is **per instance** (serial as argument, or
   `SERIAL`/`ADB_SERIAL`). Never start, stop or adb into an instance another
   session holds. `device-lock.sh status` lists every held instance.
+- Gradle's device tasks are adb commands too, and they fan out:
+  `connectedDebugAndroidTest` (and `install*`) installs and runs on **every**
+  connected device unless `ANDROID_SERIAL` names one. Pin it on every such
+  command, not only the first of a session:
+
+      ANDROID_SERIAL=emulator-5562 ./gradlew :app:ui:connectedDebugAndroidTest
+
+  It happened: a session's unpinned L2 runs installed the test APK and
+  launched test activities on two instances other sessions held, one mid-L4
+  run. Nothing reports it; the only trace is one directory per device under
+  `build/outputs/androidTest-results/connected/debug/`, and a red run can be
+  another device's failure.
 - L4 runs never use the working instance's `userdata-qemu.img.qcow2`. Test
   instances run writable, because `-read-only` disables snapshots entirely,
   load included. Every run starts by loading its snapshot, which resets RAM and
