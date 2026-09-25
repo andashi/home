@@ -210,4 +210,24 @@ says_why_when_the_dump_fails() { # $1 = helper, $2 = argument
 check "tap_desc says why when the dump fails" says_why_when_the_dump_fails tap_desc Search
 check "tap_id says why when the dump fails" says_why_when_the_dump_fails tap_id grid-edit-done
 
+# Every other wait loop in the library has the same contract: its timeout is
+# wall-clock time, whatever the device does. This fake hangs on every call,
+# as a wedged adb connection does. An outer timeout keeps a red run short.
+mkdir -p "$WORK/wedged"
+cat > "$WORK/wedged/adb" <<'EOF'
+#!/usr/bin/env bash
+sleep 60
+EOF
+chmod +x "$WORK/wedged/adb"
+bounded() { # $@ = a wait call with a 3 s timeout
+  local start=$SECONDS
+  ( PATH="$WORK/wedged:$PATH" timeout 20 bash -c "$(declare -f); $(declare -p SERIAL PKG WORK STATE_URI 2>/dev/null); $*" ) >/dev/null 2>&1
+  [ $((SECONDS - start)) -le 6 ]
+}
+check "wait_desc gives up after its timeout" bounded wait_desc Search 3 test
+check "wait_id gives up after its timeout" bounded wait_id grid-edit-done 3 test
+check "wait_cells gives up after its timeout" bounded wait_cells 1 3
+check "wait_report gives up after its timeout" bounded "wait_report '.success' 3 test"
+check "wait_on_home gives up after its timeout" bounded wait_on_home grid-item:dock 3
+
 exit "$failed"
