@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- The narrow-screen default; wider screens get values-w400dp and values-w480dp.
+         Here rather than in :app:app so every module's tests resolve it (#144). -->
+    <integer name="config_columnCount">4</integer>
     <integer name="config_toolbarSlots">1</integer>
 </resources>

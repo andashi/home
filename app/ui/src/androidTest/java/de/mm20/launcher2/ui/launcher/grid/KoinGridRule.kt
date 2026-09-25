@@ -1,6 +1,5 @@
 package de.mm20.launcher2.ui.launcher.grid
 
-import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.platform.app.InstrumentationRegistry
 import de.mm20.launcher2.grid.SizeLimits
@@ -15,7 +14,6 @@ import de.mm20.launcher2.permissions.PermissionsManager
 import de.mm20.launcher2.preferences.preferencesModule
 import de.mm20.launcher2.preferences.ui.UiSettings
 import de.mm20.launcher2.profiles.ProfileManager
-import java.io.File
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
@@ -63,7 +61,6 @@ class KoinGridRule(
         // are handed to the view model directly; Koin only serves what the
         // grid resolves itself (the profile manager, the settings).
         if (GlobalContext.getOrNull() == null) {
-            seedDefaultSettingsFile()
             startKoin {
                 androidContext(ApplicationProvider.getApplicationContext())
                 modules(
@@ -96,13 +93,6 @@ class KoinGridRule(
             itemLimits = GridItemLimits { item, _ -> limits[item.id] ?: SizeLimits.Unbounded },
             locked = locked,
         )
-    }
-
-    private fun seedDefaultSettingsFile() {
-        val context = ApplicationProvider.getApplicationContext<Context>()
-        val dir = File(context.filesDir, "datastore")
-        dir.mkdirs()
-        File(dir, "settings.json").writeText("""{"schemaVersion":6}""")
     }
 
     private class GrantedPermissions : PermissionsManager {

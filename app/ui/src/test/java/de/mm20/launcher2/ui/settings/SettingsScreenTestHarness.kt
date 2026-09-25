@@ -17,7 +17,6 @@ import de.mm20.launcher2.ui.locals.LocalBackStack
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import org.junit.rules.ExternalResource
-import java.io.File
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
@@ -56,7 +55,6 @@ class KoinSettingsRule(
     private val permissionsGranted: Boolean = true,
 ) : ExternalResource() {
     override fun before() {
-        seedDefaultSettingsFile()
         stopKoin()
         startKoin {
             androidContext(ApplicationProvider.getApplicationContext())
@@ -71,24 +69,6 @@ class KoinSettingsRule(
 
     override fun after() {
         stopKoin()
-    }
-
-    /**
-     * Writes a minimal settings file before DataStore first reads one.
-     *
-     * Without it DataStore falls back to `serializer.defaultValue`, whose
-     * Context-based `LauncherSettingsData` constructor reads
-     * `R.integer.config_columnCount` — a `core:preferences` resource that does
-     * not resolve from this module under Robolectric. Every field absent from
-     * the file takes its Kotlin default, which is what a golden should show.
-     * `core:preferences` has the same workaround in its own tests
-     * (`seedSettingsFile`), but it is internal to that module.
-     */
-    private fun seedDefaultSettingsFile() {
-        val context = ApplicationProvider.getApplicationContext<android.content.Context>()
-        val dir = File(context.filesDir, "datastore")
-        dir.mkdirs()
-        File(dir, "settings.json").writeText("""{"schemaVersion":6}""")
     }
 }
 

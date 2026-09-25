@@ -53,10 +53,6 @@ class ConfigRoundTripTest {
     @Before
     fun setUp() {
         val context = ApplicationProvider.getApplicationContext<Context>()
-        // A settings file before DataStore reads one: its Context-based default
-        // needs a resource this module cannot resolve under Robolectric.
-        File(context.filesDir, "datastore").apply { mkdirs() }
-            .resolve("settings.json").writeText("""{"schemaVersion":6}""")
         stopKoin()
         startKoin {
             androidContext(context)

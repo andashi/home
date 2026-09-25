@@ -9,6 +9,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 
@@ -19,12 +20,33 @@ class LauncherSettingsDataTest {
         ApplicationProvider.getApplicationContext()
     )
 
+    /**
+     * #144: the Context default resolves at every width, the narrowest
+     * included, so a test that builds a real LauncherDataStore needs no
+     * hand-written settings file. The unqualified value lived in :app:app,
+     * which no library module and none of their tests can see.
+     */
+    @Test
+    @Config(qualifiers = "w320dp")
+    fun `the default column count on a narrow screen is 4`() {
+        assertEquals(4, serializer.defaultValue.gridColumnCount)
+    }
+
+    @Test
+    @Config(qualifiers = "w400dp")
+    fun `the default column count from 400dp is 5`() {
+        assertEquals(5, serializer.defaultValue.gridColumnCount)
+    }
+
+    @Test
+    @Config(qualifiers = "w480dp")
+    fun `the default column count from 480dp is 6`() {
+        assertEquals(6, serializer.defaultValue.gridColumnCount)
+    }
+
     @Test
     fun `default value survives a write-read round trip`() = runTest {
-        // Not serializer.defaultValue: the Context constructor reads
-        // R.integer.config_columnCount, which only exists in width-qualified
-        // resources and is not resolvable under Robolectric.
-        val default = LauncherSettingsData()
+        val default = serializer.defaultValue
         val out = ByteArrayOutputStream()
         serializer.writeTo(default, out)
         val decoded = serializer.readFrom(ByteArrayInputStream(out.toByteArray()))
