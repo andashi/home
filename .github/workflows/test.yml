@@ -140,7 +140,8 @@ jobs:
           target: default
           arch: x86_64
           profile: pixel_6
-          script: ./gradlew :app:ui:connectedDebugAndroidTest
+          # On failure, the windows on screen and any ANR or crash (#113).
+          script: e2e/ci/l2-with-evidence.sh ./gradlew :app:ui:connectedDebugAndroidTest
 
   # The Fold (ADR 0001, D7) on a foldable AVD: HomeGridFoldTest switches the
   # device posture with `cmd device_state` and asserts the eight-column inner
@@ -181,4 +182,4 @@ jobs:
           profile: "7.6in Foldable"
           avd-name: fold
           pre-emulator-launch-script: e2e/avd/pixel-fold.sh "$HOME/.android/avd/fold.avd/config.ini"
-          script: ./gradlew :app:ui:connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=de.mm20.launcher2.ui.launcher.grid.HomeGridFoldTest
+          script: e2e/ci/l2-with-evidence.sh ./gradlew :app:ui:connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=de.mm20.launcher2.ui.launcher.grid.HomeGridFoldTest
