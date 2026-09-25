@@ -328,7 +328,9 @@ target `sdk_phone64_x86_64-cur-userdebug`, test-keys), operated via
   From its second window size change on, the dock's icons were composed,
   placed and drawn per Compose, yet HWUI's overdraw view showed no pixels; a
   process launched after the load kept them through four fold cycles, and a
-  device never crosses a snapshot's clock jump (#129, closed as an artefact).
+  device never crosses a snapshot's clock jump. This is an **emulator
+  artefact, not a device bug**: #129 was closed as such, not as fixed, and is
+  to be reopened if the symptom ever shows on hardware.
   So one window size change after a load is fine, but a sequence of more than
   one size change starts from a freshly launched process, restarted after the
   restore:
