@@ -5,10 +5,13 @@
    test.yml, and every other job needs it. Without that a tag ships commits
    no device test has seen together.
 2. The release key is touched only by a tag push: a job that reads a secret
-   carries exactly the tag condition as its own `if`, and no workflow-level
-   env reads one. Otherwise a dispatch on any branch produces an APK signed
-   with the production key, and the signer certificate stops telling a
-   release from a branch build.
+   carries exactly the tag condition as its own `if` and declares
+   `environment: release`, and no workflow-level env reads one. Otherwise a
+   dispatch on any branch produces an APK signed with the production key,
+   and the signer certificate stops telling a release from a branch build.
+   The environment is the second, independent mechanism: once its secrets
+   are restricted to `v*` tags in the repository settings, GitHub withholds
+   them from any other ref before a line of this YAML runs.
 
 Exits non-zero naming every violation.
 """
@@ -52,6 +55,11 @@ def violations(workflow):
             found.append(f"jobs.{name} does not need tests")
         if reads_secret(job) and normalized(job.get("if")) != TAG_PUSH:
             found.append(f"jobs.{name} reads a secret without `if: {TAG_PUSH}`")
+        environment = job.get("environment")
+        if isinstance(environment, dict):
+            environment = environment.get("name")
+        if reads_secret(job) and environment != "release":
+            found.append(f"jobs.{name} reads a secret outside `environment: release`")
     return found
 
 
