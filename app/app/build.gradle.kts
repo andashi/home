@@ -37,14 +37,17 @@ android {
         versionCode = System.getenv("VERSION_CODE_OVERRIDE")?.toIntOrNull() ?: 2026091500
         // Releases take their version from the git tag (.github/workflows/release.yml).
         versionName = System.getenv("VERSION_NAME_OVERRIDE") ?: "0.1.0-dev"
-        signingConfig = signingConfigs.getByName("debug")
     }
 
     // Release signing (ADR 0006): the organization's key, provided by the
     // environment. In CI the keystore is decoded to $RUNNER_TEMP/keystore;
-    // locally set KEYSTORE_PATH. Without these variables a release build comes
-    // out unsigned (not installable) rather than silently signed with the
-    // debug key.
+    // locally set KEYSTORE_PATH. Without these variables a release or nightly
+    // build comes out unsigned, so `adb install` refuses it. That needs the
+    // debug key set on the debug build type, not on defaultConfig: a null
+    // signingConfig on a build type falls back to defaultConfig's, and a
+    // keyless release was debug-signed with the release application id (#137).
+    // Installed over a release-signed install, that breaks config ingest in
+    // every secondary user (AGENTS.md, Emulator).
     val releaseKeystore = System.getenv("KEYSTORE_PATH")
         ?: System.getenv("RUNNER_TEMP")?.let { "$it/keystore/keystore.jks" }
     val releaseSigningAvailable = releaseKeystore != null &&
@@ -76,13 +79,14 @@ android {
         debug {
             applicationIdSuffix = ".debug"
             isDebuggable = true
+            signingConfig = signingConfigs.getByName("debug")
         }
         create("nightly") {
             initWith(getByName("release"))
             matchingFallbacks += "release"
             applicationIdSuffix = ".nightly"
             versionNameSuffix = "-${LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"))}-nightly"
-            signingConfig = signingConfigs.findByName("gh-actions")
+            signingConfig = if (releaseSigningAvailable) signingConfigs.getByName("gh-actions") else null
 
             isMinifyEnabled = true
             isShrinkResources = true
