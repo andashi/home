@@ -10,7 +10,6 @@ import de.mm20.launcher2.config.GridItemConfig
 import de.mm20.launcher2.config.GridLayoutConfig
 import de.mm20.launcher2.config.JsoncObjectSpan
 import de.mm20.launcher2.config.JsoncSpanResult
-import de.mm20.launcher2.config.ReloadReport
 import de.mm20.launcher2.config.ReloadTrigger
 import de.mm20.launcher2.homegrid.HomeGridItem
 import de.mm20.launcher2.homegrid.HomeGridLayouts
@@ -19,6 +18,7 @@ import de.mm20.launcher2.homegrid.HomeGridWidgets
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.runBlocking
+import org.junit.After
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
@@ -30,8 +30,8 @@ import org.robolectric.RobolectricTestRunner
 import java.io.File
 
 /**
- * Write-back (ADR 0003, D3): edit mode writes `home.grid` back into the
- * file, and only that object's text changes.
+ * Write-back (ADR 0003 section 5): edit mode writes the grid back into the
+ * file, through the engine every section's change goes through (#3 slice 4).
  */
 @RunWith(RobolectricTestRunner::class)
 class GridWriteBackTest {
@@ -69,6 +69,12 @@ class GridWriteBackTest {
     fun cleanup() {
         file.delete()
         File(context.filesDir, "config/last-reload-report.json").delete()
+        File(context.filesDir, "config/applied-baseline.json").delete()
+    }
+
+    @After
+    fun closeRealStore() {
+        real?.close()
     }
 
     private val documentWithGrid = """
@@ -90,84 +96,6 @@ class GridWriteBackTest {
 
     private fun gridOf(text: String): GridConfig =
         ConfigParser.parse(text).config!!.home!!.grid!!
-
-    @Test
-    fun `only the grid object changes, every other byte survives`() = runBlocking {
-        putFile(documentWithGrid)
-        val span = JsoncObjectSpan.find(documentWithGrid, listOf("home", "grid")) as JsoncSpanResult.Found
-
-        val result = writeBack().write(HomeGridLayouts.Phone, items)
-
-        assertTrue(result.toString(), result is WriteBackResult.Written)
-        val after = file.readText()
-        assertEquals(documentWithGrid.substring(0, span.start), after.substring(0, span.start))
-        val oldTail = documentWithGrid.substring(span.endExclusive)
-        assertEquals(oldTail, after.substring(after.length - oldTail.length))
-        assertTrue(after.contains("// note: this comment must survive a write-back untouched"))
-        assertTrue(after.contains("// trailing comment with a } brace"))
-        assertEquals(GridConfig(4, false, gridState.gridLayouts), gridOf(after))
-    }
-
-    @Test
-    fun `a comment inside the old grid object is lost, by design`() = runBlocking {
-        putFile(documentWithGrid)
-
-        writeBack().write(HomeGridLayouts.Phone, items)
-
-        assertTrue(!file.readText().contains("this comment lives inside the grid"))
-    }
-
-    @Test
-    fun `a home without a grid gets one inserted and the file still parses`() = runBlocking {
-        val text = """
-            {
-              "schemaVersion": 2,
-              "home": {
-                "searchBar": { "position": "bottom" } // keep me
-              }
-            }
-        """.trimIndent()
-        putFile(text)
-
-        val result = writeBack().write(HomeGridLayouts.Phone, items)
-
-        assertTrue(result is WriteBackResult.Written)
-        val after = file.readText()
-        assertTrue(after.contains("// keep me"))
-        assertEquals(GridConfig(4, false, gridState.gridLayouts), gridOf(after))
-        assertEquals("bottom", ConfigParser.parse(after).config!!.home!!.searchBar!!.position!!.name.lowercase())
-    }
-
-    @Test
-    fun `a document without home gets home and grid`() = runBlocking {
-        putFile("""{ "schemaVersion": 2, "icons": { "themed": true } }""")
-
-        val result = writeBack().write(HomeGridLayouts.Phone, items)
-
-        assertTrue(result is WriteBackResult.Written)
-        val after = file.readText()
-        assertEquals(GridConfig(4, false, gridState.gridLayouts), gridOf(after))
-        assertEquals(true, ConfigParser.parse(after).config!!.icons!!.themed)
-    }
-
-    @Test
-    fun `a trailing comma before the closing brace stays valid`() = runBlocking {
-        putFile(
-            """
-            {
-              "schemaVersion": 2,
-              "home": {
-                "searchBar": { "position": "bottom" },
-              },
-            }
-            """.trimIndent()
-        )
-
-        val result = writeBack().write(HomeGridLayouts.Phone, items)
-
-        assertTrue(result is WriteBackResult.Written)
-        assertEquals(GridConfig(4, false, gridState.gridLayouts), gridOf(file.readText()))
-    }
 
     @Test
     fun `no file means the database is written and the file is skipped`() = runBlocking {
@@ -234,36 +162,6 @@ class GridWriteBackTest {
     }
 
     @Test
-    fun `a result that would exceed the parser limit is not written`() = runBlocking {
-        // Just under the limit before, over it once the grid is rendered.
-        val padding = "// " + "x".repeat(ConfigParser.MaxInputBytes - 200) + "\n"
-        val text = "{\n$padding\"schemaVersion\": 2,\n\"home\": { \"grid\": {} }\n}\n"
-        assertTrue(text.toByteArray().size <= ConfigParser.MaxInputBytes)
-        putFile(text)
-        val before = file.readBytes()
-
-        val result = writeBack().write(HomeGridLayouts.Phone, items)
-
-        assertEquals("too-large", (result as WriteBackResult.Skipped).code)
-        assertArrayEquals(before, file.readBytes())
-    }
-
-    @Test
-    fun `the report carries the self-write trigger and the hash of the written bytes`() = runBlocking {
-        putFile(documentWithGrid)
-
-        val result = writeBack().write(HomeGridLayouts.Phone, items) as WriteBackResult.Written
-
-        val report = reportStore.read()!!
-        assertEquals(ReloadTrigger.SelfWrite, report.trigger)
-        assertEquals(true, report.success)
-        assertEquals(listOf("home.grid"), report.appliedMutations)
-        assertEquals(ConfigMigrations.currentSchemaVersion, report.schemaVersion)
-        assertEquals(file.readBytes().sha256Hex(), report.configSha256)
-        assertEquals(result.sha256, report.configSha256)
-    }
-
-    @Test
     fun `the database is written before the file`() = runBlocking {
         putFile(documentWithGrid)
         repository.fileTextAtReplace = { file.readText() }
@@ -305,16 +203,165 @@ class GridWriteBackTest {
         assertEquals("no-config-file", (writeBack.lastResult.value as WriteBackResult.Skipped).code)
     }
 
+    // ---- the file applied first (#3 slice 4) ----
+    //
+    // A write-back compares the device with what the file produced once
+    // applied, so the tests below apply the file through the real reloader
+    // into the real store first, and the baseline is the one production
+    // records. The FakeConfigStore above holds only a grid: every other
+    // section would serve its defaults, which a write-back for every section
+    // rightly reads as edits. It was adequate for a grid-only write-back and
+    // is not for a general one; the tests above keep it, because none of
+    // them gets as far as comparing.
+
+    private var real: RealConfigStore? = null
+    private val baselines = AppliedBaselineStore(context)
+    private val lock = ConfigFileLock()
+
+    /** The file put and reloaded, as a device that has applied it; the grid write-back over that device. */
+    private suspend fun appliedWriteBack(text: String): Pair<GridWriteBack, RealConfigStore> {
+        putFile(text)
+        val store = RealConfigStore().also { real = it }
+        ConfigReloader(store.store, reportStore, lock, baselines).reload(file)
+        return GridWriteBack(context, store.grid, store.store, reportStore, lock, baselineStore = baselines) to store
+    }
+
+    /** What the file gets for [items]: the device's items, without the options that are at their default. */
+    private val writtenLayouts = mapOf(
+        HomeGridLayouts.Phone to GridLayoutConfig(
+            listOf(
+                GridItemConfig(id = "dock", widget = "favorites", x = 0, y = 5, w = 4, h = 1),
+                GridItemConfig(id = "clock", widget = clock.widget, x = 0, y = 0, w = 4, h = 2),
+            )
+        )
+    )
+
     @Test
-    fun `the written grid comes from the store's state, not from the items`() = runBlocking {
-        // The items are what the UI holds; the file gets the effective
-        // state, which is complete (every layout, every option), so what
-        // provisioning pulls is a document it can push back unchanged.
-        putFile(documentWithGrid)
+    fun `only the values the edit changed are rewritten, every other byte survives`() = runBlocking {
+        val (writeBack, _) = appliedWriteBack(documentWithGrid)
+        val span = JsoncObjectSpan.find(documentWithGrid, listOf("home", "grid", "layouts")) as JsoncSpanResult.Found
 
-        writeBack().write(HomeGridLayouts.Phone, items)
+        val result = writeBack.write(HomeGridLayouts.Phone, items)
 
-        assertEquals(gridState.gridLayouts, gridOf(file.readText()).layouts)
+        assertTrue(result.toString(), result is WriteBackResult.Written)
+        val after = file.readText()
+        assertEquals(documentWithGrid.substring(0, span.start), after.substring(0, span.start))
+        val oldTail = documentWithGrid.substring(span.endExclusive)
+        assertEquals(oldTail, after.substring(after.length - oldTail.length))
+        // W1: the file had no `locked`, so it gets none.
+        assertEquals(GridConfig(columns = 4, locked = null, layouts = writtenLayouts), gridOf(after))
+    }
+
+    /** Was "lost, by design" while the whole grid object was replaced. A comment inside a rewritten list or map still is. */
+    @Test
+    fun `a comment inside the grid object survives the edit`() = runBlocking {
+        val (writeBack, _) = appliedWriteBack(documentWithGrid)
+
+        writeBack.write(HomeGridLayouts.Phone, items)
+
+        assertTrue(file.readText().contains("this comment lives inside the grid"))
+    }
+
+    /**
+     * W1, removed on purpose (ADR 0003): a file without home.grid used to
+     * get one inserted. It is left byte for byte; the edit stays on the
+     * device and the skip says how to make the file manage the grid.
+     */
+    @Test
+    fun `a home without a grid is left as it is, and the edit stays on the device`() = runBlocking {
+        val text = """
+            {
+              "schemaVersion": 2,
+              "home": {
+                "searchBar": { "position": "bottom" } // keep me
+              }
+            }
+        """.trimIndent()
+        val (writeBack, store) = appliedWriteBack(text)
+
+        val result = writeBack.write(HomeGridLayouts.Phone, items)
+
+        assertEquals("grid-unmanaged", (result as WriteBackResult.Skipped).code)
+        assertEquals(text, file.readText())
+        assertEquals(items, store.grid.layouts[HomeGridLayouts.Phone])
+    }
+
+    @Test
+    fun `a document without home is left as it is, and the edit stays on the device`() = runBlocking {
+        val text = """{ "schemaVersion": 2, "icons": { "themed": true } }"""
+        val (writeBack, store) = appliedWriteBack(text)
+
+        val result = writeBack.write(HomeGridLayouts.Phone, items)
+
+        assertEquals("grid-unmanaged", (result as WriteBackResult.Skipped).code)
+        assertEquals(text, file.readText())
+        assertEquals(items, store.grid.layouts[HomeGridLayouts.Phone])
+    }
+
+    @Test
+    fun `a trailing comma before the closing brace stays valid`() = runBlocking {
+        val (writeBack, _) = appliedWriteBack(
+            """
+            {
+              "schemaVersion": 2,
+              "home": {
+                "searchBar": { "position": "bottom" },
+                "grid": { "layouts": { "phone": { "items": [], }, }, },
+              },
+            }
+            """.trimIndent()
+        )
+
+        val result = writeBack.write(HomeGridLayouts.Phone, items)
+
+        assertTrue(result.toString(), result is WriteBackResult.Written)
+        assertEquals(writtenLayouts, gridOf(file.readText()).layouts)
+    }
+
+    @Test
+    fun `a result that would exceed the parser limit is not written`() = runBlocking {
+        // Just under the limit before, over it once the items are rendered.
+        val body = "\"schemaVersion\": 2,\n\"home\": { \"grid\": { \"layouts\": { \"phone\": { \"items\": [] } } } }\n}\n"
+        val padding = "// " + "x".repeat(ConfigParser.MaxInputBytes - body.length - 60) + "\n"
+        val text = "{\n$padding$body"
+        assertTrue(text.toByteArray().size <= ConfigParser.MaxInputBytes)
+        val (writeBack, _) = appliedWriteBack(text)
+        val before = file.readBytes()
+
+        val result = writeBack.write(HomeGridLayouts.Phone, items)
+
+        assertEquals("too-large", (result as WriteBackResult.Skipped).code)
+        assertArrayEquals(before, file.readBytes())
+    }
+
+    @Test
+    fun `the report carries the self-write trigger, the changed path and the hash of the written bytes`() = runBlocking {
+        val (writeBack, _) = appliedWriteBack(documentWithGrid)
+
+        val result = writeBack.write(HomeGridLayouts.Phone, items) as WriteBackResult.Written
+
+        val report = reportStore.read()!!
+        assertEquals(ReloadTrigger.SelfWrite, report.trigger)
+        assertEquals(true, report.success)
+        assertEquals(listOf("home.grid.layouts"), report.appliedMutations)
+        assertEquals(ConfigMigrations.currentSchemaVersion, report.schemaVersion)
+        assertEquals(file.readBytes().sha256Hex(), report.configSha256)
+        assertEquals(result.sha256, report.configSha256)
+    }
+
+    /**
+     * The file gets the device's grid, merged into what it has: the layouts
+     * it names and, for the items, every field except the options at their
+     * default - no fold layout it did not have, no `borderless: false`.
+     * Pushed back, it changes nothing.
+     */
+    @Test
+    fun `the written grid is the device's, merged into the keys the file has`() = runBlocking {
+        val (writeBack, _) = appliedWriteBack(documentWithGrid)
+
+        writeBack.write(HomeGridLayouts.Phone, items)
+
+        assertEquals(writtenLayouts, gridOf(file.readText()).layouts)
     }
 
     /** Records the file's text at the moment [replace] runs, to prove the write order. */

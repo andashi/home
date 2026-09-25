@@ -124,23 +124,81 @@ tap_bounds() { # $1 = "l t r b"
 
 tap_desc() { # $1 = content-desc
   local b
-  b="$(desc_bounds "$1")"
+  b="$(desc_bounds "$1")" || die "uiautomator dump failed while looking for '$1'"
   [ -n "$b" ] || die "'$1' is not on screen"
   tap_bounds "$b"
 }
 
 tap_id() { # $1 = resource-id (test tag)
   local b
-  b="$(id_bounds "$1")"
+  b="$(id_bounds "$1")" || die "uiautomator dump failed while looking for '$1'"
   [ -n "$b" ] || die "'$1' is not on screen"
   tap_bounds "$b"
 }
 
-tap_text() { # $1 = visible text; returns 1 (no exit) when absent, so callers can fall back
-  local b
-  b="$(node_bounds text "$1")"
-  [ -n "$b" ] || return 1
-  tap_bounds "$b"
+# "top bottom" in px: the lower edge of the status bar and the upper edge of
+# the navigation bar, from the frames `dumpsys window` reports; 0 and a
+# bound past any screen for a bar that is hidden or absent. With several
+# displays (the Fold) the union, which refuses more rather than less.
+system_bars() {
+  adb -s "$SERIAL" shell dumpsys window | tr -d '\r' | awk '
+    / InsetsSource id=/ && /visible=true/ && match($0, /frame=\[[0-9]+,[0-9]+\]\[[0-9]+,[0-9]+\]/) {
+      split(substr($0, RSTART + 6, RLENGTH - 6), f, /[^0-9]+/)
+      if (/ type=statusBars / && f[5] > top) top = f[5]
+      if (/ type=navigationBars / && /sideHint=BOTTOM/ && (bottom == "" || f[3] < bottom)) bottom = f[3]
+    }
+    END { print top + 0, (bottom == "" ? 1000000 : bottom) }'
+}
+
+# tap_text taps a node only where a tap reaches it (#155). A settings row
+# scrolled under the top app bar is still in the dump, and a tap at its
+# centre lands on the bar; l4-write-back failed on exactly that. What covers
+# the centre is measured, never assumed as a height:
+# - what the app draws over its own scrolling content: a node that comes
+#   after the target's scrollable ancestor in the dump and lies outside it,
+#   such as a top app bar of any height ([0,0][1080,264] on "Grid and icons"
+#   at 480 dpi) or a floating button;
+# - the status and navigation bars, from system_bars.
+# A node that does not scroll is where it is drawn: a chip right under a top
+# search bar, or a label its own button is drawn over, is tapped.
+# Returning 1 then is the same contract as "absent": a caller that scrolls
+# and retries keeps working, and one that took 1 for "absent" now fails
+# loudly instead of tapping the wrong thing.
+tap_text() { # $1 = visible text; returns 1 (no exit) when absent or not where a tap reaches it
+  local point
+  [ -n "$(node_bounds text "$1")" ] || return 1
+  point="$(python3 - "$WORK/dump.xml" "$1" $(system_bars) <<'PY'
+import re, sys
+try:
+    import defusedxml.ElementTree as ET
+except ImportError:
+    import xml.etree.ElementTree as ET
+dump, text, top, bottom = sys.argv[1], sys.argv[2], int(sys.argv[3]), int(sys.argv[4])
+root = ET.parse(dump).getroot()
+def rect(node):
+    m = re.match(r"\[(\d+),(\d+)\]\[(\d+),(\d+)\]", node.get("bounds", ""))
+    return tuple(map(int, m.groups())) if m else None
+order = list(root.iter("node"))
+target = next(n for n in order if n.get("text", "") == text and rect(n))
+l, t, r, b = rect(target)
+x, y = (l + r) // 2, (t + b) // 2
+if not top <= y < bottom:
+    sys.exit()
+parent = {c: p for p in root.iter() for c in p}
+scroller = target
+while scroller is not None and scroller.get("scrollable") != "true":
+    scroller = parent.get(scroller)
+if scroller is not None:
+    inside = set(scroller.iter())
+    for node in order[order.index(scroller) + 1:]:
+        c = None if node in inside else rect(node)
+        if c and c[0] <= x < c[2] and c[1] <= y < c[3]:
+            sys.exit()
+print(x, y)
+PY
+)"
+  [ -n "$point" ] || return 1
+  adb -s "$SERIAL" shell input tap $point
 }
 
 # "id left top right bottom" for every grid cell on screen.
@@ -320,4 +378,23 @@ screenshot() { # $1 = output file
   fi
   adb -s "$SERIAL" exec-out screencap -p > "$1" 2>/dev/null
   file "$1" | grep -q 'PNG image' || die "screencap did not produce a PNG for $1"
+}
+
+assert_jq() { # $1 = json, $2 = jq filter, $3 = description
+  if ! jq -e "$2" >/dev/null 2>&1 <<<"$1"; then
+    printf 'offending json:\n%s\n' "$1" >&2
+    die "assertion failed: $3"
+  fi
+}
+
+pull_config() { # $1 = local file
+  adb -s "$SERIAL" pull "$DEVICE_CONFIG" "$1" >/dev/null 2>&1 || die "adb pull of $DEVICE_CONFIG failed"
+}
+
+wait_text() { # $1 = visible text, $2 = timeout (s)
+  local elapsed=0
+  until [ -n "$(node_bounds text "$1")" ]; do
+    [ "$elapsed" -lt "$2" ] || die "timed out (${2}s) waiting for '$1' on screen"
+    sleep 1; elapsed=$((elapsed + 1))
+  done
 }

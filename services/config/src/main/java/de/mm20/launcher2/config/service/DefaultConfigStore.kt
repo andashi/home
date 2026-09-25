@@ -29,7 +29,11 @@ import de.mm20.launcher2.searchable.SavableSearchableRepository
 import de.mm20.launcher2.homegrid.HomeGridInitFlag
 import de.mm20.launcher2.homegrid.HomeGridInitLock
 import de.mm20.launcher2.homegrid.HomeGridRepository
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.merge
 import de.mm20.launcher2.config.Profile as ConfigProfile
 
 /**
@@ -63,13 +67,32 @@ class DefaultConfigStore(
     private val searchActions: SearchActionStore,
 ) : ConfigStore {
 
+    private fun favoriteApps() = searchableRepository.get(
+        includeTypes = listOf(AppDomain),
+        minPinnedLevel = PinnedLevel.ManuallySorted,
+        maxPinnedLevel = PinnedLevel.ManuallySorted,
+    )
+
+    /**
+     * Every source [readState] reads, each passing on only a change of what
+     * the config sees of it - the favorites' keys, not a launch count that
+     * moved; the settings the config covers, not every other one - and each
+     * emitting once on collection, so a change made before anyone collected
+     * is not lost. Nothing here reads the whole state: an app launch or an
+     * unrelated setting costs nothing. The wallpaper is not a source: a
+     * wallpaper picked on the device has no upload name, so it cannot be
+     * written back.
+     */
+    override fun changes(): Flow<Unit> = merge(
+        settings.changes(),
+        favoriteApps().map { apps -> apps.map { it.key } }.distinctUntilChanged().map { },
+        searchActions.changes(),
+        *GridLayouts.All.map { layout -> homeGridRepository.observe(layout).distinctUntilChanged().map { } }.toTypedArray(),
+    )
+
     override suspend fun readState(): ConfigState {
         val settingsState = settings.readState()
-        val favorites = searchableRepository.get(
-            includeTypes = listOf(AppDomain),
-            minPinnedLevel = PinnedLevel.ManuallySorted,
-            maxPinnedLevel = PinnedLevel.ManuallySorted,
-        ).first().mapNotNull { it.toFavorite() }
+        val favorites = favoriteApps().first().mapNotNull { it.toFavorite() }
         val wallpaper = wallpapers.current()
 
         // One snapshot of the layouts and the flag, under the lock the default
@@ -91,42 +114,73 @@ class DefaultConfigStore(
         )
     }
 
-    override suspend fun apply(mutations: List<ConfigMutation>): List<Diagnostic> {
-        val diagnostics = mutableListOf<Diagnostic>()
+    override suspend fun apply(mutations: List<ConfigMutation>): List<Diagnostic> = applyAndCapture(mutations).diagnostics
 
+    /**
+     * Each section as its write left it, taken from the write itself: the
+     * settings from the DataStore update's own result, the grid, favorites
+     * and search actions from what went into their repositories. A section
+     * whose write threw is not among [ConfigStore.Applied.sections]; one
+     * written with entries left out (an app not installed) is, as written.
+     */
+    override suspend fun applyAndCapture(mutations: List<ConfigMutation>): ConfigStore.Applied {
+        val diagnostics = mutableListOf<Diagnostic>()
+        val sections = mutableSetOf<String>()
+
+        var written = ConfigState()
         val settingsMutations = mutations.filter { it.isSettingsBacked }
         if (settingsMutations.isNotEmpty()) {
             try {
-                settings.apply(settingsMutations)
+                written = settings.applyAndRead(settingsMutations)
+                sections += settingsMutations.filter { it !is ConfigMutation.SetGrid }.map { it.section }
             } catch (e: Exception) {
                 for (mutation in settingsMutations) {
                     diagnostics += mutation.applyFailed(e)
                 }
             }
         }
+        val settingsWritten = settingsMutations.isNotEmpty() && diagnostics.isEmpty()
 
         for (mutation in mutations) {
             when (mutation) {
                 is ConfigMutation.SetGrid -> try {
-                    diagnostics += applyGrid(mutation)
+                    val layouts = mutableMapOf<String, GridLayoutConfig>()
+                    diagnostics += applyGrid(mutation, layouts)
+                    written = written.copy(
+                        gridLayouts = GridLayouts.All.associateWith { layout ->
+                            layouts[layout] ?: GridLayoutConfig(homeGridRepository.observe(layout).first().map { it.toConfig() })
+                        },
+                        gridInitialized = homeGridInitFlag.isInitialized(),
+                    )
+                    if (settingsWritten) sections += mutation.section
                 } catch (e: Exception) {
                     diagnostics += mutation.applyFailed(e)
                 }
 
                 is ConfigMutation.SetFavorites -> try {
-                    diagnostics += applyFavorites(mutation)
+                    val (applied, favorites) = applyFavorites(mutation)
+                    diagnostics += applied
+                    written = written.copy(favorites = favorites)
+                    sections += mutation.section
                 } catch (e: Exception) {
                     diagnostics += mutation.applyFailed(e)
                 }
 
                 is ConfigMutation.SetSearchActions -> try {
-                    diagnostics += searchActions.replace(mutation.actions, "search.actions")
+                    val (replaced, actions) = searchActions.replaceAndRead(mutation.actions, "search.actions")
+                    diagnostics += replaced
+                    written = written.copy(searchActions = actions)
+                    sections += mutation.section
                 } catch (e: Exception) {
                     diagnostics += mutation.applyFailed(e)
                 }
 
                 is ConfigMutation.SetWallpaper -> try {
                     diagnostics += wallpapers.apply(mutation.image, mutation.target)
+                    // Nothing on the device writes the managed image, so a read is the write.
+                    val wallpaper = wallpapers.current()
+                    written = written.copy(wallpaperImage = wallpaper?.image, wallpaperTarget = wallpaper?.target)
+                    sections += mutation.section
                 } catch (e: Exception) {
                     diagnostics += mutation.applyFailed(e)
                 }
@@ -151,7 +205,7 @@ class DefaultConfigStore(
             )
         }
 
-        return diagnostics
+        return ConfigStore.Applied(diagnostics, written, sections)
     }
 
     /**
@@ -165,12 +219,13 @@ class DefaultConfigStore(
      */
     private suspend fun applyGrid(
         mutation: ConfigMutation.SetGrid,
+        written: MutableMap<String, GridLayoutConfig>,
     ): List<Diagnostic> {
         val layouts = mutation.layouts ?: return emptyList()
         val diagnostics = mutableListOf<Diagnostic>()
         val columns = mutation.columns ?: settings.readState().gridColumns
         for ((layoutKey, layout) in layouts) {
-            diagnostics += applyLayout(layoutKey, layout, columns)
+            diagnostics += applyLayout(layoutKey, layout, columns, written)
         }
         return diagnostics
     }
@@ -197,6 +252,7 @@ class DefaultConfigStore(
         layoutKey: String,
         layout: GridLayoutConfig,
         columns: Int,
+        written: MutableMap<String, GridLayoutConfig>,
     ): List<Diagnostic> {
         val diagnostics = mutableListOf<Diagnostic>()
         val basePath = "home.grid.layouts.$layoutKey.items"
@@ -318,14 +374,15 @@ class DefaultConfigStore(
                     h = gridItem.span.h,
                     appWidgetId = previous?.appWidgetId,
                     config = HomeGridItemConfig(
-                        borderless = config.borderless ?: false,
-                        background = config.background ?: true,
-                        themeColors = config.themeColors ?: true,
+                        borderless = config.borderless ?: GridItemConfig.OptionDefaults.getValue("borderless"),
+                        background = config.background ?: GridItemConfig.OptionDefaults.getValue("background"),
+                        themeColors = config.themeColors ?: GridItemConfig.OptionDefaults.getValue("themeColors"),
                     ),
                     position = position,
                 )
             }
             homeGridRepository.replace(layoutKey, items)
+            written[layoutKey] = GridLayoutConfig(items.map { it.toConfig() })
             // A config that names a layout is the grid's first content as much as
             // the default row is: from here on an empty layout means empty.
             homeGridInitFlag.markInitialized()
@@ -394,9 +451,10 @@ class DefaultConfigStore(
      * relative order and follow the configured apps. Automatically pinned
      * favorites are outside the config's scope and are preserved.
      */
+    /** Writes the favorites; returns the diagnostics and the favorites as written. */
     private suspend fun applyFavorites(
         mutation: ConfigMutation.SetFavorites,
-    ): List<Diagnostic> {
+    ): Pair<List<Diagnostic>, List<Favorite>> {
         val diagnostics = mutableListOf<Diagnostic>()
         val resolved = mutableListOf<SavableSearchable>()
 
@@ -435,7 +493,7 @@ class DefaultConfigStore(
         // One transaction reads the other pins and writes the new order, so a
         // pin made while this reload runs is never replaced by a stale copy.
         searchableRepository.replaceManuallySortedAwaited(types = listOf(AppDomain), items = resolved)
-        return diagnostics
+        return diagnostics to resolved.mapNotNull { it.toFavorite() }
     }
 
     private suspend fun SavableSearchable.toFavorite(): Favorite? {

@@ -313,6 +313,17 @@ data class GridItemConfig(
 
     companion object {
         const val Favorites = "favorites"
+
+        /**
+         * What an absent option means: the one place in the contract where
+         * absent is a default, not unmanaged (ADR 0002). Apply stores these,
+         * read-back serves them, and a write-back leaves them out again.
+         */
+        val OptionDefaults: Map<String, Boolean> = mapOf(
+            "borderless" to false,
+            "background" to true,
+            "themeColors" to true,
+        )
     }
 }
 

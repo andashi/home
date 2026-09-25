@@ -87,8 +87,8 @@ except `schemaVersion` is optional, and an absent key means *unmanaged*, not
 *off*. There is one exception, stated so it is not trusted wrongly: a grid
 item is stored whole, so its `borderless`, `background` and `themeColors`
 take their defaults (`false`, `true`, `true`) when absent and keep them. The
-round-trip test measured it (#3); write-back must treat those three as
-always present.
+round-trip test measured it (#3); write-back leaves them out again while they
+have their default (ADR 0003 section 5).
 
 <!-- adr-0002-example -->
 ```json
@@ -133,7 +133,7 @@ always present.
     // The single-page home grid (ADR 0001). Rows are derived from the screen.
     "grid": {
       "columns": 4,     // per cover-width page; the fold layout is twice as wide
-      "locked": false,  // true: no edit mode, nothing is written back
+      "locked": false,  // true: no edit mode, the grid is not written back
       "labels": true,   // a label under every item but the dock
       "layouts": {
         "phone": {
@@ -175,18 +175,20 @@ them before:
   position, so reordering or deleting an item in the file cannot rebind another
   item's widget. The AppWidget host's integer id is device-local and never
   appears in the document. Geometry (`x`, `y`, `w`, `h`, in cells) may be
-  omitted once: the launcher places the item at the first free cells and, once
-  write-back lands (#23), writes the geometry into this file. Until then a
-  re-push of the same file stays a no-op, because an absent field matches
-  whatever was placed.
+  omitted: the launcher places the item at the first free cells. The
+  placement is the launcher's, not a change anyone made, so write-back does
+  not put it into the file (ADR 0003 section 5); moving the item on the device
+  does. A re-push of the same file stays a no-op, because an absent field
+  matches whatever was placed.
 
 `profile` accepts `personal`, `work` and `private`; Private Space is just
 another profile here (ADR 0006).
 
-**Since write-back (ADR 0003 section 5, 2026-09-22) the file is no longer only
-the host's declaration; it is the last agreed state between host and device.**
-Edit mode on the device writes `home.grid` into `launcher.json`, so the copy in
-the dotfiles repo can be behind the one on the phone. The host therefore pulls
+**Since write-back (ADR 0003 section 5, 2026-09-22; every section since
+2026-09-25) the file is no longer only the host's declaration; it is the last
+agreed state between host and device.** A change made on the device goes into
+the keys `launcher.json` already has, so the copy in the dotfiles repo can be
+behind the one on the phone. The host therefore pulls
 before it pushes (owner: `adb pull`; other profiles: the read-back provider,
 which serves the effective document in this exact shape) and commits the
 pulled file like any other change; a push that would overwrite a device edit

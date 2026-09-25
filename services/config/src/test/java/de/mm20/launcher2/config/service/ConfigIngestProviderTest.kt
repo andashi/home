@@ -149,6 +149,35 @@ class ConfigIngestProviderTest {
         assertFalse(tmp.exists())
     }
 
+    /**
+     * Review on #155: a push is committed under the lock a write-back holds
+     * between reading launcher.json and renaming onto it, or the write-back's
+     * rename would silently replace what was pushed in between.
+     */
+    @Test
+    fun `a push waits for a write-back that holds the file lock`() {
+        target.writeText("old")
+        val tmp = provider.newTempFile(target.parentFile!!).apply { writeText("pushed") }
+        val lock = ConfigFileLock()
+        provider.fileLock = lock
+        val held = java.util.concurrent.CountDownLatch(1)
+        val release = kotlinx.coroutines.CompletableDeferred<Unit>()
+        val writeBack = Thread {
+            kotlinx.coroutines.runBlocking { lock.withLock { held.countDown(); release.await() } }
+        }.apply { start() }
+        held.await()
+
+        val push = Thread { provider.commit(tmp, target, null) }.apply { start() }
+        push.join(500)
+
+        assertTrue("the push must wait for the lock", push.isAlive)
+        assertEquals("old", target.readText())
+        release.complete(Unit)
+        push.join(5_000)
+        writeBack.join(5_000)
+        assertEquals("pushed", target.readText())
+    }
+
     @Test
     fun `failed transfer discards the upload and keeps the previous config`() {
         target.writeText("old")

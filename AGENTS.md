@@ -131,6 +131,18 @@ afterthought (see `docs/architecture/adr/0005-testing-strategy.md`):
   over without the change and which are deliberate controls that pass in both
   states - a fix that "passes" by disabling the feature is otherwise
   indistinguishable from one that works.
+- In a shell test this is not optional, and breaking the code is only half
+  of it: check that the break reaches the code you meant, and count the
+  total, not the passes. A shell test can fail to exercise anything in more
+  than one way, and each looks like a working test. Both happened to the
+  tests for one fix in `e2e/lib/grid-device.sh` (#155):
+  - `set -e` is ignored inside an `if` condition, even in a subshell, so a
+    helper run as `if helper; then` cannot exit on an error: the test passed
+    without the fix;
+  - moved into its own `bash -c`, the helper died on a variable the library
+    reads under `set -u` before any of it ran: red before the fix for the
+    wrong reason, and red after it, which a count of the passes read as
+    green.
 
 ## Test harness (Phase 1)
 

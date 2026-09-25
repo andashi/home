@@ -2,10 +2,12 @@ package de.mm20.launcher2.config.service
 
 import de.mm20.launcher2.config.ConfigDiffer
 import de.mm20.launcher2.config.ConfigParser
+import de.mm20.launcher2.config.ConfigState
 import de.mm20.launcher2.config.Diagnostic
 import de.mm20.launcher2.config.ReloadReport
 import de.mm20.launcher2.config.ReloadTrigger
 import de.mm20.launcher2.config.Severity
+import de.mm20.launcher2.config.toLauncherConfig
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -31,6 +33,7 @@ class ConfigReloader(
     private val configStore: ConfigStore,
     private val reportStore: ReloadReportStore,
     private val lock: ConfigFileLock = ConfigFileLock(),
+    private val baselineStore: AppliedBaselineStore? = null,
 ) {
 
     /**
@@ -112,9 +115,8 @@ class ConfigReloader(
             )
         }
 
-        val mutations = try {
-            val state = configStore.readState()
-            ConfigDiffer.diff(config, state)
+        val (before, mutations) = try {
+            configStore.readState().let { it to ConfigDiffer.diff(config, it) }
         } catch (e: Exception) {
             return persist(
                 ReloadReport(
@@ -134,19 +136,26 @@ class ConfigReloader(
             )
         }
 
-        val applyDiagnostics = try {
-            configStore.apply(mutations)
+        val applied = try {
+            // The capture is only for the baseline; without a store for one, a plain apply.
+            if (baselineStore != null) configStore.applyAndCapture(mutations)
+            else ConfigStore.Applied(configStore.apply(mutations), before, emptySet())
         } catch (e: Exception) {
-            listOf(
-                Diagnostic(
-                    Severity.Error,
-                    "apply-failed",
-                    "",
-                    "Could not apply config mutations: " +
-                            (e.message ?: e.javaClass.simpleName),
-                )
+            ConfigStore.Applied(
+                diagnostics = listOf(
+                    Diagnostic(
+                        Severity.Error,
+                        "apply-failed",
+                        "",
+                        "Could not apply config mutations: " +
+                                (e.message ?: e.javaClass.simpleName),
+                    )
+                ),
+                written = before,
+                sections = emptySet(),
             )
         }
+        val applyDiagnostics = applied.diagnostics
 
         val failedSections = applyDiagnostics
             .filter { it.severity == Severity.Error }
@@ -156,6 +165,7 @@ class ConfigReloader(
             .distinct()
             .filter { section -> failedSections.none { it.isInSection(section) } }
 
+        recordBaseline(configSha256, before, applied)
         return persist(
             ReloadReport(
                 success = applyDiagnostics.none { it.severity == Severity.Error },
@@ -166,6 +176,30 @@ class ConfigReloader(
                 trigger = trigger,
             )
         )
+    }
+
+    /**
+     * What this file produced once applied, for a write-back to compare the
+     * device with (#3 slice 4, D). The rule for every capture point: a value
+     * is taken at the moment it was written, never by a later read. So each
+     * section the apply wrote comes from the write itself
+     * ([ConfigStore.applyAndCapture]) - a clamp or a skipped entry is in it,
+     * a change a person makes right after the write is not - and every other
+     * section, a failed one included, from the state read [before] the apply
+     * (see [baselineOf]).
+     */
+    private suspend fun recordBaseline(configSha256: String, before: ConfigState, applied: ConfigStore.Applied) {
+        val store = baselineStore ?: return
+        try {
+            val effective = baselineOf(
+                effectiveTree(before.toLauncherConfig()),
+                effectiveTree(applied.written.toLauncherConfig()),
+                applied.sections,
+            )
+            store.save(AppliedBaseline(configSha256, effective))
+        } catch (_: Exception) {
+            // Without a baseline a write-back skips and says so; the reload stands.
+        }
     }
 
     private suspend fun persist(report: ReloadReport): ReloadReport {

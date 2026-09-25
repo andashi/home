@@ -14,6 +14,8 @@ import de.mm20.launcher2.config.ConfigValidator
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.IOException
+import kotlinx.coroutines.runBlocking
+import org.koin.core.context.GlobalContext
 
 /**
  * Fork addition (Phase 2, ADR 0003): write-only ingest for the launcher
@@ -130,13 +132,22 @@ class ConfigIngestProvider : ContentProvider() {
             tmp.delete()
             return false
         }
-        if (!tmp.renameTo(target)) {
+        // launcher.json is replaced under the lock a write-back holds from its
+        // read to its rename; without it, a push landing in between would be
+        // renamed over by the write-back, lost without a trace (review on #155).
+        val lock = fileLock.takeIf { target.name == ConfigLocation.ConfigFileName }
+        val renamed = if (lock != null) runBlocking { lock.withLock { tmp.renameTo(target) } } else tmp.renameTo(target)
+        if (!renamed) {
             Log.e(TAG, "Config ingest could not rename ${tmp.name} to ${target.name}")
             tmp.delete()
             return false
         }
         return true
     }
+
+    /** The one lock around launcher.json ([ConfigFileLock]); from Koin, which the provider cannot be injected by. */
+    internal var fileLock: ConfigFileLock? = null
+        get() = field ?: GlobalContext.getOrNull()?.getOrNull<ConfigFileLock>()
 
     /**
      * One temp file per upload, so concurrent writers never truncate each

@@ -1,19 +1,10 @@
 package de.mm20.launcher2.config.service
 
-import android.content.ComponentName
-import android.content.Context
-import android.os.Process
-import android.os.UserHandle
-import androidx.test.core.app.ApplicationProvider
 import de.mm20.launcher2.config.ConfigDiffer
 import de.mm20.launcher2.config.ConfigParser
 import de.mm20.launcher2.config.Diagnostic
 import de.mm20.launcher2.config.LauncherConfig
 import de.mm20.launcher2.config.toLauncherConfig
-import de.mm20.launcher2.homegrid.HomeGridInitLock
-import de.mm20.launcher2.preferences.config.LauncherConfigSettings
-import de.mm20.launcher2.preferences.preferencesModule
-import de.mm20.launcher2.profiles.Profile
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -21,10 +12,6 @@ import org.junit.Assert.assertNotNull
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.koin.android.ext.koin.androidContext
-import org.koin.core.context.GlobalContext
-import org.koin.core.context.startKoin
-import org.koin.core.context.stopKoin
 import org.robolectric.RobolectricTestRunner
 import java.io.File
 
@@ -43,46 +30,22 @@ import java.io.File
 @RunWith(RobolectricTestRunner::class)
 class ConfigRoundTripTest {
 
-    private lateinit var store: DefaultConfigStore
-    private val personal: UserHandle = Process.myUserHandle()
-    private val work: UserHandle = TestUsers.userHandleFor(10)
+    private lateinit var real: RealConfigStore
+    private val store get() = real.store
 
     private val example: String =
         File(System.getProperty("repoRoot"), "docs/configuration/complete-example.json").readText()
 
     @Before
     fun setUp() {
-        val context = ApplicationProvider.getApplicationContext<Context>()
-        stopKoin()
-        startKoin {
-            androidContext(context)
-            modules(preferencesModule)
-        }
-        val apps = FakeAppRepository().apply {
-            this.apps["com.example.dialer" to personal] = app("com.example.dialer", personal)
-            this.apps["com.example.work.mail" to work] = app("com.example.work.mail", work)
-        }
-        store = DefaultConfigStore(
-            GlobalContext.get().get<LauncherConfigSettings>(),
-            FakeHomeGridRepository(),
-            FakeInitFlag(),
-            HomeGridInitLock(),
-            FakeGridLimitsSource(),
-            FakeGridRowsSource(),
-            FakeSavableSearchableRepository(),
-            apps,
-            FakeProfileResolver(
-                personal = Profile(Profile.Type.Personal, personal, 0),
-                work = Profile(Profile.Type.Work, work, 10),
-            ),
-            FakeWallpaperStore(),
-            FakeSearchActionStore(),
-        )
+        real = RealConfigStore()
+        real.install("com.example.dialer")
+        real.install("com.example.work.mail", real.work)
     }
 
     @After
     fun tearDown() {
-        stopKoin()
+        real.close()
     }
 
     @Test
@@ -106,7 +69,4 @@ class ConfigRoundTripTest {
         // And what it serves, pushed again, changes nothing.
         assertEquals(emptyList<Any>(), ConfigDiffer.diff(served, state))
     }
-
-    private fun app(packageName: String, user: UserHandle) =
-        FakeApplication(ComponentName(packageName, "$packageName.MainActivity"), user)
 }

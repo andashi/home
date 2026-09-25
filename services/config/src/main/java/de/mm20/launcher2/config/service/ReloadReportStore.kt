@@ -25,18 +25,9 @@ class ReloadReportStore(
     private val file = File(context.filesDir, "config/last-reload-report.json")
 
     suspend fun save(report: ReloadReport) = withContext(Dispatchers.IO) {
-        val parent = file.parentFile
-        if (parent != null && !parent.exists()) {
-            parent.mkdirs()
-        }
-        val tmp = File(file.parentFile, "${file.name}.tmp")
-        tmp.writeText(ConfigParser.json.encodeToString(ReloadReport.serializer(), report))
-        if (!tmp.renameTo(file)) {
-            // Never write the shared file in place: a concurrent provider query
-            // could read a torn report. Keep the previous one and fail loudly.
-            tmp.delete()
-            throw IOException("Could not replace ${file.name}")
-        }
+        // Never written in place: a concurrent provider query could read a
+        // torn report. A failed rename keeps the previous one and throws.
+        file.replaceAtomically(ConfigParser.json.encodeToString(ReloadReport.serializer(), report))
     }
 
     suspend fun read(): ReloadReport? = withContext(Dispatchers.IO) {

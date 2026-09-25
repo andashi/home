@@ -2,8 +2,9 @@
 
 Andashi Home is configured by one JSON file, `launcher.json`. The file is the
 source of truth: the launcher converges its state towards it on every reload,
-and edit mode on the device writes the grid back into it
-([ADR 0003](../architecture/adr/0003-config-hot-reload.md)). Everything you can
+and a change made on the device is written back into it
+([ADR 0003](../architecture/adr/0003-config-hot-reload.md), and
+[below](#changes-made-on-the-device)). Everything you can
 set is on these pages, with pictures of what it does on a phone and on a Pixel
 Fold (cover and inner display).
 
@@ -26,8 +27,16 @@ Fold (cover and inner display).
 The top level has five keys: `schemaVersion` (required, currently `2`),
 `icons`, `appearance`, `home` and `search`. Everything else is optional, and **an absent
 key means "unmanaged", not "off"**: the launcher leaves whatever is set on the
-device. One named exception: a grid item's `borderless`, `background` and
-`themeColors` take their defaults when absent ([Home grid](home-grid.md)). Comments and trailing commas are allowed (JSONC).
+device. Comments and trailing commas are allowed (JSONC).
+
+The exceptions, in one place:
+- a grid item's `borderless`, `background` and `themeColors` take their
+  defaults when absent ([Home grid](home-grid.md)), and a write-back leaves
+  them out again while they have their default;
+- the wallpaper is not written back from the device: a wallpaper picked
+  there has no upload name to write ([below](#changes-made-on-the-device));
+- a grid item without geometry is placed by the launcher, and that
+  placement is not written back; moving the item on the device is.
 
 The smallest valid file:
 
@@ -118,6 +127,41 @@ The report lists `appliedMutations` (the sections that changed) and
   - `inert-key`: a key this build accepts but does not act on, with the reason.
   - Grid corrections: an item was enlarged to the widget's minimum, nudged, or
     did not fit.
+  - `write-back-skipped:<code>`: a change made on the device was kept there
+    but not written into the file, and why (next section).
+
+## Changes made on the device
+
+A setting changed on the device, a favorite pinned, a search action edited
+or a widget moved in edit mode is written back into `launcher.json`, so the
+file keeps describing the device. Only keys the file already has are
+written; a key it leaves out stays out, and the file never gains a section
+it did not have. Everything else in the file, comments included, stays as
+it was.
+
+What the file says but the launcher could not do as written - a widget
+height clamped to what the widget allows, a favorite whose app is not
+installed - keeps its written value: write-back records what someone
+changed, not what the launcher adjusted. It is one rule for both: a list
+applied with some entries left out had an effect, the entries it wrote, and
+that is what a later change on the device is compared with. The file keeps
+the entry for the day the app arrives, as it keeps `h: 7` against a widget
+that caps at 6.
+
+A change stays on the device, and the report says why, when:
+- `grid-unmanaged`: a widget was moved but the file has no
+  `home.grid.layouts`; add `"layouts": {}` under `home.grid` to keep the
+  arrangement in the file.
+- `locked`: `home.grid.locked` is `true`, so the grid is not the device's to
+  change.
+- `no-baseline`, `not-applied-yet`: the launcher has not applied this exact
+  file yet; the change is written after its next reload.
+- `malformed-config`, `invalid-config`, `schema-version-outdated`: the file
+  is broken, has errors, or is an older `schemaVersion`; it is never
+  overwritten.
+
+What is never written back is listed with the other exceptions under
+[The file](#the-file).
 
 ## Removed keys
 

@@ -21,7 +21,7 @@ away in search. Design background:
 | `home.widgets` | Holds the grid's master switch | object | — |
 | `home.widgets.enabled` | Switches the grid on. Off, the home screen shows only the search bar | boolean | device setting |
 | `home.grid.columns` | Columns of the grid on a phone and on the Fold's cover. The Fold's inner display has twice as many | 2–8 | 4 |
-| `home.grid.locked` | No edit mode on the device, so nothing is ever written back into the file | boolean | `false` |
+| `home.grid.locked` | No edit mode on the device, so the grid is never written back into the file | boolean | `false` |
 | `home.grid.labels` | A label under every widget, never under the dock. It shows the app's name | boolean | `true` |
 | `home.grid.layouts` | The layouts, one per form factor (below) | `phone`, `fold` | — |
 
@@ -73,9 +73,11 @@ So an item written without them and pushed again resets any change made to
 them on the device. The item is stored whole; there is no "unset" for its
 options. Measured by the round-trip test (#3, `ConfigRoundTripTest`).
 
-**Geometry can be left out once.** An item without `x`, `y`, `w`, `h` is
-placed at the first free cells with the widget's default size, and write-back
-puts the geometry into the file. A position is `x` and `y` together; a lone
+**Geometry can be left out.** An item without `x`, `y`, `w`, `h` is
+placed at the first free cells with the widget's default size. The
+placement is the launcher's, not a change anyone made, so the file keeps the
+item without geometry; once someone moves it on the device, write-back puts
+its new geometry into the file. A position is `x` and `y` together; a lone
 coordinate is ignored with a `partial-grid-position` warning. The launcher
 keeps a layout valid on the actual screen:
 - a size below the widget's minimum is enlarged (`widget-too-small`);

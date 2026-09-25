@@ -12,7 +12,11 @@ import de.mm20.launcher2.searchactions.builders.AppSearchActionBuilder
 import de.mm20.launcher2.searchactions.builders.CustomIntentActionBuilder
 import de.mm20.launcher2.searchactions.builders.CustomWebsearchActionBuilder
 import de.mm20.launcher2.searchactions.builders.SearchActionBuilder
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 
 /**
  * The device's search actions in the contract's form (#106): what the config
@@ -27,6 +31,13 @@ interface SearchActionStore {
      * device cannot apply is left out and reported at `[basePath][index]`.
      */
     suspend fun replace(actions: List<SearchActionConfig>, basePath: String): List<Diagnostic>
+
+    /** [replace], and the actions as written - not read again afterwards (#3 slice 4). */
+    suspend fun replaceAndRead(actions: List<SearchActionConfig>, basePath: String): Pair<List<Diagnostic>, List<SearchActionConfig>> =
+        replace(actions, basePath) to read()
+
+    /** Emits once on collection and then whenever the actions change, for write-back to follow (#3 slice 4). */
+    fun changes(): Flow<Unit> = emptyFlow()
 }
 
 /**
@@ -42,7 +53,20 @@ internal class AndroidSearchActionStore(
     override suspend fun read(): List<SearchActionConfig> =
         repository.getSearchActionBuilders().first().map { it.toConfig() }
 
-    override suspend fun replace(actions: List<SearchActionConfig>, basePath: String): List<Diagnostic> {
+    override fun changes(): Flow<Unit> =
+        repository.getSearchActionBuilders().map { builders -> builders.map { it.toConfig() } }.distinctUntilChanged().map { }
+
+    override suspend fun replace(actions: List<SearchActionConfig>, basePath: String): List<Diagnostic> =
+        write(actions, basePath).first
+
+    override suspend fun replaceAndRead(
+        actions: List<SearchActionConfig>,
+        basePath: String,
+    ): Pair<List<Diagnostic>, List<SearchActionConfig>> =
+        write(actions, basePath).let { (diagnostics, written) -> diagnostics to written.map { it.toConfig() } }
+
+    /** Replaces the device's actions; returns the diagnostics and the builders written. */
+    private suspend fun write(actions: List<SearchActionConfig>, basePath: String): Pair<List<Diagnostic>, List<SearchActionBuilder>> {
         val diagnostics = mutableListOf<Diagnostic>()
         val builtIns = repository.getBuiltinSearchActionBuilders().associateBy { it.key }
         // A user's own intent actions, kept where a pulled file names them (#116 review).
@@ -99,7 +123,7 @@ internal class AndroidSearchActionStore(
             }
         }
         repository.replaceSearchActionBuilders(builders)
-        return diagnostics
+        return diagnostics to builders
     }
 
     private fun SearchActionBuilder.toConfig(): SearchActionConfig = when (this) {

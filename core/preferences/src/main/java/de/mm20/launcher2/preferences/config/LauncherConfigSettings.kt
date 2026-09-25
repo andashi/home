@@ -8,7 +8,11 @@ import de.mm20.launcher2.config.InSearchBarPosition
 import de.mm20.launcher2.config.SearchBarPosition
 import de.mm20.launcher2.preferences.LauncherDataStore
 import de.mm20.launcher2.preferences.LauncherSettingsData
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 
 /**
  * Fork addition (Phase 2): settings-backed projection of [ConfigState] and
@@ -46,14 +50,34 @@ interface LauncherConfigSettings {
      * implementation covariantly returns the updated settings data.
      */
     suspend fun apply(mutations: List<ConfigMutation>)
+
+    /**
+     * Applies [mutations] and returns the settings-backed state as written,
+     * from the update itself rather than a later read (#3 slice 4): a setting
+     * changed right after the write is not part of it.
+     */
+    suspend fun applyAndRead(mutations: List<ConfigMutation>): ConfigState {
+        apply(mutations)
+        return readState()
+    }
+
+    /**
+     * Emits once on collection and then whenever the settings-backed state
+     * changes, for write-back to follow (#3 slice 4). A write to a setting the
+     * config does not cover emits nothing.
+     */
+    fun changes(): Flow<Unit> = emptyFlow()
 }
 
 internal class LauncherConfigSettingsImpl(
     private val dataStore: LauncherDataStore,
 ) : LauncherConfigSettings {
 
-    override suspend fun readState(): ConfigState {
-        val data = dataStore.data.first()
+    override fun changes(): Flow<Unit> = dataStore.data.map { stateOf(it) }.distinctUntilChanged().map { }
+
+    override suspend fun readState(): ConfigState = stateOf(dataStore.data.first())
+
+    private fun stateOf(data: LauncherSettingsData): ConfigState {
         return ConfigState(
             themedIcons = data.iconsThemed,
             enforceThemedIcons = data.iconsForceThemed,
@@ -98,6 +122,8 @@ internal class LauncherConfigSettingsImpl(
     override suspend fun apply(mutations: List<ConfigMutation>) {
         applyAndReturn(mutations)
     }
+
+    override suspend fun applyAndRead(mutations: List<ConfigMutation>): ConfigState = stateOf(applyAndReturn(mutations))
 
     /**
      * Rich variant of [apply] for in-module consumers/tests: returns the
