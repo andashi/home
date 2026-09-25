@@ -17,7 +17,6 @@ import org.koin.core.context.GlobalContext
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
 import org.robolectric.RobolectricTestRunner
-import java.io.File
 
 @RunWith(RobolectricTestRunner::class)
 class UiSettingsInitFlagTest {
@@ -26,11 +25,6 @@ class UiSettingsInitFlagTest {
 
     @Before
     fun setUp() {
-        // A minimal settings file, so DataStore never reaches the Context
-        // constructor of LauncherSettingsData (its resource does not resolve
-        // from this module under Robolectric; same workaround as app/ui).
-        val dir = File(context.filesDir, "datastore").apply { mkdirs() }
-        File(dir, "settings.json").writeText("""{"schemaVersion":6}""")
         stopKoin()
         startKoin {
             androidContext(context)

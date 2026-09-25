@@ -17,7 +17,6 @@ import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
 import org.koin.dsl.module
 import org.robolectric.RobolectricTestRunner
-import java.io.File
 
 /** The Koin module wires what the grid needs, and the rows source is one object. */
 @RunWith(RobolectricTestRunner::class)
@@ -29,8 +28,6 @@ class HomeGridModuleTest {
     @Before
     fun setUp() {
         database = Room.inMemoryDatabaseBuilder(context, AppDatabase::class.java).build()
-        File(context.filesDir, "datastore").apply { mkdirs() }
-            .let { File(it, "settings.json").writeText("""{"schemaVersion":6}""") }
         stopKoin()
         startKoin {
             androidContext(context)
