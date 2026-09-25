@@ -48,11 +48,5 @@ class IconSettings internal constructor(
         }
     }
 
-    fun setIconPackThemed(iconPackThemed: Boolean) {
-        launcherDataStore.update {
-            it.copy(iconsPackThemed = iconPackThemed)
-        }
-    }
-
 
 }

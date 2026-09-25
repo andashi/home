@@ -3,7 +3,6 @@ package de.mm20.launcher2.ui.settings.debug
 import androidx.lifecycle.ViewModel
 import de.mm20.launcher2.data.customattrs.CustomAttributesRepository
 import de.mm20.launcher2.icons.IconService
-import de.mm20.launcher2.preferences.BaseLayout
 import de.mm20.launcher2.preferences.ui.UiSettings
 import de.mm20.launcher2.searchable.SavableSearchableRepository
 import kotlinx.coroutines.flow.map

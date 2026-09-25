@@ -13,9 +13,10 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 
 /**
- * The settings the grid reads (D1, D3) and the one side effect the grid
- * removes: `home.dock.enabled` used to switch on the favorite affordances in
- * search results through `favoritesEnabled || homeScreenDock` (#46).
+ * The settings the grid reads (D1, D3). `favoritesEnabled` follows its own
+ * field alone: `home.dock.enabled` used to switch on the favorite affordances
+ * in search results through `favoritesEnabled || homeScreenDock` (#46), and
+ * the dock flag itself is gone since #3.
  */
 @RunWith(RobolectricTestRunner::class)
 class UiSettingsHomeGridTest {
@@ -28,20 +29,13 @@ class UiSettingsHomeGridTest {
     }
 
     @Test
-    fun `favoritesEnabled no longer follows the dead dock flag`() = runTest {
-        val settings = settings(LauncherSettingsData(favoritesEnabled = false, homeScreenDock = true))
-
-        assertEquals(false, settings.favoritesEnabled.first())
-    }
-
-    @Test
     fun `favoritesEnabled follows its own field when on`() = runTest {
         assertEquals(true, settings(LauncherSettingsData(favoritesEnabled = true)).favoritesEnabled.first())
     }
 
     @Test
     fun `favoritesEnabled follows its own field when off`() = runTest {
-        assertEquals(false, settings(LauncherSettingsData(favoritesEnabled = false, homeScreenDock = false)).favoritesEnabled.first())
+        assertEquals(false, settings(LauncherSettingsData(favoritesEnabled = false)).favoritesEnabled.first())
     }
 
     @Test

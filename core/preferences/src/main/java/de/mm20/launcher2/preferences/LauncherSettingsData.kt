@@ -13,6 +13,8 @@ import java.util.UUID
 @Serializable
 @ConsistentCopyVisibility
 data class LauncherSettingsData internal constructor(
+    // No migration keys on it any more: Migration4 and Migration5, the ones
+    // that did, were deleted (#3), and Migration6 is keyed on content.
     val schemaVersion: Int = 6,
 
     val uiColorScheme: ColorScheme = ColorScheme.System,
@@ -31,19 +33,10 @@ data class LauncherSettingsData internal constructor(
     val uiTypographyId: UUID = UUID(0L, 0L),
 
     val uiCompatModeColors: Boolean = false,
-    @Deprecated("No longer in use, only used for migration")
-    val uiBaseLayout: BaseLayout = BaseLayout.PullDown,
     val uiOrientation: ScreenOrientation = ScreenOrientation.Auto,
 
     val wallpaperDim: Boolean = false,
-    val wallpaperBlur: Boolean = true,
-    val wallpaperBlurRadius: Int = 32,
 
-    val mediaAllowList: Set<String> = emptySet(),
-    val mediaDenyList: Set<String> = emptySet(),
-
-    val homeScreenDock: Boolean = false,
-    val homeScreenDockRows: Int = 1,
     val homeScreenWidgets: Boolean = false,
     /** `home.grid.columns`: columns of one cover-width page (ADR 0001, D1). */
     val homeGridColumns: Int = 4,
@@ -64,8 +57,6 @@ data class LauncherSettingsData internal constructor(
     val appsShowDetails: Boolean = true,
 
 
-    @Deprecated("Use contactSearchProviders `local` instead")
-    val contactSearchEnabled: Boolean = true,
     val contactSearchProviders: Set<String> = setOf("local"),
     val contactSearchCallOnTap: Boolean = false,
 
@@ -97,7 +88,6 @@ data class LauncherSettingsData internal constructor(
     val searchBarFixed: Boolean = false,
 
     val searchResultsReversed: Boolean = false,
-    val separateWorkProfile: Boolean = true,
 
     val rankingWeightFactor: WeightFactor = WeightFactor.Default,
 
@@ -109,19 +99,10 @@ data class LauncherSettingsData internal constructor(
     val iconsThemed: Boolean = true,
     val iconsForceThemed: Boolean = false,
     val iconsPack: String? = null,
-    @Deprecated("Use iconsThemed instead")
-    val iconsPackThemed: Boolean = false,
-
-    val easterEgg: Boolean = false,
-
     val systemBarsHideStatus: Boolean = false,
     val systemBarsHideNav: Boolean = false,
     val systemBarsStatusColors: SystemBarColors = SystemBarColors.Auto,
     val systemBarsNavColors: SystemBarColors = SystemBarColors.Auto,
-
-    val surfacesOpacity: Float = 1f,
-    val surfacesBorderWidth: Int = 0,
-
 
     val gesturesSwipeDown: GestureAction = GestureAction.Search,
     val gesturesSwipeLeft: GestureAction = GestureAction.NoAction,
@@ -223,13 +204,6 @@ enum class SystemBarColors {
 enum class SurfaceShape {
     Rounded,
     Cut,
-}
-
-@Serializable
-enum class BaseLayout {
-    PullDown,
-    Pager,
-    PagerReversed,
 }
 
 @Serializable
