@@ -10,6 +10,13 @@
 # both displays - and then unfolds from those snapshots in turn, RUNS rounds,
 # so host drift hits every build alike.
 #
+# Robust by construction to prior state (every measured unfold starts by
+# loading a snapshot, which resets RAM and disks) and to host load (the
+# interleaving). Not robust to a concurrent workload on the same instance:
+# an unpinned `./gradlew connected*` from another shell installs and runs
+# there mid-series. Hold the instance's lock, and pin ANDROID_SERIAL on
+# every Gradle device task (AGENTS.md, "Emulator").
+#
 # An unfold here is the hinge sensor swept from 0 to 180 degrees in 10-degree
 # steps (the console's `sensor set hinge-angle0`), not `cmd device_state
 # state 2`: the override skips the sensor and the device-state policy, and
