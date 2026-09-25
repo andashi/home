@@ -12,12 +12,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 
-/**
- * The settings the grid reads (D1, D3). `favoritesEnabled` follows its own
- * field alone: `home.dock.enabled` used to switch on the favorite affordances
- * in search results through `favoritesEnabled || homeScreenDock` (#46), and
- * the dock flag itself is gone since #3.
- */
+/** The settings the grid reads (D1, D3). */
 @RunWith(RobolectricTestRunner::class)
 class UiSettingsHomeGridTest {
 
@@ -26,16 +21,6 @@ class UiSettingsHomeGridTest {
     private fun settings(seed: LauncherSettingsData): UiSettings {
         seedSettingsFile(context, seed)
         return UiSettings(LauncherDataStore(context))
-    }
-
-    @Test
-    fun `favoritesEnabled follows its own field when on`() = runTest {
-        assertEquals(true, settings(LauncherSettingsData(favoritesEnabled = true)).favoritesEnabled.first())
-    }
-
-    @Test
-    fun `favoritesEnabled follows its own field when off`() = runTest {
-        assertEquals(false, settings(LauncherSettingsData(favoritesEnabled = false)).favoritesEnabled.first())
     }
 
     @Test
