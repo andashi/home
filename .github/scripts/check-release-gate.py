@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Asserts the two properties release.yml must keep (#132).
+"""Asserts the three properties release.yml must keep (#132, #3).
 
 1. Nothing builds before the full test suite is green: `tests` calls
    test.yml, and every other job needs it. Without that a tag ships commits
@@ -12,6 +12,11 @@
    The environment is the second, independent mechanism: once its secrets
    are restricted to `v*` tags in the repository settings, GitHub withholds
    them from any other ref before a line of this YAML runs.
+3. A release publishes the JSON Schema of launcher.json it reads (ADR 0002)
+   next to the APK, hashed in SHA256SUMS: the provisioning host validates a
+   zone's file against the version it deploys. The release job runs only on
+   a tag, so without this check a lost upload would show only when someone
+   looked for the asset.
 
 Exits non-zero naming every violation.
 """
@@ -60,6 +65,15 @@ def violations(workflow):
             environment = environment.get("name")
         if reads_secret(job) and environment != "release":
             found.append(f"jobs.{name} reads a secret outside `environment: release`")
+
+    release_steps = "\n".join(str(step.get("run", "")) for step in (jobs.get("release") or {}).get("steps") or [])
+    if "docs/configuration/launcher.schema.json" not in release_steps:
+        found.append("jobs.release does not take docs/configuration/launcher.schema.json")
+    if "launcher.schema.json > SHA256SUMS" not in release_steps:
+        found.append("jobs.release does not hash launcher.schema.json in SHA256SUMS")
+    publish = [line for line in release_steps.splitlines() if '"$APK_PATH"' in line]
+    if not any('"$SCHEMA_PATH"' in line for line in publish):
+        found.append("jobs.release does not publish launcher.schema.json with the APK")
     return found
 
 
@@ -71,7 +85,7 @@ def main(path):
         print(f"::error file={path}::{line}")
     if found:
         return 1
-    print(f"{path}: every job needs the full suite, and only a tag push signs")
+    print(f"{path}: every job needs the full suite, only a tag push signs, and the schema ships")
     return 0
 
 
