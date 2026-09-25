@@ -31,9 +31,6 @@ data class GridSettings(
 class UiSettings internal constructor(
     private val launcherDataStore: LauncherDataStore,
 ) {
-    val favoritesEnabled
-        get() = launcherDataStore.data.map { it.favoritesEnabled }
-
     val iconShape
         get() = launcherDataStore.data.map {
             it.iconsShape
