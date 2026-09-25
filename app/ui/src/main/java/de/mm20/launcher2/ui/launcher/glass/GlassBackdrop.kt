@@ -22,6 +22,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
@@ -70,6 +71,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
@@ -98,15 +100,31 @@ class GlassBackdropController(
 
     private val window = MutableStateFlow<WindowInputs?>(null)
 
+    /**
+     * The glass values, collected once for the style, the pipeline and the
+     * synchronous lookup (#130).
+     */
+    private val glassInputs: StateFlow<GlassInputs?> = glass.stateIn(scope, SharingStarted.Eagerly, null)
+
     /** The glass values with contrast applied, for every surface (#75). */
-    val style: StateFlow<ResolvedGlass> = glass
+    val style: StateFlow<ResolvedGlass> = glassInputs.filterNotNull()
         .map { GlassStyle.resolve(it) }
         .stateIn(scope, SharingStarted.Eagerly, DefaultStyle)
 
+    private val pipeline = BackdropPipeline(source.image, glassInputs.filterNotNull(), window, BackdropCache(), render)
+
     val backdrop: StateFlow<RenderedBackdrop<ImageBitmap>?> =
-        BackdropPipeline(source.image, glass, window, BackdropCache(), render)
-            .backdrop
-            .stateIn(scope, SharingStarted.Eagerly, null)
+        pipeline.backdrop.stateIn(scope, SharingStarted.Eagerly, null)
+
+    /**
+     * The backdrop made for this window if it is cached, else null; never
+     * renders and never waits (#130). A composition that sees a new window
+     * size draws with it at once instead of with the previous window's.
+     */
+    fun cachedBackdropFor(window: WindowInputs): RenderedBackdrop<ImageBitmap>? {
+        val glass = glassInputs.value ?: return null
+        return pipeline.peek(source.image.value, glass, window)
+    }
 
     fun setWindow(widthPx: Int, heightPx: Int, density: Float) {
         window.value = WindowInputs(widthPx, heightPx, density)
@@ -156,15 +174,28 @@ val GlassBackdropBlurPx = SemanticsPropertyKey<Int>("GlassBackdropBlurPx")
 fun ProvideGlassBackdrop(controller: GlassBackdropController, content: @Composable () -> Unit) {
     val size = LocalWindowInfo.current.containerSize
     val density = LocalDensity.current.density
-    LaunchedEffect(controller, size, density) {
-        if (size.width > 0 && size.height > 0) controller.setWindow(size.width, size.height, density)
+    val window = if (size.width > 0 && size.height > 0) WindowInputs(size.width, size.height, density) else null
+    LaunchedEffect(controller, window) {
+        if (window != null) controller.setWindow(window.widthPx, window.heightPx, window.density)
     }
     val scope = rememberCoroutineScope()
     LifecycleResumeEffect(controller) {
         scope.launch { controller.refresh() }
         onPauseOrDispose { }
     }
-    val backdrop by controller.backdrop.collectAsState()
+    val flowed by controller.backdrop.collectAsState()
+    // The window reaches the pipeline in the effect above, after this
+    // composition; a backdrop already made for the window it lays out is
+    // taken from the cache now, so the first frame after a fold or unfold is
+    // not drawn with the previous window's (#130). A real miss keeps the
+    // previous backdrop until the render arrives through the flow.
+    // Looked up in every composition, not remembered: the key also depends
+    // on the glass values, which recompose this through the style below, and
+    // a stale remembered lookup would draw the previous blur for a frame
+    // (#149 review). The lookup is a map read; an equal result does not
+    // change LocalGlassBackdrop.
+    val cached = window?.let(controller::cachedBackdropFor)
+    val backdrop = cached ?: flowed
     val style by controller.style.collectAsState()
     val wallpaperBlur by controller.wallpaperBlur.collectAsState()
     val searchWallpaperBlur by controller.searchWallpaperBlur.collectAsState()

@@ -34,4 +34,15 @@ class BackdropPipeline<B : Any>(
                     cache.get(key) { render(image, key) }?.let { RenderedBackdrop(key, it) }
                 }
             }
+
+    /**
+     * The cached backdrop for these inputs, or null; never renders (#130).
+     * Keyed as [backdrop] keys its renders, so it finds exactly what the flow
+     * would emit for this window once it got there.
+     */
+    fun peek(image: BackdropImage?, glass: GlassInputs, window: WindowInputs): RenderedBackdrop<B>? {
+        if (image == null) return null
+        val key = BackdropGeometry.key(image, window, glass)
+        return cache.peek(key)?.let { RenderedBackdrop(key, it) }
+    }
 }

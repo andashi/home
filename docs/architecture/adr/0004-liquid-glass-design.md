@@ -36,7 +36,11 @@ What the epic shipped, in the order it is drawn:
    box-blurred (three passes) on the CPU in `:core:glass`, keyed by
    wallpaper hash, window size and blur. An LRU of three (phone, fold cover,
    fold inner) means folding does not re-blur. The blur runs once per key,
-   never per frame (`GlassBackdropTest`, `BackdropPipelineTest`).
+   never per frame (`GlassBackdropTest`, `BackdropPipelineTest`). A cached
+   key is also looked up synchronously in the composition that sees a new
+   window, so the first frame after a fold or unfold draws the right
+   backdrop instead of the previous window's stretched (#130); only a real
+   miss waits for its render and keeps the previous backdrop meanwhile.
 2. **Home background** (#82). With `appearance.glass.wallpaperBlur` (default
    on) the same bitmap is drawn full-window behind the scaffold, so the
    whole screen is soft as in the reference.

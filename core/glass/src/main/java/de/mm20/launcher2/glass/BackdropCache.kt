@@ -18,10 +18,20 @@ class BackdropCache<B : Any>(private val capacity: Int = 3) {
      * twice. A failed production (null) is not remembered.
      */
     suspend fun get(key: BackdropKey, produce: suspend () -> B?): B? = mutex.withLock {
-        entries[key]?.let { return@withLock it }
+        peek(key)?.let { return@withLock it }
         val made = produce() ?: return@withLock null
-        entries[key] = made
-        while (entries.size > capacity) entries.remove(entries.keys.first())
+        synchronized(entries) {
+            entries[key] = made
+            while (entries.size > capacity) entries.remove(entries.keys.first())
+        }
         made
     }
+
+    /**
+     * The backdrop for [key] if one is made, without producing or waiting
+     * (#130): the composition that sees a new window looks its backdrop up
+     * here on the main thread. The map has its own short lock, so a render
+     * holding [mutex] for its whole duration never blocks the lookup.
+     */
+    fun peek(key: BackdropKey): B? = synchronized(entries) { entries[key] }
 }

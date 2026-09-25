@@ -5,14 +5,19 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Text
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.platform.LocalWindowInfo
+import androidx.compose.ui.platform.WindowInfo
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -167,7 +172,97 @@ class GlassBackdropTest {
         )).assertExists()
     }
 
+    /** A window whose size the test changes, as a fold or unfold does. */
+    private class FakeWindowInfo(size: IntSize) : WindowInfo {
+        var size by mutableStateOf(size)
+        override val isWindowFocused = true
+        override val containerSize: IntSize get() = size
+    }
+
+    /**
+     * What each composition inside [ProvideGlassBackdrop] saw: the window's
+     * width and the width of the window the provided backdrop was made for.
+     */
+    private fun setWindowContent(window: FakeWindowInfo, seen: MutableList<Pair<Int, Int?>>) {
+        composeRule.mainClock.autoAdvance = false
+        composeRule.setContent {
+            CompositionLocalProvider(
+                LocalWindowInfo provides window,
+                LocalLifecycleOwner provides TestLifecycleOwner(Lifecycle.State.RESUMED),
+            ) {
+                ProvideGlassBackdrop(controller) {
+                    val width = LocalWindowInfo.current.containerSize.width
+                    val made = LocalGlassBackdrop.current?.key?.windowWidthPx
+                    SideEffect { seen += width to made }
+                }
+            }
+        }
+    }
+
+    private fun framesUntil(done: () -> Boolean) {
+        var frames = 0
+        while (!composeRule.runOnIdle(done)) {
+            check(++frames < 20) { "never happened" }
+            composeRule.mainClock.advanceTimeByFrame()
+        }
+    }
+
+    /** Unfolds to [Inner], runs frames until [done], and returns the first composition at [Inner]. */
+    private fun firstCompositionAfterResize(
+        window: FakeWindowInfo,
+        seen: MutableList<Pair<Int, Int?>>,
+        done: () -> Boolean,
+    ): Pair<Int, Int?> {
+        composeRule.runOnIdle { seen.clear() }
+        window.size = Inner
+        framesUntil(done)
+        return composeRule.runOnIdle { seen.first { it.first == Inner.width } }
+    }
+
+    /**
+     * #130: after a fold or unfold the first composition at the new window
+     * size must already draw the backdrop made for it when that backdrop is
+     * cached. It drew the previous window's, stretched, for one frame: the
+     * window reached the controller in a LaunchedEffect after that
+     * composition, and the cache hit came back through the flow.
+     */
+    @Test
+    fun `a window change is composed with the cached backdrop for the new window, in that frame`() {
+        val window = FakeWindowInfo(Cover)
+        val seen = mutableListOf<Pair<Int, Int?>>()
+        setWindowContent(window, seen)
+        // Both displays blurred once: fold, unfold, fold.
+        framesUntil { seen.lastOrNull()?.second == Cover.width }
+        window.size = Inner
+        framesUntil { seen.lastOrNull()?.second == Inner.width }
+        window.size = Cover
+        framesUntil { seen.lastOrNull()?.second == Cover.width }
+        assertEquals(2, renders)
+
+        val first = firstCompositionAfterResize(window, seen) { seen.any { it.first == Inner.width } }
+        assertEquals("the backdrop in the first composition at ${Inner.width} px", Inner.width, first.second)
+        assertEquals("from the cache, not re-blurred", 2, renders)
+    }
+
+    /**
+     * Control: a window never blurred before keeps the previous backdrop
+     * until its own is made. The composition never waits for a render.
+     */
+    @Test
+    fun `a window never blurred keeps the previous backdrop until its own is made`() {
+        val window = FakeWindowInfo(Cover)
+        val seen = mutableListOf<Pair<Int, Int?>>()
+        setWindowContent(window, seen)
+        framesUntil { seen.lastOrNull()?.second == Cover.width }
+
+        val first = firstCompositionAfterResize(window, seen) { seen.lastOrNull()?.second == Inner.width }
+        assertEquals("the previous backdrop in the first composition", Cover.width, first.second)
+        assertEquals(2, renders)
+    }
+
     private companion object {
         const val Surfaces = 8
+        val Cover = IntSize(1080, 2364)
+        val Inner = IntSize(2076, 2152)
     }
 }
