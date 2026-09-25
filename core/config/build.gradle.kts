@@ -51,6 +51,7 @@ tasks.withType<Test>().configureEach {
     inputs.dir(rootProject.file("docs/configuration"))
         .withPropertyName("configurationDocs")
         .withPathSensitivity(PathSensitivity.RELATIVE)
+    systemProperty("repoRoot", rootProject.rootDir.absolutePath)
 }
 
 // Coverage gate (ADR 0005, AGENTS.md "Test policy"). The bound is the value the

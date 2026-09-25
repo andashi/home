@@ -1,0 +1,119 @@
+{
+  "schemaVersion": 2,
+  "icons": {
+    "themed": false,
+    "enforceThemed": true,
+    "pack": "com.example.iconpack"
+  },
+  "appearance": {
+    "glass": {
+      "blur": 12.0,
+      "tint": 0.3,
+      "radius": 16.0,
+      "contrast": "high",
+      "wallpaperBlur": false,
+      "searchWallpaperBlur": false
+    },
+    "wallpaper": {
+      "image": "zone.jpg",
+      "target": "lock"
+    }
+  },
+  "home": {
+    "searchBar": {
+      "position": "bottom"
+    },
+    "favorites": [
+      {
+        "packageName": "com.example.dialer"
+      },
+      {
+        "packageName": "com.example.work.mail",
+        "profile": "work"
+      }
+    ],
+    "widgets": {
+      "enabled": true
+    },
+    "grid": {
+      "columns": 5,
+      "locked": true,
+      "labels": false,
+      "layouts": {
+        "phone": {
+          "items": [
+            {
+              "id": "dock",
+              "widget": "favorites",
+              "x": 0,
+              "y": 5,
+              "w": 5,
+              "h": 1,
+              "borderless": false,
+              "background": true,
+              "themeColors": true
+            },
+            {
+              "id": "clock",
+              "widget": "com.android.deskclock/.DigitalAppWidgetProvider",
+              "x": 1,
+              "y": 0,
+              "w": 3,
+              "h": 2,
+              "profile": "work",
+              "borderless": true,
+              "background": false,
+              "themeColors": false
+            }
+          ]
+        },
+        "fold": {
+          "items": [
+            {
+              "id": "clock",
+              "widget": "com.android.deskclock/.DigitalAppWidgetProvider",
+              "x": 0,
+              "y": 1,
+              "w": 4,
+              "h": 3,
+              "profile": "work",
+              "borderless": true,
+              "background": false,
+              "themeColors": false
+            }
+          ]
+        }
+      }
+    }
+  },
+  "search": {
+    "favorites": false,
+    "allApps": false,
+    "layout": "list",
+    "labels": false,
+    "contacts": false,
+    "shortcuts": false,
+    "filterBar": false,
+    "openKeyboard": false,
+    "launchOnEnter": false,
+    "reversed": true,
+    "hiddenItemsButton": true,
+    "barPosition": "bottom",
+    "actions": [
+      {
+        "type": "url",
+        "label": "Wiki",
+        "url": "https://en.wikipedia.org/w/index.php?search=${1}",
+        "encoding": "form"
+      },
+      {
+        "type": "app",
+        "label": "Maps",
+        "package": "com.example.maps"
+      },
+      {
+        "type": "call"
+      }
+    ]
+  }
+}

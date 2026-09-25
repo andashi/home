@@ -61,9 +61,17 @@ Each layout is `home.grid.layouts.<layout>.items`, a list of up to 32 items:
 | `home.grid.layouts.<layout>.items[].w` | Width in cells | 1 to 64 |
 | `home.grid.layouts.<layout>.items[].h` | Height in cells | 1 to 64 |
 | `home.grid.layouts.<layout>.items[].profile` | Which profile's widget: `personal`, `work`, `private` | enum, default `personal` |
-| `home.grid.layouts.<layout>.items[].borderless` | Draw the widget without the card's padding | boolean |
-| `home.grid.layouts.<layout>.items[].background` | `false`: no glass surface behind the widget at all | boolean, default `true` |
-| `home.grid.layouts.<layout>.items[].themeColors` | Hand the widget the zone's Material You colors | boolean |
+| `home.grid.layouts.<layout>.items[].borderless` | Draw the widget without the card's padding | boolean, default `false` (see below) |
+| `home.grid.layouts.<layout>.items[].background` | `false`: no glass surface behind the widget at all | boolean, default `true` (see below) |
+| `home.grid.layouts.<layout>.items[].themeColors` | Hand the widget the zone's Material You colors | boolean, default `true` (see below) |
+
+**An exception to "absent means unmanaged".** For `borderless`,
+`background` and `themeColors`, and for these three keys only, an absent key
+does not leave the device's value alone. It sets the default (`false`,
+`true`, `true`) and keeps it, and the read-back serves the value either way.
+So an item written without them and pushed again resets any change made to
+them on the device. The item is stored whole; there is no "unset" for its
+options. Measured by the round-trip test (#3, `ConfigRoundTripTest`).
 
 **Geometry can be left out once.** An item without `x`, `y`, `w`, `h` is
 placed at the first free cells with the widget's default size, and write-back
