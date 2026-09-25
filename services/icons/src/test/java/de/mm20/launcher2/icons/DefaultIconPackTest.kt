@@ -30,6 +30,22 @@ class DefaultIconPackTest {
         assertEquals(DefaultIconPack.Lawnicons, DefaultIconPack.effective("  ", lawniconsInstalled))
     }
 
+    /**
+     * #3 D6: "none" is the one way to say "the apps' own icons" that does not
+     * mean "not chosen". Not chosen falls back to Lawnicons; none does not.
+     */
+    @Test
+    fun `none means the apps' own icons even when Lawnicons is installed`() = runTest {
+        assertNull(DefaultIconPack.effective(DefaultIconPack.None, lawniconsInstalled))
+    }
+
+    /** The picker's "System" entry is the empty package name; it means none, not "not chosen". */
+    @Test
+    fun `the picker's System entry is stored as none`() {
+        assertEquals(DefaultIconPack.None, DefaultIconPack.fromPicker(""))
+        assertEquals("com.example.pack", DefaultIconPack.fromPicker("com.example.pack"))
+    }
+
     @Test
     fun `a configured pack is not second-guessed even when it is not installed`() = runTest {
         // IconService then logs the missing pack and falls back to the apps' own icons,

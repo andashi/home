@@ -407,6 +407,15 @@ class ConfigParserTest {
         assertTrue(result.diagnostics.single().message.contains("appearance.glass"))
     }
 
+    /** #3 D6: "none" is a value of its own: the apps' own icons, no pack and no fallback. */
+    @Test
+    fun `icons pack none is accepted`() {
+        val result = ConfigParser.parse("""{ "schemaVersion": 2, "icons": { "pack": "none" } }""")
+
+        assertEquals(emptyList<Diagnostic>(), result.diagnostics)
+        assertEquals("none", result.config!!.icons!!.pack)
+    }
+
     @Test
     fun `invalid package names are reported`() {
         val input = """
