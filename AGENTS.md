@@ -51,10 +51,26 @@ gh pr view <n> --json closingIssuesReferences \
   --jq '[.closingIssuesReferences[].number]'
 ```
 
-An empty list is what a partial pull request should print. That command caught
-this very section: the first draft quoted the offending sentence verbatim, so
-the pull request documenting the trap would have closed the issue a second
-time. This text writes `#NNN` rather than a real number for that reason.
+An empty list is what a partial pull request should print.
+
+**The body is not the only channel.** GitHub parses the same keywords in
+**commit messages** that land on the default branch, and
+`closingIssuesReferences` does not see them: it reflects the pull request body
+alone. So check both before merging a partial pull request:
+
+```bash
+git log --format=%B origin/main..HEAD |
+  grep -inE '(clos[ed]*|fix[ed]*|resolve[ds]*)[[:space:]]*:?[[:space:]]*#[0-9]+'
+```
+
+No output is what a partial pull request should print.
+
+Both halves of this section were written the hard way. The first draft quoted
+the offending sentence in the text, and the `gh pr view` check caught it. The
+corrected draft still quoted it in a **commit message**, which that check does
+not read - and merging the document that explains this trap closed the issue a
+second time, seven hours after the first. This text writes `#NNN` rather than a
+real number for that reason, in prose and in commit messages alike.
 
 A wrongly closed issue is not a bookkeeping problem. It takes a live defect off
 the list everyone reads while it is still failing builds.
