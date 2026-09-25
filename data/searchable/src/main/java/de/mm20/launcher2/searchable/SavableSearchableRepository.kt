@@ -104,17 +104,17 @@ interface SavableSearchableRepository {
     )
 
     /**
-     * Fork addition (Phase 2 config reload, ADR 0003): awaited variant of
-     * [updateFavorites]. Runs the same transaction (unpin all, then re-pin) but
-     * returns only after it has committed, so the caller can rely on the new
-     * favorites being visible immediately afterwards. [manuallySorted] keeps its
-     * order (first item ends up on top), making it suitable for ordered,
-     * config-managed dock favorites.
+     * Fork addition (#3 D4): makes [items] the manually sorted favorites of
+     * [types], in order. Manually sorted pins of every other type keep their
+     * relative order and follow [items]; automatically sorted pins are not
+     * touched. Returns once committed, so the new favorites are visible
+     * immediately afterwards (the config reload relies on that, ADR 0003).
+     *
+     * The current pins are read inside the same transaction that writes the
+     * new ones, so a pin made while a config reload runs is never replaced
+     * by a snapshot taken before it.
      */
-    suspend fun updateFavoritesAwaited(
-        manuallySorted: List<SavableSearchable>,
-        automaticallySorted: List<SavableSearchable>,
-    )
+    suspend fun replaceManuallySortedAwaited(types: List<String>, items: List<SavableSearchable>)
 
     /**
      * Returns the given keys sorted by relevance.
@@ -367,9 +367,9 @@ internal class SavableSearchableRepositoryImpl(
     }
 
     // Fork addition (Phase 2 config reload): one ordered writer for favorite
-    // replacements. Both variants enqueue at call time, so a fire-and-forget
-    // updateFavorites(A) issued before updateFavoritesAwaited(B) can never land
-    // after B and undo it; the awaited variant returns once its entry committed.
+    // replacements. Both enqueue at call time, so a fire-and-forget
+    // updateFavorites(A) issued before replaceManuallySortedAwaited(B) can never
+    // land after B and undo it; the awaited one returns once its entry committed.
     private val favoriteWrites = Channel<suspend () -> Unit>(Channel.UNLIMITED)
 
     init {
@@ -385,15 +385,20 @@ internal class SavableSearchableRepositoryImpl(
         favoriteWrites.trySend { updateFavoritesInternal(manuallySorted, automaticallySorted) }
     }
 
-    // Fork addition (Phase 2 config reload): awaited variant, see interface.
-    override suspend fun updateFavoritesAwaited(
-        manuallySorted: List<SavableSearchable>,
-        automaticallySorted: List<SavableSearchable>
-    ) {
+    // Fork addition (#3 D4), see interface. The other types' pins are not
+    // touched at all: the items go above the highest of them, so their order
+    // and positions stay as they are, and a pin whose item no longer
+    // deserializes (an uninstalled app's shortcut) is kept, not dropped.
+    override suspend fun replaceManuallySortedAwaited(types: List<String>, items: List<SavableSearchable>) {
         val done = CompletableDeferred<Unit>()
         favoriteWrites.trySend {
             try {
-                updateFavoritesInternal(manuallySorted, automaticallySorted)
+                val dao = database.searchableDao()
+                database.withTransaction {
+                    dao.unpinManuallySorted(types)
+                    val othersTop = dao.getHighestManualPinPositionExcept(types) ?: 1
+                    dao.upsert(pinEntities(items, top = othersTop + items.size))
+                }
                 done.complete(Unit)
             } catch (e: Throwable) {
                 done.completeExceptionally(e)
@@ -402,6 +407,20 @@ internal class SavableSearchableRepositoryImpl(
         done.await()
     }
 
+    /**
+     * Manual pins for [items] in order, the first at [top] and each next one
+     * below it; positions above 1 are manually sorted, 1 is automatic.
+     */
+    private fun pinEntities(items: List<SavableSearchable>, top: Int) =
+        items.mapIndexedNotNull { index, searchable ->
+            SavedSearchableUpdatePinEntity(
+                key = searchable.key,
+                type = searchable.domain,
+                pinPosition = top - index,
+                serializedSearchable = searchable.serialize() ?: return@mapIndexedNotNull null,
+            )
+        }
+
     private suspend fun updateFavoritesInternal(
         manuallySorted: List<SavableSearchable>,
         automaticallySorted: List<SavableSearchable>
@@ -409,17 +428,7 @@ internal class SavableSearchableRepositoryImpl(
         val dao = database.searchableDao()
         database.withTransaction {
             dao.unpinAll()
-            dao.upsert(
-                manuallySorted.mapIndexedNotNull { index, savableSearchable ->
-                    SavedSearchableUpdatePinEntity(
-                        key = savableSearchable.key,
-                        type = savableSearchable.domain,
-                        pinPosition = manuallySorted.size - index + 1,
-                        serializedSearchable = savableSearchable.serialize()
-                            ?: return@mapIndexedNotNull null,
-                    )
-                }
-            )
+            dao.upsert(pinEntities(manuallySorted, top = manuallySorted.size + 1))
             dao.upsert(
                 automaticallySorted.mapNotNull { savableSearchable ->
                     SavedSearchableUpdatePinEntity(

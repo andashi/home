@@ -538,6 +538,53 @@ class DefaultConfigStoreTest {
         assertEquals(listOf(automatic), searchableRepository.automaticallySorted)
     }
 
+    /**
+     * #3 D4: the file names apps only, so a present `home.favorites` manages
+     * the app pins and nothing else. Shortcuts, tags and contacts pinned on
+     * the device stay pinned, in their order, after the configured apps -
+     * a reload used to unpin them all.
+     */
+    @Test
+    fun `SetFavorites keeps pinned shortcuts tags and contacts after the configured apps`() = runTest {
+        val appA = app("com.example.a", personalHandle)
+        val appB = app("com.example.b", workHandle)
+        val appOld = app("com.example.old", personalHandle)
+        appRepository.apps["com.example.a" to personalHandle] = appA
+        appRepository.apps["com.example.b" to workHandle] = appB
+        val contact = FakeItem("contact://42", "contact")
+        val shortcut = FakeItem("shortcut://com.example.a/compose", "shortcut")
+        val tag = FakeItem("tag://work", "tag")
+        // Mixed on the device: a contact first, apps in between.
+        searchableRepository.manuallySorted = listOf(contact, appB, shortcut, appOld, tag)
+        val automatic = app("com.example.c", personalHandle)
+        searchableRepository.automaticallySorted = listOf(automatic)
+
+        val diagnostics = store.apply(
+            listOf(
+                ConfigMutation.SetFavorites(
+                    listOf(
+                        Favorite("com.example.a", ConfigProfile.Personal),
+                        Favorite("com.example.b", ConfigProfile.Work),
+                    )
+                )
+            )
+        )
+
+        assertEquals(emptyList<Diagnostic>(), diagnostics)
+        // The apps in file order, the app the file dropped unpinned, then the
+        // other pins in the order they had.
+        assertEquals(listOf(appA, appB, contact, shortcut, tag), searchableRepository.manuallySorted)
+        assertEquals(listOf(automatic), searchableRepository.automaticallySorted)
+    }
+
+    @Test
+    fun `readState reports app favorites only, not the pins the file cannot name`() = runTest {
+        val appA = app("com.example.a", personalHandle)
+        searchableRepository.manuallySorted = listOf(appA, FakeItem("tag://work", "tag"), FakeItem("contact://42", "contact"))
+
+        assertEquals(listOf(Favorite("com.example.a", ConfigProfile.Personal)), store.readState().favorites)
+    }
+
     @Test
     fun `SetFavorites skips unavailable apps with error diagnostics`() = runTest {
         val appA = app("com.example.a", personalHandle)
@@ -796,12 +843,9 @@ class DefaultConfigStoreTest {
             return flowOf(items.filter { includeTypes == null || it.domain in includeTypes })
         }
 
-        override suspend fun updateFavoritesAwaited(
-            manuallySorted: List<SavableSearchable>,
-            automaticallySorted: List<SavableSearchable>,
-        ) {
-            this.manuallySorted = manuallySorted
-            this.automaticallySorted = automaticallySorted
+        /** The real one's semantics; its atomicity is the Room transaction, tested there. */
+        override suspend fun replaceManuallySortedAwaited(types: List<String>, items: List<SavableSearchable>) {
+            manuallySorted = items + manuallySorted.filter { it.domain !in types }
         }
 
         override fun insert(searchable: SavableSearchable) = throw NotImplementedError()
@@ -926,6 +970,20 @@ class DefaultConfigStoreTest {
         override fun getSerializer(): SearchableSerializer = throw NotImplementedError()
         override fun uninstall(context: Context) = throw NotImplementedError()
         override fun openAppDetails(context: Context) = throw NotImplementedError()
+    }
+
+    /** A pinned item that is not an app: a shortcut, a tag or a contact. */
+    private class FakeItem(
+        override val key: String,
+        override val domain: String,
+    ) : SavableSearchable {
+        override val label: String = key
+        override val labelOverride: String? = null
+        override val preferDetailsOverLaunch: Boolean = false
+        override fun overrideLabel(label: String): SavableSearchable = this
+        override fun launch(context: Context, options: Bundle?): Boolean = false
+        override fun getPlaceholderIcon(context: Context): StaticLauncherIcon = throw NotImplementedError()
+        override fun getSerializer(): SearchableSerializer = throw NotImplementedError()
     }
 
     private companion object {
