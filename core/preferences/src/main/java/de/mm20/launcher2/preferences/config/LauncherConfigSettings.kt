@@ -52,6 +52,16 @@ interface LauncherConfigSettings {
     suspend fun apply(mutations: List<ConfigMutation>)
 
     /**
+     * Applies [mutations] and returns the settings-backed state as written,
+     * from the update itself rather than a later read (#3 slice 4): a setting
+     * changed right after the write is not part of it.
+     */
+    suspend fun applyAndRead(mutations: List<ConfigMutation>): ConfigState {
+        apply(mutations)
+        return readState()
+    }
+
+    /**
      * Emits once on collection and then whenever the settings-backed state
      * changes, for write-back to follow (#3 slice 4). A write to a setting the
      * config does not cover emits nothing.
@@ -112,6 +122,8 @@ internal class LauncherConfigSettingsImpl(
     override suspend fun apply(mutations: List<ConfigMutation>) {
         applyAndReturn(mutations)
     }
+
+    override suspend fun applyAndRead(mutations: List<ConfigMutation>): ConfigState = stateOf(applyAndReturn(mutations))
 
     /**
      * Rich variant of [apply] for in-module consumers/tests: returns the

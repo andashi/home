@@ -115,10 +115,14 @@ internal class FakeHomeGridRepository : HomeGridRepository {
     var lockedDuringReplace: Boolean? = null
     var onReplace: (suspend () -> Unit)? = null
 
+    /** Runs right after a replace has landed: the moment a capture must not read past. */
+    var afterReplace: (suspend (String) -> Unit)? = null
+
     override suspend fun replace(layout: String, items: List<HomeGridItem>) {
         replaceCalls++
         onReplace?.invoke()
         layouts[layout] = items
+        afterReplace?.let { hook -> afterReplace = null; hook(layout) }
     }
 
     override suspend fun patchGeometry(layout: String, id: String, x: Int, y: Int, w: Int, h: Int) =
@@ -332,7 +336,11 @@ internal class FakeSearchActionStore : SearchActionStore {
 
     override suspend fun read(): List<SearchActionConfig> = actions
 
+    /** When set, a replace throws it before writing anything. */
+    var failure: Exception? = null
+
     override suspend fun replace(actions: List<SearchActionConfig>, basePath: String): List<Diagnostic> {
+        failure?.let { throw it }
         replaced += actions to basePath
         this.actions = actions
         return reports

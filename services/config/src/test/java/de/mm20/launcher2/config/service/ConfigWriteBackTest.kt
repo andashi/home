@@ -1,6 +1,7 @@
 package de.mm20.launcher2.config.service
 
 import de.mm20.launcher2.config.ConfigDiffer
+import de.mm20.launcher2.preferences.config.LauncherConfigSettings
 import de.mm20.launcher2.config.ConfigMutation
 import de.mm20.launcher2.config.ConfigParser
 import de.mm20.launcher2.config.Diagnostic
@@ -41,6 +42,9 @@ import org.robolectric.RobolectricTestRunner
 class ConfigWriteBackTest {
 
     private lateinit var real: RealConfigStore
+
+    /** Runs once, right after the next settings write has landed and before anything reads after it. */
+    private var afterSettingsWrite: (suspend () -> Unit)? = null
     private val context get() = real.context
     private val file: File get() = ConfigLocation.configFile(context)!!
     private lateinit var reportStore: ReloadReportStore
@@ -51,7 +55,12 @@ class ConfigWriteBackTest {
 
     @Before
     fun setUp() {
-        real = RealConfigStore()
+        real = RealConfigStore(decorateSettings = { settings ->
+            object : LauncherConfigSettings by settings {
+                override suspend fun applyAndRead(mutations: List<ConfigMutation>) =
+                    settings.applyAndRead(mutations).also { afterSettingsWrite?.let { hook -> afterSettingsWrite = null; hook() } }
+            }
+        })
         reportStore = ReloadReportStore(context)
         baselineStore = AppliedBaselineStore(context)
         reloader = ConfigReloader(real.store, reportStore, lock, baselineStore)
@@ -167,6 +176,28 @@ class ConfigWriteBackTest {
         assertEquals(listOf("search.layout"), report.appliedMutations)
         assertEquals(sha, baselineStore.read()!!.configSha256)
         assertEquals(WriteBackResult.Unchanged, writeBack.write())
+    }
+
+    /**
+     * Review on #155: the baseline is saved before the report, each on its
+     * own. A report that cannot be saved must not leave the baseline behind
+     * the file, or every write-back after it skips as not-applied-yet.
+     */
+    @Test
+    fun `a self-write whose report cannot be saved still becomes the baseline`() = runBlocking {
+        applied(searchFile)
+        onDevice("""{"schemaVersion":2,"search":{"layout":"list"}}""")
+        val report = File(context.filesDir, "config/last-reload-report.json")
+        report.delete()
+        report.mkdirs() // a rename onto a directory fails: the report cannot be saved
+
+        val written = writeBack.write() as WriteBackResult.Written
+
+        assertEquals(written.sha256, baselineStore.read()!!.configSha256)
+        onDevice("""{"schemaVersion":2,"search":{"layout":"grid"}}""")
+        assertTrue(writeBack.write() is WriteBackResult.Written)
+        report.delete()
+        Unit
     }
 
     @Test
@@ -295,8 +326,8 @@ class ConfigWriteBackTest {
     fun `a change made on the device while a reload applies is written back afterwards`() = runBlocking {
         applied(twoSections)
         val duringApply = object : ConfigStore by real.store {
-            override suspend fun apply(mutations: List<ConfigMutation>) =
-                real.store.apply(mutations).also { onDevice("""{"schemaVersion":2,"icons":{"themed":true}}""") }
+            override suspend fun applyAndCapture(mutations: List<ConfigMutation>) =
+                real.store.applyAndCapture(mutations).also { onDevice("""{"schemaVersion":2,"icons":{"themed":true}}""") }
         }
         val newer = twoSections.replace("\"grid\"", "\"list\"")
         put(newer)
@@ -306,6 +337,65 @@ class ConfigWriteBackTest {
 
         assertTrue(result.toString(), result is WriteBackResult.Written)
         assertEquals(newer.replace("\"themed\":false", "\"themed\":true"), file.readText())
+    }
+
+    /**
+     * Review on #155: the window after the write. A setting the person
+     * changes right after the reload wrote its section, before anything reads
+     * the state again, is theirs, not the file's. The baseline is taken from
+     * the write itself, so the change is written back.
+     */
+    @Test
+    fun `a setting changed right after the reload wrote its section is written back`() = runBlocking {
+        val file = """{"schemaVersion":2,"search":{"layout":"grid","labels":true}}"""
+        applied(file)
+        val newer = file.replace("\"grid\"", "\"list\"")
+        put(newer)
+        afterSettingsWrite = {
+            real.settings.apply(listOf(ConfigMutation.SetSearch(de.mm20.launcher2.config.SearchConfig(labels = false))))
+        }
+        reloader.reload(this@ConfigWriteBackTest.file)
+
+        val result = writeBack.write()
+
+        assertTrue(result.toString(), result is WriteBackResult.Written)
+        assertEquals(newer.replace("\"labels\":true", "\"labels\":false"), this@ConfigWriteBackTest.file.readText())
+    }
+
+    /** The same window for a section in a repository: the grid, moved right after the reload placed it. */
+    @Test
+    fun `a grid item moved right after the reload placed it is written back`() = runBlocking {
+        val file = """{"schemaVersion":2,"home":{"widgets":{"enabled":true},"grid":{"layouts":{"phone":{"items":[{"id":"dock","widget":"favorites","x":0,"y":5,"w":4,"h":1}]}}}}}"""
+        applied(file)
+        val newer = file.replace("\"y\":5", "\"y\":4")
+        put(newer)
+        real.grid.afterReplace = { layout ->
+            real.grid.replace(layout, real.grid.layouts.getValue(layout).map { it.copy(y = 3) })
+        }
+        reloader.reload(this@ConfigWriteBackTest.file)
+
+        val result = writeBack.write()
+
+        assertTrue(result.toString(), result is WriteBackResult.Written)
+        assertEquals(3, ConfigParser.parse(this@ConfigWriteBackTest.file.readText()).config!!.home!!.grid!!.layouts!!.getValue("phone").items.single().y)
+    }
+
+    /**
+     * Review on #155: a section whose write failed was not applied, so it
+     * stays in the baseline as it was before; the others are as written.
+     */
+    @Test
+    fun `a section whose write failed stays in the baseline as it was before`() = runBlocking {
+        val file = """{"schemaVersion":2,"icons":{"themed":false},"search":{"actions":[{"type":"url","label":"Wiki","url":"https://w.example/?q=${'$'}{1}"}]}}"""
+        applied(file)
+        put(file.replace("\"themed\":false", "\"themed\":true").replace("\"Wiki\"", "\"Wikipedia\""))
+        real.actions.failure = IllegalStateException("database locked")
+        reloader.reload(this@ConfigWriteBackTest.file)
+
+        val baseline = baselineStore.read()!!.effective
+
+        assertEquals("true", baseline.at(listOf("icons", "themed")).toString())
+        assertEquals("\"Wiki\"", (baseline.at(listOf("search", "actions")) as kotlinx.serialization.json.JsonArray)[0].let { (it as kotlinx.serialization.json.JsonObject)["label"].toString() })
     }
 
     /**

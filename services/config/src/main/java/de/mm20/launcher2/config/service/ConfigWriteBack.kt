@@ -179,6 +179,16 @@ class ConfigWriteBack(
         }
 
         val written = spliced.toByteArray(Charsets.UTF_8).sha256Hex()
+        // The baseline first, each record on its own (review on #155): what
+        // the file now says is what the device state it was computed from has
+        // in effect, and a report that fails to save must not leave the
+        // baseline on the old hash, or every write-back after it skips.
+        try {
+            baselineStore.save(AppliedBaseline(written, device))
+        } catch (e: Exception) {
+            // The watcher sees an unknown hash and reloads, which records it.
+            Log.w(TAG, "could not record the baseline of the self-write", e)
+        }
         try {
             reportStore.save(
                 ReloadReport(
@@ -189,12 +199,10 @@ class ConfigWriteBack(
                     trigger = ReloadTrigger.SelfWrite,
                 )
             )
-            // What the file now says is what the device has in effect.
-            baselineStore.save(AppliedBaseline(written, device))
         } catch (e: Exception) {
             // The file is written; without the report the watcher reloads it
-            // once, which converges to a no-op and records the baseline.
-            Log.w(TAG, "could not record the self-write", e)
+            // once, which converges to a no-op.
+            Log.w(TAG, "could not record the self-write report", e)
         }
         return WriteBackResult.Written(written)
     }

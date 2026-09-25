@@ -136,19 +136,26 @@ class ConfigReloader(
             )
         }
 
-        val applyDiagnostics = try {
-            configStore.apply(mutations)
+        val applied = try {
+            // The capture is only for the baseline; without a store for one, a plain apply.
+            if (baselineStore != null) configStore.applyAndCapture(mutations)
+            else ConfigStore.Applied(configStore.apply(mutations), before, emptySet())
         } catch (e: Exception) {
-            listOf(
-                Diagnostic(
-                    Severity.Error,
-                    "apply-failed",
-                    "",
-                    "Could not apply config mutations: " +
-                            (e.message ?: e.javaClass.simpleName),
-                )
+            ConfigStore.Applied(
+                diagnostics = listOf(
+                    Diagnostic(
+                        Severity.Error,
+                        "apply-failed",
+                        "",
+                        "Could not apply config mutations: " +
+                                (e.message ?: e.javaClass.simpleName),
+                    )
+                ),
+                written = before,
+                sections = emptySet(),
             )
         }
+        val applyDiagnostics = applied.diagnostics
 
         val failedSections = applyDiagnostics
             .filter { it.severity == Severity.Error }
@@ -158,7 +165,7 @@ class ConfigReloader(
             .distinct()
             .filter { section -> failedSections.none { it.isInSection(section) } }
 
-        recordBaseline(configSha256, before, mutations.map { it.section })
+        recordBaseline(configSha256, before, applied)
         return persist(
             ReloadReport(
                 success = applyDiagnostics.none { it.severity == Severity.Error },
@@ -173,21 +180,21 @@ class ConfigReloader(
 
     /**
      * What this file produced once applied, for a write-back to compare the
-     * device with (#3 slice 4, D): the [applied] sections as the device has
-     * them after the apply, so whatever the apply did differently from the
-     * text - a clamp, a skipped entry - is in it, and every other section as
-     * it was [before], so a change a person made on the device while the
-     * apply ran is not (see [baselineOf]). Recorded after a partial apply too:
-     * that is what the file produced.
+     * device with (#3 slice 4, D). The rule for every capture point: a value
+     * is taken at the moment it was written, never by a later read. So each
+     * section the apply wrote comes from the write itself
+     * ([ConfigStore.applyAndCapture]) - a clamp or a skipped entry is in it,
+     * a change a person makes right after the write is not - and every other
+     * section, a failed one included, from the state read [before] the apply
+     * (see [baselineOf]).
      */
-    private suspend fun recordBaseline(configSha256: String, before: ConfigState, applied: List<String>) {
+    private suspend fun recordBaseline(configSha256: String, before: ConfigState, applied: ConfigStore.Applied) {
         val store = baselineStore ?: return
         try {
-            val after = configStore.readState()
             val effective = baselineOf(
                 effectiveTree(before.toLauncherConfig()),
-                effectiveTree(after.toLauncherConfig()),
-                applied,
+                effectiveTree(applied.written.toLauncherConfig()),
+                applied.sections,
             )
             store.save(AppliedBaseline(configSha256, effective))
         } catch (_: Exception) {

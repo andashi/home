@@ -134,6 +134,39 @@ class WriteBackPlanTest {
         )
     }
 
+    /**
+     * Review on #155: a key inside a rebuilt entry that the device's model
+     * does not know - a newer field, one written by hand - is the file's, and
+     * survives. The rule is that the file's text survives, not a list of
+     * fields to keep.
+     */
+    @Test
+    fun `a key the model does not know survives inside a rebuilt entry`() {
+        val result = gridChange(
+            literal = """[{"id":"clock","widget":"a.b/.C","x":0,"futureField":{"k":1}}]""",
+            applied = """[{"id":"clock","widget":"a.b/.C","x":0}]""",
+            device = """[{"id":"clock","widget":"a.b/.C","x":2}]""",
+        )
+
+        assertEquals(
+            ConfigParser.json.parseToJsonElement("""{"phone":{"items":[{"id":"clock","widget":"a.b/.C","x":2,"futureField":{"k":1}}]}}"""),
+            result.single().value,
+        )
+    }
+
+    /** A list the device state differs in, merged back to exactly what the file says, is no change to write. */
+    @Test
+    fun `a merged value equal to the file's is not written`() {
+        assertEquals(
+            emptyList<WriteBackPlan.Change>(),
+            WriteBackPlan.changes(
+                tree(favorites("""["org.a.one","org.not.here"]""")),
+                tree(favorites("""[]""")),
+                tree(favorites("""["org.a.one"]""")),
+            ),
+        )
+    }
+
     /** The device lists items in its own order; they are matched by id, never by position. */
     @Test
     fun `elements are matched by id, not by position`() {

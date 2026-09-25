@@ -62,7 +62,10 @@ object WriteBackPlan {
             if (written is JsonObject && now is JsonObject && path !in WholeValues) {
                 collect(written, canon as? JsonObject, effect as? JsonObject, now, path)
             } else if (!same(effect, now)) {
-                add(Change(path, merged(written, canon, effect, now, path)))
+                // Merged back, it can say exactly what the file says: then
+                // there is nothing to write.
+                val value = merged(written, canon, effect, now, path)
+                if (!same(value, written)) add(Change(path, value))
             }
         }
     }
@@ -125,6 +128,10 @@ object WriteBackPlan {
                                 else -> put(key, merged(keyText, (canon as? JsonObject)?.get(key), was, value, path + key))
                             }
                         }
+                        // What the file has that the model does not know - a
+                        // newer field, one written by hand - is the file's, and
+                        // survives the rebuild (review on #155).
+                        text?.forEach { (key, value) -> if (key !in now) put(key, value) }
                     }
                 )
             }

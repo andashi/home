@@ -19,14 +19,21 @@ import org.koin.core.context.stopKoin
  * real DataStore - and the shared fakes for the repository-backed sections.
  * Starts Koin with the preferences module; [close] stops it.
  */
-internal class RealConfigStore {
+internal class RealConfigStore(
+    /** Wraps the real settings, for a test that has to act between their write and anything after it. */
+    decorateSettings: (LauncherConfigSettings) -> LauncherConfigSettings = { it },
+) {
     val context: Context = ApplicationProvider.getApplicationContext()
     val personal: UserHandle = Process.myUserHandle()
     val work: UserHandle = TestUsers.userHandleFor(10)
     val apps = FakeAppRepository()
     val grid = FakeHomeGridRepository()
+    val actions = FakeSearchActionStore()
 
     val store: DefaultConfigStore
+
+    /** The settings the store writes through, undecorated. */
+    val settings: LauncherConfigSettings
 
     init {
         stopKoin()
@@ -34,8 +41,9 @@ internal class RealConfigStore {
             androidContext(context)
             modules(preferencesModule)
         }
+        settings = GlobalContext.get().get<LauncherConfigSettings>()
         store = DefaultConfigStore(
-            GlobalContext.get().get<LauncherConfigSettings>(),
+            decorateSettings(settings),
             grid,
             FakeInitFlag(),
             HomeGridInitLock(),
@@ -48,7 +56,7 @@ internal class RealConfigStore {
                 work = Profile(Profile.Type.Work, work, 10),
             ),
             FakeWallpaperStore(),
-            FakeSearchActionStore(),
+            actions,
         )
     }
 
