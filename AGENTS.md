@@ -51,10 +51,39 @@ gh pr view <n> --json closingIssuesReferences \
   --jq '[.closingIssuesReferences[].number]'
 ```
 
-An empty list is what a partial pull request should print. That command caught
-this very section: the first draft quoted the offending sentence verbatim, so
-the pull request documenting the trap would have closed the issue a second
-time. This text writes `#NNN` rather than a real number for that reason.
+An empty list is what a partial pull request should print.
+
+**The body is not the only channel.** GitHub parses the same keywords in
+**commit messages** that land on the default branch, and
+`closingIssuesReferences` does not see them: it reflects the pull request body
+alone. So check both before merging a partial pull request:
+
+```bash
+git log --format=%B origin/main..HEAD | grep -inE \
+  '(^|[^a-z])(close[sd]?|fix(e[sd])?|resolve[sd]?)[[:space:]]*:?[[:space:]]*([a-z0-9._-]+/[a-z0-9._-]+)?(#|gh-)[0-9]+'
+```
+
+No output is what a partial pull request should print.
+
+The alternation is fiddly on purpose. GitHub accepts nine keywords - `close`,
+`closes`, `closed`, `fix`, `fixes`, `fixed`, `resolve`, `resolves`, `resolved` -
+and documents two reference forms, `#123` and `owner/repo#123`. `GH-123` is
+matched as well, deliberately: it is an autolink form and whether it closes is
+not documented either way. The costs are not symmetric - a false positive sends
+somebody to look at a line that turns out to be harmless, a false negative lets
+a live issue close on merge - so this pattern errs toward matching. The first
+version of this command in #161 covered neither `fixes #123` nor `closes #123`,
+the two most common of them, so it printed nothing on exactly the mistake it
+exists to catch, while matching `disclose #123`, which closes nothing. It is now
+checked against a table of all nine keywords, the three reference forms and six
+strings that must not match.
+
+Both halves of this section were written the hard way. The first draft quoted
+the offending sentence in the text, and the `gh pr view` check caught it. The
+corrected draft still quoted it in a **commit message**, which that check does
+not read - and merging the document that explains this trap closed the issue a
+second time, seven hours after the first. This text writes `#NNN` rather than a
+real number for that reason, in prose and in commit messages alike.
 
 A wrongly closed issue is not a bookkeeping problem. It takes a live defect off
 the list everyone reads while it is still failing builds.
