@@ -19,6 +19,7 @@ Fold (cover and inner display).
 | [Search bar](search-bar.md) | `home.searchBar.position`, what search looks like |
 | [Search](search.md) | `search`: favorites row, all apps, grid or list, labels, contacts, shortcuts, filter bar, keyboard, Enter, order, hidden items |
 | [Screens](screens.md) | Every scene on the phone, the Fold's cover and its inner display |
+| [Complete example](complete-example.json) | Every key the launcher applies, each off its default, in the form the read-back writes. The round-trip test runs it through parse, apply and read-back (#3) |
 
 ## The file
 

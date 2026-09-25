@@ -70,6 +70,11 @@ tasks.withType<Test>().configureEach {
         "--add-opens=java.desktop/java.awt.font=ALL-UNNAMED",
         "--add-opens=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
     )
+    // ConfigRoundTripTest reads the complete example from the docs; without
+    // this, a change to the example alone would leave the task UP-TO-DATE.
+    inputs.file(rootProject.file("docs/configuration/complete-example.json"))
+        .withPropertyName("completeExample")
+        .withPathSensitivity(PathSensitivity.RELATIVE)
 }
 
 // Coverage gate (ADR 0005, AGENTS.md "Test policy"). The bound is the value the

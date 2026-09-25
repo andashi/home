@@ -729,17 +729,4 @@ class DefaultConfigStoreTest {
         assertEquals(emptyList<Diagnostic>(), store.apply(emptyList()))
     }
 
-    private class FakeSearchActionStore : SearchActionStore {
-        var actions: List<SearchActionConfig> = emptyList()
-        var reports: List<Diagnostic> = emptyList()
-        val replaced = mutableListOf<Pair<List<SearchActionConfig>, String>>()
-
-        override suspend fun read(): List<SearchActionConfig> = actions
-
-        override suspend fun replace(actions: List<SearchActionConfig>, basePath: String): List<Diagnostic> {
-            replaced += actions to basePath
-            this.actions = actions
-            return reports
-        }
-    }
 }
