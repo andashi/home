@@ -3,17 +3,23 @@ package de.mm20.launcher2.ui.launcher.scaffold
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.layout.positionInRoot
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import org.junit.Assert.assertEquals
@@ -126,6 +132,60 @@ class OffscreenPagesTest {
 
         composeRule.mainClock.advanceTimeBy(OffscreenPagesSettleMillis)
         composeRule.runOnIdle { assertEquals("after it", after, measured.width) }
+    }
+
+    /**
+     * Folding makes the window narrower while a page keeps its wider size
+     * until it settles. It must stay out of the viewport meanwhile - not
+     * drawn, but still hit-testable - also right to left, where a relative
+     * offset moves the box the other way (review on #128).
+     */
+    @Test
+    fun `a page wider than the window after a fold stays out of the viewport, right to left`() =
+        assertOutOfViewportAfterFold(LayoutDirection.Rtl)
+
+    /** Control: left to right the box sits right of the window either way. */
+    @Test
+    fun `a page wider than the window after a fold stays out of the viewport, left to right`() =
+        assertOutOfViewportAfterFold(LayoutDirection.Ltr)
+
+    private fun assertOutOfViewportAfterFold(direction: LayoutDirection) {
+        var side by mutableStateOf(200.dp)
+        var window = IntSize.Zero
+        var left = 0f
+        var width = 0
+        composeRule.mainClock.autoAdvance = false
+        composeRule.setContent {
+            // The window's width as state, as the scaffold passes state.size.
+            val widthPx = with(LocalDensity.current) { side.roundToPx() }
+            CompositionLocalProvider(LocalLayoutDirection provides direction) {
+                Box(Modifier.size(side).onSizeChanged { window = it }) {
+                    OffscreenPages(offsetX = { widthPx }) {
+                        Box(
+                            Modifier.fillMaxSize().onGloballyPositioned {
+                                // Not boundsInRoot: that is clipped to the root.
+                                left = it.positionInRoot().x
+                                width = it.size.width
+                            }
+                        )
+                    }
+                }
+            }
+        }
+        composeRule.mainClock.advanceTimeByFrame()
+        side = 100.dp
+        val narrow = with(composeRule.density) { 100.dp.roundToPx() }
+        var frames = 0
+        while (composeRule.runOnIdle { window.width } != narrow) {
+            check(++frames < 10) { "the window never changed size" }
+            composeRule.mainClock.advanceTimeByFrame()
+        }
+        composeRule.mainClock.advanceTimeBy(500)
+        composeRule.runOnIdle {
+            assertTrue("the page keeps its size ($width vs ${window.width})", width > window.width)
+            val right = left + width
+            assertTrue("page $left..$right overlaps the window 0..${window.width}", left >= window.width || right <= 0f)
+        }
     }
 
     /** Control: the same page in the viewport is drawn, so a zero above is not a test that sees nothing. */
