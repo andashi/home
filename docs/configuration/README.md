@@ -142,7 +142,11 @@ it was.
 What the file says but the launcher could not do as written - a widget
 height clamped to what the widget allows, a favorite whose app is not
 installed - keeps its written value: write-back records what someone
-changed, not what the launcher adjusted.
+changed, not what the launcher adjusted. It is one rule for both: a list
+applied with some entries left out had an effect, the entries it wrote, and
+that is what a later change on the device is compared with. The file keeps
+the entry for the day the app arrives, as it keeps `h: 7` against a widget
+that caps at 6.
 
 A change stays on the device, and the report says why, when:
 - `grid-unmanaged`: a widget was moved but the file has no
