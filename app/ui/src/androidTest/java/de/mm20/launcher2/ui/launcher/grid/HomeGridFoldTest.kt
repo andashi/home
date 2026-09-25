@@ -5,6 +5,8 @@ import de.mm20.launcher2.ui.launcher.search.SearchPanes
 import de.mm20.launcher2.homegrid.SearchLayout
 import de.mm20.launcher2.homegrid.HomeGridGeometry
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.test.onAllNodesWithTag
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.contentDescription
@@ -22,7 +24,6 @@ import androidx.compose.material3.Text
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
-import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
@@ -135,7 +136,7 @@ class HomeGridFoldTest {
             val settled = runCatching {
                 composeRule.waitUntil(5_000) {
                     vm.uiStateNow()?.geometry?.visibleColumns == columns &&
-                            composeRule.onAllNodesWithContentDescription("grid-item:dock").fetchSemanticsNodes()
+                            composeRule.onAllNodesWithTag("grid-item:dock").fetchSemanticsNodes()
                                 .any { it.size.height > 0 }
                 }
             }.isSuccess
@@ -158,7 +159,7 @@ class HomeGridFoldTest {
         show(vm)
 
         assertEquals(8, vm.uiStateNow()!!.geometry.visibleColumns)
-        composeRule.onNodeWithContentDescription("grid-item:left").assertIsDisplayed()
+        composeRule.onNodeWithTag("grid-item:left").assertIsDisplayed()
         assertEquals(8, vm.spanOf("dock").w)
     }
 
@@ -170,14 +171,14 @@ class HomeGridFoldTest {
         posture(postures.closed)
         waitForColumns(vm, 4)
 
-        composeRule.onNodeWithContentDescription("grid-item:left").assertDoesNotExist()
-        composeRule.onNodeWithContentDescription("grid-item:digital").assertIsDisplayed()
+        composeRule.onNodeWithTag("grid-item:left").assertDoesNotExist()
+        composeRule.onNodeWithTag("grid-item:digital").assertIsDisplayed()
         assertEquals(listOf(5, 0, 3, 1), vm.spanOf("digital").let { listOf(it.x, it.y, it.w, it.h) })
         assertEquals(listOf(4, 4), vm.spanOf("dock").let { listOf(it.x, it.w) })
         // Drawn from the cover's first column: layout column 5 is the cover's second.
         val grid = composeRule.onRoot().fetchSemanticsNode().boundsInWindow
         val cell = vm.uiStateNow()!!.geometry.let { (it.cellDp + it.gapDp) * composeRule.density.density }
-        val digitalLeft = composeRule.onNodeWithContentDescription("grid-item:digital").fetchSemanticsNode().boundsInWindow.left
+        val digitalLeft = composeRule.onNodeWithTag("grid-item:digital").fetchSemanticsNode().boundsInWindow.left
         assertEquals(grid.left + cell, digitalLeft, cell / 4)
     }
 
@@ -197,12 +198,12 @@ class HomeGridFoldTest {
 
         posture(postures.closed)
         waitForColumns(vm, 4)
-        composeRule.onNodeWithContentDescription("grid-item:analog").assertDoesNotExist()
-        composeRule.onNodeWithContentDescription("grid-item:digital").assertIsDisplayed()
+        composeRule.onNodeWithTag("grid-item:analog").assertDoesNotExist()
+        composeRule.onNodeWithTag("grid-item:digital").assertIsDisplayed()
 
         posture(postures.opened)
         waitForColumns(vm, 8)
-        composeRule.onNodeWithContentDescription("grid-item:analog").assertIsDisplayed()
+        composeRule.onNodeWithTag("grid-item:analog").assertIsDisplayed()
         assertEquals(listOf(0, 2), vm.spanOf("analog").let { listOf(it.x, it.y) })
     }
 
@@ -214,7 +215,7 @@ class HomeGridFoldTest {
         posture(postures.halfOpened)
         waitForColumns(vm, 8)
 
-        composeRule.onNodeWithContentDescription("grid-item:left").assertIsDisplayed()
+        composeRule.onNodeWithTag("grid-item:left").assertIsDisplayed()
         assertEquals(8, vm.uiStateNow()!!.geometry.visibleColumns)
     }
 
@@ -234,7 +235,7 @@ class HomeGridFoldTest {
         assertEquals(8, geometry.spec.columns)
         assertTrue(geometry.rows >= 1)
         assertTrue(koin.writeBack.writes.isEmpty())
-        composeRule.onNodeWithContentDescription("grid-item:dock").assertIsDisplayed()
+        composeRule.onNodeWithTag("grid-item:dock").assertIsDisplayed()
     }
 
     @Test
@@ -242,10 +243,10 @@ class HomeGridFoldTest {
         val vm = koin.viewModel()
         show(vm)
 
-        composeRule.onNodeWithContentDescription("grid-item:phone-only").assertDoesNotExist()
+        composeRule.onNodeWithTag("grid-item:phone-only").assertDoesNotExist()
         posture(postures.closed)
         waitForColumns(vm, 4)
-        composeRule.onNodeWithContentDescription("grid-item:phone-only").assertDoesNotExist()
+        composeRule.onNodeWithTag("grid-item:phone-only").assertDoesNotExist()
         assertEquals(HomeGridLayouts.Fold, vm.uiStateNow()!!.geometry.layout)
     }
 

@@ -19,14 +19,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.click
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.longClick
-import androidx.compose.ui.test.onAllNodesWithContentDescription
-import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -130,13 +129,13 @@ class HomeGridUnfoldTest {
     )
 
     private fun waitForDock() = composeRule.waitUntil(5_000) {
-        composeRule.onAllNodesWithContentDescription("grid-item:dock").fetchSemanticsNodes().any { it.size.height > 0 }
+        composeRule.onAllNodesWithTag("grid-item:dock").fetchSemanticsNodes().any { it.size.height > 0 }
     }
 
     private fun assertDockAtColumn7() {
         val inner = HomeGridGeometry.derive(FormFactor.Fold, 4, 790f, 700f)
         val grid = composeRule.onNodeWithTag("home-grid").fetchSemanticsNode().boundsInRoot
-        val docks = composeRule.onAllNodesWithContentDescription("grid-item:dock").fetchSemanticsNodes()
+        val docks = composeRule.onAllNodesWithTag("grid-item:dock").fetchSemanticsNodes()
         assertEquals("the dock is on screen in the first frame", 1, docks.size)
         val expected = grid.left + with(composeRule.density) { (7 * (inner.cellDp + inner.gapDp)).dp.toPx() }
         assertEquals("at column 7 of the inner display", expected, docks.single().boundsInRoot.left, 1f)
@@ -172,7 +171,7 @@ class HomeGridUnfoldTest {
             }
         }
         composeRule.waitUntil(5_000) {
-            composeRule.onAllNodesWithContentDescription("grid-item:dock").fetchSemanticsNodes().any { it.size.height > 0 }
+            composeRule.onAllNodesWithTag("grid-item:dock").fetchSemanticsNodes().any { it.size.height > 0 }
         }
         composeRule.mainClock.autoAdvance = false
 
@@ -182,7 +181,7 @@ class HomeGridUnfoldTest {
 
         val inner = HomeGridGeometry.derive(FormFactor.Fold, 4, 790f, 700f)
         val grid = composeRule.onNodeWithTag("home-grid").fetchSemanticsNode().boundsInRoot
-        val docks = composeRule.onAllNodesWithContentDescription("grid-item:dock").fetchSemanticsNodes()
+        val docks = composeRule.onAllNodesWithTag("grid-item:dock").fetchSemanticsNodes()
         assertEquals("the dock is on screen in the first frame", 1, docks.size)
         val expected = grid.left + with(composeRule.density) { (7 * (inner.cellDp + inner.gapDp)).dp.toPx() }
         assertEquals("at column 7 of the inner display", expected, docks.single().boundsInRoot.left, 1f)

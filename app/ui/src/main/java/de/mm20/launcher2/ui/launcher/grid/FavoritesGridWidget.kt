@@ -6,8 +6,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.platform.testTag
 import de.mm20.launcher2.ui.R
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
@@ -63,7 +62,7 @@ fun FavoritesGridWidget(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
                     .padding(6.dp)
-                    .semantics { contentDescription = "grid-favorites-overflow" },
+                    .testTag("grid-favorites-overflow"),
             )
         }
         // Fewer favorites than cells are centred (#111); every icon keeps one

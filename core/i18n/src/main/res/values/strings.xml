@@ -141,6 +141,12 @@
     <string name="grid_write_back_failed">The layout could not be saved: %1$s. Tap Done to try again.</string>
     <string name="grid_no_room">No room on the grid for this widget</string>
     <string name="grid_favorites_overflow">+%1$d more in search</string>
+    <!-- Edit mode's resize controls, read by TalkBack (#117) -->
+    <string name="grid_resize_narrower">Narrower</string>
+    <string name="grid_resize_wider">Wider</string>
+    <string name="grid_resize_shorter">Shorter</string>
+    <string name="grid_resize_taller">Taller</string>
+    <string name="grid_resize_handle">Resize</string>
     <string name="grid_locked">The home screen layout is locked by its configuration</string>
     <string name="menu_item_edit_favs">Edit favorites</string>
     <!-- Edit favorites, title for items that are frequently used but not pinned -->

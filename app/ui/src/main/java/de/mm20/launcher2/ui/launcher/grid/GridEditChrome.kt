@@ -26,6 +26,8 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
@@ -56,13 +58,13 @@ internal fun GridEditBar(
         Row(modifier = Modifier.padding(4.dp)) {
             FilledTonalIconButton(
                 onClick = onAdd,
-                modifier = Modifier.semantics { contentDescription = "grid-edit-add" },
+                modifier = Modifier.testTag("grid-edit-add"),
             ) {
                 Icon(painterResource(R.drawable.add_24px), contentDescription = stringResource(R.string.widget_add_widget))
             }
             FilledTonalIconButton(
                 onClick = onDone,
-                modifier = Modifier.semantics { contentDescription = "grid-edit-done" },
+                modifier = Modifier.testTag("grid-edit-done"),
             ) {
                 Icon(painterResource(R.drawable.check_24px), contentDescription = stringResource(R.string.action_done))
             }
@@ -158,7 +160,7 @@ internal fun GridCellEditOverlay(
                 .align(Alignment.TopEnd)
                 .padding(2.dp)
                 .size(32.dp)
-                .semantics { contentDescription = "grid-remove" },
+                .testTag("grid-remove"),
         ) {
             Icon(painterResource(R.drawable.close_20px), contentDescription = stringResource(R.string.widget_action_remove))
         }
@@ -167,27 +169,29 @@ internal fun GridCellEditOverlay(
 
         Row(modifier = Modifier.align(Alignment.BottomStart).padding(2.dp)) {
             if (current.w > limits.minW) {
-                ResizeButton("grid-resize-narrower", "W−") { viewModel.resize(id, current.w - 1, current.h) }
+                ResizeButton("grid-resize-narrower", "W−", stringResource(R.string.grid_resize_narrower)) { viewModel.resize(id, current.w - 1, current.h) }
             }
             if (current.w < limits.maxW && current.x + current.w < geometry.visibleRange.last + 1) {
-                ResizeButton("grid-resize-wider", "W+") { viewModel.resize(id, current.w + 1, current.h) }
+                ResizeButton("grid-resize-wider", "W+", stringResource(R.string.grid_resize_wider)) { viewModel.resize(id, current.w + 1, current.h) }
             }
             if (current.h > limits.minH) {
-                ResizeButton("grid-resize-shorter", "H−") { viewModel.resize(id, current.w, current.h - 1) }
+                ResizeButton("grid-resize-shorter", "H−", stringResource(R.string.grid_resize_shorter)) { viewModel.resize(id, current.w, current.h - 1) }
             }
             if (current.h < limits.maxH && current.y + current.h < geometry.rows) {
-                ResizeButton("grid-resize-taller", "H+") { viewModel.resize(id, current.w, current.h + 1) }
+                ResizeButton("grid-resize-taller", "H+", stringResource(R.string.grid_resize_taller)) { viewModel.resize(id, current.w, current.h + 1) }
             }
         }
 
         // The corner handle: drag in whole cells, clamped by the same limits.
         var dragW = 0f
         var dragH = 0f
+        val handleDescription = stringResource(R.string.grid_resize_handle)
         Box(
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .size(28.dp)
-                .semantics { contentDescription = "grid-resize-handle" }
+                .testTag("grid-resize-handle")
+                .semantics { contentDescription = handleDescription }
                 .pointerInput(id, pitchPx) {
                     detectDragGestures(
                         onDragStart = { dragW = 0f; dragH = 0f },
@@ -219,14 +223,16 @@ internal fun GridCellEditOverlay(
 }
 
 @Composable
-private fun ResizeButton(description: String, label: String, onClick: () -> Unit) {
+private fun ResizeButton(tag: String, label: String, description: String, onClick: () -> Unit) {
     FilledTonalIconButton(
         onClick = onClick,
         modifier = Modifier
             .size(32.dp)
+            .testTag(tag)
             .semantics { contentDescription = description },
     ) {
-        Text(label, style = MaterialTheme.typography.labelSmall)
+        // "W+" is a glyph for the eye; TalkBack reads the description.
+        Text(label, style = MaterialTheme.typography.labelSmall, modifier = Modifier.clearAndSetSemantics {})
     }
 }
 

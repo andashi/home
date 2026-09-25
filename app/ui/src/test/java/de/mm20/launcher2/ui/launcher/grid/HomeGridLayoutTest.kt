@@ -22,7 +22,6 @@ import androidx.compose.ui.test.assertLeftPositionInRootIsEqualTo
 import androidx.compose.ui.test.assertTopPositionInRootIsEqualTo
 import androidx.compose.ui.test.assertWidthIsEqualTo
 import androidx.compose.ui.test.junit4.createComposeRule
-import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
@@ -69,16 +68,16 @@ class HomeGridLayoutTest {
             }
         }
 
-        composeRule.onNodeWithContentDescription("grid-item:a")
+        composeRule.onNodeWithTag("grid-item:a")
             .assertLeftPositionInRootIsEqualTo(0.dp)
             .assertTopPositionInRootIsEqualTo(0.dp)
             .assertWidthIsEqualTo(196.dp)   // 2 cells + 1 gap
             .assertHeightIsEqualTo(196.dp)
-        composeRule.onNodeWithContentDescription("grid-item:b")
+        composeRule.onNodeWithTag("grid-item:b")
             .assertLeftPositionInRootIsEqualTo(204.dp) // 2 * (94 + 8)
             .assertTopPositionInRootIsEqualTo(102.dp)
             .assertWidthIsEqualTo(94.dp)
-        composeRule.onNodeWithContentDescription("grid-item:dock")
+        composeRule.onNodeWithTag("grid-item:dock")
             .assertTopPositionInRootIsEqualTo(408.dp)
             .assertWidthIsEqualTo(400.dp)
             .assertHeightIsEqualTo(94.dp)
@@ -104,9 +103,9 @@ class HomeGridLayoutTest {
             }
         }
 
-        composeRule.onNodeWithContentDescription("grid-item:right")
+        composeRule.onNodeWithTag("grid-item:right")
             .assertLeftPositionInRootIsEqualTo(102.dp) // one pitch from the cover's first column
-        composeRule.onNodeWithContentDescription("grid-item:dock")
+        composeRule.onNodeWithTag("grid-item:dock")
             .assertLeftPositionInRootIsEqualTo(0.dp)
             .assertWidthIsEqualTo(400.dp)
     }
@@ -139,7 +138,7 @@ class HomeGridLayoutTest {
         composeRule.mainClock.advanceTimeByFrame()
 
         // Where the dock ends up, once nothing moves any more.
-        fun left() = composeRule.onNodeWithContentDescription("grid-item:dock").fetchSemanticsNode().boundsInRoot.left
+        fun left() = composeRule.onNodeWithTag("grid-item:dock").fetchSemanticsNode().boundsInRoot.left
         val early = left()
         // Column 7 of the inner display, from the grid's left edge (#119 review).
         val gridLeft = composeRule.onNodeWithTag("grid-root").fetchSemanticsNode().boundsInRoot.left
@@ -174,7 +173,7 @@ class HomeGridLayoutTest {
         composeRule.mainClock.advanceTimeByFrame()
         composeRule.mainClock.advanceTimeByFrame()
 
-        fun left() = composeRule.onNodeWithContentDescription("grid-item:a").fetchSemanticsNode().boundsInRoot.left -
+        fun left() = composeRule.onNodeWithTag("grid-item:a").fetchSemanticsNode().boundsInRoot.left -
                 composeRule.onNodeWithTag("grid-root").fetchSemanticsNode().boundsInRoot.left
         val early = left()
         composeRule.mainClock.advanceTimeBy(2000)
@@ -200,7 +199,7 @@ class HomeGridLayoutTest {
         composeRule.mainClock.advanceTimeByFrame()
         composeRule.mainClock.advanceTimeByFrame()
 
-        val left = composeRule.onNodeWithContentDescription("grid-item:a").fetchSemanticsNode().boundsInRoot.left
+        val left = composeRule.onNodeWithTag("grid-item:a").fetchSemanticsNode().boundsInRoot.left
         val target = with(composeRule.density) { (2 * (geometry.cellDp + geometry.gapDp)).dp.toPx() }
         assertTrue("still sliding: left $left, target $target", left < target - 1f)
     }
