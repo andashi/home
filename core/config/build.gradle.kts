@@ -35,6 +35,8 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
 
     testImplementation(libs.junit)
+    // The schema is checked against a real JSON Schema implementation (ADR 0002). Test scope only.
+    testImplementation(libs.json.schema.validator)
 }
 
 // `ConfigParserTest` parses the example document out of ADR 0002, so the ADR is
@@ -52,6 +54,8 @@ tasks.withType<Test>().configureEach {
         .withPropertyName("configurationDocs")
         .withPathSensitivity(PathSensitivity.RELATIVE)
     systemProperty("repoRoot", rootProject.rootDir.absolutePath)
+    // ConfigSchemaTest rewrites docs/configuration/launcher.schema.json with -PupdateSchema.
+    systemProperty("updateSchema", providers.gradleProperty("updateSchema").isPresent.toString())
 }
 
 // Coverage gate (ADR 0005, AGENTS.md "Test policy"). The bound is the value the

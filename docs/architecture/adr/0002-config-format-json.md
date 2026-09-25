@@ -36,9 +36,25 @@ Additional rules:
 
 - The document carries an explicit `schemaVersion: Int`. Migrations run config-side,
   are pure functions `ConfigVn -> ConfigVn+1`, and are unit-tested.
-- A **JSON Schema** is generated from the Kotlin model (or maintained alongside) and
-  committed to the dotfiles repo; editors get completion and validation via
-  `$schema`.
+- A **JSON Schema** is generated from what the parser reads (`ConfigSchema`:
+  the key table, the serial descriptors, `ConfigValidator`'s named limits)
+  and checked in as `docs/configuration/launcher.schema.json`; editors get
+  completion and validation via `$schema`. A test regenerates it on every run
+  and fails when the checked-in copy differs, so it cannot go stale behind a
+  step nobody runs (#3 slice 3).
+  - It is **strict** (`additionalProperties: false`) while the parser is
+    **tolerant** (an unknown key is a warning). That is not a contradiction:
+    the schema says what this build understands, so an editor marks a typo
+    as it is typed; the parser stays tolerant so that a newer file does not
+    break an older launcher. Accepted-but-inert keys are listed as
+    deprecated, not rejected.
+  - It is validated against a **real JSON Schema implementation**
+    (`com.networknt:json-schema-validator`, test scope only, absent from
+    every release runtime classpath), because comparing a generated schema
+    with its own generator proves nothing about the parser: the documented
+    examples must pass it, and documents the parser rejects must fail it
+    too. This is the fork's one third-party dependency taken for that
+    reason alone.
 - The config is a *desired state* document, not a backup archive. It does not adopt
   Kvaesitso's version-pinned backup format — that was the trap identified in the
   exported-surface analysis ("fragile UI automation traded for fragile format

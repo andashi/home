@@ -737,33 +737,6 @@ class ConfigParserTest {
      * block there and hand the parser a prefix, and a guard that reads less
      * than it thinks is the failure this whole test exists to prevent.
      */
-    private fun fencedJsonAfter(markdown: String, marker: String): String {
-        val lines = markdown.lines()
-
-        val markerAt = lines.indexOfFirst { it.trim() == marker }
-        assertTrue("$marker is missing from the ADR", markerAt >= 0)
-
-        val openAt = (markerAt + 1..lines.lastIndex)
-            .firstOrNull { lines[it].trimStart().startsWith("```") }
-        assertNotNull("no fenced block follows $marker", openAt)
-
-        val opener = lines[openAt!!].trim()
-        val fence = opener.takeWhile { it == '`' }
-        assertEquals(
-            "the block after $marker must be tagged json",
-            "json",
-            opener.removePrefix(fence).trim(),
-        )
-
-        val closeAt = (openAt + 1..lines.lastIndex).firstOrNull {
-            val line = lines[it].trim()
-            line.length >= fence.length && line.all { char -> char == '`' }
-        }
-        assertNotNull("the block after $marker is never closed", closeAt)
-
-        return lines.subList(openAt + 1, closeAt!!).joinToString("\n")
-    }
-
     /**
      * What `content://<applicationId>.state/config` hands a host back is the
      * document re-serialised from the decoded model, and the config Json does
@@ -1041,4 +1014,31 @@ class ConfigParserTest {
 
         assertEquals(emptyList<Diagnostic>(), result.diagnostics)
     }
+}
+
+internal fun fencedJsonAfter(markdown: String, marker: String): String {
+    val lines = markdown.lines()
+
+    val markerAt = lines.indexOfFirst { it.trim() == marker }
+    assertTrue("$marker is missing from the ADR", markerAt >= 0)
+
+    val openAt = (markerAt + 1..lines.lastIndex)
+        .firstOrNull { lines[it].trimStart().startsWith("```") }
+    assertNotNull("no fenced block follows $marker", openAt)
+
+    val opener = lines[openAt!!].trim()
+    val fence = opener.takeWhile { it == '`' }
+    assertEquals(
+        "the block after $marker must be tagged json",
+        "json",
+        opener.removePrefix(fence).trim(),
+    )
+
+    val closeAt = (openAt + 1..lines.lastIndex).firstOrNull {
+        val line = lines[it].trim()
+        line.length >= fence.length && line.all { char -> char == '`' }
+    }
+    assertNotNull("the block after $marker is never closed", closeAt)
+
+    return lines.subList(openAt + 1, closeAt!!).joinToString("\n")
 }
