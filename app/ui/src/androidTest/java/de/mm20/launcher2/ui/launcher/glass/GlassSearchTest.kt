@@ -395,7 +395,8 @@ class GlassSearchTest {
                 "glass in the screenshot at x ${centreX.toInt()}: y ${glassRows.firstOrNull()}..${glassRows.lastOrNull()}, " +
                 discriminate(screen, semantics.positionOnScreen.x, semantics.positionOnScreen.y, semantics.size.width, semantics.size.height) +
                 (if (tag == "popup") ", " + windowState(popupRoot) + ", " +
-                    popupWindowCapture(popupRoot, semantics.positionOnScreen, semantics.size.width, semantics.size.height) else "") + "\n" +
+                    popupWindowCapture(popupRoot, semantics.positionOnScreen, semantics.size.width, semantics.size.height) else "") + ", " +
+                surroundings(screen, semantics.positionOnScreen.x, semantics.positionOnScreen.y, semantics.size.width, semantics.size.height) + "\n" +
                 eventLog()
             android.util.Log.e("GlassSearchTest", "$tag failed:\n$evidence")
             assertEquals("$tag: backdrop row drawn vs where it is on screen; $evidence", expected, drawn, 0.03f)
@@ -491,6 +492,26 @@ class GlassSearchTest {
         val top = onScreen.y - rootOnScreen[1]
         return "popup capture ${bitmap.width}x${bitmap.height}, node at ($left, $top): " +
             discriminate(bitmap, left, top, width, height)
+    }
+
+    /**
+     * #113: the screen 8 dp outside each edge of a surface. Host green there
+     * with a fill inside means the fill is the popup layer's own; the same
+     * fill outside too means something larger covers that part of the screen
+     * (a system dialog or overlay), and the popup is not the question.
+     */
+    private fun surroundings(image: Bitmap, left: Float, top: Float, width: Int, height: Int): String {
+        val gap = 8 * InstrumentationRegistry.getInstrumentation().targetContext.resources.displayMetrics.density
+        val cx = left + width / 2f
+        val cy = top + height / 2f
+        fun at(x: Float, y: Float): String {
+            val xi = x.toInt()
+            val yi = y.toInt()
+            if (xi !in 0 until image.width || yi !in 0 until image.height) return "off-screen"
+            return "#" + Integer.toHexString(image.getPixel(xi, yi))
+        }
+        return "outside the bounds: above ${at(cx, top - gap)}, below ${at(cx, top + height + gap)}, " +
+            "left ${at(left - gap, cy)}, right ${at(left + width + gap, cy)}"
     }
 
     /** The popup window as the view system sees it at the failure (#113). */
