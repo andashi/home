@@ -8,6 +8,7 @@ import androidx.test.core.app.ApplicationProvider
 import de.mm20.launcher2.config.ConfigDiffer
 import de.mm20.launcher2.config.ConfigParser
 import de.mm20.launcher2.config.Diagnostic
+import de.mm20.launcher2.config.LauncherConfig
 import de.mm20.launcher2.config.toLauncherConfig
 import de.mm20.launcher2.homegrid.HomeGridInitLock
 import de.mm20.launcher2.preferences.config.LauncherConfigSettings
@@ -46,7 +47,8 @@ class ConfigRoundTripTest {
     private val personal: UserHandle = Process.myUserHandle()
     private val work: UserHandle = TestUsers.userHandleFor(10)
 
-    private val example: String = repoFile("docs/configuration/complete-example.json").readText()
+    private val example: String =
+        File(System.getProperty("repoRoot"), "docs/configuration/complete-example.json").readText()
 
     @Before
     fun setUp() {
@@ -97,30 +99,18 @@ class ConfigRoundTripTest {
         val diagnostics = store.apply(ConfigDiffer.diff(config!!, store.readState()))
         assertEquals(emptyList<Diagnostic>(), diagnostics)
 
-        assertEquals(config, store.readState().toLauncherConfig())
-    }
-
-    /** What the read-back serves is a file that, pushed back, changes nothing. */
-    @Test
-    fun `the read-back of the complete example diffs to nothing`() = runTest {
-        val config = ConfigParser.parse(example).config!!
-        store.apply(ConfigDiffer.diff(config, store.readState()))
-
-        val served = store.readState().toLauncherConfig()
-
-        assertEquals(emptyList<Any>(), ConfigDiffer.diff(served, store.readState()))
+        val state = store.readState()
+        val served = state.toLauncherConfig()
+        assertEquals(config, served)
+        // As provisioning sees it: the text the read-back provider serves.
+        assertEquals(
+            ConfigParser.json.parseToJsonElement(example),
+            ConfigParser.json.parseToJsonElement(ConfigParser.json.encodeToString(LauncherConfig.serializer(), served)),
+        )
+        // And what it serves, pushed again, changes nothing.
+        assertEquals(emptyList<Any>(), ConfigDiffer.diff(served, state))
     }
 
     private fun app(packageName: String, user: UserHandle) =
         FakeApplication(ComponentName(packageName, "$packageName.MainActivity"), user)
-
-    private fun repoFile(path: String): File {
-        var dir: File? = File("").absoluteFile
-        while (dir != null) {
-            val candidate = File(dir, path)
-            if (candidate.exists()) return candidate
-            dir = dir.parentFile
-        }
-        throw AssertionError("$path not found above ${File("").absolutePath}")
-    }
 }

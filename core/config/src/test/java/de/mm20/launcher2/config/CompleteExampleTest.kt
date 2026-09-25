@@ -17,7 +17,8 @@ import java.io.File
  */
 class CompleteExampleTest {
 
-    private val text: String = repoFile("docs/configuration/complete-example.json").readText()
+    private val text: String =
+        File(System.getProperty("repoRoot"), "docs/configuration/complete-example.json").readText()
 
     @Test
     fun `the complete example parses with nothing to report`() {
@@ -42,6 +43,31 @@ class CompleteExampleTest {
         )
     }
 
+    /**
+     * A key set to its default proves nothing in the round trip: dropped on
+     * the way, it would come back as the default anyway. So every value the
+     * example sets differs from what the read-back serves with nothing
+     * configured; a value that does not fails by path.
+     */
+    @Test
+    fun `every value in the complete example is off its default`() {
+        val defaults = leaves(ConfigParser.json.parseToJsonElement(
+            ConfigParser.json.encodeToString(LauncherConfig.serializer(), ConfigState().toLauncherConfig()),
+        ))
+        val example = leaves(ConfigParser.json.parseToJsonElement(text)) - "schemaVersion"
+
+        val atDefault = example.filter { (path, value) -> defaults[path] == value }.keys
+
+        assertEquals("values in the complete example that equal their default: $atDefault", emptySet<String>(), atDefault)
+    }
+
+    /** Every scalar in [element] by its path, array elements by index. */
+    private fun leaves(element: JsonElement, path: String = ""): Map<String, JsonElement> = when (element) {
+        is JsonObject -> element.flatMap { (key, value) -> leaves(value, if (path.isEmpty()) key else "$path.$key").toList() }.toMap()
+        is JsonArray -> element.withIndex().flatMap { (i, value) -> leaves(value, "$path[$i]").toList() }.toMap()
+        else -> mapOf(path to element)
+    }
+
     /** Every (section, key) in [element], sections named as in [ConfigParser.keyEffects]. */
     private fun keyPaths(element: JsonElement, section: String = ""): Set<Pair<String, String>> {
         val obj = element as? JsonObject ?: return emptySet()
@@ -54,15 +80,5 @@ class CompleteExampleTest {
             }
             listOf(section to key) + nested
         }.toSet()
-    }
-
-    private fun repoFile(path: String): File {
-        var dir: File? = File("").absoluteFile
-        while (dir != null) {
-            val candidate = File(dir, path)
-            if (candidate.exists()) return candidate
-            dir = dir.parentFile
-        }
-        throw AssertionError("$path not found above ${File("").absolutePath}")
     }
 }

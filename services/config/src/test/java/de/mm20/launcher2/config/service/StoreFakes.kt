@@ -1,33 +1,22 @@
 package de.mm20.launcher2.config.service
 
 import de.mm20.launcher2.config.SearchActionConfig
-import de.mm20.launcher2.config.SearchConfig
 import android.content.ComponentName
 import android.content.Context
 import android.os.Bundle
 import android.os.Parcel
-import android.os.Process
 import android.os.UserHandle
-import androidx.test.core.app.ApplicationProvider
 import de.mm20.launcher2.applications.AppRepository
 import de.mm20.launcher2.config.WallpaperTarget
 import de.mm20.launcher2.config.ConfigMutation
-import de.mm20.launcher2.config.GlassContrast
-import de.mm20.launcher2.config.GridItemConfig
-import de.mm20.launcher2.config.GridLayoutConfig
-import de.mm20.launcher2.config.GridLayouts
 import de.mm20.launcher2.grid.CellSize
 import de.mm20.launcher2.grid.SizeLimits
 import de.mm20.launcher2.homegrid.GridRowsSource
 import de.mm20.launcher2.homegrid.HomeGridItem
-import de.mm20.launcher2.homegrid.HomeGridItemConfig
 import de.mm20.launcher2.homegrid.HomeGridInitFlag
-import de.mm20.launcher2.homegrid.HomeGridInitLock
 import de.mm20.launcher2.homegrid.HomeGridRepository
 import de.mm20.launcher2.config.ConfigState
 import de.mm20.launcher2.config.Diagnostic
-import de.mm20.launcher2.config.Favorite
-import de.mm20.launcher2.config.Severity
 import de.mm20.launcher2.icons.StaticLauncherIcon
 import de.mm20.launcher2.preferences.config.LauncherConfigSettings
 import de.mm20.launcher2.profiles.Profile
@@ -39,17 +28,8 @@ import de.mm20.launcher2.searchable.SavableSearchableRepository
 import de.mm20.launcher2.searchable.VisibilityLevel
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.test.runTest
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNull
-import org.junit.Assert.assertTrue
-import org.junit.Before
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.robolectric.RobolectricTestRunner
 import de.mm20.launcher2.config.Profile as ConfigProfile
 
 /** Fakes for [DefaultConfigStore]'s dependencies, shared by its tests and the round trip. */
