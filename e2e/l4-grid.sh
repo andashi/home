@@ -107,13 +107,6 @@ trap cleanup EXIT
 # shellcheck source=lib/grid-device.sh
 . "$(dirname "$0")/lib/grid-device.sh"
 
-assert_jq() { # $1 = json, $2 = jq filter, $3 = description
-  if ! jq -e "$2" >/dev/null 2>&1 <<<"$1"; then
-    printf 'offending json:\n%s\n' "$1" >&2
-    die "assertion failed: $3"
-  fi
-}
-
 settle_then_broadcast() { # $1 = local config file, $2 = sha256, $3 = stage name
   write_config "$1"
   log "$3: waiting for file-watcher reload (hash ${2:0:12}...)"

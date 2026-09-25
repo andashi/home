@@ -142,13 +142,6 @@ trap cleanup EXIT
 
 # --- adb helpers -------------------------------------------------------
 
-assert_jq() { # $1 = json, $2 = jq filter, $3 = description
-  if ! jq -e "$2" >/dev/null 2>&1 <<<"$1"; then
-    printf 'offending json:\n%s\n' "$1" >&2
-    die "assertion failed: $3"
-  fi
-}
-
 write_wallpaper() { # $1 = local image, $2 = upload name
   local out
   out="$(adb -s "$SERIAL" shell content write --uri "$WALLPAPER_URI/$2" < "$1" 2>&1 | tr -d '\r')" \

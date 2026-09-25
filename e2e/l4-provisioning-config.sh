@@ -89,8 +89,6 @@ APK="${1:-$(dirname "$0")/../app/app/build/outputs/apk/default/debug/app-default
 PKG="${PKG:-org.andashi.home.debug}"
 # The theming.json launcher entry whose pkg matches PKG.
 LAUNCHER_CONFIG_KEY="${LAUNCHER_CONFIG_KEY:-andashi-home-debug}"
-STATE_URI="content://$PKG.state"
-INGEST_URI="content://$PKG.config-ingest/launcher.json"
 PROFILES_JSON="$GOS_REPO/config/profiles.json"
 WORK="$(mktemp -d)"
 # The configs the provisioning step pushes are generated here for the launcher
@@ -139,6 +137,12 @@ cleanup() {
   rm -rf "$WORK"
 }
 trap cleanup EXIT
+
+# The device helpers and their constants (STATE_URI, INGEST_URI, ...) live
+# in the shared library (#126). This script's per-user reads stay its own,
+# as query_json_as_user.
+# shellcheck source=lib/grid-device.sh
+. "$(dirname "$0")/lib/grid-device.sh"
 
 # --- helpers -------------------------------------------------------------
 
@@ -251,13 +255,6 @@ query_json_as_user() { # $1 = provider path (config|diagnostics), $2 = uid
       *) printf 'unexpected provider output (user %s): %s\n' "$2" "$out" >&2; return 1 ;;
     esac
   done
-}
-
-assert_jq() { # $1 = json, $2 = jq filter, $3 = description
-  if ! jq -e "$2" >/dev/null 2>&1 <<<"$1"; then
-    printf 'offending json:\n%s\n' "$1" >&2
-    die "assertion failed: $3"
-  fi
 }
 
 # Streams the file into the target user's ingest provider. `content write`
