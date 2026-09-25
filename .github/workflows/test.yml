@@ -45,6 +45,7 @@ jobs:
           distribution: 'temurin'
       - uses: gradle/actions/setup-gradle@v4
       - name: Unit tests
+        id: unit
         run: >-
           ./gradlew
           :core:preferences:testDebugUnitTest
@@ -71,11 +72,14 @@ jobs:
           :services:config:koverVerifyDebug
           :data:homegrid:koverVerifyDebug
           :app:ui:koverVerifyDebug
+      # Only when the tests ran: after an earlier step fails, the JDK 21 setup
+      # is skipped too, and this step would run every test on the runner's
+      # default JDK - failures that look real and are not (#155).
       - name: Upload coverage reports on failure
-        if: ${{ failure() }}
+        if: ${{ failure() && steps.unit.conclusion != 'skipped' }}
         run: ./gradlew :core:config:koverHtmlReportDebug :core:grid:koverHtmlReport :core:glass:koverHtmlReport :services:config:koverHtmlReportDebug :data:homegrid:koverHtmlReportDebug :app:ui:koverHtmlReportDebug
       - uses: actions/upload-artifact@v4
-        if: ${{ failure() }}
+        if: ${{ failure() && steps.unit.conclusion != 'skipped' }}
         with:
           name: kover-html
           path: |

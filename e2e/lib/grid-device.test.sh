@@ -201,7 +201,7 @@ says_why_when_the_dump_fails() { # $1 = helper, $2 = argument
   local err
   err="$(PATH="$WORK/nodump:$PATH" bash -c '
     set -euo pipefail
-    SERIAL=fake WORK="$1"
+    SERIAL=fake PKG=org.andashi.home.test WORK="$1"
     die() { printf "die: %s\n" "$*" >&2; exit 1; }
     . ./grid-device.sh
     "$2" "$3"' _ "$WORK" "$1" "$2" 2>&1 >/dev/null)" && return 1
