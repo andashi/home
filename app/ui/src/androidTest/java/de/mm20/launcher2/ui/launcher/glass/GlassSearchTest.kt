@@ -239,8 +239,9 @@ class GlassSearchTest {
         fun hostTop() = IntArray(2).also(host::getLocationOnScreen)[1]
         val topBefore = hostTop()
         fun popupNode() = composeRule.onNodeWithTag("popup", useUnmergedTree = true).fetchSemanticsNode()
-        val popupBefore = popupNode().positionOnScreen
-        val regionBefore = popupNode().config.getOrNull(GlassBackdropRegion)
+        val before = popupNode()
+        val popupBefore = before.positionOnScreen
+        val regionBefore = before.config.getOrNull(GlassBackdropRegion)
 
         // Move the launcher window down, same size: its content, the popup's
         // anchor included, stays where it is inside it.
@@ -262,13 +263,18 @@ class GlassSearchTest {
         composeRule.waitForIdle()
 
         val topAfter = hostTop()
-        android.util.Log.i(
-            "GlassSearchTest",
-            "host move: host $topBefore -> $topAfter, popup $popupBefore -> ${popupNode().positionOnScreen}, " +
-                "region $regionBefore -> ${popupNode().config.getOrNull(GlassBackdropRegion)}",
-        )
-        // Without this a host that never moved passes too.
-        assertEquals("the launcher window moved on screen", shift.toFloat(), (topAfter - topBefore).toFloat(), 2f)
+        val after = popupNode()
+        val popupAfter = after.positionOnScreen
+        val moves = "asked $shift px; host $topBefore -> $topAfter, popup $popupBefore -> $popupAfter, " +
+            "region $regionBefore -> ${after.config.getOrNull(GlassBackdropRegion)}"
+        android.util.Log.i("GlassSearchTest", "host move: $moves")
+        // Where the window lands is the window manager's call, not the test's:
+        // on some CI emulators it lands 128 px past the requested offset (#113),
+        // so the move is measured, never predicted. Without these two checks a
+        // host that never moved, or a popup left behind, would pass too.
+        val moved = topAfter - topBefore
+        assertTrue("the launcher window moved on screen ($moves)", moved >= shift / 2)
+        assertEquals("the popup moved with the launcher window ($moves)", moved.toFloat(), popupAfter.y - popupBefore.y, 2f)
 
         val screen = InstrumentationRegistry.getInstrumentation().uiAutomation.takeScreenshot()
         val semantics = composeRule.onNodeWithTag("popup", useUnmergedTree = true).fetchSemanticsNode()
