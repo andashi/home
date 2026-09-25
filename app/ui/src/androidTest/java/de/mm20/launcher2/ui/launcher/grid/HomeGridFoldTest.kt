@@ -158,7 +158,7 @@ class HomeGridFoldTest {
         val vm = koin.viewModel()
         show(vm)
 
-        assertEquals(8, vm.uiStateNow()!!.geometry.visibleColumns)
+        assertEquals(9, vm.uiStateNow()!!.geometry.visibleColumns) // deliberately wrong (#132 proof)
         composeRule.onNodeWithTag("grid-item:left").assertIsDisplayed()
         assertEquals(8, vm.spanOf("dock").w)
     }
@@ -216,7 +216,7 @@ class HomeGridFoldTest {
         waitForColumns(vm, 8)
 
         composeRule.onNodeWithTag("grid-item:left").assertIsDisplayed()
-        assertEquals(8, vm.uiStateNow()!!.geometry.visibleColumns)
+        assertEquals(9, vm.uiStateNow()!!.geometry.visibleColumns) // deliberately wrong (#132 proof)
     }
 
     @Test
