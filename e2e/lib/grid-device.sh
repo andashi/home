@@ -189,6 +189,15 @@ cell_center() { # $1 = id
   printf '%s %s\n' $(( ($2 + $4) / 2 )) $(( ($3 + $5) / 2 ))
 }
 
+wait_cell() { # $1 = id, $2 = timeout (s), $3 = message
+  local elapsed=0
+  while [ "$elapsed" -lt "$2" ]; do
+    cell_center "$1" >/dev/null 2>&1 && return 0
+    sleep 1; elapsed=$((elapsed + 1))
+  done
+  die "timed out (${2}s) waiting for cell '$1': $3"
+}
+
 # Cell pitch in px from the dock's width and its span in cells.
 cell_pitch() { # $1 = dock width in cells
   local dock gap

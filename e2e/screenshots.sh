@@ -181,8 +181,9 @@ EOF
   tap_id grid-remove
   sleep 1
   scene 07-remove-undo "Remove shows a snackbar with Undo; the AppWidget host id is released only after it expires." "HomeGridEditModeTest.removeThenUndoRestoresTheItem"
-  tap_text "Undo" 2>/dev/null || tap_text "UNDO" 2>/dev/null || warn "no Undo action on screen"
-  sleep 1
+  tap_text "Undo" 2>/dev/null || tap_text "UNDO" 2>/dev/null \
+    || die "no Undo action on screen: scenes 08 onward would run without the analog clock"
+  wait_cell analog 10 "Undo did not restore the analog clock"
 
   # 08: the favorites editor.
   tap_bounds "$(cell_center dock | awk '{print $1, $2, $1, $2}')"
