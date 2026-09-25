@@ -63,7 +63,6 @@ import de.mm20.launcher2.ui.ktx.toPixels
 import de.mm20.launcher2.ui.launcher.search.common.SearchableItemVM
 import de.mm20.launcher2.ui.launcher.search.listItemViewModel
 import de.mm20.launcher2.ui.launcher.sheets.LocalBottomSheetManager
-import de.mm20.launcher2.ui.locals.LocalFavoritesEnabled
 import de.mm20.launcher2.ui.locals.LocalGridSettings
 import de.mm20.launcher2.ui.modifier.scale
 import androidx.core.net.toUri
@@ -320,26 +319,24 @@ fun ContactItem(
 
                     val toolbarActions = mutableListOf<ToolbarAction>()
 
-                    if (LocalFavoritesEnabled.current) {
-                        val isPinned by viewModel.isPinned.collectAsState(false)
-                        val favAction = if (isPinned) {
-                            DefaultToolbarAction(
-                                label = stringResource(R.string.menu_favorites_unpin),
-                                icon = R.drawable.star_24px_filled,
-                                action = {
-                                    viewModel.unpin()
-                                }
-                            )
-                        } else {
-                            DefaultToolbarAction(
-                                label = stringResource(R.string.menu_favorites_pin),
-                                icon = R.drawable.star_24px,
-                                action = {
-                                    viewModel.pin()
-                                })
-                        }
-                        toolbarActions.add(favAction)
+                    val isPinned by viewModel.isPinned.collectAsState(false)
+                    val favAction = if (isPinned) {
+                        DefaultToolbarAction(
+                            label = stringResource(R.string.menu_favorites_unpin),
+                            icon = R.drawable.star_24px_filled,
+                            action = {
+                                viewModel.unpin()
+                            }
+                        )
+                    } else {
+                        DefaultToolbarAction(
+                            label = stringResource(R.string.menu_favorites_pin),
+                            icon = R.drawable.star_24px,
+                            action = {
+                                viewModel.pin()
+                            })
                     }
+                    toolbarActions.add(favAction)
 
                     toolbarActions.add(
                         DefaultToolbarAction(

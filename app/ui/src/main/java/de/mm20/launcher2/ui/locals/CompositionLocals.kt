@@ -18,7 +18,6 @@ val LocalBackStack = staticCompositionLocalOf< NavBackStack<NavKey>> { throw Ill
 
 val LocalCardStyle = compositionLocalOf { CardStyle() }
 
-val LocalFavoritesEnabled = compositionLocalOf { true }
 
 val LocalShowAppDetails = compositionLocalOf { false }
 

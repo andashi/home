@@ -20,7 +20,6 @@ import de.mm20.launcher2.preferences.ui.UiSettings
 import de.mm20.launcher2.ui.component.ProvideIconShape
 import de.mm20.launcher2.ui.locals.LocalCalendarSystemIds
 import de.mm20.launcher2.ui.locals.LocalCalendarSystems
-import de.mm20.launcher2.ui.locals.LocalFavoritesEnabled
 import de.mm20.launcher2.ui.locals.LocalShowAppDetails
 import de.mm20.launcher2.ui.locals.LocalGridSettings
 import de.mm20.launcher2.ui.locals.LocalTimeFormat
@@ -42,10 +41,6 @@ fun ProvideSettings(
     val iconShape by remember {
         settings.iconShape.distinctUntilChanged()
     }.collectAsState(IconShape.Circle)
-
-    val favoritesEnabled by remember {
-        settings.favoritesEnabled.distinctUntilChanged()
-    }.collectAsState(true)
 
     val gridSettings by remember {
         settings.gridSettings.distinctUntilChanged()
@@ -95,7 +90,6 @@ fun ProvideSettings(
     if (timeFormat == null) return
 
     CompositionLocalProvider(
-        LocalFavoritesEnabled provides favoritesEnabled,
         LocalShowAppDetails provides showAppDetails,
         LocalGridSettings provides gridSettings,
         LocalTimeFormat provides timeFormat!!,

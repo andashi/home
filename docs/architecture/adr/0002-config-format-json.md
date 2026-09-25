@@ -229,7 +229,7 @@ nothing about search's appearance is configured twice.
 
 | Key | Meaning | Default |
 |---|---|---|
-| `search.favorites` | the favorites row at the top of search | `true` |
+| `search.favorites` | the favorites row at the top of search, and only the row: "Pin to favorites" stays (#3 D5) | `true` |
 | `search.allApps` | all apps while the query is empty | `true` |
 | `search.layout` | `grid` or `list` for app results | `grid` |
 | `search.labels` | labels under app icons in search | `true` |
