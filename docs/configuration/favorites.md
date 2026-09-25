@@ -43,7 +43,9 @@ else:
   not in the list is unpinned;
 - shortcuts, tags and contacts pinned on the device stay pinned, keep their
   order among themselves, and follow the configured apps;
-- contacts are never named in the file and never touched by it;
+- contacts are never named in the file and never unpinned by it; like the
+  other retained pins, a manually sorted contact can change its position
+  (see below);
 - automatically sorted pins, which is what "Pin to favorites" in search
   makes, are not touched either; a listed app that was one becomes manually
   sorted, in file order.
