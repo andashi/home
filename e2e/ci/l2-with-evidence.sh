@@ -20,7 +20,55 @@ set -uo pipefail
 # below ends the test file before a single check runs - silently, and
 # looking exactly like a passing suite.
 
+# The CI emulator's own launcher ANRs on roughly one boot in ten, about 45 s
+# before the first test, and the "Application Not Responding" dialog it
+# leaves never goes away on its own. It sits above everything with a dim
+# layer, so every screen-sampling test whose sample falls under it fails on
+# pixels rather than on a name (#113).
+#
+# Only that one package is touched, named exactly and never as a pattern. An
+# ANR of the launcher under test, or of anything else, is reported here and
+# left where it is: the tests must see it, and the evidence below names it.
+#
+# An ANR that fires after this check - a slower boot - still lands on a test,
+# and the post-failure dump names it there instead. That is the right
+# failure mode: this removes a known obstruction, it does not promise a clear
+# screen.
+STOCK_HOME=com.android.launcher3
+: "${ANR_RECHECK_TRIES:=5}" "${ANR_RECHECK_SLEEP:=1}"
+
+anr_packages() { # one package per "Application Not Responding" window on screen
+  adb shell dumpsys window windows |
+    sed -n 's/.*Application Not Responding: \([A-Za-z0-9_.]*\).*/\1/p' | sort -u
+}
+
+clear_stock_launcher_anr() {
+  local pkgs; pkgs="$(anr_packages)"
+  [ -n "$pkgs" ] || return 0
+  printf '::group::#113 ANR windows on screen before the tests\n%s\n::endgroup::\n' "$pkgs"
+  if ! printf '%s\n' "$pkgs" | grep -qx "$STOCK_HOME"; then
+    printf 'Leaving them: none is %s. The tests will show what they cover.\n' "$STOCK_HOME"
+    return 0
+  fi
+  printf 'Dismissing the stock launcher ANR dialog (%s) so it cannot cover a test.\n' "$STOCK_HOME"
+  adb shell am force-stop "$STOCK_HOME"
+  local i=0
+  while [ "$i" -lt "$ANR_RECHECK_TRIES" ]; do
+    [ "$ANR_RECHECK_SLEEP" = 0 ] || sleep "$ANR_RECHECK_SLEEP"
+    printf '%s\n' "$(anr_packages)" | grep -qx "$STOCK_HOME" || { printf 'Gone.\n'; return 0; }
+    i=$((i + 1))
+  done
+  # HOME restarts after a force-stop and can ANR again on a slow boot.
+  # Saying so once is worth more than looping: the tests and the evidence
+  # below are the honest reporters, and a second attempt would only spend
+  # the job's time.
+  printf 'Still there after the dismissal; leaving it and running the tests anyway.\n'
+  return 0
+}
+
 [ "${BASH_SOURCE[0]}" = "$0" ] || return 0
+
+clear_stock_launcher_anr
 
 "$@"
 status=$?
