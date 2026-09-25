@@ -390,14 +390,28 @@ class GlassSearchTest {
                 android.graphics.Color.green(p) < 16 &&
                     android.graphics.Color.red(p) + android.graphics.Color.blue(p) > 200
             }
+            val onScreenVerdict = discriminate(screen, semantics.positionOnScreen.x, semantics.positionOnScreen.y, semantics.size.width, semantics.size.height)
+            val capture = if (tag == "popup") capturePopupWindow(popupRoot) else null
             val evidence = "on screen ${semantics.positionOnScreen}, size ${semantics.size}, host top $hostTop, " +
                 "window height $windowHeight, region $region, drawn 100 ms later $later, " +
                 "glass in the screenshot at x ${centreX.toInt()}: y ${glassRows.firstOrNull()}..${glassRows.lastOrNull()}, " +
-                discriminate(screen, semantics.positionOnScreen.x, semantics.positionOnScreen.y, semantics.size.width, semantics.size.height) +
+                onScreenVerdict +
                 (if (tag == "popup") ", " + windowState(popupRoot) + ", " +
-                    popupWindowCapture(popupRoot, semantics.positionOnScreen, semantics.size.width, semantics.size.height) else "") + ", " +
+                    describeCapture(capture, semantics.positionOnScreen, semantics.size.width, semantics.size.height) else "") + ", " +
                 surroundings(screen, outerBounds(if (tag == "popup") popupRoot else null, semantics.positionOnScreen, semantics.size.width, semantics.size.height)) + "\n" +
                 eventLog()
+            // #113, the stock emulator's signature and nothing wider: the
+            // screen shows a uniform fill over the popup while the popup
+            // window's own buffer holds the backdrop at the expected row. The
+            // launcher drew correctly; what reached the screenshot did not.
+            if (capture != null && onScreenVerdict.endsWith("neither glass nor host")) {
+                val (bitmap, origin) = capture
+                val inWindow = drawnAt(bitmap, centreX - origin[0], centreY - origin[1])
+                if (kotlin.math.abs(expected - inWindow) <= 0.03f) {
+                    android.util.Log.w("GlassSearchTest", "$tag: emulator composition signature (#113), window buffer drawn $inWindow:\n$evidence")
+                    return
+                }
+            }
             android.util.Log.e("GlassSearchTest", "$tag failed:\n$evidence")
             assertEquals("$tag: backdrop row drawn vs where it is on screen; $evidence", expected, drawn, 0.03f)
         }
@@ -465,31 +479,42 @@ class GlassSearchTest {
 
     /**
      * #113: what the popup window itself drew, captured from its own surface,
-     * next to the screenshot of what the screen shows. The backdrop here and a
-     * fill on screen is composition; a fill here too is the popup's own draw.
+     * with the window's origin on screen. The backdrop here and a fill on
+     * screen is composition; a fill here too is the popup's own draw.
      */
-    private fun popupWindowCapture(root: android.view.View?, onScreen: androidx.compose.ui.geometry.Offset, width: Int, height: Int): String {
-        if (root == null) return "popup capture: no popup window"
+    private fun capturePopupWindow(root: android.view.View?): Pair<Bitmap, IntArray>? {
+        if (root == null) return null
         val done = java.util.concurrent.CountDownLatch(1)
         var captured: Bitmap? = null
-        var status = -1
         val rootOnScreen = IntArray(2)
+        var rootSize = 0 to 0
         InstrumentationRegistry.getInstrumentation().runOnMainSync {
             root.getLocationOnScreen(rootOnScreen)
+            rootSize = root.width to root.height
             val request = android.view.PixelCopy.Request.Builder.ofWindow(root).build()
             // A direct executor: no thread to leak when a capture times out.
             android.view.PixelCopy.request(request, java.util.concurrent.Executor(Runnable::run)) { result ->
-                status = result.status
                 if (result.status == android.view.PixelCopy.SUCCESS) captured = result.bitmap
                 done.countDown()
             }
         }
-        if (!done.await(2, java.util.concurrent.TimeUnit.SECONDS)) return "popup capture: timed out"
-        val bitmap = captured ?: return "popup capture: PixelCopy status $status"
-        // The capture's origin is the popup window's, which can be larger
-        // than the node (371 against 315 px in the first local run).
-        val left = onScreen.x - rootOnScreen[0]
-        val top = onScreen.y - rootOnScreen[1]
+        if (!done.await(2, java.util.concurrent.TimeUnit.SECONDS)) return null
+        val bitmap = captured ?: return null
+        // The surface is larger than the window by its insets (room for the
+        // elevation shadow): 371 against 293 px on emulator-5562, 399 against
+        // 315 in CI. Centred, so the capture's origin sits half of that
+        // before the window's.
+        val origin = intArrayOf(
+            rootOnScreen[0] - (bitmap.width - rootSize.first) / 2,
+            rootOnScreen[1] - (bitmap.height - rootSize.second) / 2,
+        )
+        return bitmap to origin
+    }
+
+    private fun describeCapture(capture: Pair<Bitmap, IntArray>?, onScreen: androidx.compose.ui.geometry.Offset, width: Int, height: Int): String {
+        val (bitmap, origin) = capture ?: return "popup capture: none (no popup window, timeout or PixelCopy failure)"
+        val left = onScreen.x - origin[0]
+        val top = onScreen.y - origin[1]
         return "popup capture ${bitmap.width}x${bitmap.height}, node at ($left, $top): " +
             discriminate(bitmap, left, top, width, height)
     }
