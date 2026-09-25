@@ -38,6 +38,8 @@ jobs:
       # fake adb. Nothing else in CI runs the e2e scripts.
       - name: e2e library tests
         run: e2e/lib/grid-device.test.sh
+      - name: CI wrapper tests
+        run: e2e/ci/l2-with-evidence.test.sh
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:

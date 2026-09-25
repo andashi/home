@@ -409,32 +409,13 @@ class GlassSearchTest {
                 (if (popup != null) ", " + windowState(popup) + ", " + describeCapture(capture, onScreen, width, height) else "") + ", " +
                 outside + (if (popup != null) ", " + windows() else "") + "\n" +
                 eventLog()
-            // #113, the CI emulator's signature and nothing wider: a system
-            // dialog over the screen. Both screenshots show a uniform fill
-            // over the whole popup interior, the same fill continues left and
-            // right outside the popup window (it is larger than the popup),
-            // and the popup window's own buffer, taken between the
-            // screenshots, holds the backdrop at the expected row. The
-            // launcher drew correctly; something else was in front of it. A
-            // fill confined to the popup layer would be the launcher's and
-            // still fails.
-            val fill = onScreenVerdict.fill
-            if (capture != null && fill != null && laterVerdict.kind == Verdict.Fill &&
-                outside.left.sameAs(fill) && outside.right.sameAs(fill)
-            ) {
-                val (bitmap, origin) = capture
-                val inWindow = drawnAt(bitmap, centreX - origin[0], centreY - origin[1])
-                if (matches(inWindow)) {
-                    android.util.Log.w(
-                        "GlassSearchTest",
-                        "#113 EMULATOR ARTEFACT ACCEPTED - $tag: a fill wider than the popup covers the screen, the popup window's " +
-                            "buffer the backdrop (row $inWindow, expected $expected). If this line appears on hardware, " +
-                            "or often, reopen #113: this is the only thing standing between it and a silently accepted " +
-                            "defect.\n$evidence",
-                    )
-                    return
-                }
-            }
+            // #113 was an "Application Not Responding" dialog of the CI
+            // emulator's own launcher, covering whichever screen-sampling
+            // test ran under it. It is dismissed before the tests now
+            // (e2e/ci/l2-with-evidence.sh), so this check no longer accepts
+            // a signature of its own: a fill over the popup is a failure
+            // again, whoever put it there. The evidence above still names
+            // what was in front, which is what identified it.
             android.util.Log.e("GlassSearchTest", "$tag failed:\n$evidence")
             assertEquals("$tag: backdrop row drawn vs where it is on screen; $evidence", expected, drawn, 0.03f)
         }
@@ -454,7 +435,7 @@ class GlassSearchTest {
     private enum class Verdict { Backdrop, Fill, Window, Glass, Unclassified }
 
     /** A [Verdict] and the counts behind it, for the evidence. */
-    private class Discrimination(val kind: Verdict, private val text: String, val fill: Int? = null) {
+    private class Discrimination(val kind: Verdict, private val text: String) {
         override fun toString() = text
     }
 
@@ -511,7 +492,6 @@ class GlassSearchTest {
             kind,
             "pixels in bounds (every 2nd): backdrop $backdrop ($interiorBackdrop inside), host $host, rim ring $rim, interior $interior " +
                 "(uniform $uniform), other $other; centre ARGB #${Integer.toHexString(centre)}; verdict: $verdict",
-            first.takeIf { kind == Verdict.Fill },
         )
     }
 
@@ -585,12 +565,6 @@ class GlassSearchTest {
             right = at(bounds.right + gap, bounds.centerY()),
         )
     }
-
-    /** Within the few levels [discriminate] allows inside a uniform fill. */
-    private fun Int?.sameAs(fill: Int) = this != null &&
-        kotlin.math.abs(android.graphics.Color.red(this) - android.graphics.Color.red(fill)) <= 6 &&
-        kotlin.math.abs(android.graphics.Color.green(this) - android.graphics.Color.green(fill)) <= 6 &&
-        kotlin.math.abs(android.graphics.Color.blue(this) - android.graphics.Color.blue(fill)) <= 6
 
     /**
      * #113: the windows on screen and the focus, so a firing names the
