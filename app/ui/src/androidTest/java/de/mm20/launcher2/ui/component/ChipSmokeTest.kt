@@ -27,6 +27,6 @@ class ChipSmokeTest {
                 Chip(text = "Smoke")
             }
         }
-        composeRule.onNodeWithText("Smoke").assertIsDisplayed()
+        composeRule.onNodeWithText("Smoke, deliberately wrong (#132 proof)").assertIsDisplayed()
     }
 }
