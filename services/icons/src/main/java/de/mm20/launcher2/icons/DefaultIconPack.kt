@@ -24,4 +24,15 @@ object DefaultIconPack {
         configured?.takeIf { it.isNotBlank() }?.let { return it }
         return Lawnicons.takeIf { isInstalled(it) }
     }
+
+    /**
+     * The pack the icons come from: [effective], looked up. Null means the
+     * apps' own icons, which is also what a chosen pack that is not installed
+     * gives (#139).
+     */
+    suspend fun resolve(configured: String?, lookup: suspend (String) -> IconPack?): IconPack? {
+        var found: IconPack? = null
+        val name = effective(configured) { lookup(it).also { pack -> found = pack } != null } ?: return null
+        return found ?: lookup(name)
+    }
 }

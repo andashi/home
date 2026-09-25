@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.graphics.Color
-import android.util.Log
 import android.util.LruCache
 import de.mm20.launcher2.data.customattrs.AdaptifiedLegacyIcon
 import de.mm20.launcher2.data.customattrs.CustomAttributesRepository
@@ -44,6 +43,8 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -73,6 +74,11 @@ class IconService(
     private val cache = LruCache<String, LauncherIcon>(200)
 
     private val iconProviders: MutableStateFlow<List<IconProvider>> = MutableStateFlow(listOf())
+
+    private val appliedIconPack = MutableStateFlow<IconPack?>(null)
+
+    /** The pack the icons come from right now; null means the apps' own icons (#139). */
+    val effectiveIconPack: StateFlow<IconPack?> = appliedIconPack.asStateFlow()
 
     /**
      * Signal that installed icon packs have been updated. Force a reload of all icons.
@@ -109,22 +115,18 @@ class IconService(
 
                     // Re-evaluated on every pack install and removal
                     // (iconPacksUpdated), so installing Lawnicons later applies it.
-                    val packName = DefaultIconPack.effective(settings.iconPack) { iconPackManager.getIconPack(it) != null }
-                    if (packName != null) {
-                        val pack = iconPackManager.getIconPack(packName)
-                        if (pack != null) {
-                            providers.add(
-                                IconPackIconProvider(
-                                    context,
-                                    pack,
-                                    iconPackManager,
-                                    settings.themedIcons,
-                                )
+                    val pack = DefaultIconPack.resolve(settings.iconPack) { iconPackManager.getIconPack(it) }
+                    if (pack != null) {
+                        providers.add(
+                            IconPackIconProvider(
+                                context,
+                                pack,
+                                iconPackManager,
+                                settings.themedIcons,
                             )
-                        } else {
-                            Log.w("MM20", "Icon pack $packName not found")
-                        }
+                        )
                     }
+                    appliedIconPack.value = pack
                     providers.add(DynamicClockIconProvider(context, settings.themedIcons))
                     providers.add(CalendarIconProvider(context, settings.themedIcons))
                     providers.add(SystemIconProvider(context, settings.themedIcons))

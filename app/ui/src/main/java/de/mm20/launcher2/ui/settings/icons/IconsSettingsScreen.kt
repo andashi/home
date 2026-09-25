@@ -26,7 +26,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -200,7 +199,7 @@ fun IconsSettingsScreen() {
                         viewModel.setForceThemedIcons(it)
                     }
                 )
-                val iconPack by viewModel.effectiveIconPack.collectAsState(null)
+                val iconPack by viewModel.effectiveIconPack.collectAsStateWithLifecycle(null)
                 val items = installedIconPacks.map {
                     it.name to it
                 }
@@ -209,7 +208,7 @@ fun IconsSettingsScreen() {
                     summary = if (items.size <= 1) {
                         stringResource(R.string.preference_icon_pack_summary_empty)
                     } else {
-                        iconPack?.name ?: "System"
+                        iconPack?.name.orEmpty()
                     },
                     enabled = installedIconPacks.size > 1,
                     onClick = {
