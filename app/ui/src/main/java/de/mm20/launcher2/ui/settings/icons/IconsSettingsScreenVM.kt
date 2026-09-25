@@ -2,11 +2,14 @@ package de.mm20.launcher2.ui.settings.icons
 
 import android.content.ComponentName
 import android.content.Context
+import android.os.Process
+import android.os.UserHandle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import de.mm20.launcher2.applications.AppRepository
 import de.mm20.launcher2.icons.DefaultIconPack
 import de.mm20.launcher2.icons.IconPack
 import de.mm20.launcher2.icons.IconPackManager
@@ -19,6 +22,7 @@ import de.mm20.launcher2.preferences.ui.BadgeSettings
 import de.mm20.launcher2.preferences.ui.IconSettings
 import de.mm20.launcher2.preferences.ui.UiSettings
 import de.mm20.launcher2.search.Application
+import de.mm20.launcher2.search.SavableSearchable
 import de.mm20.launcher2.services.favorites.FavoritesService
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
@@ -38,6 +42,7 @@ class IconsSettingsScreenVM(
     private val favoritesService: FavoritesService,
     private val permissionsManager: PermissionsManager,
     private val iconPackManager: IconPackManager,
+    private val appRepository: AppRepository,
 ) : ViewModel() {
 
     val grid = uiSettings.gridSettings
@@ -80,17 +85,11 @@ class IconsSettingsScreenVM(
         iconSettings.setForceThemedIcons(forceThemedIcons)
     }
 
+    /** The pack the icons come from right now, which is not always the one stored (#139). */
+    val effectiveIconPack: Flow<IconPack> = iconService.effectiveIconPack.map { it ?: SystemIconPack }
+
     val installedIconPacks: Flow<List<IconPack>> = iconService.getInstalledIconPacks().map {
-        listOf(
-            // The apps' own icons, chosen: stored as is (#3 D6), and the
-            // entry the screen marks when icons.pack is "none".
-            IconPack(
-                name = "System",
-                packageName = DefaultIconPack.None,
-                version = "",
-                themed = true,
-            )
-        ) + it
+        listOf(SystemIconPack) + it
     }
 
     fun setIconPack(iconPack: String) {
@@ -144,48 +143,31 @@ class IconsSettingsScreenVM(
         size: Int,
         themed: Boolean
     ): Flow<List<LauncherIcon>> {
-        return previewItems.map { items ->
-            val apps = items.filterIsInstance<Application>()
-            val icons = mutableListOf<LauncherIcon>()
-
-            val usedApps = mutableSetOf<ComponentName>()
-
-            for (app in apps) {
-                val icon = if (iconPack.packageName == DefaultIconPack.None) {
-                    app.loadIcon(context, size, themed)
-                } else {
-                    iconPackManager.getIcon(
-                        packageName = app.componentName.packageName,
-                        activityName = app.componentName.className,
-                        iconPack = iconPack.packageName,
-                        allowThemed = themed,
-                    )
-                }
-                if (icon != null) {
-                    icons += icon
-                    usedApps += app.componentName
-                }
+        if (iconPack.packageName == DefaultIconPack.None) {
+            return systemPreviewApps(previewItems, appRepository.findMany(), Process.myUserHandle()).map { apps ->
+                firstIcons(apps, count) { it.loadIcon(context, size, themed) }
             }
-
-            for (fallback in fallbackIconPackIcons) {
-                if (icons.size >= count) break
-
-                if (fallback in usedApps) continue
-
-                val icon = iconPackManager.getIcon(
-                    packageName = fallback.packageName,
-                    activityName = fallback.className,
+        }
+        return previewItems.map { favorites ->
+            val components = favorites.filterIsInstance<Application>().map { it.componentName } + fallbackIconPackIcons
+            firstIcons(components.distinct(), count) {
+                iconPackManager.getIcon(
+                    packageName = it.packageName,
+                    activityName = it.className,
                     iconPack = iconPack.packageName,
                     allowThemed = themed,
                 )
-                if (icon != null) {
-                    icons += icon
-                    usedApps += fallback
-                }
             }
-
-            return@map icons
         }
+    }
+
+    private suspend fun <T> firstIcons(candidates: List<T>, count: Int, load: suspend (T) -> LauncherIcon?): List<LauncherIcon> {
+        val icons = mutableListOf<LauncherIcon>()
+        for (candidate in candidates) {
+            if (icons.size >= count) break
+            load(candidate)?.let { icons += it }
+        }
+        return icons
     }
 
     companion object : KoinComponent {
@@ -199,9 +181,19 @@ class IconsSettingsScreenVM(
                     badgeSettings = get(),
                     iconSettings = get(),
                     iconPackManager = get(),
+                    appRepository = get(),
                 )
             }
         }
+
+        // The apps' own icons, chosen: stored as is (#3 D6), and the entry the
+        // screen marks when icons.pack is "none" or the chosen pack is missing.
+        private val SystemIconPack = IconPack(
+            name = "System",
+            packageName = DefaultIconPack.None,
+            version = "",
+            themed = true,
+        )
 
         // Some very common activities that are likely included in most icon packs
         private val fallbackIconPackIcons = mutableListOf(
@@ -218,4 +210,19 @@ class IconsSettingsScreenVM(
             ),
         )
     }
+}
+
+/**
+ * The apps the System card previews with their own icons (#139): the
+ * favorites, then the other apps of [user]. Not the icon packs' fallback
+ * components, which a pack has glyphs for whether or not the app is installed.
+ * [installed] is an upstream, not a snapshot: on a fresh profile the
+ * repository is still empty when the screen opens.
+ */
+internal fun systemPreviewApps(
+    favorites: Flow<List<SavableSearchable>>,
+    installed: Flow<List<Application>>,
+    user: UserHandle,
+): Flow<List<Application>> = combine(favorites, installed) { favorites, installed ->
+    (favorites.filterIsInstance<Application>() + installed.filter { it.user == user }).distinctBy { it.componentName }
 }

@@ -41,8 +41,44 @@ class DefaultIconPackTest {
 
     @Test
     fun `a configured pack is not second-guessed even when it is not installed`() = runTest {
-        // IconService then logs the missing pack and falls back to the apps' own icons,
-        // as it always has; the default is for the unconfigured case only.
+        // resolve() then finds no pack and the apps' own icons are used, as they
+        // always have been; the default is for the unconfigured case only.
         assertEquals("com.example.gone", DefaultIconPack.effective("com.example.gone", lawniconsInstalled))
+    }
+
+    private val lawnicons = IconPack(name = "Lawnicons", packageName = DefaultIconPack.Lawnicons, version = "2.18.0", themed = true)
+    private val other = IconPack(name = "Other", packageName = "com.example.pack", version = "1")
+
+    private fun installed(vararg packs: IconPack): suspend (String) -> IconPack? =
+        { name -> packs.firstOrNull { it.packageName == name } }
+
+    /**
+     * #139: the pack the icons come from, which IconService publishes and the
+     * icon settings name. Nothing chosen with Lawnicons installed is Lawnicons,
+     * not "System".
+     */
+    @Test
+    fun `nothing chosen with Lawnicons installed resolves to Lawnicons`() = runTest {
+        assertEquals(lawnicons, DefaultIconPack.resolve(null, installed(other, lawnicons)))
+    }
+
+    @Test
+    fun `nothing chosen without Lawnicons resolves to the apps' own icons`() = runTest {
+        assertNull(DefaultIconPack.resolve(null, installed(other)))
+    }
+
+    @Test
+    fun `none resolves to the apps' own icons even with Lawnicons installed`() = runTest {
+        assertNull(DefaultIconPack.resolve(DefaultIconPack.None, installed(lawnicons)))
+    }
+
+    @Test
+    fun `a chosen pack resolves to that pack`() = runTest {
+        assertEquals(other, DefaultIconPack.resolve(other.packageName, installed(other, lawnicons)))
+    }
+
+    @Test
+    fun `a chosen pack that is not installed resolves to the apps' own icons`() = runTest {
+        assertNull(DefaultIconPack.resolve("com.example.gone", installed(lawnicons)))
     }
 }
