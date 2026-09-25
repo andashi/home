@@ -1,9 +1,16 @@
 name: Tests
 
-# L1 (unit) + L3 (screenshot verify) on pull requests and on main.
-# L2 (Compose UI on emulator) on PRs only — it is the slow layer; the fold
-# suite runs on a second, foldable emulator in its own job.
+# L1 (unit), L3 (screenshot verify) and L2 (Compose UI on emulator; the fold
+# suite on a second, foldable emulator in its own job) on pull requests, on
+# every push to main and for every release. A push to any other branch runs
+# nothing until it has a pull request; see the note on `push` below.
 # L4 stays manual/local: it needs the self-built GrapheneOS emulator (ADR 0005).
+#
+# release.yml calls this workflow and builds nothing unless every job is
+# green; why the release repeats what main already ran: AGENTS.md § CI and
+# § Releases (#132).
+# The tag push itself does not trigger this workflow - the call does, so there
+# is one run per release, not two.
 
 # `push` is limited to main on purpose. With a bare `push:` every commit on a
 # PR branch ran this workflow twice - once for the push, once for the pull
@@ -17,6 +24,10 @@ on:
   push:
     branches: [main]
   pull_request:
+  workflow_call:
+
+permissions:
+  contents: read
 
 jobs:
   l1-unit:
@@ -68,6 +79,16 @@ jobs:
             '**/build/reports/kover/html'
           retention-days: 14
 
+  # release.yml's two guarantees (#132), checked statically because both fail
+  # silently: a dropped `needs` still publishes, and a branch build signed
+  # with the production key still looks like a release.
+  release-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check release.yml
+        run: python3 .github/scripts/check-release-gate.py .github/workflows/release.yml
+
   l3-screenshots:
     runs-on: ubuntu-latest
     steps:
@@ -91,7 +112,6 @@ jobs:
           retention-days: 14
 
   l2-compose-ui:
-    if: ${{ github.event_name == 'pull_request' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -124,7 +144,6 @@ jobs:
   # itself by assumption on a device without postures, so the phone job above
   # stays green and this job is the one that proves the fold.
   l2-fold:
-    if: ${{ github.event_name == 'pull_request' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

@@ -136,9 +136,17 @@ afterthought (see `docs/architecture/adr/0005-testing-strategy.md`):
 
 ## CI
 
-`.github/workflows/test.yml`: L1 + L3 on every push/PR (JDK 21 — Robolectric
-with SDK 36+ requires >= 21), L2 on PRs via `android-emulator-runner` (stock
-API 36 image). L4 stays manual/local.
+`.github/workflows/test.yml`: L1 + L3 (JDK 21 — Robolectric with SDK 36+
+requires >= 21) and L2 via `android-emulator-runner` (stock API 36 image, plus
+a foldable one), on every PR, every push to `main` and every release. A push to
+another branch runs nothing until it has a PR: a bare `push:` ran every PR
+commit twice and doubled the flakes. L4 stays manual/local.
+
+**Red on `main` is fixed before the next merge.** A PR is green on its own
+head; the run on `main` is the first to see it combined with whatever merged
+next to it, and nothing blocks on that run - GitHub tells the merger at most.
+A control test from #123 went red on `main` and stayed red through three more
+merges until someone read a log (#132).
 
 ## Fork conventions
 
@@ -180,6 +188,17 @@ A release is made by pushing an annotated tag. `.github/workflows/release.yml`
 publishes the annotation verbatim as the release body, so the annotation is
 where the release is described - `git tag -a`, never a lightweight tag (the
 workflow rejects those).
+
+**A tag ships only a commit whose full suite is green, L2 included.** PRs merged
+close together meet for the first time on `main`: v0.7.2 was tagged from a
+commit that merged three PRs within ten seconds, each green on its own head, and
+no L2 suite had seen them together (#132). The run on `main` reports that
+combination but blocks nothing, and a tag can be cut before it finishes, so
+`release.yml` runs `test.yml` with both emulator suites itself and builds
+nothing unless all of it is green. That is the
+enforcement, not a reason to tag blind: a red release run means the tag names a
+commit that must not ship - fix it on `main` and tag the fix, never re-run until
+a flake lets it through without looking at the failure.
 
 End the annotation with the trailer the provisioning host parses:
 
