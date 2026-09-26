@@ -20,6 +20,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -249,6 +250,30 @@ class ConfigWriteBackTest {
             withTimeout(10_000) { seen.receive() }
             onDevice("""{"schemaVersion":2,"search":{"layout":"list"}}""")
             withTimeout(10_000) { seen.receive() }
+        } finally {
+            collecting.cancel()
+        }
+    }
+
+    /**
+     * #167: a start is one write-back pass, not one per source. Each source
+     * the store follows - settings, favorites, search actions, every grid
+     * layout - emits its first value on collection; followed one by one, a
+     * start made one full pass (file read, state read, wallpaper hash) for
+     * each of them.
+     */
+    @Test
+    fun `a start asks for one write-back, not one per source`() = runBlocking {
+        applied(searchFile)
+        val seen = Channel<Unit>(Channel.UNLIMITED)
+        val collecting = launch(Dispatchers.Default) { real.store.changes().collect { seen.send(Unit) } }
+        try {
+            withTimeout(10_000) { seen.receive() }
+            // Every source has emitted its first value well within this.
+            delay(1_000)
+            var more = 0
+            while (seen.tryReceive().isSuccess) more++
+            assertEquals("emissions after the first on start", 0, more)
         } finally {
             collecting.cancel()
         }
