@@ -393,4 +393,37 @@ recovery_runs_after_a_slow_dump() {
 }
 check "a round whose dump used up its cap still wakes the device and reopens home" recovery_runs_after_a_slow_dump
 
+# The search helpers config-screenshots.sh and l4-search.sh each carried a
+# copy of (#164). screen_state reads one dump; the waits around it are
+# bounded like every other wait in the library.
+mkdir -p "$WORK/search"
+cat > "$WORK/search/adb" <<EOF
+#!/usr/bin/env bash
+case "\$*" in
+  *"cat /sdcard/grid-dump.xml"*) cat "$WORK/search/screen.xml" ;;
+  *"dumpsys input_method"*) cat "$WORK/search/ime.txt" ;;
+  *"KEYCODE_BACK"*) echo "  mInputShown=false" > "$WORK/search/ime.txt" ;;
+  *"input tap"*) echo '<hierarchy><node content-desc="Show filters" bounds="[0,0][9,9]"/></hierarchy>' > "$WORK/search/screen.xml" ;;
+esac
+EOF
+chmod +x "$WORK/search/adb"
+home_screen() { echo '<hierarchy><node content-desc="Search" bounds="[0,0][9,9]"/></hierarchy>' > "$WORK/search/screen.xml"; }
+screen_state_reads_the_screen() {
+  local home search none
+  home_screen; home="$(PATH="$WORK/search:$PATH" screen_state)"
+  echo '<hierarchy><node content-desc="Show filters" bounds="[0,0][9,9]"/><node content-desc="Search" bounds="[0,0][9,9]"/></hierarchy>' > "$WORK/search/screen.xml"
+  search="$(PATH="$WORK/search:$PATH" screen_state)"
+  : > "$WORK/search/screen.xml"; none="$(PATH="$WORK/search:$PATH" screen_state)"
+  [ "$home/$search/$none" = "home/search/unknown" ]
+}
+check "screen_state tells home from search, and an empty dump from both" screen_state_reads_the_screen
+opens_search_and_dismisses_the_keyboard() {
+  home_screen; echo "  mInputShown=true" > "$WORK/search/ime.txt"
+  ( PATH="$WORK/search:$PATH"; open_search c && dismiss_keyboard ) >/dev/null 2>&1 \
+    && grep -q "mInputShown=false" "$WORK/search/ime.txt"
+}
+check "open_search opens search, dismiss_keyboard closes the keyboard" opens_search_and_dismisses_the_keyboard
+check "open_search gives up after its timeout on a wedged device" bounded "SEARCH_TIMEOUT=3 open_search c"
+check "dismiss_keyboard gives up after its timeout on a wedged device" bounded "KEYBOARD_TIMEOUT=1 dismiss_keyboard"
+
 exit "$failed"
