@@ -1,6 +1,7 @@
 package de.mm20.launcher2.config.service
 
 import de.mm20.launcher2.config.ConfigDiffer
+import de.mm20.launcher2.config.ConfigMutation
 import de.mm20.launcher2.config.ConfigParser
 import de.mm20.launcher2.config.ConfigState
 import de.mm20.launcher2.config.Diagnostic
@@ -187,12 +188,19 @@ class ConfigReloader(
             configSha256 = configSha256,
             trigger = trigger,
         )
-        // A measurement reload that fitted nothing differently and has no
-        // correction of its own leaves the last report alone: that report is
-        // what a push is waited on by, and it still describes the device. The
-        // capability warnings are left out of the test because every reload of
-        // this file carries them (#178 review).
-        if (trigger == ReloadTrigger.GridMeasured && applyDiagnostics.isEmpty() && !gridChanged(before)) return report
+        // A measurement reload that is a true no-op leaves the last report
+        // alone: that report is what a push is waited on by, and it still
+        // describes the device. A no-op means the last report is of this very
+        // file, only the forced grid was applied, the fit changed nothing and
+        // there is no correction; a measurement reload that met a newly pushed
+        // file has to say so. The capability warnings are left out of the test
+        // because every reload of this file carries them (#178 review).
+        val noOp = trigger == ReloadTrigger.GridMeasured &&
+            applyDiagnostics.isEmpty() &&
+            mutations.all { it is ConfigMutation.SetGrid } &&
+            lastReportSha() == configSha256 &&
+            !gridChanged(before)
+        if (noOp) return report
         return persist(report)
     }
 
@@ -218,6 +226,12 @@ class ConfigReloader(
         } catch (_: Exception) {
             // Without a baseline a write-back skips and says so; the reload stands.
         }
+    }
+
+    private suspend fun lastReportSha(): String? = try {
+        reportStore.read()?.configSha256
+    } catch (e: Exception) {
+        null
     }
 
     /** Whether the grid the store holds now differs from [before]; unreadable counts as changed. */

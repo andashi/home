@@ -249,6 +249,42 @@ class ConfigReloaderTest {
         assertEquals(ReloadTrigger.Broadcast, reportStore.read()!!.trigger)
     }
 
+    // Silent only for a true no-op: a measurement reload that met a file the
+    // last report does not describe, or applied anything besides the forced
+    // grid, has something to say (#178 review). Each test below changes one
+    // of the two, so each condition is guarded on its own.
+
+    @Test
+    fun `a measurement reload of a file the last report does not describe replaces it`() = runTest {
+        val store = FakeConfigStore(state = foldState(6))
+        val (reloader, reportStore) = newReloader(store)
+        reloader.reload(foldText, ReloadTrigger.Broadcast)
+        // The same settings in a new file: only the hash tells them apart.
+        val newer = "$foldText\n"
+
+        val report = reloader.reload(newer, ReloadTrigger.GridMeasured)
+
+        assertEquals(listOf("home.grid"), report.appliedMutations)
+        assertEquals(report.configSha256, reportStore.read()!!.configSha256)
+        assertEquals(ReloadTrigger.GridMeasured, reportStore.read()!!.trigger)
+    }
+
+    @Test
+    fun `a measurement reload that applied more than the grid replaces the last report`() = runTest {
+        val text = foldText.replace("\"schemaVersion\": 2,", "\"schemaVersion\": 2, \"icons\": {\"themed\": false},")
+        val store = FakeConfigStore(state = foldState(6).copy(themedIcons = false))
+        val (reloader, reportStore) = newReloader(store)
+        val pushed = reloader.reload(text, ReloadTrigger.Broadcast)
+        // Changed on the device since the push; the same file puts it back.
+        store.state = store.state.copy(themedIcons = true)
+
+        val report = reloader.reload(text, ReloadTrigger.GridMeasured)
+
+        assertEquals(pushed.configSha256, report.configSha256)
+        assertEquals(listOf("icons", "home.grid"), report.appliedMutations)
+        assertEquals(ReloadTrigger.GridMeasured, reportStore.read()!!.trigger)
+    }
+
     @Test
     fun `a measurement reload that fitted the grid differently replaces the last report`() = runTest {
         val store = FakeConfigStore(state = foldState(6))
