@@ -15,7 +15,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.jsonObject
@@ -154,14 +153,15 @@ class ConfigWriteBack(
             return skipped("not-applied-yet", "${file.name} changed since it was last applied; it is reloaded first")
         }
 
-        val device = effectiveTree(configStore.readState().toLauncherConfig())
+        val state = configStore.readState()
+        val device = effectiveTree(state.toLauncherConfig())
         val changes = WriteBackPlan.changes(literal, baseline.effective, device, canonical = effectiveTree(config))
             // W2: a locked grid is not the device's to change, whatever else is.
             .filterNot { gridLocked && it.path.take(2) == listOf("home", "grid") }
         // A colour scheme a person made has no slug, so the read-back leaves
         // colors out and the plan writes nothing there: the file keeps what
         // it asked, and the report says why the effect differs (#3 slice 3).
-        val keptColors = if (literal.at(ThemeColorsPath) != null && device.at(ThemeColorsPath).let { it == null || it is JsonNull }) {
+        val keptColors = if (literal.at(ThemeColorsPath) != null && state.themeColors == null) {
             Diagnostic(
                 Severity.Warning,
                 SkipCodePrefix + "colors-custom",

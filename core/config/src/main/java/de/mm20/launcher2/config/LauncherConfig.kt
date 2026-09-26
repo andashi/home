@@ -143,6 +143,7 @@ internal abstract class FieldEnumSerializer<E : Enum<E>>(
      * published value, so a new or renamed entry is a visible change.
      */
     private val byName = entries.associateBy { it.name.replace(KebabBoundary, "$1-$2").lowercase() }
+    private val nameOf = byName.entries.associate { (name, entry) -> entry to name }
 
     /** The values the contract accepts, as written; the JSON Schema lists these. */
     val names: List<String> = byName.keys.toList()
@@ -150,7 +151,7 @@ internal abstract class FieldEnumSerializer<E : Enum<E>>(
     override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor(serialName, PrimitiveKind.STRING)
 
     override fun serialize(encoder: Encoder, value: E) {
-        encoder.encodeString(byName.entries.first { it.value == value }.key)
+        encoder.encodeString(nameOf.getValue(value))
     }
 
     override fun deserialize(decoder: Decoder): E {

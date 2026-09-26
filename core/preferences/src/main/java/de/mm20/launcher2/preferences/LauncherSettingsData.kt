@@ -18,7 +18,7 @@ data class LauncherSettingsData internal constructor(
 
     val uiColorScheme: ColorScheme = ColorScheme.System,
     @Serializable(with = UUIDSerializer::class)
-    val uiColorsId: UUID = UUID(0L, 0L),
+    val uiColorsId: UUID = BuiltInColorSchemes.System,
     @Serializable(with = UUIDSerializer::class)
     val uiShapesId: UUID = UUID(0L, 0L),
     /** `appearance.glass` (ADR 0004, #24); written only by a config reload. */
@@ -153,9 +153,11 @@ enum class ColorScheme {
 
 /**
  * The ids of the built-in colour schemes, the one place they are defined:
- * data/themes names its built-ins by these, and `appearance.theme.colors`
- * maps its slugs onto them (#3 slice 3). Any other id is a scheme a person
- * made.
+ * data/themes names its built-in colour schemes by these, and
+ * `appearance.theme.colors` maps its slugs onto them (#3 slice 3). Any other
+ * id is a scheme a person made. [System] has the value of data/themes'
+ * DefaultThemeId, which is also the default of every other theme part
+ * (shapes, typography) and so stays defined there.
  */
 object BuiltInColorSchemes {
     /** Follows the system (Monet) palette; also the default of every theme part. */

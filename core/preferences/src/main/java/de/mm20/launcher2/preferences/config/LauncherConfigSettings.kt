@@ -75,6 +75,13 @@ interface LauncherConfigSettings {
     fun changes(): Flow<Unit> = flowOf(Unit)
 }
 
+/** `appearance.theme.colors` slug to the built-in scheme's id, one entry per slug. */
+private val BuiltInColorIds = mapOf(
+    ThemeColors.System to BuiltInColorSchemes.System,
+    ThemeColors.BlackAndWhite to BuiltInColorSchemes.BlackAndWhite,
+    ThemeColors.HighContrast to BuiltInColorSchemes.HighContrast,
+)
+
 internal class LauncherConfigSettingsImpl(
     private val dataStore: LauncherDataStore,
 ) : LauncherConfigSettings {
@@ -105,12 +112,7 @@ internal class LauncherConfigSettingsImpl(
                 ColorScheme.System -> ThemeMode.System
             },
             // A scheme a person made has no slug: null, and the file keeps its own.
-            themeColors = when (data.uiColorsId) {
-                BuiltInColorSchemes.System -> ThemeColors.System
-                BuiltInColorSchemes.BlackAndWhite -> ThemeColors.BlackAndWhite
-                BuiltInColorSchemes.HighContrast -> ThemeColors.HighContrast
-                else -> null
-            },
+            themeColors = BuiltInColorIds.entries.firstOrNull { it.value == data.uiColorsId }?.key,
             // search (#91): upstream's own settings, which the search UI reads.
             search = SearchState(
                 favorites = data.favoritesEnabled,
@@ -202,12 +204,7 @@ internal class LauncherConfigSettingsImpl(
                     ThemeMode.System -> ColorScheme.System
                     null -> uiColorScheme
                 },
-                uiColorsId = when (mutation.colors) {
-                    ThemeColors.System -> BuiltInColorSchemes.System
-                    ThemeColors.BlackAndWhite -> BuiltInColorSchemes.BlackAndWhite
-                    ThemeColors.HighContrast -> BuiltInColorSchemes.HighContrast
-                    null -> uiColorsId
-                },
+                uiColorsId = mutation.colors?.let(BuiltInColorIds::getValue) ?: uiColorsId,
             )
 
             is ConfigMutation.SetSearch -> with(mutation.search) {
