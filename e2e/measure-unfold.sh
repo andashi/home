@@ -73,18 +73,25 @@ names=()
 # shellcheck source=lib/grid-device.sh
 . "$HERE/lib/grid-device.sh"
 cleanup() {
-  local rc=$?
+  # Any step below that fails leaves the instance other than it was found,
+  # and then the run has not succeeded, whatever it measured.
+  local rc=$? keep_lock=0 unclean=0
   rm -rf "$WORK"
   # Its own snapshots, ~3.5 GB each; `clean` stays.
-  for n in "${names[@]}"; do adb -s "$SERIAL" emu avd snapshot delete "$n" >/dev/null 2>&1 || true; done
+  delete_snapshots "${names[@]}" || unclean=1
   # Stopped only if this run booted it. A stop that fails keeps the lock: a
   # running instance nobody holds is what the locks exist to prevent.
   if [ "$BOOTED" = 1 ] && ! "$RUN" stop >/dev/null 2>&1; then
     printf 'x could not stop %s; keeping the lock (%s) - stop it by hand\n' "$SERIAL" "$LOCK_OWNER" >&2
-    [ "$rc" -ne 0 ] || exit 1
-    return
+    keep_lock=1; unclean=1
   fi
-  [ "$HELD_BEFORE" = 1 ] || "$LOCK" release "$LOCK_OWNER" "$SERIAL" >/dev/null 2>&1 || true
+  if [ "$HELD_BEFORE" != 1 ] && [ "$keep_lock" != 1 ] \
+    && ! "$LOCK" release "$LOCK_OWNER" "$SERIAL" >/dev/null 2>&1; then
+    printf 'x could not release the lock (%s) on %s; release it by hand\n' "$LOCK_OWNER" "$SERIAL" >&2
+    unclean=1
+  fi
+  # An earlier failure keeps its own status.
+  if [ "$unclean" = 1 ] && [ "$rc" -eq 0 ]; then exit 1; fi
 }
 trap cleanup EXIT
 

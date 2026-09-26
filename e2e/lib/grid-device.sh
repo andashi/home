@@ -143,6 +143,27 @@ boot_instance() { # $1 = run.sh
   BOOTED=1
 }
 
+# Deletes a run's own snapshots (~3.5 GB each), one retry each, and checks
+# the list afterwards: fails and names what is left, or every one of them
+# when the list cannot be read, since an unread list is not an empty one.
+delete_snapshots() { # $@ = snapshot names
+  [ $# -gt 0 ] || return 0
+  local n listed left=()
+  for n in "$@"; do
+    # A failed delete is not fatal here: the list below is the check.
+    ADB_DEADLINE=$(deadline_in 30) adb_t emu avd snapshot delete "$n" >/dev/null 2>&1 \
+      || { sleep 2; ADB_DEADLINE=$(deadline_in 30) adb_t emu avd snapshot delete "$n" >/dev/null 2>&1; } \
+      || :
+  done
+  if ! listed="$(ADB_DEADLINE=$(deadline_in 15) adb_out emu avd snapshot list 2>/dev/null)"; then
+    printf 'x could not list the snapshots on %s; check by hand for: %s\n' "$SERIAL" "$*" >&2
+    return 1
+  fi
+  for n in "$@"; do grep -qF "$n" <<<"$listed" && left+=("$n"); done
+  [ "${#left[@]}" -eq 0 ] \
+    || { printf 'x snapshots left on %s, delete them by hand: %s\n' "$SERIAL" "${left[*]}" >&2; return 1; }
+}
+
 query_json() { # $1 = provider path (config|diagnostics)
   # The provider answers one row whose json value spans many lines. Anything
   # else is an error, never an empty answer: a caller reading "" as "no

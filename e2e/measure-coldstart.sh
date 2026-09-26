@@ -77,18 +77,8 @@ cleanup() {
     keep_lock=1; unclean=1
   fi
   # Each run-specific snapshot is ~3.5 GB: a delete that fails silently
-  # would let them pile up. One retry, then name whatever is left.
-  if [ "${#names[@]}" -gt 0 ]; then
-    local n listed left=()
-    for n in "${names[@]}"; do
-      ADB_DEADLINE=$(deadline_in 30) adb_t emu avd snapshot delete "$n" >/dev/null 2>&1 \
-        || { sleep 2; ADB_DEADLINE=$(deadline_in 30) adb_t emu avd snapshot delete "$n" >/dev/null 2>&1; } || true
-    done
-    listed="$(ADB_DEADLINE=$(deadline_in 15) adb_t emu avd snapshot list 2>/dev/null || true)"
-    for n in "${names[@]}"; do grep -qF "$n" <<<"$listed" && left+=("$n"); done
-    [ "${#left[@]}" -eq 0 ] \
-      || { printf 'x snapshots left on %s, delete them by hand: %s\n' "$SERIAL" "${left[*]}" >&2; unclean=1; }
-  fi
+  # would let them pile up.
+  delete_snapshots "${names[@]}" || unclean=1
   # Stopped only if this run booted it. A stop that fails keeps the lock: a
   # running instance nobody holds is what the locks exist to prevent.
   if [ "$BOOTED" = 1 ] && ! "$RUN" stop >/dev/null 2>&1; then
