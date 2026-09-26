@@ -2,6 +2,7 @@ package de.mm20.launcher2.ui.launcher.grid
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
@@ -17,6 +18,8 @@ import org.junit.runner.Description
 import org.junit.runner.RunWith
 import org.junit.runners.model.Statement
 import org.robolectric.RobolectricTestRunner
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 
 /**
  * The rule's contract, without the race it prevents: a scope whose work sits
@@ -27,14 +30,26 @@ import org.robolectric.RobolectricTestRunner
 @RunWith(RobolectricTestRunner::class)
 class ViewModelScopeRuleTest {
 
-    /** Waits on a real IO thread, then resumes into Main, like a settings read. */
+    /**
+     * Waits on a real IO thread, then resumes into Main, like a settings read.
+     * Started undispatched, so it is not a queued launch that a cancel ends
+     * before it runs: the test waits until the IO section is entered (#180
+     * review).
+     */
     private class IoBoundVM : ViewModel() {
+        val enteredIo = CountDownLatch(1)
+
         init {
-            viewModelScope.launch {
-                withContext(Dispatchers.IO) { delay(60_000) }
+            viewModelScope.launch(start = CoroutineStart.UNDISPATCHED) {
+                withContext(Dispatchers.IO) {
+                    enteredIo.countDown()
+                    delay(60_000)
+                }
             }
         }
         val job: Job get() = viewModelScope.coroutineContext.job
+
+        fun awaitIo() = assertTrue("never reached the IO thread", enteredIo.await(5, TimeUnit.SECONDS))
     }
 
     private fun ViewModelScopeRule.runAround(body: () -> Unit) {
@@ -49,6 +64,7 @@ class ViewModelScopeRuleTest {
         lateinit var vm: IoBoundVM
         rule.runAround {
             vm = rule.track(IoBoundVM())
+            vm.awaitIo()
         }
         assertTrue(vm.job.isCompleted)
     }
@@ -59,6 +75,7 @@ class ViewModelScopeRuleTest {
         lateinit var vm: IoBoundVM
         rule.runAround {
             vm = rule.track(IoBoundVM())
+            vm.awaitIo()
         }
         assertTrue(vm.job.isCompleted)
     }
@@ -70,6 +87,7 @@ class ViewModelScopeRuleTest {
         lateinit var vm: IoBoundVM
         rule.runAround {
             vm = IoBoundVM()
+            vm.awaitIo()
         }
         assertFalse(vm.job.isCompleted)
         vm.job.cancel()

@@ -130,7 +130,7 @@ class HomeGridTest {
     @Test
     fun `the view model factory resolves everything from Koin`() {
         val factory = HomeGridVM.factory()
-        val vm = factory.create(HomeGridVM::class.java, androidx.lifecycle.viewmodel.CreationExtras.Empty)
+        val vm = viewModels.track(factory.create(HomeGridVM::class.java, androidx.lifecycle.viewmodel.CreationExtras.Empty))
 
         org.junit.Assert.assertEquals(FormFactor.Phone, vm.formFactor)
     }
