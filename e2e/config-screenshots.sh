@@ -182,6 +182,14 @@ adb -s "$SERIAL" install -r "$LAWNICONS_APK" | grep -q Success || die "Lawnicons
 adb -s "$SERIAL" install -r "$APK" | grep -q Success || die "launcher install failed"
 adb -s "$SERIAL" shell appwidget grantbind --package "$PKG" --user 0 >/dev/null
 adb -s "$SERIAL" shell cmd role add-role-holder android.app.role.HOME "$PKG" >/dev/null 2>&1 || true
+# The scenes set `search.contacts: true`, and since #172 the launcher
+# reports that as permission-missing when it does not hold READ_CONTACTS,
+# which fails every scene's clean-report check and puts a permission banner
+# into pictures about the search layout. Granting it is the state a user who
+# turned contact search on is in. The other way out, `contacts: false` in
+# the fixtures, is a smaller diff but would change what the pictures show.
+out="$(adb -s "$SERIAL" shell pm grant "$PKG" android.permission.READ_CONTACTS 2>&1)" \
+  || die "could not grant READ_CONTACTS to $PKG: ${out:-no output}"
 
 FOLDABLE=0
 states="$(adb -s "$SERIAL" shell cmd device_state print-states 2>/dev/null | tr -d '\r')"
