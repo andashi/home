@@ -88,6 +88,84 @@ real number for that reason, in prose and in commit messages alike.
 A wrongly closed issue is not a bookkeeping problem. It takes a live defect off
 the list everyone reads while it is still failing builds.
 
+## Merging a pull request
+
+Three conditions, no exceptions and no judgement about how small the diff is:
+every check green, **zero** unresolved review threads, and CodeRabbit's review
+covering the **current head**. If the hourly quota is exhausted (10 included
+reviews per hour, rolling), wait for it. A pull request that waits an hour
+costs an hour; one merged unreviewed costs whatever it broke.
+
+Recount immediately before merging rather than trusting a count from earlier in
+the session: CodeRabbit posts after a push, so a thread can open between the
+check and the merge.
+
+**"Reviewed at the head" is not the same as "reviewed".** CodeRabbit reviews a
+push incrementally by default - it re-reads only the commits since its last
+run - and its verdict is the same green check either way. The range line in its
+comment says which kind you got:
+
+    Reviewing files that changed from the base of the PR and between <from> and <to>
+
+`<from>` equal to the pull request's base means the whole pull request was read
+in that run. `<from>` equal to some later commit means only the tail was, and
+everything before it was covered - if at all - by an earlier run. The
+incremental runs are supposed to chain, each starting where the last ended, and
+the chain usually holds.
+
+On #170 it appears not to have held. A `/simplify` commit landed shortly after a
+review, and the session working the pull request reported a following run whose
+range *started* at that commit rather than before it - which would leave the
+refactor at the heart of the pull request read by nothing. A full review,
+requested by hand, then found a real defect in exactly that commit: a grid item
+shrunk to fit and afterwards dropped for crossing the fold reported both that it
+had been resized and that it was gone.
+
+**That account could not be confirmed from the pull request afterwards, and
+that is the point.** CodeRabbit keeps one rolling summary comment and **edits it
+in place**, so every run overwrites the record of the one before. Hours later the
+pull request showed two base-anchored full reviews and one incremental run, and
+no trace of the run that would prove or disprove the gap. Whether the chain broke
+that day is now unanswerable - which means the chain cannot be audited after the
+fact by anyone, on any pull request. So do not try to audit it; remove the need
+for it:
+
+**Request a full review before merging.** It costs one of ten hourly reviews and
+replaces an argument about chain-of-custody with a single line that either reads
+from the base or does not. Check it mechanically:
+
+```bash
+pr=<n>
+base=$(gh pr view "$pr" --json baseRefOid --jq .baseRefOid)
+head=$(gh pr view "$pr" --json headRefOid --jq .headRefOid)
+gh api graphql -f query='
+{ repository(owner:"andashi", name:"home") { pullRequest(number:'"$pr"') {
+    reviews(last:30) { nodes { author{login} submittedAt lastEditedAt body } }
+    comments(last:30){ nodes { author{login} createdAt  updatedAt    body } } } } }' \
+  --jq '[ (.data.repository.pullRequest.reviews.nodes[]
+           | select(.author.login=="coderabbitai")
+           | {at:(.lastEditedAt // .submittedAt), body:.body}),
+          (.data.repository.pullRequest.comments.nodes[]
+           | select(.author.login=="coderabbitai")
+           | {at:(.updatedAt // .createdAt), body:.body}) ]
+        | map(select(.body | test("Reviewing files that changed")))
+        | sort_by(.at) | last
+        | if . == null then "NO REVIEW AT ALL"
+          else .body | capture("between (?<a>[0-9a-f]+) and (?<b>[0-9a-f]+)")
+                     | "\(.a) \(.b)" end'
+echo "base $base"
+echo "head $head"
+```
+
+The pair it prints must be exactly `base head`. `NO REVIEW AT ALL` means
+CodeRabbit has not reviewed this pull request in any form - it is printed rather
+than left blank on purpose, because an empty line here reads as "nothing to
+worry about" and means the opposite. Read **both** the reviews and the
+rolling comment, and sort by the edit time rather than the creation time: a
+re-requested full review arrives as a review, an automatic incremental one
+arrives as an edit to a comment created much earlier, and sorting on
+`createdAt` hands you the older of the two while looking correct.
+
 ## Feedback loop (no LSP)
 
 LSP is deliberately disabled for this project: Kotlin language servers on a
