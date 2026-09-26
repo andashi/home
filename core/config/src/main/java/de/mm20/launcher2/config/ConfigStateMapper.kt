@@ -68,9 +68,14 @@ fun ConfigState.toLauncherConfig(): LauncherConfig {
             wallpaper = wallpaperImage?.let { WallpaperConfig(image = it, target = wallpaperTarget) },
             // Complete, except a colour scheme a person made, which has no slug.
             theme = ThemeConfig(mode = themeMode, colors = themeColors),
+            // Complete, like glass (#3 slice 1).
+            systemBars = SystemBarsConfig(
+                statusBar = StatusBarConfig(hidden = statusBarHidden, icons = statusBarIcons),
+                navigationBar = NavigationBarConfig(hidden = navigationBarHidden, icons = navigationBarIcons),
+            ),
         ),
         home = HomeConfig(
-            searchBar = SearchBarConfig(position = searchBarPosition),
+            searchBar = SearchBarConfig(position = searchBarPosition, fixed = searchBarFixed),
             favorites = favorites,
             widgets = WidgetsConfig(enabled = widgetsEnabled),
             grid = GridConfig(
@@ -79,6 +84,7 @@ fun ConfigState.toLauncherConfig(): LauncherConfig {
                 layouts = gridLayouts,
                 labels = gridLabels,
             ),
+            lockRotation = rotationLocked,
         ),
     )
 }

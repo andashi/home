@@ -157,6 +157,7 @@ internal object ConfigSchema {
         listOf(
             GlassContrastSerializer, SearchBarPositionInSearchSerializer, SearchResultLayoutSerializer,
             ThemeModeSerializer, ThemeColorsSerializer,
+            StatusBarIconsSerializer, NavigationBarIconsSerializer,
         )
             .associateBy { it.descriptor.serialName }
 

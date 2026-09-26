@@ -117,6 +117,36 @@ class ConfigStateMapperTest {
         )
     }
 
+    /** Served complete, like glass: a host compares field by field without knowing the defaults. */
+    @Test
+    fun `the home and system bar read-back carries every key, defaults and set values alike`() {
+        val defaults = ConfigState().toLauncherConfig()
+        assertEquals(false, defaults.home?.searchBar?.fixed)
+        assertEquals(false, defaults.home?.lockRotation)
+        assertEquals(
+            SystemBarsConfig(
+                statusBar = StatusBarConfig(hidden = false, icons = SystemBarIcons.Auto),
+                navigationBar = NavigationBarConfig(hidden = false, icons = SystemBarIcons.Auto),
+            ),
+            defaults.appearance?.systemBars,
+        )
+
+        val set = ConfigState(
+            searchBarFixed = true, rotationLocked = true,
+            statusBarHidden = true, statusBarIcons = SystemBarIcons.Dark,
+            navigationBarHidden = true, navigationBarIcons = SystemBarIcons.Light,
+        ).toLauncherConfig()
+        assertEquals(true, set.home?.searchBar?.fixed)
+        assertEquals(true, set.home?.lockRotation)
+        assertEquals(
+            SystemBarsConfig(
+                statusBar = StatusBarConfig(hidden = true, icons = SystemBarIcons.Dark),
+                navigationBar = NavigationBarConfig(hidden = true, icons = SystemBarIcons.Light),
+            ),
+            set.appearance?.systemBars,
+        )
+    }
+
     @Test
     fun `serialized mapping round-trips through the parser and diffs to nothing`() {
         val state = ConfigState(

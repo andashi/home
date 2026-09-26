@@ -10,6 +10,9 @@ import de.mm20.launcher2.config.ThemeColors
 import de.mm20.launcher2.config.ThemeMode
 import de.mm20.launcher2.preferences.BuiltInColorSchemes
 import de.mm20.launcher2.preferences.ColorScheme
+import de.mm20.launcher2.config.SystemBarIcons
+import de.mm20.launcher2.preferences.ScreenOrientation
+import de.mm20.launcher2.preferences.SystemBarColors
 import de.mm20.launcher2.preferences.LauncherDataStore
 import de.mm20.launcher2.preferences.LauncherSettingsData
 import kotlinx.coroutines.flow.Flow
@@ -140,6 +143,15 @@ internal class LauncherConfigSettingsImpl(
             } else {
                 SearchBarPosition.Top
             },
+            // #3 slice 1: the fixed bar, the system bars, the rotation lock.
+            searchBarFixed = data.searchBarFixed,
+            statusBarHidden = data.systemBarsHideStatus,
+            statusBarIcons = data.systemBarsStatusColors.toIcons(),
+            navigationBarHidden = data.systemBarsHideNav,
+            navigationBarIcons = data.systemBarsNavColors.toIcons(),
+            // Anything but Auto locks portrait (LauncherScaffoldVM), a stored
+            // Landscape from an older build included.
+            rotationLocked = data.uiOrientation != ScreenOrientation.Auto,
             widgetsEnabled = data.homeScreenWidgets,
             gridColumns = data.homeGridColumns,
             gridLocked = data.homeGridLocked,
@@ -178,6 +190,20 @@ internal class LauncherConfigSettingsImpl(
 
             is ConfigMutation.SetSearchBarPosition -> copy(
                 searchBarBottom = mutation.position == SearchBarPosition.Bottom,
+            )
+
+            is ConfigMutation.SetSearchBarFixed -> copy(searchBarFixed = mutation.fixed)
+
+            is ConfigMutation.SetSystemBars -> copy(
+                systemBarsHideStatus = mutation.statusHidden ?: systemBarsHideStatus,
+                systemBarsStatusColors = mutation.statusIcons?.toColors() ?: systemBarsStatusColors,
+                systemBarsHideNav = mutation.navigationHidden ?: systemBarsHideNav,
+                systemBarsNavColors = mutation.navigationIcons?.toColors() ?: systemBarsNavColors,
+            )
+
+            // What the settings screen's switch writes (HomescreenSettingsScreenVM).
+            is ConfigMutation.SetRotationLock -> copy(
+                uiOrientation = if (mutation.locked) ScreenOrientation.Portrait else ScreenOrientation.Auto,
             )
 
             is ConfigMutation.SetWidgetsEnabled -> copy(homeScreenWidgets = mutation.enabled)
@@ -249,3 +275,16 @@ internal class LauncherConfigSettingsImpl(
 
 /** The contact search provider for the device's own contacts (upstream's `local`). */
 private const val ContactsProvider = "local"
+
+/** The contract's name for upstream's bar icon colour; two enums, since :core:config does not see :core:preferences. */
+private fun SystemBarColors.toIcons(): SystemBarIcons = when (this) {
+    SystemBarColors.Auto -> SystemBarIcons.Auto
+    SystemBarColors.Light -> SystemBarIcons.Light
+    SystemBarColors.Dark -> SystemBarIcons.Dark
+}
+
+private fun SystemBarIcons.toColors(): SystemBarColors = when (this) {
+    SystemBarIcons.Auto -> SystemBarColors.Auto
+    SystemBarIcons.Light -> SystemBarColors.Light
+    SystemBarIcons.Dark -> SystemBarColors.Dark
+}
