@@ -184,6 +184,20 @@ locked, like `home.grid.locked`.
   writer; the provisioning side pulls before it pushes and refuses a push
   when the device file's hash changed since the last pull
   (andashi/provisioning#2).
+- **What write-back puts in the file can leave the device, but only by an
+  owner's explicit action, and none of it by a new path.** Some of what
+  write-back writes is authored on the device: a search action's `label` and
+  `url` as someone typed them (a URL can carry a private endpoint), and the
+  favorites, which name the apps a person uses. The same values already
+  left the device before write-back:
+  - by the read-back provider (section 4, shell only), which is what
+    provisioning's `--pull` copies into a catalog in git;
+  - by the platform backup when the owner enables it (`allowBackup`), through
+    the settings and databases they live in.
+
+  Write-back adds a copy inside `launcher.json`, so "the file carries only
+  what the host put there" stops being true. A key added to write-back is
+  therefore a value that can end up in a zone's catalog: weigh it as that.
 
 ### 3. Convergence, not application
 
