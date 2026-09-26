@@ -23,7 +23,8 @@ export_re='^[[:space:]]*export[[:space:]]+LOCK_OWNER([=[:space:]]|$)'
 assign_re='^[[:space:]]*LOCK_OWNER='
 call_re='emulator/run\.sh|"\$RUN"'
 # A line that only assigns (RUN="$GOS_REPO/emulator/run.sh") names run.sh
-# without calling it; an assignment prefixed to a command still calls it.
+# without calling it; an assignment prefixed to a command still calls it,
+# and so does a value that substitutes a command, $(...) or backticks.
 only_assign_re='^[[:space:]]*(local[[:space:]]+|readonly[[:space:]]+)?[A-Za-z_][A-Za-z0-9_]*=("[^"]*"|'"'"'[^'"'"']*'"'"'|[^[:space:]]*)[[:space:]]*$'
 # Entry points only: lib/ relies on the calling script's export, and a
 # *.test.sh drives fakes, not instances.
@@ -41,7 +42,7 @@ for script in *.sh; do
       continue
     fi
     [[ "$line" =~ $assign_re ]] && assigned=1
-    [[ "$line" =~ $only_assign_re ]] && continue
+    if [[ "$line" =~ $only_assign_re ]] && [[ "$line" != *'$('* ]] && [[ "$line" != *'`'* ]]; then continue; fi
     if [ "$exported" = 0 ] && [ -z "$first_call" ] && [[ "$line" =~ $call_re ]]; then first_call=$n; fi
   done <<<"$(cat "$script")"
   if [ -n "$first_call" ]; then
