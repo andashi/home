@@ -31,6 +31,16 @@ case_ run-sh-before-the-export fail '(cd "$GOS_REPO" && emulator/run.sh start)
 export LOCK_OWNER="x@$SERIAL#$$"'
 case_ export-before-run-sh pass 'export LOCK_OWNER="x@$SERIAL#$$"
 "$RUN" start'
+# An export of an unset variable gives run.sh no owner either.
+case_ export-without-a-value fail 'export LOCK_OWNER
+emulator/run.sh stop'
+case_ assigned-then-exported pass 'LOCK_OWNER="x@$SERIAL#$$"
+export LOCK_OWNER
+"$RUN" stop'
+# Naming run.sh in an assignment is not calling it.
+case_ run-path-assigned-before-the-export pass 'RUN="$GOS_REPO/emulator/run.sh"
+export LOCK_OWNER="x@$SERIAL#$$"
+"$RUN" start'
 case_ run-sh-without-an-owner fail '(cd "$GOS_REPO" && SERIAL="$SERIAL" emulator/run.sh stop)'
 case_ no-run-sh-no-owner pass 'adb -s "$SERIAL" shell true'
 case_ comment-mentions-run-sh pass '# emulator/run.sh is started by the caller'
