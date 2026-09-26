@@ -199,9 +199,27 @@ plain `last:100` is enough for them because CodeRabbit submits a *new* review
 per full run rather than editing an old one, so the newest is the newest by
 submission time. Read **both** the reviews and the
 rolling comment, and sort by the edit time rather than the creation time: a
-re-requested full review arrives as a review, an automatic incremental one
-arrives as an edit to a comment created much earlier, and sorting on
-`createdAt` hands you the older of the two while looking correct.
+re-requested full review *with findings* arrives as a review, an automatic
+incremental one arrives as an edit to a comment created much earlier, and
+sorting on `createdAt` hands you the older of the two while looking correct.
+A re-requested review that finds nothing arrives only as that edit - see below.
+
+**A full review that finds nothing creates no review object at all.** Its range
+line then exists only in the rolling comment, so a check that reads the reviews
+alone concludes the review never ran. The command above is already right about
+this - it reads both - but do not reason about the reviews API on its own when
+a pull request comes back clean.
+
+**A rebase invalidates a review anchored before it, even when the ranges
+chain.** This is judgement, not a command: two reviews can meet exactly, with no
+commit unread, and still be worthless, because the same diff against a different
+tree is a different change. On #175 the ranges abutted perfectly; a review
+anchored at the current base then found **seven** real defects, every one of them
+about a shared library that had been rewritten in the meantime. Glass's
+conflict-free rebase the same day is the mechanism in miniature: `open_search`
+resolved to a different function with different behaviour, no conflict, nothing
+red. So after a rebase, request a full review and check the range starts at the
+**current** base - a chained one does not count, however tidy it looks.
 
 ## Feedback loop (no LSP)
 
@@ -287,6 +305,59 @@ afterthought (see `docs/architecture/adr/0005-testing-strategy.md`):
     reads under `set -u` before any of it ran: red before the fix for the
     wrong reason, and red after it, which a count of the passes read as
     green.
+
+### Ways a test runs and tests nothing
+
+Seven distinct mechanisms, all met in this repository within one week. None is
+carelessness; every one of them looks correct while you are writing it. That is
+why a green run is not evidence and the deliberate break is, and it is why the
+test policy above asks for the break rather than the pass.
+
+1. **The task did not run.** A test reading a file outside its source set
+   without declaring it as an input leaves the task `UP-TO-DATE`, so a changed
+   file runs nothing (`ConfigParserTest` and ADR 0002).
+2. **`set -e` inside an `if`.** Ignored there, even in a subshell, so a helper
+   run as `if helper; then` cannot exit on an error (#155).
+3. **The suite executed no case.** A shell test that sources the script under
+   test inherits its `exit`, ending the file before a single check runs. It
+   passed, and the exit code said so (#168).
+4. **A name changed meaning under a rebase.** `open_search` moved into the
+   shared library keeping its name and losing what it did. No conflict, nothing
+   red, and the step waited for an answer to a query nobody had made (#164).
+5. **The assertion target went inert.** An isolation check overrode
+   `appearance.transparency.background`, accepted but not served since #24, so
+   it compared a value neither profile ever had (#176).
+6. **A blind control.** The control tapped through an empty query, which lists
+   every app, so the item it looked for was on screen whatever the code did -
+   and the unfixed build passed (#187).
+7. **The assertion ran off the test thread.** A concurrent test asserting on a
+   worker thread never sees the failure, so a wrong result stays green (#190).
+
+The check that catches all seven is the same one: break what the test guards,
+and watch **that** test go red and the others stay green. It costs a minute.
+Say in the pull request which tests fall over without the change and which are
+deliberate controls that pass in both states.
+
+**Two rules for the shared shell library in `e2e/lib/`, both learned the hard
+way in one day.**
+
+**A function that moves into the library keeps its name only if it keeps its
+behaviour.** Different behaviour means a different name, so old call sites fail
+loudly instead of changing silently. `open_search` moved into the library under
+its own name while losing what it did - the script's version typed a letter and
+closed the keyboard, the library's only opened search - and a *conflict-free*
+rebase silently pointed an existing call at the new meaning. The step then waited
+for a banner answering a query nobody had made. Git cannot see this: two valid
+files, one name, different meaning. Renaming to `open_search_field` made the old
+name exist nowhere, so any stale call site goes red; a library test asserts
+`! declare -F open_search`.
+
+**A helper's log goes to stderr when its callers might capture stdout.** Found
+twice within ten minutes: `grant_home_role` logging through `log` corrupted
+`measure-footprint`'s TSV, which promises data on stdout, and `retry_for`'s
+elapsed-time line would have corrupted the JSON that `query_json_as_user`'s
+callers parse. Both now write to stderr, and the test for the second asserts
+that stdout is exactly the predicate's output.
 
 ## Test harness (Phase 1)
 
@@ -400,6 +471,17 @@ guarantees. Treat security as a design constraint, not a checklist item:
   even indirectly — flag it explicitly instead of merging it silently.
 
 ## Releases
+
+**Run the L4 scenarios from `clean` before tagging, and say so in the
+annotation.** CI covers L1, L2 and L3 on every pull request and on the release
+itself, but L4 is manual and local by design, so nothing runs it unless a person
+does. Two contract drifts sat undetected for weeks because of that. One scenario fed
+the launcher `home.dock`, a key removed at schema 2; the same scenario's
+isolation check overrode `appearance.transparency.background`, inert since #24.
+Both failed loudly the moment somebody ran that scenario from `clean`, and
+nobody had since #24. Finding them cost an afternoon and a wrong escalation into the
+provisioning repository. One person, one hour per release, catches that class
+before it ships rather than weeks after.
 
 A release is made by pushing an annotated tag. `.github/workflows/release.yml`
 publishes the annotation verbatim as the release body, so the annotation is
