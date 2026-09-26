@@ -13,7 +13,8 @@
 #               [! | && | if | then | do] "$RUN" verb ...
 #   not a call  RUN="$GOS_REPO/emulator/run.sh"   (a plain quoted assignment)
 # Any other line that names run.sh or $RUN - a command substitution, eval, an
-# unquoted or braced $RUN - fails as unreadable, by file and line. Not
+# unquoted or braced $RUN, a second mention next to a readable call, any
+# mention in an export line - fails as unreadable, by file and line. Not
 # catching a form and not knowing it was not caught are different failures;
 # only the second is dangerous, so an unknown form never passes quietly.
 # A call must come after `export LOCK_OWNER=value` (or an assignment and then
@@ -44,6 +45,14 @@ for script in *.sh; do
   while IFS= read -r line || [ -n "$line" ]; do
     n=$((n + 1))
     [[ "$line" =~ ^[[:space:]]*# ]] && continue
+    # A readable line names run.sh once; an export names it not at all.
+    # grep exits 1 on a line without a mention; that one status is a count
+    # of zero, any other aborts.
+    mentions="$( { grep -oE "$mention_re" <<<"$line" || [ $? -eq 1 ]; } | wc -l)"
+    if [ "$mentions" -gt 1 ] || { [ "$mentions" = 1 ] && [[ "$line" =~ $export_re ]]; }; then
+      printf '::error file=e2e/%s,line=%s::names run.sh in a form this guard cannot read; use a form from its contract (e2e/check-lock-owner.sh)\n' "$script" "$n"
+      found=1; continue
+    fi
     if [[ "$line" =~ $export_re ]]; then
       # With a value only: its own, or an earlier assignment's.
       if [[ "$line" =~ LOCK_OWNER= ]] || [ "$assigned" = 1 ]; then exported=1; fi
