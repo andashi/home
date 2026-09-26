@@ -91,6 +91,8 @@ restore() {
   timeout 20 adb -s "$SERIAL" wait-for-device \
     || { timeout 10 adb -s "$SERIAL" reconnect >/dev/null 2>&1; timeout 30 adb -s "$SERIAL" wait-for-device; } \
     || die "$SERIAL stayed offline after loading $1"
+  # A snapshot can bring adbd back as root; every sample runs as uid 2000.
+  unrooted_shell
 }
 # Gone only when pidof ran and found nothing (exit 1, no output): a hung or
 # failed adb call is not "gone", or a warm start could be recorded as cold.
@@ -130,7 +132,16 @@ cat > "$WORK/zone.jsonc" <<'EOF'
 }
 EOF
 
-apks=("$@")
+# Copied first, and installed and hashed as copied: a build replacing an
+# input path mid-run must not leave the header naming another APK than the
+# one measured.
+apks=(); srcs=()
+for i in $(seq 0 $(($# - 1))); do
+  src="${@:$((i + 1)):1}"
+  [ -f "$src" ] || die "no such APK: $src"
+  cp "$src" "$WORK/build-$i.apk"
+  apks+=("$WORK/build-$i.apk"); srcs+=("$src")
+done
 # Checked before any setup: a committed series is never overwritten.
 revlist=""
 for k in "${!apks[@]}"; do revlist+="$(rev "$k")-"; done
@@ -142,7 +153,7 @@ for k in "${!apks[@]}"; do
   apk="${apks[k]}"
   # Run-specific, so an existing snapshot of that name is never taken or deleted.
   name="cold-$RUN_TOKEN-m$k"; names+=("$name")
-  log "preparing $name from $(basename "$apk")"
+  log "preparing $name from $(basename "${srcs[k]}")"
   restore clean
   adb -s "$SERIAL" install -r "$apk" >/dev/null
   sh_ cmd role add-role-holder android.app.role.HOME "$PKG"
