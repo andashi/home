@@ -1,13 +1,11 @@
 package de.mm20.launcher2.ui.locals
 
-import android.icu.util.Calendar
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.geometry.Size
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavKey
-import de.mm20.launcher2.preferences.TimeFormat
 import de.mm20.launcher2.preferences.ui.CardStyle
 import de.mm20.launcher2.preferences.ui.GridSettings
 import de.mm20.launcher2.ui.theme.WallpaperColors
@@ -23,9 +21,6 @@ val LocalShowAppDetails = compositionLocalOf { false }
 
 val LocalGridSettings = compositionLocalOf { GridSettings() }
 
-val LocalTimeFormat = staticCompositionLocalOf { TimeFormat.TwentyFourHour }
-val LocalCalendarSystems = staticCompositionLocalOf<List<Calendar?>> { listOf(null, null) }
-val LocalCalendarSystemIds = staticCompositionLocalOf<List<String?>> { listOf(null, null) }
 
 val LocalSnackbarHostState = compositionLocalOf { SnackbarHostState() }
 

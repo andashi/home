@@ -329,9 +329,6 @@
     <string name="preference_grid_list_icons">App-Icons in Liste anzeigen</string>
     <string name="preference_grid_list_style_summary">Apps als Liste statt als Raster darstellen</string>
     <string name="preference_grid_list_icons_summary">Icons in der App-Liste anzeigen</string>
-    <string name="preference_clock_widget_time_format">Zeitformat</string>
-    <string name="preference_clock_widget_time_format_24h">24-Stunden</string>
-    <string name="preference_clock_widget_time_format_12h">12-Stunden</string>
     <string name="widget_removed">Widget entfernt</string>
     <string name="missing_permission_call_contacts_settings">Telefonberechtigung wird benötigt, um Anrufe zu starten</string>
     <string name="preference_widgets_on_home_screen_summary">Widgets auf dem Startbildschirm anstatt auf einer eigenen Seite anzeigen</string>
@@ -407,9 +404,6 @@
     <string name="add_font_style">Schriftstil hinzufügen</string>
     <string name="remove_font_style">Diesen Schriftstil entfernen</string>
     <string name="gesture_action_widgets_indexed">Widgets (%1$d)</string>
-    <string name="preference_calendar_system">Kalendersystem</string>
-    <string name="preference_calendar_system_primary">Primärer Kalender</string>
-    <string name="preference_calendar_system_secondary">Sekundärer Kalender</string>
     <string name="preference_category_donate">Entwicklung unterstützen</string>
     <string name="gesture_action_category_launcher">Launcherseiten</string>
     <string name="gesture_action_category_system">Systemaktionen</string>

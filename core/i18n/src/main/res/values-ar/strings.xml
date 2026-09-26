@@ -360,9 +360,6 @@
     <string name="preference_grid_list_icons_summary">إظهار الأيقونات في عرض القائمة</string>
     <string name="preference_contacts_call_on_tap_summary">بدء مكالمة بدون تأكيد عند النقر على رقم هاتف</string>
     <string name="widget_removed">تمت إزالة عنصر واجهة المستخدم</string>
-    <string name="preference_clock_widget_time_format">تنسيق الوقت</string>
-    <string name="preference_clock_widget_time_format_24h">24-ساعة</string>
-    <string name="preference_clock_widget_time_format_12h">12-ساعة</string>
     <string name="missing_permission_call_contacts_settings">مطلوب إذن الاتصال لبدء المكالمات</string>
     <string name="preference_contacts_call_on_tap">انقر للاتصال</string>
     <string name="save_as_file">حفظ كملف</string>
@@ -425,9 +422,6 @@
     <string name="typo_preview_short2">يكتب</string>
     <string name="typo_preview_short1">آفا</string>
     <string name="typo_preview_extra_short">أبجد</string>
-    <string name="preference_calendar_system_secondary">التقويم الثانوي</string>
-    <string name="preference_calendar_system_primary">التقويم الاساسي</string>
-    <string name="preference_calendar_system">تقويم النظام الافتراضي</string>
     <string name="remove_font_style">قم بإزالة نمط الخط</string>
     <string name="add_font_style">إضافة نمض خط</string>
     <string name="gesture_action_launch_select_app">حدد التطبيق أو الاختصار</string>

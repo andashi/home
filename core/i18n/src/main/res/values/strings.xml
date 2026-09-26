@@ -326,9 +326,6 @@
     <string name="preference_screen_debug">Debug</string>
     <string name="preference_screen_debug_summary">Troubleshooting tools</string>
     <string name="preference_category_widgets">Widgets</string>
-    <string name="preference_clock_widget_time_format">Time format</string>
-    <string name="preference_clock_widget_time_format_24h">24-hour</string>
-    <string name="preference_clock_widget_time_format_12h">12-hour</string>
     <string name="widget_use_theme_colors">Use theme color</string>
     <string name="preference_screen_search">Search</string>
     <string name="preference_screen_search_summary">Search, tags, excluded results</string>
@@ -567,9 +564,6 @@
     <string name="preference_form_of_address_masc">Masculine</string>
     <string name="preference_transliteration">Preferred transliteration</string>
     <string name="preference_transliteration_auto">Automatic</string>
-    <string name="preference_calendar_system">Calendar system</string>
-    <string name="preference_calendar_system_primary">Primary calendar</string>
-    <string name="preference_calendar_system_secondary">Secondary calendar</string>
     <string name="select_tag">Select tag</string>
     <string name="create_tag_title">New tag</string>
     <string name="edit_tag_title">Edit tag</string>

@@ -195,9 +195,6 @@
     <string name="preference_grid_list_icons_summary">הצגת הסמלים בתצוגת רשימה</string>
     <string name="preference_screen_debug">ניפוי שגיאות</string>
     <string name="preference_screen_debug_summary">כלים לפתרון בעיות</string>
-    <string name="preference_clock_widget_time_format">תבנית השעה</string>
-    <string name="preference_clock_widget_time_format_24h">24 שעות</string>
-    <string name="preference_clock_widget_time_format_12h">12 שעות</string>
     <string name="widget_use_theme_colors">החלת צבע ערכת הנושא</string>
     <string name="preference_search_contacts">אנשי קשר</string>
     <string name="preference_screen_buildinfo_summary">עוד מידע על בנייה זו של יישום זה</string>
@@ -412,9 +409,6 @@
     <string name="typo_preview_medium2">נוף איילון</string>
     <string name="typo_preview_long">איך בלש תפס גמד\nרוצח עז קטנה 12390</string>
     <string name="gesture_action_widgets_indexed">יישומונים (%1$d)</string>
-    <string name="preference_calendar_system">סוג לוח-השנה</string>
-    <string name="preference_calendar_system_primary">לוח-השנה הראשי</string>
-    <string name="preference_calendar_system_secondary">לוח-שנה משני</string>
     <string name="preference_category_donate">תמיכה במפתחים</string>
     <string name="gesture_action_launch_select_app">בחירת יישום או קיצור-דרך</string>
     <string name="gesture_action_widgets_empty">ריקון</string>

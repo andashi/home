@@ -81,8 +81,6 @@ import de.mm20.launcher2.ui.settings.icons.IconsSettingsRoute
 import de.mm20.launcher2.ui.settings.icons.IconsSettingsScreen
 import de.mm20.launcher2.ui.settings.license.LicenseRoute
 import de.mm20.launcher2.ui.settings.license.LicenseScreen
-import de.mm20.launcher2.ui.settings.locale.CalendarSettingsRoute
-import de.mm20.launcher2.ui.settings.locale.CalendarSettingsScreen
 import de.mm20.launcher2.ui.settings.locale.LocaleSettingsRoute
 import de.mm20.launcher2.ui.settings.locale.LocaleSettingsScreen
 import de.mm20.launcher2.ui.settings.main.MainRoute
@@ -197,9 +195,6 @@ class SettingsActivity : BaseActivity() {
             }
             entry<LocaleSettingsRoute> {
                 LocaleSettingsScreen()
-            }
-            entry<CalendarSettingsRoute> {
-                CalendarSettingsScreen()
             }
             entry<LicenseRoute> {
                 LicenseScreen(it.libraryName)

@@ -289,9 +289,6 @@
     <string name="preference_grid_list_style_summary">Mostrar aplicaciones en una lista en lugar de una cuadrícula</string>
     <string name="action_clear">Limpiar</string>
     <string name="action_more_actions">Más acciones</string>
-    <string name="preference_clock_widget_time_format_12h">12 horas</string>
-    <string name="preference_clock_widget_time_format">Formato de hora</string>
-    <string name="preference_clock_widget_time_format_24h">24 horas</string>
     <string name="preference_contacts_call_on_tap">Toca para llamar</string>
     <string name="widget_removed">Widget eliminado</string>
     <string name="action_done">Hecho</string>
@@ -408,9 +405,6 @@
     <string name="gesture_action_launch_select_app">Selecciona aplicación o acceso directo</string>
     <string name="add_font_style">Añadir estilo de fuente</string>
     <string name="remove_font_style">Eliminar este estilo de fuente</string>
-    <string name="preference_calendar_system">Calendario del sistema</string>
-    <string name="preference_calendar_system_primary">Calendario primario</string>
-    <string name="preference_calendar_system_secondary">Calendario secundario</string>
     <string name="create_tag_title">Nueva etiqueta</string>
     <string name="edit_tag_title">Editar etiqueta</string>
     <string name="dialog_discard_unsaved">¿Salir sin guardar?</string>

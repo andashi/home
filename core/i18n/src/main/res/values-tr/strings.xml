@@ -309,9 +309,6 @@
     <string name="preference_screen_debug">Hata Ayıklama</string>
     <string name="preference_screen_debug_summary">Sorun giderme araçları</string>
     <string name="preference_category_widgets">Widgetlar</string>
-    <string name="preference_clock_widget_time_format">Saat biçimi</string>
-    <string name="preference_clock_widget_time_format_24h">24 saat</string>
-    <string name="preference_clock_widget_time_format_12h">12 saat</string>
     <string name="widget_use_theme_colors">Tema rengini kullan</string>
     <string name="preference_clockwidget_favorites_part">Dok</string>
     <string name="preference_clockwidget_favorites_part_summary">Sabitlenmiş öğelerin dokta göster</string>
@@ -559,9 +556,6 @@
     <string name="typo_preview_medium2">Önizleme</string>
     <string name="typo_preview_long">Çevik kahverenkli tilki\n123456789\'un üstünden atlar</string>
     <string name="gesture_action_widgets_indexed">%1$d Widgetları</string>
-    <string name="preference_calendar_system">Takvim sistemi</string>
-    <string name="preference_calendar_system_primary">Birincil takvim</string>
-    <string name="preference_calendar_system_secondary">İkincil takvim</string>
     <string name="preference_category_donate">Geliştirmeyi destekle</string>
     <string name="gesture_action_category_launcher">Başlatıcı sayfaları</string>
     <string name="gesture_action_category_system">Sistem eylemleri</string>

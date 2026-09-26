@@ -276,9 +276,6 @@
         <item quantity="one">%1$d مورد پاک‌شده.</item>
         <item quantity="other">%1$d مورد پاک‌شده.</item>
     </plurals>
-    <string name="preference_clock_widget_time_format">فرمت زمان</string>
-    <string name="preference_clock_widget_time_format_24h">24 ساعته</string>
-    <string name="preference_clock_widget_time_format_12h">12 ساعته</string>
     <string name="widget_use_theme_colors">به‌کارگیری رنگ‌های پوسته</string>
     <string name="preference_clockwidget_favorites_part">نوار ابزار</string>
     <string name="preference_clockwidget_favorites_part_summary">نمایش اولین ردیف موارد دلخواه</string>

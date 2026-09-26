@@ -203,7 +203,6 @@
     <string name="preference_screen_shapes">Forme</string>
     <string name="preference_shapes_extra_round">Mai rotund</string>
     <string name="preference_shapes_rect">Dreptunghiular</string>
-    <string name="preference_clock_widget_time_format">Formatul orei</string>
     <string name="preference_contacts_call_on_tap">Atinge pentru a apela</string>
     <string name="search_action_label">Nume</string>
     <string name="preference_favorites_frequently_used_summary">Afișează elementele utilizate frecvent în favorite</string>

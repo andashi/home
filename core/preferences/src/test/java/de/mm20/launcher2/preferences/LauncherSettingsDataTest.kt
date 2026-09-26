@@ -113,13 +113,6 @@ class LauncherSettingsDataTest {
     }
 
     @Test
-    fun `legacy clockWidgetTimeFormat key still maps to localeTimeFormat`() = runTest {
-        val json = """{ "schemaVersion": 6, "clockWidgetTimeFormat": "24h" }"""
-        val decoded = serializer.readFrom(ByteArrayInputStream(json.toByteArray()))
-        assertEquals(TimeFormat.TwentyFourHour, decoded.localeTimeFormat)
-    }
-
-    @Test
     fun `an enum value this build no longer knows is skipped, not fatal`() = runTest {
         // Removing a feature removes its filter-bar value (ADR 0008). A settings
         // file written before that still names it, and an unknown value inside a

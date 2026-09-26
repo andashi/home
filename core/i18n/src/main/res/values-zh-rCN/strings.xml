@@ -323,9 +323,6 @@
     <string name="profile_private_profile_action_lock">锁定私人空间</string>
     <string name="preference_compact_tags">紧凑型标签</string>
     <string name="customize_item_label">标签</string>
-    <string name="preference_clock_widget_time_format">时间格式</string>
-    <string name="preference_clock_widget_time_format_24h">24小时</string>
-    <string name="preference_clock_widget_time_format_12h">12小时</string>
     <string name="missing_permission_call_contacts_settings">需要通话权限才能开始通话</string>
     <string name="import_theme_exists">已有的样式将会被覆盖</string>
     <string name="preference_search_bar_style_transparent">透明</string>
@@ -405,9 +402,6 @@
     <string name="gesture_action_category_apps">应用与快捷方式</string>
     <string name="gesture_action_widgets_empty">没有组件</string>
     <string name="gesture_action_launch_select_app">选择应用或快捷方式</string>
-    <string name="preference_calendar_system">历制</string>
-    <string name="preference_calendar_system_primary">主历制</string>
-    <string name="preference_calendar_system_secondary">第二历制</string>
     <string name="preference_category_donate">支持开发</string>
     <string name="preference_search_apps_show_details">显示应用信息</string>
     <string name="preference_search_apps_show_details_summary">在上下文菜单中显示应用的版本与包名</string>

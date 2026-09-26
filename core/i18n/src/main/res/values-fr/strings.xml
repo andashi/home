@@ -354,11 +354,8 @@
     <string name="apps_profile_private">Privé</string>
     <string name="app_label_locked_profile">Verrouillé</string>
     <string name="profile_private_profile_action_lock">Verrouiller l\'espace privé</string>
-    <string name="preference_clock_widget_time_format_12h">12 heures</string>
-    <string name="preference_clock_widget_time_format_24h">24 heures</string>
     <string name="missing_permission_call_contacts_settings">La permission d\'accès au téléphone est nécessaire pour démarrer un appel</string>
     <string name="widget_removed">Widget supprimé</string>
-    <string name="preference_clock_widget_time_format">Format de l\'heure</string>
     <string name="preference_grid_list_icons_summary">Afficher les icônes pour l\'affichage en liste</string>
     <string name="preference_grid_list_style">Afficher les applications en tant que liste</string>
     <string name="preference_grid_list_icons">Afficher les icônes d\'applications dans la liste</string>
@@ -435,9 +432,6 @@
     <string name="remove_font_style">Retirer ce style de police</string>
     <string name="preference_transliteration">Translittération préférée</string>
     <string name="preference_transliteration_auto">Automatique</string>
-    <string name="preference_calendar_system">Système calendaire</string>
-    <string name="preference_calendar_system_primary">Calendrier principal</string>
-    <string name="preference_calendar_system_secondary">Calendrier secondaire</string>
     <string name="select_tag">Choisir une étiquette</string>
     <string name="create_tag_title">Nouvelle étiquette</string>
     <string name="edit_tag_title">Modifier l’étiquette</string>

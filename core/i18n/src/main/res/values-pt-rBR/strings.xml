@@ -316,15 +316,12 @@
     <string name="profile_work_profile_action_lock">Pausar aplicativos de trabalho</string>
     <string name="contact_info_work">Trabalho</string>
     <string name="missing_permission_call_contacts_settings">A permissão de telefone é necessária para iniciar chamadas</string>
-    <string name="preference_clock_widget_time_format_12h">12-horas</string>
     <string name="preference_contacts_call_on_tap_summary">Iniciar a chamada imediatamente ao tocar em um número de telefone</string>
     <string name="profile_private_profile_state_locked">Espaço Privado está bloqueado.</string>
     <string name="preference_grid_list_style">Exibir aplicativos em lista</string>
     <string name="preference_grid_list_icons">Exibir ícones de aplicativos em lista</string>
-    <string name="preference_clock_widget_time_format_24h">24-horas</string>
     <string name="preference_grid_list_style_summary">Exibir aplicativos por lista em vez de grade</string>
     <string name="preference_grid_list_icons_summary">Mostrar ícones na exibição por lista</string>
-    <string name="preference_clock_widget_time_format">Formato de horário</string>
     <string name="customize_item_visibility">Exibir em</string>
     <string name="contact_info_mobile">Celular</string>
     <string name="profile_work_profile_action_unlock">Despausar</string>
@@ -395,9 +392,6 @@
     <string name="preference_form_of_address_fem">Feminino</string>
     <string name="preference_form_of_address_masc">Masculino</string>
     <string name="preference_transliteration_auto">Automático</string>
-    <string name="preference_calendar_system">Sistema de calendário</string>
-    <string name="preference_calendar_system_primary">Calendário principal</string>
-    <string name="preference_calendar_system_secondary">Calendário secundário</string>
     <string name="typo_preview_medium1">Hamburgo</string>
     <string name="typo_preview_medium2">Prévia</string>
     <string name="typo_preview_long">Só juíza chata não vê\ncâmera frágil\n1234790</string>
