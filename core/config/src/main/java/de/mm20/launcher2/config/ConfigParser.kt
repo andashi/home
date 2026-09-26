@@ -79,6 +79,7 @@ object ConfigParser {
             ),
             "glass" to KeyEffect.Applied,
             "wallpaper" to KeyEffect.Applied,
+            "theme" to KeyEffect.Applied,
         ),
         "appearance.glass" to mapOf(
             "blur" to KeyEffect.Applied,
@@ -91,6 +92,10 @@ object ConfigParser {
         "appearance.wallpaper" to mapOf(
             "image" to KeyEffect.Applied,
             "target" to KeyEffect.Applied,
+        ),
+        "appearance.theme" to mapOf(
+            "mode" to KeyEffect.Applied,
+            "colors" to KeyEffect.Applied,
         ),
         "home" to mapOf(
             "searchBar" to KeyEffect.Applied,

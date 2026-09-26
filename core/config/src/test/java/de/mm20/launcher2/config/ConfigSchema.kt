@@ -154,7 +154,10 @@ internal object ConfigSchema {
 
     /** The enums with a field-naming serializer, by the serial name of its descriptor; their values come from it. */
     private val fieldEnums: Map<String, FieldEnumSerializer<*>> =
-        listOf(GlassContrastSerializer, SearchBarPositionInSearchSerializer, SearchResultLayoutSerializer)
+        listOf(
+            GlassContrastSerializer, SearchBarPositionInSearchSerializer, SearchResultLayoutSerializer,
+            ThemeModeSerializer, ThemeColorsSerializer,
+        )
             .associateBy { it.descriptor.serialName }
 
     /** Every layout has the same items, so their limits are keyed once, under `*`. */

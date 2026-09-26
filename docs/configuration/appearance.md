@@ -1,7 +1,7 @@
 # Appearance
 
-`appearance` holds the look of the home screen: the glass surfaces and the
-wallpaper. Design background: [ADR 0004](../architecture/adr/0004-liquid-glass-design.md).
+`appearance` holds the look of the home screen: the glass surfaces, the
+wallpaper and the theme. Design background: [ADR 0004](../architecture/adr/0004-liquid-glass-design.md).
 
 ## Glass
 
@@ -130,6 +130,37 @@ the reload reports `wallpaper-pending-foreground`.
 This managed wallpaper is also the only source of the glass backdrop. The
 launcher cannot read a wallpaper set elsewhere without permissions it does not
 ask for.
+
+## Theme
+
+`appearance.theme` picks light or dark and the colour scheme.
+
+<!-- config -->
+```json
+{
+  "schemaVersion": 2,
+  "appearance": { "theme": { "mode": "system", "colors": "system" } }
+}
+```
+
+These are the defaults. Every key is optional; an absent one keeps what the
+device has.
+
+| Key | What it does | Accepted | Default |
+|---|---|---|---|
+| `appearance.theme.mode` | `light`, `dark`, or `system` to follow the system's dark theme | enum | `system` |
+| `appearance.theme.colors` | The launcher's built-in colour scheme: `system` follows the system palette, `black-and-white` and `high-contrast` replace it | enum | `system` |
+
+`system` for `colors` is the zone's own palette: each zone gets its colour
+from the system (its Monet seed), and the launcher follows it. A file names
+one of the built-in schemes; it cannot define a palette. `black-and-white`
+and `high-contrast` replace the zone's colour on the home screen, so a zone
+that uses them no longer shows its colour there.
+
+On the device, a person can also pick a colour scheme they made themselves.
+The file cannot name one, so write-back leaves `colors` as the file wrote it,
+and the reload report carries a `write-back-skipped:colors-custom` warning
+saying so.
 
 ## Removed: transparency
 
