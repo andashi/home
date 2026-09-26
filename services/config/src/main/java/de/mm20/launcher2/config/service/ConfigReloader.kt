@@ -117,7 +117,13 @@ class ConfigReloader(
         }
 
         val (before, mutations) = try {
-            configStore.readState().let { it to ConfigDiffer.diff(config, it) }
+            configStore.readState().let { state ->
+                // A new measurement fits the layouts the file names even where
+                // the store agrees with the file: a layout kept as written
+                // before its rows were known is exactly that (GridRowsSource).
+                val compared = if (trigger == ReloadTrigger.GridMeasured) state.copy(gridInitialized = false) else state
+                state to ConfigDiffer.diff(config, compared)
+            }
         } catch (e: Exception) {
             return persist(
                 ReloadReport(

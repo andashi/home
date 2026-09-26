@@ -5,6 +5,11 @@ import androidx.test.core.app.ApplicationProvider
 import de.mm20.launcher2.config.ReloadReport
 import de.mm20.launcher2.config.ReloadTrigger
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runCurrent
@@ -276,5 +281,83 @@ class ConfigWatcherTest {
         val report = reportStore.read()!!
         assertEquals(configFile().readBytes().sha256Hex(), report.configSha256)
         assertTrue(report.configSha256!!.matches(Regex("[0-9a-f]{64}")))
+    }
+
+    // ----- a layout kept as written until its rows are measured (#90) -----
+
+    private fun TestScope.measuringWatcher(
+        store: FakeConfigStore,
+        measurements: MutableStateFlow<Map<String, Int>>,
+        reportStore: ReloadReportStore = ReloadReportStore(context),
+    ) = ConfigWatcher(context, ConfigReloader(store, reportStore), reportStore, scope = this, measurements = measurements)
+
+    /**
+     * The reload reads the file on the IO pool, which virtual time does not
+     * run, so this waits in real time for the store to have applied [n]
+     * times - bounded, and on the condition rather than a sleep.
+     */
+    private suspend fun FakeConfigStore.awaitApplies(n: Int) = withContext(Dispatchers.Default) {
+        withTimeout(5_000) { while (applyCount < n) delay(5) }
+    }
+
+    /**
+     * Before the first draw a layout's rows are not known, so a config pushed
+     * then is kept as written (GridRowsSource). Nothing else re-fits it: the
+     * next reload would find the file and the store agreeing. So the
+     * measurement itself reloads, and that reload fits the layout.
+     */
+    @Test
+    fun `the first measurement of the grid reloads the config to fit it`() = runTest {
+        val store = FakeConfigStore()
+        val reportStore = ReloadReportStore(context)
+        val measurements = MutableStateFlow<Map<String, Int>>(emptyMap())
+        writeConfig()
+        val job = measuringWatcher(store, measurements, reportStore).watchMeasurements()!!
+        runCurrent()
+        assertEquals("nothing is measured yet", 0, store.applyCount)
+
+        measurements.value = mapOf("fold" to 7)
+        runCurrent()
+        store.awaitApplies(1)
+
+        assertEquals(1, store.applyCount)
+        assertEquals(ReloadTrigger.GridMeasured, reportStore.read()!!.trigger)
+        job.cancel()
+    }
+
+    @Test
+    fun `a change of the measured rows reloads again`() = runTest {
+        val store = FakeConfigStore()
+        val measurements = MutableStateFlow<Map<String, Int>>(emptyMap())
+        writeConfig()
+        val job = measuringWatcher(store, measurements).watchMeasurements()!!
+
+        measurements.value = mapOf("fold" to 7)
+        runCurrent()
+        store.awaitApplies(1)
+        // The same rows again are no new measurement (a StateFlow does not emit them).
+        measurements.value = mapOf("fold" to 7)
+        runCurrent()
+        measurements.value = mapOf("fold" to 6)
+        runCurrent()
+        store.awaitApplies(2)
+
+        assertEquals(2, store.applyCount)
+        job.cancel()
+    }
+
+    @Test
+    fun `a measurement without a config file reloads nothing`() = runTest {
+        val store = FakeConfigStore()
+        val measurements = MutableStateFlow<Map<String, Int>>(emptyMap())
+        val job = measuringWatcher(store, measurements).watchMeasurements()!!
+
+        measurements.value = mapOf("fold" to 7)
+        runCurrent()
+        // Nothing to wait for; give a reload that should not happen the time one would take.
+        withContext(Dispatchers.Default) { delay(200) }
+
+        assertEquals(0, store.applyCount)
+        job.cancel()
     }
 }

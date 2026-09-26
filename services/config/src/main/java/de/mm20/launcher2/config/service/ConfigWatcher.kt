@@ -7,6 +7,9 @@ import de.mm20.launcher2.config.ReloadTrigger
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -38,11 +41,14 @@ class ConfigWatcher(
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO),
     private val debounceMs: Long = DefaultDebounceMs,
     private val baselineStore: AppliedBaselineStore? = null,
+    /** This device's measured grid rows (MeasuredGridRows); null when nothing measures. */
+    private val measurements: Flow<Map<String, Int>>? = null,
 ) {
     private val appContext = context.applicationContext
 
     private var observer: FileObserver? = null
     private var startJob: Job? = null
+    private var measureJob: Job? = null
     internal var debounceJob: Job? = null
 
     /**
@@ -68,11 +74,14 @@ class ConfigWatcher(
             startObserver(dir)
             startupCheck()
         }
+        if (measureJob?.isActive != true) measureJob = watchMeasurements()
     }
 
     fun stop() {
         startJob?.cancel()
         startJob = null
+        measureJob?.cancel()
+        measureJob = null
         debounceJob?.cancel()
         debounceJob = null
         observer?.stopWatching()
@@ -141,6 +150,24 @@ class ConfigWatcher(
         null
     } catch (e: SecurityException) {
         null
+    }
+
+    /**
+     * Fits a layout that was kept as written because its rows were not known
+     * yet (GridRowsSource): each new measurement reloads the config with
+     * [ReloadTrigger.GridMeasured], which applies the grid even where the
+     * file and the store agree. Without this, a config pushed before the
+     * first draw would stay unfitted, and unreported, until an unrelated
+     * change reloaded it.
+     */
+    internal fun watchMeasurements(): Job? {
+        val measurements = measurements ?: return null
+        return scope.launch {
+            measurements.filter { it.isNotEmpty() }.distinctUntilChanged().collect {
+                val file = ConfigLocation.configFile(appContext) ?: return@collect
+                if (file.exists()) reloader.reload(file, ReloadTrigger.GridMeasured)
+            }
+        }
     }
 
     internal fun startupCheck(): Job? {

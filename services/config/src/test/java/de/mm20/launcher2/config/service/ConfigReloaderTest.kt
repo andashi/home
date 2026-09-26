@@ -6,6 +6,7 @@ import de.mm20.launcher2.config.ConfigMutation
 import de.mm20.launcher2.config.ConfigState
 import de.mm20.launcher2.config.SearchState
 import de.mm20.launcher2.config.Diagnostic
+import de.mm20.launcher2.config.ReloadTrigger
 import de.mm20.launcher2.config.Severity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -189,6 +190,33 @@ class ConfigReloaderTest {
 
         assertTrue(report.success)
         assertEquals(listOf("home.grid"), report.appliedMutations)
+    }
+
+    /**
+     * A layout kept as written because its rows were not measured yet is
+     * fitted once they are: the reload for the measurement applies the grid
+     * even though the file and what is stored agree, which is exactly the
+     * state a layout kept as written is in.
+     */
+    @Test
+    fun `a reload for a new grid measurement applies the grid the file and the store agree on`() = runTest {
+        val layout = """{"items": [{"id": "dock", "widget": "favorites", "x": 4, "y": 6, "w": 4, "h": 1}]}"""
+        val text = """{"schemaVersion": 2, "home": {"grid": {"layouts": {"fold": $layout}}}}"""
+        val stored = ConfigState(
+            gridLayouts = mapOf(
+                "fold" to de.mm20.launcher2.config.GridLayoutConfig(
+                    listOf(de.mm20.launcher2.config.GridItemConfig(id = "dock", widget = "favorites", x = 4, y = 6, w = 4, h = 1)),
+                ),
+            ),
+        )
+
+        val control = FakeConfigStore(state = stored)
+        newReloader(control).first.reload(text, ReloadTrigger.Broadcast)
+        val measured = FakeConfigStore(state = stored)
+        newReloader(measured).first.reload(text, ReloadTrigger.GridMeasured)
+
+        assertEquals(listOf("read", "apply:[]"), control.events)
+        assertEquals(listOf("read", "apply:[home.grid]"), measured.events)
     }
 
     @Test

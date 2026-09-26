@@ -26,6 +26,15 @@ enum class ReloadTrigger {
      */
     @SerialName("self-write")
     SelfWrite,
+
+    /**
+     * The grid of this device was measured for the first time, or its rows
+     * changed. A layout kept as written because its rows were not known yet
+     * is fitted now; the reload applies the grid even where the file and the
+     * store agree, because a layout kept as written is exactly that.
+     */
+    @SerialName("grid-measured")
+    GridMeasured,
 }
 
 @Serializable
