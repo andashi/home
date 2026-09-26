@@ -36,6 +36,10 @@ export GPU="${GPU:-host}"
 PKG=org.andashi.home
 RUNS="${RUNS:-10}"
 STARTS="${STARTS:-3}"
+# The host's 1-minute load average may not exceed this when a round starts;
+# a round above it ends the run. Set before the first sample, never judged
+# afterwards: a series on a busy host cannot resolve tens of milliseconds.
+MAX_LOAD="${MAX_LOAD:-}"
 LOCK_OWNER="${LOCK_OWNER:-measure-coldstart@$SERIAL#$$}"
 WORK="$(mktemp -d)"
 RUN="$GOS_REPO/emulator/run.sh"
@@ -133,8 +137,8 @@ revlist=""
 for k in "${!apks[@]}"; do revlist+="$(rev "$k")-"; done
 OUT="${OUT:-$HERE/measurements/coldstart-${revlist%-}.tsv}"
 {
-  printf '# serial %s, overlay %s, GPU %s, adb uid 2000, runs %s, starts %s\n' \
-    "$SERIAL" "$(basename "$OVERLAY_DIR")" "$GPU" "$RUNS" "$STARTS"
+  printf '# serial %s, overlay %s, GPU %s, adb uid 2000, runs %s, starts %s, max load %s\n' \
+    "$SERIAL" "$(basename "$OVERLAY_DIR")" "$GPU" "$RUNS" "$STARTS" "${MAX_LOAD:-none}"
   for k in "${!apks[@]}"; do
     printf '# %s = rev %s, apk sha256 %s\n' "${names[k]}" "$(rev "$k")" "$(sha256sum "${apks[k]}" | cut -d' ' -f1)"
   done
@@ -149,6 +153,11 @@ for run in $(seq "$RUNS"); do
     order=(); for ((i = ${#names[@]} - 1; i >= 0; i--)); do order+=("${names[i]}"); done
   fi
   for name in "${order[@]}"; do
+    if [ -n "$MAX_LOAD" ]; then
+      load="$(cut -d' ' -f1 /proc/loadavg)"
+      awk -v l="$load" -v m="$MAX_LOAD" 'BEGIN { exit !(l <= m) }' \
+        || die "host load $load above MAX_LOAD $MAX_LOAD before $name, round $run: run ended"
+    fi
     restore "$name"
     sleep 3; wake_screen; sleep 2
     for start in $(seq "$STARTS"); do
