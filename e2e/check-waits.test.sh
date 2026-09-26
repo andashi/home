@@ -84,6 +84,12 @@ S
 verdict caught "a sleep after a quoted #" <<'S'
 for i in $(seq 3); do echo "#"; sleep 1; done
 S
+verdict caught "a sleep after an escaped quote and a spaced # inside double quotes" <<'S'
+for i in $(seq 3); do echo "a\" #"; sleep 1; done
+S
+verdict caught "a sleep after an escaped # outside quotes (control)" <<'S'
+for i in $(seq 3); do echo a \# b; sleep 1; done
+S
 verdict caught "\$SECONDS only in the body of a counted loop" <<'S'
 for i in $(seq 5); do echo "$SECONDS"; sleep 1; done
 S
