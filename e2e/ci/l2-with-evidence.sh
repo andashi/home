@@ -132,9 +132,13 @@ clear_foreign_anrs() {
 }
 
 # Presses the Wait button (android:id/aerr_wait), once per foreign package,
-# and only on an unambiguous screen: exactly one ANR window, and that one
-# foreign. The button cannot be tied to a package in the dump, and a tap that
-# landed on an ANR of ours would let a test that should fail pass (#191).
+# and only on an unambiguous screen: the ANR windows up belong to exactly
+# one package, and a foreign one. The button cannot be tied to a package in
+# the dump, and a tap that landed on an ANR of ours would let a test that
+# should fail pass (#191). Packages, not windows, are what is counted: the
+# window list names one dialog on several lines (its window, the focus), and
+# two dialogs of one foreign package leave nothing of ours to tap - an ANR of
+# ours would be a second package, and nothing is pressed.
 # The window list is read after the slow dump and right before the tap, so
 # what is left unguarded is one read to one tap, well under a second. An ANR
 # of ours that comes up inside that span would take the tap, and the foreign
@@ -161,7 +165,7 @@ press_wait_on_foreign() { # $@ = the foreign packages
     count="$(printf '%s\n' "$now" | grep -c . || true)"
     [ "$count" -gt 0 ] || return 0
     if [ "$count" -ne 1 ]; then
-      printf 'More than one ANR window is up; not pressing Wait, the button could be anyone'"'"'s.\n'
+      printf 'ANR windows of more than one package are up; not pressing Wait, the button could be anyone'"'"'s.\n'
       return 1
     fi
     only="$now"

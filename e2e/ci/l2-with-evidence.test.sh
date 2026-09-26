@@ -207,6 +207,18 @@ waits_only_on_a_single_dialog() {
 }
 check "no Wait button is pressed while more than one ANR window is up" waits_only_on_a_single_dialog
 
+# What is counted is packages, not windows (#191 review). Two dialogs of one
+# foreign package still get Wait: there is nothing of ours under either, and
+# a line count would refuse it, because the window list names one dialog on
+# more than one line (the window and the focus).
+waits_on_two_dialogs_of_one_foreign_package() {
+  windows "Application Not Responding: com.android.systemui" "Application Not Responding: com.android.systemui"
+  : > "$WORK/sticky"
+  clear_foreign_anrs > "$WORK/log" 2>&1 || return 1
+  [ "$(taps)" -eq 1 ] && grep -q 'Gone after Wait' "$WORK/log"
+}
+check "two dialogs of one foreign package get their Wait pressed" waits_on_two_dialogs_of_one_foreign_package
+
 # The window list is read after the slow dump, right before the tap, so an
 # ANR of ours that came up during the dump is seen and nothing is pressed. A
 # tap meant for a foreign dialog must not land on ours: a test that should
