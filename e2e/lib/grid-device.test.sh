@@ -480,4 +480,33 @@ check "open_search_field waits three rounds on a slow host and says what they co
 old_open_search_is_gone() { ! declare -F open_search >/dev/null; }
 check "no open_search exists, so an old call site fails loudly" old_open_search_is_gone
 
+# Round-based waits inside a wall-clock wait stop at the outer deadline too:
+# the pause and the next round are skipped once it has passed (#179 review).
+rounds_keep_the_outer_deadline() {
+  local start=$SECONDS
+  failing() { sleep 1; return 1; }
+  retry_for 2 retry_rounds 5 1 failing
+  [ $((SECONDS - start)) -le 3 ]
+}
+check "retry_rounds inside retry_for stops at the outer deadline" rounds_keep_the_outer_deadline
+# tap_text's own adb calls (the window insets it measures, the tap itself)
+# are bounded like every other call: a fake that finds the node but hangs on
+# them must not hold tap_text past its deadline (#179 review).
+mkdir -p "$WORK/tapwedge"
+cat > "$WORK/tapwedge/adb" <<'EOF'
+#!/usr/bin/env bash
+case "$*" in
+  *"cat /sdcard/grid-dump.xml"*) echo '<hierarchy><node text="Search" bounds="[100,900][300,1000]"/></hierarchy>' ;;
+  *"dumpsys window"*|*"input tap"*) sleep 60 ;;
+  *"wm size"*) echo "Physical size: 1080x1920" ;;
+esac
+EOF
+chmod +x "$WORK/tapwedge/adb"
+tap_text_is_bounded() {
+  local start=$SECONDS
+  ( PATH="$WORK/tapwedge:$PATH" timeout 60 bash -c "$(declare -f); $(declare -p SERIAL PKG WORK 2>/dev/null); ADB_DEADLINE=\$((SECONDS + 3)); tap_text Search" ) >/dev/null 2>&1
+  [ $((SECONDS - start)) -le 6 ]
+}
+check "tap_text's own adb calls give up at the deadline" tap_text_is_bounded
+
 exit "$failed"

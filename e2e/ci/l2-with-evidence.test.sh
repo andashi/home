@@ -112,6 +112,17 @@ recheck_is_wall_clock() {
 }
 check "a hanging window read cannot carry the re-check past its deadline" recheck_is_wall_clock
 
+# The pause between reads is capped by what is left: a sleep longer than the
+# deadline must not start a read after it (#179 review).
+sleep_is_capped_by_the_deadline() {
+  windows "Application Not Responding: com.android.launcher3"
+  : > "$WORK/sticky"
+  local start=$SECONDS
+  ANR_RECHECK_SECONDS=3 ANR_RECHECK_SLEEP=5 clear_stock_launcher_anr > "$WORK/log" 2>&1 || return 1
+  [ $((SECONDS - start)) -le 4 ]
+}
+check "the re-check's pause cannot carry it past its deadline" sleep_is_capped_by_the_deadline
+
 # The count, not the colour: a suite that reports only its passes hides the
 # checks that never ran (AGENTS.md, test policy).
 # "Named exactly, never a pattern" has to be true of the match as well:

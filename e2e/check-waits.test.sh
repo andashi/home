@@ -68,4 +68,13 @@ S
 verdict quiet "a sleep only in a comment" <<'S'
 for i in $(seq 3); do echo "$i"; done  # no sleep here
 S
+verdict caught "an arithmetic for loop with a sleep" <<'S'
+for ((i = 0; i < 5; i++)); do check && break; sleep 1; done
+S
+verdict caught "a sleep after a quoted #" <<'S'
+for i in $(seq 3); do echo "#"; sleep 1; done
+S
+verdict caught "\$SECONDS only in the body of a counted loop" <<'S'
+for i in $(seq 5); do echo "$SECONDS"; sleep 1; done
+S
 exit "$failed"
