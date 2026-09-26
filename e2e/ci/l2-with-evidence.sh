@@ -50,6 +50,12 @@ set -uo pipefail
 # Self-contained on purpose: e2e/ci/ runs on a bare runner, without the
 # device library.
 : "${ANR_RECHECK_SECONDS:=5}" "${ANR_RECHECK_SLEEP:=1}"
+# The Wait fallback has one wall-clock deadline of its own: the dump, the
+# read, the tap and the re-check after it all share it (#191 review).
+: "${ANR_WAIT_SECONDS:=10}"
+# Set when a Wait left its foreign dialog up, the one signature under which a
+# tap may have closed an ANR of ours instead; it fails a run that passes.
+WAIT_AMBIGUOUS=0
 
 anr_packages() { # [$1 = seconds for the read, default 10] one package per ANR window on screen
   timeout "${1:-10}" adb shell dumpsys window windows |
@@ -111,8 +117,8 @@ clear_foreign_anrs() {
   # Still there. A persistent process (System UI) survives force-stop: on the
   # device its pid stayed the same and the dialog stayed up (#189). Its
   # dialog's Wait button closes it without killing anything. The button
-  # cannot be tied to a package in the dump, so it is pressed only while no
-  # ANR window of ours is on screen - the one pressed could be ours.
+  # cannot be tied to a package in the dump, so it is pressed only on an
+  # unambiguous screen - see press_wait_on_foreign.
   if press_wait_on_foreign "${foreign[@]}"; then
     printf 'Gone after Wait.\n'
     return 0
@@ -125,43 +131,65 @@ clear_foreign_anrs() {
   return 0
 }
 
-# Presses the Wait button (android:id/aerr_wait) of the topmost ANR dialog,
-# once per foreign package, while every ANR window on screen is foreign.
+# Presses the Wait button (android:id/aerr_wait), once per foreign package,
+# and only on an unambiguous screen: exactly one ANR window, and that one
+# foreign. The button cannot be tied to a package in the dump, and a tap that
+# landed on an ANR of ours would let a test that should fail pass (#191).
+# The window list is read after the slow dump and right before the tap, so
+# what is left unguarded is one read to one tap, well under a second. An ANR
+# of ours that comes up inside that span would take the tap, and the foreign
+# dialog would stay up: that signature is checked after every tap, and it
+# fails a run that passes (WAIT_AMBIGUOUS).
 # Succeeds when none of $@ is left.
 press_wait_on_foreign() { # $@ = the foreign packages
-  local round now pkg bounds
+  local round now pkg bounds count only
+  local wdeadline=$((SECONDS + ANR_WAIT_SECONDS))
+  wleft() { echo $(( wdeadline - SECONDS > 0 ? wdeadline - SECONDS : 0 )); }
   for round in "$@"; do
-    now="$(anr_packages 5)" || return 1
-    local left=0 ours_up=0
-    while IFS= read -r pkg; do
-      [ -n "$pkg" ] || continue
-      if is_ours "$pkg"; then ours_up=1; else left=1; fi
-    done <<<"$now"
-    [ "$left" = 1 ] || return 0
-    if [ "$ours_up" = 1 ]; then
-      printf 'An ANR window of the app under test is up too; not pressing Wait, it could be ours.\n'
-      return 1
-    fi
-    timeout 10 adb shell uiautomator dump /sdcard/anr-dump.xml >/dev/null 2>&1 || return 1
-    bounds="$(timeout 10 adb shell cat /sdcard/anr-dump.xml 2>/dev/null | tr -d '\r' |
+    [ "$(wleft)" -gt 0 ] || { printf 'The Wait fallback ran out of time.\n'; return 1; }
+    timeout "$(wleft)" adb shell uiautomator dump /sdcard/anr-dump.xml >/dev/null 2>&1 || return 1
+    [ "$(wleft)" -gt 0 ] || { printf 'The Wait fallback ran out of time.\n'; return 1; }
+    bounds="$(timeout "$(wleft)" adb shell cat /sdcard/anr-dump.xml 2>/dev/null | tr -d '\r' |
       grep -o 'resource-id="android:id/aerr_wait"[^>]*bounds="\[[0-9]*,[0-9]*\]\[[0-9]*,[0-9]*\]"' |
       sed -n 's/.*bounds="\[\([0-9]*\),\([0-9]*\)\]\[\([0-9]*\),\([0-9]*\)\]".*/\1 \2 \3 \4/p' | head -1)"
+    # Read last, right before the tap.
+    [ "$(wleft)" -gt 0 ] || { printf 'The Wait fallback ran out of time.\n'; return 1; }
+    now="$(anr_packages "$(wleft)")" || return 1
+    count="$(printf '%s\n' "$now" | grep -c . || true)"
+    [ "$count" -gt 0 ] || return 0
+    if [ "$count" -ne 1 ]; then
+      printf 'More than one ANR window is up; not pressing Wait, the button could be anyone'"'"'s.\n'
+      return 1
+    fi
+    only="$now"
+    # Only ours is left: the foreign ones are gone, and ours stays.
+    is_ours "$only" && return 0
     [ -n "$bounds" ] || { printf 'No Wait button in the dump.\n'; return 1; }
     set -- $bounds
-    printf 'Pressing Wait on the ANR dialog that survived force-stop.\n'
-    timeout 10 adb shell input tap $(( ($1 + $3) / 2 )) $(( ($2 + $4) / 2 ))
+    printf 'Pressing Wait on the ANR dialog of %s, which survived force-stop.\n' "$only"
+    timeout "$(( $(wleft) > 0 ? $(wleft) : 1 ))" adb shell input tap $(( ($1 + $3) / 2 )) $(( ($2 + $4) / 2 ))
     # The dialog closes a moment after the tap: the device's first look right
     # after it still found System UI's (#189). Wait for the list to change,
-    # bounded like the re-check above.
-    local before="$now" deadline=$((SECONDS + ANR_RECHECK_SECONDS)) pause
-    while [ "$SECONDS" -lt "$deadline" ]; do
-      pause=$((deadline - SECONDS))
+    # within the same deadline.
+    local before="$now" pause
+    while [ "$(wleft)" -gt 0 ]; do
+      pause="$(wleft)"
       [ "$ANR_RECHECK_SLEEP" = 0 ] || sleep "$(( ANR_RECHECK_SLEEP < pause ? ANR_RECHECK_SLEEP : pause ))"
-      now="$(anr_packages "$(( deadline - SECONDS > 0 ? deadline - SECONDS : 1 ))")" || return 1
+      [ "$(wleft)" -gt 0 ] || break
+      now="$(anr_packages "$(wleft)")" || return 1
       [ "$now" = "$before" ] || break
     done
+    # A tap closes one dialog, the topmost. If the one it was meant for is
+    # still up, an ANR of ours may have come up just before the tap and been
+    # closed instead: that cannot be told apart from Wait not working, so it
+    # is flagged, and a run that passes is failed rather than trusted.
+    if printf '%s\n' "$now" | grep -Fxq -- "$only"; then
+      WAIT_AMBIGUOUS=1
+      printf '::error::Wait left the ANR dialog of %s up. A tap closes the topmost dialog, so an ANR of the app under test may have come up just before it and been closed instead; the run fails if its tests pass.\n' "$only"
+      return 1
+    fi
   done
-  now="$(anr_packages 5)" || return 1
+  now="$(anr_packages "$(( $(wleft) > 0 ? $(wleft) : 1 ))")" || return 1
   while IFS= read -r pkg; do
     [ -n "$pkg" ] || continue
     is_ours "$pkg" || return 1
@@ -175,6 +203,10 @@ clear_foreign_anrs
 
 "$@"
 status=$?
+if [ "$status" -eq 0 ] && [ "$WAIT_AMBIGUOUS" = 1 ]; then
+  printf '::error::The tests passed, but a Wait before them may have closed an ANR of the app under test (see above); failing the run so it is not taken for a pass.\n'
+  status=1
+fi
 [ "$status" -eq 0 ] && exit 0
 
 echo "::group::#113 evidence: windows on screen at $(adb shell cat /proc/uptime | cut -d' ' -f1) s since boot"

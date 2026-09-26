@@ -49,7 +49,12 @@ case "$*" in
     cat "$work/windows" ;;
   *"am force-stop "*) for a in "$@"; do pkg="$a"; done; echo "$pkg" >> "$work/stopped"
     [ -e "$work/sticky" ] || { grep -v "Application Not Responding: $pkg}" "$work/windows" > "$work/w2" || true; mv "$work/w2" "$work/windows"; } ;;
-  *"uiautomator dump"*) : ;;
+  *"uiautomator dump"*)
+    [ ! -e "$work/dumphangui" ] || sleep 60
+    # An ANR of ours that comes up while the (slow) dump runs.
+    if [ -e "$work/oursondump" ]; then
+      printf '  Window #8 Window{8 u0 Application Not Responding: org.andashi.home}:\n' >> "$work/windows"
+    fi ;;
   *"cat /sdcard/anr-dump.xml"*)
     if grep -q 'Application Not Responding' "$work/windows"; then
       echo '<hierarchy><node resource-id="android:id/aerr_wait" bounds="[75,966][1005,1110]"/></hierarchy>'
@@ -72,10 +77,11 @@ export ADB_FAKE_WORK="$WORK"
 export PATH="$WORK/bin:$PATH"
 # The re-check polls; the intervals are the script's own, shortened here so
 # the suite stays in seconds. The bound itself is what is under test.
-export ANR_RECHECK_SECONDS=3 ANR_RECHECK_SLEEP=0
+export ANR_RECHECK_SECONDS=3 ANR_RECHECK_SLEEP=0 ANR_WAIT_SECONDS=3
 
 windows() { # $@ = "Application Not Responding: <pkg>" entries, in z-order
-  : > "$WORK/windows"; rm -f "$WORK/stopped" "$WORK/sticky" "$WORK/dumphang" "$WORK/firstfail" "$WORK/taps" "$WORK/waitsticky" "$WORK/closing" "$WORK/closing.seen"
+  : > "$WORK/windows"; rm -f "$WORK/stopped" "$WORK/sticky" "$WORK/dumphang" "$WORK/firstfail" "$WORK/taps" "$WORK/waitsticky" "$WORK/closing" "$WORK/closing.seen" "$WORK/oursondump" "$WORK/dumphangui"
+  WAIT_AMBIGUOUS=0
   printf '  Window #1 Window{1 u0 com.example/com.example.Main}:\n' >> "$WORK/windows"
   local i=2 w
   for w in "$@"; do printf '  Window #%s Window{%s u0 %s}:\n' "$i" "$i" "$w" >> "$WORK/windows"; i=$((i + 1)); done
@@ -176,6 +182,73 @@ never_waits_while_ours_is_up() {
     grep -q 'Application Not Responding: org.andashi.home' "$WORK/windows"
 }
 check "no Wait button is pressed while an ANR window of ours is up" never_waits_while_ours_is_up
+
+# The Wait button cannot be tied to a package, so it is pressed only when the
+# screen is unambiguous: exactly one ANR window, and that one foreign. Two
+# survivors are reported and left, not guessed at.
+waits_only_on_a_single_dialog() {
+  windows "Application Not Responding: com.android.systemui" "Application Not Responding: com.android.phone"
+  : > "$WORK/sticky"
+  clear_foreign_anrs > "$WORK/log" 2>&1 || return 1
+  [ "$(taps)" -eq 0 ] && grep -qi 'still' "$WORK/log"
+}
+check "no Wait button is pressed while more than one ANR window is up" waits_only_on_a_single_dialog
+
+# The window list is read after the slow dump, right before the tap, so an
+# ANR of ours that came up during the dump is seen and nothing is pressed. A
+# tap meant for a foreign dialog must not land on ours: a test that should
+# fail would pass.
+sees_ours_arrive_during_the_dump() {
+  windows "Application Not Responding: com.android.systemui"
+  : > "$WORK/sticky"; : > "$WORK/oursondump"
+  clear_foreign_anrs > "$WORK/log" 2>&1 || return 1
+  [ "$(taps)" -eq 0 ] &&
+    grep -q 'Application Not Responding: org.andashi.home' "$WORK/windows"
+}
+check "an ANR of ours that comes up during the dump is seen before any tap" sees_ours_arrive_during_the_dump
+
+# The Wait fallback has one wall-clock deadline: a dump that hangs must not
+# carry it past ANR_WAIT_SECONDS (#191 review).
+wait_fallback_is_wall_clock() {
+  windows "Application Not Responding: com.android.systemui"
+  : > "$WORK/sticky"; : > "$WORK/dumphangui"
+  local start=$SECONDS
+  clear_foreign_anrs > "$WORK/log" 2>&1 || return 1
+  [ $((SECONDS - start)) -le $((ANR_RECHECK_SECONDS + ANR_WAIT_SECONDS + 2)) ]
+}
+check "a hanging dump cannot carry the Wait fallback past its deadline" wait_fallback_is_wall_clock
+
+# A tap closes one dialog, the topmost. If an ANR of ours came up just before
+# it, the tap closed ours and the foreign one is still there - so a foreign
+# dialog that survives its Wait is the one signature under which ours may have
+# been dismissed. It is flagged, never passed over (#191 review).
+flags_a_wait_that_left_its_dialog() {
+  windows "Application Not Responding: com.android.systemui"
+  : > "$WORK/sticky"; : > "$WORK/waitsticky"
+  clear_foreign_anrs > "$WORK/log" 2>&1 || return 1
+  [ "$WAIT_AMBIGUOUS" = 1 ] && grep -q '::error::' "$WORK/log"
+}
+check "a Wait that leaves its foreign dialog up is flagged" flags_a_wait_that_left_its_dialog
+
+# Control: a Wait that closed its dialog flags nothing.
+a_clean_wait_flags_nothing() {
+  windows "Application Not Responding: com.android.systemui"
+  : > "$WORK/sticky"
+  clear_foreign_anrs > "$WORK/log" 2>&1 || return 1
+  [ "$WAIT_AMBIGUOUS" = 0 ] && ! grep -q '::error::' "$WORK/log"
+}
+check "a Wait that closed its dialog flags nothing" a_clean_wait_flags_nothing
+
+# And the flag reaches the job: a run whose tests pass fails, so a dismissed
+# ANR of ours cannot turn into a pass.
+a_flagged_wait_fails_a_passing_run() {
+  windows "Application Not Responding: com.android.systemui"
+  : > "$WORK/sticky"; : > "$WORK/waitsticky"
+  local rc=0
+  bash ./l2-with-evidence.sh true > "$WORK/run" 2>&1 || rc=$?
+  [ "$rc" -ne 0 ] && grep -qi 'may have' "$WORK/run"
+}
+check "a flagged Wait fails a run whose tests pass" a_flagged_wait_fails_a_passing_run
 
 # The re-check is wall-clock time (#164). "5 tries, 1 s apart" read as five
 # seconds, but each try is a dumpsys over adb with no bound, so on a loaded
