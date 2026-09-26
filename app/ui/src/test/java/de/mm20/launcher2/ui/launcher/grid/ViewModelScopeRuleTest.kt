@@ -90,6 +90,10 @@ class ViewModelScopeRuleTest {
             vm.awaitIo()
         }
         assertFalse(vm.job.isCompleted)
-        vm.job.cancel()
+        // Ended by a rule of its own, not a bare cancel: the control must not
+        // leave behind the leak it demonstrates (#180 review). Whether that
+        // works is the contract tests' claim, not this one's.
+        val cleanup = ViewModelScopeRule()
+        cleanup.runAround { cleanup.track(vm) }
     }
 }
