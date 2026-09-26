@@ -509,4 +509,24 @@ tap_text_is_bounded() {
 }
 check "tap_text's own adb calls give up at the deadline" tap_text_is_bounded
 
+# A timed-out wait_report prints the last report it saw, even when the query
+# after it failed: a failed query must not wipe the evidence (#179 review).
+mkdir -p "$WORK/flaky"
+cat > "$WORK/flaky/adb" <<EOF
+#!/usr/bin/env bash
+case "\$*" in
+  *"content query"*"/diagnostics"*)
+    n=\$(( \$(cat "$WORK/flaky/n" 2>/dev/null || echo 0) + 1 )); echo "\$n" > "$WORK/flaky/n"
+    [ "\$n" = 1 ] && echo 'Row: 0 json={"success":false,"marker":"seen"}' || exit 1 ;;
+esac
+EOF
+chmod +x "$WORK/flaky/adb"
+timeout_keeps_the_last_report() {
+  local out
+  rm -f "$WORK/flaky/n"
+  out="$( ( PATH="$WORK/flaky:$PATH"; wait_report '.success == true' 3 test ) 2>&1 )" && return 1
+  grep -q '"marker":"seen"' <<<"$out"
+}
+check "a wait_report timeout prints the last report seen, not what a failed query left" timeout_keeps_the_last_report
+
 exit "$failed"
