@@ -53,6 +53,8 @@ object ConfigParser {
             "filterBar", "openKeyboard", "launchOnEnter", "reversed", "hiddenItemsButton",
             "barPosition",
             "actions",
+            // #3 slice 1.
+            "listIcons", "appDetails",
         ).associateWith { KeyEffect.Applied },
         // #106: one search action.
         "search.actions[]" to listOf("type", "label", "url", "package", "encoding")
@@ -61,7 +63,13 @@ object ConfigParser {
             "themed" to KeyEffect.Applied,
             "enforceThemed" to KeyEffect.Applied,
             "pack" to KeyEffect.Applied,
+            // #3 slice 1.
+            "size" to KeyEffect.Applied,
+            "adaptify" to KeyEffect.Applied,
+            "badges" to KeyEffect.Applied,
         ),
+        "icons.badges" to listOf("notifications", "shortcuts", "suspendedApps")
+            .associateWith { KeyEffect.Applied },
         "appearance" to mapOf(
             // No sub-table on purpose: its keys mean nothing any more, so
             // they are neither spell-checked nor validated, and the section

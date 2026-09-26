@@ -205,6 +205,8 @@ class ConfigSchemaTest {
             "pattern" -> JsonPrimitive("!")
             "maxLength" -> JsonPrimitive("a." + "a".repeat(limit.int)) // a package name in form, one too long
             "maxItems" -> JsonArray(List(limit.int + 1) { current.jsonArray.first() })
+            // Inside the range, between the steps.
+            "multipleOf" -> JsonPrimitive(current.jsonPrimitive.long + 1)
             else -> error("no way to break $keyword")
         }
     }

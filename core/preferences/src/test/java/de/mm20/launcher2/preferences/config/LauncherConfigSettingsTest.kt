@@ -189,6 +189,62 @@ class LauncherConfigSettingsTest {
         assertEquals("com.example.new", updated.iconsPack)
     }
 
+    // ---- icons: size, adaptify, badges (#3 slice 1) ----
+
+    @Test
+    fun `readState maps the icon size, adaptify and the badges`() = runTest {
+        val gateway = createGateway(
+            LauncherSettingsData(
+                gridIconSize = 56, iconsAdaptify = true,
+                badgesNotifications = false, badgesShortcuts = false, badgesSuspendedApps = false,
+            )
+        )
+
+        val state = gateway.readState()
+
+        assertEquals(56, state.iconSize)
+        assertEquals(true, state.adaptifyIcons)
+        assertEquals(false, state.badgeNotifications)
+        assertEquals(false, state.badgeShortcuts)
+        assertEquals(false, state.badgeSuspendedApps)
+    }
+
+    /** Control: fresh settings read back the defaults the state documents. */
+    @Test
+    fun `fresh settings read back the icon defaults`() = runTest {
+        val state = createGateway().readState()
+        val defaults = de.mm20.launcher2.config.ConfigState()
+
+        assertEquals(defaults.iconSize, state.iconSize)
+        assertEquals(defaults.adaptifyIcons, state.adaptifyIcons)
+        assertEquals(defaults.badgeNotifications, state.badgeNotifications)
+        assertEquals(defaults.badgeShortcuts, state.badgeShortcuts)
+        assertEquals(defaults.badgeSuspendedApps, state.badgeSuspendedApps)
+    }
+
+    @Test
+    fun `apply SetIcons writes the size, adaptify and badges it carries and nothing else`() = runTest {
+        val seed = LauncherSettingsData()
+        val gateway = createGateway(seed)
+
+        val updated = gateway.applyAndReturn(
+            listOf(
+                ConfigMutation.SetIcons(
+                    size = 64, adaptify = true,
+                    badgeNotifications = false, badgeShortcuts = false, badgeSuspendedApps = false,
+                )
+            )
+        )
+
+        assertEquals(
+            seed.copy(
+                gridIconSize = 64, iconsAdaptify = true,
+                badgesNotifications = false, badgesShortcuts = false, badgesSuspendedApps = false,
+            ),
+            updated,
+        )
+    }
+
     @Test
     fun `apply SetSearchBarPosition Bottom sets searchBarBottom true`() = runTest {
         val gateway = createGateway(LauncherSettingsData(searchBarBottom = false))
@@ -318,7 +374,7 @@ class LauncherConfigSettingsTest {
                 favoritesEnabled = false, searchAllApps = false, gridList = true, gridLabels = false,
                 contactSearchProviders = emptySet(), shortcutSearchEnabled = false, searchFilterBar = false,
                 searchBarKeyboard = false, searchLaunchOnEnter = false, searchResultsReversed = true,
-                hiddenItemsShowButton = true,
+                hiddenItemsShowButton = true, gridListIcons = false, appsShowDetails = false,
             )
         )
 
@@ -327,6 +383,7 @@ class LauncherConfigSettingsTest {
                 favorites = false, allApps = false, layout = SearchResultLayout.List, labels = false,
                 contacts = false, shortcuts = false, filterBar = false, openKeyboard = false,
                 launchOnEnter = false, reversed = true, hiddenItemsButton = true,
+                listIcons = false, appDetails = false,
             ),
             gateway.readState().search,
         )
@@ -348,6 +405,18 @@ class LauncherConfigSettingsTest {
         )
 
         assertEquals(seed.copy(gridList = true, searchResultsReversed = true), updated)
+    }
+
+    @Test
+    fun `apply SetSearch writes list icons and app details to their own fields`() = runTest {
+        val seed = LauncherSettingsData()
+        val gateway = createGateway(seed)
+
+        val updated = gateway.applyAndReturn(
+            listOf(ConfigMutation.SetSearch(SearchConfig(listIcons = false, appDetails = false)))
+        )
+
+        assertEquals(seed.copy(gridListIcons = false, appsShowDetails = false), updated)
     }
 
     @Test

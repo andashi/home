@@ -84,6 +84,11 @@ internal class LauncherConfigSettingsImpl(
             themedIcons = data.iconsThemed,
             enforceThemedIcons = data.iconsForceThemed,
             iconPack = data.iconsPack,
+            iconSize = data.gridIconSize,
+            adaptifyIcons = data.iconsAdaptify,
+            badgeNotifications = data.badgesNotifications,
+            badgeShortcuts = data.badgesShortcuts,
+            badgeSuspendedApps = data.badgesSuspendedApps,
             glassBlur = data.glassBlur,
             glassTint = data.glassTint,
             glassRadius = data.glassRadius,
@@ -108,6 +113,8 @@ internal class LauncherConfigSettingsImpl(
                     false -> InSearchBarPosition.Top
                     null -> InSearchBarPosition.Follow
                 },
+                listIcons = data.gridListIcons,
+                appDetails = data.appsShowDetails,
             ),
             searchBarPosition = if (data.searchBarBottom) {
                 SearchBarPosition.Bottom
@@ -143,6 +150,11 @@ internal class LauncherConfigSettingsImpl(
                 iconsThemed = mutation.themed ?: iconsThemed,
                 iconsForceThemed = mutation.enforceThemed ?: iconsForceThemed,
                 iconsPack = mutation.pack ?: iconsPack,
+                gridIconSize = mutation.size ?: gridIconSize,
+                iconsAdaptify = mutation.adaptify ?: iconsAdaptify,
+                badgesNotifications = mutation.badgeNotifications ?: badgesNotifications,
+                badgesShortcuts = mutation.badgeShortcuts ?: badgesShortcuts,
+                badgesSuspendedApps = mutation.badgeSuspendedApps ?: badgesSuspendedApps,
             )
 
             is ConfigMutation.SetSearchBarPosition -> copy(
@@ -191,6 +203,8 @@ internal class LauncherConfigSettingsImpl(
                         InSearchBarPosition.Follow -> null
                         null -> searchBarBottomInSearch
                     },
+                    gridListIcons = listIcons ?: gridListIcons,
+                    appsShowDetails = appDetails ?: appsShowDetails,
                 )
             }
 

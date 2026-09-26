@@ -911,7 +911,8 @@ class ConfigParserTest {
           "search": {
             "favorites": false, "allApps": false, "layout": "list", "labels": false,
             "contacts": false, "shortcuts": false, "filterBar": false, "openKeyboard": false,
-            "launchOnEnter": false, "reversed": true, "hiddenItemsButton": true
+            "launchOnEnter": false, "reversed": true, "hiddenItemsButton": true,
+            "listIcons": false, "appDetails": false
           }
         }
     """.trimIndent()
@@ -927,6 +928,7 @@ class ConfigParserTest {
                 favorites = false, allApps = false, layout = SearchResultLayout.List, labels = false,
                 contacts = false, shortcuts = false, filterBar = false, openKeyboard = false,
                 launchOnEnter = false, reversed = true, hiddenItemsButton = true,
+                listIcons = false, appDetails = false,
             ),
             result.config?.search,
         )
@@ -1000,5 +1002,61 @@ class ConfigParserTest {
         )
 
         assertEquals(emptyList<Diagnostic>(), result.diagnostics)
+    }
+
+    // ---- icons: size, adaptify, badges (#3 slice 1) ----
+
+    @Test
+    fun `every icons key parses, all away from its default, with nothing to report`() {
+        val result = ConfigParser.parse(
+            """{ "schemaVersion": 2, "icons": { "size": 64, "adaptify": true,
+                 "badges": { "notifications": false, "shortcuts": false, "suspendedApps": false } } }"""
+        )
+
+        assertTrue(result.isSuccess)
+        assertEquals(emptyList<Diagnostic>(), result.diagnostics)
+        assertEquals(
+            IconsConfig(
+                size = 64, adaptify = true,
+                badges = IconBadgesConfig(notifications = false, shortcuts = false, suspendedApps = false),
+            ),
+            result.config?.icons,
+        )
+    }
+
+    /**
+     * The settings screen offers 32 to 64 dp in steps of eight, and the
+     * write-back only ever produces those; the file is untrusted input, so
+     * anything else is an error at the field, like a glass value.
+     */
+    @Test
+    fun `an icon size the launcher does not offer fails at its path`() {
+        for (size in listOf(24, 50, 72, 0, -48)) {
+            val result = ConfigParser.parse("""{ "schemaVersion": 2, "icons": { "size": $size } }""")
+
+            assertFalse("size $size", result.isSuccess)
+            val error = result.diagnostics.single { it.code == "invalid-icons" }
+            assertEquals(Severity.Error, error.severity)
+            assertEquals("icons.size", error.path)
+        }
+    }
+
+    /** Control: every size the settings screen offers is accepted. */
+    @Test
+    fun `every icon size the launcher offers is accepted`() {
+        for (size in listOf(32, 40, 48, 56, 64)) {
+            val result = ConfigParser.parse("""{ "schemaVersion": 2, "icons": { "size": $size } }""")
+
+            assertTrue("size $size", result.isSuccess)
+            assertEquals(size, result.config?.icons?.size)
+        }
+    }
+
+    @Test
+    fun `a misspelled badge key is reported at its path`() {
+        val result = ConfigParser.parse("""{ "schemaVersion": 2, "icons": { "badges": { "notification": false } } }""")
+
+        assertTrue(result.isSuccess)
+        assertEquals(listOf("icons.badges.notification"), result.diagnostics.filter { it.code == "unknown-key" }.map { it.path })
     }
 }

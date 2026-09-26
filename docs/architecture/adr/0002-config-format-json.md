@@ -254,6 +254,11 @@ so a reset is a word of its own, never `null`. The read-back serves what is
 configured, so an absent pack reads back as absent and `none` as `none`. Lawnicons is not
 bundled: it is 39.5 MB of trademark-derived icons and changes weekly.
 
+`icons.size` (#3 slice 1) takes only the steps the settings screen offers,
+32 to 64 dp in eights, because a write-back never produces anything else;
+any other value is an `invalid-icons` error at the field, like a glass value
+out of range. `icons.badges` and the size are served complete, like `glass`.
+
 The read-back always serves `glass` complete, defaults filled in, so a host
 compares field by field without knowing them. There is no icon `style` or
 `shape` key: the fork renders one icon look on one shape (ADR 0004). Nor is

@@ -59,6 +59,18 @@ object ConfigValidator {
         config.icons?.pack?.takeIf { it != IconsConfig.NoPack }?.let { pack ->
             validatePackageName(pack, "icons.pack", diagnostics)
         }
+        // Only the steps the settings screen offers: a write-back produces
+        // nothing else, and the file is untrusted input (#3 slice 1).
+        config.icons?.size?.let { size ->
+            if (size !in IconDefaults.Sizes) {
+                diagnostics += Diagnostic(
+                    Severity.Error,
+                    "invalid-icons",
+                    "icons.size",
+                    "Icon size must be one of ${IconDefaults.Sizes.joinToString()} dp, got $size",
+                )
+            }
+        }
 
         // #107: reversed results put the best match at the bottom, the
         // farthest from a bar at the top. Applied anyway; the config decides.

@@ -3,7 +3,14 @@
   "icons": {
     "themed": false,
     "enforceThemed": true,
-    "pack": "com.example.iconpack"
+    "pack": "com.example.iconpack",
+    "size": 56,
+    "adaptify": true,
+    "badges": {
+      "notifications": false,
+      "shortcuts": false,
+      "suspendedApps": false
+    }
   },
   "appearance": {
     "glass": {
@@ -98,6 +105,8 @@
     "launchOnEnter": false,
     "reversed": true,
     "hiddenItemsButton": true,
+    "listIcons": false,
+    "appDetails": false,
     "barPosition": "bottom",
     "actions": [
       {

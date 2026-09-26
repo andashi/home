@@ -28,6 +28,30 @@
                             "maxLength": 256
                         }
                     ]
+                },
+                "size": {
+                    "type": "integer",
+                    "minimum": 32,
+                    "maximum": 64,
+                    "multipleOf": 8
+                },
+                "adaptify": {
+                    "type": "boolean"
+                },
+                "badges": {
+                    "type": "object",
+                    "properties": {
+                        "notifications": {
+                            "type": "boolean"
+                        },
+                        "shortcuts": {
+                            "type": "boolean"
+                        },
+                        "suspendedApps": {
+                            "type": "boolean"
+                        }
+                    },
+                    "additionalProperties": false
                 }
             },
             "additionalProperties": false
@@ -480,6 +504,12 @@
                         ]
                     },
                     "maxItems": 32
+                },
+                "listIcons": {
+                    "type": "boolean"
+                },
+                "appDetails": {
+                    "type": "boolean"
                 }
             },
             "additionalProperties": false
