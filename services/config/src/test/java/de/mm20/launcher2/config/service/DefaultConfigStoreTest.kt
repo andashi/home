@@ -398,7 +398,11 @@ class DefaultConfigStoreTest {
 
         val layout = homeGridRepository.layouts["phone"]!!.associateBy { it.id }
         assertEquals(listOf(2, 3), listOf(layout.getValue("second").y, layout.getValue("placed").y))
-        assertEquals(listOf("second"), diagnostics.filter { it.code == "grid-item-moved" }.map { it.path.substringAfterLast('[').trimEnd(']').let { i -> listOf("first", "second", "placed")[i.toInt()] } })
+        // "second" (items[1]) asked for its place; "placed" (items[2]) did not.
+        assertEquals(
+            listOf("home.grid.layouts.phone.items[1]"),
+            diagnostics.filter { it.code == "grid-item-moved" }.map { it.path },
+        )
     }
 
     // An item without a position is sized by placement, not by normalize, and
