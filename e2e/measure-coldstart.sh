@@ -12,7 +12,8 @@
 # STARTS cold starts in it: `am force-stop`, then `am start -W`, whose
 # TotalTime is the time to the launcher's first frame. The first start of a
 # round and the later ones are kept apart (start 1 vs start > 1), since the
-# first one after a snapshot load can differ.
+# first one after a snapshot load can differ. The builds' order within a
+# round alternates, so a load trend inside a round lands on each alike.
 #
 # Output: e2e/measurements/coldstart-<revs>.tsv (one line per start, headed by
 # the builds' revisions and SHA-256s) unless OUT is set. Each APK's revision
@@ -47,6 +48,9 @@ die() { printf 'x %s\n' "$*" >&2; exit 1; }
 names=()
 cleanup() {
   rm -rf "$WORK"
+  # Back to `clean` before the lock goes, also after a failure: the next
+  # user of the instance must not find a build of ours installed.
+  [ "${#names[@]}" -gt 0 ] && "$RUN" restore clean >/dev/null 2>&1 || true
   for n in "${names[@]}"; do adb -s "$SERIAL" emu avd snapshot delete "$n" >/dev/null 2>&1 || true; done
   [ "$HELD_BEFORE" = 1 ] || "$LOCK" release "$LOCK_OWNER" "$SERIAL" >/dev/null 2>&1 || true
 }
@@ -68,7 +72,15 @@ restore() {
     || die "$SERIAL stayed offline after loading $1"
 }
 cold_start() {
-  sh_ am force-stop "$PKG" >/dev/null 2>&1 || true
+  # Only a start from no process is a cold start: a failed force-stop, or a
+  # process still there after it, would measure a warm one.
+  sh_ am force-stop "$PKG" >/dev/null 2>&1 || die "am force-stop $PKG failed"
+  local gone=0
+  for _ in 1 2 3 4 5 6 7 8 9 10; do
+    if ! sh_ pidof "$PKG" >/dev/null 2>&1; then gone=1; break; fi
+    sleep 0.5
+  done
+  [ "$gone" = 1 ] || die "$PKG still running 5 s after force-stop"
   sleep 1
   sh_ am start -W -n "$LAUNCHER_ACTIVITY" 2>/dev/null | tr -d '\r' | awk -F': *' '/^TotalTime/ { print $2; exit }'
 }
@@ -98,7 +110,8 @@ EOF
 apks=("$@")
 for k in "${!apks[@]}"; do
   apk="${apks[k]}"
-  name="cold-m$k"; names+=("$name")
+  # Run-specific, so an existing snapshot of that name is never taken or deleted.
+  name="cold-$$-m$k"; names+=("$name")
   log "preparing $name from $(basename "$apk")"
   restore clean
   adb -s "$SERIAL" install -r "$apk" >/dev/null
@@ -129,12 +142,19 @@ OUT="${OUT:-$HERE/measurements/coldstart-${revlist%-}.tsv}"
 } > "$OUT"
 
 for run in $(seq "$RUNS"); do
-  for name in "${names[@]}"; do
+  # The order alternates round by round: with a fixed order, load that rises
+  # within a round would always land on the same build.
+  order=("${names[@]}")
+  if [ $((run % 2)) -eq 0 ]; then
+    order=(); for ((i = ${#names[@]} - 1; i >= 0; i--)); do order+=("${names[i]}"); done
+  fi
+  for name in "${order[@]}"; do
     restore "$name"
     sleep 3; wake_screen; sleep 2
     for start in $(seq "$STARTS"); do
       load="$(cut -d' ' -f1 /proc/loadavg)"
-      t="$(cold_start || true)"
+      # A failed force-stop ends the run here, with its own message.
+      t="$(cold_start)" || exit 1
       # A missing sample would leave a pair incomplete and still look like a
       # valid series; stop instead, as measure-footprint.sh does.
       [ -n "$t" ] || die "am start -W reported no TotalTime ($name, round $run, start $start)"
