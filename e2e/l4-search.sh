@@ -19,7 +19,9 @@
 # 4. #3 slice 1: the icons and search keys read back as pushed, an icon size
 #    the settings do not offer fails the file and keeps the last good state,
 #    call on tap without CALL_PHONE is reported, and a tap on a contact's
-#    number then opens the dialer instead of doing nothing;
+#    number then opens the dialer instead of doing nothing; search's
+#    favorites row keys and its transliterator read back, and one this
+#    device's ICU lacks is reported and kept;
 # 5. stops the instance and releases the lock.
 #
 # Runs as the unrooted shell (uid 2000, asserted).
@@ -384,5 +386,33 @@ case "$top" in
   *) die "the tap on the number did not reach the dialer: top is '$top'" ;;
 esac
 adb -s "$SERIAL" shell input keyevent KEYCODE_HOME
+
+# E. Search's favorites row and its transliterator (#3 slice 1, PR C).
+log "slice 1: frequently used, its rows, the edit button, compact tags, the transliterator"
+cat > "$WORK/favorites-row.json" <<'EOF'
+{ "schemaVersion": 2,
+  "search": { "frequentlyUsed": false, "frequentlyUsedRows": 3, "favoritesEditButton": false,
+              "compactTags": true, "transliterator": "Any-Latin" } }
+EOF
+push_config "$WORK/favorites-row.json" "favorites row"
+assert_jq "$(query_json diagnostics)" \
+  '.success == true and ([.diagnostics[]? | select(.code == "transliterator-unavailable")] | length) == 0' \
+  "Any-Latin, which this device's ICU has, applies with nothing to report"
+assert_jq "$(query_json config)" \
+  '.search.frequentlyUsed == false and .search.frequentlyUsedRows == 3 and .search.favoritesEditButton == false
+   and .search.compactTags == true and .search.transliterator == "Any-Latin"' \
+  "the read-back serves the favorites row keys and the transliterator as pushed"
+ok "favorites row keys and transliterator: applied and read back"
+
+# A transliterator this ICU lacks is a device condition, not a parse error:
+# applied as written, reported, kept in the read-back.
+printf '{ "schemaVersion": 2, "search": { "transliterator": "No-Such-Transliterator" } }\n' > "$WORK/no-such.json"
+push_config "$WORK/no-such.json" "unavailable transliterator"
+assert_jq "$(query_json diagnostics)" \
+  '.success == true and ([.diagnostics[]? | select(.code == "transliterator-unavailable" and .path == "search.transliterator" and .severity == "warning")] | length) == 1' \
+  "the report says this device's ICU does not have the transliterator"
+assert_jq "$(query_json config)" '.search.transliterator == "No-Such-Transliterator"' \
+  "the read-back keeps what the file asked for"
+ok "unavailable transliterator: reported, kept"
 
 ok "l4-search passed"
