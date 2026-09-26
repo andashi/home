@@ -363,12 +363,15 @@ log "generating launcher configs for entry '$LAUNCHER_CONFIG_KEY' into $LAUNCHER
 (cd "$GOS_REPO/config" && OUT_DIR="$LAUNCHER_CFG_DIR" GEN_LAUNCHER_KEY="$LAUNCHER_CONFIG_KEY" ./gen-launcher.sh) \
   || die "gen-launcher.sh failed for entry '$LAUNCHER_CONFIG_KEY'"
 
-# gen-launcher.sh emits `"favorites": []` for every zone, so the one corner of
-# the config contract that no other layer covers is the one this scenario never
-# filled (#35). Fill it here rather than waiting for the provisioning repo to
-# declare favorites again, so the dock path is exercised either way. $PKG is the
-# single package this scenario installs into every profile, which makes it the
-# safe entry.
+# Favorites are the one corner of the config contract no other layer fills
+# for every zone (#35). gen-launcher.sh declares them for Home only, and
+# emits `"favorites": []` for the others. So a zone that declares none gets
+# one here, under `home.favorites`. Until 2026-09-26 this wrote
+# `home.dock.favorites` and `home.dock.enabled` into the schema-2 files:
+# keys schema 2 had removed, which the launcher ignored with an unknown-key
+# warning while provisioning's read-back check failed on all six profiles.
+# A zone that declares favorites keeps its own. $PKG is the single package
+# this scenario installs into every profile, which makes it the safe entry.
 #
 # Both legal spellings are used, in different profiles on purpose: the object
 # form, which is what a round trip writes back, and the bare package name, which
@@ -384,22 +387,25 @@ log "generating launcher configs for entry '$LAUNCHER_CONFIG_KEY' into $LAUNCHER
 # points PKG/APK at an older release; the diagnostics assert in section 6
 # compares configSha256 against the pushed file and fails loudly in that case
 # rather than quietly comparing a stale document.
-log "injecting dock favorites into the generated configs ($PKG)"
+log "injecting favorites into the generated configs that declare none ($PKG)"
 for i in "${!PROFILE_KEYS[@]}"; do
   key="${PROFILE_KEYS[$i]}"
   cfgfile="$LAUNCHER_CFG_DIR/$key.json"
   [ -f "$cfgfile" ] || die "generated config missing: $cfgfile (run config/gen-launcher.sh)"
+  if [ "$(jq '.home.favorites // [] | length' "$cfgfile")" -gt 0 ]; then
+    ok "profile '$key': declares its own favorites $(jq -c '[.home.favorites[] | .packageName? // .]' "$cfgfile")"
+    continue
+  fi
   if [ "$i" -eq 1 ]; then
     favorites="$(jq -n --arg p "$PKG" '[$p]')"
   else
     favorites="$(jq -n --arg p "$PKG" '[{packageName: $p, profile: "personal"}]')"
   fi
-  jq --argjson fav "$favorites" \
-    '.home.dock.enabled = true | .home.dock.favorites = $fav' \
+  jq --argjson fav "$favorites" '.home.favorites = $fav' \
     "$cfgfile" > "$cfgfile.tmp" \
     || die "could not inject favorites into $cfgfile"
   mv "$cfgfile.tmp" "$cfgfile"
-  ok "profile '$key': dock favorites := $(jq -c '.home.dock.favorites' "$cfgfile")"
+  ok "profile '$key': favorites := $(jq -c '.home.favorites' "$cfgfile")"
 done
 
 log "running provision/45-launcher-config.sh (LAUNCHER_CONFIG_KEY=$LAUNCHER_CONFIG_KEY)"
@@ -436,8 +442,8 @@ for key in "${PROFILE_KEYS[@]}"; do
   # arrived at the right profile.
   mism="$(jq -r -n --argjson eff "$eff" --slurpfile want "$cfgfile" '
     def canon:
-      if ((.home.dock.favorites // null) | type) == "array" then
-        .home.dock.favorites |= map(
+      if ((.home.favorites // null) | type) == "array" then
+        .home.favorites |= map(
           if type == "string" then { packageName: ., profile: "personal" }
           else { packageName: .packageName, profile: (.profile // "personal") }
           end)
@@ -452,13 +458,14 @@ for key in "${PROFILE_KEYS[@]}"; do
 
   # Named explicitly, because the canonicalising comparison above would also be
   # satisfied by an empty list on both sides - which is exactly the state that
-  # let this corner go untested for so long. This asserts the config path only:
-  # home.dock.enabled still has no renderer (#46), so a rendering assert would
-  # prove nothing yet.
+  # let this corner go untested for so long. This asserts the config path
+  # only. On screen the favorites are drawn only where a `favorites` grid item
+  # is declared, and only Home declares one; a rendering assert across six
+  # profiles is a scenario of its own, and l4-grid.sh covers the widget.
   assert_jq "$eff" \
-    "([.home.dock.favorites[]? | .packageName] | index(\"$PKG\")) != null" \
-    "profile '$key' (user $uid): dock favorite $PKG survived the round trip"
-  ok "profile '$key' (user $uid): dock favorites $(jq -c '[.home.dock.favorites[]?|.packageName]' <<<"$eff") served back"
+    "(.home.favorites // [] | length) > 0" \
+    "profile '$key' (user $uid): its favorites survived the round trip"
+  ok "profile '$key' (user $uid): favorites $(jq -c '[.home.favorites[]?|.packageName]' <<<"$eff") served back"
 
   # The generated config names a wallpaper; the system must show a non-default
   # wallpaper id for that user (dumpsys is independent evidence of the read-back).
@@ -505,8 +512,12 @@ BASE_UID="$(resolve_uid "$BASE_KEY")"
 OVERRIDE_UID="$(resolve_uid "$OVERRIDE_KEY")"
 [ -n "$BASE_UID" ] && [ -n "$OVERRIDE_UID" ] || die "could not resolve isolation profile uids"
 
+# A key the launcher serves back: appearance.transparency was accepted but no
+# longer served once appearance.glass replaced it (#24), so an override
+# written there never showed in /config and the check failed on all runs
+# since (found 2026-09-26, the first run to get this far from `clean`).
 OVERRIDE_CONFIG="$WORK/$OVERRIDE_KEY-isolation.json"
-jq '.appearance.transparency.background = 0.42' \
+jq '.appearance.glass.tint = 0.42' \
   "$LAUNCHER_CFG_DIR/$OVERRIDE_KEY.json" > "$OVERRIDE_CONFIG"
 OVERRIDE_SHA="$(sha256sum "$OVERRIDE_CONFIG" | cut -d' ' -f1)"
 
@@ -520,17 +531,17 @@ wait_diagnostics_sha "$OVERRIDE_UID" "$OVERRIDE_SHA" 30
 override_eff="$(query_json_as_user config "$OVERRIDE_UID")" \
   || die "profile '$OVERRIDE_KEY': /config not served after isolation override"
 assert_jq "$override_eff" \
-  '.appearance.transparency.background == 0.42' \
+  '.appearance.glass.tint == 0.42' \
   "profile '$OVERRIDE_KEY' sees the isolation override"
 
-BASE_BACKGROUND="$(jq -e '.appearance.transparency.background' "$LAUNCHER_CFG_DIR/$BASE_KEY.json")" \
-  || die "could not read appearance.transparency.background from $LAUNCHER_CFG_DIR/$BASE_KEY.json"
-[ "$BASE_BACKGROUND" != "0.42" ] || die "isolation check needs a base value other than the override (0.42)"
+BASE_TINT="$(jq -e '.appearance.glass.tint' "$LAUNCHER_CFG_DIR/$BASE_KEY.json")" \
+  || die "could not read appearance.glass.tint from $LAUNCHER_CFG_DIR/$BASE_KEY.json"
+[ "$BASE_TINT" != "0.42" ] || die "isolation check needs a base value other than the override (0.42)"
 base_eff="$(query_json_as_user config "$BASE_UID")" \
   || die "profile '$BASE_KEY': /config not served during isolation check"
 assert_jq "$base_eff" \
-  ".appearance.transparency.background == $BASE_BACKGROUND" \
-  "profile '$BASE_KEY' keeps the generated value ($BASE_BACKGROUND) while '$OVERRIDE_KEY' is overridden"
+  ".appearance.glass.tint == $BASE_TINT" \
+  "profile '$BASE_KEY' keeps the generated value ($BASE_TINT) while '$OVERRIDE_KEY' is overridden"
 ok "per-user isolation: '$OVERRIDE_KEY' changed, '$BASE_KEY' unchanged"
 
 # --- 8. background-set wallpapers render once the profile is foreground ---
