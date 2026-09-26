@@ -34,3 +34,5 @@ in the column it would have on the home screen. On the Fold's cover that is
 the same `home.grid.columns` (four by default); on the inner display search has two panes that meet
 at the fold line - favorites and apps in the half the cover shows, shortcuts,
 contacts and the filters in the other - and nothing crosses the hinge.
+
+<img alt="Search on the Fold: one pane on the cover; opened, two panes that meet at the fold line" src="img/search-fold-panes.svg" width="640">

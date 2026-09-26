@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="430" viewBox="0 0 1100 430">
+  <defs>
+    <marker id="ah" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8" fill="none" stroke="#2563eb" stroke-width="1.5"/>
+    </marker>
+    <marker id="ahg" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8" fill="none" stroke="#b45309" stroke-width="1.5"/>
+    </marker>
+    <style>
+      .box { fill: #ffffff; stroke: #b6c2d4; stroke-width: 1.2; }
+      .box-host { fill: #ffffff; stroke: #2563eb; stroke-width: 1.6; }
+      .bt { font: 600 11px ui-monospace, Menlo, Consolas, monospace; fill: #16324f; text-anchor: middle; }
+      .bd { font: 9.5px ui-monospace, Menlo, Consolas, monospace; fill: #5d7086; text-anchor: middle; }
+      .ar { font: 600 9.5px ui-monospace, Menlo, Consolas, monospace; fill: #2563eb; text-anchor: middle; }
+      .arw { font: 600 9.5px ui-monospace, Menlo, Consolas, monospace; fill: #b45309; text-anchor: middle; }
+      .flow { stroke: #2563eb; stroke-width: 1.5; fill: none; }
+      .floww { stroke: #b45309; stroke-width: 1.5; fill: none; stroke-dasharray: 5 4; }
+      .cap { font: 10.5px ui-monospace, Menlo, Consolas, monospace; fill: #16324f; text-anchor: middle; }
+      .title { font: 600 12.5px ui-monospace, Menlo, Consolas, monospace; letter-spacing: 1.5px; fill: #5d7086; }
+    </style>
+  </defs>
+  <rect width="1100" height="430" rx="14" fill="#f4f7fb"/>
+  <text class="title" x="40" y="34">THE FILE IS THE SOURCE OF TRUTH — IN BOTH DIRECTIONS</text>
+
+  <!-- row 1: the push path -->
+  <rect class="box-host" x="40" y="60" width="200" height="76" rx="10"/>
+  <text class="bt" x="140" y="92">launcher.json</text>
+  <text class="bd" x="140" y="108">on the host, versioned</text>
+  <text class="bd" x="140" y="122">(dotfiles, provisioning)</text>
+
+  <rect class="box" x="330" y="60" width="210" height="76" rx="10"/>
+  <text class="bt" x="435" y="92">config-ingest provider</text>
+  <text class="bd" x="435" y="108">content write, per Android user</text>
+  <text class="bd" x="435" y="122">wallpapers the same way</text>
+
+  <rect class="box" x="630" y="60" width="200" height="76" rx="10"/>
+  <text class="bt" x="730" y="92">the file on the device</text>
+  <text class="bd" x="730" y="108">app-specific storage</text>
+  <text class="bd" x="730" y="122">watched by the launcher</text>
+
+  <rect class="box" x="910" y="60" width="170" height="76" rx="10"/>
+  <text class="bt" x="995" y="92">reload + converge</text>
+  <text class="bd" x="995" y="108">parse, validate, apply</text>
+  <text class="bd" x="995" y="122">check-before-set</text>
+
+  <path class="flow" d="M240 98 H322" marker-end="url(#ah)"/>
+  <text class="ar" x="281" y="88">push</text>
+  <path class="flow" d="M540 98 H622" marker-end="url(#ah)"/>
+  <text class="ar" x="581" y="88">write</text>
+  <path class="flow" d="M830 98 H902" marker-end="url(#ah)"/>
+  <text class="ar" x="866" y="88">trigger</text>
+
+  <!-- row 2: the read-back path -->
+  <rect class="box" x="910" y="240" width="170" height="76" rx="10"/>
+  <text class="bt" x="995" y="272">effective state</text>
+  <text class="bd" x="995" y="288">grid, icons, glass,</text>
+  <text class="bd" x="995" y="302">wallpaper, pins</text>
+  <path class="flow" d="M995 136 V232" marker-end="url(#ah)"/>
+
+  <rect class="box" x="630" y="240" width="210" height="76" rx="10"/>
+  <text class="bt" x="735" y="272">state provider (read-back)</text>
+  <text class="bd" x="735" y="288">query …state/config</text>
+  <text class="bd" x="735" y="302">query …state/diagnostics</text>
+  <path class="flow" d="M910 278 H848" marker-end="url(#ah)"/>
+  <text class="ar" x="875" y="268">read back</text>
+
+  <rect class="box-host" x="330" y="240" width="210" height="76" rx="10"/>
+  <text class="bt" x="435" y="272">provisioning verifies</text>
+  <text class="bd" x="435" y="288">field by field, against the</text>
+  <text class="bd" x="435" y="302">pushed file's SHA-256</text>
+  <path class="flow" d="M630 278 H548" marker-end="url(#ah)"/>
+
+  <path class="floww" d="M330 286 H140 V144" marker-end="url(#ahg)"/>
+  <text class="arw" x="225" y="268">the next push builds</text>
+  <text class="arw" x="225" y="282">on what applied</text>
+
+  <!-- write-back from the device -->
+  <rect class="box" x="630" y="170" width="210" height="54" rx="10"/>
+  <text class="bt" x="735" y="192">edit mode on the device</text>
+  <text class="bd" x="735" y="207">moved widgets, pinned favorites</text>
+  <path class="floww" d="M735 170 V144" marker-end="url(#ahg)"/>
+  <text class="arw" x="745" y="146" style="text-anchor:start">write-back: named keys only,</text>
+  <text class="arw" x="745" y="160" style="text-anchor:start">comments survive</text>
+
+  <text class="cap" x="550" y="384">All three interfaces are gated to shell and system via WRITE_SECURE_SETTINGS — no app on the device can reach them.</text>
+  <text class="cap" x="550" y="402">The host pulls before it pushes: the on-device file is the last agreed state in both directions (ADR 0003 §5).</text>
+</svg>

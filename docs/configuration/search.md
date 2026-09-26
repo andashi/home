@@ -113,6 +113,8 @@ it has two panes that meet at the fold line: favorites and apps in the half
 the cover shows (the right one), at the home grid's pitch, and shortcuts,
 contacts and the filters in the left half. Nothing crosses the hinge.
 
+<img alt="Search on the Fold: one pane on the cover; opened, favorites and apps in the right pane at the fold line, shortcuts, contacts and filters in the left" src="img/search-fold-panes.svg" width="720">
+
 ## Search actions
 
 `search.actions` is the list of search actions, in order. Each one either

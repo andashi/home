@@ -8,6 +8,8 @@ and a change made on the device is written back into it
 set is on these pages, with pictures of what it does on a phone and on a Pixel
 Fold (cover and inner display).
 
+<img alt="The configuration loop: the file is pushed through the ingest provider, the launcher reloads and converges, the state provider reads the result back for verification, and edit mode writes back into the file" src="img/config-flow.svg" width="820">
+
 <img src="img/full-dock-bottom-phone.jpg" width="270" alt="A phone home screen full of glass widgets, the dock at the bottom">
 <img src="img/full-dock-bottom-fold-inner.jpg" width="390" alt="The Fold's inner display with the same widgets and more">
 

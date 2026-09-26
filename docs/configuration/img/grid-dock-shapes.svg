@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1010" height="380" viewBox="0 0 1010 380">
+  <defs>
+    <pattern id="cells39" width="39" height="39" patternUnits="userSpaceOnUse">
+      <rect width="34" height="34" rx="5" fill="none" stroke="#b6c2d4" stroke-dasharray="4 3"/>
+    </pattern>
+    <style>
+      .title { font: 600 11.5px ui-monospace, Menlo, Consolas, monospace; letter-spacing: 0.5px; fill: #16324f; }
+      .meta { font: 10px ui-monospace, Menlo, Consolas, monospace; fill: #5d7086; }
+      .cap { font: 10.5px ui-monospace, Menlo, Consolas, monospace; fill: #16324f; }
+      .id { fill: #b45309; fill-opacity: 0.14; stroke: #b45309; stroke-width: 1.5; }
+      .iw { fill: #64748b; fill-opacity: 0.10; stroke: #64748b; stroke-width: 1.2; }
+      .dot { fill: #b45309; }
+    </style>
+  </defs>
+  <rect width="1010" height="380" rx="14" fill="#f4f7fb"/>
+
+  <!-- A: bottom strip -->
+  <text class="title" x="40" y="28">bottom strip (classic)</text>
+  <rect x="40" y="40" width="151" height="229" fill="url(#cells39)"/>
+  <rect class="iw" x="40" y="40" width="73" height="73" rx="5"/>
+  <rect class="iw" x="118" y="40" width="73" height="73" rx="5"/>
+  <rect class="id" x="40" y="235" width="151" height="34" rx="5"/>
+  <circle class="dot" cx="57" cy="252" r="7"/><circle class="dot" cx="96" cy="252" r="7"/>
+  <circle class="dot" cx="135" cy="252" r="7"/><circle class="dot" cx="174" cy="252" r="7"/>
+  <text class="meta" x="40" y="292">x0 y5 w4 h1</text>
+  <text class="meta" x="40" y="306">Fold: x4 y6, the right half</text>
+
+  <!-- B: side column -->
+  <text class="title" x="300" y="28">side column (Fold default)</text>
+  <rect x="300" y="40" width="151" height="229" fill="url(#cells39)"/>
+  <rect class="iw" x="300" y="40" width="73" height="73" rx="5"/>
+  <rect class="iw" x="300" y="118" width="73" height="73" rx="5"/>
+  <rect class="id" x="417" y="40" width="34" height="229" rx="5"/>
+  <circle class="dot" cx="434" cy="57" r="7"/><circle class="dot" cx="434" cy="96" r="7"/>
+  <circle class="dot" cx="434" cy="135" r="7"/><circle class="dot" cx="434" cy="174" r="7"/>
+  <circle class="dot" cx="434" cy="213" r="7"/><circle class="dot" cx="434" cy="252" r="7"/>
+  <text class="meta" x="300" y="292">x3 y0 w1 h6</text>
+  <text class="meta" x="300" y="306">Fold: x7 y0 h7, the edge both</text>
+  <text class="meta" x="300" y="320">displays share</text>
+
+  <!-- C: two rows -->
+  <text class="title" x="560" y="28">two rows</text>
+  <rect x="560" y="40" width="151" height="229" fill="url(#cells39)"/>
+  <rect class="iw" x="560" y="40" width="73" height="73" rx="5"/>
+  <rect class="iw" x="638" y="40" width="73" height="73" rx="5"/>
+  <rect class="id" x="560" y="196" width="151" height="73" rx="5"/>
+  <circle class="dot" cx="577" cy="213" r="7"/><circle class="dot" cx="616" cy="213" r="7"/>
+  <circle class="dot" cx="655" cy="213" r="7"/><circle class="dot" cx="694" cy="213" r="7"/>
+  <circle class="dot" cx="577" cy="252" r="7"/><circle class="dot" cx="616" cy="252" r="7"/>
+  <circle class="dot" cx="655" cy="252" r="7"/><circle class="dot" cx="694" cy="252" r="7"/>
+  <text class="meta" x="560" y="292">x0 y4 w4 h2</text>
+  <text class="meta" x="560" y="306">eight favorites, row by row</text>
+
+  <!-- D: icon grid -->
+  <text class="title" x="820" y="28">icon grid, or none</text>
+  <rect x="820" y="40" width="151" height="229" fill="url(#cells39)"/>
+  <rect class="iw" x="820" y="40" width="73" height="73" rx="5"/>
+  <rect class="iw" x="898" y="40" width="73" height="34" rx="5"/>
+  <rect class="id" x="859" y="118" width="73" height="73" rx="5"/>
+  <circle class="dot" cx="876" cy="135" r="7"/><circle class="dot" cx="915" cy="135" r="7"/>
+  <circle class="dot" cx="876" cy="174" r="7"/><circle class="dot" cx="915" cy="174" r="7"/>
+  <text class="meta" x="820" y="292">x1 y2 w2 h2</text>
+  <text class="meta" x="820" y="306">or leave the item out:</text>
+  <text class="meta" x="820" y="320">no dock at all</text>
+
+  <text class="cap" x="40" y="352">A dock of w &#215; h cells shows w &#215; h favorites, centred in its cells; the rest stay reachable in search.</text>
+  <text class="cap" x="40" y="368">Each icon keeps the size of one grid cell, so a full dock lines up with the grid. The dock never has a label.</text>
+</svg>
