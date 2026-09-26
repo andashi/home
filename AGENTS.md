@@ -85,6 +85,19 @@ not read - and merging the document that explains this trap closed the issue a
 second time, seven hours after the first. This text writes `#NNN` rather than a
 real number for that reason, in prose and in commit messages alike.
 
+**The keyword counts even when the sentence is about a different pull request.**
+A body saying "#171 closes #NNN" - a statement of fact about somebody else's
+work - is parsed as *this* pull request closing that issue, exactly as the
+negation case is. Write "settles that issue", or name the other pull request
+without a keyword in front of the number. Found on #175 on 2026-09-26, which
+listed an issue it had nothing to do with.
+
+**`closingIssuesReferences` updates with a lag.** Re-read it a little after
+editing the body, not immediately: the field served right after an edit can
+still be the old one, so a check run at once can report a reference that is
+already gone, or miss one that has just appeared. Both directions are wrong and
+only one of them is safe.
+
 A wrongly closed issue is not a bookkeeping problem. It takes a live defect off
 the list everyone reads while it is still failing builds.
 
