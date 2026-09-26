@@ -55,4 +55,31 @@ class IcuStringNormalizerTest {
 
         assertEquals(1, lookups)
     }
+
+    /**
+     * Also when the first calls come at once: search normalizes on several
+     * coroutines, and a check-then-record cache let each of them look the id
+     * up before any had recorded the failure (#190 review).
+     */
+    @Test
+    fun `a transliterator the device does not have is looked up once under concurrent first use`() {
+        val lookups = java.util.concurrent.atomic.AtomicInteger()
+        val n = normalizer("No-Such-Transliterator") { id ->
+            lookups.incrementAndGet()
+            Thread.sleep(50) // a slow lookup widens the window the race needs
+            Transliterator.getInstance(id)
+        }
+        val start = java.util.concurrent.CountDownLatch(1)
+        val threads = List(8) {
+            Thread {
+                start.await()
+                assertEquals("apfel", n.normalize("Äpfel"))
+            }.apply { start() }
+        }
+
+        start.countDown()
+        threads.forEach { it.join(5_000) }
+
+        assertEquals(1, lookups.get())
+    }
 }

@@ -35,23 +35,29 @@ internal class IcuStringNormalizer(
         .stateIn(scope, SharingStarted.Eagerly, DisabledTransliteratorId)
 
     /**
-     * Ids this device's ICU does not have. Looked up once: normalize runs for
-     * every item on every keystroke, and each lookup of a missing id threw and
-     * logged again (#3 slice 1). Only failures are kept; a working id is
-     * created per call as before, since ICU does not promise that one instance
-     * may be shared across the search coroutines.
+     * Whether this device's ICU has an id, decided once per id: normalize runs
+     * for every item on every keystroke, and each lookup of a missing id threw
+     * and logged again (#3 slice 1). computeIfAbsent makes the first lookup
+     * atomic, so concurrent first calls do not each look it up (#190 review).
+     * Only availability is kept; a working id is created per call as before,
+     * since ICU does not promise that one instance may be shared across the
+     * search coroutines.
      */
-    private val unavailableIds: MutableSet<String> = ConcurrentHashMap.newKeySet()
+    private val available = ConcurrentHashMap<String, Boolean>()
 
     override fun normalize(input: String): String {
         val id = transliteratorId.value
 
-        val transliterator = if (id in unavailableIds) null else try {
-            newTransliterator(id)
-        } catch (e: IllegalArgumentException) {
-            if (unavailableIds.add(id)) CrashReporter.logException(e)
-            null
+        val isAvailable = available.computeIfAbsent(id) {
+            try {
+                newTransliterator(it)
+                true
+            } catch (e: IllegalArgumentException) {
+                CrashReporter.logException(e)
+                false
+            }
         }
+        val transliterator = if (isAvailable) newTransliterator(id) else null
 
         if (transliterator ==  null) {
             return StringUtils.stripAccents(input.lowercase(Locale.getDefault()))
