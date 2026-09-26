@@ -658,4 +658,17 @@ reports_elapsed_on_stderr_only() {
 }
 check "a successful retry_for reports its elapsed time on stderr, and stdout is untouched" reports_elapsed_on_stderr_only
 
+# Nested inside a shorter outer wait, the line reports the bound that was in
+# force, not the one asked for: "after 1 s of 30 s" under an outer 3 s
+# would claim headroom that never existed (#184 review).
+reports_the_effective_bound() {
+  local n=0 err
+  later() { n=$((n + 1)); [ "$n" -ge 2 ]; }
+  inner() { retry_for 30 later; }
+  retry_for 3 inner 2>"$WORK/nested-err" >/dev/null || return 1
+  err="$(grep "later" "$WORK/nested-err")"
+  grep -qE "of [0-3] s" <<<"$err" && ! grep -q "of 30 s" <<<"$err"
+}
+check "a nested retry_for reports the bound in force, not the one asked for" reports_the_effective_bound
+
 exit "$failed"
