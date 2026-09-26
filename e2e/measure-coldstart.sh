@@ -135,7 +135,10 @@ for run in $(seq "$RUNS"); do
     for start in $(seq "$STARTS"); do
       load="$(cut -d' ' -f1 /proc/loadavg)"
       t="$(cold_start || true)"
-      printf '%s\t%s\t%s\t%s\t%s\n' "$name" "$run" "$start" "$load" "${t:-NA}" | tee -a "$OUT"
+      # A missing sample would leave a pair incomplete and still look like a
+      # valid series; stop instead, as measure-footprint.sh does.
+      [ -n "$t" ] || die "am start -W reported no TotalTime ($name, round $run, start $start)"
+      printf '%s\t%s\t%s\t%s\t%s\n' "$name" "$run" "$start" "$load" "$t" | tee -a "$OUT"
       # Let the start settle before the next one; the last is followed by a restore.
       if [ "$start" -lt "$STARTS" ]; then sleep 4; fi
     done
