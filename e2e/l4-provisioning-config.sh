@@ -289,7 +289,9 @@ SEEN_DIAG=""
 diagnostics_show_sha() { # $1 = uid, $2 = sha256
   # A failed query keeps the last report seen, for the timeout message.
   local got
-  got="$(query_json_as_user diagnostics "$1" 2>/dev/null)" || return 1
+  # stderr stays visible: it carries the provider wait's elapsed time and,
+  # on failure, what the provider said (#184 review).
+  got="$(query_json_as_user diagnostics "$1")" || return 1
   SEEN_DIAG="$got"
   jq -e ".success == true and .configSha256 == \"$2\"" >/dev/null 2>&1 <<<"$got" && LAST_DIAG="$got"
 }

@@ -61,7 +61,11 @@ retry_for() { # $1 = timeout (s), $2... = command
     if "$@"; then
       # How close it came, on stderr: stdout belongs to callers that
       # capture it. 9.8 s of 10 is a pass that is about to become a failure.
-      printf '   %s: after %s s of %s s\n' "$*" "$((SECONDS - t0))" "$timeout" >&2
+      # The bound reported is the one in force, which an outer deadline
+      # may have shortened, with the one asked for when they differ.
+      local bound=$((ADB_DEADLINE - t0)) asked=""
+      [ "$bound" = "$timeout" ] || asked=", asked for $timeout s"
+      printf '   %s: after %s s of %s s%s\n' "$*" "$((SECONDS - t0))" "$bound" "$asked" >&2
       return 0
     fi
     [ $((ADB_DEADLINE - SECONDS)) -gt 1 ] || break
