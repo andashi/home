@@ -164,7 +164,7 @@ class ConfigWriteBack(
         val keptColors = if (literal.at(ThemeColorsPath) != null && state.themeColors == null) {
             Diagnostic(
                 Severity.Warning,
-                SkipCodePrefix + "colors-custom",
+                ColorsCustomCode,
                 ThemeColorsPath.joinToString("."),
                 "the device uses a colour scheme a person made, which appearance.theme.colors cannot name; " +
                     "the file keeps its value",
@@ -173,7 +173,9 @@ class ConfigWriteBack(
             null
         }
         if (changes.isEmpty()) {
-            keptColors?.let { recordSkipWarning(it) }
+            // The warning describes the device as it is now: back on a
+            // built-in scheme, an earlier one goes.
+            if (keptColors != null) recordSkipWarning(keptColors) else clearWarning(ColorsCustomCode)
             return WriteBackResult.Unchanged
         }
 
@@ -230,6 +232,17 @@ class ConfigWriteBack(
     private suspend fun recordSkip(skip: WriteBackResult.Skipped) =
         recordSkipWarning(Diagnostic(Severity.Warning, SkipCodePrefix + skip.code, "", skip.reason))
 
+    /** Removes [code]'s warning from the last reload report, if it has one; nothing else changes. */
+    private suspend fun clearWarning(code: String) {
+        try {
+            val last = reportStore.read() ?: return
+            if (last.diagnostics.none { it.code == code }) return
+            reportStore.save(last.copy(diagnostics = last.diagnostics.filterNot { it.code == code }))
+        } catch (e: Exception) {
+            Log.w(TAG, "could not clear the $code warning", e)
+        }
+    }
+
     /** [warning] in place of any earlier skip warning on the last reload report. */
     private suspend fun recordSkipWarning(warning: Diagnostic) {
         try {
@@ -253,5 +266,6 @@ class ConfigWriteBack(
         const val SkipCodePrefix = "write-back-skipped:"
 
         private val ThemeColorsPath = listOf("appearance", "theme", "colors")
+        private const val ColorsCustomCode = SkipCodePrefix + "colors-custom"
     }
 }

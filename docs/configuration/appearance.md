@@ -154,8 +154,15 @@ device has.
 `system` for `colors` is the zone's own palette: each zone gets its colour
 from the system (its Monet seed), and the launcher follows it. A file names
 one of the built-in schemes; it cannot define a palette. `black-and-white`
-and `high-contrast` replace the zone's colour on the home screen, so a zone
-that uses them no longer shows its colour there.
+and `high-contrast` replace the zone's palette in the launcher's own
+colours. On the glass surfaces that is slight: they carry the scheme's
+surface colour only at the glass tint (0.12 by default), so the wallpaper
+behind them still dominates. `mode` is the visible switch: dark glass and
+light text, or the reverse.
+
+| <img alt="search open, theme system/system, fold inner" src="img/theme-system-fold-inner.jpg" width="260"> | <img alt="search open, theme dark/high-contrast, fold inner" src="img/theme-dark-high-contrast-fold-inner.jpg" width="260"> | <img alt="search open, theme light/black-and-white, fold inner" src="img/theme-light-black-and-white-fold-inner.jpg" width="260"> |
+|---|---|---|
+| `system`, `system` (light on this device) | `dark`, `high-contrast` | `light`, `black-and-white` |
 
 On the device, a person can also pick a colour scheme they made themselves.
 The file cannot name one, so write-back leaves `colors` as the file wrote it,

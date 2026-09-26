@@ -155,9 +155,8 @@ enum class ColorScheme {
  * The ids of the built-in colour schemes, the one place they are defined:
  * data/themes names its built-in colour schemes by these, and
  * `appearance.theme.colors` maps its slugs onto them (#3 slice 3). Any other
- * id is a scheme a person made. [System] has the value of data/themes'
- * DefaultThemeId, which is also the default of every other theme part
- * (shapes, typography) and so stays defined there.
+ * id is a scheme a person made. data/themes' DefaultThemeId, the default of
+ * every theme part (shapes, typography too), is [System].
  */
 object BuiltInColorSchemes {
     /** Follows the system (Monet) palette; also the default of every theme part. */

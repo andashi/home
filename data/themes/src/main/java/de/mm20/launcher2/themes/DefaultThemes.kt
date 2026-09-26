@@ -4,7 +4,9 @@ import de.mm20.launcher2.preferences.BuiltInColorSchemes
 import java.util.UUID
 
 
-val DefaultThemeId = UUID(0L, 0L)
+// The system colour scheme's id, and the default id of every other theme
+// part (shapes, typography): one value, defined once in core/preferences.
+val DefaultThemeId: UUID = BuiltInColorSchemes.System
 
 // The built-in colour schemes' ids live in core/preferences, where
 // appearance.theme.colors maps its slugs onto them (#3 slice 3).
