@@ -426,4 +426,16 @@ check "open_search opens search, dismiss_keyboard closes the keyboard" opens_sea
 check "open_search gives up after its timeout on a wedged device" bounded "SEARCH_TIMEOUT=3 open_search c"
 check "dismiss_keyboard gives up after its timeout on a wedged device" bounded "KEYBOARD_TIMEOUT=1 dismiss_keyboard"
 
+# A wait inside a wait cannot extend the outer deadline: the inner retry_for
+# gets what is left of the outer one at most (#164, query_json_as_user is
+# called inside wait_diagnostics_sha).
+nested_waits_share_the_outer_deadline() {
+  local start=$SECONDS
+  never() { sleep 1; return 1; }
+  inner() { retry_for 30 never; return 1; }
+  retry_for 3 inner
+  [ $((SECONDS - start)) -le 6 ]
+}
+check "a nested retry_for cannot extend the outer deadline" nested_waits_share_the_outer_deadline
+
 exit "$failed"

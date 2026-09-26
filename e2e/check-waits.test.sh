@@ -38,6 +38,19 @@ for run in $(seq "$RUNS"); do
   for _ in $(seq 40); do pidof perfetto || break; sleep 0.5; done
 done
 S
+verdict caught "while : with an attempt counter" <<'S'
+while :; do
+  out="$(query)" && break
+  attempt=$((attempt + 1)); [ "$attempt" -lt 15 ] || return 1
+  sleep 2
+done
+S
+verdict caught "until loop with a sleep" <<'S'
+until alive; do sleep 1; done
+S
+verdict quiet "a while read loop" <<'S'
+while IFS=$'\t' read -r n t; do echo "$n"; done < list
+S
 verdict quiet "a marked repetition loop" <<'S'
 # not a wait: measurement repetitions
 for run in $(seq "$RUNS"); do measure; sleep 2; done
