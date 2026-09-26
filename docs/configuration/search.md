@@ -25,7 +25,12 @@
     "hiddenItemsButton": false,
     "listIcons": true,
     "appDetails": true,
-    "contactsCallOnTap": false
+    "contactsCallOnTap": false,
+    "frequentlyUsed": true,
+    "frequentlyUsedRows": 1,
+    "favoritesEditButton": true,
+    "compactTags": false,
+    "transliterator": "auto"
   }
 }
 ```
@@ -45,6 +50,11 @@
 | `search.hiddenItemsButton` | A button in the search bar that shows hidden items | boolean | `false` |
 | `search.listIcons` | Icons in front of apps while `search.layout` is `list`; no effect in the grid | boolean | `true` |
 | `search.appDetails` | An expanded app shows its version and package details | boolean | `true` |
+| `search.frequentlyUsed` | The favorites row appends the most used apps after the pins. Search's row only: the dock shows its pins alone | boolean | `true` |
+| `search.frequentlyUsedRows` | How many rows of frequently used apps | 1–4 | `1` |
+| `search.favoritesEditButton` | An edit button at the end of the favorites row | boolean | `true` |
+| `search.compactTags` | The favorites row's tags as small chips | boolean | `false` |
+| `search.transliterator` | How search matches across scripts: `auto` picks from the device's languages, `off` only strips accents, or one ICU transliterator id such as `Any-Latin`. An id this device's ICU does not have is kept, reported (`transliterator-unavailable`), and matching falls back to stripping accents | `auto`, `off`, an ICU id | `auto` |
 | `search.contactsCallOnTap` | A tap on a contact's number calls it instead of opening the dialer. Needs the call permission: without it the tap opens the dialer, and the report says so (`permission-missing`) | boolean | `false` |
 | `search.barPosition` | Where the search bar sits while search is open. `follow` puts it where [`home.searchBar.position`](search-bar.md) does | `top`, `bottom`, `follow` | `follow` |
 | `search.actions` | The search actions: the chips under the search bar and the recognisers for numbers, addresses and times, in order ([below](#search-actions)) | list | the device's own |

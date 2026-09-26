@@ -55,6 +55,7 @@ object ConfigParser {
             "actions",
             // #3 slice 1.
             "listIcons", "appDetails", "contactsCallOnTap",
+            "frequentlyUsed", "frequentlyUsedRows", "favoritesEditButton", "compactTags", "transliterator",
         ).associateWith { KeyEffect.Applied },
         // #106: one search action.
         "search.actions[]" to listOf("type", "label", "url", "package", "encoding")

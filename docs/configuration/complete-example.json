@@ -108,6 +108,11 @@
     "listIcons": false,
     "appDetails": false,
     "contactsCallOnTap": true,
+    "frequentlyUsed": false,
+    "frequentlyUsedRows": 3,
+    "favoritesEditButton": false,
+    "compactTags": true,
+    "transliterator": "Any-Latin",
     "barPosition": "bottom",
     "actions": [
       {

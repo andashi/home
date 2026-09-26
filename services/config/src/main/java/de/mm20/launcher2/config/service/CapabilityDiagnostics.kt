@@ -3,6 +3,7 @@ package de.mm20.launcher2.config.service
 import de.mm20.launcher2.config.ConfigState
 import de.mm20.launcher2.config.Diagnostic
 import de.mm20.launcher2.config.LauncherConfig
+import de.mm20.launcher2.config.SearchDefaults
 import de.mm20.launcher2.config.Severity
 
 /**
@@ -17,6 +18,8 @@ import de.mm20.launcher2.config.Severity
 class CapabilityDiagnostics(
     private val contactsGranted: () -> Boolean,
     private val callGranted: () -> Boolean,
+    /** Whether this device's ICU has a transliterator id; ICU versions differ between devices. */
+    private val transliteratorAvailable: (id: String) -> Boolean,
 ) {
 
     /**
@@ -58,10 +61,28 @@ class CapabilityDiagnostics(
                 )
             )
         }
+        // #3 slice 1: one file serves devices with different ICU versions, so an
+        // id this one lacks is not a parse error; search falls back instead
+        // (IcuStringNormalizer, which looks it up once).
+        val transliterator = if (failedAt("search.transliterator")) before.search.transliterator else config.search?.transliterator
+        if (config.search?.transliterator != null && transliterator != null &&
+            transliterator != SearchDefaults.TransliteratorAuto && transliterator != SearchDefaults.TransliteratorOff &&
+            !transliteratorAvailable(transliterator)
+        ) {
+            add(
+                Diagnostic(
+                    Severity.Warning,
+                    "transliterator-unavailable",
+                    "search.transliterator",
+                    "search.transliterator is \"$transliterator\", which this device's ICU does not have; " +
+                        "search matching falls back to stripping accents",
+                )
+            )
+        }
     }
 
     companion object {
         /** No checks: for a reloader that is not the device's own. */
-        val None = CapabilityDiagnostics(contactsGranted = { true }, callGranted = { true })
+        val None = CapabilityDiagnostics(contactsGranted = { true }, callGranted = { true }, transliteratorAvailable = { true })
     }
 }

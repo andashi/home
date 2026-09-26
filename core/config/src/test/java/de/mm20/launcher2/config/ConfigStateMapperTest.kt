@@ -185,6 +185,8 @@ class ConfigStateMapperTest {
                 launchOnEnter = true, reversed = false, hiddenItemsButton = false,
                 barPosition = InSearchBarPosition.Follow, listIcons = true, appDetails = true,
                 contactsCallOnTap = false,
+                frequentlyUsed = true, frequentlyUsedRows = 1, favoritesEditButton = true,
+                compactTags = false, transliterator = "auto",
             ),
             defaults,
         )
@@ -192,6 +194,8 @@ class ConfigStateMapperTest {
             search = SearchState(
                 layout = SearchResultLayout.List, reversed = true, listIcons = false, appDetails = false,
                 contactsCallOnTap = true,
+                frequentlyUsed = false, frequentlyUsedRows = 3, favoritesEditButton = false,
+                compactTags = true, transliterator = "Any-Latin",
             ),
         ).toLauncherConfig().search
         assertEquals(SearchResultLayout.List, set?.layout)
@@ -199,6 +203,11 @@ class ConfigStateMapperTest {
         assertEquals(false, set?.listIcons)
         assertEquals(false, set?.appDetails)
         assertEquals(true, set?.contactsCallOnTap)
+        assertEquals(false, set?.frequentlyUsed)
+        assertEquals(3, set?.frequentlyUsedRows)
+        assertEquals(false, set?.favoritesEditButton)
+        assertEquals(true, set?.compactTags)
+        assertEquals("Any-Latin", set?.transliterator)
     }
 
     /** #3 D6: following is a value now, so the read-back serves it and `search` is complete. */

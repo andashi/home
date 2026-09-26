@@ -408,6 +408,24 @@ data class SearchConfig(
      * Needs CALL_PHONE; without it the tap dials, and the report says so.
      */
     val contactsCallOnTap: Boolean? = null,
+    /**
+     * The favorites row appends the most used apps after the pins (#3 slice 1).
+     * Search's row only: the dock shows its pins alone (#187).
+     */
+    val frequentlyUsed: Boolean? = null,
+    /** How many rows of frequently used apps, [SearchDefaults.MinFrequentlyUsedRows] to [SearchDefaults.MaxFrequentlyUsedRows]. */
+    val frequentlyUsedRows: Int? = null,
+    /** An edit button at the end of the favorites row. */
+    val favoritesEditButton: Boolean? = null,
+    /** The favorites row's tags as small chips. */
+    val compactTags: Boolean? = null,
+    /**
+     * How search matches across scripts: [SearchDefaults.TransliteratorAuto]
+     * (picked from the device's languages), [SearchDefaults.TransliteratorOff],
+     * or one ICU transliterator id. Whether this device's ICU has the id is
+     * the device's question, reported, not the parser's.
+     */
+    val transliterator: String? = null,
 )
 
 /**
@@ -493,4 +511,14 @@ object SearchDefaults {
     const val ListIcons = true
     const val AppDetails = true
     const val ContactsCallOnTap = false
+    const val FrequentlyUsed = true
+    const val FrequentlyUsedRows = 1
+    const val MinFrequentlyUsedRows = 1
+    /** What the settings screen offers. */
+    const val MaxFrequentlyUsedRows = 4
+    const val FavoritesEditButton = true
+    const val CompactTags = false
+    const val TransliteratorAuto = "auto"
+    const val TransliteratorOff = "off"
+    const val Transliterator = TransliteratorAuto
 }

@@ -912,7 +912,9 @@ class ConfigParserTest {
             "favorites": false, "allApps": false, "layout": "list", "labels": false,
             "contacts": false, "shortcuts": false, "filterBar": false, "openKeyboard": false,
             "launchOnEnter": false, "reversed": true, "hiddenItemsButton": true,
-            "listIcons": false, "appDetails": false, "contactsCallOnTap": true
+            "listIcons": false, "appDetails": false, "contactsCallOnTap": true,
+            "frequentlyUsed": false, "frequentlyUsedRows": 3, "favoritesEditButton": false,
+            "compactTags": true, "transliterator": "Any-Latin"
           }
         }
     """.trimIndent()
@@ -929,6 +931,8 @@ class ConfigParserTest {
                 contacts = false, shortcuts = false, filterBar = false, openKeyboard = false,
                 launchOnEnter = false, reversed = true, hiddenItemsButton = true,
                 listIcons = false, appDetails = false, contactsCallOnTap = true,
+                frequentlyUsed = false, frequentlyUsedRows = 3, favoritesEditButton = false,
+                compactTags = true, transliterator = "Any-Latin",
             ),
             result.config?.search,
         )
@@ -1058,5 +1062,57 @@ class ConfigParserTest {
 
         assertTrue(result.isSuccess)
         assertEquals(listOf("icons.badges.notification"), result.diagnostics.filter { it.code == "unknown-key" }.map { it.path })
+    }
+
+    // ---- search favorites and matching (#3 slice 1, PR C) ----
+
+    /** The settings offer one to four rows; the file is untrusted input, so anything else is an error at the field. */
+    @Test
+    fun `a frequently used row count the launcher does not offer fails at its path`() {
+        for (rows in listOf(0, 5, -1, 100)) {
+            val result = ConfigParser.parse("""{ "schemaVersion": 2, "search": { "frequentlyUsedRows": $rows } }""")
+
+            assertFalse("rows $rows", result.isSuccess)
+            val error = result.diagnostics.single { it.code == "invalid-search" }
+            assertEquals(Severity.Error, error.severity)
+            assertEquals("search.frequentlyUsedRows", error.path)
+        }
+    }
+
+    /** Control: every row count the settings offer is accepted. */
+    @Test
+    fun `every frequently used row count the launcher offers is accepted`() {
+        for (rows in 1..4) {
+            val result = ConfigParser.parse("""{ "schemaVersion": 2, "search": { "frequentlyUsedRows": $rows } }""")
+
+            assertTrue("rows $rows", result.isSuccess)
+        }
+    }
+
+    /**
+     * A transliterator is auto, off, or one ICU id. The launcher appends its
+     * own base transliterator, so a compound id (with `;`) is refused, and so
+     * is anything that could not be an id. Whether this device's ICU has the
+     * id is not the parser's question: it is the device's (capabilities).
+     */
+    @Test
+    fun `a transliterator that cannot be one ICU id fails at its path`() {
+        for (id in listOf("", "Any-Latin;Latin-ASCII", "a b", "x".repeat(65), "Latin\u0000")) {
+            val result = ConfigParser.parse("""{ "schemaVersion": 2, "search": { "transliterator": "$id" } }""")
+
+            assertFalse("id '$id'", result.isSuccess)
+            assertEquals(listOf("search.transliterator"), result.diagnostics.filter { it.code == "invalid-search" }.map { it.path })
+        }
+    }
+
+    /** Control: the words and real ids, including ones with a variant, are accepted. */
+    @Test
+    fun `auto, off and single ICU ids are accepted as transliterators`() {
+        for (id in listOf("auto", "off", "Any-Latin", "ru-ru_Latn/BGN", "Cyrillic-Latin")) {
+            val result = ConfigParser.parse("""{ "schemaVersion": 2, "search": { "transliterator": "$id" } }""")
+
+            assertTrue("id '$id'", result.isSuccess)
+            assertEquals(id, result.config?.search?.transliterator)
+        }
     }
 }

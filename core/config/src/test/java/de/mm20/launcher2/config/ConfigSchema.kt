@@ -209,6 +209,8 @@ internal object ConfigSchema {
         "home.grid.layouts.*.items[].w" to range(ConfigValidator.MinGridSpan, ConfigValidator.MaxGridCoordinate),
         "home.grid.layouts.*.items[].h" to range(ConfigValidator.MinGridSpan, ConfigValidator.MaxGridCoordinate),
         "search.actions" to maxItems(ConfigValidator.MaxSearchActions),
+        "search.frequentlyUsedRows" to range(SearchDefaults.MinFrequentlyUsedRows, SearchDefaults.MaxFrequentlyUsedRows),
+        "search.transliterator" to pattern(ConfigValidator.transliteratorIdRegex),
         "search.actions[].url" to mapOf("pattern" to JsonPrimitive(literal(SearchActionTypes.QueryPlaceholder))),
         "search.actions[].package" to packageNameLimits(),
     )
