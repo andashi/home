@@ -203,6 +203,23 @@ re-requested full review arrives as a review, an automatic incremental one
 arrives as an edit to a comment created much earlier, and sorting on
 `createdAt` hands you the older of the two while looking correct.
 
+**A full review that finds nothing creates no review object at all.** Its range
+line then exists only in the rolling comment, so a check that reads the reviews
+alone concludes the review never ran. The command above is already right about
+this - it reads both - but do not reason about the reviews API on its own when
+a pull request comes back clean.
+
+**A rebase invalidates a review anchored before it, even when the ranges
+chain.** This is judgement, not a command: two reviews can meet exactly, with no
+commit unread, and still be worthless, because the same diff against a different
+tree is a different change. On #175 the ranges abutted perfectly; a review
+anchored at the current base then found **seven** real defects, every one of them
+about a shared library that had been rewritten in the meantime. Glass's
+conflict-free rebase the same day is the mechanism in miniature: `open_search`
+resolved to a different function with different behaviour, no conflict, nothing
+red. So after a rebase, request a full review and check the range starts at the
+**current** base - a chained one does not count, however tidy it looks.
+
 ## Feedback loop (no LSP)
 
 LSP is deliberately disabled for this project: Kotlin language servers on a
@@ -287,6 +304,27 @@ afterthought (see `docs/architecture/adr/0005-testing-strategy.md`):
     reads under `set -u` before any of it ran: red before the fix for the
     wrong reason, and red after it, which a count of the passes read as
     green.
+
+**Two rules for the shared shell library in `e2e/lib/`, both learned the hard
+way in one day.**
+
+**A function that moves into the library keeps its name only if it keeps its
+behaviour.** Different behaviour means a different name, so old call sites fail
+loudly instead of changing silently. `open_search` moved into the library under
+its own name while losing what it did - the script's version typed a letter and
+closed the keyboard, the library's only opened search - and a *conflict-free*
+rebase silently pointed an existing call at the new meaning. The step then waited
+for a banner answering a query nobody had made. Git cannot see this: two valid
+files, one name, different meaning. Renaming to `open_search_field` made the old
+name exist nowhere, so any stale call site goes red; a library test asserts
+`! declare -F open_search`.
+
+**A helper's log goes to stderr when its callers might capture stdout.** Found
+twice within ten minutes: `grant_home_role` logging through `log` corrupted
+`measure-footprint`'s TSV, which promises data on stdout, and `retry_for`'s
+elapsed-time line would have corrupted the JSON that `query_json_as_user`'s
+callers parse. Both now write to stderr, and the test for the second asserts
+that stdout is exactly the predicate's output.
 
 ## Test harness (Phase 1)
 
@@ -400,6 +438,17 @@ guarantees. Treat security as a design constraint, not a checklist item:
   even indirectly — flag it explicitly instead of merging it silently.
 
 ## Releases
+
+**Run the L4 scenarios from `clean` before tagging, and say so in the
+annotation.** CI covers L1, L2 and L3 on every pull request and on the release
+itself, but L4 is manual and local by design, so nothing runs it unless a person
+does. Two contract drifts sat undetected for weeks because of that: a scenario
+feeding the launcher `home.dock`, a key removed at schema 2, and an isolation
+check overriding `appearance.transparency.background`, inert since #24. Both
+failed loudly the moment somebody ran the scenario from `clean`; nobody had,
+since #24. Finding them cost an afternoon and a wrong escalation into the
+provisioning repository. One person, one hour per release, catches that class
+before it ships rather than weeks after.
 
 A release is made by pushing an annotated tag. `.github/workflows/release.yml`
 publishes the annotation verbatim as the release body, so the annotation is
