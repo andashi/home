@@ -8,7 +8,9 @@
 # wallpaper, a right-edge favorites dock with four favorites, folded, on the
 # home screen, after one unfold/fold cycle so the glass backdrop cache holds
 # both displays - and then unfolds from those snapshots in turn, RUNS rounds,
-# so host drift hits every build alike.
+# so host drift hits every build alike. The builds' order within a round
+# alternates, so a load trend inside a round lands on each alike; until #175
+# it was fixed, and series from before then carry that position bias.
 #
 # Robust by construction to prior state (every measured unfold starts by
 # loading a snapshot, which resets RAM and disks) and to host load (the
@@ -169,7 +171,13 @@ OUT="${OUT:-$HERE/measurements/unfold-${revlist%-}.tsv}"
 
 # not a wait: RUNS measurement repetitions
 for run in $(seq "$RUNS"); do
-  for name in "${names[@]}"; do
+  # The order alternates round by round: with a fixed order, a load trend
+  # within a round always landed on the same build (#175).
+  order=("${names[@]}")
+  if [ $((run % 2)) -eq 0 ]; then
+    order=(); for ((i = ${#names[@]} - 1; i >= 0; i--)); do order+=("${names[i]}"); done
+  fi
+  for name in "${order[@]}"; do
     restore "$name"
     sleep 3; wake_screen
     # The snapshot was folded with the device-state override; hand the state
