@@ -285,6 +285,49 @@ class DefaultConfigStoreTest {
         assertEquals(Severity.Warning, diagnostics.single().severity)
     }
 
+    /**
+     * #140: the Fold dock declared `h: 7` was stored and served as 6 with no
+     * diagnostic, because the widget allows six. Read-back serves what is in
+     * effect; the diagnostic says what was asked, what is in effect and why.
+     */
+    @Test
+    fun `SetGrid shrinks a span above the provider maximum and says so`() = runTest {
+        gridLimits.limits[clockWidget] = ProviderLimits(default = CellSize(4, 2), limits = SizeLimits(2, 2, 4, 3))
+
+        val diagnostics = store.apply(
+            listOf(grid(GridItemConfig(id = "clock", widget = clockWidget, x = 0, y = 0, w = 4, h = 5)))
+        )
+
+        val clock = homeGridRepository.layouts["phone"]!!.single()
+        assertEquals(3, clock.h)
+        val diagnostic = diagnostics.single()
+        assertEquals("widget-too-large", diagnostic.code)
+        assertEquals("home.grid.layouts.phone.items[0]", diagnostic.path)
+        assertEquals(Severity.Warning, diagnostic.severity)
+        assertEquals(
+            "'clock' asks for 4x5 cells, above the widget's maximum; it was shrunk to 4x3",
+            diagnostic.message,
+        )
+    }
+
+    @Test
+    fun `SetGrid shrinks a span larger than the grid and says the grid set the limit`() = runTest {
+        // This device's own layout, so its rows are the device's, not sized to the items.
+        gridRows.own = "phone"
+        gridLimits.limits[clockWidget] = ProviderLimits(default = CellSize(2, 2), limits = SizeLimits(1, 1, 8, 20))
+
+        val diagnostics = store.apply(
+            listOf(grid(GridItemConfig(id = "clock", widget = clockWidget, x = 0, y = 0, w = 2, h = 9)))
+        )
+
+        val clock = homeGridRepository.layouts["phone"]!!.single()
+        assertEquals(gridRows.rows, clock.h)
+        assertEquals(
+            "'clock' asks for 2x9 cells, more than the grid's ${4}x${gridRows.rows}; it was shrunk to 2x${gridRows.rows}",
+            diagnostics.single { it.code == "widget-too-large" }.message,
+        )
+    }
+
     @Test
     fun `SetGrid drops what does not fit and reports it`() = runTest {
         gridRows.rows = 2

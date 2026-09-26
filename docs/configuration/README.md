@@ -125,8 +125,8 @@ The report lists `appliedMutations` (the sections that changed) and
 - **Warnings** still apply the file:
   - `unknown-key`: a misspelled or unknown key, which is ignored.
   - `inert-key`: a key this build accepts but does not act on, with the reason.
-  - Grid corrections: an item was enlarged to the widget's minimum, nudged, or
-    did not fit.
+  - Grid corrections: an item was enlarged to the widget's minimum, shrunk to
+    its maximum or the grid, nudged, or did not fit.
   - `write-back-skipped:<code>`: a change made on the device was kept there
     but not written into the file, and why (next section).
 

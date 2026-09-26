@@ -79,6 +79,15 @@ sealed class LayoutIssue {
     /** The requested span was smaller than the item's minimum and was enlarged. */
     data class BelowMinimum(val id: String, val requested: Span, val clamped: Span) : LayoutIssue()
 
+    /**
+     * The requested span was larger than the item may be and was shrunk (#140):
+     * [bound] says whether the widget's own maximum, the grid's size, or each
+     * on a different axis set the limit.
+     */
+    data class AboveMaximum(val id: String, val requested: Span, val clamped: Span, val bound: Bound) : LayoutIssue()
+
+    enum class Bound { Widget, Grid, Both }
+
     /** No free cells were left for the item. */
     data class Overflow(val id: String) : LayoutIssue()
 }

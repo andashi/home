@@ -330,7 +330,7 @@ class DefaultConfigStore(
         val order = layout.items.withIndex().associate { it.value.id to it.index }
         val result = GridLayout.normalize(spec, placed.sortedBy { order[it.id] })
         for (issue in result.issues) {
-            issue.toDiagnostic(basePath, order)?.let { diagnostics += it }
+            issue.toDiagnostic(basePath, order, spec)?.let { diagnostics += it }
         }
         // The engine nudges a crossing item to one side without a word (that
         // is the right thing for a hand move); a config that asked for the
@@ -390,7 +390,7 @@ class DefaultConfigStore(
         return diagnostics
     }
 
-    private fun LayoutIssue.toDiagnostic(basePath: String, order: Map<String, Int>): Diagnostic? {
+    private fun LayoutIssue.toDiagnostic(basePath: String, order: Map<String, Int>, spec: GridSpec): Diagnostic? {
         fun path(id: String) = "$basePath[${order[id] ?: -1}]"
         return when (this) {
             is LayoutIssue.BelowMinimum -> Diagnostic(
@@ -421,6 +421,21 @@ class DefaultConfigStore(
                 "grid-overflow",
                 path(id),
                 "No free cells left for '$id'; the item was dropped",
+            )
+
+            // #140: read-back serves the shrunk span, which is what is in
+            // effect; the file keeps what it asked for, and this says why the
+            // two differ.
+            is LayoutIssue.AboveMaximum -> Diagnostic(
+                Severity.Warning,
+                "widget-too-large",
+                path(id),
+                "'$id' asks for ${requested.w}x${requested.h} cells, " +
+                    when (bound) {
+                        LayoutIssue.Bound.Widget -> "above the widget's maximum"
+                        LayoutIssue.Bound.Grid -> "more than the grid's ${spec.columns}x${spec.rows}"
+                        LayoutIssue.Bound.Both -> "above the widget's maximum and the grid's ${spec.columns}x${spec.rows}"
+                    } + "; it was shrunk to ${clamped.w}x${clamped.h}",
             )
 
             // An overlap is reported through what the engine did about it:

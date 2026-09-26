@@ -127,7 +127,7 @@ object GridLayout {
     /**
      * Turns a layout as written in a config file into one that can be drawn:
      * spans below an item's minimum are enlarged ([LayoutIssue.BelowMinimum]),
-     * spans above its maximum or the grid are shrunk, items sticking out of
+     * spans above its maximum or the grid are shrunk ([LayoutIssue.AboveMaximum]), items sticking out of
      * the grid are slid back in when possible and dropped otherwise
      * ([LayoutIssue.OutOfBounds]), items crossing the fold are nudged to one
      * side or dropped ([LayoutIssue.CrossesFold]), and an item overlapping an
@@ -151,6 +151,12 @@ object GridLayout {
             }
             if (w > requested.w || h > requested.h) {
                 issues += LayoutIssue.BelowMinimum(item.id, requested, Span(requested.x, requested.y, w, h))
+            }
+            if (w < requested.w || h < requested.h) {
+                issues += LayoutIssue.AboveMaximum(
+                    item.id, requested, Span(requested.x, requested.y, w, h),
+                    boundOf(spec, item, shrunkW = w < requested.w, shrunkH = h < requested.h),
+                )
             }
             val y = requested.y.coerceIn(0, spec.rows - h)
             val x = nudgeClearOfFold(spec, requested.x.coerceIn(0, spec.columns - w), w, item.mayCrossFold)
@@ -205,6 +211,15 @@ object GridLayout {
 
     private fun clampHeight(spec: GridSpec, item: GridItem, h: Int): Int =
         h.coerceIn(item.limits.minH, maxOf(item.limits.minH, minOf(item.limits.maxH, spec.rows)))
+
+    /** What set the limit on each shrunk axis: the widget's maximum where it is below the grid's size. */
+    private fun boundOf(spec: GridSpec, item: GridItem, shrunkW: Boolean, shrunkH: Boolean): LayoutIssue.Bound {
+        val bounds = buildSet {
+            if (shrunkW) add(if (item.limits.maxW < spec.columns) LayoutIssue.Bound.Widget else LayoutIssue.Bound.Grid)
+            if (shrunkH) add(if (item.limits.maxH < spec.rows) LayoutIssue.Bound.Widget else LayoutIssue.Bound.Grid)
+        }
+        return bounds.singleOrNull() ?: LayoutIssue.Bound.Both
+    }
 
     private fun crossesFold(spec: GridSpec, span: Span): Boolean {
         val fold = spec.foldColumn ?: return false

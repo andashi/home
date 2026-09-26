@@ -209,6 +209,50 @@ class GridLayoutTest {
         assertEquals(listOf(LayoutIssue.BelowMinimum("cal", Span(0, 0, 4, 1), Span(0, 0, 4, 2))), result.issues)
     }
 
+    // #140: a span above what the item may be is shrunk like one below its
+    // minimum is enlarged, and said the same way - with what bounded it.
+    @Test
+    fun `normalize reports a span above the widget's maximum, and clamps it`() {
+        val tall = GridSpec(columns = 4, rows = 8)
+        val items = listOf(item("dock", 3, 0, 1, 7, limits = SizeLimits(1, 1, 4, 6)))
+        val result = GridLayout.normalize(tall, items)
+        assertEquals(Span(3, 0, 1, 6), result.items.spanOf("dock"))
+        assertEquals(
+            listOf(LayoutIssue.AboveMaximum("dock", Span(3, 0, 1, 7), Span(3, 0, 1, 6), LayoutIssue.Bound.Widget)),
+            result.issues,
+        )
+    }
+
+    @Test
+    fun `normalize reports a span larger than the grid, and clamps it`() {
+        val items = listOf(item("note", 0, 0, 2, 9))
+        val result = GridLayout.normalize(Phone, items)
+        assertEquals(Span(0, 0, 2, 6), result.items.spanOf("note"))
+        assertEquals(
+            listOf(LayoutIssue.AboveMaximum("note", Span(0, 0, 2, 9), Span(0, 0, 2, 6), LayoutIssue.Bound.Grid)),
+            result.issues,
+        )
+    }
+
+    @Test
+    fun `normalize says both bounds when each axis met a different one`() {
+        val items = listOf(item("wide", 0, 0, 9, 5, limits = SizeLimits(1, 1, 8, 3)))
+        val result = GridLayout.normalize(Phone, items)
+        assertEquals(Span(0, 0, 4, 3), result.items.spanOf("wide"))
+        assertEquals(
+            listOf(LayoutIssue.AboveMaximum("wide", Span(0, 0, 9, 5), Span(0, 0, 4, 3), LayoutIssue.Bound.Both)),
+            result.issues,
+        )
+    }
+
+    @Test
+    fun `normalize leaves a span at the widget's maximum alone`() {
+        val items = listOf(item("dock", 3, 0, 1, 6, limits = SizeLimits(1, 1, 4, 6)))
+        val result = GridLayout.normalize(Phone, items)
+        assertTrue(result.issues.toString(), result.isClean)
+        assertEquals(Span(3, 0, 1, 6), result.items.spanOf("dock"))
+    }
+
     @Test
     fun `normalize slides an item back into the grid and drops what cannot fit`() {
         val items = listOf(

@@ -81,6 +81,11 @@ its new geometry into the file. A position is `x` and `y` together; a lone
 coordinate is ignored with a `partial-grid-position` warning. The launcher
 keeps a layout valid on the actual screen:
 - a size below the widget's minimum is enlarged (`widget-too-small`);
+- a size above the widget's maximum, or larger than the grid, is shrunk
+  (`widget-too-large`, which says which of the two set the limit). The
+  read-back serves the shrunk size, because that is what is on screen, and
+  the file keeps what it asked for: `h: 7` against a widget that allows 6
+  reads back as 6 and stays 7 in the file (#140);
 - an item across the Fold's middle is nudged (`grid-crosses-fold`);
 - what does not fit is dropped (`grid-overflow`, `grid-out-of-bounds`).
 

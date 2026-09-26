@@ -23,6 +23,9 @@
 #      bounds moved down one row, diagnostics clean
 #   6. push w: 1 for the digital clock (declared minimum two cells wide):
 #      diagnostic widget-too-small, bounds show two columns
+#   6b. push the dock as a 1x7 column on the six-row grid: diagnostic
+#      widget-too-large naming the grid, read-back h 6, the device file keeps
+#      h 7, the dock drawn six rows tall (#140)
 #   7. locked: push locked: true, a long press shows no edit bar, the file's
 #      hash on the device is unchanged
 #   8. malformed push: last good state kept, bounds unchanged
@@ -518,6 +521,21 @@ TOO_SMALL_CONFIG="$WORK/too-small.jsonc"
 sed 's|"id": "digital", "widget": "'"$DIGITAL_CLOCK"'", "x": 0, "y": 0, "w": 3, "h": 1|"id": "digital", "widget": "'"$DIGITAL_CLOCK"'", "x": 0, "y": 0, "w": 1, "h": 1|' \
   "$GRID_CONFIG" > "$TOO_SMALL_CONFIG"
 
+# The dock as a right-edge column seven rows tall, on a six-row phone grid:
+# above what fits (#140). Alone, so the shrunk dock collides with nothing.
+TOO_LARGE_CONFIG="$WORK/too-large.jsonc"
+cat > "$TOO_LARGE_CONFIG" <<'EOF'
+{
+  "schemaVersion": 2,
+  "home": {
+    "widgets": { "enabled": true },
+    "grid": { "columns": 4, "locked": false, "layouts": {
+      "phone": { "items": [ { "id": "dock", "widget": "favorites", "x": 3, "y": 0, "w": 1, "h": 7 } ] }
+    } }
+  }
+}
+EOF
+
 LOCKED_CONFIG="$WORK/locked.jsonc"
 sed 's|"locked": false|"locked": true|' "$GRID_CONFIG" > "$LOCKED_CONFIG"
 
@@ -528,6 +546,7 @@ H_LEGACY="$(sha256sum "$LEGACY_CONFIG" | cut -d' ' -f1)"
 H_GRID="$(sha256sum "$GRID_CONFIG" | cut -d' ' -f1)"
 H_PUSHDOWN="$(sha256sum "$PUSHDOWN_CONFIG" | cut -d' ' -f1)"
 H_TOO_SMALL="$(sha256sum "$TOO_SMALL_CONFIG" | cut -d' ' -f1)"
+H_TOO_LARGE="$(sha256sum "$TOO_LARGE_CONFIG" | cut -d' ' -f1)"
 H_MALFORMED="$(sha256sum "$MALFORMED_CONFIG" | cut -d' ' -f1)"
 H_LOCKED="$(sha256sum "$LOCKED_CONFIG" | cut -d' ' -f1)"
 
@@ -741,6 +760,21 @@ PY
   show_home
   assert_cells $'digital 0 0 2 1\nanalog 0 1 2 2\ndock 0 5 4 1' "minimum enforced on screen"
   ok "below minimum: widget-too-small reported, two columns drawn"
+
+  # --- 6b. above what fits (#140) ------------------------------------------
+  # Read-back serves what is in effect, the file keeps what it asked for, and
+  # the report says why the two differ.
+  settle_then_broadcast "$TOO_LARGE_CONFIG" "$H_TOO_LARGE" "too-large"
+  assert_jq "$LAST_REPORT" \
+    '.success == true and ([.diagnostics[]? | select(.code == "widget-too-large" and .path == "home.grid.layouts.phone.items[0]" and (.message | contains("asks for 1x7 cells, more than the grid")))] | length) == 1' \
+    "the dock above the grid's rows is reported, with the grid as what set the limit"
+  effective="$(query_json config)" || die "could not query /config"
+  assert_jq "$effective" '(.home.grid.layouts.phone.items[] | select(.id == "dock") | .h) == 6' \
+    "the read-back serves the six rows in effect"
+  [ "$(device_config_sha)" = "$H_TOO_LARGE" ] || die "the file on the device changed: it must keep h 7"
+  show_home
+  assert_cells 'dock 3 0 1 6' "the dock shrunk to the grid on screen"
+  ok "above what fits: widget-too-large reported, read-back 6, the file keeps 7"
 
   # --- 7. a locked layout refuses edit mode ------------------------------
   settle_then_broadcast "$LOCKED_CONFIG" "$H_LOCKED" "locked"
