@@ -104,6 +104,23 @@ for i in $(seq 3); do
   sleep 1
 done
 S
+verdict caught "code handed to another shell with options before -c" <<'S'
+bash -e -c 'for i in $(seq 3); do sleep 1; done'
+S
+verdict caught "a quoted <<END is not a heredoc" <<'S'
+echo '<<END'
+for i in $(seq 3); do sleep 1; done
+S
+verdict caught "a here-string is not a heredoc" <<'S'
+grep -q x <<<"$out"
+for i in $(seq 3); do sleep 1; done
+S
+verdict caught "\$SECONDS mentioned in a condition that counts attempts" <<'S'
+while [ "$attempt" -lt 3 ] && printf '%s\n' "$SECONDS"; do sleep 1; attempt=$((attempt + 1)); done
+S
+verdict quiet "a deadline written the other way round (control)" <<'S'
+while [ "$deadline" -gt "$SECONDS" ]; do sleep 1; check && break; done
+S
 verdict quiet "a marked repetition loop" <<'S'
 # not a wait: measurement repetitions
 for run in $(seq "$RUNS"); do measure; sleep 2; done
