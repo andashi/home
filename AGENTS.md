@@ -85,8 +85,123 @@ not read - and merging the document that explains this trap closed the issue a
 second time, seven hours after the first. This text writes `#NNN` rather than a
 real number for that reason, in prose and in commit messages alike.
 
+**The keyword counts even when the sentence is about a different pull request.**
+A body saying "#171 closes #NNN" - a statement of fact about somebody else's
+work - is parsed as *this* pull request closing that issue, exactly as the
+negation case is. Write "settles that issue", or name the other pull request
+without a keyword in front of the number. Found on #175 on 2026-09-26, which
+listed an issue it had nothing to do with.
+
+**`closingIssuesReferences` updates with a lag.** Re-read it a little after
+editing the body, not immediately: the field served right after an edit can
+still be the old one, so a check run at once can report a reference that is
+already gone, or miss one that has just appeared. Both directions are wrong and
+only one of them is safe.
+
 A wrongly closed issue is not a bookkeeping problem. It takes a live defect off
 the list everyone reads while it is still failing builds.
+
+## Merging a pull request
+
+Three conditions, no exceptions and no judgement about how small the diff is:
+every check green, **zero** unresolved review threads, and CodeRabbit's review
+covering the **current head**. If the hourly quota is exhausted (10 included
+reviews per hour, rolling), wait for it. A pull request that waits an hour
+costs an hour; one merged unreviewed costs whatever it broke.
+
+Recount immediately before merging rather than trusting a count from earlier in
+the session: CodeRabbit posts after a push, so a thread can open between the
+check and the merge.
+
+**"Reviewed at the head" is not the same as "reviewed".** CodeRabbit reviews a
+push incrementally by default - it re-reads only the commits since its last
+run - and its verdict is the same green check either way. The range line in its
+comment says which kind you got:
+
+    Reviewing files that changed from the base of the PR and between <from> and <to>
+
+`<from>` equal to the pull request's base means the whole pull request was read
+in that run. `<from>` equal to some later commit means only the tail was, and
+everything before it was covered - if at all - by an earlier run. The
+incremental runs are supposed to chain, each starting where the last ended, and
+the chain usually holds.
+
+On #170 it appears not to have held. A `/simplify` commit landed shortly after a
+review, and the session working the pull request reported a following run whose
+range *started* at that commit rather than before it - which would leave the
+refactor at the heart of the pull request read by nothing. A full review,
+requested by hand, then found a real defect in exactly that commit: a grid item
+shrunk to fit and afterwards dropped for crossing the fold reported both that it
+had been resized and that it was gone.
+
+**That account could not be confirmed from the pull request afterwards, and
+that is the point.** CodeRabbit keeps one rolling summary comment and **edits it
+in place**, so every run overwrites the record of the one before. Hours later the
+pull request showed two base-anchored full reviews and one incremental run, and
+no trace of the run that would prove or disprove the gap. Whether the chain broke
+that day is now unanswerable - which means the chain cannot be audited after the
+fact by anyone, on any pull request. So do not try to audit it; remove the need
+for it:
+
+**Request a full review before merging.** It costs one of ten hourly reviews and
+replaces an argument about chain-of-custody with a single line that either reads
+from the base or does not. Check it mechanically:
+
+```bash
+pr=<n>
+gh api graphql -f query='
+{ repository(owner:"andashi", name:"home") { pullRequest(number:'"$pr"') {
+    baseRefOid
+    headRefOid
+    reviews(last:100) { nodes { author{login} submittedAt lastEditedAt body } }
+    comments(orderBy:{field:UPDATED_AT, direction:DESC}, first:30) {
+      nodes { author{login} createdAt updatedAt body } } } } }' \
+  --jq '.data.repository.pullRequest as $pr
+        | [ ($pr.reviews.nodes[]  | select(.author.login=="coderabbitai")
+             | {at:(.lastEditedAt // .submittedAt), body:.body}),
+            ($pr.comments.nodes[] | select(.author.login=="coderabbitai")
+             | {at:(.updatedAt    // .createdAt),   body:.body}) ]
+        | map(select(.body | test("Reviewing files that changed")))
+        | sort_by(.at) | last
+        | if . == null then "NO REVIEW RANGE FOUND"
+          else .body | capture("between (?<a>[0-9a-f]+) and (?<b>[0-9a-f]+)")
+                     | "\(.a) \(.b)" end
+        | "reviewed  \(.)\nbase head \($pr.baseRefOid) \($pr.headRefOid)"'
+```
+
+The two lines it prints must match. `NO REVIEW RANGE FOUND` means no CodeRabbit
+record carries a range line - either it has not reviewed the pull request, or it
+has and said so in a form this command cannot read, which is the same thing for
+the purpose of merging. It is printed rather than left blank on purpose, because
+an empty line here reads as "nothing to worry about" and means the opposite.
+
+**One request, not three.** The base and head come out of the same call as the
+review records, and that is not tidiness. Fetching them separately leaves a
+window in which a push can land between reading the head and reading the
+reviews, and the failure is the dangerous direction: the head reads as the
+commit the review covered, the command prints a match, and the merge takes a
+newer commit nothing has read. Caught in review on this very section, which had
+three calls.
+
+**The comments are ordered by `UPDATED_AT`, and that is load-bearing.** The
+rolling summary comment is created early and edited on every later run, so
+taking the most recently *created* comments drops it as soon as thirty comments
+follow it, and the command then prints `NO REVIEW AT ALL` for a pull request
+that has in fact been reviewed. The first version of this section did exactly
+that, and review caught it: on #170 the rolling comment was created at 07:07 and
+last edited at 07:44, which put it second by edit time and outside the three
+newest by creation time. The failure is at least safe - a missing record blocks
+a merge rather than waving one through - but a check that cries wolf is one
+people learn to skip, and that is how it fails the other way in the end.
+
+The reviews cannot be ordered that way; the API offers no `orderBy` there. A
+plain `last:100` is enough for them because CodeRabbit submits a *new* review
+per full run rather than editing an old one, so the newest is the newest by
+submission time. Read **both** the reviews and the
+rolling comment, and sort by the edit time rather than the creation time: a
+re-requested full review arrives as a review, an automatic incremental one
+arrives as an edit to a comment created much earlier, and sorting on
+`createdAt` hands you the older of the two while looking correct.
 
 ## Feedback loop (no LSP)
 
