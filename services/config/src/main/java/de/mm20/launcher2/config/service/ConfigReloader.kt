@@ -34,6 +34,7 @@ class ConfigReloader(
     private val reportStore: ReloadReportStore,
     private val lock: ConfigFileLock = ConfigFileLock(),
     private val baselineStore: AppliedBaselineStore? = null,
+    private val capabilities: CapabilityDiagnostics = CapabilityDiagnostics.None,
 ) {
 
     /**
@@ -170,7 +171,7 @@ class ConfigReloader(
             ReloadReport(
                 success = applyDiagnostics.none { it.severity == Severity.Error },
                 schemaVersion = config.schemaVersion,
-                diagnostics = parseResult.diagnostics + applyDiagnostics,
+                diagnostics = parseResult.diagnostics + applyDiagnostics + capabilities.of(config),
                 appliedMutations = appliedSections,
                 configSha256 = configSha256,
                 trigger = trigger,

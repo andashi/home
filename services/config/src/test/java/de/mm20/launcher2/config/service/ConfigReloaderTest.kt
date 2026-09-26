@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import de.mm20.launcher2.config.ConfigMutation
 import de.mm20.launcher2.config.ConfigState
+import de.mm20.launcher2.config.SearchState
 import de.mm20.launcher2.config.Diagnostic
 import de.mm20.launcher2.config.Severity
 import kotlinx.coroutines.Dispatchers
@@ -239,5 +240,65 @@ class ConfigReloaderTest {
         assertFalse(report.success)
         assertTrue(report.diagnostics.any { it.code == "read-failed" && it.severity == Severity.Error })
         assertEquals(0, store.applyCount)
+    }
+
+    // ----- what the file asks for that this profile cannot do (#140) -----
+
+    private fun reloaderWith(store: FakeConfigStore, contactsGranted: Boolean) =
+        ConfigReloader(store, ReloadReportStore(context), capabilities = CapabilityDiagnostics { contactsGranted })
+
+    /**
+     * The key stays as written and is applied: the read-back feeds write-back
+     * and `--pull`, so serving `false` for a missing permission would write
+     * that revocable condition into the file as a choice. The report says why
+     * the effect differs.
+     */
+    @Test
+    fun `contacts asked for without READ_CONTACTS is applied as written and reported`() = runTest {
+        // Off on the device, so the reload has to switch it on to match the file.
+        val store = FakeConfigStore(state = ConfigState(search = SearchState(contacts = false)))
+
+        val report = reloaderWith(store, contactsGranted = false)
+            .reload("""{"schemaVersion": 2, "search": {"contacts": true}}""")
+
+        assertTrue(report.success)
+        assertEquals(listOf("read", "apply:[search]"), store.events)
+        val diagnostic = report.diagnostics.single { it.code == "permission-missing" }
+        assertEquals(Severity.Warning, diagnostic.severity)
+        assertEquals("search.contacts", diagnostic.path)
+        assertEquals(
+            "search.contacts is true, but this profile does not hold READ_CONTACTS; " +
+                "contact search finds nothing until it is granted",
+            diagnostic.message,
+        )
+    }
+
+    @Test
+    fun `contacts with READ_CONTACTS held is not reported`() = runTest {
+        val report = reloaderWith(FakeConfigStore(), contactsGranted = true)
+            .reload("""{"schemaVersion": 2, "search": {"contacts": true}}""")
+
+        assertTrue(report.diagnostics.none { it.code == "permission-missing" })
+    }
+
+    @Test
+    fun `a file that does not ask for contacts is not reported, whatever the permission`() = runTest {
+        for (text in listOf(
+            """{"schemaVersion": 2, "search": {"contacts": false}}""",
+            """{"schemaVersion": 2, "search": {"layout": "grid"}}""",
+        )) {
+            val report = reloaderWith(FakeConfigStore(), contactsGranted = false).reload(text)
+            assertTrue(text, report.diagnostics.none { it.code == "permission-missing" })
+        }
+    }
+
+    /** Nothing was applied, and nothing depends on a key that did not land. */
+    @Test
+    fun `an invalid file is not reported for contacts`() = runTest {
+        val report = reloaderWith(FakeConfigStore(), contactsGranted = false)
+            .reload("""{"schemaVersion": 2, "search": {"contacts": true, "layout": "diagonal"}}""")
+
+        assertFalse(report.success)
+        assertTrue(report.diagnostics.none { it.code == "permission-missing" })
     }
 }

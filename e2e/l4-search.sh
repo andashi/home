@@ -156,4 +156,34 @@ open_search
 adb -s "$SERIAL" shell input keyevent KEYCODE_HOME
 assert_home_stays "Home button"
 
+# --- contacts asked for in a profile without READ_CONTACTS (#140) ---------
+# The key stays as written and reads back true: the read-back feeds
+# write-back and --pull, so a missing permission must not become a written
+# `false`. The report says why contact search finds nothing, and the banner
+# stays: its Turn off writes `contacts: false` into the file since #3 slice 4,
+# so it is a real choice, which is why #140's "no banner" no longer holds.
+log "search.contacts: true without READ_CONTACTS"
+adb -s "$SERIAL" shell pm revoke "$PKG" android.permission.READ_CONTACTS >/dev/null 2>&1 || true
+printf '{ "schemaVersion": 2, "search": { "contacts": true } }\n' > "$WORK/contacts.json"
+push_config "$WORK/contacts.json" "contacts"
+report="$(query_json diagnostics)"
+assert_jq "$report" \
+  '.success == true and ([.diagnostics[]? | select(.code == "permission-missing" and .path == "search.contacts" and .severity == "warning")] | length) == 1' \
+  "the report says contact search cannot work here"
+assert_jq "$(query_json config)" '.search.contacts == true' "the read-back keeps what the file asked for"
+open_search
+wait_text "Contacts permission is required to search your contacts" 15
+wait_text "Turn off" 5
+adb -s "$SERIAL" shell input keyevent KEYCODE_HOME
+assert_home_stays "Home button after the contacts banner"
+ok "without READ_CONTACTS: permission-missing reported, read-back true, the banner offers Grant and Turn off"
+
+# Control: once the profile holds the permission, a reload reports nothing.
+adb -s "$SERIAL" shell pm grant "$PKG" android.permission.READ_CONTACTS || die "could not grant READ_CONTACTS"
+reload_broadcast
+wait_report '.trigger == "broadcast"' 30 "the reload after the grant"
+assert_jq "$(query_json diagnostics)" '([.diagnostics[]? | select(.code == "permission-missing")] | length) == 0' \
+  "with READ_CONTACTS held nothing is reported"
+ok "with READ_CONTACTS: the reload reports nothing"
+
 ok "l4-search passed"
