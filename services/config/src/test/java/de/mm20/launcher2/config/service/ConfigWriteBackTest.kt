@@ -30,6 +30,8 @@ import org.koin.core.context.GlobalContext
 import de.mm20.launcher2.preferences.ui.UiSettings
 import java.util.UUID
 import de.mm20.launcher2.config.ReloadReport
+import de.mm20.launcher2.preferences.BuiltInColorSchemes
+import de.mm20.launcher2.config.ThemeColors
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -192,6 +194,23 @@ class ConfigWriteBackTest {
         assertTrue(result.toString(), result is WriteBackResult.Written)
         assertEquals(themeFile.replace("\"mode\": \"system\"", "\"mode\": \"light\""), file.readText())
         assertTrue(reportStore.read()?.diagnostics.toString(), result.keptColors(reportStore.read()))
+    }
+
+    /** The warning describes the device as it is now: back on a built-in scheme, it goes (#183 review). */
+    @Test
+    fun `back from a person's own scheme to a built-in one, the warning goes`() = runBlocking {
+        applied(themeFile)
+        ownColorSchemeOnDevice()
+        writeBack.write()
+        assertTrue(WriteBackResult.Unchanged.keptColors(reportStore.read()))
+
+        GlobalContext.get().get<UiSettings>().setColorsId(BuiltInColorSchemes.System)
+        withTimeout(10_000) { while (real.store.readState().themeColors != ThemeColors.System) delay(20) }
+        val result = writeBack.write()
+
+        assertEquals(WriteBackResult.Unchanged, result)
+        assertEquals(themeFile, file.readText())
+        assertTrue(reportStore.read()?.diagnostics.toString(), !result.keptColors(reportStore.read()))
     }
 
     @Test
