@@ -202,17 +202,6 @@ afterthought (see `docs/architecture/adr/0005-testing-strategy.md`):
   <before>.tsv <after>.tsv` prints the deltas and names the permissions that
   appeared or disappeared. Every module-diet PR (#20) carries a before/after
   from it.
-- **Cold start and unfold, build against build**: `e2e/measure-coldstart.sh`
-  (`am start -W` TotalTime) and `e2e/measure-unfold.sh` (the first frame
-  after an unfold). Each prepares one snapshot per APK and alternates the
-  builds round by round; compare them **pairwise** (same round, same start),
-  never by unpaired medians. On #167 the unpaired medians put the build with
-  extra start-up work 140 ms *faster* (626 against 766 ms) - opposite to the
-  hypothesis, which is how the spread showed it dominated - while the pairs
-  said what was there: slower in 25 of 60, median -31 ms, no effect above
-  the noise at host load 11-15. And a median whose paired spread dwarfs it
-  is not quoted, not even as colour: "351 ms before, 341 after" in the
-  v0.8.0 notes sat on a paired spread of -55 to +401 ms.
 
 ## CI
 
