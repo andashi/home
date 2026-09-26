@@ -451,6 +451,13 @@ ime_hidden() { ime_read && [ "$IME" = hidden ]; }
 
 # Opens search from the launcher's bar and types $1, if given.
 #
+# Named open_search_field, not open_search, on purpose (#164): l4-search.sh
+# had an open_search that also typed a letter and closed the keyboard. A
+# function that moves into the library keeps its name only if it keeps its
+# behaviour; a different behaviour gets a different name, so a call site
+# that still means the old one fails loudly instead of changing silently.
+# #172's contacts step did exactly that on a conflict-free rebase.
+#
 # Bounded by rounds, and each round re-issues the tap: opening search is an
 # action that can be lost, and a tap that did not register cannot be waited
 # out, only repeated (#164). A wall-clock 10 s had room for about two looks
@@ -465,7 +472,7 @@ search_open_round() {
   [ -n "$b" ] && tap_bounds "$b"
   search_is_open
 }
-open_search() { # [$1 = text to type]
+open_search_field() { # [$1 = text to type]
   local t0=$SECONDS
   retry_rounds 3 "${ROUND_CAP:-20}" search_open_round \
     || die "search did not open after 3 rounds of tapping the bar ($((SECONDS - t0)) s)"

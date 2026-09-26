@@ -420,18 +420,18 @@ screen_state_reads_the_screen() {
 check "screen_state tells home from search, and an empty dump from both" screen_state_reads_the_screen
 opens_search_and_dismisses_the_keyboard() {
   home_screen; echo "  mInputShown=true" > "$WORK/search/ime.txt"
-  ( PATH="$WORK/search:$PATH"; open_search c && dismiss_keyboard ) >/dev/null 2>&1 \
+  ( PATH="$WORK/search:$PATH"; open_search_field c && dismiss_keyboard ) >/dev/null 2>&1 \
     && grep -q "mInputShown=false" "$WORK/search/ime.txt"
 }
-check "open_search opens search, dismiss_keyboard closes the keyboard" opens_search_and_dismisses_the_keyboard
+check "open_search_field opens search, dismiss_keyboard closes the keyboard" opens_search_and_dismisses_the_keyboard
 # 3 rounds at a 1 s cap, each a look, a tap lookup and a look: 3 x 1 + 2 s
 # of pauses = 5 s nominal, plus 3 s for whole-second rounding and scheduling.
 open_search_is_bounded_by_its_rounds() {
   local start=$SECONDS
-  ( PATH="$WORK/wedged:$PATH" timeout 60 bash -c "$(declare -f); $(declare -p SERIAL PKG WORK STATE_URI 2>/dev/null); ROUND_CAP=1 open_search c" ) >/dev/null 2>&1 && return 1
+  ( PATH="$WORK/wedged:$PATH" timeout 60 bash -c "$(declare -f); $(declare -p SERIAL PKG WORK STATE_URI 2>/dev/null); ROUND_CAP=1 open_search_field c" ) >/dev/null 2>&1 && return 1
   [ $((SECONDS - start)) -le $((3 * 1 + 2 + 3)) ]
 }
-check "open_search gives up after its rounds on a wedged device" open_search_is_bounded_by_its_rounds
+check "open_search_field gives up after its rounds on a wedged device" open_search_is_bounded_by_its_rounds
 check "dismiss_keyboard gives up after its timeout on a wedged device" bounded "KEYBOARD_TIMEOUT=1 dismiss_keyboard"
 
 # A wait inside a wait cannot extend the outer deadline: the inner retry_for
@@ -449,7 +449,7 @@ check "a nested retry_for cannot extend the outer deadline" nested_waits_share_t
 # Opening search is an action that can be lost: a tap that did not register
 # cannot be waited out, only repeated. On the fold with software rendering a
 # dump took about 4 s, so a 10 s bound had room for two looks, and
-# config-screenshots.sh failed there (#164, 2026-09-26 10:11). open_search
+# config-screenshots.sh failed there (#164, 2026-09-26 10:11). open_search_field
 # makes up to 3 rounds, each re-issuing the tap, each capped, and says what
 # they cost. The fake loses the first two taps.
 mkdir -p "$WORK/slowsearch"
@@ -469,9 +469,15 @@ chmod +x "$WORK/slowsearch/adb"
 open_search_waits_three_slow_rounds() {
   local out
   rm -f "$WORK/slowsearch/taps"
-  out="$( ( PATH="$WORK/slowsearch:$PATH"; log() { printf '%s\n' "$*"; }; open_search ) 2>&1 )" || { printf '%s\n' "$out" >&2; return 1; }
+  out="$( ( PATH="$WORK/slowsearch:$PATH"; log() { printf '%s\n' "$*"; }; open_search_field ) 2>&1 )" || { printf '%s\n' "$out" >&2; return 1; }
   grep -qE "search open after 3 rounds, [0-9]+ s" <<<"$out"
 }
-check "open_search waits three rounds on a slow host and says what they cost" open_search_waits_three_slow_rounds
+check "open_search_field waits three rounds on a slow host and says what they cost" open_search_waits_three_slow_rounds
+
+# The old name is gone on purpose: a call site that still means the
+# script's former open_search (type a letter, close the keyboard) must fail
+# with "command not found", never run the library's different function.
+old_open_search_is_gone() { ! declare -F open_search >/dev/null; }
+check "no open_search exists, so an old call site fails loudly" old_open_search_is_gone
 
 exit "$failed"

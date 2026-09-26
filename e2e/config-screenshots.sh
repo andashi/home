@@ -233,11 +233,11 @@ capture() { # $1 = output jpg, $2 = width
 
 # Opens search for a scene and types its query ("@open" types nothing), then
 # closes the keyboard, which would cover the results the picture is about.
-# open_search, dismiss_keyboard and screen_state are the library's (#164).
+# open_search_field, dismiss_keyboard and screen_state are the library's (#164).
 open_scene_search() { # $1 = scene
   local query="${SCENE_QUERY[$1]:-}"
   [ -n "$query" ] || return 0
-  if [ "$query" = @open ]; then open_search; else open_search "$query"; fi
+  if [ "$query" = @open ]; then open_search_field; else open_search_field "$query"; fi
   dismiss_keyboard
   sleep 2
 }

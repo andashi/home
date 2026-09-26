@@ -78,10 +78,10 @@ wait_desc Search 30 "the launcher's search bar"
 
 # Opens search and types a letter, then closes the keyboard: it takes the
 # first Back for itself, and that is not under test. Search must still be
-# open afterwards. screen_state, open_search and dismiss_keyboard are the
+# open afterwards. screen_state, open_search_field and dismiss_keyboard are the
 # library's (#164).
 enter_search() {
-  open_search c
+  open_search_field c
   dismiss_keyboard
   search_is_open || die "search closed with the keyboard"
 }
@@ -132,9 +132,9 @@ assert_jq "$report" \
   '.success == true and ([.diagnostics[]? | select(.code == "permission-missing" and .path == "search.contacts" and .severity == "warning")] | length) == 1' \
   "the report says contact search cannot work here"
 assert_jq "$(query_json config)" '.search.contacts == true' "the read-back keeps what the file asked for"
-# enter_search, not the library's open_search: #172 wrote this against the
-# script's former open_search, which also typed a letter and closed the
-# keyboard. The banner answers a query.
+# enter_search: #172 wrote this against the script's former open_search,
+# which also typed a letter and closed the keyboard. The library's
+# open_search_field types nothing, and the banner answers a query.
 enter_search
 wait_text "Contacts permission is required to search your contacts" 15
 wait_text "Turn off" 5
