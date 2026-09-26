@@ -152,7 +152,7 @@ object GridLayout {
      * spans above its maximum or the grid are shrunk ([LayoutIssue.AboveMaximum]), items sticking out of
      * the grid are slid back in when possible ([LayoutIssue.Moved]) and dropped otherwise
      * ([LayoutIssue.OutOfBounds]), items crossing the fold are nudged to one
-     * side or dropped ([LayoutIssue.CrossesFold]), and an item overlapping an
+     * side ([LayoutIssue.NudgedOffFold]) or dropped ([LayoutIssue.CrossesFold]), and an item overlapping an
      * earlier one is pushed down to the first free row at or below its own
      * ([LayoutIssue.Overlap], [LayoutIssue.Moved]) or dropped when there is none
      * ([LayoutIssue.Overflow]). Items are processed in list order, so the
@@ -182,7 +182,6 @@ object GridLayout {
             }
             var span = Span(x, y, w, h)
             val blocker = result.firstOrNull { it.span.overlaps(span) }
-            val pushed = blocker != null
             if (blocker != null) {
                 issues += LayoutIssue.Overlap(blocker.id, item.id)
                 // Pushed down like move() does: the first row at or below its
@@ -198,9 +197,10 @@ object GridLayout {
             // item that ends up in the layout; one that is dropped reports
             // why it was dropped, and nothing else (#170 review).
             issues += fit.issues
-            if (slid || pushed) {
+            if (slid || blocker != null) {
                 issues += LayoutIssue.Moved(item.id, from = requested, to = span, pushedBy = blocker?.id)
             }
+            if (x != slidX) issues += LayoutIssue.NudgedOffFold(item.id)
             result += if (span == item.span) item else item.copy(span = span)
         }
         return LayoutResult(result, issues)

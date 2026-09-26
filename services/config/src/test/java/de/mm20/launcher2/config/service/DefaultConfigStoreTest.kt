@@ -479,6 +479,25 @@ class DefaultConfigStoreTest {
     }
 
     /**
+     * The nudge is reported from what the engine did, not recomputed from the
+     * file (#174 simplify): an item with no `w` takes the provider's default
+     * width, crosses the fold with it and is nudged like any other.
+     */
+    @Test
+    fun `a nudge off the fold is reported for an item whose width is the default`() = runTest {
+        settings.state = ConfigState(gridColumns = 4)
+        gridLimits.limits[clockWidget] = ProviderLimits(default = CellSize(2, 1), limits = SizeLimits(1, 1, 4, 2))
+
+        val diagnostics = store.apply(
+            listOf(grid(GridItemConfig(id = "clock", widget = clockWidget, x = 3, y = 0), layout = "fold"))
+        )
+
+        val clock = homeGridRepository.layouts["fold"]!!.single()
+        assertTrue("the clock was nudged to one side: x=${clock.x}", clock.x + clock.w <= 4 || clock.x >= 4)
+        assertEquals(listOf("grid-crosses-fold"), diagnostics.map { it.code })
+    }
+
+    /**
      * #90: a phone checked the fold layout against its own six rows, so the
      * Fold's seventh row was clamped to the sixth and, with that row taken,
      * the item dropped with grid-overflow. The phone never shows that layout;

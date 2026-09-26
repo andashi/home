@@ -361,7 +361,7 @@ class GridLayoutTest {
         assertEquals(listOf(LayoutIssue.Overlap("full", "late"), LayoutIssue.Overflow("late")), result.issues)
     }
 
-    // A nudge off the fold line is CrossesFold's to report, not a move.
+    // A nudge off the fold line is NudgedOffFold, not a move.
     @Test
     fun `normalize handles the fold like move does`() {
         val items = listOf(item("a", 3, 0, 2, 1), item("b", 1, 1, 6, 1), favorites(0, 5, 8, 1))
@@ -369,7 +369,8 @@ class GridLayoutTest {
         assertEquals(Span(2, 0, 2, 1), result.items.spanOf("a"))
         assertEquals(Span(0, 5, 8, 1), result.items.spanOf("favorites"))
         assertEquals(listOf("a", "favorites"), result.items.map { it.id })
-        assertEquals(listOf(LayoutIssue.CrossesFold("b")), result.issues)
+        // The nudge is its own issue, not a move: a kept, b dropped.
+        assertEquals(listOf(LayoutIssue.NudgedOffFold("a"), LayoutIssue.CrossesFold("b")), result.issues)
     }
 
     @Test
