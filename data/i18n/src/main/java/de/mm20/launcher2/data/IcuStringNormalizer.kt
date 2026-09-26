@@ -4,20 +4,23 @@ import android.content.Context
 import android.icu.text.Transliterator
 import android.icu.util.ULocale
 import de.mm20.launcher2.crashreporter.CrashReporter
-import de.mm20.launcher2.preferences.ui.LocaleSettings
 import de.mm20.launcher2.search.StringNormalizer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import org.apache.commons.lang3.StringUtils
 import java.util.Locale
+import java.util.concurrent.ConcurrentHashMap
 
 internal class IcuStringNormalizer(
     private val context: Context,
-    localeSettings: LocaleSettings,
+    /** The stored transliterator: null off, "" auto, else an ICU id (LocaleSettings.transliterator). */
+    transliteratorSetting: Flow<String?>,
+    private val newTransliterator: (String) -> Transliterator = Transliterator::getInstance,
 ) : StringNormalizer {
 
     override val id: String
@@ -25,19 +28,28 @@ internal class IcuStringNormalizer(
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
-    private val transliteratorId = localeSettings.transliterator
+    private val transliteratorId = transliteratorSetting
         .map {
             getTransliteratorId(it)
         }
         .stateIn(scope, SharingStarted.Eagerly, DisabledTransliteratorId)
 
+    /**
+     * Ids this device's ICU does not have. Looked up once: normalize runs for
+     * every item on every keystroke, and each lookup of a missing id threw and
+     * logged again (#3 slice 1). Only failures are kept; a working id is
+     * created per call as before, since ICU does not promise that one instance
+     * may be shared across the search coroutines.
+     */
+    private val unavailableIds: MutableSet<String> = ConcurrentHashMap.newKeySet()
+
     override fun normalize(input: String): String {
         val id = transliteratorId.value
 
-        val transliterator = try {
-            Transliterator.getInstance(id)
+        val transliterator = if (id in unavailableIds) null else try {
+            newTransliterator(id)
         } catch (e: IllegalArgumentException) {
-            CrashReporter.logException(e)
+            if (unavailableIds.add(id)) CrashReporter.logException(e)
             null
         }
 
