@@ -225,6 +225,7 @@ bounded() { # $@ = a wait call with a 3 s timeout
   [ $((SECONDS - start)) -le 6 ]
 }
 check "wait_desc gives up after its timeout" bounded wait_desc Search 3 test
+check "wait_text gives up after its timeout" bounded wait_text "Grid and icons" 3
 check "wait_id gives up after its timeout" bounded wait_id grid-edit-done 3 test
 check "wait_cells gives up after its timeout" bounded wait_cells 1 3
 check "wait_report gives up after its timeout" bounded "wait_report '.success' 3 test"

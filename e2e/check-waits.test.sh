@@ -48,6 +48,9 @@ S
 verdict caught "until loop with a sleep" <<'S'
 until alive; do sleep 1; done
 S
+verdict quiet "a loop bounded by \$SECONDS" <<'S'
+while [ "$SECONDS" -lt "$deadline" ]; do sleep 1; check && break; done
+S
 verdict quiet "a while read loop" <<'S'
 while IFS=$'\t' read -r n t; do echo "$n"; done < list
 S
