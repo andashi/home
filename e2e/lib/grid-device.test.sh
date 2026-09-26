@@ -765,6 +765,30 @@ rejects_a_flag_as_the_value() {
   grep -q "needs" <<<"$out"
 }
 check "push_config rejects --ignored followed by another option" rejects_a_flag_as_the_value
+# A run boots the instance it needs when it is down, and says so, so that it
+# stops only what it booted: a hand-booted emulator-5562 ran unlocked for
+# five hours after the check that needed it (2026-09-26).
+mkdir -p "$WORK/boot"
+cat > "$WORK/boot/adb" <<EOF
+#!/usr/bin/env bash
+case "\$*" in
+  *"get-state"*) [ -e "$WORK/boot/up" ] && echo device || { echo "error: device not found" >&2; exit 1; } ;;
+esac
+EOF
+cat > "$WORK/boot/run.sh" <<EOF
+#!/usr/bin/env bash
+echo "\$*" >> "$WORK/boot/calls"
+EOF
+chmod +x "$WORK/boot/adb" "$WORK/boot/run.sh"
+booted_after() { # $1 = up|down; prints BOOTED and the run.sh calls
+  rm -f "$WORK/boot/calls" "$WORK/boot/up"
+  [ "$1" = down ] || : > "$WORK/boot/up"
+  ( PATH="$WORK/boot:$PATH"; boot_instance "$WORK/boot/run.sh"; printf '%s|%s' "$BOOTED" "$(cat "$WORK/boot/calls" 2>/dev/null)" )
+}
+boots_a_down_instance() { [ "$(booted_after down)" = "1|start" ]; }
+check "boot_instance boots a down instance and says it did" boots_a_down_instance
+leaves_a_running_instance() { [ "$(booted_after up)" = "0|" ]; }
+check "boot_instance leaves a running instance alone and says it did not boot it" leaves_a_running_instance
 
 # gos_run is the one way to run.sh. It checks the owner at the moment of the
 # call, so no reading of the script's text can be fooled: exported and
