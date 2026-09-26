@@ -236,5 +236,5 @@ for run in $(seq "$RUNS"); do
     done
   done
 done
-"$RUN" restore clean >/dev/null
+# The EXIT trap restores `clean`, once, and keeps the lock if that fails.
 log "written: $OUT"
