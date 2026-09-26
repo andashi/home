@@ -79,6 +79,12 @@ trap cleanup EXIT
 [ $# -ge 1 ] || die "usage: $0 a.apk [b.apk ...]"
 [[ "$RUNS" =~ ^[1-9][0-9]*$ ]] || die "RUNS must be a positive integer, not '$RUNS'"
 [[ "$STARTS" =~ ^[1-9][0-9]*$ ]] || die "STARTS must be a positive integer, not '$STARTS'"
+# A ceiling means something only next to the floor it sits above.
+if [ -n "$MAX_LOAD" ]; then
+  [[ "$MAX_LOAD" =~ ^[0-9]+(\.[0-9]+)?$ ]] || die "MAX_LOAD must be a number, not '$MAX_LOAD'"
+  [[ "$LOAD_FLOOR" =~ ^[0-9]+(\.[0-9]+)?$ ]] \
+    || die "MAX_LOAD needs LOAD_FLOOR: the idle load of the booted instance, measured before the first sample"
+fi
 "$LOCK" acquire "$LOCK_OWNER" "$SERIAL" >/dev/null || die "$SERIAL is locked by someone else"
 # `run.sh start` leaves adb as root; a release build offers the unrooted shell.
 unrooted_shell
