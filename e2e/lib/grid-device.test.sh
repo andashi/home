@@ -586,5 +586,16 @@ fails_in_time() { # $@ = a call that must fail within 6 s on a wedged device
 }
 check "write_config fails at the deadline while the content write hangs" fails_in_time "ADB_DEADLINE=\$((SECONDS + 3)) write_config $WORK/config.json"
 check "reload_broadcast fails at the deadline while the broadcast hangs" fails_in_time "ADB_DEADLINE=\$((SECONDS + 3)) reload_broadcast"
+# The same for every helper that branches on adb's status: a hung dumpsys
+# is not a hidden keyboard, and a hung grant says so rather than blaming
+# whoever holds the role.
+check "ime_read fails, and does not say hidden, while dumpsys hangs" fails_in_time "ADB_DEADLINE=\$((SECONDS + 3)) ime_read"
+check "query_json fails at the deadline while the query hangs" fails_in_time "ADB_DEADLINE=\$((SECONDS + 3)) query_json diagnostics"
+grant_names_the_hung_grant() {
+  local out
+  out="$( ( PATH="$WORK/wedged:$PATH" timeout 20 bash -c "$(declare -f); $(declare -p SERIAL WORK 2>/dev/null); PKG=org.andashi.home; ADB_DEADLINE=\$((SECONDS + 3)); grant_home_role" ) 2>&1 )" && return 1
+  grep -q "could not grant the HOME role" <<<"$out"
+}
+check "grant_home_role names the hung grant, not the role holder" grant_names_the_hung_grant
 
 exit "$failed"
