@@ -328,6 +328,35 @@ class DefaultConfigStoreTest {
         )
     }
 
+    // An item without a position is sized by placement, not by normalize, and
+    // used to be fitted there without a word in either direction (#170 review).
+    @Test
+    fun `an item without a position that is too large is reported like a placed one`() = runTest {
+        gridLimits.limits[clockWidget] = ProviderLimits(default = CellSize(4, 2), limits = SizeLimits(2, 2, 4, 3))
+
+        val diagnostics = store.apply(
+            listOf(grid(GridItemConfig(id = "clock", widget = clockWidget, w = 4, h = 5)))
+        )
+
+        assertEquals(3, homeGridRepository.layouts["phone"]!!.single().h)
+        assertEquals(
+            listOf("widget-too-large" to "'clock' asks for 4x5 cells, above the widget's maximum; it was shrunk to 4x3"),
+            diagnostics.map { it.code to it.message },
+        )
+    }
+
+    @Test
+    fun `an item without a position that is too small is reported like a placed one`() = runTest {
+        gridLimits.limits[clockWidget] = ProviderLimits(default = CellSize(4, 2), limits = SizeLimits(2, 2, 4, 3))
+
+        val diagnostics = store.apply(
+            listOf(grid(GridItemConfig(id = "clock", widget = clockWidget, w = 4, h = 1)))
+        )
+
+        assertEquals(2, homeGridRepository.layouts["phone"]!!.single().h)
+        assertEquals(listOf("widget-too-small"), diagnostics.map { it.code })
+    }
+
     @Test
     fun `SetGrid drops what does not fit and reports it`() = runTest {
         gridRows.rows = 2

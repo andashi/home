@@ -288,6 +288,8 @@ class DefaultConfigStore(
             foldColumn = if (isFold) columns else null,
         )
 
+        val order = layout.items.withIndex().associate { it.value.id to it.index }
+
         // A position anchors the item; a missing size is the provider's
         // default. Items without a position are placed after them.
         val placed = mutableListOf<GridItem>()
@@ -323,11 +325,15 @@ class DefaultConfigStore(
                 )
                 continue
             }
+            // Placement fits the size the way normalize does, and normalize
+            // then sees the fitted span; so the fit is said here (#140).
+            for (issue in GridLayout.fitSize(spec, candidate).issues) {
+                issue.toDiagnostic(basePath, order, spec)?.let { diagnostics += it }
+            }
             placed += free
         }
 
         // Back into array order, then normalise against this device's grid.
-        val order = layout.items.withIndex().associate { it.value.id to it.index }
         val result = GridLayout.normalize(spec, placed.sortedBy { order[it.id] })
         for (issue in result.issues) {
             issue.toDiagnostic(basePath, order, spec)?.let { diagnostics += it }

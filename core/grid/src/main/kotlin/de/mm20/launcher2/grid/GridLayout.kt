@@ -48,8 +48,7 @@ object GridLayout {
         newItem: GridItem,
         columns: IntRange = 0 until spec.columns,
     ): GridItem? {
-        val w = clampWidth(spec, newItem, newItem.span.w)
-        val h = clampHeight(spec, newItem, newItem.span.h)
+        val (w, h) = fitSize(spec, newItem).span.let { it.w to it.h }
         val occupied = items.filter { it.id != newItem.id }.map { it.span }
         val span = firstFree(spec, occupied, w, h, newItem.mayCrossFold, columns) ?: return null
         return newItem.copy(span = span)
@@ -73,8 +72,7 @@ object GridLayout {
     fun move(spec: GridSpec, items: List<GridItem>, id: String, to: Span): LayoutResult {
         val moving = items.firstOrNull { it.id == id }
             ?: throw IllegalArgumentException("no item with id '$id' in the layout")
-        val w = clampWidth(spec, moving, to.w)
-        val h = clampHeight(spec, moving, to.h)
+        val (w, h) = fitSize(spec, moving.copy(span = to)).span.let { it.w to it.h }
         // A minimum larger than the grid cannot be clamped into it; answer
         // instead of letting coerceIn throw on an inverted range.
         if (w > spec.columns || h > spec.rows) {
@@ -125,6 +123,30 @@ object GridLayout {
     }
 
     /**
+     * [item]'s span fitted to its limits and the grid, and what fitting it
+     * changed: a span below the minimum enlarged ([LayoutIssue.BelowMinimum]),
+     * one above the maximum or the grid shrunk ([LayoutIssue.AboveMaximum],
+     * with what set the limit). The one place a size is fitted, so an item
+     * the file places and one placement sizes are reported alike (#140). The
+     * fitted span is larger than the grid when the minimum is; the caller
+     * decides what that means.
+     */
+    fun fitSize(spec: GridSpec, item: GridItem): SizeFit {
+        val requested = item.span
+        val w = fitAxis(requested.w, item.limits.minW, item.limits.maxW, spec.columns)
+        val h = fitAxis(requested.h, item.limits.minH, item.limits.maxH, spec.rows)
+        val fitted = requested.copy(w = w.value, h = h.value)
+        val issues = buildList {
+            if (w.value > requested.w || h.value > requested.h) add(LayoutIssue.BelowMinimum(item.id, requested, fitted))
+            val bounds = listOfNotNull(w.shrunkBy, h.shrunkBy).distinct()
+            if (bounds.isNotEmpty()) {
+                add(LayoutIssue.AboveMaximum(item.id, requested, fitted, bounds.singleOrNull() ?: LayoutIssue.Bound.Both))
+            }
+        }
+        return SizeFit(fitted, issues)
+    }
+
+    /**
      * Turns a layout as written in a config file into one that can be drawn:
      * spans below an item's minimum are enlarged ([LayoutIssue.BelowMinimum]),
      * spans above its maximum or the grid are shrunk ([LayoutIssue.AboveMaximum]), items sticking out of
@@ -142,22 +164,15 @@ object GridLayout {
         val result = mutableListOf<GridItem>()
         for (item in items) {
             val requested = item.span
-            val w = clampWidth(spec, item, requested.w)
-            val h = clampHeight(spec, item, requested.h)
+            val fit = fitSize(spec, item)
+            val w = fit.span.w
+            val h = fit.span.h
             if (w > spec.columns || h > spec.rows) {
                 // the minimum itself does not fit; nothing to slide
                 issues += LayoutIssue.OutOfBounds(item.id, requested)
                 continue
             }
-            if (w > requested.w || h > requested.h) {
-                issues += LayoutIssue.BelowMinimum(item.id, requested, Span(requested.x, requested.y, w, h))
-            }
-            if (w < requested.w || h < requested.h) {
-                issues += LayoutIssue.AboveMaximum(
-                    item.id, requested, Span(requested.x, requested.y, w, h),
-                    boundOf(spec, item, shrunkW = w < requested.w, shrunkH = h < requested.h),
-                )
-            }
+            issues += fit.issues
             val y = requested.y.coerceIn(0, spec.rows - h)
             val x = nudgeClearOfFold(spec, requested.x.coerceIn(0, spec.columns - w), w, item.mayCrossFold)
             if (x == null) {
@@ -206,19 +221,17 @@ object GridLayout {
 
     // --- helpers ----------------------------------------------------------
 
-    private fun clampWidth(spec: GridSpec, item: GridItem, w: Int): Int =
-        w.coerceIn(item.limits.minW, maxOf(item.limits.minW, minOf(item.limits.maxW, spec.columns)))
+    private class AxisFit(val value: Int, val shrunkBy: LayoutIssue.Bound?)
 
-    private fun clampHeight(spec: GridSpec, item: GridItem, h: Int): Int =
-        h.coerceIn(item.limits.minH, maxOf(item.limits.minH, minOf(item.limits.maxH, spec.rows)))
-
-    /** What set the limit on each shrunk axis: the widget's maximum where it is below the grid's size. */
-    private fun boundOf(spec: GridSpec, item: GridItem, shrunkW: Boolean, shrunkH: Boolean): LayoutIssue.Bound {
-        val bounds = buildSet {
-            if (shrunkW) add(if (item.limits.maxW < spec.columns) LayoutIssue.Bound.Widget else LayoutIssue.Bound.Grid)
-            if (shrunkH) add(if (item.limits.maxH < spec.rows) LayoutIssue.Bound.Widget else LayoutIssue.Bound.Grid)
+    /** One axis fitted to [min]..min([max], [grid]), never below [min], with what set a shrink. */
+    private fun fitAxis(requested: Int, min: Int, max: Int, grid: Int): AxisFit {
+        val value = requested.coerceIn(min, maxOf(min, minOf(max, grid)))
+        val shrunkBy = when {
+            value >= requested -> null
+            max < grid -> LayoutIssue.Bound.Widget
+            else -> LayoutIssue.Bound.Grid
         }
-        return bounds.singleOrNull() ?: LayoutIssue.Bound.Both
+        return AxisFit(value, shrunkBy)
     }
 
     private fun crossesFold(spec: GridSpec, span: Span): Boolean {

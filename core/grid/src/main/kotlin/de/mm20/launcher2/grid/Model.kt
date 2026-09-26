@@ -92,6 +92,9 @@ sealed class LayoutIssue {
     data class Overflow(val id: String) : LayoutIssue()
 }
 
+/** A span fitted to an item's limits and the grid, and what fitting it changed. */
+data class SizeFit(val span: Span, val issues: List<LayoutIssue>)
+
 /** The outcome of an engine operation: the resulting items and what happened on the way. */
 data class LayoutResult(val items: List<GridItem>, val issues: List<LayoutIssue> = emptyList()) {
     val isClean: Boolean get() = issues.isEmpty()
