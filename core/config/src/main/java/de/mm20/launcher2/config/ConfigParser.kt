@@ -79,7 +79,12 @@ object ConfigParser {
             ),
             "glass" to KeyEffect.Applied,
             "wallpaper" to KeyEffect.Applied,
+            // #3 slice 1.
+            "systemBars" to KeyEffect.Applied,
         ),
+        "appearance.systemBars" to listOf("statusBar", "navigationBar").associateWith { KeyEffect.Applied },
+        "appearance.systemBars.statusBar" to listOf("hidden", "icons").associateWith { KeyEffect.Applied },
+        "appearance.systemBars.navigationBar" to listOf("hidden", "icons").associateWith { KeyEffect.Applied },
         "appearance.glass" to mapOf(
             "blur" to KeyEffect.Applied,
             "tint" to KeyEffect.Applied,
@@ -97,9 +102,13 @@ object ConfigParser {
             "favorites" to KeyEffect.Applied,
             "widgets" to KeyEffect.Applied,
             "grid" to KeyEffect.Applied,
+            // #3 slice 1.
+            "lockRotation" to KeyEffect.Applied,
         ),
         "home.searchBar" to mapOf(
             "position" to KeyEffect.Applied,
+            // #3 slice 1.
+            "fixed" to KeyEffect.Applied,
         ),
         "home.favorites[]" to mapOf(
             "packageName" to KeyEffect.Applied,

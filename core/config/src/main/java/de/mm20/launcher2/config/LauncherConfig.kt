@@ -69,6 +69,49 @@ object IconDefaults {
 data class AppearanceConfig(
     val glass: GlassConfig? = null,
     val wallpaper: WallpaperConfig? = null,
+    /** The status and navigation bars over the launcher (#3 slice 1). */
+    val systemBars: SystemBarsConfig? = null,
+)
+
+/** `appearance.systemBars`: each bar hidden or shown, and the colour of its icons. */
+@Serializable
+data class SystemBarsConfig(
+    val statusBar: StatusBarConfig? = null,
+    val navigationBar: NavigationBarConfig? = null,
+)
+
+/**
+ * One class per bar, not one shared: [SystemBarIcons] decodes with an error
+ * that names its field, and the field differs per bar, so a wrong value in
+ * the navigation bar does not report the status bar.
+ */
+@Serializable
+data class StatusBarConfig(
+    val hidden: Boolean? = null,
+    @Serializable(with = StatusBarIconsSerializer::class)
+    val icons: SystemBarIcons? = null,
+)
+
+@Serializable
+data class NavigationBarConfig(
+    val hidden: Boolean? = null,
+    @Serializable(with = NavigationBarIconsSerializer::class)
+    val icons: SystemBarIcons? = null,
+)
+
+/**
+ * The colour of a bar's icons. [Auto] follows the wallpaper: dark icons over a
+ * light wallpaper. Upstream's behaviour, kept: while the wallpaper is dimmed
+ * (dark theme), the icons are light whatever this says.
+ */
+enum class SystemBarIcons { Auto, Light, Dark }
+
+internal object StatusBarIconsSerializer : FieldEnumSerializer<SystemBarIcons>(
+    "de.mm20.launcher2.config.StatusBarIcons", "appearance.systemBars.statusBar.icons", SystemBarIcons.entries,
+)
+
+internal object NavigationBarIconsSerializer : FieldEnumSerializer<SystemBarIcons>(
+    "de.mm20.launcher2.config.NavigationBarIcons", "appearance.systemBars.navigationBar.icons", SystemBarIcons.entries,
 )
 
 /**
@@ -193,11 +236,18 @@ data class HomeConfig(
     val favorites: List<Favorite>? = null,
     val widgets: WidgetsConfig? = null,
     val grid: GridConfig? = null,
+    /**
+     * The launcher stays in portrait (#3 slice 1). The launcher only knows
+     * locked or free: any stored orientation but Auto locks portrait.
+     */
+    val lockRotation: Boolean? = null,
 )
 
 @Serializable
 data class SearchBarConfig(
     val position: SearchBarPosition? = null,
+    /** The bar stays in place instead of scrolling away with the home screen (#3 slice 1). */
+    val fixed: Boolean? = null,
 )
 
 @Serializable

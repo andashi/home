@@ -63,12 +63,14 @@ internal val ConfigSections = listOf(
     "icons",
     "appearance.glass",
     "appearance.wallpaper",
+    "appearance.systemBars",
     "search",
     "search.actions",
     "home.searchBar",
     "home.favorites",
     "home.widgets.enabled",
     "home.grid",
+    "home.lockRotation",
 )
 
 /**

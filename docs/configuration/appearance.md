@@ -131,6 +131,33 @@ This managed wallpaper is also the only source of the glass backdrop. The
 launcher cannot read a wallpaper set elsewhere without permissions it does not
 ask for.
 
+## System bars
+
+`appearance.systemBars` sets the status bar and the navigation bar over the
+launcher: each can be hidden, and its icons can be light or dark.
+
+<!-- config -->
+```json
+{ "schemaVersion": 2, "appearance": { "systemBars": {
+  "statusBar": { "hidden": false, "icons": "auto" },
+  "navigationBar": { "hidden": true, "icons": "auto" } } } }
+```
+
+| Key | What it does | Accepted | Default |
+|---|---|---|---|
+| `appearance.systemBars.statusBar.hidden` | Hides the status bar on the home screen and in search | boolean | `false` |
+| `appearance.systemBars.statusBar.icons` | The colour of the status bar's icons. `auto` follows the wallpaper: dark icons over a light one | `auto`, `light`, `dark` | `auto` |
+| `appearance.systemBars.navigationBar.hidden` | Hides the navigation bar | boolean | `false` |
+| `appearance.systemBars.navigationBar.icons` | The colour of the navigation bar's icons, as above | `auto`, `light`, `dark` | `auto` |
+
+`appearance.systemBars.statusBar` and `appearance.systemBars.navigationBar`
+are objects of their own; a key left out of either stays as it is on the
+device, and the read-back always serves all four.
+
+While the wallpaper is dimmed, which happens only in the dark theme, both
+bars show light icons whatever `icons` says. That is the launcher's own
+behaviour, kept as it is.
+
 ## Removed: transparency
 
 `appearance.transparency` was the upstream transparency scheme. It is

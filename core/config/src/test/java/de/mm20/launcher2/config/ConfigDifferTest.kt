@@ -451,6 +451,48 @@ class ConfigDifferTest {
         assertEquals(emptyList<ConfigMutation>(), ConfigDiffer.diff(LauncherConfig(2, icons = icons), baseState))
     }
 
+    // ----- home screen and system bars (#3 slice 1, PR B) -----
+
+    @Test
+    fun `each home and system bar key diffs on its own`() {
+        fun diff(config: LauncherConfig) = ConfigDiffer.diff(config, baseState)
+
+        assertEquals(
+            listOf(ConfigMutation.SetSearchBarFixed(true)),
+            diff(LauncherConfig(2, home = HomeConfig(searchBar = SearchBarConfig(fixed = true)))),
+        )
+        assertEquals(
+            listOf(ConfigMutation.SetRotationLock(true)),
+            diff(LauncherConfig(2, home = HomeConfig(lockRotation = true))),
+        )
+        val bars = listOf(
+            SystemBarsConfig(statusBar = StatusBarConfig(hidden = true)) to ConfigMutation.SetSystemBars(statusHidden = true),
+            SystemBarsConfig(statusBar = StatusBarConfig(icons = SystemBarIcons.Dark)) to ConfigMutation.SetSystemBars(statusIcons = SystemBarIcons.Dark),
+            SystemBarsConfig(navigationBar = NavigationBarConfig(hidden = true)) to ConfigMutation.SetSystemBars(navigationHidden = true),
+            SystemBarsConfig(navigationBar = NavigationBarConfig(icons = SystemBarIcons.Light)) to ConfigMutation.SetSystemBars(navigationIcons = SystemBarIcons.Light),
+        )
+        for ((systemBars, expected) in bars) {
+            assertEquals(listOf(expected), diff(LauncherConfig(2, appearance = AppearanceConfig(systemBars = systemBars))))
+        }
+    }
+
+    /** Control: the values the state already has produce nothing. */
+    @Test
+    fun `home and system bar keys equal to the state produce nothing`() {
+        val config = LauncherConfig(
+            2,
+            home = HomeConfig(searchBar = SearchBarConfig(fixed = false), lockRotation = false),
+            appearance = AppearanceConfig(
+                systemBars = SystemBarsConfig(
+                    statusBar = StatusBarConfig(hidden = false, icons = SystemBarIcons.Auto),
+                    navigationBar = NavigationBarConfig(hidden = false, icons = SystemBarIcons.Auto),
+                ),
+            ),
+        )
+
+        assertEquals(emptyList<ConfigMutation>(), ConfigDiffer.diff(config, baseState))
+    }
+
     // ----- search (#91) -----
 
     @Test

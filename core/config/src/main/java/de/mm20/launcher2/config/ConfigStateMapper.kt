@@ -66,9 +66,14 @@ fun ConfigState.toLauncherConfig(): LauncherConfig {
             // Only while a managed wallpaper is in effect; a generated config
             // without the key must compare equal to the read-back.
             wallpaper = wallpaperImage?.let { WallpaperConfig(image = it, target = wallpaperTarget) },
+            // Complete, like glass (#3 slice 1).
+            systemBars = SystemBarsConfig(
+                statusBar = StatusBarConfig(hidden = statusBarHidden, icons = statusBarIcons),
+                navigationBar = NavigationBarConfig(hidden = navigationBarHidden, icons = navigationBarIcons),
+            ),
         ),
         home = HomeConfig(
-            searchBar = SearchBarConfig(position = searchBarPosition),
+            searchBar = SearchBarConfig(position = searchBarPosition, fixed = searchBarFixed),
             favorites = favorites,
             widgets = WidgetsConfig(enabled = widgetsEnabled),
             grid = GridConfig(
@@ -77,6 +82,7 @@ fun ConfigState.toLauncherConfig(): LauncherConfig {
                 layouts = gridLayouts,
                 labels = gridLabels,
             ),
+            lockRotation = rotationLocked,
         ),
     )
 }

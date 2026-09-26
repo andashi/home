@@ -7,6 +7,9 @@ import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import de.mm20.launcher2.config.ConfigDiffer
 import de.mm20.launcher2.config.ConfigMutation
+import de.mm20.launcher2.config.SystemBarIcons
+import de.mm20.launcher2.preferences.ScreenOrientation
+import de.mm20.launcher2.preferences.SystemBarColors
 import de.mm20.launcher2.config.ConfigParser
 import de.mm20.launcher2.config.Favorite
 import de.mm20.launcher2.config.GlassContrast
@@ -243,6 +246,91 @@ class LauncherConfigSettingsTest {
             ),
             updated,
         )
+    }
+
+    // ---- home screen and system bars (#3 slice 1, PR B) ----
+
+    @Test
+    fun `readState maps the fixed bar, the system bars and the rotation lock`() = runTest {
+        val gateway = createGateway(
+            LauncherSettingsData(
+                searchBarFixed = true,
+                systemBarsHideStatus = true, systemBarsStatusColors = SystemBarColors.Dark,
+                systemBarsHideNav = true, systemBarsNavColors = SystemBarColors.Light,
+                uiOrientation = ScreenOrientation.Portrait,
+            )
+        )
+
+        val state = gateway.readState()
+
+        assertEquals(true, state.searchBarFixed)
+        assertEquals(true, state.statusBarHidden)
+        assertEquals(SystemBarIcons.Dark, state.statusBarIcons)
+        assertEquals(true, state.navigationBarHidden)
+        assertEquals(SystemBarIcons.Light, state.navigationBarIcons)
+        assertEquals(true, state.rotationLocked)
+    }
+
+    /**
+     * The launcher locks to portrait for anything but Auto (LauncherScaffoldVM),
+     * so a stored Landscape, from an older build, reads back as locked.
+     */
+    @Test
+    fun `a stored landscape orientation reads back as locked`() = runTest {
+        val gateway = createGateway(LauncherSettingsData(uiOrientation = ScreenOrientation.Landscape))
+
+        assertEquals(true, gateway.readState().rotationLocked)
+    }
+
+    /** Control: fresh settings read back the defaults the state documents. */
+    @Test
+    fun `fresh settings read back the home and system bar defaults`() = runTest {
+        val state = createGateway().readState()
+        val defaults = de.mm20.launcher2.config.ConfigState()
+
+        assertEquals(defaults.searchBarFixed, state.searchBarFixed)
+        assertEquals(defaults.statusBarHidden, state.statusBarHidden)
+        assertEquals(defaults.statusBarIcons, state.statusBarIcons)
+        assertEquals(defaults.navigationBarHidden, state.navigationBarHidden)
+        assertEquals(defaults.navigationBarIcons, state.navigationBarIcons)
+        assertEquals(defaults.rotationLocked, state.rotationLocked)
+    }
+
+    @Test
+    fun `apply writes the fixed bar, the system bars and the rotation lock to their own fields`() = runTest {
+        val seed = LauncherSettingsData()
+        val gateway = createGateway(seed)
+
+        val updated = gateway.applyAndReturn(
+            listOf(
+                ConfigMutation.SetSearchBarFixed(true),
+                ConfigMutation.SetSystemBars(
+                    statusHidden = true, statusIcons = SystemBarIcons.Dark,
+                    navigationHidden = true, navigationIcons = SystemBarIcons.Light,
+                ),
+                ConfigMutation.SetRotationLock(true),
+            )
+        )
+
+        assertEquals(
+            seed.copy(
+                searchBarFixed = true,
+                systemBarsHideStatus = true, systemBarsStatusColors = SystemBarColors.Dark,
+                systemBarsHideNav = true, systemBarsNavColors = SystemBarColors.Light,
+                // What the settings screen's switch writes (HomescreenSettingsScreenVM).
+                uiOrientation = ScreenOrientation.Portrait,
+            ),
+            updated,
+        )
+    }
+
+    @Test
+    fun `unlocking the rotation writes Auto`() = runTest {
+        val gateway = createGateway(LauncherSettingsData(uiOrientation = ScreenOrientation.Landscape))
+
+        val updated = gateway.applyAndReturn(listOf(ConfigMutation.SetRotationLock(false)))
+
+        assertEquals(ScreenOrientation.Auto, updated.uiOrientation)
     }
 
     @Test

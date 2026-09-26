@@ -239,3 +239,14 @@ A long press on an empty cell enters edit mode:
 **Done** writes the layout back into `launcher.json`, so the file keeps
 matching what you see. Pull it before pushing a changed file from elsewhere.
 `home.grid.locked: true` disables all of this.
+
+## Rotation
+
+`home.lockRotation` set to `true` keeps the launcher in portrait. `false`,
+the default, lets it follow the device. There is no landscape lock: the launcher
+knows only locked or free, and a locked launcher is in portrait.
+
+<!-- config -->
+```json
+{ "schemaVersion": 2, "home": { "lockRotation": true } }
+```
