@@ -56,6 +56,10 @@ HELD_BEFORE=0
 
 log() { printf ':: %s\n' "$*"; }
 die() { printf 'x %s\n' "$*" >&2; exit 1; }
+# Sourced before the trap exists, so the trap's adb calls are bounded like
+# every other one.
+# shellcheck source=lib/grid-device.sh
+. "$HERE/lib/grid-device.sh"
 names=()
 cleanup() {
   local rc=$?
@@ -71,16 +75,14 @@ cleanup() {
     keep_lock=1
   fi
   # Each run-specific snapshot is ~3.5 GB: a delete that fails silently
-  # would let them pile up. One retry, then name whatever is left. Plain
-  # `timeout`, not adb_t: this trap can fire before the library is sourced.
-  local left=()
-  for n in "${names[@]}"; do
-    timeout 30 adb -s "$SERIAL" emu avd snapshot delete "$n" >/dev/null 2>&1 \
-      || { sleep 2; timeout 30 adb -s "$SERIAL" emu avd snapshot delete "$n" >/dev/null 2>&1; } || true
-  done
+  # would let them pile up. One retry, then name whatever is left.
   if [ "${#names[@]}" -gt 0 ]; then
-    local listed
-    listed="$(timeout 15 adb -s "$SERIAL" emu avd snapshot list 2>/dev/null || true)"
+    local n listed left=()
+    for n in "${names[@]}"; do
+      ADB_DEADLINE=$(deadline_in 30) adb_t emu avd snapshot delete "$n" >/dev/null 2>&1 \
+        || { sleep 2; ADB_DEADLINE=$(deadline_in 30) adb_t emu avd snapshot delete "$n" >/dev/null 2>&1; } || true
+    done
+    listed="$(ADB_DEADLINE=$(deadline_in 15) adb_t emu avd snapshot list 2>/dev/null || true)"
     for n in "${names[@]}"; do grep -qF "$n" <<<"$listed" && left+=("$n"); done
     [ "${#left[@]}" -eq 0 ] || printf 'x snapshots left on %s, delete them by hand: %s\n' "$SERIAL" "${left[*]}" >&2
   fi
@@ -90,8 +92,6 @@ cleanup() {
   if [ "$keep_lock" = 1 ] && [ "$rc" -eq 0 ]; then exit 1; fi
 }
 trap cleanup EXIT
-# shellcheck source=lib/grid-device.sh
-. "$HERE/lib/grid-device.sh"
 
 [ $# -ge 1 ] || die "usage: $0 a.apk [b.apk ...]"
 [[ "$RUNS" =~ ^[1-9][0-9]*$ ]] || die "RUNS must be a positive integer, not '$RUNS'"
@@ -159,11 +159,11 @@ EOF
 # input path mid-run must not leave the header naming another APK than the
 # one measured.
 apks=(); srcs=()
-for i in $(seq 0 $(($# - 1))); do
-  src="${@:$((i + 1)):1}"
+for src in "$@"; do
   [ -f "$src" ] || die "no such APK: $src"
-  cp "$src" "$WORK/build-$i.apk"
-  apks+=("$WORK/build-$i.apk"); srcs+=("$src")
+  apk="$WORK/build-${#apks[@]}.apk"
+  cp "$src" "$apk"
+  apks+=("$apk"); srcs+=("$src")
 done
 # Checked before any setup: a committed series is never overwritten.
 revlist=""
@@ -180,7 +180,7 @@ for k in "${!apks[@]}"; do
   restore clean
   # An install outlasts adb_t's default minute on a loaded host.
   ADB_DEADLINE=$(deadline_in 180) adb_t install -r "$apk" >/dev/null
-  sh_ cmd role add-role-holder android.app.role.HOME "$PKG"
+  grant_home_role
   show_home; sleep 5
   sh_ content write --uri "content://$PKG.config-ingest/wallpapers/mauritius.jpg" \
     < "$GOS_REPO/themes/mauritius/tall/wallpaper.jpg"
