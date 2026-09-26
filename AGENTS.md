@@ -206,8 +206,11 @@ afterthought (see `docs/architecture/adr/0005-testing-strategy.md`):
   (`am start -W` TotalTime) and `e2e/measure-unfold.sh` (the first frame
   after an unfold). Each prepares one snapshot per APK and alternates the
   builds round by round; compare them **pairwise** (same round, same start),
-  never by unpaired medians: on a loaded host those can land the wrong way
-  round (#167).
+  never by unpaired medians. On #167 the unpaired medians put the build with
+  extra start-up work 140 ms *faster* (626 against 766 ms) - opposite to the
+  hypothesis, which is how the spread showed it dominated - while the pairs
+  said what was there: slower in 25 of 60, median -31 ms, no effect above
+  the noise at host load 11-15.
 
 ## CI
 
