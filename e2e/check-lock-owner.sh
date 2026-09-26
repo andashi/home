@@ -19,7 +19,10 @@
 # only the second is dangerous, so an unknown form never passes quietly.
 # A call must come after `export LOCK_OWNER=value` (or an assignment and then
 # `export LOCK_OWNER`), because run.sh inherits only what was exported
-# before it ran.
+# before it ran. Those two, and an assignment at the start of a line, are
+# the only forms in which the guard reads LOCK_OWNER changing; any other
+# (unset, export -n, declare, a second change on the line) is unreadable,
+# because after it the tracked export no longer says what run.sh gets.
 #
 #   e2e/check-lock-owner.sh        # exit 1 and name every offender
 set -euo pipefail
@@ -27,6 +30,7 @@ cd "${1:-$(dirname "$0")}"  # a directory laid out like e2e/, for the tests
 
 export_re='^[[:space:]]*export[[:space:]]+LOCK_OWNER([=[:space:]]|$)'
 assign_re='^[[:space:]]*LOCK_OWNER='
+owner_word_re='(^|[^${A-Za-z0-9_])LOCK_OWNER([^A-Za-z0-9_]|$)'
 mention_re='run\.sh|\$\{?RUN\}?([^A-Za-z0-9_]|$)'
 prefix='([A-Za-z_][A-Za-z0-9_]*=("[^"`$]*(\$[A-Za-z_{][A-Za-z0-9_}]*[^"`$]*)*"|[^[:space:]"`$]*)[[:space:]]+)*'
 call_a='^[[:space:]]*\(cd "\$GOS_REPO" && '"$prefix"'emulator/run\.sh [a-z-]+'
@@ -51,6 +55,13 @@ for script in *.sh; do
     mentions="$( { grep -oE "$mention_re" <<<"$line" || [ $? -eq 1 ]; } | wc -l)"
     if [ "$mentions" -gt 1 ] || { [ "$mentions" = 1 ] && [[ "$line" =~ $export_re ]]; }; then
       printf '::error file=e2e/%s,line=%s::names run.sh in a form this guard cannot read; use a form from its contract (e2e/check-lock-owner.sh)\n' "$script" "$n"
+      found=1; continue
+    fi
+    # LOCK_OWNER as a word, not a $-expansion, is read only as an assignment
+    # at the start of a line or an export, once per line.
+    owner_words="$( { grep -oE "$owner_word_re" <<<"$line" || [ $? -eq 1 ]; } | wc -l)"
+    if [ "$owner_words" -gt 1 ] || { [ "$owner_words" = 1 ] && ! [[ "$line" =~ $export_re ]] && ! [[ "$line" =~ $assign_re ]]; }; then
+      printf '::error file=e2e/%s,line=%s::changes LOCK_OWNER in a form this guard cannot read; use a form from its contract (e2e/check-lock-owner.sh)\n' "$script" "$n"
       found=1; continue
     fi
     if [[ "$line" =~ $export_re ]]; then
