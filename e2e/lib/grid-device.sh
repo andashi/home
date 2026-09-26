@@ -26,6 +26,17 @@ adb_t() {
   timeout "$left" adb -s "$SERIAL" "$@"
 }
 
+# adb_t's output without the device's carriage returns, and adb's own
+# status. For every caller that branches on the status: a pipe into tr took
+# tr's status unless the caller had pipefail, and a timed-out call passed as
+# an empty answer (#175 review).
+adb_out() {
+  local out rc=0
+  out="$(adb_t "$@")" || rc=$?
+  printf '%s' "${out//$'\r'/}"
+  return "$rc"
+}
+
 # The deadline $1 seconds from now, but never later than one a caller has
 # already set: a wait inside a wait gets what is left of the outer one at
 # most (query_json_as_user runs inside wait_diagnostics_sha, #164).
@@ -113,7 +124,7 @@ query_json() { # $1 = provider path (config|diagnostics)
   # else is an error, never an empty answer: a caller reading "" as "no
   # config" would pass for the wrong reason.
   local out
-  out="$(adb_t shell content query --uri "$STATE_URI/$1" 2>&1 | tr -d '\r')" \
+  out="$(adb_out shell content query --uri "$STATE_URI/$1" 2>&1)" \
     || { printf 'content query failed: %s\n' "$out" >&2; return 1; }
   case "$out" in
     "Row: 0 json="*) printf '%s' "${out#Row: 0 json=}" ;;
@@ -142,21 +153,17 @@ wait_report() { # $1 = jq filter, $2 = timeout (s), $3 = description
   die "timed out (${2}s) waiting for report: $3"
 }
 
-# adb's own status decides, not a pipe's: without pipefail in the caller,
-# `adb_t ... | tr` took tr's status, and a timed-out write passed (#175 review).
 write_config() { # $1 = local file
   local out
-  out="$(adb_t shell content write --uri "$INGEST_URI" < "$1" 2>&1)" \
-    || { printf '%s\n' "${out//$'\r'/}" >&2; die "content write failed"; }
-  out="${out//$'\r'/}"
+  out="$(adb_out shell content write --uri "$INGEST_URI" < "$1" 2>&1)" \
+    || { printf '%s\n' "$out" >&2; die "content write failed"; }
   [ -z "$out" ] || { printf '%s\n' "$out" >&2; die "content write reported an error"; }
 }
 
 reload_broadcast() {
   local out
-  out="$(adb_t shell am broadcast -n "$RECEIVER" -a "$ACTION" 2>&1)" \
-    || { printf '%s\n' "${out//$'\r'/}" >&2; die "am broadcast failed"; }
-  out="${out//$'\r'/}"
+  out="$(adb_out shell am broadcast -n "$RECEIVER" -a "$ACTION" 2>&1)" \
+    || { printf '%s\n' "$out" >&2; die "am broadcast failed"; }
   case "$out" in
     *"Broadcast completed"*) ;;
     *) printf '%s\n' "$out" >&2; die "am broadcast did not complete" ;;
@@ -440,9 +447,9 @@ resolve_postures() {
 # a slow emulator afterwards.
 grant_home_role() { # [$1 = user, default 0]
   local user=${1:-0} out holders
-  out="$(adb_t shell cmd role add-role-holder --user "$user" android.app.role.HOME "$PKG" 2>&1 | tr -d '\r')" \
+  out="$(adb_out shell cmd role add-role-holder --user "$user" android.app.role.HOME "$PKG" 2>&1)" \
     || die "could not grant the HOME role to $PKG (user $user): ${out:-no output}"
-  holders="$(adb_t shell cmd role get-role-holders --user "$user" android.app.role.HOME 2>&1 | tr -d '\r')" \
+  holders="$(adb_out shell cmd role get-role-holders --user "$user" android.app.role.HOME 2>&1)" \
     || die "could not read the HOME role holders (user $user): ${holders:-no output}"
   grep -Fxq "$PKG" <<<"$holders" \
     || die "the HOME role is held by '${holders:-nobody}', not $PKG (user $user)${out:+; add-role-holder said: $out}"
@@ -473,7 +480,7 @@ ime_read() {
   local state
   # Captured first: grep -q stops at the first match, and under pipefail the
   # writer's SIGPIPE would read as "not shown".
-  state="$(adb_t shell dumpsys input_method 2>/dev/null | tr -d '\r')" || { IME=unknown; return 1; }
+  state="$(adb_out shell dumpsys input_method 2>/dev/null)" || { IME=unknown; return 1; }
   if grep -q 'mInputShown=true' <<<"$state"; then IME=shown; else IME=hidden; fi
 }
 ime_shown() { ime_read && [ "$IME" = shown ]; }
