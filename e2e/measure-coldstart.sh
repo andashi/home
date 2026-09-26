@@ -190,7 +190,7 @@ for k in "${!apks[@]}"; do
   show_home; sleep 5
   sh_ content write --uri "content://$PKG.config-ingest/wallpapers/mauritius.jpg" \
     < "$GOS_REPO/themes/mauritius/tall/wallpaper.jpg"
-  push_config "$WORK/zone.jsonc" "zone fixture" || push_config "$WORK/zone.jsonc" "zone fixture, again"
+  push_config "$WORK/zone.jsonc" "zone fixture"
   # Two cold starts before the snapshot, so dexopt, the first reload and the
   # first write-back baseline are behind every build alike.
   # not a wait: two preparatory starts
