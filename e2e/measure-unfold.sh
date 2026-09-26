@@ -69,19 +69,29 @@ HELD_BEFORE=0
 log() { printf ':: %s\n' "$*"; }
 die() { printf 'x %s\n' "$*" >&2; exit 1; }
 names=()
+# Sourced before the trap exists: the trap reads BOOTED.
+# shellcheck source=lib/grid-device.sh
+. "$HERE/lib/grid-device.sh"
 cleanup() {
+  local rc=$?
   rm -rf "$WORK"
   # Its own snapshots, ~3.5 GB each; `clean` stays.
   for n in "${names[@]}"; do adb -s "$SERIAL" emu avd snapshot delete "$n" >/dev/null 2>&1 || true; done
+  # Stopped only if this run booted it. A stop that fails keeps the lock: a
+  # running instance nobody holds is what the locks exist to prevent.
+  if [ "$BOOTED" = 1 ] && ! "$RUN" stop >/dev/null 2>&1; then
+    printf 'x could not stop %s; keeping the lock (%s) - stop it by hand\n' "$SERIAL" "$LOCK_OWNER" >&2
+    [ "$rc" -ne 0 ] || exit 1
+    return
+  fi
   [ "$HELD_BEFORE" = 1 ] || "$LOCK" release "$LOCK_OWNER" "$SERIAL" >/dev/null 2>&1 || true
 }
 trap cleanup EXIT
-# shellcheck source=lib/grid-device.sh
-. "$HERE/lib/grid-device.sh"
 
 [ $# -ge 1 ] || die "usage: $0 a.apk [b.apk ...]"
 [ -x "$TP" ] || die "trace_processor not found (TRACE_PROCESSOR)"
 "$LOCK" acquire "$LOCK_OWNER" "$SERIAL" >/dev/null || die "$SERIAL is locked by someone else"
+boot_instance "$RUN"
 unrooted_shell
 read -r -a revs <<<"${REVS:-}"
 resolve_postures   # POSTURE_CLOSED / POSTURE_OPENED: the ids differ between instances

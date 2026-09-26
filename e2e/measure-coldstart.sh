@@ -20,7 +20,8 @@
 # comes from REVS (space-separated, in APK order), else "unknown".
 #
 # Instance: SERIAL + OVERLAY_DIR (default emulator-5562, instances/test-fold-gpu),
-# snapshot `clean`, under the instance's device lock, as the unrooted shell
+# snapshot `clean`, under the instance's device lock, booted by the run when
+# it is down and then stopped by it too, as the unrooted shell
 # (uid 2000; `run.sh start` ends with `adb root`, and the script unroots
 # through the library's unrooted_shell). Robust by construction
 # to prior state (the snapshot) and to host load (the interleaving); not to a
@@ -88,6 +89,12 @@ cleanup() {
     [ "${#left[@]}" -eq 0 ] \
       || { printf 'x snapshots left on %s, delete them by hand: %s\n' "$SERIAL" "${left[*]}" >&2; unclean=1; }
   fi
+  # Stopped only if this run booted it. A stop that fails keeps the lock: a
+  # running instance nobody holds is what the locks exist to prevent.
+  if [ "$BOOTED" = 1 ] && ! "$RUN" stop >/dev/null 2>&1; then
+    printf 'x could not stop %s; keeping the lock (%s) - stop it by hand\n' "$SERIAL" "$LOCK_OWNER" >&2
+    keep_lock=1; unclean=1
+  fi
   if [ "$HELD_BEFORE" != 1 ] && [ "$keep_lock" != 1 ] \
     && ! "$LOCK" release "$LOCK_OWNER" "$SERIAL" >/dev/null 2>&1; then
     printf 'x could not release the lock (%s) on %s; release it by hand\n' "$LOCK_OWNER" "$SERIAL" >&2
@@ -108,6 +115,7 @@ if [ -n "$MAX_LOAD" ]; then
     || die "MAX_LOAD needs LOAD_FLOOR: the idle load of the booted instance, measured before the first sample"
 fi
 "$LOCK" acquire "$LOCK_OWNER" "$SERIAL" >/dev/null || die "$SERIAL is locked by someone else"
+boot_instance "$RUN"
 # `run.sh start` leaves adb as root; a release build offers the unrooted shell.
 unrooted_shell
 read -r -a revs <<<"${REVS:-}"

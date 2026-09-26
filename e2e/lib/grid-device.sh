@@ -128,6 +128,21 @@ unrooted_shell() { # [$1 = timeout (s), default 60]
   log "adb as unrooted shell (uid 2000)"
 }
 
+# Boots SERIAL's instance through run.sh ($1) when it is down, from SNAPSHOT
+# (default clean), and leaves BOOTED=1 when it did. A run stops only what it
+# booted, and an instance someone else started stays as it was. Call it with
+# the instance's lock held: a hand-booted emulator-5562 ran unlocked for five
+# hours after the check that needed it (2026-09-26).
+# Running means the emulator process on the port, as run.sh decides it, not
+# adb's answer: adbd is briefly offline after a boot and after `adb unroot`.
+BOOTED=0
+boot_instance() { # $1 = run.sh
+  pgrep -f "qemu-system.* -port ${SERIAL#emulator-}( |$)" >/dev/null 2>&1 && return 0
+  log "booting $SERIAL from ${SNAPSHOT:-clean}"
+  SNAPSHOT="${SNAPSHOT:-clean}" "$1" start >/dev/null || die "could not boot $SERIAL"
+  BOOTED=1
+}
+
 query_json() { # $1 = provider path (config|diagnostics)
   # The provider answers one row whose json value spans many lines. Anything
   # else is an error, never an empty answer: a caller reading "" as "no
