@@ -117,6 +117,17 @@ applies its layouts even where the file and the store agree. A plain reload
 would find them agreeing - that is exactly the state of a layout kept as
 written - and fit nothing.
 
+Its report replaces the last one only when it has something to say, because
+provisioning waits on that report. It stays silent when the last report is
+a successful one of this very file, the reload applied the forced layouts
+and nothing else, the fit changed no layout, and nothing was corrected. A
+measurement reload that meets a newly pushed file, restores a drifted
+setting, fits a layout differently or replaces a failed report writes its
+own, with trigger `grid-measured`. A measurement that could not be fitted
+yet (no file, or a file caught half-written) stays pending and is retried
+after the next reload; one that arrives during a reload is never cleared by
+it.
+
 ### 5. Write-back: every section follows the device
 
 Added 2026-09-22 for the home grid (ADR 0001, #23); extended to every
