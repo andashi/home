@@ -46,10 +46,10 @@
 #      interactive dotfile path, proving the file watcher reacts to a push
 #      exactly like to an ingest
 #
-# Report correlation: ReloadReport has no id/timestamp, so a new reload is
-# detected via trigger and/or configSha256 transitions. Before every explicit
-# broadcast the script waits for the file-watcher report of the write (trigger
-# "file-watcher"), which both settles the watcher and validates it.
+# Report correlation: a push's report is found by hash and freshness
+# (push_config, wait_push_report). The trigger is asserted only where a step
+# claims a cause: the broadcast reaching the receiver, the watcher picking up
+# an adb push.
 #
 # Everything here runs as the unrooted shell (`adb unroot` after boot), so
 # the result holds for release GrapheneOS, which has no `adb root`.
@@ -165,20 +165,6 @@ wallpaper_id() {
 adb_push_config() { # $1 = local file
   adb -s "$SERIAL" shell "mkdir -p '$REMOTE_DIR'" >/dev/null
   adb -s "$SERIAL" push "$1" "$REMOTE_CONFIG" >/dev/null
-}
-
-# Pushes a config, waits for the file-watcher to settle (validates the
-# watcher and avoids watcher/broadcast report races), then sends the explicit
-# broadcast and waits for the resulting report.
-settle_then_broadcast() { # $1 = local config file, $2 = sha256, $3 = stage name
-  write_config "$1"
-  log "$3: waiting for file-watcher reload (hash ${2:0:12}...)"
-  wait_report ".configSha256 == \"$2\" and .trigger == \"file-watcher\"" 30 \
-    "$3: file-watcher report"
-  log "$3: broadcasting explicit reload"
-  reload_broadcast
-  wait_report ".configSha256 == \"$2\" and .trigger == \"broadcast\"" 30 \
-    "$3: broadcast report"
 }
 
 # --- fixtures ----------------------------------------------------------
@@ -341,11 +327,7 @@ MALFORMED_CONFIG="$WORK/malformed.jsonc"
 printf '{ "schemaVersion": 2, "icons": { not json at all\n' > "$MALFORMED_CONFIG"
 
 H_VALID="$(sha256sum "$VALID_CONFIG" | cut -d' ' -f1)"
-H_UNKNOWN="$(sha256sum "$UNKNOWN_KEYS_CONFIG" | cut -d' ' -f1)"
-H_MALFORMED="$(sha256sum "$MALFORMED_CONFIG" | cut -d' ' -f1)"
 H_CHANGED="$(sha256sum "$CHANGED_CONFIG" | cut -d' ' -f1)"
-H_WALLPAPER="$(sha256sum "$WALLPAPER_CONFIG" | cut -d' ' -f1)"
-H_LEGACY="$(sha256sum "$LEGACY_CONFIG" | cut -d' ' -f1)"
 
 # #90: one file for phones and Folds. The Fold has seven rows, so its layout
 # puts the dock in row 6 with row 5 taken; this phone has six. A phone must
@@ -370,7 +352,6 @@ cat > "$FOLD_ROWS_CONFIG" <<'EOF'
   },
 }
 EOF
-H_FOLD_ROWS="$(sha256sum "$FOLD_ROWS_CONFIG" | cut -d' ' -f1)"
 
 # The /config read-back is fully populated (ConfigStateMapper), so these are
 # the exact effective values after applying VALID_CONFIG.
@@ -439,16 +420,16 @@ ok "package installed: $PKG"
 
 write_config "$VALID_CONFIG"
 
-# The first provider query starts the app process (the provider is exported);
-# the watcher's startup drift check then reloads on its own. Letting it settle
-# first makes the subsequent broadcast unambiguous: trigger must flip from
-# "startup-check" to "broadcast", which only the explicit receiver can cause.
-# Generous timeout: cold process start plus Koin on the emulator.
-# The ingest itself already started the process (the provider is exported),
-# so the watcher may have caught the rename: accept either trigger.
+# The ingest starts the app process (the provider is exported), and the
+# startup drift check or the watcher reloads the file. The install is fresh,
+# so there is no report before this one: any report of the hash is the
+# ingest's, whatever caused it. Letting it settle first makes the broadcast
+# below unambiguous: its trigger must flip to "broadcast", which only the
+# explicit receiver can cause. Generous timeout: cold process start plus
+# Koin on the emulator.
 log "waiting for the first reload of the ingested config (starts the app process)"
-wait_report ".success == true and .configSha256 == \"$H_VALID\" and (.trigger == \"startup-check\" or .trigger == \"file-watcher\")" 90 \
-  "startup-check or file-watcher report for valid config"
+wait_push_report null "$H_VALID" 90 "first report of the ingested config"
+assert_jq "$LAST_REPORT" '.success == true' "ingested config applied"
 ok "ingested config applied (trigger=$(jq -r .trigger <<<"$LAST_REPORT"))"
 
 log "broadcasting explicit reload to the shell-gated receiver"
@@ -473,7 +454,7 @@ ok "glass and labels applied (no inert-key)"
 
 # --- 5. re-write unchanged config: no mutations -------------------------
 
-settle_then_broadcast "$VALID_CONFIG" "$H_VALID" "re-write"
+push_config "$VALID_CONFIG" "re-write"
 assert_jq "$LAST_REPORT" \
   '.success == true and ((.appliedMutations // []) == [])' \
   "re-write of unchanged config yields success with no applied mutations"
@@ -481,13 +462,13 @@ ok "unchanged re-write: successful, no applied mutations"
 
 # --- 6. change every section, then change it back ----------------------
 
-settle_then_broadcast "$CHANGED_CONFIG" "$H_CHANGED" "change"
+push_config "$CHANGED_CONFIG" "change"
 assert_jq "$LAST_REPORT" '.success == true' "changed config applied"
 effective="$(query_json config)" || die "could not query /config"
 assert_jq "$effective" "$CHANGED_FILTER" "effective config shows the changed values in every section"
 ok "changed config: every section flipped (icons, glass, search, search bar, widgets, grid)"
 
-settle_then_broadcast "$VALID_CONFIG" "$H_VALID" "change-back"
+push_config "$VALID_CONFIG" "change-back"
 assert_jq "$LAST_REPORT" '.success == true' "original config re-applied"
 effective="$(query_json config)" || die "could not query /config"
 assert_jq "$effective" "$EFFECTIVE_FILTER" "effective config is back to the original values"
@@ -502,7 +483,7 @@ wait_report ".success == true and .configSha256 == \"$H_CHANGED\" and ((.applied
   "the reload that applied the changed config"
 assert_jq "$LAST_REPORT" "$ALL_SECTIONS_FILTER" "the applying reload lists every changed section"
 ok "applied sections reported: $(jq -c '.appliedMutations' <<<"$LAST_REPORT")"
-settle_then_broadcast "$VALID_CONFIG" "$H_VALID" "change-back-2"
+push_config "$VALID_CONFIG" "change-back-2"
 
 # --- 6b. wallpaper: upload, apply, verify, idempotent -------------------
 
@@ -523,7 +504,7 @@ ok "launcher in the foreground ($home_activity)"
 
 id_before="$(wallpaper_id)"
 write_wallpaper "$WALLPAPER_IMAGE" "l4.png"
-settle_then_broadcast "$WALLPAPER_CONFIG" "$H_WALLPAPER" "wallpaper"
+push_config "$WALLPAPER_CONFIG" "wallpaper"
 assert_jq "$LAST_REPORT" '.success == true' "wallpaper config applied"
 effective="$(query_json config)" || die "could not query /config"
 assert_jq "$effective" '.appearance.wallpaper.image == "l4.png" and .appearance.wallpaper.target == "both"' \
@@ -533,7 +514,7 @@ id_after="$(wallpaper_id)"
   || die "system wallpaper id did not change (before='${id_before:-}', after='${id_after:-}')"
 ok "wallpaper applied from config (system id ${id_before:-0} -> $id_after)"
 
-settle_then_broadcast "$WALLPAPER_CONFIG" "$H_WALLPAPER" "wallpaper-rewrite"
+push_config "$WALLPAPER_CONFIG" "wallpaper-rewrite"
 assert_jq "$LAST_REPORT" '.success == true and ((.appliedMutations // []) == [])' \
   "re-write of the wallpaper config is a no-op"
 [ "$(wallpaper_id)" = "$id_after" ] || die "wallpaper was set again although nothing changed"
@@ -541,7 +522,7 @@ ok "wallpaper re-write: no mutation, id unchanged ($id_after)"
 
 # --- 7. malformed JSON: failed report, state intact --------------------
 
-settle_then_broadcast "$MALFORMED_CONFIG" "$H_MALFORMED" "malformed"
+push_config "$MALFORMED_CONFIG" "malformed"
 assert_jq "$LAST_REPORT" \
   '.success == false and ([.diagnostics[] | select(.severity == "error" and .code == "malformed-json")] | length > 0)' \
   "malformed config yields a failed report with a malformed-json error"
@@ -553,7 +534,7 @@ ok "previous effective config intact"
 
 # --- 8. unknown keys: warnings, successful apply -----------------------
 
-settle_then_broadcast "$UNKNOWN_KEYS_CONFIG" "$H_UNKNOWN" "unknown-keys"
+push_config "$UNKNOWN_KEYS_CONFIG" "unknown-keys"
 assert_jq "$LAST_REPORT" \
   '.success == true and ([.diagnostics[] | select(.severity == "warning" and .code == "unknown-key")] | length >= 3)' \
   "unknown keys yield warning diagnostics and a successful apply"
@@ -565,7 +546,7 @@ ok "effective config unchanged (unknown keys ignored)"
 
 # --- 10. schema version 1: migrated, not rejected ------------------------
 
-settle_then_broadcast "$LEGACY_CONFIG" "$H_LEGACY" "legacy-v1"
+push_config "$LEGACY_CONFIG" "legacy-v1"
 assert_jq "$LAST_REPORT" \
   '.success == true and ([.diagnostics[] | select(.severity == "error")] | length == 0)' \
   "a schemaVersion 1 file applies without errors"
@@ -588,7 +569,7 @@ ok "transparency: reported inert, no effect, not served back"
 
 # --- 10b. a fold layout with the Fold's seventh row, on a phone (#90) -----
 
-settle_then_broadcast "$FOLD_ROWS_CONFIG" "$H_FOLD_ROWS" "fold-rows"
+push_config "$FOLD_ROWS_CONFIG" "fold-rows"
 assert_jq "$LAST_REPORT" \
   '.success == true and ([(.diagnostics // [])[] | select(.code | startswith("grid-"))] | length == 0)' \
   "a fold layout using the Fold's seventh row applies on a phone without a grid diagnostic"

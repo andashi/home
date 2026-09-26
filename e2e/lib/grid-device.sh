@@ -135,9 +135,6 @@ query_json() { # $1 = provider path (config|diagnostics)
 # Waits for a /diagnostics report matching the jq filter; the match is left in
 # LAST_REPORT for the caller to assert on.
 LAST_REPORT=""
-# Waits for a /diagnostics report matching the jq filter; the match is left in
-# LAST_REPORT for the caller to assert on.
-LAST_REPORT=""
 LAST_SEEN_REPORT=""
 report_matches() { # $1 = jq filter
   # A failed query keeps the last report seen, for the timeout message.
@@ -151,6 +148,23 @@ wait_report() { # $1 = jq filter, $2 = timeout (s), $3 = description
   retry_for "$2" report_matches "$1" && return 0
   printf 'last /diagnostics report:\n%s\n' "$LAST_SEEN_REPORT" >&2
   die "timed out (${2}s) waiting for report: $3"
+}
+
+# The report about a push is the one carrying its hash that was not there
+# before the push, never the one with an expected trigger (ADR 0003, section
+# 4: a measurement reload can replace the watcher's report). A step that
+# claims a cause asserts the trigger itself, with wait_report.
+# The provider answers null itself before the first report; a failed query is
+# retried and then fails, never read as null, or an older report of the same
+# hash would pass as the push's.
+REPORT_NOW=""
+report_grab() { REPORT_NOW="$(query_json diagnostics 2>/dev/null)"; }
+report_now() { # the current report, or the provider's null before the first one
+  retry_for "${REPORT_NOW_TIMEOUT:-10}" report_grab || die "could not read the report before a push"
+  printf '%s' "$REPORT_NOW"
+}
+wait_push_report() { # $1 = report_now before the push, $2 = sha256 pushed, $3 = timeout (s), $4 = description
+  wait_report ".configSha256 == \"$2\" and . != $1" "$3" "$4"
 }
 
 write_config() { # $1 = local file
@@ -172,12 +186,16 @@ reload_broadcast() {
 
 # Push a file and wait until the launcher reports it applied (by hash).
 push_config() { # $1 = local file, $2 = stage name
-  local h
+  local h before
   h="$(sha256sum "$1" | cut -d' ' -f1)"
+  before="$(report_now)" || exit 1
   write_config "$1"
-  wait_report ".configSha256 == \"$h\"" 60 "$2: reload of the pushed file"
+  log "$2: waiting for the reload of the pushed file (hash ${h:0:12}...)"
+  wait_push_report "$before" "$h" 60 "$2: reload of the pushed file"
+  log "$2: broadcasting explicit reload"
+  before="$(report_now)" || exit 1
   reload_broadcast
-  wait_report ".configSha256 == \"$h\" and .trigger == \"broadcast\"" 30 "$2: broadcast report"
+  wait_push_report "$before" "$h" 30 "$2: broadcast report"
 }
 
 wake_screen() {
