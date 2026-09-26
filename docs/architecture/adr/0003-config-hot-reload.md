@@ -129,6 +129,16 @@ yet (no file, or a file caught half-written) stays pending and is retried
 after the next reload; one that arrives during a reload is never cleared by
 it.
 
+So a consumer waiting for the report about its own push identifies it by
+the config hash, and by the report not being the one there before the push,
+never by the trigger. The trigger names what caused a reload, not which push
+the report is about: a measurement reload can meet a push before the watcher
+does, or right after it, and then its report is the one about that push. In
+the L4 scenario the watcher's report of a pushed file stood for 1.2 s before
+the first measurement replaced it, and a wait for `file-watcher` timed out
+(2026-09-26). A consumer asserts a trigger only when it claims a cause, as
+"the explicit broadcast reached the receiver" does.
+
 ### 5. Write-back: every section follows the device
 
 Added 2026-09-22 for the home grid (ADR 0001, #23); extended to every

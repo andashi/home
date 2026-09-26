@@ -111,13 +111,19 @@ trap cleanup EXIT
 # shellcheck source=lib/grid-device.sh
 . "$(dirname "$0")/lib/grid-device.sh"
 
+# The reports of a push found by hash and freshness, not by trigger: the
+# grid's first measurement can reload the pushed file and replace the
+# watcher's report (wait_push_report, ADR 0003 section 4).
 settle_then_broadcast() { # $1 = local config file, $2 = sha256, $3 = stage name
+  local before
+  before="$(report_now)"
   write_config "$1"
-  log "$3: waiting for file-watcher reload (hash ${2:0:12}...)"
-  wait_report ".configSha256 == \"$2\" and .trigger == \"file-watcher\"" 30 "$3: file-watcher report"
+  log "$3: waiting for the reload of the pushed file (hash ${2:0:12}...)"
+  wait_push_report "$before" "$2" 30 "$3: report of the pushed file"
   log "$3: broadcasting explicit reload"
+  before="$(report_now)"
   reload_broadcast
-  wait_report ".configSha256 == \"$2\" and .trigger == \"broadcast\"" 30 "$3: broadcast report"
+  wait_push_report "$before" "$2" 30 "$3: report after the broadcast"
 }
 
 # --- screen helpers ----------------------------------------------------

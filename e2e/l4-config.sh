@@ -46,10 +46,12 @@
 #      interactive dotfile path, proving the file watcher reacts to a push
 #      exactly like to an ingest
 #
-# Report correlation: ReloadReport has no id/timestamp, so a new reload is
-# detected via trigger and/or configSha256 transitions. Before every explicit
-# broadcast the script waits for the file-watcher report of the write (trigger
-# "file-watcher"), which both settles the watcher and validates it.
+# Report correlation: ReloadReport has no id/timestamp, so the report about
+# a push is the one carrying its configSha256 that was not there before the
+# push (wait_push_report). The trigger is asserted only where a step claims a
+# cause: the broadcast reaching the receiver, the watcher picking up an adb
+# push. Before every explicit broadcast the script waits for the push's own
+# reload, which settles the watcher.
 #
 # Everything here runs as the unrooted shell (`adb unroot` after boot), so
 # the result holds for release GrapheneOS, which has no `adb root`.
@@ -167,18 +169,23 @@ adb_push_config() { # $1 = local file
   adb -s "$SERIAL" push "$1" "$REMOTE_CONFIG" >/dev/null
 }
 
-# Pushes a config, waits for the file-watcher to settle (validates the
-# watcher and avoids watcher/broadcast report races), then sends the explicit
-# broadcast and waits for the resulting report.
+# Pushes a config, waits until the launcher has reloaded it (so the
+# watcher's reload cannot race the broadcast's), then sends the explicit
+# broadcast and waits for the report after it. Both waits find the report by
+# hash and freshness, not by trigger: the grid's first measurement can reload
+# the pushed file before or after the watcher and replace its report
+# (wait_push_report, ADR 0003 section 4). The watcher itself is proven by the
+# restore step, which pushes over adb and asserts the file-watcher trigger.
 settle_then_broadcast() { # $1 = local config file, $2 = sha256, $3 = stage name
+  local before
+  before="$(report_now)"
   write_config "$1"
-  log "$3: waiting for file-watcher reload (hash ${2:0:12}...)"
-  wait_report ".configSha256 == \"$2\" and .trigger == \"file-watcher\"" 30 \
-    "$3: file-watcher report"
+  log "$3: waiting for the reload of the pushed file (hash ${2:0:12}...)"
+  wait_push_report "$before" "$2" 30 "$3: report of the pushed file"
   log "$3: broadcasting explicit reload"
+  before="$(report_now)"
   reload_broadcast
-  wait_report ".configSha256 == \"$2\" and .trigger == \"broadcast\"" 30 \
-    "$3: broadcast report"
+  wait_push_report "$before" "$2" 30 "$3: report after the broadcast"
 }
 
 # --- fixtures ----------------------------------------------------------
