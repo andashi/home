@@ -57,10 +57,17 @@ names=()
 cleanup() {
   rm -rf "$WORK"
   # Back to `clean` before the lock goes, also after a failure: the next
-  # user of the instance must not find a build of ours installed.
-  [ "${#names[@]}" -gt 0 ] && "$RUN" restore clean >/dev/null 2>&1 || true
+  # user of the instance must not find a build of ours installed. If that
+  # fails, the lock stays held, and says so, rather than hand on a dirty
+  # instance.
+  local keep_lock=0
+  if [ "${#names[@]}" -gt 0 ] && ! "$RUN" restore clean >/dev/null 2>&1; then
+    printf 'x could not restore clean on %s; keeping the lock (%s) so nobody inherits this run\n' \
+      "$SERIAL" "$LOCK_OWNER" >&2
+    keep_lock=1
+  fi
   for n in "${names[@]}"; do adb -s "$SERIAL" emu avd snapshot delete "$n" >/dev/null 2>&1 || true; done
-  [ "$HELD_BEFORE" = 1 ] || "$LOCK" release "$LOCK_OWNER" "$SERIAL" >/dev/null 2>&1 || true
+  [ "$HELD_BEFORE" = 1 ] || [ "$keep_lock" = 1 ] || "$LOCK" release "$LOCK_OWNER" "$SERIAL" >/dev/null 2>&1 || true
 }
 trap cleanup EXIT
 # shellcheck source=lib/grid-device.sh
@@ -150,6 +157,14 @@ OUT="${OUT:-$HERE/measurements/coldstart-${revlist%-}.tsv}"
 } > "$OUT"
 
 for run in $(seq "$RUNS"); do
+  # Once per round, before its first build: a round either starts under the
+  # ceiling and runs complete, or does not start. A check between its builds
+  # would end the run with half a round - unpaired rows.
+  if [ -n "$MAX_LOAD" ]; then
+    load="$(cut -d' ' -f1 /proc/loadavg)"
+    awk -v l="$load" -v m="$MAX_LOAD" 'BEGIN { exit !(l <= m) }' \
+      || die "host load $load above MAX_LOAD $MAX_LOAD before round $run: run ended"
+  fi
   # The order alternates round by round: with a fixed order, load that rises
   # within a round would always land on the same build.
   order=("${names[@]}")
@@ -157,11 +172,6 @@ for run in $(seq "$RUNS"); do
     order=(); for ((i = ${#names[@]} - 1; i >= 0; i--)); do order+=("${names[i]}"); done
   fi
   for name in "${order[@]}"; do
-    if [ -n "$MAX_LOAD" ]; then
-      load="$(cut -d' ' -f1 /proc/loadavg)"
-      awk -v l="$load" -v m="$MAX_LOAD" 'BEGIN { exit !(l <= m) }' \
-        || die "host load $load above MAX_LOAD $MAX_LOAD before $name, round $run: run ended"
-    fi
     restore "$name"
     sleep 3; wake_screen; sleep 2
     for start in $(seq "$STARTS"); do

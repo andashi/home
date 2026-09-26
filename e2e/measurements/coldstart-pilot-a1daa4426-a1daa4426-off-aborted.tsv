@@ -1,0 +1,13 @@
+# serial emulator-5562, overlay test-fold-gpu, GPU host, adb uid 2000, runs 10, starts 3, load floor 2.93, max load 4.93
+# cold-1617169-m0 = rev a1daa4426, apk sha256 4ad1eeb45fed0e25c63c5b57bcb16572fd6f13f22c199637bf85f8626b42ec21
+# cold-1617169-m1 = rev a1daa4426-off, apk sha256 bc9d64be4d3cca55e0b12934c8f536444cefa9e2195d23f9f283511e932bfdd3
+build	run	start	hostload	total_ms
+cold-1617169-m0	1	1	4.33	701
+cold-1617169-m0	1	2	4.22	598
+cold-1617169-m0	1	3	4.77	607
+cold-1617169-m1	1	1	4.72	517
+cold-1617169-m1	1	2	4.82	499
+cold-1617169-m1	1	3	4.59	789
+cold-1617169-m1	2	1	7.11	2780
+cold-1617169-m1	2	2	10.54	564
+cold-1617169-m1	2	3	9.67	624

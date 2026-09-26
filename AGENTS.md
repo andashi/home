@@ -320,9 +320,10 @@ afterthought (see `docs/architecture/adr/0005-testing-strategy.md`):
 - **Cold start and unfold, build against build**: `e2e/measure-coldstart.sh`
   (`am start -W` TotalTime) and `e2e/measure-unfold.sh` (the first frame
   after an unfold). Each prepares one snapshot per APK and alternates the
-  builds round by round, **in alternating order**: with a fixed order, a
-  load trend within a round always lands on the same build.
-  (`measure-unfold.sh` still runs a fixed order until this is carried over.)
+  builds round by round. `measure-coldstart.sh` also **alternates their
+  order** within a round: with a fixed order, a load trend within a round
+  always lands on the same build. `measure-unfold.sh` still runs a fixed
+  order until this is carried over.
   - Compare **pairwise** (same round, same start), never by unpaired
     medians. On #167, a fixed-order series at host load 11-15 had the
     unpaired medians put the build with extra start-up work 140 ms *faster*
@@ -333,6 +334,13 @@ afterthought (see `docs/architecture/adr/0005-testing-strategy.md`):
   - Measure on a quiet host, or say that the host was not quiet: at load
     11-18 these series cannot resolve tens of milliseconds, and a null result
     from them is not evidence that a cost was looked for and not found.
+  - **On this host, under working conditions, they cannot be run at all.**
+    #175's pilot, with a ceiling fixed beforehand at the idle floor + 2
+    (2.93 + 2), ended in its second round at load 9.67 when another
+    session's build started. The harness's own working load was 4.2-4.8,
+    within a point of the ceiling. A series that resolves tens of
+    milliseconds needs the machine to itself: a pilot of about 15 minutes to
+    estimate the spread, and if that allows it, up to about 90 minutes more.
 
 ## CI
 
