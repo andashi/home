@@ -246,6 +246,7 @@ class HomeGridVM(
             is LayoutIssue.CrossesFold -> this.id == id
             is LayoutIssue.BelowMinimum -> this.id == id
             is LayoutIssue.AboveMaximum -> this.id == id
+            is LayoutIssue.Moved -> this.id == id
             is LayoutIssue.Overflow -> this.id == id
         }
         fun fits(span: Span) = GridLayout.validate(spec, others + candidate.copy(span = span))

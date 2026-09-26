@@ -341,7 +341,11 @@ class DefaultConfigStore(
 
         // Back into array order, then normalise against this device's grid.
         val result = GridLayout.normalize(spec, placed.sortedBy { order[it.id] })
+        // A move is only one when the file asked for a position: an item
+        // without one is placed, and nothing was overridden.
+        val positioned = layout.items.filter { it.hasPosition }.map { it.id }.toSet()
         for (issue in result.issues) {
+            if (issue is LayoutIssue.Moved && issue.id !in positioned) continue
             issue.toDiagnostic(basePath, order, spec)?.let { diagnostics += it }
         }
         // The engine nudges a crossing item to one side without a word (that
@@ -450,8 +454,20 @@ class DefaultConfigStore(
                     } + "; it was shrunk to ${clamped.w}x${clamped.h}",
             )
 
+            // #140: the file keeps where it put the item; the report says
+            // where the item went and why. The move itself is unchanged.
+            is LayoutIssue.Moved -> Diagnostic(
+                Severity.Warning,
+                "grid-item-moved",
+                path(id),
+                "'$id' asks for x=${from.x} y=${from.y}, " +
+                    (pushedBy?.let { "which overlaps '$it'; it was moved down" }
+                        ?: "which puts its ${to.w}x${to.h} cells outside the grid; it was moved") +
+                    " to x=${to.x} y=${to.y}",
+            )
+
             // An overlap is reported through what the engine did about it:
-            // the later item was re-placed (silently) or dropped (Overflow).
+            // the later item was moved (Moved) or dropped (Overflow).
             is LayoutIssue.Overlap -> null
         }
     }

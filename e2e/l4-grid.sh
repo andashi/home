@@ -20,7 +20,8 @@
 #      comment in icons survives byte for byte), the report says self-write
 #   4. idempotence: reloading the pulled file applies nothing
 #   5. push a file that drops a 2x2 item onto the clock's cell: the clock's
-#      bounds moved down one row, diagnostics clean
+#      bounds moved down one row, and the report names each item that was
+#      pushed down (grid-item-moved, #140)
 #   6. push w: 1 for the digital clock (declared minimum two cells wide):
 #      diagnostic widget-too-small, bounds show two columns
 #   6b. push the dock as a 1x7 column on the six-row grid: diagnostic
@@ -511,6 +512,10 @@ PY
   # --- 5. push-down ----------------------------------------------------
   settle_then_broadcast "$PUSHDOWN_CONFIG" "$H_PUSHDOWN" "push-down"
   assert_jq "$LAST_REPORT" '.success == true' "push-down config applied"
+  # The file keeps where it put the clocks; the report says where they went.
+  assert_jq "$LAST_REPORT" \
+    '[.diagnostics[]? | select(.code == "grid-item-moved") | .path] == ["home.grid.layouts.phone.items[1]", "home.grid.layouts.phone.items[2]"]' \
+    "the two clocks pushed down are reported, and nothing else is"
   effective="$(query_json config)" || die "could not query /config"
   assert_jq "$effective" \
     '(.home.grid.layouts.phone.items[] | select(.id == "digital") | .y) == 2' \

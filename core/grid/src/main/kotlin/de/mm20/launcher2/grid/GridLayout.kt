@@ -150,11 +150,11 @@ object GridLayout {
      * Turns a layout as written in a config file into one that can be drawn:
      * spans below an item's minimum are enlarged ([LayoutIssue.BelowMinimum]),
      * spans above its maximum or the grid are shrunk ([LayoutIssue.AboveMaximum]), items sticking out of
-     * the grid are slid back in when possible and dropped otherwise
+     * the grid are slid back in when possible ([LayoutIssue.Moved]) and dropped otherwise
      * ([LayoutIssue.OutOfBounds]), items crossing the fold are nudged to one
      * side or dropped ([LayoutIssue.CrossesFold]), and an item overlapping an
      * earlier one is pushed down to the first free row at or below its own
-     * ([LayoutIssue.Overlap]) or dropped when there is none
+     * ([LayoutIssue.Overlap], [LayoutIssue.Moved]) or dropped when there is none
      * ([LayoutIssue.Overflow]). Items are processed in list order, so the
      * earlier item always keeps its place. Invariant: the result passes
      * [validate] with no issues.
@@ -173,13 +173,16 @@ object GridLayout {
                 continue
             }
             val y = requested.y.coerceIn(0, spec.rows - h)
-            val x = nudgeClearOfFold(spec, requested.x.coerceIn(0, spec.columns - w), w, item.mayCrossFold)
+            val slidX = requested.x.coerceIn(0, spec.columns - w)
+            val slid = slidX != requested.x || y != requested.y
+            val x = nudgeClearOfFold(spec, slidX, w, item.mayCrossFold)
             if (x == null) {
                 issues += LayoutIssue.CrossesFold(item.id)
                 continue
             }
             var span = Span(x, y, w, h)
             val blocker = result.firstOrNull { it.span.overlaps(span) }
+            val pushed = blocker != null
             if (blocker != null) {
                 issues += LayoutIssue.Overlap(blocker.id, item.id)
                 // Pushed down like move() does: the first row at or below its
@@ -195,6 +198,9 @@ object GridLayout {
             // item that ends up in the layout; one that is dropped reports
             // why it was dropped, and nothing else (#170 review).
             issues += fit.issues
+            if (slid || pushed) {
+                issues += LayoutIssue.Moved(item.id, from = requested, to = span, pushedBy = blocker?.id)
+            }
             result += if (span == item.span) item else item.copy(span = span)
         }
         return LayoutResult(result, issues)

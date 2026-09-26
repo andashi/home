@@ -88,6 +88,13 @@ sealed class LayoutIssue {
 
     enum class Bound { Widget, Grid, Both }
 
+    /**
+     * The item is in the layout, but not where it asked to be: slid back into
+     * the grid, or pushed down below [pushedBy], an earlier item it overlapped
+     * (#140). A nudge off the fold line is [CrossesFold]'s, not this.
+     */
+    data class Moved(val id: String, val from: Span, val to: Span, val pushedBy: String? = null) : LayoutIssue()
+
     /** No free cells were left for the item. */
     data class Overflow(val id: String) : LayoutIssue()
 }
