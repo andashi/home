@@ -13,7 +13,12 @@
 #    screen comes back and stays: the Back key used to close search and
 #    reopen it at once, because the framework handed focus back to the
 #    search field;
-# 3. stops the instance and releases the lock.
+# 3. contacts without READ_CONTACTS: reported, the key kept (#140);
+# 4. #3 slice 1: the icons and search keys read back as pushed, an icon size
+#    the settings do not offer fails the file and keeps the last good state,
+#    call on tap without CALL_PHONE is reported, and a tap on a contact's
+#    number then opens the dialer instead of doing nothing;
+# 5. stops the instance and releases the lock.
 #
 # Runs as the unrooted shell (uid 2000, asserted).
 set -euo pipefail
@@ -146,5 +151,115 @@ reload_broadcast
 wait_report '.trigger == "broadcast" and .success == true and ([.diagnostics[]? | select(.code == "permission-missing")] | length) == 0' \
   30 "a reload after the grant that no longer reports permission-missing"
 ok "with READ_CONTACTS: the reload reports nothing"
+
+# --- #3 slice 1: icons and search keys ------------------------------------
+# A. Every key away from its default reads back as pushed.
+log "slice 1: icon size, adaptify, badges, list icons, app details, call on tap"
+cat > "$WORK/slice1.json" <<'EOF'
+{ "schemaVersion": 2,
+  "icons": { "size": 56, "adaptify": true,
+             "badges": { "notifications": false, "shortcuts": false, "suspendedApps": false } },
+  "search": { "contacts": true, "listIcons": false, "appDetails": false, "contactsCallOnTap": true } }
+EOF
+adb -s "$SERIAL" shell pm grant "$PKG" android.permission.CALL_PHONE || die "could not grant CALL_PHONE"
+push_config "$WORK/slice1.json" "slice 1"
+assert_jq "$(query_json diagnostics)" '.success == true and ((.diagnostics // []) | length) == 0' \
+  "slice 1 applies with nothing to report while CALL_PHONE is held"
+assert_jq "$(query_json config)" \
+  '.icons.size == 56 and .icons.adaptify == true
+   and .icons.badges == {"notifications": false, "shortcuts": false, "suspendedApps": false}
+   and .search.listIcons == false and .search.appDetails == false and .search.contactsCallOnTap == true' \
+  "the read-back serves every slice-1 key as pushed"
+ok "slice 1 keys: applied and read back"
+
+# B. A size the settings do not offer fails the file; the last good state stays.
+printf '{ "schemaVersion": 2, "icons": { "size": 50 } }\n' > "$WORK/size50.json"
+h50="$(sha256sum "$WORK/size50.json" | cut -d' ' -f1)"
+write_config "$WORK/size50.json"
+wait_report ".configSha256 == \"$h50\"" 60 "the reload of icons.size 50"
+assert_jq "$LAST_REPORT" \
+  '.success == false and ([.diagnostics[] | select(.code == "invalid-icons" and .path == "icons.size" and .severity == "error")] | length) == 1' \
+  "icons.size 50 fails with invalid-icons at its path"
+assert_jq "$(query_json config)" '.icons.size == 56' "the last good size stays"
+ok "icons.size 50: rejected, last good state kept"
+
+# C. Call on tap without CALL_PHONE: applied as written, reported.
+adb -s "$SERIAL" shell pm revoke "$PKG" android.permission.CALL_PHONE || die "could not revoke CALL_PHONE"
+push_config "$WORK/slice1.json" "call on tap without CALL_PHONE"
+assert_jq "$(query_json diagnostics)" \
+  '.success == true and ([.diagnostics[]? | select(.code == "permission-missing" and .path == "search.contactsCallOnTap" and .severity == "warning")] | length) == 1' \
+  "the report says a tap dials instead of calling"
+assert_jq "$(query_json config)" '.search.contactsCallOnTap == true' "the read-back keeps what the file asked for"
+ok "without CALL_PHONE: permission-missing reported, read-back true"
+
+# D. And the tap itself: without CALL_PHONE it reaches the dial pad. Before
+# the fix the call was refused and the tap did nothing at all.
+CONTACT="Slice Onetest"
+NUMBER="5550100"
+# `content insert` does not return the new row, so the raw contact carries a
+# marker of this run in its free sync1 column and is found by it (#181
+# review). account_name cannot carry it: a local contact has neither an
+# account name nor a type, and the provider wants both or neither.
+MARK="l4-search-$$"
+adb -s "$SERIAL" shell content insert --uri content://com.android.contacts/raw_contacts \
+  --bind account_type:n: --bind account_name:n: --bind sync1:s:"$MARK" >/dev/null || die "could not insert a contact"
+raw_id="$(adb -s "$SERIAL" shell content query --uri content://com.android.contacts/raw_contacts --projection _id \
+  --where "\"sync1='$MARK'\"" | tr -d '\r' | sed -n 's/.*_id=\([0-9]*\).*/\1/p')"
+[ "$(wc -w <<<"$raw_id")" = 1 ] || die "expected exactly one raw contact marked $MARK, got: '${raw_id}'"
+adb -s "$SERIAL" shell content insert --uri content://com.android.contacts/data --bind raw_contact_id:i:"$raw_id" \
+  --bind mimetype:s:vnd.android.cursor.item/name --bind data1:s:"'$CONTACT'" >/dev/null
+adb -s "$SERIAL" shell content insert --uri content://com.android.contacts/data --bind raw_contact_id:i:"$raw_id" \
+  --bind mimetype:s:vnd.android.cursor.item/phone_v2 --bind data1:s:"$NUMBER" --bind data2:i:2 >/dev/null
+# The launcher shows a number formatted for the device's region
+# (PhoneNumberUtils.formatNumber): 5550100 reads "555-0100" on a US image.
+# So the number is found by its digits, not by the text as inserted; the
+# first run of this step waited for "5550100" and timed out on exactly that.
+number_bounds() { # $1 = the number's digits
+  dump_screen || return 1
+  python3 - "$WORK/dump.xml" "$1" <<'PY'
+import re, sys
+try:
+    import defusedxml.ElementTree as ET
+except ImportError:
+    import xml.etree.ElementTree as ET
+for node in ET.parse(sys.argv[1]).getroot().iter("node"):
+    if re.sub(r"\D", "", node.get("text", "")) == sys.argv[2]:
+        m = re.match(r"\[(\d+),(\d+)\]\[(\d+),(\d+)\]", node.get("bounds", ""))
+        if m:
+            print(*m.groups()); break
+PY
+}
+screen_texts() { # every visible text, for a failure that has to say what was there
+  dump_screen || { echo "(no dump)"; return; }
+  python3 - "$WORK/dump.xml" <<'PY'
+import sys
+try:
+    import defusedxml.ElementTree as ET
+except ImportError:
+    import xml.etree.ElementTree as ET
+print(" | ".join(n.get("text") for n in ET.parse(sys.argv[1]).getroot().iter("node") if n.get("text")))
+PY
+}
+open_search_field "Onetest"
+wait_text "$CONTACT" 20
+tap_text "$CONTACT" || die "the contact is not where a tap reaches it"
+retry_for 15 shows number_bounds "$NUMBER" \
+  || die "the expanded contact shows no number with the digits $NUMBER; on screen: $(screen_texts)"
+tap_bounds "$(number_bounds "$NUMBER")" || die "could not tap the number"
+TOP=""
+dialer_on_top() {
+  TOP="$(adb_t shell dumpsys activity activities | tr -d '\r' \
+    | sed -n 's/.*topResumedActivity=ActivityRecord{[^ ]* [^ ]* \([^ ]*\) .*/\1/p' | head -1)"
+  case "$TOP" in *dialer*|*Dialer*) return 0 ;; *) return 1 ;; esac
+}
+retry_for 10 dialer_on_top || true
+top="$TOP"
+log "top activity after the tap: $top"
+case "$top" in
+  *InCall*) die "the tap placed a call without CALL_PHONE: $top" ;;
+  *dialer*|*Dialer*) ok "without CALL_PHONE: the tap on the number opened the dialer ($top)" ;;
+  *) die "the tap on the number did not reach the dialer: top is '$top'" ;;
+esac
+adb -s "$SERIAL" shell input keyevent KEYCODE_HOME
 
 ok "l4-search passed"

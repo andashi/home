@@ -65,7 +65,6 @@ import de.mm20.launcher2.ui.launcher.search.listItemViewModel
 import de.mm20.launcher2.ui.launcher.sheets.LocalBottomSheetManager
 import de.mm20.launcher2.ui.locals.LocalGridSettings
 import de.mm20.launcher2.ui.modifier.scale
-import androidx.core.net.toUri
 import de.mm20.launcher2.ktx.checkPermission
 import de.mm20.launcher2.ktx.getApplicationIconOrNull
 import de.mm20.launcher2.ktx.getApplicationInfoOrNull
@@ -170,14 +169,7 @@ fun ContactItem(
                                 },
                                 onContact = {
                                     viewModel.reportUsage(contact)
-                                    context.tryStartActivity(
-                                        Intent(
-                                            if (callOnTap)
-                                                Intent.ACTION_CALL
-                                            else
-                                                Intent.ACTION_DIAL
-                                        ).setData("tel:${it.number}".toUri())
-                                    )
+                                    callOrDial(it.number, callOnTap) { intent -> context.tryStartActivity(intent) }
                                 },
                                 copyText = { it.number },
                             )

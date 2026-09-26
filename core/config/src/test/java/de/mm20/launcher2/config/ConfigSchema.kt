@@ -192,6 +192,9 @@ internal object ConfigSchema {
 
     /** Limits added to a leaf's type; [ConfigSchemaTest] breaks each one and expects the parser to object. */
     internal val constraints: Map<String, Map<String, JsonElement>> = mapOf(
+        // The steps the settings screen offers (#3 slice 1): 32, 40, 48, 56, 64.
+        "icons.size" to range(IconDefaults.MinSize, IconDefaults.MaxSize) +
+            mapOf("multipleOf" to JsonPrimitive(IconDefaults.SizeStep)),
         "appearance.glass.blur" to range(ConfigValidator.MinGlass, ConfigValidator.MaxGlassBlur),
         "appearance.glass.tint" to range(ConfigValidator.MinGlass, ConfigValidator.MaxGlassTint),
         "appearance.glass.radius" to range(ConfigValidator.MinGlass, ConfigValidator.MaxGlassRadius),

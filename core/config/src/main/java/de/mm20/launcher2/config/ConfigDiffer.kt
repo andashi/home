@@ -4,6 +4,13 @@ data class ConfigState(
     val themedIcons: Boolean = true,
     val enforceThemedIcons: Boolean = false,
     val iconPack: String? = null,
+    /** `icons.size` in dp (#3 slice 1): search, the dock and the pickers. */
+    val iconSize: Int = IconDefaults.Size,
+    val adaptifyIcons: Boolean = IconDefaults.Adaptify,
+    /** `icons.badges` (#3 slice 1). */
+    val badgeNotifications: Boolean = IconDefaults.Badges,
+    val badgeShortcuts: Boolean = IconDefaults.Badges,
+    val badgeSuspendedApps: Boolean = IconDefaults.Badges,
     val glassBlur: Float = GlassDefaults.Blur,
     val glassTint: Float = GlassDefaults.Tint,
     val glassRadius: Float = GlassDefaults.Radius,
@@ -60,6 +67,9 @@ data class SearchState(
     val hiddenItemsButton: Boolean = SearchDefaults.HiddenItemsButton,
     /** Where the bar sits in search (#107); [InSearchBarPosition.Follow] by default, read back always (#3 D6). */
     val barPosition: InSearchBarPosition = InSearchBarPosition.Follow,
+    val listIcons: Boolean = SearchDefaults.ListIcons,
+    val appDetails: Boolean = SearchDefaults.AppDetails,
+    val contactsCallOnTap: Boolean = SearchDefaults.ContactsCallOnTap,
 )
 
 sealed class ConfigMutation {
@@ -69,6 +79,11 @@ sealed class ConfigMutation {
         val themed: Boolean? = null,
         val enforceThemed: Boolean? = null,
         val pack: String? = null,
+        val size: Int? = null,
+        val adaptify: Boolean? = null,
+        val badgeNotifications: Boolean? = null,
+        val badgeShortcuts: Boolean? = null,
+        val badgeSuspendedApps: Boolean? = null,
     ) : ConfigMutation() {
         override val section = "icons"
     }
@@ -143,13 +158,17 @@ object ConfigDiffer {
             val themed = icons.themed?.takeIf { it != current.themedIcons }
             val enforceThemed = icons.enforceThemed?.takeIf { it != current.enforceThemedIcons }
             val pack = icons.pack?.takeIf { it != current.iconPack }
-            if (themed != null || enforceThemed != null || pack != null) {
-                mutations += ConfigMutation.SetIcons(
-                    themed = themed,
-                    enforceThemed = enforceThemed,
-                    pack = pack,
-                )
-            }
+            val changed = ConfigMutation.SetIcons(
+                themed = themed,
+                enforceThemed = enforceThemed,
+                pack = pack,
+                size = icons.size?.takeIf { it != current.iconSize },
+                adaptify = icons.adaptify?.takeIf { it != current.adaptifyIcons },
+                badgeNotifications = icons.badges?.notifications?.takeIf { it != current.badgeNotifications },
+                badgeShortcuts = icons.badges?.shortcuts?.takeIf { it != current.badgeShortcuts },
+                badgeSuspendedApps = icons.badges?.suspendedApps?.takeIf { it != current.badgeSuspendedApps },
+            )
+            if (changed != ConfigMutation.SetIcons()) mutations += changed
         }
 
         desired.appearance?.glass?.let { glass ->
@@ -188,6 +207,9 @@ object ConfigDiffer {
                 reversed = search.reversed?.takeIf { it != current.reversed },
                 hiddenItemsButton = search.hiddenItemsButton?.takeIf { it != current.hiddenItemsButton },
                 barPosition = search.barPosition?.takeIf { it != current.barPosition },
+                listIcons = search.listIcons?.takeIf { it != current.listIcons },
+                appDetails = search.appDetails?.takeIf { it != current.appDetails },
+                contactsCallOnTap = search.contactsCallOnTap?.takeIf { it != current.contactsCallOnTap },
             )
             if (changed != SearchConfig()) mutations += ConfigMutation.SetSearch(changed)
         }

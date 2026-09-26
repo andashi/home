@@ -418,6 +418,39 @@ class ConfigDifferTest {
         assertEquals(first, second)
     }
 
+    // ----- icons: size, adaptify, badges (#3 slice 1) -----
+
+    @Test
+    fun `each new icons key diffs on its own`() {
+        fun diff(icons: IconsConfig) = ConfigDiffer.diff(LauncherConfig(2, icons = icons), baseState)
+
+        assertEquals(listOf(ConfigMutation.SetIcons(size = 64)), diff(IconsConfig(size = 64)))
+        assertEquals(listOf(ConfigMutation.SetIcons(adaptify = true)), diff(IconsConfig(adaptify = true)))
+        assertEquals(
+            listOf(ConfigMutation.SetIcons(badgeNotifications = false)),
+            diff(IconsConfig(badges = IconBadgesConfig(notifications = false))),
+        )
+        assertEquals(
+            listOf(ConfigMutation.SetIcons(badgeShortcuts = false)),
+            diff(IconsConfig(badges = IconBadgesConfig(shortcuts = false))),
+        )
+        assertEquals(
+            listOf(ConfigMutation.SetIcons(badgeSuspendedApps = false)),
+            diff(IconsConfig(badges = IconBadgesConfig(suspendedApps = false))),
+        )
+    }
+
+    /** Control: values the state already has produce nothing. */
+    @Test
+    fun `new icons keys equal to the state produce nothing`() {
+        val icons = IconsConfig(
+            size = 48, adaptify = false,
+            badges = IconBadgesConfig(notifications = true, shortcuts = true, suspendedApps = true),
+        )
+
+        assertEquals(emptyList<ConfigMutation>(), ConfigDiffer.diff(LauncherConfig(2, icons = icons), baseState))
+    }
+
     // ----- search (#91) -----
 
     @Test
@@ -431,6 +464,8 @@ class ConfigDifferTest {
             SearchConfig(filterBar = false), SearchConfig(openKeyboard = false),
             SearchConfig(launchOnEnter = false), SearchConfig(reversed = true),
             SearchConfig(hiddenItemsButton = true),
+            SearchConfig(listIcons = false), SearchConfig(appDetails = false),
+            SearchConfig(contactsCallOnTap = true),
         )
         for (search in each) {
             assertEquals(listOf(ConfigMutation.SetSearch(search)), diff(search))

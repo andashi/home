@@ -22,7 +22,10 @@
     "openKeyboard": true,
     "launchOnEnter": true,
     "reversed": false,
-    "hiddenItemsButton": false
+    "hiddenItemsButton": false,
+    "listIcons": true,
+    "appDetails": true,
+    "contactsCallOnTap": false
   }
 }
 ```
@@ -40,6 +43,9 @@
 | `search.launchOnEnter` | Enter on the keyboard launches the best match | boolean | `true` |
 | `search.reversed` | Results from the bottom up, the best match nearest a bottom search bar | boolean | `false` |
 | `search.hiddenItemsButton` | A button in the search bar that shows hidden items | boolean | `false` |
+| `search.listIcons` | Icons in front of apps while `search.layout` is `list`; no effect in the grid | boolean | `true` |
+| `search.appDetails` | An expanded app shows its version and package details | boolean | `true` |
+| `search.contactsCallOnTap` | A tap on a contact's number calls it instead of opening the dialer. Needs the call permission: without it the tap opens the dialer, and the report says so (`permission-missing`) | boolean | `false` |
 | `search.barPosition` | Where the search bar sits while search is open. `follow` puts it where [`home.searchBar.position`](search-bar.md) does | `top`, `bottom`, `follow` | `follow` |
 | `search.actions` | The search actions: the chips under the search bar and the recognisers for numbers, addresses and times, in order ([below](#search-actions)) | list | the device's own |
 

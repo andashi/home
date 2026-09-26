@@ -27,11 +27,42 @@ data class IconsConfig(
     val enforceThemed: Boolean? = null,
     /** A pack's package name, or [NoPack]; absent, the launcher's default (Lawnicons if installed). */
     val pack: String? = null,
+    /**
+     * Icon size in dp (#3 slice 1): search results, the dock and the pickers.
+     * One of [IconDefaults.Sizes], the steps the settings screen offers.
+     */
+    val size: Int? = null,
+    /** Legacy (non-adaptive) icons are fitted into an adaptive shape. */
+    val adaptify: Boolean? = null,
+    val badges: IconBadgesConfig? = null,
 ) {
     companion object {
         /** The apps' own icons, chosen: no pack and no fallback (#3 D6). */
         const val NoPack = "none"
     }
+}
+
+/** `icons.badges` (#3 slice 1): the dots and marks drawn on icons. */
+@Serializable
+data class IconBadgesConfig(
+    /** A dot for an app with notifications. */
+    val notifications: Boolean? = null,
+    /** The app's badge on a shortcut's icon. */
+    val shortcuts: Boolean? = null,
+    /** A mark on an app that is paused (suspended). */
+    val suspendedApps: Boolean? = null,
+)
+
+/** The one place the icon defaults live: today's behavior, so a file without them changes nothing. */
+object IconDefaults {
+    const val Size = 48
+    const val MinSize = 32
+    const val MaxSize = 64
+    const val SizeStep = 8
+    /** The sizes the settings screen offers, and so all a write-back produces. */
+    val Sizes: List<Int> = (MinSize..MaxSize step SizeStep).toList()
+    const val Adaptify = false
+    const val Badges = true
 }
 
 @Serializable
@@ -368,6 +399,15 @@ data class SearchConfig(
      * its own.
      */
     val actions: List<SearchActionConfig>? = null,
+    /** Icons in front of apps while results are a list (#3 slice 1). */
+    val listIcons: Boolean? = null,
+    /** An expanded app shows its version and package details. */
+    val appDetails: Boolean? = null,
+    /**
+     * A tap on a contact's number calls it instead of opening the dialer.
+     * Needs CALL_PHONE; without it the tap dials, and the report says so.
+     */
+    val contactsCallOnTap: Boolean? = null,
 )
 
 /**
@@ -450,4 +490,7 @@ object SearchDefaults {
     const val LaunchOnEnter = true
     const val Reversed = false
     const val HiddenItemsButton = false
+    const val ListIcons = true
+    const val AppDetails = true
+    const val ContactsCallOnTap = false
 }

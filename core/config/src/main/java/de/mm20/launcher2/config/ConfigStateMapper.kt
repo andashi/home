@@ -37,11 +37,22 @@ fun ConfigState.toLauncherConfig(): LauncherConfig {
             barPosition = search.barPosition,
             // The actions in effect (#106).
             actions = searchActions,
+            listIcons = search.listIcons,
+            appDetails = search.appDetails,
+            contactsCallOnTap = search.contactsCallOnTap,
         ),
         icons = IconsConfig(
             themed = themedIcons,
             enforceThemed = enforceThemedIcons,
             pack = iconPack,
+            size = iconSize,
+            adaptify = adaptifyIcons,
+            // Complete, like glass (#3 slice 1).
+            badges = IconBadgesConfig(
+                notifications = badgeNotifications,
+                shortcuts = badgeShortcuts,
+                suspendedApps = badgeSuspendedApps,
+            ),
         ),
         appearance = AppearanceConfig(
             glass = GlassConfig(

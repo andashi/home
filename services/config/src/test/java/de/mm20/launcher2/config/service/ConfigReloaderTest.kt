@@ -306,7 +306,7 @@ class ConfigReloaderTest {
         val store = FakeConfigStore(state = foldState(6).copy(search = SearchState(contacts = true)))
         val reportStore = ReloadReportStore(context)
         var granted = true
-        val reloader = ConfigReloader(store, reportStore, capabilities = CapabilityDiagnostics { granted })
+        val reloader = ConfigReloader(store, reportStore, capabilities = CapabilityDiagnostics(contactsGranted = { granted }, callGranted = { true }))
         reloader.reload(text, ReloadTrigger.Broadcast)
         // Revoked since the push: the file and the grid are as they were, the
         // warning is new (#178 review).
@@ -410,8 +410,67 @@ class ConfigReloaderTest {
 
     // ----- what the file asks for that this profile cannot do (#140) -----
 
-    private fun reloaderWith(store: FakeConfigStore, contactsGranted: Boolean) =
-        ConfigReloader(store, ReloadReportStore(context), capabilities = CapabilityDiagnostics { contactsGranted })
+    private fun reloaderWith(store: FakeConfigStore, contactsGranted: Boolean = true, callGranted: Boolean = true) =
+        ConfigReloader(
+            store, ReloadReportStore(context),
+            capabilities = CapabilityDiagnostics(contactsGranted = { contactsGranted }, callGranted = { callGranted }),
+        )
+
+    /**
+     * #3 slice 1: without CALL_PHONE a tap on a number dials instead of
+     * calling. The key stays as written, like contacts; the report says why.
+     */
+    @Test
+    fun `call on tap asked for without CALL_PHONE is applied as written and reported`() = runTest {
+        val store = FakeConfigStore(state = ConfigState(search = SearchState(contactsCallOnTap = false)))
+
+        val report = reloaderWith(store, callGranted = false)
+            .reload("""{"schemaVersion": 2, "search": {"contactsCallOnTap": true}}""")
+
+        assertTrue(report.success)
+        assertEquals(listOf("read", "apply:[search]"), store.events)
+        val diagnostic = report.diagnostics.single { it.code == "permission-missing" }
+        assertEquals(Severity.Warning, diagnostic.severity)
+        assertEquals("search.contactsCallOnTap", diagnostic.path)
+        assertEquals(
+            "search.contactsCallOnTap is true, but this profile does not hold CALL_PHONE; " +
+                "a tap on a number opens the dialer instead of calling",
+            diagnostic.message,
+        )
+    }
+
+    @Test
+    fun `call on tap with CALL_PHONE held is not reported`() = runTest {
+        val report = reloaderWith(FakeConfigStore(), callGranted = true)
+            .reload("""{"schemaVersion": 2, "search": {"contactsCallOnTap": true}}""")
+
+        assertTrue(report.diagnostics.none { it.code == "permission-missing" })
+    }
+
+    @Test
+    fun `a file that does not ask to call on tap is not reported, whatever the permission`() = runTest {
+        for (text in listOf(
+            """{"schemaVersion": 2, "search": {"contactsCallOnTap": false}}""",
+            """{"schemaVersion": 2, "search": {"layout": "grid"}}""",
+        )) {
+            val report = reloaderWith(FakeConfigStore(), callGranted = false).reload(text)
+            assertTrue(text, report.diagnostics.none { it.code == "permission-missing" })
+        }
+    }
+
+    /** Like contacts: a failed search section left call on tap as it was, off here, so nothing is missing. */
+    @Test
+    fun `call on tap in a search section that failed to apply is not reported as a permission problem`() = runTest {
+        val store = FakeConfigStore(
+            state = ConfigState(search = SearchState(contactsCallOnTap = false)),
+            applyDiagnostics = listOf(Diagnostic(Severity.Error, "apply-failed", "search", "datastore gone")),
+        )
+
+        val report = reloaderWith(store, callGranted = false)
+            .reload("""{"schemaVersion": 2, "search": {"contactsCallOnTap": true}}""")
+
+        assertEquals(listOf("apply-failed"), report.diagnostics.map { it.code })
+    }
 
     /**
      * The key stays as written and is applied: the read-back feeds write-back

@@ -22,6 +22,11 @@ class ConfigStateMapperTest {
             themedIcons = true,
             enforceThemedIcons = true,
             iconPack = "com.example.icons",
+            iconSize = 56,
+            adaptifyIcons = true,
+            badgeNotifications = false,
+            badgeShortcuts = false,
+            badgeSuspendedApps = false,
             glassBlur = 16f,
             glassTint = 0.5f,
             glassRadius = 20f,
@@ -46,7 +51,13 @@ class ConfigStateMapperTest {
         val config = state.toLauncherConfig()
 
         assertEquals(ConfigMigrations.currentSchemaVersion, config.schemaVersion)
-        assertEquals(IconsConfig(true, true, "com.example.icons"), config.icons)
+        assertEquals(
+            IconsConfig(
+                true, true, "com.example.icons", size = 56, adaptify = true,
+                badges = IconBadgesConfig(notifications = false, shortcuts = false, suspendedApps = false),
+            ),
+            config.icons,
+        )
         assertEquals(
             GlassConfig(16f, 0.5f, 20f, GlassContrast.High, wallpaperBlur = false, searchWallpaperBlur = false),
             config.appearance?.glass,
@@ -92,6 +103,18 @@ class ConfigStateMapperTest {
         assertEquals(4, config.home?.grid?.columns)
         assertEquals(false, config.home?.grid?.locked)
         assertNotNull(config.home?.grid?.layouts)
+    }
+
+    /** Served complete, like glass: a host compares field by field without knowing the defaults. */
+    @Test
+    fun `the icons read-back carries size, adaptify and every badge by default`() {
+        assertEquals(
+            IconsConfig(
+                themed = true, enforceThemed = false, pack = null, size = 48, adaptify = false,
+                badges = IconBadgesConfig(notifications = true, shortcuts = true, suspendedApps = true),
+            ),
+            ConfigState().toLauncherConfig().icons,
+        )
     }
 
     @Test
@@ -160,13 +183,22 @@ class ConfigStateMapperTest {
                 favorites = true, allApps = true, layout = SearchResultLayout.Grid, labels = true,
                 contacts = true, shortcuts = true, filterBar = true, openKeyboard = true,
                 launchOnEnter = true, reversed = false, hiddenItemsButton = false,
-                barPosition = InSearchBarPosition.Follow,
+                barPosition = InSearchBarPosition.Follow, listIcons = true, appDetails = true,
+                contactsCallOnTap = false,
             ),
             defaults,
         )
-        val set = ConfigState(search = SearchState(layout = SearchResultLayout.List, reversed = true)).toLauncherConfig().search
+        val set = ConfigState(
+            search = SearchState(
+                layout = SearchResultLayout.List, reversed = true, listIcons = false, appDetails = false,
+                contactsCallOnTap = true,
+            ),
+        ).toLauncherConfig().search
         assertEquals(SearchResultLayout.List, set?.layout)
         assertEquals(true, set?.reversed)
+        assertEquals(false, set?.listIcons)
+        assertEquals(false, set?.appDetails)
+        assertEquals(true, set?.contactsCallOnTap)
     }
 
     /** #3 D6: following is a value now, so the read-back serves it and `search` is complete. */
