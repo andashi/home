@@ -388,6 +388,16 @@ class DefaultConfigStore(
         return diagnostics
     }
 
+    /**
+     * A diagnostic reports what the engine recorded; it never re-derives it
+     * from the configuration. A copy of the engine's rule is subtly wrong in
+     * exactly the case nobody wrote down, because it needs inputs the engine
+     * does not: the store's own fold-nudge check needed a `w`, so an item the
+     * file left without one - nudged by the engine at its default width - was
+     * never reported (#174), and a size decided before normalize claimed an
+     * effective size for an item normalize then dropped (#170). The engine
+     * says what it did; this only gives it a name, a path and words.
+     */
     private fun LayoutIssue.toDiagnostic(basePath: String, order: Map<String, Int>, spec: GridSpec): Diagnostic? {
         fun path(id: String) = "$basePath[${order[id] ?: -1}]"
         return when (this) {
