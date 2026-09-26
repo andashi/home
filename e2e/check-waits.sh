@@ -92,6 +92,11 @@ def scan_file(lines):
 
 
 UNREADABLE = ("eval", "alias")
+SEC = r'"?\$SECONDS"?'
+OPERAND = r'"?\$?\{?\w+\}?"?'
+DEADLINE = re.compile(
+    r"^\s*(while|until)\s+\[\s+(" + SEC + r"\s+-(lt|le)\s+" + OPERAND
+    + r"|" + OPERAND + r"\s+-(gt|ge)\s+" + SEC + r")\s+\]\s*;?\s*$")
 
 
 def unreadable(code):
@@ -103,8 +108,14 @@ def unreadable(code):
             continue
         if words[0] in UNREADABLE:
             return words[0]
-        if words[0] in ("bash", "sh") and "-c" in words[1:2]:
-            return words[0] + " -c"
+        if words[0] in ("bash", "sh"):
+            # -c may follow other options (bash -e -c ...), or share a word
+            # with them (bash -ec ...).
+            for word in words[1:]:
+                if not word.startswith("-"):
+                    break
+                if not word.startswith("--") and "c" in word[1:]:
+                    return words[0] + " -c"
     return None
 
 
@@ -140,9 +151,13 @@ for path in sys.argv[1:]:
                 heredoc = None
             lines[n] = ""
             continue
-        m = re.search(r"<<-?\s*['\"]?(\w+)['\"]?", scan(raw)[1])
-        if m:
-            heredoc = m.group(1)
+        # Only an unquoted << opens a heredoc (not '<<END' in a string, not
+        # the here-string <<<); its delimiter may itself be quoted.
+        opener = re.search(r"(?<!<)<<(?!<)", scan(raw)[0])
+        if opener:
+            m = re.match(r"<<-?\s*['\"]?(\w+)", raw[opener.start():])
+            if m:
+                heredoc = m.group(1)
     views = scan_file(lines)
     # What the guard cannot read fails loudly, never silently: it cannot see
     # a wait inside eval, an alias or another shell's -c string.
@@ -184,10 +199,12 @@ for path in sys.argv[1:]:
         while k >= 0 and lines[k].strip().startswith("#") and not lines[k].strip().startswith("# not a wait:"):
             k -= 1
         marked = k >= 0 and lines[k].strip().startswith("# not a wait:")
-        # A loop whose condition is the clock is a deadline, not a count.
-        # Only the condition, the text before `do`, counts.
+        # A loop whose whole condition compares the clock with a deadline is
+        # a deadline, not a count: [ "$SECONDS" -lt X ] or [ X -gt "$SECONDS" ],
+        # and nothing else. A condition that merely mentions $SECONDS
+        # while it counts attempts is not one.
         condition = re.split(r"\bdo\b", views[start][1], maxsplit=1)[0]
-        marked = marked or "$SECONDS" in condition
+        marked = marked or bool(DEADLINE.match(condition))
         if not marked and any(re.search(r"\bsleep\b", l) for l in body):
             print(f"::error file=e2e/{path},line={start + 1}::counts rounds instead of waiting against a deadline: {lines[start].strip()}")
             found = 1
