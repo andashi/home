@@ -282,12 +282,12 @@ class ConfigWriteBackTest {
     @Test
     fun `a setting changed on the device reaches the file without being asked`() = runBlocking {
         applied(searchFile)
-        // Every result, not the last. The trigger's first passes, one per
-        // source it merges, keep arriving for a while after it starts, so a
-        // change made meanwhile gives a Written followed within a millisecond
-        // by an Unchanged pass, and lastResult, a StateFlow, can drop the
-        // Written before a collector sees it. It did under CI load (3 in 40
-        // locally with every core busy); the file was right each time.
+        // Every result, not the last. A Written can be followed within a
+        // millisecond by an Unchanged pass - when the trigger still made one
+        // pass per source at start (#167), always so - and lastResult, a
+        // StateFlow, can drop the Written before a collector sees it. It did
+        // under CI load (3 in 40 locally with every core busy); the file was
+        // right each time.
         val results = Channel<WriteBackResult>(Channel.UNLIMITED)
         val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
         try {

@@ -9,8 +9,8 @@ import de.mm20.launcher2.config.SearchBarPosition
 import de.mm20.launcher2.preferences.LauncherDataStore
 import de.mm20.launcher2.preferences.LauncherSettingsData
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 
@@ -64,9 +64,11 @@ interface LauncherConfigSettings {
     /**
      * Emits once on collection and then whenever the settings-backed state
      * changes, for write-back to follow (#3 slice 4). A write to a setting the
-     * config does not cover emits nothing.
+     * config does not cover emits nothing. The default emits once and never
+     * again (#167): nothing emitted at all would hold back every write-back
+     * the store combines this into.
      */
-    fun changes(): Flow<Unit> = emptyFlow()
+    fun changes(): Flow<Unit> = flowOf(Unit)
 }
 
 internal class LauncherConfigSettingsImpl(

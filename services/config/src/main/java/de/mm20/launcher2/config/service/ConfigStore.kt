@@ -5,7 +5,7 @@ import de.mm20.launcher2.config.ConfigState
 import de.mm20.launcher2.config.Diagnostic
 import de.mm20.launcher2.config.Severity
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.flowOf
 
 /**
  * Fork addition (Phase 2, ADR 0003): abstraction over the launcher's mutable
@@ -57,7 +57,8 @@ interface ConfigStore {
      * Emits at least once on collection and then whenever the effective
      * state changes, whoever changed it - the device or a reload - for
      * write-back to follow (#3 slice 4). It may emit for a change that turns
-     * out to be none; a write-back then finds nothing to write.
+     * out to be none; a write-back then finds nothing to write. The default
+     * emits once and never again (#167).
      */
-    fun changes(): Flow<Unit> = emptyFlow()
+    fun changes(): Flow<Unit> = flowOf(Unit)
 }
