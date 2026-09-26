@@ -124,6 +124,13 @@ S
 verdict caught "a loop that does not start its own line" <<'S'
 ready; for i in $(seq 3); do sleep 1; done
 S
+verdict quiet "a while read loop after a pipe, without a sleep (control)" <<'S'
+list |
+  while IFS='|' read -r a b; do echo "$a"; done
+S
+verdict caught "a waiting loop after a pipe" <<'S'
+list | while read -r a; do sleep 1; done
+S
 verdict caught "until with a while-style deadline test" <<'S'
 until [ "$SECONDS" -lt "$deadline" ]; do sleep 1; done
 S

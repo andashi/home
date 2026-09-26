@@ -95,7 +95,7 @@ UNREADABLE = ("eval", "alias")
 SEC = r'"?\$SECONDS"?'
 OPERAND = r'"?\$?\{?\w+\}?"?'
 DEADLINE = re.compile(
-    r"^\s*(while|until)\s+\[\s+(" + SEC + r"\s+-(lt|le)\s+" + OPERAND
+    r"^\s*while\s+\[\s+(" + SEC + r"\s+-(lt|le)\s+" + OPERAND
     + r"|" + OPERAND + r"\s+-(gt|ge)\s+" + SEC + r")\s+\]\s*;?\s*$")
 
 
@@ -117,6 +117,19 @@ def unreadable(code):
                 if not word.startswith("--") and "c" in word[1:]:
                     return words[0] + " -c"
     return None
+
+
+def starts_loop(code):
+    """True when a for/while/until starts a command anywhere on the line:
+    at its start, after `;`/`&&`/`||`, or after a pipe (`... | while read`,
+    which this repository uses)."""
+    if LOOP.match(code):
+        return True
+    for segment in re.split(r"[;&|]|&&|\|\|", code)[1:]:
+        words = segment.lstrip("!({ ").split()
+        if words and words[0] in ("for", "while", "until"):
+            return True
+    return False
 
 
 def keywords(code):
@@ -155,20 +168,25 @@ for path in sys.argv[1:]:
         # the here-string <<<); its delimiter may itself be quoted.
         opener = re.search(r"(?<!<)<<(?!<)", scan(raw)[0])
         if opener:
-            m = re.match(r"<<-?\s*['\"]?(\w+)", raw[opener.start():])
+            m = re.match(r"<<-?\s*['\"]?([^\s'\";&|<>()]+)", raw[opener.start():])
             if m:
-                heredoc = m.group(1)
+                heredoc, heredoc_line = m.group(1), n
+    if heredoc is not None:
+        # Never closed: the guard misread the delimiter or the file is cut
+        # off, and everything after the opener went unread.
+        print(f"::error file=e2e/{path},line={heredoc_line + 1}::a heredoc the guard never saw close (delimiter {heredoc!r}), so what follows it went unread")
+        found = 1
     views = scan_file(lines)
     # What the guard cannot read fails loudly, never silently: it cannot see
     # a wait inside eval, an alias or another shell's -c string.
     for n, raw in enumerate(lines):
         what = unreadable(views[n][0])
         if what:
-            print(f"::error file=e2e/{path},line={n + 1}::cannot read inside `{what}`, so a wait there would pass unseen; write it out: {raw.strip()}")
+            print(f"::error file=e2e/{path},line={n + 1}::cannot read {what!r}, so a wait there would pass unseen; write it out plainly: {raw.strip()}")
             found = 1
     i = 0
     while i < len(lines):
-        if not LOOP.match(views[i][0]):
+        if not starts_loop(views[i][0]):
             i += 1
             continue
         start = i
