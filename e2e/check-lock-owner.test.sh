@@ -74,6 +74,19 @@ unreadable_case unreadable-bare-path 'emulator/run.sh stop'
 # run.sh at all: a substitution in the export runs before the export does.
 unreadable_case unreadable-eval-after-a-readable-call 'if "$RUN" stop; then eval "emulator/run.sh start"; fi'
 unreadable_case unreadable-mention-in-an-export 'export LOCK_OWNER="$(emulator/run.sh status)"'
+# LOCK_OWNER itself is read in two forms, an assignment at the start of a
+# line and an export. Anything else that changes it fails as unreadable:
+# after `unset`, the export tracked above no longer holds.
+unreadable_case unreadable-unset 'unset LOCK_OWNER'
+unreadable_case unreadable-export-n 'export -n LOCK_OWNER'
+unreadable_case unreadable-declare 'declare -x LOCK_OWNER="y"'
+unreadable_case unreadable-second-owner-word 'export LOCK_OWNER="y"; unset LOCK_OWNER'
+# Reading its value is not changing it.
+case_ reads-of-the-owner pass 'export LOCK_OWNER="x@$SERIAL#$$"
+echo "held by $LOCK_OWNER"
+LOCK_OWNER="${LOCK_OWNER:-x}"
+export LOCK_OWNER
+"$RUN" stop'
 # Every form the contract names, after the export: all pass.
 case_ contract-forms pass 'export LOCK_OWNER="x@$SERIAL#$$"
 RUN="$GOS_REPO/emulator/run.sh"
