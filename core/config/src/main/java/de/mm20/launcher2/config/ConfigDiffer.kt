@@ -17,6 +17,15 @@ data class ConfigState(
     val glassContrast: GlassContrast = GlassDefaults.Contrast,
     val glassWallpaperBlur: Boolean = GlassDefaults.WallpaperBlur,
     val glassSearchWallpaperBlur: Boolean = GlassDefaults.SearchWallpaperBlur,
+    /** `appearance.theme.mode` (#3 slice 3). */
+    val themeMode: ThemeMode = ThemeMode.System,
+    /**
+     * `appearance.theme.colors`: the built-in scheme in effect, or null when
+     * the device uses a colour scheme a person made, which the file cannot
+     * name. The read-back then leaves `colors` out, and write-back keeps the
+     * file's text.
+     */
+    val themeColors: ThemeColors? = ThemeColors.System,
     val searchBarPosition: SearchBarPosition = SearchBarPosition.Top,
     /** `search` (#91). */
     val search: SearchState = SearchState(),
@@ -97,6 +106,14 @@ sealed class ConfigMutation {
         val searchWallpaperBlur: Boolean? = null,
     ) : ConfigMutation() {
         override val section = "appearance.glass"
+    }
+
+    /** `appearance.theme` (#3 slice 3): the keys that differ from the state; null is unchanged. */
+    data class SetTheme(
+        val mode: ThemeMode? = null,
+        val colors: ThemeColors? = null,
+    ) : ConfigMutation() {
+        override val section = "appearance.theme"
     }
 
     data class SetWallpaper(
@@ -189,6 +206,15 @@ object ConfigDiffer {
                     wallpaperBlur = wallpaperBlur,
                     searchWallpaperBlur = searchWallpaperBlur,
                 )
+            }
+        }
+
+        desired.appearance?.theme?.let { theme ->
+            val mode = theme.mode?.takeIf { it != current.themeMode }
+            // A custom scheme on the device (null) differs from every slug.
+            val colors = theme.colors?.takeIf { it != current.themeColors }
+            if (mode != null || colors != null) {
+                mutations += ConfigMutation.SetTheme(mode = mode, colors = colors)
             }
         }
 

@@ -66,6 +66,8 @@ fun ConfigState.toLauncherConfig(): LauncherConfig {
             // Only while a managed wallpaper is in effect; a generated config
             // without the key must compare equal to the read-back.
             wallpaper = wallpaperImage?.let { WallpaperConfig(image = it, target = wallpaperTarget) },
+            // Complete, except a colour scheme a person made, which has no slug.
+            theme = ThemeConfig(mode = themeMode, colors = themeColors),
         ),
         home = HomeConfig(
             searchBar = SearchBarConfig(position = searchBarPosition),
