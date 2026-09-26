@@ -58,6 +58,7 @@ log() { printf ':: %s\n' "$*"; }
 die() { printf 'x %s\n' "$*" >&2; exit 1; }
 names=()
 cleanup() {
+  local rc=$?
   rm -rf "$WORK"
   # Back to `clean` before the lock goes, also after a failure: the next
   # user of the instance must not find a build of ours installed. If that
@@ -84,6 +85,9 @@ cleanup() {
     [ "${#left[@]}" -eq 0 ] || printf 'x snapshots left on %s, delete them by hand: %s\n' "$SERIAL" "${left[*]}" >&2
   fi
   [ "$HELD_BEFORE" = 1 ] || [ "$keep_lock" = 1 ] || "$LOCK" release "$LOCK_OWNER" "$SERIAL" >/dev/null 2>&1 || true
+  # A run that leaves the instance dirty and locked has not succeeded,
+  # whatever it measured; an earlier failure keeps its own status.
+  if [ "$keep_lock" = 1 ] && [ "$rc" -eq 0 ]; then exit 1; fi
 }
 trap cleanup EXIT
 # shellcheck source=lib/grid-device.sh
