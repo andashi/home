@@ -3,6 +3,7 @@ package de.mm20.launcher2.ui.launcher.search.common.grid
 import de.mm20.launcher2.ui.launcher.glass.resultHighlight
 import de.mm20.launcher2.ui.component.SquircleShape
 import de.mm20.launcher2.ui.launcher.glass.LocalClearIcons
+import de.mm20.launcher2.icons.LauncherIcon
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.MutableTransitionState
@@ -50,6 +51,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntRect
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.roundToIntRect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -129,6 +131,7 @@ fun GridItem(
         val windowSize = LocalWindowSize.current
 
         if (item is Application) {
+            val clearTransition = LocalClearIcons.current
             HandleEnterHomeTransition {
                 val cn = item.componentName
                 if (
@@ -139,9 +142,7 @@ fun GridItem(
                     return@HandleEnterHomeTransition EnterHomeTransitionParams(
                         bounds
                     ) { _, _ ->
-                        ShapedLauncherIcon(
-                            size = LocalGridSettings.current.iconSize.dp,
-                            icon = { icon })
+                        EnterHomeIcon(clearTransition, LocalGridSettings.current.iconSize.dp, icon = { icon })
                     }
                 }
                 return@HandleEnterHomeTransition null
@@ -350,4 +351,17 @@ private fun lerp(start: Float, stop: Float, fraction: Float): Float {
 
 private fun lerp(start: Int, stop: Int, fraction: Float): Int {
     return start + (fraction * (stop - start)).toInt()
+}
+
+/**
+ * The icon an app shrinks back into on its way home (the enter-home
+ * transition). The host composes it outside the block that makes launcher
+ * icons Clear, so it carries its item's own setting, as the popups do: an
+ * icon must not change shape mid-animation.
+ */
+@Composable
+internal fun EnterHomeIcon(clear: Boolean, size: Dp, icon: () -> LauncherIcon?) {
+    CompositionLocalProvider(LocalClearIcons provides clear) {
+        ShapedLauncherIcon(size = size, icon = icon)
+    }
 }
