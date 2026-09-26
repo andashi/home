@@ -45,6 +45,10 @@ jobs:
         run: e2e/check-helpers.test.sh
       - name: e2e scripts share one copy of each helper
         run: e2e/check-helpers.sh
+      - name: e2e wait guard recognises every counting loop
+        run: e2e/check-waits.test.sh
+      - name: e2e scripts wait against deadlines, not round counts
+        run: e2e/check-waits.sh
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
