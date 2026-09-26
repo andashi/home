@@ -25,6 +25,12 @@ case_ indented-plain-assignment fail '  LOCK_OWNER="x@$SERIAL#$$"'
 case_ exported-on-a-later-line pass 'LOCK_OWNER="x@$SERIAL#$$"
 export LOCK_OWNER
 emulator/run.sh stop'
+# The owner has to be in the environment when run.sh starts, not somewhere
+# in the file.
+case_ run-sh-before-the-export fail '(cd "$GOS_REPO" && emulator/run.sh start)
+export LOCK_OWNER="x@$SERIAL#$$"'
+case_ export-before-run-sh pass 'export LOCK_OWNER="x@$SERIAL#$$"
+"$RUN" start'
 case_ run-sh-without-an-owner fail '(cd "$GOS_REPO" && SERIAL="$SERIAL" emulator/run.sh stop)'
 case_ no-run-sh-no-owner pass 'adb -s "$SERIAL" shell true'
 case_ comment-mentions-run-sh pass '# emulator/run.sh is started by the caller'
