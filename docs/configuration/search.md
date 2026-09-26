@@ -33,7 +33,7 @@
 | `search.allApps` | All apps while the query is empty; off, an empty query shows only favorites | boolean | `true` |
 | `search.layout` | App results as icons in the home grid's columns, or as a list | `grid`, `list` | `grid` |
 | `search.labels` | Labels under app icons in search (the dock never has labels) | boolean | `true` |
-| `search.contacts` | Contacts in the results. It grants no permission: without it, search shows a banner that asks | boolean | `true` |
+| `search.contacts` | Contacts in the results. It grants no permission: in a profile without `READ_CONTACTS` the key stays `true` and reads back `true`, the reload report carries a `permission-missing` warning (it reflects the permission when the file was reloaded), and search shows a banner with Grant and Turn off (Turn off writes `false` into the file) | boolean | `true` |
 | `search.shortcuts` | App shortcuts in the results | boolean | `true` |
 | `search.filterBar` | The filter bar above the keyboard (apps, shortcuts, contacts) | boolean | `true` |
 | `search.openKeyboard` | The keyboard opens when search opens | boolean | `true` |

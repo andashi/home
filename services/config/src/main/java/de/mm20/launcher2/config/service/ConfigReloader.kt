@@ -34,6 +34,7 @@ class ConfigReloader(
     private val reportStore: ReloadReportStore,
     private val lock: ConfigFileLock = ConfigFileLock(),
     private val baselineStore: AppliedBaselineStore? = null,
+    private val capabilities: CapabilityDiagnostics = CapabilityDiagnostics.None,
 ) {
 
     /**
@@ -165,12 +166,18 @@ class ConfigReloader(
             .distinct()
             .filter { section -> failedSections.none { it.isInSection(section) } }
 
+        // A failure covers a key when the key lies inside the failed path; one
+        // with no path is the whole apply's, and covers every key.
+        val capabilityDiagnostics = capabilities.of(config, before) { keyPath ->
+            failedSections.any { it.isEmpty() || keyPath.isInSection(it) }
+        }
+
         recordBaseline(configSha256, before, applied)
         return persist(
             ReloadReport(
                 success = applyDiagnostics.none { it.severity == Severity.Error },
                 schemaVersion = config.schemaVersion,
-                diagnostics = parseResult.diagnostics + applyDiagnostics,
+                diagnostics = parseResult.diagnostics + applyDiagnostics + capabilityDiagnostics,
                 appliedMutations = appliedSections,
                 configSha256 = configSha256,
                 trigger = trigger,

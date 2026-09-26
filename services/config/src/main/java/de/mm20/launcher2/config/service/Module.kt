@@ -2,6 +2,8 @@ package de.mm20.launcher2.config.service
 
 import de.mm20.launcher2.glass.GlassBackdropSource
 import de.mm20.launcher2.homegrid.HomeGridWriteBack
+import de.mm20.launcher2.permissions.PermissionGroup
+import de.mm20.launcher2.permissions.PermissionsManager
 import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.module
 
@@ -45,7 +47,14 @@ val configModule = module {
     // write-back must serialize on it.
     single { ConfigFileLock() }
     single { AppliedBaselineStore(androidContext()) }
-    single { ConfigReloader(get(), get(), get(), get()) }
+    // What the file asks for that this profile cannot do is reported (#140).
+    single {
+        val permissions = get<PermissionsManager>()
+        ConfigReloader(
+            get(), get(), get(), get(),
+            capabilities = CapabilityDiagnostics { permissions.checkPermissionOnce(PermissionGroup.Contacts) },
+        )
+    }
     single { ConfigWriteBack(androidContext(), get(), get(), get(), get()) }
     single { GridWriteBack(androidContext(), get(), get(), get(), get(), engine = get()) }
     // What the grid's edit mode calls on Done (data/homegrid's interface).

@@ -45,6 +45,7 @@ dependencies {
     implementation(project(":core:grid"))
     implementation(project(":core:glass"))
     implementation(project(":core:preferences"))
+    implementation(project(":core:permissions"))
     implementation(project(":core:profiles"))
     implementation(project(":data:applications"))
     implementation(project(":data:searchable"))
