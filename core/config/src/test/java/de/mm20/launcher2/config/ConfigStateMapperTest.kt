@@ -160,6 +160,24 @@ class ConfigStateMapperTest {
         assertTrue(serialized, !serialized.contains("transparency"))
     }
 
+    /**
+     * `appearance.theme` reads back complete; a custom colour scheme the file
+     * cannot name reads back without `colors`, so write-back leaves the key
+     * as the file wrote it (#3 slice 3).
+     */
+    @Test
+    fun `the theme reads back, a custom colour scheme without colors`() {
+        assertEquals(ThemeConfig(ThemeMode.System, ThemeColors.System), ConfigState().toLauncherConfig().appearance?.theme)
+        assertEquals(
+            ThemeConfig(ThemeMode.Dark, ThemeColors.HighContrast),
+            ConfigState(themeMode = ThemeMode.Dark, themeColors = ThemeColors.HighContrast).toLauncherConfig().appearance?.theme,
+        )
+        val custom = ConfigState(themeColors = null).toLauncherConfig()
+        assertEquals(ThemeConfig(ThemeMode.System, null), custom.appearance?.theme)
+        val served = ConfigParser.json.encodeToString(LauncherConfig.serializer(), custom)
+        assertTrue(served, !served.contains("\"colors\""))
+    }
+
     /** The documented defaults (#73, #24) are what an empty state reads back as. */
     @Test
     fun `the glass defaults are the documented ones`() {
