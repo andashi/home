@@ -121,6 +121,18 @@ S
 verdict quiet "a deadline written the other way round (control)" <<'S'
 while [ "$deadline" -gt "$SECONDS" ]; do sleep 1; check && break; done
 S
+verdict caught "a loop that does not start its own line" <<'S'
+ready; for i in $(seq 3); do sleep 1; done
+S
+verdict caught "until with a while-style deadline test" <<'S'
+until [ "$SECONDS" -lt "$deadline" ]; do sleep 1; done
+S
+verdict caught "a heredoc the guard never sees close" <<'S'
+cat <<END-1
+text
+END-1
+for i in $(seq 3); do sleep 1; done
+S
 verdict quiet "a marked repetition loop" <<'S'
 # not a wait: measurement repetitions
 for run in $(seq "$RUNS"); do measure; sleep 2; done
