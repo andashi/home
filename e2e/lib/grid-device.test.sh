@@ -597,5 +597,44 @@ grant_names_the_hung_grant() {
   grep -q "could not grant the HOME role" <<<"$out"
 }
 check "grant_home_role names the hung grant, not the role holder" grant_names_the_hung_grant
+# The report about a push is the one with its hash that was not there before
+# the push, whatever caused the reload: the trigger names the cause, not the
+# push. l4-config waited for "file-watcher" and missed it, because the grid's
+# first measurement reloaded the same file 1.2 s later and replaced the report
+# (ADR 0003, section 4).
+mkdir -p "$WORK/reports"
+cat > "$WORK/reports/adb" <<EOF
+#!/usr/bin/env bash
+case "\$*" in
+  *"content query"*"/diagnostics"*) cat "$WORK/reports/now" ;;
+esac
+EOF
+chmod +x "$WORK/reports/adb"
+serve_report() { printf 'Row: 0 json=%s\n' "$1" > "$WORK/reports/now"; }
+push_report_found() { # $1 = report before the push, $2 = report now, $3 = hash pushed
+  serve_report "$2"
+  ( PATH="$WORK/reports:$PATH"; wait_push_report "$1" "$3" 3 test ) >/dev/null 2>&1
+}
+takes_a_report_whatever_caused_it() {
+  push_report_found '{"configSha256":"a","trigger":"broadcast"}' '{"configSha256":"a","trigger":"grid-measured"}' a
+}
+check "wait_push_report takes the push's report whatever caused the reload" takes_a_report_whatever_caused_it
+takes_the_first_report() {
+  push_report_found 'null' '{"configSha256":"a","trigger":"startup-check"}' a
+}
+check "wait_push_report takes the first report there is" takes_the_first_report
+refuses_the_report_from_before() {
+  ! push_report_found '{"configSha256":"a","trigger":"broadcast"}' '{"configSha256":"a","trigger":"broadcast"}' a
+}
+check "wait_push_report does not take the report from before the push" refuses_the_report_from_before
+refuses_another_files_report() {
+  ! push_report_found '{"configSha256":"a","trigger":"broadcast"}' '{"configSha256":"b","trigger":"file-watcher"}' a
+}
+check "wait_push_report does not take another file's report" refuses_another_files_report
+report_now_is_null_without_one() {
+  printf 'Error: no report\n' > "$WORK/reports/now"
+  [ "$( PATH="$WORK/reports:$PATH"; report_now )" = null ]
+}
+check "report_now says null when there is no report yet" report_now_is_null_without_one
 
 exit "$failed"
