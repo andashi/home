@@ -245,6 +245,27 @@ class GridLayoutTest {
         )
     }
 
+    // A fit is reported only for an item that stays: one the engine drops has
+    // no effective size to claim (#170 review).
+    @Test
+    fun `a fitted item dropped for crossing the fold reports the drop, not a size`() {
+        val items = listOf(item("wide", 0, 0, 7, 1, limits = SizeLimits(1, 1, 6, 1)))
+        val result = GridLayout.normalize(Fold, items)
+        assertEquals(emptyList<GridItem>(), result.items)
+        assertEquals(listOf(LayoutIssue.CrossesFold("wide")), result.issues)
+    }
+
+    @Test
+    fun `a fitted item dropped for want of room reports the drop, not a size`() {
+        val items = listOf(
+            item("full", 0, 0, 4, 6),
+            item("late", 0, 0, 2, 9),
+        )
+        val result = GridLayout.normalize(Phone, items)
+        assertEquals(listOf("full"), result.items.map { it.id })
+        assertEquals(listOf(LayoutIssue.Overlap("full", "late"), LayoutIssue.Overflow("late")), result.issues)
+    }
+
     @Test
     fun `normalize leaves a span at the widget's maximum alone`() {
         val items = listOf(item("dock", 3, 0, 1, 6, limits = SizeLimits(1, 1, 4, 6)))

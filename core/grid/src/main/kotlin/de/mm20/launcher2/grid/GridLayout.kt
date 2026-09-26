@@ -172,7 +172,6 @@ object GridLayout {
                 issues += LayoutIssue.OutOfBounds(item.id, requested)
                 continue
             }
-            issues += fit.issues
             val y = requested.y.coerceIn(0, spec.rows - h)
             val x = nudgeClearOfFold(spec, requested.x.coerceIn(0, spec.columns - w), w, item.mayCrossFold)
             if (x == null) {
@@ -192,6 +191,10 @@ object GridLayout {
                 }
                 span = below
             }
+            // An issue that names an effective state is reported only for an
+            // item that ends up in the layout; one that is dropped reports
+            // why it was dropped, and nothing else (#170 review).
+            issues += fit.issues
             result += if (span == item.span) item else item.copy(span = span)
         }
         return LayoutResult(result, issues)
