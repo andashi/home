@@ -150,7 +150,7 @@ class ConfigWriteBackTest {
         withTimeout(10_000) { while (real.store.readState().themeColors != null) delay(20) }
     }
 
-    private fun WriteBackResult.keptColors(report: ReloadReport?) =
+    private fun keptColors(report: ReloadReport?) =
         report?.diagnostics?.any {
             it.code == ConfigWriteBack.SkipCodePrefix + "colors-custom" && it.message.contains("appearance.theme.colors")
         } == true
@@ -180,7 +180,7 @@ class ConfigWriteBackTest {
 
         assertEquals(WriteBackResult.Unchanged, result)
         assertEquals(themeFile, file.readText())
-        assertTrue(reportStore.read()?.diagnostics.toString(), result.keptColors(reportStore.read()))
+        assertTrue(reportStore.read()?.diagnostics.toString(), keptColors(reportStore.read()))
     }
 
     @Test
@@ -193,7 +193,7 @@ class ConfigWriteBackTest {
 
         assertTrue(result.toString(), result is WriteBackResult.Written)
         assertEquals(themeFile.replace("\"mode\": \"system\"", "\"mode\": \"light\""), file.readText())
-        assertTrue(reportStore.read()?.diagnostics.toString(), result.keptColors(reportStore.read()))
+        assertTrue(reportStore.read()?.diagnostics.toString(), keptColors(reportStore.read()))
     }
 
     /** The warning describes the device as it is now: back on a built-in scheme, it goes (#183 review). */
@@ -202,7 +202,7 @@ class ConfigWriteBackTest {
         applied(themeFile)
         ownColorSchemeOnDevice()
         writeBack.write()
-        assertTrue(WriteBackResult.Unchanged.keptColors(reportStore.read()))
+        assertTrue(keptColors(reportStore.read()))
 
         GlobalContext.get().get<UiSettings>().setColorsId(BuiltInColorSchemes.System)
         withTimeout(10_000) { while (real.store.readState().themeColors != ThemeColors.System) delay(20) }
@@ -210,7 +210,7 @@ class ConfigWriteBackTest {
 
         assertEquals(WriteBackResult.Unchanged, result)
         assertEquals(themeFile, file.readText())
-        assertTrue(reportStore.read()?.diagnostics.toString(), !result.keptColors(reportStore.read()))
+        assertTrue(reportStore.read()?.diagnostics.toString(), !keptColors(reportStore.read()))
     }
 
     /**
@@ -230,7 +230,7 @@ class ConfigWriteBackTest {
         assertEquals("grid-unmanaged", (result as WriteBackResult.Skipped).code)
         val codes = reportStore.read()!!.diagnostics.map { it.code }
         assertTrue(codes.toString(), ConfigWriteBack.SkipCodePrefix + "grid-unmanaged" in codes)
-        assertTrue(codes.toString(), result.keptColors(reportStore.read()))
+        assertTrue(codes.toString(), keptColors(reportStore.read()))
     }
 
     @Test
@@ -243,7 +243,7 @@ class ConfigWriteBackTest {
 
         assertEquals(WriteBackResult.Unchanged, result)
         assertEquals(modeOnly, file.readText())
-        assertTrue(reportStore.read()?.diagnostics.toString(), !result.keptColors(reportStore.read()))
+        assertTrue(reportStore.read()?.diagnostics.toString(), !keptColors(reportStore.read()))
     }
 
     @Test

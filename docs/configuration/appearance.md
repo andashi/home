@@ -151,11 +151,8 @@ device has.
 | `appearance.theme.mode` | `light`, `dark`, or `system` to follow the system's dark theme | enum | `system` |
 | `appearance.theme.colors` | The launcher's built-in colour scheme: `system` follows the system palette, `black-and-white` and `high-contrast` replace it | enum | `system` |
 
-`system` for `colors` is the zone's own palette: each zone gets its colour
-from the system (its Monet seed), and the launcher follows it. A file names
-one of the built-in schemes; it cannot define a palette. `black-and-white`
-and `high-contrast` replace the zone's palette in the launcher's own
-colours.
+Each zone's palette comes from the system (its Monet seed). A file picks one
+of the built-in schemes; it cannot define a palette.
 
 On the home screen the glass is the dominant visual element by design
 ([ADR 0004](../architecture/adr/0004-liquid-glass-design.md)): a surface is
