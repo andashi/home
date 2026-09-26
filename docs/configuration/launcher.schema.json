@@ -112,6 +112,46 @@
                     },
                     "additionalProperties": false
                 },
+                "systemBars": {
+                    "type": "object",
+                    "properties": {
+                        "statusBar": {
+                            "type": "object",
+                            "properties": {
+                                "hidden": {
+                                    "type": "boolean"
+                                },
+                                "icons": {
+                                    "type": "string",
+                                    "enum": [
+                                        "auto",
+                                        "light",
+                                        "dark"
+                                    ]
+                                }
+                            },
+                            "additionalProperties": false
+                        },
+                        "navigationBar": {
+                            "type": "object",
+                            "properties": {
+                                "hidden": {
+                                    "type": "boolean"
+                                },
+                                "icons": {
+                                    "type": "string",
+                                    "enum": [
+                                        "auto",
+                                        "light",
+                                        "dark"
+                                    ]
+                                }
+                            },
+                            "additionalProperties": false
+                        }
+                    },
+                    "additionalProperties": false
+                },
                 "transparency": {
                     "deprecated": true,
                     "description": "Accepted and ignored: replaced by appearance.glass (#24); the file no longer feeds the transparency scheme"
@@ -131,6 +171,9 @@
                                 "top",
                                 "bottom"
                             ]
+                        },
+                        "fixed": {
+                            "type": "boolean"
                         }
                     },
                     "additionalProperties": false
@@ -353,6 +396,9 @@
                         }
                     },
                     "additionalProperties": false
+                },
+                "lockRotation": {
+                    "type": "boolean"
                 }
             },
             "additionalProperties": false

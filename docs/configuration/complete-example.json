@@ -13,6 +13,10 @@
     }
   },
   "appearance": {
+    "systemBars": {
+      "statusBar": { "hidden": true, "icons": "dark" },
+      "navigationBar": { "hidden": true, "icons": "light" }
+    },
     "glass": {
       "blur": 12.0,
       "tint": 0.3,
@@ -28,8 +32,10 @@
   },
   "home": {
     "searchBar": {
-      "position": "bottom"
+      "position": "bottom",
+      "fixed": true
     },
+    "lockRotation": true,
     "favorites": [
       {
         "packageName": "com.example.dialer"

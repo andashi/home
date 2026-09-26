@@ -18,6 +18,15 @@ data class ConfigState(
     val glassWallpaperBlur: Boolean = GlassDefaults.WallpaperBlur,
     val glassSearchWallpaperBlur: Boolean = GlassDefaults.SearchWallpaperBlur,
     val searchBarPosition: SearchBarPosition = SearchBarPosition.Top,
+    /** `home.searchBar.fixed` (#3 slice 1). */
+    val searchBarFixed: Boolean = false,
+    /** `appearance.systemBars` (#3 slice 1). */
+    val statusBarHidden: Boolean = false,
+    val statusBarIcons: SystemBarIcons = SystemBarIcons.Auto,
+    val navigationBarHidden: Boolean = false,
+    val navigationBarIcons: SystemBarIcons = SystemBarIcons.Auto,
+    /** `home.lockRotation` (#3 slice 1). */
+    val rotationLocked: Boolean = false,
     /** `search` (#91). */
     val search: SearchState = SearchState(),
     /** The manually pinned apps, in order: `home.favorites`. */
@@ -129,6 +138,28 @@ sealed class ConfigMutation {
         override val section = "search.actions"
     }
 
+    /** `home.searchBar.fixed`; the same section as the position, a mutation of its own. */
+    data class SetSearchBarFixed(
+        val fixed: Boolean,
+    ) : ConfigMutation() {
+        override val section = "home.searchBar"
+    }
+
+    data class SetSystemBars(
+        val statusHidden: Boolean? = null,
+        val statusIcons: SystemBarIcons? = null,
+        val navigationHidden: Boolean? = null,
+        val navigationIcons: SystemBarIcons? = null,
+    ) : ConfigMutation() {
+        override val section = "appearance.systemBars"
+    }
+
+    data class SetRotationLock(
+        val locked: Boolean,
+    ) : ConfigMutation() {
+        override val section = "home.lockRotation"
+    }
+
     data class SetWidgetsEnabled(
         val enabled: Boolean,
     ) : ConfigMutation() {
@@ -238,6 +269,24 @@ object ConfigDiffer {
             if (favorites != current.favorites) {
                 mutations += ConfigMutation.SetFavorites(favorites)
             }
+        }
+
+        desired.home?.searchBar?.fixed?.let { fixed ->
+            if (fixed != current.searchBarFixed) mutations += ConfigMutation.SetSearchBarFixed(fixed)
+        }
+
+        desired.appearance?.systemBars?.let { bars ->
+            val changed = ConfigMutation.SetSystemBars(
+                statusHidden = bars.statusBar?.hidden?.takeIf { it != current.statusBarHidden },
+                statusIcons = bars.statusBar?.icons?.takeIf { it != current.statusBarIcons },
+                navigationHidden = bars.navigationBar?.hidden?.takeIf { it != current.navigationBarHidden },
+                navigationIcons = bars.navigationBar?.icons?.takeIf { it != current.navigationBarIcons },
+            )
+            if (changed != ConfigMutation.SetSystemBars()) mutations += changed
+        }
+
+        desired.home?.lockRotation?.let { locked ->
+            if (locked != current.rotationLocked) mutations += ConfigMutation.SetRotationLock(locked)
         }
 
         desired.home?.widgets?.enabled?.let { enabled ->

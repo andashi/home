@@ -1059,4 +1059,50 @@ class ConfigParserTest {
         assertTrue(result.isSuccess)
         assertEquals(listOf("icons.badges.notification"), result.diagnostics.filter { it.code == "unknown-key" }.map { it.path })
     }
+
+    // ---- home screen and system bars (#3 slice 1, PR B) ----
+
+    @Test
+    fun `every home and system bar key parses, all away from its default, with nothing to report`() {
+        val result = ConfigParser.parse(
+            """{ "schemaVersion": 2,
+                 "home": { "searchBar": { "fixed": true }, "lockRotation": true },
+                 "appearance": { "systemBars": {
+                   "statusBar": { "hidden": true, "icons": "dark" },
+                   "navigationBar": { "hidden": true, "icons": "light" } } } }"""
+        )
+
+        assertTrue(result.isSuccess)
+        assertEquals(emptyList<Diagnostic>(), result.diagnostics)
+        assertEquals(true, result.config?.home?.searchBar?.fixed)
+        assertEquals(true, result.config?.home?.lockRotation)
+        assertEquals(
+            SystemBarsConfig(
+                statusBar = StatusBarConfig(hidden = true, icons = SystemBarIcons.Dark),
+                navigationBar = NavigationBarConfig(hidden = true, icons = SystemBarIcons.Light),
+            ),
+            result.config?.appearance?.systemBars,
+        )
+    }
+
+    /** Each bar names itself: the same enum at two paths, and a wrong value says which one. */
+    @Test
+    fun `an unknown bar icon colour fails with its own bar in the message`() {
+        for (bar in listOf("statusBar", "navigationBar")) {
+            val result = ConfigParser.parse(
+                """{ "schemaVersion": 2, "appearance": { "systemBars": { "$bar": { "icons": "purple" } } } }"""
+            )
+
+            assertFalse(bar, result.isSuccess)
+            assertTrue(bar, result.diagnostics.any { it.code == "decode-failed" && it.message.contains("appearance.systemBars.$bar.icons") })
+        }
+    }
+
+    @Test
+    fun `a misspelled key inside a system bar is reported at its path`() {
+        val result = ConfigParser.parse("""{ "schemaVersion": 2, "appearance": { "systemBars": { "statusBar": { "hide": true } } } }""")
+
+        assertTrue(result.isSuccess)
+        assertEquals(listOf("appearance.systemBars.statusBar.hide"), result.diagnostics.filter { it.code == "unknown-key" }.map { it.path })
+    }
 }
