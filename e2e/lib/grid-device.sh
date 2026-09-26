@@ -142,17 +142,21 @@ wait_report() { # $1 = jq filter, $2 = timeout (s), $3 = description
   die "timed out (${2}s) waiting for report: $3"
 }
 
+# adb's own status decides, not a pipe's: without pipefail in the caller,
+# `adb_t ... | tr` took tr's status, and a timed-out write passed (#175 review).
 write_config() { # $1 = local file
   local out
-  out="$(adb_t shell content write --uri "$INGEST_URI" < "$1" 2>&1 | tr -d '\r')" \
-    || { printf '%s\n' "$out" >&2; die "content write failed"; }
+  out="$(adb_t shell content write --uri "$INGEST_URI" < "$1" 2>&1)" \
+    || { printf '%s\n' "${out//$'\r'/}" >&2; die "content write failed"; }
+  out="${out//$'\r'/}"
   [ -z "$out" ] || { printf '%s\n' "$out" >&2; die "content write reported an error"; }
 }
 
 reload_broadcast() {
   local out
-  out="$(adb_t shell am broadcast -n "$RECEIVER" -a "$ACTION" 2>&1 | tr -d '\r')" \
-    || { printf '%s\n' "$out" >&2; die "am broadcast failed"; }
+  out="$(adb_t shell am broadcast -n "$RECEIVER" -a "$ACTION" 2>&1)" \
+    || { printf '%s\n' "${out//$'\r'/}" >&2; die "am broadcast failed"; }
+  out="${out//$'\r'/}"
   case "$out" in
     *"Broadcast completed"*) ;;
     *) printf '%s\n' "$out" >&2; die "am broadcast did not complete" ;;
