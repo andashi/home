@@ -529,4 +529,16 @@ timeout_keeps_the_last_report() {
 }
 check "a wait_report timeout prints the last report seen, not what a failed query left" timeout_keeps_the_last_report
 
+# No round starts after an outer deadline has passed: the time is checked
+# again after the pause, not only before it (#179 review).
+no_round_starts_late() {
+  local deadline_at starts=()
+  record() { echo "$SECONDS" >> "$WORK/starts"; sleep 1; return 1; }
+  rm -f "$WORK/starts"
+  deadline_at=$((SECONDS + 2))
+  ( ADB_DEADLINE=$deadline_at; retry_rounds 5 1 record ) || true
+  while read -r t; do [ "$t" -le "$deadline_at" ] || return 1; done < "$WORK/starts"
+}
+check "retry_rounds starts no round after an outer deadline" no_round_starts_late
+
 exit "$failed"

@@ -29,6 +29,7 @@ case "$*" in
   *"dumpsys window windows"*)
     if [ -e "$work/dumpfail" ] && [ -e "$work/stopped" ]; then exit 1; fi
     if [ -e "$work/dumphang" ] && [ -e "$work/stopped" ]; then sleep 60; fi
+    if [ -e "$work/firstfail" ]; then exit 1; fi
     cat "$work/windows" ;;
   *"am force-stop "*) for a in "$@"; do pkg="$a"; done; echo "$pkg" >> "$work/stopped"
     [ -e "$work/sticky" ] || { grep -v "Application Not Responding: $pkg}" "$work/windows" > "$work/w2" || true; mv "$work/w2" "$work/windows"; } ;;
@@ -44,7 +45,7 @@ export PATH="$WORK/bin:$PATH"
 export ANR_RECHECK_SECONDS=3 ANR_RECHECK_SLEEP=0
 
 windows() { # $@ = "Application Not Responding: <pkg>" entries, in z-order
-  : > "$WORK/windows"; rm -f "$WORK/stopped" "$WORK/sticky" "$WORK/dumphang"
+  : > "$WORK/windows"; rm -f "$WORK/stopped" "$WORK/sticky" "$WORK/dumphang" "$WORK/firstfail"
   printf '  Window #1 Window{1 u0 com.example/com.example.Main}:\n' >> "$WORK/windows"
   local i=2 w
   for w in "$@"; do printf '  Window #%s Window{%s u0 %s}:\n' "$i" "$i" "$w" >> "$WORK/windows"; i=$((i + 1)); done
@@ -122,6 +123,16 @@ sleep_is_capped_by_the_deadline() {
   [ $((SECONDS - start)) -le 4 ]
 }
 check "the re-check's pause cannot carry it past its deadline" sleep_is_capped_by_the_deadline
+
+# A first read of the window list that fails is said out loud, never taken
+# for "no ANR window": the dialog could still be there (#179 review).
+a_failed_first_read_is_reported() {
+  windows "Application Not Responding: com.android.launcher3"
+  : > "$WORK/firstfail"
+  clear_stock_launcher_anr > "$WORK/log" 2>&1 || return 1
+  grep -qi "could not read" "$WORK/log"
+}
+check "a failed first window read is reported, not taken for no ANR" a_failed_first_read_is_reported
 
 # The count, not the colour: a suite that reports only its passes hides the
 # checks that never ran (AGENTS.md, test policy).
