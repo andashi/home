@@ -13,8 +13,8 @@ import de.mm20.launcher2.searchactions.builders.CustomIntentActionBuilder
 import de.mm20.launcher2.searchactions.builders.CustomWebsearchActionBuilder
 import de.mm20.launcher2.searchactions.builders.SearchActionBuilder
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 
@@ -36,8 +36,13 @@ interface SearchActionStore {
     suspend fun replaceAndRead(actions: List<SearchActionConfig>, basePath: String): Pair<List<Diagnostic>, List<SearchActionConfig>> =
         replace(actions, basePath) to read()
 
-    /** Emits once on collection and then whenever the actions change, for write-back to follow (#3 slice 4). */
-    fun changes(): Flow<Unit> = emptyFlow()
+    /**
+     * Emits once on collection and then whenever the actions change, for
+     * write-back to follow (#3 slice 4). The default emits once and never
+     * again (#167): nothing emitted at all would hold back every write-back
+     * the store combines this into.
+     */
+    fun changes(): Flow<Unit> = flowOf(Unit)
 }
 
 /**

@@ -33,7 +33,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.flow.combine
 import de.mm20.launcher2.config.Profile as ConfigProfile
 
 /**
@@ -76,19 +76,25 @@ class DefaultConfigStore(
     /**
      * Every source [readState] reads, each passing on only a change of what
      * the config sees of it - the favorites' keys, not a launch count that
-     * moved; the settings the config covers, not every other one - and each
-     * emitting once on collection, so a change made before anyone collected
-     * is not lost. Nothing here reads the whole state: an app launch or an
-     * unrelated setting costs nothing. The wallpaper is not a source: a
-     * wallpaper picked on the device has no upload name, so it cannot be
-     * written back.
+     * moved; the settings the config covers, not every other one. Combined,
+     * not merged: they emit once when every source has its first value, so
+     * a change made before anyone collected is not lost, and then once per
+     * change of any. Merged, each source's first value was a write-back pass
+     * of its own - five per start, each hashing the managed wallpaper
+     * (#167). Every source emits its current value on collection (DataStore,
+     * Room); one that never did would hold write-back back entirely, which
+     * ConfigWriteBackTest's "changes arrive on collection" guards. Nothing
+     * here reads the whole state: an app launch or an unrelated setting
+     * costs nothing. The wallpaper is not a source: a wallpaper picked on
+     * the device has no upload name, so it cannot be written back.
      */
-    override fun changes(): Flow<Unit> = merge(
-        settings.changes(),
-        favoriteApps().map { apps -> apps.map { it.key } }.distinctUntilChanged().map { },
-        searchActions.changes(),
-        *GridLayouts.All.map { layout -> homeGridRepository.observe(layout).distinctUntilChanged().map { } }.toTypedArray(),
-    )
+    override fun changes(): Flow<Unit> = combine(
+        listOf(
+            settings.changes(),
+            favoriteApps().map { apps -> apps.map { it.key } }.distinctUntilChanged().map { },
+            searchActions.changes(),
+        ) + GridLayouts.All.map { layout -> homeGridRepository.observe(layout).distinctUntilChanged().map { } },
+    ) { }
 
     override suspend fun readState(): ConfigState {
         val settingsState = settings.readState()

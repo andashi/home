@@ -21,6 +21,9 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
+import kotlinx.coroutines.flow.first
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -63,6 +66,18 @@ class AndroidSearchActionStoreTest {
             component,
             IntentFilter(Intent.ACTION_SEARCH).apply { addCategory(Intent.CATEGORY_DEFAULT) },
         )
+    }
+
+    /**
+     * #167: write-back combines this with its other sources, and combine
+     * waits for every source's first value - a changes() that never emitted
+     * would switch write-back off entirely, silently, not just lose this
+     * source's changes. Its KDoc promises an emission on collection; this
+     * checks it.
+     */
+    @Test
+    fun `changes emits on collection`() = runBlocking {
+        withTimeout(10_000) { store.changes().first() }
     }
 
     @Test

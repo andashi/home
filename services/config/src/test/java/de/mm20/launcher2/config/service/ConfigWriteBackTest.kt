@@ -20,6 +20,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -254,15 +255,39 @@ class ConfigWriteBackTest {
         }
     }
 
+    /**
+     * #167: a start is one write-back pass, not one per source. Each source
+     * the store follows - settings, favorites, search actions, every grid
+     * layout - emits its first value on collection; followed one by one, a
+     * start made one full pass (file read, state read, wallpaper hash) for
+     * each of them.
+     */
+    @Test
+    fun `a start asks for one write-back, not one per source`() = runBlocking {
+        applied(searchFile)
+        val seen = Channel<Unit>(Channel.UNLIMITED)
+        val collecting = launch(Dispatchers.Default) { real.store.changes().collect { seen.send(Unit) } }
+        try {
+            withTimeout(10_000) { seen.receive() }
+            // Every source has emitted its first value well within this.
+            delay(1_000)
+            var more = 0
+            while (seen.tryReceive().isSuccess) more++
+            assertEquals("emissions after the first on start", 0, more)
+        } finally {
+            collecting.cancel()
+        }
+    }
+
     @Test
     fun `a setting changed on the device reaches the file without being asked`() = runBlocking {
         applied(searchFile)
-        // Every result, not the last. The trigger's first passes, one per
-        // source it merges, keep arriving for a while after it starts, so a
-        // change made meanwhile gives a Written followed within a millisecond
-        // by an Unchanged pass, and lastResult, a StateFlow, can drop the
-        // Written before a collector sees it. It did under CI load (3 in 40
-        // locally with every core busy); the file was right each time.
+        // Every result, not the last. A Written can be followed within a
+        // millisecond by an Unchanged pass - when the trigger still made one
+        // pass per source at start (#167), always so - and lastResult, a
+        // StateFlow, can drop the Written before a collector sees it. It did
+        // under CI load (3 in 40 locally with every core busy); the file was
+        // right each time.
         val results = Channel<WriteBackResult>(Channel.UNLIMITED)
         val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
         try {
