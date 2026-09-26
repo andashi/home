@@ -154,8 +154,14 @@ wait_report() { # $1 = jq filter, $2 = timeout (s), $3 = description
 # before the push, never the one with an expected trigger (ADR 0003, section
 # 4: a measurement reload can replace the watcher's report). A step that
 # claims a cause asserts the trigger itself, with wait_report.
-report_now() { # the current report, or null before the first one
-  query_json diagnostics 2>/dev/null || echo null
+# The provider answers null itself before the first report; a failed query is
+# retried and then fails, never read as null, or an older report of the same
+# hash would pass as the push's.
+REPORT_NOW=""
+report_grab() { REPORT_NOW="$(query_json diagnostics 2>/dev/null)"; }
+report_now() { # the current report, or the provider's null before the first one
+  retry_for "${REPORT_NOW_TIMEOUT:-10}" report_grab || die "could not read the report before a push"
+  printf '%s' "$REPORT_NOW"
 }
 wait_push_report() { # $1 = report_now before the push, $2 = sha256 pushed, $3 = timeout (s), $4 = description
   wait_report ".configSha256 == \"$2\" and . != $1" "$3" "$4"
@@ -182,12 +188,12 @@ reload_broadcast() {
 push_config() { # $1 = local file, $2 = stage name
   local h before
   h="$(sha256sum "$1" | cut -d' ' -f1)"
-  before="$(report_now)"
+  before="$(report_now)" || exit 1
   write_config "$1"
   log "$2: waiting for the reload of the pushed file (hash ${h:0:12}...)"
   wait_push_report "$before" "$h" 60 "$2: reload of the pushed file"
   log "$2: broadcasting explicit reload"
-  before="$(report_now)"
+  before="$(report_now)" || exit 1
   reload_broadcast
   wait_push_report "$before" "$h" 30 "$2: broadcast report"
 }
