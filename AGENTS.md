@@ -199,9 +199,10 @@ plain `last:100` is enough for them because CodeRabbit submits a *new* review
 per full run rather than editing an old one, so the newest is the newest by
 submission time. Read **both** the reviews and the
 rolling comment, and sort by the edit time rather than the creation time: a
-re-requested full review arrives as a review, an automatic incremental one
-arrives as an edit to a comment created much earlier, and sorting on
-`createdAt` hands you the older of the two while looking correct.
+re-requested full review *with findings* arrives as a review, an automatic
+incremental one arrives as an edit to a comment created much earlier, and
+sorting on `createdAt` hands you the older of the two while looking correct.
+A re-requested review that finds nothing arrives only as that edit - see below.
 
 **A full review that finds nothing creates no review object at all.** Its range
 line then exists only in the rolling comment, so a check that reads the reviews
@@ -442,11 +443,11 @@ guarantees. Treat security as a design constraint, not a checklist item:
 **Run the L4 scenarios from `clean` before tagging, and say so in the
 annotation.** CI covers L1, L2 and L3 on every pull request and on the release
 itself, but L4 is manual and local by design, so nothing runs it unless a person
-does. Two contract drifts sat undetected for weeks because of that: a scenario
-feeding the launcher `home.dock`, a key removed at schema 2, and an isolation
-check overriding `appearance.transparency.background`, inert since #24. Both
-failed loudly the moment somebody ran the scenario from `clean`; nobody had,
-since #24. Finding them cost an afternoon and a wrong escalation into the
+does. Two contract drifts sat undetected for weeks because of that. One scenario fed
+the launcher `home.dock`, a key removed at schema 2; the same scenario's
+isolation check overrode `appearance.transparency.background`, inert since #24.
+Both failed loudly the moment somebody ran that scenario from `clean`, and
+nobody had since #24. Finding them cost an afternoon and a wrong escalation into the
 provisioning repository. One person, one hour per release, catches that class
 before it ships rather than weeks after.
 
