@@ -213,6 +213,26 @@ class ConfigWriteBackTest {
         assertTrue(reportStore.read()?.diagnostics.toString(), !result.keptColors(reportStore.read()))
     }
 
+    /**
+     * Two reasons at once: a skip warning must not evict the colour-scheme
+     * warning, which still describes the device (#183 simplify).
+     */
+    @Test
+    fun `a skipped write-back leaves the colour-scheme warning in place`() = runBlocking {
+        applied(themeFile)
+        ownColorSchemeOnDevice()
+        writeBack.write()
+        val grid = GridWriteBack(context, real.grid, real.store, reportStore, lock, baselineStore = baselineStore)
+        val items = listOf(HomeGridItem(HomeGridLayouts.Phone, "dock", HomeGridWidgets.Favorites, null, 0, 5, 4, 1, position = 0))
+
+        val result = grid.write(HomeGridLayouts.Phone, items)
+
+        assertEquals("grid-unmanaged", (result as WriteBackResult.Skipped).code)
+        val codes = reportStore.read()!!.diagnostics.map { it.code }
+        assertTrue(codes.toString(), ConfigWriteBack.SkipCodePrefix + "grid-unmanaged" in codes)
+        assertTrue(codes.toString(), result.keptColors(reportStore.read()))
+    }
+
     @Test
     fun `a file without colors says nothing about a person's own scheme`() = runBlocking {
         val modeOnly = themeFile.replace(""", "colors": "system" /* the zone's palette */""", "")
