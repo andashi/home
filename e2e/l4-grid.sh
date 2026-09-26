@@ -125,22 +125,21 @@ device_config_sha() {
   adb -s "$SERIAL" shell sha256sum "$DEVICE_CONFIG" 2>/dev/null | tr -d '\r' | cut -d' ' -f1
 }
 
-# Polls the /config read-back until the jq filter holds. Sets LAST_CONFIG.
+# Polls the /config read-back until the jq filter holds, against a
+# wall-clock deadline (#164): a read-back is a content query, well under a
+# second, so the timeout is about how long the launcher takes to settle.
+# Sets LAST_CONFIG.
 LAST_CONFIG=""
+SEEN_CONFIG=""
+config_matches() { # $1 = jq filter
+  SEEN_CONFIG="$(query_json config 2>/dev/null)" && [ -n "$SEEN_CONFIG" ] \
+    && jq -e "$1" >/dev/null 2>&1 <<<"$SEEN_CONFIG" && LAST_CONFIG="$SEEN_CONFIG"
+}
 wait_until() { # $1 = jq filter over /config, $2 = timeout (s), $3 = description
-  local filter="$1" timeout="$2" what="$3" elapsed=0 config=""
-  while [ "$elapsed" -lt "$timeout" ]; do
-    if config="$(query_json config 2>/dev/null)" && [ -n "$config" ]; then
-      if jq -e "$filter" >/dev/null 2>&1 <<<"$config"; then
-        LAST_CONFIG="$config"
-        return 0
-      fi
-    fi
-    sleep 1
-    elapsed=$((elapsed + 1))
-  done
-  printf 'last /config read-back:\n%s\n' "$config" >&2
-  die "timed out (${timeout}s) waiting for read-back: $what"
+  SEEN_CONFIG=""
+  retry_for "$2" config_matches "$1" && return 0
+  printf 'last /config read-back:\n%s\n' "$SEEN_CONFIG" >&2
+  die "timed out (${2}s) waiting for read-back: $3"
 }
 
 # Checks every cell of the dumped screen against the expected geometry:
@@ -150,23 +149,25 @@ wait_until() { # $1 = jq filter over /config, $2 = timeout (s), $3 = description
 #
 # Polls: a reload is applied before its report is written, but the screen
 # recomposes asynchronously, so the dump is repeated until the expected
-# cells are there (up to CELLS_TIMEOUT seconds) and the last mismatch is
-# what a timeout reports.
+# cells are there and the last mismatch is what a timeout reports.
+# CELLS_TIMEOUT is wall-clock time (#164). 60 s leaves room for 10 or more
+# dumps on an unloaded host (about 4 s each) and still 4 under load (about
+# 15 s each). The loop it replaces counted 60 rounds, up to several minutes.
 CELLS_TIMEOUT="${CELLS_TIMEOUT:-60}"
 LAST_EXPECTED_CELLS=""
+CELLS_RESULT=""
+cells_match() { # $1 = expected lines, $2 = description
+  CELLS_RESULT="$(check_cells "$1" "$2" 2>&1)"
+}
 assert_cells() { # $1 = expected lines, $2 = description
-  local expected="$1" what="$2" elapsed=0 result=""
-  LAST_EXPECTED_CELLS="$expected"
-  while [ "$elapsed" -lt "$CELLS_TIMEOUT" ]; do
-    if result="$(check_cells "$expected" "$what" 2>&1)"; then
-      printf '%s\n' "$result"
-      return 0
-    fi
-    sleep 1
-    elapsed=$((elapsed + 1))
-  done
-  printf '%s\n' "$result" >&2
-  die "timed out (${CELLS_TIMEOUT}s) waiting for cells: $what"
+  LAST_EXPECTED_CELLS="$1"
+  CELLS_RESULT=""
+  if retry_for "$CELLS_TIMEOUT" cells_match "$1" "$2"; then
+    printf '%s\n' "$CELLS_RESULT"
+    return 0
+  fi
+  printf '%s\n' "$CELLS_RESULT" >&2
+  die "timed out (${CELLS_TIMEOUT}s) waiting for cells: $2"
 }
 
 check_cells() { # $1 = expected lines, $2 = description

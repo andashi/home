@@ -404,6 +404,60 @@ resolve_postures() {
   log "postures: closed=$POSTURE_CLOSED half=$POSTURE_HALF opened=$POSTURE_OPENED"
 }
 
+# What the screen shows, from one dump: "search" while search is open (its
+# filter button is on screen), "home" while the launcher's bar is on screen
+# without it, "unknown" for a failed or empty dump or anything else, which
+# is never taken for either. So a failed look cannot pass a check.
+screen_state() {
+  dump_screen || { echo unknown; return 0; }
+  if grep -q 'content-desc="Show filters"' "$WORK/dump.xml"; then echo search
+  elif grep -q 'content-desc="Search"' "$WORK/dump.xml"; then echo home
+  else echo unknown; fi
+}
+search_is_open() { [ "$(screen_state)" = search ]; }
+home_is_shown() { [ "$(screen_state)" = home ]; }
+# One valid look, left in SCREEN: fails only on "unknown", so a caller can
+# retry for a readable dump without retrying for the answer it wants.
+SCREEN=unknown
+screen_known() { SCREEN="$(screen_state)"; [ "$SCREEN" != unknown ]; }
+
+# The soft keyboard's state, left in IME: shown, hidden, or unknown when adb
+# did not answer. "Not shown" is only ever a positive answer.
+IME=unknown
+ime_read() {
+  local state
+  # Captured first: grep -q stops at the first match, and under pipefail the
+  # writer's SIGPIPE would read as "not shown".
+  state="$(adb_t shell dumpsys input_method 2>/dev/null | tr -d '\r')" || { IME=unknown; return 1; }
+  if grep -q 'mInputShown=true' <<<"$state"; then IME=shown; else IME=hidden; fi
+}
+ime_shown() { ime_read && [ "$IME" = shown ]; }
+ime_hidden() { ime_read && [ "$IME" = hidden ]; }
+
+# Opens search from the launcher's bar and types $1, if given. Tap and wait
+# share one deadline, SEARCH_TIMEOUT (10 s).
+open_search() { # [$1 = text to type]
+  local timeout=${SEARCH_TIMEOUT:-10}
+  local ADB_DEADLINE=$((SECONDS + timeout))
+  tap_desc Search
+  retry_for "$((ADB_DEADLINE - SECONDS))" search_is_open || die "tapping the bar did not open search within ${timeout}s"
+  [ -z "${1:-}" ] || adb_t shell input text "$1"
+}
+
+# Closes the soft keyboard if it comes up. It comes up a moment after the
+# field is focused, so a single look right away misses it. It takes the
+# first Back for itself, which would otherwise close search under a test
+# of Back. KEYBOARD_TIMEOUT (5 s) for it to come up, twice that to close.
+dismiss_keyboard() {
+  local timeout=${KEYBOARD_TIMEOUT:-5}
+  if ! retry_for "$timeout" ime_shown; then
+    [ "$IME" = hidden ] && return 0
+    die "could not read the keyboard's state within ${timeout}s"
+  fi
+  adb_t shell input keyevent KEYCODE_BACK >/dev/null 2>&1 || true
+  retry_for "$((2 * timeout))" ime_hidden || die "the keyboard did not close within $((2 * timeout))s"
+}
+
 # Waits until the node with resource id $1 is on the home screen, waking and
 # re-showing home in between: after a posture change the activity comes back
 # on the other display, and a check made before that sees the blank in
