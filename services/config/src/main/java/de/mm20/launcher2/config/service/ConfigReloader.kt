@@ -166,9 +166,10 @@ class ConfigReloader(
             .distinct()
             .filter { section -> failedSections.none { it.isInSection(section) } }
 
-        // A failure with no path is the whole apply's, and covers every section.
-        val capabilityDiagnostics = capabilities.of(config, before) { section ->
-            failedSections.any { it.isEmpty() || it.isInSection(section) }
+        // A failure covers a key when the key lies inside the failed path; one
+        // with no path is the whole apply's, and covers every key.
+        val capabilityDiagnostics = capabilities.of(config, before) { keyPath ->
+            failedSections.any { it.isEmpty() || keyPath.isInSection(it) }
         }
 
         recordBaseline(configSha256, before, applied)

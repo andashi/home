@@ -327,6 +327,24 @@ class ConfigReloaderTest {
         assertEquals(listOf("apply-failed", "permission-missing"), report.diagnostics.map { it.code })
     }
 
+    /**
+     * A failure is matched against the key's own path: the search actions
+     * failing leaves search.contacts as applied, and it is reported
+     * (#172 review).
+     */
+    @Test
+    fun `contacts is reported when only the search actions failed`() = runTest {
+        val store = FakeConfigStore(
+            state = ConfigState(search = SearchState(contacts = false)),
+            applyDiagnostics = listOf(Diagnostic(Severity.Error, "apply-failed", "search.actions", "database locked")),
+        )
+
+        val report = reloaderWith(store, contactsGranted = false)
+            .reload("""{"schemaVersion": 2, "search": {"contacts": true}}""")
+
+        assertEquals(listOf("apply-failed", "permission-missing"), report.diagnostics.map { it.code })
+    }
+
     /** The same when the whole apply threw: its failure names no section. */
     @Test
     fun `contacts in a reload whose apply threw is not reported as a permission problem`() = runTest {
