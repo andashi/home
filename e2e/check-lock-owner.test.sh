@@ -24,7 +24,7 @@ case_ plain-assignment fail 'LOCK_OWNER="x@$SERIAL#$$"
 case_ indented-plain-assignment fail '  LOCK_OWNER="x@$SERIAL#$$"'
 case_ exported-on-a-later-line pass 'LOCK_OWNER="x@$SERIAL#$$"
 export LOCK_OWNER
-emulator/run.sh stop'
+(cd "$GOS_REPO" && emulator/run.sh stop)'
 # The owner has to be in the environment when run.sh starts, not somewhere
 # in the file.
 case_ run-sh-before-the-export fail '(cd "$GOS_REPO" && emulator/run.sh start)
@@ -33,7 +33,7 @@ case_ export-before-run-sh pass 'export LOCK_OWNER="x@$SERIAL#$$"
 "$RUN" start'
 # An export of an unset variable gives run.sh no owner either.
 case_ export-without-a-value fail 'export LOCK_OWNER
-emulator/run.sh stop'
+(cd "$GOS_REPO" && emulator/run.sh stop)'
 case_ assigned-then-exported pass 'LOCK_OWNER="x@$SERIAL#$$"
 export LOCK_OWNER
 "$RUN" stop'
@@ -56,4 +56,24 @@ $(for i in $(seq 1 20000); do echo ": filler line $i"; done)"
 mkdir -p "$WORK/libdir/lib"; printf '%s\n' '(cd "$GOS_REPO" && emulator/run.sh stop)' > "$WORK/libdir/lib/x.sh"
 printf '%s\n' 'LOCK_OWNER=x' > "$WORK/libdir/x.test.sh"
 if "$here/check-lock-owner.sh" "$WORK/libdir" >/dev/null 2>&1; then echo " + lib-and-test-files-skipped"; else echo " x lib-and-test-files-skipped"; failed=1; fi
+# The contract: forms outside it fail by name, never pass quietly. Each of
+# these names run.sh in a way the guard does not read, after the export.
+unreadable_case() { # $1 = name, $2 = body
+  local d="$WORK/$1" out
+  mkdir -p "$d"; printf 'export LOCK_OWNER="x@$SERIAL#$$"\n%s\n' "$2" > "$d/s.sh"
+  if out="$("$here/check-lock-owner.sh" "$d" 2>&1)"; then echo " x $1 (passed)"; failed=1
+  elif grep -q "cannot read" <<<"$out" && grep -q "line=2" <<<"$out"; then echo " + $1"
+  else echo " x $1 (failed, but not as unreadable at line 2: $out)"; failed=1; fi
+}
+unreadable_case unreadable-realpath-substitution 'RUN="$(realpath "$GOS_REPO/emulator/run.sh")"'
+unreadable_case unreadable-eval 'eval "emulator/run.sh stop"'
+unreadable_case unreadable-unquoted-run '$RUN stop'
+unreadable_case unreadable-braced-run '"${RUN}" stop'
+unreadable_case unreadable-bare-path 'emulator/run.sh stop'
+# Every form the contract names, after the export: all pass.
+case_ contract-forms pass 'export LOCK_OWNER="x@$SERIAL#$$"
+RUN="$GOS_REPO/emulator/run.sh"
+(cd "$GOS_REPO" && SNAPSHOT="$SNAPSHOT" emulator/run.sh start) >&2
+"$RUN" restore "$1" >/dev/null
+if [ "$n" -gt 0 ] && ! "$RUN" restore clean >/dev/null 2>&1; then :; fi'
 exit "$failed"
