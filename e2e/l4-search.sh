@@ -213,11 +213,42 @@ adb -s "$SERIAL" shell content insert --uri content://com.android.contacts/data 
   --bind mimetype:s:vnd.android.cursor.item/name --bind data1:s:"'$CONTACT'" >/dev/null
 adb -s "$SERIAL" shell content insert --uri content://com.android.contacts/data --bind raw_contact_id:i:"$raw_id" \
   --bind mimetype:s:vnd.android.cursor.item/phone_v2 --bind data1:s:"$NUMBER" --bind data2:i:2 >/dev/null
+# The launcher shows a number formatted for the device's region
+# (PhoneNumberUtils.formatNumber): 5550100 reads "555-0100" on a US image.
+# So the number is found by its digits, not by the text as inserted; the
+# first run of this step waited for "5550100" and timed out on exactly that.
+number_bounds() { # $1 = the number's digits
+  dump_screen || return 1
+  python3 - "$WORK/dump.xml" "$1" <<'PY'
+import re, sys
+try:
+    import defusedxml.ElementTree as ET
+except ImportError:
+    import xml.etree.ElementTree as ET
+for node in ET.parse(sys.argv[1]).getroot().iter("node"):
+    if re.sub(r"\D", "", node.get("text", "")) == sys.argv[2]:
+        m = re.match(r"\[(\d+),(\d+)\]\[(\d+),(\d+)\]", node.get("bounds", ""))
+        if m:
+            print(*m.groups()); break
+PY
+}
+screen_texts() { # every visible text, for a failure that has to say what was there
+  dump_screen || { echo "(no dump)"; return; }
+  python3 - "$WORK/dump.xml" <<'PY'
+import sys
+try:
+    import defusedxml.ElementTree as ET
+except ImportError:
+    import xml.etree.ElementTree as ET
+print(" | ".join(n.get("text") for n in ET.parse(sys.argv[1]).getroot().iter("node") if n.get("text")))
+PY
+}
 open_search_field "Onetest"
 wait_text "$CONTACT" 20
 tap_text "$CONTACT" || die "the contact is not where a tap reaches it"
-wait_text "$NUMBER" 10
-tap_text "$NUMBER" || die "the number is not where a tap reaches it"
+retry_for 15 shows number_bounds "$NUMBER" \
+  || die "the expanded contact shows no number with the digits $NUMBER; on screen: $(screen_texts)"
+tap_bounds "$(number_bounds "$NUMBER")" || die "could not tap the number"
 TOP=""
 dialer_on_top() {
   TOP="$(adb_t shell dumpsys activity activities | tr -d '\r' \
