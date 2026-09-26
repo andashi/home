@@ -52,13 +52,18 @@ deadline_in() { # $1 = seconds
 # emulator (#127).
 retry_for() { # $1 = timeout (s), $2... = command
   # Computed before `local` shadows the caller's deadline.
-  local d
+  local d t0=$SECONDS timeout=$1
   d=$(deadline_in "$1")
   local ADB_DEADLINE=$d
   shift
   # not a wait: the deadline mechanism itself, bounded by ADB_DEADLINE
   while [ "$ADB_DEADLINE" -gt "$SECONDS" ]; do
-    "$@" && return 0
+    if "$@"; then
+      # How close it came, on stderr: stdout belongs to callers that
+      # capture it. 9.8 s of 10 is a pass that is about to become a failure.
+      printf '   %s: after %s s of %s s\n' "$*" "$((SECONDS - t0))" "$timeout" >&2
+      return 0
+    fi
     [ $((ADB_DEADLINE - SECONDS)) -gt 1 ] || break
     sleep 1
   done
