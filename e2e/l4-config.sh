@@ -380,7 +380,7 @@ EFFECTIVE_FILTER='
   and .icons.enforceThemed == true
   and .appearance.glass == {"blur":16.0,"tint":0.5,"radius":20.0,"contrast":"high","wallpaperBlur":false,"searchWallpaperBlur":false}
   and (.appearance | has("transparency") | not)
-  and (.search | del(.actions)) == {"favorites":false,"allApps":true,"layout":"list","labels":true,"contacts":false,"shortcuts":true,"filterBar":true,"openKeyboard":true,"launchOnEnter":true,"reversed":true,"hiddenItemsButton":false,"barPosition":"bottom"}
+  and (.search | del(.actions)) == {"favorites":false,"allApps":true,"layout":"list","labels":true,"contacts":false,"shortcuts":true,"filterBar":true,"openKeyboard":true,"launchOnEnter":true,"reversed":true,"hiddenItemsButton":false,"barPosition":"bottom","listIcons":true,"appDetails":true,"contactsCallOnTap":false}
   and .search.actions == [{"type":"call"},{"type":"message"},{"type":"email"},{"type":"contact"},{"type":"alarm"},{"type":"timer"},{"type":"calendar"},{"type":"website"},{"type":"websearch"}]
   and .home.searchBar.position == "bottom"
   and .home.favorites == []
@@ -396,7 +396,7 @@ CHANGED_FILTER='
   and .icons.themed == false
   and .icons.enforceThemed == false
   and .appearance.glass == {"blur":32.0,"tint":0.2,"radius":12.0,"contrast":"low","wallpaperBlur":true,"searchWallpaperBlur":true}
-  and (.search | del(.actions)) == {"favorites":true,"allApps":true,"layout":"grid","labels":true,"contacts":true,"shortcuts":true,"filterBar":true,"openKeyboard":true,"launchOnEnter":true,"reversed":false,"hiddenItemsButton":false,"barPosition":"top"}
+  and (.search | del(.actions)) == {"favorites":true,"allApps":true,"layout":"grid","labels":true,"contacts":true,"shortcuts":true,"filterBar":true,"openKeyboard":true,"launchOnEnter":true,"reversed":false,"hiddenItemsButton":false,"barPosition":"top","listIcons":true,"appDetails":true,"contactsCallOnTap":false}
   and .home.searchBar.position == "top"
   and .home.favorites == []
   and .home.widgets.enabled == false
