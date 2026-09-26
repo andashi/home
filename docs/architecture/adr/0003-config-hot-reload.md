@@ -192,8 +192,9 @@ locked, like `home.grid.locked`.
   left the device before write-back:
   - by the read-back provider (section 4, shell and system only), which is what
     provisioning's `--pull` copies into a catalog in git;
-  - by the platform backup when the owner enables it (`allowBackup`), through
-    the settings and databases they live in.
+  - by platform backup when the owner enables device backup, through the
+    settings and databases they live in. The app permits this with
+    `android:allowBackup="true"` and `android:fullBackupContent="true"`.
 
   Write-back adds a copy inside `launcher.json`, so "the file carries only
   what the host put there" stops being true. A key added to write-back is
