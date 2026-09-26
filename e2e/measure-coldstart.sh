@@ -102,7 +102,7 @@ fi
 unrooted_shell
 read -r -a revs <<<"${REVS:-}"
 
-sh_() { adb -s "$SERIAL" shell "$@"; }
+sh_() { adb_t shell "$@"; }
 rev() { printf '%s' "${revs[$1]:-unknown}"; }
 restore() {
   "$RUN" restore "$1" >/dev/null
