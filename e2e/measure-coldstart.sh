@@ -33,7 +33,6 @@ export SERIAL="${SERIAL:-emulator-5562}"
 export OVERLAY_DIR="${OVERLAY_DIR:-$GOS_REPO/emulator/instances/test-fold-gpu}"
 export GPU="${GPU:-host}"
 PKG=org.andashi.home
-ACTIVITY="$PKG/de.mm20.launcher2.ui.launcher.LauncherActivity"
 RUNS="${RUNS:-10}"
 STARTS="${STARTS:-3}"
 LOCK_OWNER="${LOCK_OWNER:-measure-coldstart@$SERIAL#$$}"
@@ -71,7 +70,7 @@ restore() {
 cold_start() {
   sh_ am force-stop "$PKG" >/dev/null 2>&1 || true
   sleep 1
-  sh_ am start -W -n "$ACTIVITY" 2>/dev/null | tr -d '\r' | awk -F': *' '/^TotalTime/ { print $2; exit }'
+  sh_ am start -W -n "$LAUNCHER_ACTIVITY" 2>/dev/null | tr -d '\r' | awk -F': *' '/^TotalTime/ { print $2; exit }'
 }
 
 # Every section write-back follows (#155): settings, favorites, search, grid.
@@ -105,7 +104,7 @@ for k in "${!apks[@]}"; do
   adb -s "$SERIAL" install -r "$apk" >/dev/null
   sh_ cmd role add-role-holder android.app.role.HOME "$PKG"
   show_home; sleep 5
-  adb -s "$SERIAL" shell content write --uri "content://$PKG.config-ingest/wallpapers/mauritius.jpg" \
+  sh_ content write --uri "content://$PKG.config-ingest/wallpapers/mauritius.jpg" \
     < "$GOS_REPO/themes/mauritius/tall/wallpaper.jpg"
   push_config "$WORK/zone.jsonc" "zone fixture" || push_config "$WORK/zone.jsonc" "zone fixture, again"
   # Two cold starts before the snapshot, so dexopt, the first reload and the
@@ -137,7 +136,8 @@ for run in $(seq "$RUNS"); do
       load="$(cut -d' ' -f1 /proc/loadavg)"
       t="$(cold_start || true)"
       printf '%s\t%s\t%s\t%s\t%s\n' "$name" "$run" "$start" "$load" "${t:-NA}" | tee -a "$OUT"
-      sleep 4
+      # Let the start settle before the next one; the last is followed by a restore.
+      if [ "$start" -lt "$STARTS" ]; then sleep 4; fi
     done
   done
 done
