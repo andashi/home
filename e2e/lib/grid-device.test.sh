@@ -631,10 +631,18 @@ refuses_another_files_report() {
   ! push_report_found '{"configSha256":"a","trigger":"broadcast"}' '{"configSha256":"b","trigger":"file-watcher"}' a
 }
 check "wait_push_report does not take another file's report" refuses_another_files_report
+# The provider answers the JSON literal null before the first report
+# (ConfigStateProvider). A failed query is not that answer: taken for it, an
+# older report of the same hash would pass as the push's (#192 review).
 report_now_is_null_without_one() {
-  printf 'Error: no report\n' > "$WORK/reports/now"
+  serve_report null
   [ "$( PATH="$WORK/reports:$PATH"; report_now )" = null ]
 }
-check "report_now says null when there is no report yet" report_now_is_null_without_one
+check "report_now passes on the provider's null before the first report" report_now_is_null_without_one
+report_now_fails_on_a_failed_query() {
+  printf 'Error: provider not ready\n' > "$WORK/reports/now"
+  ! ( PATH="$WORK/reports:$PATH" timeout 20 bash -c "$(declare -f); $(declare -p SERIAL PKG WORK STATE_URI 2>/dev/null); REPORT_NOW_TIMEOUT=1 report_now" ) >/dev/null 2>&1
+}
+check "report_now fails, and does not say null, when the query fails" report_now_fails_on_a_failed_query
 
 exit "$failed"
