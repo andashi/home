@@ -21,8 +21,8 @@
 #
 # Instance: SERIAL + OVERLAY_DIR (default emulator-5562, instances/test-fold-gpu),
 # snapshot `clean`, under the instance's device lock, as the unrooted shell
-# (uid 2000, asserted; `run.sh start` ends with `adb root`, so run
-# `adb -s $SERIAL unroot` after starting the instance). Robust by construction
+# (uid 2000; `run.sh start` ends with `adb root`, and the script unroots
+# through the library's unrooted_shell). Robust by construction
 # to prior state (the snapshot) and to host load (the interleaving); not to a
 # concurrent workload on the same instance - pin ANDROID_SERIAL on every
 # Gradle device task elsewhere (AGENTS.md, "Emulator").
@@ -36,6 +36,9 @@ export GPU="${GPU:-host}"
 PKG=org.andashi.home
 RUNS="${RUNS:-10}"
 STARTS="${STARTS:-3}"
+# A run token for the snapshot names: $$ can be reused after an interrupted
+# run whose cleanup never ran, and would then name that run's snapshots.
+RUN_TOKEN="$(date +%s)-$RANDOM$RANDOM"
 # The host's 1-minute load average may not exceed this when a round starts;
 # a round above it ends the run. Set before the first sample, never judged
 # afterwards: a series on a busy host cannot resolve tens of milliseconds.
@@ -74,8 +77,11 @@ trap cleanup EXIT
 . "$HERE/lib/grid-device.sh"
 
 [ $# -ge 1 ] || die "usage: $0 a.apk [b.apk ...]"
+[[ "$RUNS" =~ ^[1-9][0-9]*$ ]] || die "RUNS must be a positive integer, not '$RUNS'"
+[[ "$STARTS" =~ ^[1-9][0-9]*$ ]] || die "STARTS must be a positive integer, not '$STARTS'"
 "$LOCK" acquire "$LOCK_OWNER" "$SERIAL" >/dev/null || die "$SERIAL is locked by someone else"
-[ "$(adb -s "$SERIAL" shell id -u | tr -d '\r')" = 2000 ] || die "adb is not the unrooted shell"
+# `run.sh start` leaves adb as root; a release build offers the unrooted shell.
+unrooted_shell
 read -r -a revs <<<"${REVS:-}"
 
 sh_() { adb -s "$SERIAL" shell "$@"; }
@@ -83,10 +89,17 @@ rev() { printf '%s' "${revs[$1]:-unknown}"; }
 restore() {
   "$RUN" restore "$1" >/dev/null
   timeout 20 adb -s "$SERIAL" wait-for-device \
-    || { adb reconnect offline >/dev/null; timeout 30 adb -s "$SERIAL" wait-for-device; } \
+    || { timeout 10 adb -s "$SERIAL" reconnect >/dev/null 2>&1; timeout 30 adb -s "$SERIAL" wait-for-device; } \
     || die "$SERIAL stayed offline after loading $1"
 }
-pkg_gone() { ! sh_ pidof "$PKG" >/dev/null 2>&1; }
+# Gone only when pidof ran and found nothing (exit 1, no output): a hung or
+# failed adb call is not "gone", or a warm start could be recorded as cold.
+# adb_t keeps each call inside retry_for's deadline.
+pkg_gone() {
+  local out rc
+  out="$(adb_t shell pidof "$PKG" 2>&1)" && rc=0 || rc=$?
+  [ "$rc" -eq 1 ] && [ -z "$out" ]
+}
 cold_start() {
   # Only a start from no process is a cold start: a failed force-stop, or a
   # process still there after it, would measure a warm one.
@@ -117,12 +130,18 @@ cat > "$WORK/zone.jsonc" <<'EOF'
 }
 EOF
 
-# --- one snapshot per build -------------------------------------------------
 apks=("$@")
+# Checked before any setup: a committed series is never overwritten.
+revlist=""
+for k in "${!apks[@]}"; do revlist+="$(rev "$k")-"; done
+OUT="${OUT:-$HERE/measurements/coldstart-${revlist%-}.tsv}"
+[ ! -e "$OUT" ] || die "$OUT exists; a committed series is never overwritten - set OUT or move it"
+
+# --- one snapshot per build -------------------------------------------------
 for k in "${!apks[@]}"; do
   apk="${apks[k]}"
   # Run-specific, so an existing snapshot of that name is never taken or deleted.
-  name="cold-$$-m$k"; names+=("$name")
+  name="cold-$RUN_TOKEN-m$k"; names+=("$name")
   log "preparing $name from $(basename "$apk")"
   restore clean
   adb -s "$SERIAL" install -r "$apk" >/dev/null
@@ -133,16 +152,17 @@ for k in "${!apks[@]}"; do
   push_config "$WORK/zone.jsonc" "zone fixture" || push_config "$WORK/zone.jsonc" "zone fixture, again"
   # Two cold starts before the snapshot, so dexopt, the first reload and the
   # first write-back baseline are behind every build alike.
-  cold_start >/dev/null || true; sleep 3
-  cold_start >/dev/null || true; sleep 5
+  # not a wait: two preparatory starts
+  for prep in 1 2; do
+    t="$(cold_start)" || exit 1
+    [ -n "$t" ] || die "preparatory start $prep of $name reported no TotalTime"
+    sleep 4
+  done
   show_home; sleep 3
   "$RUN" snapshot "$name" >/dev/null
 done
 
 # --- interleaved cold starts ------------------------------------------------
-revlist=""
-for k in "${!apks[@]}"; do revlist+="$(rev "$k")-"; done
-OUT="${OUT:-$HERE/measurements/coldstart-${revlist%-}.tsv}"
 {
   printf '# serial %s, overlay %s, GPU %s, adb uid 2000, runs %s, starts %s, load floor %s, max load %s\n' \
     "$SERIAL" "$(basename "$OVERLAY_DIR")" "$GPU" "$RUNS" "$STARTS" "$LOAD_FLOOR" "${MAX_LOAD:-none}"
