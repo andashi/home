@@ -190,7 +190,7 @@ locked, like `home.grid.locked`.
   `url` as someone typed them (a URL can carry a private endpoint), and the
   favorites, which name the apps a person uses. The same values already
   left the device before write-back:
-  - by the read-back provider (section 4, shell only), which is what
+  - by the read-back provider (section 4, shell and system only), which is what
     provisioning's `--pull` copies into a catalog in git;
   - by the platform backup when the owner enables it (`allowBackup`), through
     the settings and databases they live in.
