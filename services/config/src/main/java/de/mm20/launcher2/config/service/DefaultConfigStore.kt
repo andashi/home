@@ -341,31 +341,17 @@ class DefaultConfigStore(
 
         // Back into array order, then normalise against this device's grid.
         val result = GridLayout.normalize(spec, placed.sortedBy { order[it.id] })
+        // A move or a nudge is only one when the file asked for a position:
+        // an item without one is placed, and nothing was overridden.
         for (issue in result.issues) {
+            val id = when (issue) {
+                is LayoutIssue.Moved -> issue.id
+                is LayoutIssue.NudgedOffFold -> issue.id
+                else -> null
+            }
+            if (id != null && !layout.items[order.getValue(id)].hasPosition) continue
             issue.toDiagnostic(basePath, order, spec)?.let { diagnostics += it }
         }
-        // The engine nudges a crossing item to one side without a word (that
-        // is the right thing for a hand move); a config that asked for the
-        // crossing is told, so the host does not learn it from a read-back
-        // that differs from what it pushed.
-        val dropped = result.issues.filterIsInstance<LayoutIssue.CrossesFold>().map { it.id }.toSet()
-        spec.foldColumn?.let { fold ->
-            for (item in layout.items) {
-                if (item.isFavorites || item.id in dropped) continue
-                val x = item.x ?: continue
-                val w = item.w ?: continue
-                if (x < fold && x + w > fold) {
-                    diagnostics += Diagnostic(
-                        Severity.Warning,
-                        "grid-crosses-fold",
-                        "$basePath[${order.getValue(item.id)}]",
-                        "'${item.id}' spans the fold line, which only the favorites widget may; " +
-                                "it was moved to one side",
-                    )
-                }
-            }
-        }
-
         // From the read of what is stored to the flag: one critical section,
         // shared with the default row (HomeGridDefaults) through the init lock.
         homeGridInitLock.withLock {
@@ -400,6 +386,34 @@ class DefaultConfigStore(
             homeGridInitFlag.markInitialized()
         }
         return diagnostics
+    }
+
+    /**
+     * A diagnostic reports what the engine recorded; it never re-derives it
+     * from the configuration. A copy of the engine's rule is subtly wrong in
+     * exactly the case nobody wrote down, because it needs inputs the engine
+     * does not: the store's own fold-nudge check needed a `w`, so an item the
+     * file left without one - nudged by the engine at its default width - was
+     * never reported (#174), and a size decided before normalize claimed an
+     * effective size for an item normalize then dropped (#170). The engine
+     * says what it did; this only gives it a name, a path and words.
+     */
+    /**
+     * The overlap a push reports is where the engine found it: at the
+     * requested position, or where a slide into the grid or a nudge off the
+     * fold placed the item first. That place is named when it is not the
+     * requested one (#174 review).
+     */
+    private fun movedMessage(id: String, from: Span, to: Span, pushed: LayoutIssue.Push?): String = when {
+        pushed == null ->
+            "'$id' asks for x=${from.x} y=${from.y}, which puts its ${to.w}x${to.h} cells " +
+                "outside the grid; it was moved to x=${to.x} y=${to.y}"
+        pushed.from.x == from.x && pushed.from.y == from.y ->
+            "'$id' asks for x=${from.x} y=${from.y}, which overlaps '${pushed.by}'; " +
+                "it was moved down to x=${to.x} y=${to.y}"
+        else ->
+            "'$id' asks for x=${from.x} y=${from.y}; placed at x=${pushed.from.x} y=${pushed.from.y}, " +
+                "it overlaps '${pushed.by}', so it was moved down to x=${to.x} y=${to.y}"
     }
 
     private fun LayoutIssue.toDiagnostic(basePath: String, order: Map<String, Int>, spec: GridSpec): Diagnostic? {
@@ -450,8 +464,29 @@ class DefaultConfigStore(
                     } + "; it was shrunk to ${clamped.w}x${clamped.h}",
             )
 
+            // #140: the file keeps where it put the item; the report says
+            // where the item went and why. The move itself is unchanged.
+            is LayoutIssue.Moved -> Diagnostic(
+                Severity.Warning,
+                "grid-item-moved",
+                path(id),
+                movedMessage(id, from, to, pushed),
+            )
+
+            // The engine nudges a crossing item to one side (the right thing
+            // for a hand move too); a file that asked for the crossing is
+            // told, so the host does not learn it from a read-back that
+            // differs from what it pushed. Reported from what the engine did,
+            // not recomputed from the file (#174 simplify).
+            is LayoutIssue.NudgedOffFold -> Diagnostic(
+                Severity.Warning,
+                "grid-crosses-fold",
+                path(id),
+                "'$id' spans the fold line, which only the favorites widget may; it was moved to one side",
+            )
+
             // An overlap is reported through what the engine did about it:
-            // the later item was re-placed (silently) or dropped (Overflow).
+            // the later item was moved (Moved) or dropped (Overflow).
             is LayoutIssue.Overlap -> null
         }
     }

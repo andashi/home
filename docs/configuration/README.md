@@ -132,7 +132,8 @@ The report lists `appliedMutations` (the sections that changed) and
     reflects the permission at the reload, so after a grant the next reload
     no longer carries it.
   - Grid corrections: an item was enlarged to the widget's minimum, shrunk to
-    its maximum or the grid, nudged, or did not fit.
+    its maximum or the grid, moved into the grid or below an item it
+    overlapped, nudged off the fold, or did not fit.
   - `write-back-skipped:<code>`: a change made on the device was kept there
     but not written into the file, and why (next section).
 

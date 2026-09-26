@@ -90,6 +90,10 @@ keeps a layout valid on the actual screen:
   the file keeps what it asked for: `h: 7` against a widget that allows 6
   reads back as 6 and stays 7 in the file (#140);
 - an item across the Fold's middle is nudged (`grid-crosses-fold`);
+- an item placed partly outside the grid is slid back in, and one that
+  overlaps an earlier item is pushed down below it (`grid-item-moved`, which
+  says where it went and why). Only an item the file gives an `x` and `y`
+  is reported: one without is placed, and nothing was asked (#140);
 - what does not fit is dropped (`grid-overflow`, `grid-out-of-bounds`).
 
 Each correction is reported, and the file is still applied.

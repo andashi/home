@@ -331,6 +331,131 @@ class DefaultConfigStoreTest {
         )
     }
 
+    // #140: an item the file placed that ends up elsewhere is reported, like a
+    // size that was fitted: the file keeps what it asked, the report says why
+    // the effect differs. The move itself is unchanged.
+    @Test
+    fun `an item slid back into the grid is reported with where it went`() = runTest {
+        gridRows.own = "phone"
+        gridLimits.limits[clockWidget] = ProviderLimits(default = CellSize(2, 1), limits = SizeLimits(1, 1, 4, 6))
+
+        val diagnostics = store.apply(
+            listOf(grid(GridItemConfig(id = "clock", widget = clockWidget, x = 3, y = 5, w = 2, h = 2)))
+        )
+
+        val clock = homeGridRepository.layouts["phone"]!!.single()
+        assertEquals(listOf(2, 4), listOf(clock.x, clock.y))
+        val diagnostic = diagnostics.single()
+        assertEquals("grid-item-moved", diagnostic.code)
+        assertEquals("home.grid.layouts.phone.items[0]", diagnostic.path)
+        assertEquals(Severity.Warning, diagnostic.severity)
+        assertEquals(
+            "'clock' asks for x=3 y=5, which puts its 2x2 cells outside the grid; it was moved to x=2 y=4",
+            diagnostic.message,
+        )
+    }
+
+    @Test
+    fun `an item pushed down by an earlier one is reported with what it overlapped`() = runTest {
+        gridRows.own = "phone"
+        gridLimits.limits[clockWidget] = ProviderLimits(default = CellSize(2, 2), limits = SizeLimits(1, 1, 4, 6))
+
+        val diagnostics = store.apply(
+            listOf(
+                grid(
+                    GridItemConfig(id = "first", widget = clockWidget, x = 0, y = 0, w = 2, h = 2),
+                    GridItemConfig(id = "second", widget = clockWidget, x = 0, y = 1, w = 2, h = 2),
+                )
+            )
+        )
+
+        assertEquals(
+            listOf("grid-item-moved" to "'second' asks for x=0 y=1, which overlaps 'first'; it was moved down to x=0 y=2"),
+            diagnostics.map { it.code to it.message },
+        )
+        assertEquals("home.grid.layouts.phone.items[1]", diagnostics.single().path)
+    }
+
+    // The overlap is found where the item was slid to, not where the file
+    // put it, and the message says so (#174 review).
+    @Test
+    fun `an item slid into the grid and then pushed down is reported with both`() = runTest {
+        gridRows.own = "phone"
+        gridLimits.limits[clockWidget] = ProviderLimits(default = CellSize(2, 1), limits = SizeLimits(1, 1, 4, 6))
+
+        val diagnostics = store.apply(
+            listOf(
+                grid(
+                    GridItemConfig(id = "first", widget = clockWidget, x = 0, y = 0, w = 4, h = 2),
+                    GridItemConfig(id = "second", widget = clockWidget, x = 3, y = 1, w = 2, h = 1),
+                )
+            )
+        )
+
+        assertEquals(
+            listOf(
+                "grid-item-moved" to "'second' asks for x=3 y=1; placed at x=2 y=1, it overlaps 'first', " +
+                    "so it was moved down to x=2 y=2",
+            ),
+            diagnostics.map { it.code to it.message },
+        )
+    }
+
+    @Test
+    fun `an item nudged off the fold and then pushed down names where it overlapped`() = runTest {
+        settings.state = ConfigState(gridColumns = 4)
+        gridLimits.limits[clockWidget] = ProviderLimits(default = CellSize(1, 1), limits = SizeLimits(1, 1, 4, 2))
+
+        val diagnostics = store.apply(
+            listOf(
+                grid(
+                    GridItemConfig(id = "wall", widget = clockWidget, x = 2, y = 0, w = 1, h = 1),
+                    GridItemConfig(id = "clock", widget = clockWidget, x = 3, y = 0, w = 2, h = 1),
+                    layout = "fold",
+                )
+            )
+        )
+
+        assertEquals(
+            listOf(
+                "grid-item-moved" to "'clock' asks for x=3 y=0; placed at x=2 y=0, it overlaps 'wall', " +
+                    "so it was moved down to x=2 y=1",
+                "grid-crosses-fold" to "'clock' spans the fold line, which only the favorites widget may; " +
+                    "it was moved to one side",
+            ),
+            diagnostics.map { it.code to it.message },
+        )
+    }
+
+    // Nothing was asked, so nothing was overridden: an item without a
+    // position is placed, and placing it is not a move. Placement puts
+    // "placed" on row 2, the first free one; normalize then pushes "second"
+    // down onto row 2 as well, and "placed" goes to row 3 - the engine
+    // reports that as a move, and only the store knows it asked for none.
+    @Test
+    fun `an item without a position is never reported as moved`() = runTest {
+        gridRows.own = "phone"
+        gridLimits.limits[clockWidget] = ProviderLimits(default = CellSize(4, 1), limits = SizeLimits(1, 1, 4, 6))
+
+        val diagnostics = store.apply(
+            listOf(
+                grid(
+                    GridItemConfig(id = "first", widget = clockWidget, x = 0, y = 0, w = 4, h = 2),
+                    GridItemConfig(id = "second", widget = clockWidget, x = 0, y = 1, w = 4, h = 1),
+                    GridItemConfig(id = "placed", widget = clockWidget),
+                )
+            )
+        )
+
+        val layout = homeGridRepository.layouts["phone"]!!.associateBy { it.id }
+        assertEquals(listOf(2, 3), listOf(layout.getValue("second").y, layout.getValue("placed").y))
+        // "second" (items[1]) asked for its place; "placed" (items[2]) did not.
+        assertEquals(
+            listOf("home.grid.layouts.phone.items[1]"),
+            diagnostics.filter { it.code == "grid-item-moved" }.map { it.path },
+        )
+    }
+
     // An item without a position is sized by placement, not by normalize, and
     // used to be fitted there without a word in either direction (#170 review).
     @Test
@@ -400,6 +525,25 @@ class DefaultConfigStoreTest {
         val items = homeGridRepository.layouts["fold"]!!.associateBy { it.id }
         assertEquals("favorites may span the fold", 8, items["dock"]!!.w)
         val clock = items["clock"]!!
+        assertTrue("the clock was nudged to one side: x=${clock.x}", clock.x + clock.w <= 4 || clock.x >= 4)
+        assertEquals(listOf("grid-crosses-fold"), diagnostics.map { it.code })
+    }
+
+    /**
+     * The nudge is reported from what the engine did, not recomputed from the
+     * file (#174 simplify): an item with no `w` takes the provider's default
+     * width, crosses the fold with it and is nudged like any other.
+     */
+    @Test
+    fun `a nudge off the fold is reported for an item whose width is the default`() = runTest {
+        settings.state = ConfigState(gridColumns = 4)
+        gridLimits.limits[clockWidget] = ProviderLimits(default = CellSize(2, 1), limits = SizeLimits(1, 1, 4, 2))
+
+        val diagnostics = store.apply(
+            listOf(grid(GridItemConfig(id = "clock", widget = clockWidget, x = 3, y = 0), layout = "fold"))
+        )
+
+        val clock = homeGridRepository.layouts["fold"]!!.single()
         assertTrue("the clock was nudged to one side: x=${clock.x}", clock.x + clock.w <= 4 || clock.x >= 4)
         assertEquals(listOf("grid-crosses-fold"), diagnostics.map { it.code })
     }

@@ -285,7 +285,15 @@ class GridLayoutTest {
         assertEquals(Span(2, 4, 2, 2), result.items.spanOf("a"))
         assertEquals(Span(0, 0, 1, 1), result.items.spanOf("c"))
         assertEquals(listOf("a", "c"), result.items.map { it.id })
-        assertEquals(listOf(LayoutIssue.OutOfBounds("b", Span(0, 0, 9, 1))), result.issues)
+        // The slides are said too (#140): each item is in the layout, but not where it asked.
+        assertEquals(
+            listOf(
+                LayoutIssue.Moved("a", from = Span(3, 5, 2, 2), to = Span(2, 4, 2, 2)),
+                LayoutIssue.OutOfBounds("b", Span(0, 0, 9, 1)),
+                LayoutIssue.Moved("c", from = Span(-1, 0, 1, 1), to = Span(0, 0, 1, 1)),
+            ),
+            result.issues,
+        )
     }
 
     @Test
@@ -297,7 +305,13 @@ class GridLayoutTest {
         val result = GridLayout.normalize(Phone, items)
         assertEquals(Span(0, 0, 2, 2), result.items.spanOf("a"))
         assertEquals(Span(0, 2, 2, 2), result.items.spanOf("b"))
-        assertEquals(listOf(LayoutIssue.Overlap("a", "b")), result.issues)
+        assertEquals(
+            listOf(
+                LayoutIssue.Overlap("a", "b"),
+                LayoutIssue.Moved("b", Span(0, 1, 2, 2), Span(0, 2, 2, 2), LayoutIssue.Push("a", Span(0, 1, 2, 2))),
+            ),
+            result.issues,
+        )
         assertEquals(emptyList<LayoutIssue>(), GridLayout.validate(Phone, result.items))
     }
 
@@ -326,7 +340,13 @@ class GridLayoutTest {
         assertEquals(Span(0, 0, 2, 2), result.items.spanOf("a"))
         // Down in its own column band, not to the first free cell to the right.
         assertEquals(Span(1, 2, 2, 2), result.items.spanOf("b"))
-        assertEquals(listOf(LayoutIssue.Overlap("a", "b")), result.issues)
+        assertEquals(
+            listOf(
+                LayoutIssue.Overlap("a", "b"),
+                LayoutIssue.Moved("b", Span(1, 1, 2, 2), Span(1, 2, 2, 2), LayoutIssue.Push("a", Span(1, 1, 2, 2))),
+            ),
+            result.issues,
+        )
         assertEquals(emptyList<LayoutIssue>(), GridLayout.validate(Phone, result.items))
     }
 
@@ -338,6 +358,49 @@ class GridLayoutTest {
         assertEquals(listOf(LayoutIssue.Overlap("a", "b"), LayoutIssue.Overflow("b")), result.issues)
     }
 
+    // The overlap is found at the slid position, not at the one the file
+    // asked for; the issue says both happened (#174 review).
+    @Test
+    fun `an item slid into the grid and then pushed down says both`() {
+        val items = listOf(item("a", 0, 0, 4, 2), item("b", 3, 1, 2, 1))
+        val result = GridLayout.normalize(Phone, items)
+        assertEquals(Span(2, 2, 2, 1), result.items.spanOf("b"))
+        assertEquals(
+            listOf(
+                LayoutIssue.Overlap("a", "b"),
+                LayoutIssue.Moved("b", from = Span(3, 1, 2, 1), to = Span(2, 2, 2, 1), LayoutIssue.Push("a", Span(2, 1, 2, 1))),
+            ),
+            result.issues,
+        )
+    }
+
+    // The same for a nudge off the fold: the overlap is found at the nudged
+    // position, which the issue records (#174 review).
+    @Test
+    fun `an item nudged off the fold and then pushed down records where it overlapped`() {
+        val items = listOf(item("wall", 2, 0, 1, 1), item("b", 3, 0, 2, 1))
+        val result = GridLayout.normalize(Fold, items)
+        assertEquals(Span(2, 1, 2, 1), result.items.spanOf("b"))
+        assertEquals(
+            listOf(
+                LayoutIssue.Overlap("wall", "b"),
+                LayoutIssue.Moved("b", from = Span(3, 0, 2, 1), to = Span(2, 1, 2, 1), LayoutIssue.Push("wall", Span(2, 0, 2, 1))),
+                LayoutIssue.NudgedOffFold("b"),
+            ),
+            result.issues,
+        )
+    }
+
+    // Moved-then-dropped reports the drop only, like a fitted-then-dropped item.
+    @Test
+    fun `an item slid into the grid and then dropped reports only the drop`() {
+        val items = listOf(item("full", 0, 0, 4, 6), item("late", 3, 5, 2, 1))
+        val result = GridLayout.normalize(Phone, items)
+        assertEquals(listOf("full"), result.items.map { it.id })
+        assertEquals(listOf(LayoutIssue.Overlap("full", "late"), LayoutIssue.Overflow("late")), result.issues)
+    }
+
+    // A nudge off the fold line is NudgedOffFold, not a move.
     @Test
     fun `normalize handles the fold like move does`() {
         val items = listOf(item("a", 3, 0, 2, 1), item("b", 1, 1, 6, 1), favorites(0, 5, 8, 1))
@@ -345,7 +408,8 @@ class GridLayoutTest {
         assertEquals(Span(2, 0, 2, 1), result.items.spanOf("a"))
         assertEquals(Span(0, 5, 8, 1), result.items.spanOf("favorites"))
         assertEquals(listOf("a", "favorites"), result.items.map { it.id })
-        assertEquals(listOf(LayoutIssue.CrossesFold("b")), result.issues)
+        // The nudge is its own issue, not a move: a kept, b dropped.
+        assertEquals(listOf(LayoutIssue.NudgedOffFold("a"), LayoutIssue.CrossesFold("b")), result.issues)
     }
 
     @Test
