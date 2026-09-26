@@ -144,14 +144,14 @@ wait_report() { # $1 = jq filter, $2 = timeout (s), $3 = description
 
 write_config() { # $1 = local file
   local out
-  out="$(adb -s "$SERIAL" shell content write --uri "$INGEST_URI" < "$1" 2>&1 | tr -d '\r')" \
+  out="$(adb_t shell content write --uri "$INGEST_URI" < "$1" 2>&1 | tr -d '\r')" \
     || { printf '%s\n' "$out" >&2; die "content write failed"; }
   [ -z "$out" ] || { printf '%s\n' "$out" >&2; die "content write reported an error"; }
 }
 
 reload_broadcast() {
   local out
-  out="$(adb -s "$SERIAL" shell am broadcast -n "$RECEIVER" -a "$ACTION" 2>&1 | tr -d '\r')" \
+  out="$(adb_t shell am broadcast -n "$RECEIVER" -a "$ACTION" 2>&1 | tr -d '\r')" \
     || { printf '%s\n' "$out" >&2; die "am broadcast failed"; }
   case "$out" in
     *"Broadcast completed"*) ;;

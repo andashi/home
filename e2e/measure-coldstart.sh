@@ -70,15 +70,16 @@ cleanup() {
     keep_lock=1
   fi
   # Each run-specific snapshot is ~3.5 GB: a delete that fails silently
-  # would let them pile up. One retry, then name whatever is left.
+  # would let them pile up. One retry, then name whatever is left. Plain
+  # `timeout`, not adb_t: this trap can fire before the library is sourced.
   local left=()
   for n in "${names[@]}"; do
-    adb -s "$SERIAL" emu avd snapshot delete "$n" >/dev/null 2>&1 \
-      || { sleep 2; adb -s "$SERIAL" emu avd snapshot delete "$n" >/dev/null 2>&1; } || true
+    timeout 30 adb -s "$SERIAL" emu avd snapshot delete "$n" >/dev/null 2>&1 \
+      || { sleep 2; timeout 30 adb -s "$SERIAL" emu avd snapshot delete "$n" >/dev/null 2>&1; } || true
   done
   if [ "${#names[@]}" -gt 0 ]; then
     local listed
-    listed="$(adb -s "$SERIAL" emu avd snapshot list 2>/dev/null || true)"
+    listed="$(timeout 15 adb -s "$SERIAL" emu avd snapshot list 2>/dev/null || true)"
     for n in "${names[@]}"; do grep -qF "$n" <<<"$listed" && left+=("$n"); done
     [ "${#left[@]}" -eq 0 ] || printf 'x snapshots left on %s, delete them by hand: %s\n' "$SERIAL" "${left[*]}" >&2
   fi
@@ -173,7 +174,8 @@ for k in "${!apks[@]}"; do
   name="cold-$RUN_TOKEN-m$k"; names+=("$name")
   log "preparing $name from $(basename "${srcs[k]}")"
   restore clean
-  adb -s "$SERIAL" install -r "$apk" >/dev/null
+  # An install outlasts adb_t's default minute on a loaded host.
+  ADB_DEADLINE=$(deadline_in 180) adb_t install -r "$apk" >/dev/null
   sh_ cmd role add-role-holder android.app.role.HOME "$PKG"
   show_home; sleep 5
   sh_ content write --uri "content://$PKG.config-ingest/wallpapers/mauritius.jpg" \
