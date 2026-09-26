@@ -300,8 +300,11 @@ ok "slice 1 keys: applied and read back"
 # B. A size the settings do not offer fails the file; the last good state stays.
 printf '{ "schemaVersion": 2, "icons": { "size": 50 } }\n' > "$WORK/size50.json"
 h50="$(sha256sum "$WORK/size50.json" | cut -d' ' -f1)"
+# By hash and freshness: a hash alone could match an earlier report of the
+# same bytes at once (#192).
+before="$(report_now)" || exit 1
 write_config "$WORK/size50.json"
-wait_report ".configSha256 == \"$h50\"" 60 "the reload of icons.size 50"
+wait_push_report "$before" "$h50" 60 "the reload of icons.size 50"
 assert_jq "$LAST_REPORT" \
   '.success == false and ([.diagnostics[] | select(.code == "invalid-icons" and .path == "icons.size" and .severity == "error")] | length) == 1' \
   "icons.size 50 fails with invalid-icons at its path"
