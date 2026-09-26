@@ -334,4 +334,60 @@ waits_three_slow_rounds() {
 }
 check "wait_on_home waits three rounds on a slow host and says what they cost" waits_three_slow_rounds
 
+# Every device command is scoped to $SERIAL. An unscoped `adb reconnect
+# offline` reaches every emulator on the host, including instances other
+# sessions hold under their locks (review on #163).
+mkdir -p "$WORK/record"
+cat > "$WORK/record/adb" <<EOF
+#!/usr/bin/env bash
+echo "\$*" >> "$WORK/record/calls"
+case "\$*" in
+  *"shell id -u"*)
+    n=\$(( \$(cat "$WORK/record/n" 2>/dev/null || echo 0) + 1 )); echo "\$n" > "$WORK/record/n"
+    [ "\$n" -ge 2 ] && echo 2000 || exit 1 ;;
+esac
+EOF
+chmod +x "$WORK/record/adb"
+reconnect_is_scoped() {
+  rm -f "$WORK/record/calls" "$WORK/record/n"
+  ( PATH="$WORK/record:$PATH"; unrooted_shell 10 ) >/dev/null 2>&1 || return 1
+  grep -q "reconnect" "$WORK/record/calls" || { echo "no reconnect attempted" >&2; return 1; }
+  ! grep -v "^-s fake " "$WORK/record/calls" | grep -q .
+}
+check "unrooted_shell scopes every adb call, the reconnect included, to its serial" reconnect_is_scoped
+
+# unrooted_shell's timeout covers the whole operation, the unroot included:
+# a hanging `adb unroot` must not delay the deadline.
+mkdir -p "$WORK/stuckroot"
+cat > "$WORK/stuckroot/adb" <<'EOF'
+#!/usr/bin/env bash
+case "$*" in *" unroot"*) sleep 60 ;; *"shell id -u"*) echo 2000 ;; esac
+EOF
+chmod +x "$WORK/stuckroot/adb"
+unroot_is_under_the_deadline() {
+  local start=$SECONDS
+  ( PATH="$WORK/stuckroot:$PATH"; timeout 30 bash -c "$(declare -f); $(declare -p SERIAL PKG WORK 2>/dev/null); unrooted_shell 3" ) >/dev/null 2>&1
+  [ $((SECONDS - start)) -le 6 ]
+}
+check "unrooted_shell's timeout covers a hanging unroot" unroot_is_under_the_deadline
+
+# A round whose dump uses up ROUND_CAP still wakes the device and reopens
+# home: the recovery gets time of its own, or the next round looks at the
+# same screen (review on #163).
+mkdir -p "$WORK/slowdump"
+cat > "$WORK/slowdump/adb" <<EOF
+#!/usr/bin/env bash
+case "\$*" in
+  *"uiautomator dump"*) sleep 60 ;;
+  *"KEYCODE_WAKEUP"*|*"am start"*) echo "\$*" >> "$WORK/slowdump/recovery" ;;
+esac
+EOF
+chmod +x "$WORK/slowdump/adb"
+recovery_runs_after_a_slow_dump() {
+  rm -f "$WORK/slowdump/recovery"
+  ( PATH="$WORK/slowdump:$PATH"; ROUND_CAP=1; wait_on_home grid-item:dock 2 ) >/dev/null 2>&1
+  grep -q KEYCODE_WAKEUP "$WORK/slowdump/recovery" 2>/dev/null && grep -q "am start" "$WORK/slowdump/recovery"
+}
+check "a round whose dump used up its cap still wakes the device and reopens home" recovery_runs_after_a_slow_dump
+
 exit "$failed"

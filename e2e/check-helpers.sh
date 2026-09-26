@@ -9,7 +9,7 @@
 #
 #   e2e/check-helpers.sh        # exit 1 and name every duplicate
 set -euo pipefail
-cd "$(dirname "$0")"
+cd "${1:-$(dirname "$0")}"  # a directory laid out like e2e/, for the tests
 
 defined() { grep -oE '^[a-z_][a-z0-9_]*\(\)' "$1" | tr -d '()' | sort -u; }
 

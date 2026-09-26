@@ -41,6 +41,8 @@ jobs:
         run: e2e/lib/grid-device.test.sh
       - name: CI wrapper tests
         run: e2e/ci/l2-with-evidence.test.sh
+      - name: e2e duplicate check recognises every declaration form
+        run: e2e/check-helpers.test.sh
       - name: e2e scripts share one copy of each helper
         run: e2e/check-helpers.sh
       - name: Set up JDK 21
