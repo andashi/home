@@ -26,6 +26,12 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.yield
+import org.koin.core.context.GlobalContext
+import de.mm20.launcher2.preferences.ui.UiSettings
+import java.util.UUID
+import de.mm20.launcher2.config.ReloadReport
+import de.mm20.launcher2.preferences.BuiltInColorSchemes
+import de.mm20.launcher2.config.ThemeColors
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -126,6 +132,118 @@ class ConfigWriteBackTest {
 
         assertTrue(result.toString(), result is WriteBackResult.Written)
         assertEquals(searchFile, file.readText())
+    }
+
+    // ----- appearance.theme (#3 slice 3) -----
+
+    private val themeFile = """
+        {
+          // zone: home
+          "schemaVersion": 2,
+          "appearance": { "theme": { "mode": "system", "colors": "system" /* the zone's palette */ } }
+        }
+    """.trimIndent()
+
+    /** A scheme a person made in the launcher's settings: a random id the file cannot name. */
+    private suspend fun ownColorSchemeOnDevice() {
+        GlobalContext.get().get<UiSettings>().setColorsId(UUID.fromString("7d7c3a2e-5b1f-4c8e-9a61-2f0b9d4e1c33"))
+        withTimeout(10_000) { while (real.store.readState().themeColors != null) delay(20) }
+    }
+
+    private fun keptColors(report: ReloadReport?) =
+        report?.diagnostics?.any {
+            it.code == ConfigWriteBack.SkipCodePrefix + "colors-custom" && it.message.contains("appearance.theme.colors")
+        } == true
+
+    @Test
+    fun `a theme mode changed on the device is written into the file`() = runBlocking {
+        applied(themeFile)
+        onDevice("""{"schemaVersion":2,"appearance":{"theme":{"mode":"dark"}}}""")
+
+        val result = writeBack.write()
+
+        assertTrue(result.toString(), result is WriteBackResult.Written)
+        assertEquals(themeFile.replace("\"mode\": \"system\"", "\"mode\": \"dark\""), file.readText())
+    }
+
+    /**
+     * The file keeps what it asked, and the report says why the effect
+     * differs: writing `system` for a scheme nobody chose would put a choice
+     * into the file that no one made.
+     */
+    @Test
+    fun `a colour scheme a person made leaves colors as written, and the report says why`() = runBlocking {
+        applied(themeFile)
+        ownColorSchemeOnDevice()
+
+        val result = writeBack.write()
+
+        assertEquals(WriteBackResult.Unchanged, result)
+        assertEquals(themeFile, file.readText())
+        assertTrue(reportStore.read()?.diagnostics.toString(), keptColors(reportStore.read()))
+    }
+
+    @Test
+    fun `with a person's own scheme, a mode change is still written, and the report says colors was kept`() = runBlocking {
+        applied(themeFile)
+        ownColorSchemeOnDevice()
+        onDevice("""{"schemaVersion":2,"appearance":{"theme":{"mode":"light"}}}""")
+
+        val result = writeBack.write()
+
+        assertTrue(result.toString(), result is WriteBackResult.Written)
+        assertEquals(themeFile.replace("\"mode\": \"system\"", "\"mode\": \"light\""), file.readText())
+        assertTrue(reportStore.read()?.diagnostics.toString(), keptColors(reportStore.read()))
+    }
+
+    /** The warning describes the device as it is now: back on a built-in scheme, it goes (#183 review). */
+    @Test
+    fun `back from a person's own scheme to a built-in one, the warning goes`() = runBlocking {
+        applied(themeFile)
+        ownColorSchemeOnDevice()
+        writeBack.write()
+        assertTrue(keptColors(reportStore.read()))
+
+        GlobalContext.get().get<UiSettings>().setColorsId(BuiltInColorSchemes.System)
+        withTimeout(10_000) { while (real.store.readState().themeColors != ThemeColors.System) delay(20) }
+        val result = writeBack.write()
+
+        assertEquals(WriteBackResult.Unchanged, result)
+        assertEquals(themeFile, file.readText())
+        assertTrue(reportStore.read()?.diagnostics.toString(), !keptColors(reportStore.read()))
+    }
+
+    /**
+     * Two reasons at once: a skip warning must not evict the colour-scheme
+     * warning, which still describes the device (#183 simplify).
+     */
+    @Test
+    fun `a skipped write-back leaves the colour-scheme warning in place`() = runBlocking {
+        applied(themeFile)
+        ownColorSchemeOnDevice()
+        writeBack.write()
+        val grid = GridWriteBack(context, real.grid, real.store, reportStore, lock, baselineStore = baselineStore)
+        val items = listOf(HomeGridItem(HomeGridLayouts.Phone, "dock", HomeGridWidgets.Favorites, null, 0, 5, 4, 1, position = 0))
+
+        val result = grid.write(HomeGridLayouts.Phone, items)
+
+        assertEquals("grid-unmanaged", (result as WriteBackResult.Skipped).code)
+        val codes = reportStore.read()!!.diagnostics.map { it.code }
+        assertTrue(codes.toString(), ConfigWriteBack.SkipCodePrefix + "grid-unmanaged" in codes)
+        assertTrue(codes.toString(), keptColors(reportStore.read()))
+    }
+
+    @Test
+    fun `a file without colors says nothing about a person's own scheme`() = runBlocking {
+        val modeOnly = themeFile.replace(""", "colors": "system" /* the zone's palette */""", "")
+        applied(modeOnly)
+        ownColorSchemeOnDevice()
+
+        val result = writeBack.write()
+
+        assertEquals(WriteBackResult.Unchanged, result)
+        assertEquals(modeOnly, file.readText())
+        assertTrue(reportStore.read()?.diagnostics.toString(), !keptColors(reportStore.read()))
     }
 
     @Test

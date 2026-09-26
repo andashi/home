@@ -20,6 +20,33 @@ class WriteBackPlanTest {
     private fun changes(file: String, device: String) =
         WriteBackPlan.changes(literal = tree(file), fileEffective = tree(file), device = tree(device))
 
+    /**
+     * A value the device has but cannot express, such as a colour scheme a
+     * person made, reads back as nothing: the file keeps what it wrote, and
+     * the plan names the path it kept, so a caller can say why instead of
+     * working it out again (#183 simplify).
+     */
+    @Test
+    fun `a value the device cannot express is kept as written, and the plan names its path`() {
+        val file = """{"schemaVersion":2,"appearance":{"theme":{"mode":"system","colors":"system"}}}"""
+        val device = """{"schemaVersion":2,"appearance":{"theme":{"mode":"system"}}}"""
+
+        val plan = WriteBackPlan.plan(literal = tree(file), fileEffective = tree(file), device = tree(device))
+
+        assertEquals(emptyList<WriteBackPlan.Change>(), plan.changes)
+        assertEquals(listOf(listOf("appearance", "theme", "colors")), plan.kept)
+    }
+
+    @Test
+    fun `a key the file leaves out is not kept, it is unmanaged`() {
+        val file = """{"schemaVersion":2,"appearance":{"theme":{"mode":"system"}}}"""
+        val device = """{"schemaVersion":2,"appearance":{"theme":{"mode":"dark"}}}"""
+
+        val plan = WriteBackPlan.plan(literal = tree(file), fileEffective = tree(file), device = tree(device))
+
+        assertEquals(emptyList<List<String>>(), plan.kept)
+    }
+
     @Test
     fun `a device that matches the file changes nothing`() {
         val file = """{"schemaVersion":2,"home":{"grid":{"columns":4}}}"""

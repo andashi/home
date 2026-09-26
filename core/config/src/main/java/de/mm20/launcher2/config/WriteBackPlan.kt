@@ -34,38 +34,66 @@ object WriteBackPlan {
     data class Change(val path: List<String>, val value: JsonElement)
 
     /**
-     * The changes that make [literal] (the file as written) say what [device]
+     * What a write-back does to the file: the [changes], and the paths the
+     * file writes that it [kept] as written because the device has no value
+     * there - one it cannot express, such as a colour scheme a person made,
+     * or a key its model does not know. A caller explains a kept path from
+     * here instead of working it out again.
+     */
+    data class Plan(val changes: List<Change>, val kept: List<List<String>>)
+
+    /**
+     * The plan that makes [literal] (the file as written) say what [device]
      * has in effect. [fileEffective] is what the file produced once applied.
      * [canonical] is the file parsed and encoded again, the shape the other
      * two have, which the entries of a list are paired with; it is [literal]
      * wherever the file already writes the canonical form.
      */
+    fun plan(
+        literal: JsonObject,
+        fileEffective: JsonObject,
+        device: JsonObject,
+        canonical: JsonObject = literal,
+    ): Plan {
+        val changes = mutableListOf<Change>()
+        val kept = mutableListOf<List<String>>()
+        collect(literal, canonical, fileEffective, device, emptyList(), changes, kept)
+        return Plan(changes, kept)
+    }
+
+    /** [plan]'s changes. */
     fun changes(
         literal: JsonObject,
         fileEffective: JsonObject,
         device: JsonObject,
         canonical: JsonObject = literal,
-    ): List<Change> = buildList { collect(literal, canonical, fileEffective, device, emptyList()) }
+    ): List<Change> = plan(literal, fileEffective, device, canonical).changes
 
-    private fun MutableList<Change>.collect(
+    private fun collect(
         literal: JsonObject,
         canonical: JsonObject?,
         fileEffective: JsonObject?,
         device: JsonObject,
         at: List<String>,
+        changes: MutableList<Change>,
+        kept: MutableList<List<String>>,
     ) {
         for ((key, written) in literal) {
-            val now = device[key]?.takeUnless { it is JsonNull } ?: continue
+            val path = at + key
+            val now = device[key]?.takeUnless { it is JsonNull }
+            if (now == null) {
+                kept += path
+                continue
+            }
             val canon = canonical?.get(key)?.takeUnless { it is JsonNull } ?: written
             val effect = fileEffective?.get(key)?.takeUnless { it is JsonNull } ?: canon
-            val path = at + key
             if (written is JsonObject && now is JsonObject && path !in WholeValues) {
-                collect(written, canon as? JsonObject, effect as? JsonObject, now, path)
+                collect(written, canon as? JsonObject, effect as? JsonObject, now, path, changes, kept)
             } else if (!same(effect, now)) {
                 // Merged back, it can say exactly what the file says: then
                 // there is nothing to write.
                 val value = merged(written, canon, effect, now, path)
-                if (!same(value, written)) add(Change(path, value))
+                if (!same(value, written)) changes += Change(path, value)
             }
         }
     }

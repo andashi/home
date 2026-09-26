@@ -69,7 +69,28 @@ object IconDefaults {
 data class AppearanceConfig(
     val glass: GlassConfig? = null,
     val wallpaper: WallpaperConfig? = null,
+    val theme: ThemeConfig? = null,
 )
+
+/**
+ * `appearance.theme` (#3 slice 3, D7): light, dark or following the system,
+ * and one of the launcher's built-in colour schemes by slug. The system
+ * palette is the default for both: a zone's colour comes from the system
+ * overlay, and the launcher follows it unless a file asks otherwise. The
+ * file names a built-in scheme; it never defines a palette.
+ */
+@Serializable
+data class ThemeConfig(
+    val mode: ThemeMode? = null,
+    val colors: ThemeColors? = null,
+)
+
+@Serializable(with = ThemeModeSerializer::class)
+enum class ThemeMode { Light, Dark, System }
+
+/** The launcher's built-in colour schemes. [System] follows the system (Monet) palette. */
+@Serializable(with = ThemeColorsSerializer::class)
+enum class ThemeColors { System, BlackAndWhite, HighContrast }
 
 /**
  * The glass surfaces of the home screen (ADR 0004, #24): cards, dock and
@@ -116,7 +137,13 @@ internal abstract class FieldEnumSerializer<E : Enum<E>>(
     private val path: String,
     entries: List<E>,
 ) : KSerializer<E> {
-    private val byName = entries.associateBy { it.name.lowercase() }
+    /**
+     * Wire names are the entry names in kebab case: `Medium` is `medium`,
+     * `BlackAndWhite` is `black-and-white`. ConfigSchemaTest pins every
+     * published value, so a new or renamed entry is a visible change.
+     */
+    private val byName = entries.associateBy { it.name.replace(KebabBoundary, "$1-$2").lowercase() }
+    private val nameOf = byName.entries.associate { (name, entry) -> entry to name }
 
     /** The values the contract accepts, as written; the JSON Schema lists these. */
     val names: List<String> = byName.keys.toList()
@@ -124,7 +151,7 @@ internal abstract class FieldEnumSerializer<E : Enum<E>>(
     override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor(serialName, PrimitiveKind.STRING)
 
     override fun serialize(encoder: Encoder, value: E) {
-        encoder.encodeString(value.name.lowercase())
+        encoder.encodeString(nameOf.getValue(value))
     }
 
     override fun deserialize(decoder: Decoder): E {
@@ -135,8 +162,18 @@ internal abstract class FieldEnumSerializer<E : Enum<E>>(
     }
 }
 
+private val KebabBoundary = Regex("([a-z0-9])([A-Z])")
+
 internal object GlassContrastSerializer : FieldEnumSerializer<GlassContrast>(
     "de.mm20.launcher2.config.GlassContrast", "appearance.glass.contrast", GlassContrast.entries,
+)
+
+internal object ThemeModeSerializer : FieldEnumSerializer<ThemeMode>(
+    "de.mm20.launcher2.config.ThemeMode", "appearance.theme.mode", ThemeMode.entries,
+)
+
+internal object ThemeColorsSerializer : FieldEnumSerializer<ThemeColors>(
+    "de.mm20.launcher2.config.ThemeColors", "appearance.theme.colors", ThemeColors.entries,
 )
 
 /** The one place the glass defaults live; state, settings and read-back use it. */

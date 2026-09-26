@@ -24,6 +24,10 @@
     "wallpaper": {
       "image": "zone.jpg",
       "target": "lock"
+    },
+    "theme": {
+      "mode": "dark",
+      "colors": "high-contrast"
     }
   },
   "home": {

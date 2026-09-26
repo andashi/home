@@ -154,10 +154,17 @@ class ConfigWriteBack(
         }
 
         val device = effectiveTree(configStore.readState().toLauncherConfig())
-        val changes = WriteBackPlan.changes(literal, baseline.effective, device, canonical = effectiveTree(config))
+        val plan = WriteBackPlan.plan(literal, baseline.effective, device, canonical = effectiveTree(config))
+        val changes = plan.changes
             // W2: a locked grid is not the device's to change, whatever else is.
             .filterNot { gridLocked && it.path.take(2) == listOf("home", "grid") }
-        if (changes.isEmpty()) return WriteBackResult.Unchanged
+        // The file keeps what it asked where the device has nothing it can
+        // express, and the report says why the effect differs (#3 slice 3).
+        val kept = plan.kept.mapNotNull { KeptReasons[it] }
+        if (changes.isEmpty()) {
+            reconcileKept(kept, literal)
+            return WriteBackResult.Unchanged
+        }
 
         val spliced = WriteBackPlan.splice(text, changes)
             ?: return skipped("malformed-config", "could not locate the changed keys in ${file.name}")
@@ -197,6 +204,7 @@ class ConfigWriteBack(
                     appliedMutations = changes.map { it.path.joinToString(".") },
                     configSha256 = written,
                     trigger = ReloadTrigger.SelfWrite,
+                    diagnostics = kept,
                 )
             )
         } catch (e: Exception) {
@@ -208,30 +216,63 @@ class ConfigWriteBack(
     }
 
     /** The skip, as a warning on the last reload report; the report itself stays what it was. */
-    private suspend fun recordSkip(skip: WriteBackResult.Skipped) {
+    private suspend fun recordSkip(skip: WriteBackResult.Skipped) =
+        recordSkipWarning(Diagnostic(Severity.Warning, SkipCodePrefix + skip.code, "", skip.reason))
+
+    /**
+     * [warning] in place of any earlier skip warning on the last reload
+     * report. The kept-value warnings stay: they describe the device, not
+     * the write-back that just stopped.
+     */
+    private suspend fun recordSkipWarning(warning: Diagnostic) = editDiagnostics("the skipped write-back") { all ->
+        if (all.any { it.code == warning.code && it.message == warning.message }) all
+        else all.filterNot { it.code.startsWith(SkipCodePrefix) && it.code !in KeptCodes } + warning
+    }
+
+    /**
+     * The kept-value warnings on the last reload report as [kept] has them
+     * now, the rest of it as it was: back on a built-in scheme, an earlier
+     * colour warning goes. Only a file that writes an explained path can
+     * carry one, so any other skips reading the report.
+     */
+    private suspend fun reconcileKept(kept: List<Diagnostic>, literal: JsonObject) {
+        if (kept.isEmpty() && KeptReasons.keys.none { literal.at(it) != null }) return
+        editDiagnostics("the kept-value warnings") { all -> all.filterNot { it.code in KeptCodes } + kept }
+    }
+
+    /** Rewrites the last reload report's diagnostics with [edit]; saves only when that changes them. */
+    private suspend fun editDiagnostics(what: String, edit: (List<Diagnostic>) -> List<Diagnostic>) {
         try {
             val last = reportStore.read() ?: return
-            val code = SkipCodePrefix + skip.code
-            if (last.diagnostics.any { it.code == code && it.message == skip.reason }) return
-            val others = last.diagnostics.filterNot { it.code.startsWith(SkipCodePrefix) }
-            reportStore.save(
-                last.copy(
-                    diagnostics = others + Diagnostic(Severity.Warning, code, "", skip.reason),
-                )
-            )
+            val next = edit(last.diagnostics)
+            if (next != last.diagnostics) reportStore.save(last.copy(diagnostics = next))
         } catch (e: Exception) {
-            Log.w(TAG, "could not record the skipped write-back", e)
+            Log.w(TAG, "could not record $what", e)
         }
     }
 
     private fun skipped(code: String, reason: String) = WriteBackResult.Skipped(code, reason)
-
-
 
     companion object {
         private const val TAG = "ConfigWriteBack"
 
         /** A skipped write-back in the reload report: `write-back-skipped:<code>`. */
         const val SkipCodePrefix = "write-back-skipped:"
+
+        /**
+         * Why the device differs where the plan kept the file's value, for
+         * the paths that have a reason to give. A kept path without one (an
+         * inert key, a key of a newer build) needs no warning.
+         */
+        private val KeptReasons: Map<List<String>, Diagnostic> = mapOf(
+            listOf("appearance", "theme", "colors") to Diagnostic(
+                Severity.Warning,
+                SkipCodePrefix + "colors-custom",
+                "appearance.theme.colors",
+                "the device uses a colour scheme a person made, which appearance.theme.colors cannot name; " +
+                    "the file keeps its value",
+            ),
+        )
+        private val KeptCodes = KeptReasons.values.map { it.code }.toSet()
     }
 }

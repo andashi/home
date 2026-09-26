@@ -19,6 +19,11 @@ import de.mm20.launcher2.preferences.LauncherSettingsData
 import de.mm20.launcher2.preferences.seedSettingsFile
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
+import de.mm20.launcher2.config.ThemeColors
+import de.mm20.launcher2.config.ThemeMode
+import de.mm20.launcher2.preferences.ColorScheme
+import de.mm20.launcher2.preferences.BuiltInColorSchemes
+import java.util.UUID
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
@@ -105,6 +110,45 @@ class LauncherConfigSettingsTest {
         assertEquals(GlassDefaults.Contrast, state.glassContrast)
         assertEquals(GlassDefaults.Labels, state.gridLabels)
         assertEquals(GlassDefaults.SearchWallpaperBlur, state.glassSearchWallpaperBlur)
+    }
+
+    // ----- appearance.theme (#3 slice 3) -----
+
+    @Test
+    fun `fresh settings read back the system theme`() = runTest {
+        val state = createGateway().readState()
+        assertEquals(ThemeMode.System, state.themeMode)
+        assertEquals(ThemeColors.System, state.themeColors)
+    }
+
+    @Test
+    fun `apply SetTheme writes the mode and a built-in scheme, each field on its own`() = runTest {
+        val gateway = createGateway()
+
+        val dark = gateway.applyAndReturn(listOf(ConfigMutation.SetTheme(mode = ThemeMode.Dark)))
+        assertEquals(ColorScheme.Dark, dark.uiColorScheme)
+        assertEquals(BuiltInColorSchemes.System, dark.uiColorsId)
+
+        val contrast = gateway.applyAndReturn(listOf(ConfigMutation.SetTheme(colors = ThemeColors.HighContrast)))
+        assertEquals(ColorScheme.Dark, contrast.uiColorScheme)
+        assertEquals(BuiltInColorSchemes.HighContrast, contrast.uiColorsId)
+
+        for (mode in ThemeMode.entries) {
+            assertEquals(mode, gateway.applyAndRead(listOf(ConfigMutation.SetTheme(mode = mode))).themeMode)
+        }
+        for (colors in ThemeColors.entries) {
+            assertEquals(colors, gateway.applyAndRead(listOf(ConfigMutation.SetTheme(colors = colors))).themeColors)
+        }
+    }
+
+    /** A person's own colour scheme has a random id: the file has no slug for it. */
+    @Test
+    fun `a colour scheme a person made reads back as no slug`() = runTest {
+        val own = UUID.fromString("7d7c3a2e-5b1f-4c8e-9a61-2f0b9d4e1c33")
+        val state = createGateway(LauncherSettingsData(uiColorsId = own)).readState()
+
+        assertNull(state.themeColors)
+        assertEquals(ThemeMode.System, state.themeMode)
     }
 
     @Test

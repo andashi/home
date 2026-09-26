@@ -1,7 +1,7 @@
 # Appearance
 
-`appearance` holds the look of the home screen: the glass surfaces and the
-wallpaper. Design background: [ADR 0004](../architecture/adr/0004-liquid-glass-design.md).
+`appearance` holds the look of the home screen: the glass surfaces, the
+wallpaper and the theme. Design background: [ADR 0004](../architecture/adr/0004-liquid-glass-design.md).
 
 ## Glass
 
@@ -130,6 +130,52 @@ the reload reports `wallpaper-pending-foreground`.
 This managed wallpaper is also the only source of the glass backdrop. The
 launcher cannot read a wallpaper set elsewhere without permissions it does not
 ask for.
+
+## Theme
+
+`appearance.theme` picks light or dark and the colour scheme.
+
+<!-- config -->
+```json
+{
+  "schemaVersion": 2,
+  "appearance": { "theme": { "mode": "system", "colors": "system" } }
+}
+```
+
+These are the defaults. Every key is optional; an absent one keeps what the
+device has.
+
+| Key | What it does | Accepted | Default |
+|---|---|---|---|
+| `appearance.theme.mode` | `light`, `dark`, or `system` to follow the system's dark theme | enum | `system` |
+| `appearance.theme.colors` | The launcher's built-in colour scheme: `system` follows the system palette, `black-and-white` and `high-contrast` replace it | enum | `system` |
+
+Each zone's palette comes from the system (its Monet seed). A file picks one
+of the built-in schemes; it cannot define a palette.
+
+On the home screen the glass is the dominant visual element by design
+([ADR 0004](../architecture/adr/0004-liquid-glass-design.md)): a surface is
+the wallpaper behind it, carrying the scheme's surface colour only at the
+glass tint (0.12 by default). The theme therefore acts on what sits on the
+glass, not on the glass itself. Measured on the fold's inner display with
+search open (emulator, the system itself in light mode):
+
+- `mode` flips the text - white on `dark`, dark on `light` - and darkens the
+  glass a little (the search bar's mean brightness 219 on `light`, 206 on
+  `dark`, out of 255), rather than recolouring the screen.
+- `colors` reaches the text's tone: `black-and-white` sets it pure black
+  where `system` gives a dark grey tinted by the zone's palette. The glass
+  stays the wallpaper (219.4 against 219.9).
+
+| <img alt="search results, mode light, colors system, fold inner" src="img/theme-mode-light-fold-inner.jpg" width="260"> | <img alt="search results, mode dark, colors system, fold inner" src="img/theme-mode-dark-fold-inner.jpg" width="260"> |
+|---|---|
+| `"mode": "light"` | `"mode": "dark"` |
+
+On the device, a person can also pick a colour scheme they made themselves.
+The file cannot name one, so write-back leaves `colors` as the file wrote it,
+and the reload report carries a `write-back-skipped:colors-custom` warning
+saying so.
 
 ## Removed: transparency
 

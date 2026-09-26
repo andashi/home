@@ -63,6 +63,43 @@ class ConfigDifferTest {
         ),
     )
 
+    // ----- appearance.theme (#3 slice 3) -----
+
+    @Test
+    fun `each theme key diffs on its own, and one already in effect produces nothing`() {
+        fun diff(theme: ThemeConfig, state: ConfigState = baseState) =
+            ConfigDiffer.diff(LauncherConfig(2, appearance = AppearanceConfig(theme = theme)), state)
+
+        assertEquals(listOf(ConfigMutation.SetTheme(mode = ThemeMode.Dark)), diff(ThemeConfig(mode = ThemeMode.Dark)))
+        assertEquals(
+            listOf(ConfigMutation.SetTheme(colors = ThemeColors.HighContrast)),
+            diff(ThemeConfig(colors = ThemeColors.HighContrast)),
+        )
+        // The defaults are in effect on a fresh state: naming them changes nothing.
+        assertEquals(emptyList<ConfigMutation>(), diff(ThemeConfig(ThemeMode.System, ThemeColors.System)))
+        assertEquals(
+            listOf(ConfigMutation.SetTheme(colors = ThemeColors.BlackAndWhite)),
+            diff(ThemeConfig(ThemeMode.Light, ThemeColors.BlackAndWhite), baseState.copy(themeMode = ThemeMode.Light)),
+        )
+    }
+
+    /**
+     * A person picked a colour scheme of their own on the device: the state
+     * has no slug for it (null). A file that names one is applied - the file
+     * manages the key - so even `system` counts as a difference.
+     */
+    @Test
+    fun `a custom colour scheme on the device differs from every slug the file names`() {
+        val custom = baseState.copy(themeColors = null)
+        for (colors in ThemeColors.entries) {
+            assertEquals(
+                colors.toString(),
+                listOf(ConfigMutation.SetTheme(colors = colors)),
+                ConfigDiffer.diff(LauncherConfig(2, appearance = AppearanceConfig(theme = ThemeConfig(colors = colors))), custom),
+            )
+        }
+    }
+
     // ----- appearance.glass (#73) -----
 
     @Test
