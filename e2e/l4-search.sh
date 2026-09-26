@@ -132,7 +132,10 @@ assert_jq "$report" \
   '.success == true and ([.diagnostics[]? | select(.code == "permission-missing" and .path == "search.contacts" and .severity == "warning")] | length) == 1' \
   "the report says contact search cannot work here"
 assert_jq "$(query_json config)" '.search.contacts == true' "the read-back keeps what the file asked for"
-open_search
+# enter_search, not the library's open_search: #172 wrote this against the
+# script's former open_search, which also typed a letter and closed the
+# keyboard. The banner answers a query.
+enter_search
 wait_text "Contacts permission is required to search your contacts" 15
 wait_text "Turn off" 5
 adb -s "$SERIAL" shell input keyevent KEYCODE_HOME
