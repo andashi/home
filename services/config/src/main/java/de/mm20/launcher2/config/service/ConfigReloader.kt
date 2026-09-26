@@ -190,15 +190,17 @@ class ConfigReloader(
         )
         // A measurement reload that is a true no-op leaves the last report
         // alone: that report is what a push is waited on by, and it still
-        // describes the device. A no-op means the last report is of this very
-        // file, only the forced grid was applied, the fit changed nothing and
-        // there is no correction; a measurement reload that met a newly pushed
-        // file has to say so. The capability warnings are left out of the test
-        // because every reload of this file carries them (#178 review).
+        // describes the device. A no-op means the last report is a successful
+        // one of this very file, only the forced layouts were applied (a grid
+        // setting in SetGrid is a correction the differ found), the fit changed
+        // nothing and there is no correction; a measurement reload that met a
+        // newly pushed file, or replaces a failed report, has to say so. The
+        // capability warnings are left out of the test because every reload of
+        // this file carries them (#178 review).
         val noOp = trigger == ReloadTrigger.GridMeasured &&
             applyDiagnostics.isEmpty() &&
-            mutations.all { it is ConfigMutation.SetGrid } &&
-            lastReportSha() == configSha256 &&
+            mutations.all { it.isForcedLayoutsOnly() } &&
+            lastSuccessfulReportSha() == configSha256 &&
             !gridChanged(before)
         if (noOp) return report
         return persist(report)
@@ -228,11 +230,14 @@ class ConfigReloader(
         }
     }
 
-    private suspend fun lastReportSha(): String? = try {
-        reportStore.read()?.configSha256
+    private suspend fun lastSuccessfulReportSha(): String? = try {
+        reportStore.read()?.takeIf { it.success }?.configSha256
     } catch (e: Exception) {
         null
     }
+
+    private fun ConfigMutation.isForcedLayoutsOnly(): Boolean =
+        this is ConfigMutation.SetGrid && columns == null && locked == null && labels == null
 
     /** Whether the grid the store holds now differs from [before]; unreadable counts as changed. */
     private suspend fun gridChanged(before: ConfigState): Boolean = try {

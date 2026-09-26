@@ -416,6 +416,39 @@ class ConfigWatcherTest {
         job.cancel()
     }
 
+    /**
+     * A measurement that arrives while a retry is fitting an older one must
+     * not be cleared by that retry: the older reload fitted the older rows, or
+     * read the newer ones by chance, and cannot tell which (#178 review).
+     */
+    @Test
+    fun `a measurement that arrives during a retry's reload is fitted after it`() = runTest {
+        val store = FakeConfigStore()
+        val measurements = MutableStateFlow<Map<String, Int>>(emptyMap())
+        val watcher = measuringWatcher(store, measurements)
+        val job = watcher.watchMeasurements()!!
+        measurements.value = mapOf("fold" to 7)
+        runCurrent()
+        withContext(Dispatchers.Default) { delay(200) }
+        assertEquals("no file, so the measurement is pending", 0, store.applyCount)
+
+        // The file appears: its reload, then the retry, which is held mid-apply.
+        store.gateFromApply = 2
+        writeConfig()
+        watcher.onConfigFileEvent()
+        advanceTimeBy(ConfigWatcher.DefaultDebounceMs)
+        runCurrent()
+        store.awaitApplies(2)
+        measurements.value = mapOf("fold" to 6)
+        runCurrent()
+        store.gate.complete(Unit)
+        watcher.debounceJob!!.join()
+        store.awaitApplies(3)
+
+        assertEquals("file reload, retry, then the newer measurement's", 3, store.applyCount)
+        job.cancel()
+    }
+
     @Test
     fun `a pending measurement is fitted after a startup check that skipped the reload`() = runTest {
         val store = FakeConfigStore()

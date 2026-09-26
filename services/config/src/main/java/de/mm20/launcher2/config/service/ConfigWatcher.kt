@@ -18,6 +18,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.IOException
+import java.util.concurrent.atomic.AtomicLong
 
 /**
  * Fork addition (Phase 2, ADR 0003): the convenience reload path for
@@ -51,7 +52,11 @@ class ConfigWatcher(
     private var observer: FileObserver? = null
     private var startJob: Job? = null
     private var measureJob: Job? = null
-    @Volatile private var measurementPending = false
+    // Each new measurement is a generation; a fit clears only the one it read
+    // before its reload, so a measurement arriving during a reload stays
+    // pending (#178 review). Written by the collector, read under fitLock.
+    private val measuredGeneration = AtomicLong(0)
+    private var fittedGeneration = 0L
     private val fitLock = Mutex()
     internal var debounceJob: Job? = null
 
@@ -169,7 +174,7 @@ class ConfigWatcher(
         val measurements = measurements ?: return null
         return scope.launch {
             measurements.filter { it.isNotEmpty() }.distinctUntilChanged().collect {
-                measurementPending = true
+                measuredGeneration.incrementAndGet()
                 fitPendingMeasurement()
             }
         }
@@ -184,11 +189,12 @@ class ConfigWatcher(
      * and after the startup check, until one succeeds (#178 review).
      */
     private suspend fun fitPendingMeasurement() = fitLock.withLock {
-        if (!measurementPending) return@withLock
+        val generation = measuredGeneration.get()
+        if (generation == fittedGeneration) return@withLock
         val file = ConfigLocation.configFile(appContext) ?: return@withLock
         if (!file.exists()) return@withLock
         val report = reloader.reload(file, ReloadTrigger.GridMeasured)
-        if (report.success || GridSection in report.appliedMutations) measurementPending = false
+        if (report.success || GridSection in report.appliedMutations) fittedGeneration = generation
     }
 
     internal fun startupCheck(): Job? {

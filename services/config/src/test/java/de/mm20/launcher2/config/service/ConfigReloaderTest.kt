@@ -286,6 +286,35 @@ class ConfigReloaderTest {
     }
 
     @Test
+    fun `a measurement reload that restored a grid setting replaces the last report`() = runTest {
+        val text = foldText.replace("\"grid\": {", "\"grid\": {\"columns\": 4, ")
+        val store = FakeConfigStore(state = foldState(6))
+        val (reloader, reportStore) = newReloader(store)
+        reloader.reload(text, ReloadTrigger.Broadcast)
+        // Changed on the device since the push; the file's forced SetGrid puts
+        // it back without the layouts changing (#178 review).
+        store.state = store.state.copy(gridColumns = 5)
+
+        reloader.reload(text, ReloadTrigger.GridMeasured)
+
+        assertEquals(ReloadTrigger.GridMeasured, reportStore.read()!!.trigger)
+    }
+
+    @Test
+    fun `a successful measurement reload replaces a failed report of the same file`() = runTest {
+        val store = FakeConfigStore(state = foldState(6), readFailure = IllegalStateException("datastore gone"))
+        val (reloader, reportStore) = newReloader(store)
+        val failed = reloader.reload(foldText, ReloadTrigger.Broadcast)
+        store.readFailure = null
+
+        val report = reloader.reload(foldText, ReloadTrigger.GridMeasured)
+
+        assertEquals(failed.configSha256, report.configSha256)
+        assertTrue(report.success)
+        assertTrue(reportStore.read()!!.success)
+    }
+
+    @Test
     fun `a measurement reload that fitted the grid differently replaces the last report`() = runTest {
         val store = FakeConfigStore(state = foldState(6))
         val (reloader, reportStore) = newReloader(store)
