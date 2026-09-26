@@ -188,19 +188,18 @@ class ConfigReloader(
             configSha256 = configSha256,
             trigger = trigger,
         )
-        // A measurement reload that is a true no-op leaves the last report
-        // alone: that report is what a push is waited on by, and it still
-        // describes the device. A no-op means the last report is a successful
-        // one of this very file, only the forced layouts were applied (a grid
-        // setting in SetGrid is a correction the differ found), the fit changed
-        // nothing and there is no correction; a measurement reload that met a
-        // newly pushed file, or replaces a failed report, has to say so. The
-        // capability warnings are left out of the test because every reload of
-        // this file carries them (#178 review).
+        // A measurement reload that has nothing new to say leaves the last
+        // report alone: that report is what a push is waited on by, and it
+        // still describes the device. Nothing new means the last report is of
+        // this very file with the same diagnostics - a correction or a
+        // capability warning that appeared or went away is news, and a failed
+        // report differs by its error - only the forced layouts were applied
+        // (a grid setting in SetGrid is a correction the differ found), and
+        // the fit changed no layout. A measurement reload that met a newly
+        // pushed file has to say so (#178 review).
         val noOp = trigger == ReloadTrigger.GridMeasured &&
-            applyDiagnostics.isEmpty() &&
             mutations.all { it.isForcedLayoutsOnly() } &&
-            lastSuccessfulReportSha() == configSha256 &&
+            lastReport()?.let { it.configSha256 == configSha256 && it.diagnostics == report.diagnostics } == true &&
             !gridChanged(before)
         if (noOp) return report
         return persist(report)
@@ -230,8 +229,8 @@ class ConfigReloader(
         }
     }
 
-    private suspend fun lastSuccessfulReportSha(): String? = try {
-        reportStore.read()?.takeIf { it.success }?.configSha256
+    private suspend fun lastReport(): ReloadReport? = try {
+        reportStore.read()
     } catch (e: Exception) {
         null
     }

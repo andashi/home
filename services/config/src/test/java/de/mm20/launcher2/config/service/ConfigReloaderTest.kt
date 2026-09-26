@@ -301,6 +301,25 @@ class ConfigReloaderTest {
     }
 
     @Test
+    fun `a measurement reload whose capability warning changed replaces the last report`() = runTest {
+        val text = foldText.replace("\"schemaVersion\": 2,", "\"schemaVersion\": 2, \"search\": {\"contacts\": true},")
+        val store = FakeConfigStore(state = foldState(6).copy(search = SearchState(contacts = true)))
+        val reportStore = ReloadReportStore(context)
+        var granted = true
+        val reloader = ConfigReloader(store, reportStore, capabilities = CapabilityDiagnostics { granted })
+        reloader.reload(text, ReloadTrigger.Broadcast)
+        // Revoked since the push: the file and the grid are as they were, the
+        // warning is new (#178 review).
+        granted = false
+
+        reloader.reload(text, ReloadTrigger.GridMeasured)
+
+        val stored = reportStore.read()!!
+        assertEquals(ReloadTrigger.GridMeasured, stored.trigger)
+        assertEquals(listOf("permission-missing"), stored.diagnostics.map { it.code })
+    }
+
+    @Test
     fun `a successful measurement reload replaces a failed report of the same file`() = runTest {
         val store = FakeConfigStore(state = foldState(6), readFailure = IllegalStateException("datastore gone"))
         val (reloader, reportStore) = newReloader(store)

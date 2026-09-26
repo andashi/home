@@ -119,11 +119,12 @@ written - and fit nothing.
 
 Its report replaces the last one only when it has something to say, because
 provisioning waits on that report. It stays silent when the last report is
-a successful one of this very file, the reload applied the forced layouts
-and nothing else, the fit changed no layout, and nothing was corrected. A
-measurement reload that meets a newly pushed file, restores a drifted
-setting, fits a layout differently or replaces a failed report writes its
-own, with trigger `grid-measured`. A measurement that could not be fitted
+of this very file and says the same (equal diagnostics: a new correction, a
+capability warning that appeared or went away, or a failure all differ),
+the reload applied the forced layouts and nothing else, and the fit changed
+no layout. A measurement reload that meets a newly pushed file, restores a
+drifted setting, fits a layout differently or has anything else to report
+writes its own, with trigger `grid-measured`. A measurement that could not be fitted
 yet (no file, or a file caught half-written) stays pending and is retried
 after the next reload; one that arrives during a reload is never cleared by
 it.
