@@ -591,18 +591,18 @@ log "user $uid created, starting it"
 adb -s "$SERIAL" shell am start-user -w "$uid" </dev/null >/dev/null || die "user $uid could not be started"
 adb -s "$SERIAL" shell pm install-existing --user "$uid" "$PKG" >/dev/null 2>&1 || die "install-existing for user $uid failed"
 adb -s "$SERIAL" shell appwidget grantbind --package "$PKG" --user "$uid" >/dev/null 2>&1 || true
-elapsed=0
-until out="$(adb -s "$SERIAL" shell content write --user "$uid" --uri "$INGEST_URI" < "$GRID_CONFIG" 2>&1 | tr -d '\r')" && [ -z "$out" ]; do
-  sleep 2; elapsed=$((elapsed + 2))
-  [ "$elapsed" -lt 60 ] || { printf '%s\n' "$out" >&2; die "content write --user $uid kept failing"; }
-done
+# A new user's launcher process and its ingest come up on demand, so the
+# write is retried; both waits are wall-clock time (#164).
+out=""
+user_write_lands() { out="$(adb_t shell content write --user "$uid" --uri "$INGEST_URI" < "$GRID_CONFIG" 2>&1 | tr -d '\r')" && [ -z "$out" ]; }
+retry_for 60 user_write_lands || { printf '%s\n' "$out" >&2; die "content write --user $uid kept failing for 60 s"; }
 adb -s "$SERIAL" shell am broadcast -n "$RECEIVER" -a "$ACTION" --user "$uid" >/dev/null 2>&1 || die "broadcast --user $uid failed"
-elapsed=0
-until report="$(adb -s "$SERIAL" shell content query --uri "$STATE_URI/diagnostics" --user "$uid" 2>/dev/null | tr -d '\r')" \
-    && jq -e ".configSha256 == \"$H_GRID\" and .success == true" >/dev/null 2>&1 <<<"${report#Row: 0 json=}"; do
-  sleep 1; elapsed=$((elapsed + 1))
-  [ "$elapsed" -lt 60 ] || { printf '%s\n' "$report" >&2; die "user $uid never reported the grid config"; }
-done
+report=""
+user_reports_the_grid() {
+  report="$(adb_t shell content query --uri "$STATE_URI/diagnostics" --user "$uid" 2>/dev/null | tr -d '\r')" \
+    && jq -e ".configSha256 == \"$H_GRID\" and .success == true" >/dev/null 2>&1 <<<"${report#Row: 0 json=}"
+}
+retry_for 60 user_reports_the_grid || { printf '%s\n' "$report" >&2; die "user $uid never reported the grid config within 60 s"; }
 user_config="$(adb -s "$SERIAL" shell content query --uri "$STATE_URI/config" --user "$uid" 2>/dev/null | tr -d '\r')"
 assert_jq "${user_config#Row: 0 json=}" '(.home.grid.layouts.'"$LAYOUT"'.items | map(.id)) | index("dock") != null' \
   "user $uid holds the pushed grid"

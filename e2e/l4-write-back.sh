@@ -74,6 +74,7 @@ SETTINGS_ACTIVITY="$PKG/de.mm20.launcher2.ui.settings.SettingsActivity"
 # the middle when the row is on screen, else further down, then back up.
 tap_setting() { # $1 = visible text
   local tries=0 bounds
+  # not a wait: up to 8 scroll attempts, each lookup bounded through adb_t
   until tap_text "$1"; do
     tries=$((tries + 1))
     [ "$tries" -le 8 ] || die "the setting '$1' is not where a tap reaches it"
@@ -96,24 +97,17 @@ open_grid_settings() {
   wait_text "Show apps in a list" 30
 }
 
+# Wall-clock time through retry_for, on the library's dump_screen (#164).
+screen_contains() { dump_screen && grep -qF "$1" "$WORK/dump.xml"; }
 wait_text_containing() { # $1 = part of a visible text, $2 = timeout (s)
-  local elapsed=0
-  while :; do
-    adb -s "$SERIAL" shell uiautomator dump /sdcard/wb-dump.xml >/dev/null 2>&1 || true
-    adb -s "$SERIAL" shell cat /sdcard/wb-dump.xml 2>/dev/null | tr -d '\r' | grep -qF "$1" && return 0
-    [ "$elapsed" -lt "$2" ] || die "timed out (${2}s) waiting for a text with '$1' on screen"
-    sleep 1; elapsed=$((elapsed + 1))
-  done
+  retry_for "$2" screen_contains "$1" || die "timed out (${2}s) waiting for a text with '$1' on screen"
 }
 
 (cd "$GOS_REPO" && emulator/device-lock.sh acquire "$LOCK_OWNER" "$SERIAL")
 HAVE_LOCK=1
 log "booting $SERIAL from snapshot '$SNAPSHOT' (overlays: $OVERLAY_DIR)"
 (cd "$GOS_REPO" && SNAPSHOT="$SNAPSHOT" emulator/run.sh start)
-adb -s "$SERIAL" unroot >/dev/null 2>&1 || true
-adb -s "$SERIAL" wait-for-device
-[ "$(adb -s "$SERIAL" shell id -u | tr -d '\r')" = "2000" ] || die "adb is not the unrooted shell"
-ok "adb as unrooted shell (uid 2000)"
+unrooted_shell
 adb -s "$SERIAL" install -r "$APK" | grep -q Success || die "launcher install failed"
 adb -s "$SERIAL" shell cmd role add-role-holder android.app.role.HOME "$PKG" >/dev/null 2>&1 \
   || die "could not grant the HOME role to $PKG"

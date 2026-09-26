@@ -26,13 +26,26 @@ adb_t() {
   timeout "$left" adb -s "$SERIAL" "$@"
 }
 
+# The deadline $1 seconds from now, but never later than one a caller has
+# already set: a wait inside a wait gets what is left of the outer one at
+# most (query_json_as_user runs inside wait_diagnostics_sha, #164).
+deadline_in() { # $1 = seconds
+  local d=$((SECONDS + $1))
+  [ -n "${ADB_DEADLINE:-}" ] && [ "$ADB_DEADLINE" -lt "$d" ] && d=$ADB_DEADLINE
+  echo "$d"
+}
+
 # Runs "$@" until it succeeds or $1 seconds have passed, and fails then. The
 # adb calls of every attempt share that deadline, so one slow call cannot
 # carry the loop past it: a uiautomator dump alone took 3.84 s on the
 # emulator (#127).
 retry_for() { # $1 = timeout (s), $2... = command
-  local ADB_DEADLINE=$((SECONDS + $1))
+  # Computed before `local` shadows the caller's deadline.
+  local d
+  d=$(deadline_in "$1")
+  local ADB_DEADLINE=$d
   shift
+  # not a wait: the deadline mechanism itself, bounded by ADB_DEADLINE
   while [ "$ADB_DEADLINE" -gt "$SECONDS" ]; do
     "$@" && return 0
     [ $((ADB_DEADLINE - SECONDS)) -gt 1 ] || break
@@ -52,7 +65,7 @@ retry_rounds() { # $1 = rounds, $2 = cap per round (s), $3... = command
   shift 2
   for ((i = 1; i <= rounds; i++)); do
     ROUNDS_USED=$i
-    ADB_DEADLINE=$((SECONDS + cap)) "$@" && return 0
+    ADB_DEADLINE=$(deadline_in "$cap") "$@" && return 0
     [ "$i" -lt "$rounds" ] && sleep 1
   done
   return 1
@@ -79,7 +92,9 @@ unrooted_shell() { # [$1 = timeout (s), default 60]
   # One deadline for the whole operation: a hanging `adb unroot` must not
   # start the clock late.
   local timeout=${1:-60}
-  local ADB_DEADLINE=$((SECONDS + timeout))
+  local d
+  d=$(deadline_in "$timeout")
+  local ADB_DEADLINE=$d
   adb_t unroot >/dev/null 2>&1 || true
   retry_for "$((ADB_DEADLINE - SECONDS))" is_unrooted_shell \
     || die "adb is not the unrooted shell (uid 2000) after ${timeout}s"
@@ -438,7 +453,9 @@ ime_hidden() { ime_read && [ "$IME" = hidden ]; }
 # share one deadline, SEARCH_TIMEOUT (10 s).
 open_search() { # [$1 = text to type]
   local timeout=${SEARCH_TIMEOUT:-10}
-  local ADB_DEADLINE=$((SECONDS + timeout))
+  local d
+  d=$(deadline_in "$timeout")
+  local ADB_DEADLINE=$d
   tap_desc Search
   retry_for "$((ADB_DEADLINE - SECONDS))" search_is_open || die "tapping the bar did not open search within ${timeout}s"
   [ -z "${1:-}" ] || adb_t shell input text "$1"
@@ -479,6 +496,9 @@ dismiss_keyboard() {
 # the same: every cost here assumes an unloaded host.
 home_shows() {
   shows id_bounds "$1" && return 0
+  # Deliberately not deadline_in: the recovery may run past the round's cap,
+  # which a slow dump can use up entirely (review on #163). The bound
+  # 3 x (ROUND_CAP + RECOVERY_CAP + 1) s counts it.
   local ADB_DEADLINE=$((SECONDS + ${RECOVERY_CAP:-5}))
   wake_screen; show_home
   return 1
@@ -547,9 +567,5 @@ pull_config() { # $1 = local file
 }
 
 wait_text() { # $1 = visible text, $2 = timeout (s)
-  local elapsed=0
-  until [ -n "$(node_bounds text "$1")" ]; do
-    [ "$elapsed" -lt "$2" ] || die "timed out (${2}s) waiting for '$1' on screen"
-    sleep 1; elapsed=$((elapsed + 1))
-  done
+  retry_for "$2" shows node_bounds text "$1" || die "timed out (${2}s) waiting for '$1' on screen"
 }

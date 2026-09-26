@@ -18,12 +18,16 @@ cd "${1:-$(dirname "$0")}"  # a directory laid out like e2e/, for the tests
 python3 - *.sh */*.sh <<'PY'
 import re, sys
 
-LOOP = re.compile(r'^\s*(for\s+\w+\s+in\s+\$\(seq\b[^)]*\)|while\s+\[\s+"?\$elapsed"?\s+-lt\b)')
+# A counted for loop, or any while/until loop: `while :` with an attempt
+# counter counts rounds just the same. A loop that does not sleep (a
+# `while read`) is left alone below.
+LOOP = re.compile(r'^\s*(for\s+\w+\s+in\s+\$\(seq\b[^)]*\)|(while|until)\b)')
 found = 0
 for path in sys.argv[1:]:
-    # The library holds the deadline mechanism itself; test files hold loops
-    # as fixtures.
-    if path == "lib/grid-device.sh" or path.endswith(".test.sh"):
+    # Test files hold loops as fixtures. The library is checked too: its
+    # deadline mechanism marks its own loops, and #155 had added a
+    # round-counting wait_text to it that a library exemption hid.
+    if path.endswith(".test.sh"):
         continue
     lines = open(path).read().split("\n")
     i = 0
@@ -43,6 +47,8 @@ for path in sys.argv[1:]:
             if depth <= 0:
                 break
         marked = start > 0 and lines[start - 1].strip().startswith("# not a wait:")
+        # A loop whose condition is the clock is a deadline, not a count.
+        marked = marked or "$SECONDS" in lines[start]
         if not marked and any(re.search(r"\bsleep\b", l) for l in body):
             print(f"::error file=e2e/{path},line={start + 1}::counts rounds instead of waiting against a deadline: {lines[start].strip()}")
             found = 1
