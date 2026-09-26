@@ -91,6 +91,19 @@ S
 verdict quiet "the word eval as an argument (control)" <<'S'
 echo eval alias "bash -c"
 S
+verdict quiet "a while loop inside a multi-line awk program" <<'S'
+awk '
+  { while (k >= 1) { k-- } }
+' file
+echo later
+sleep 1
+S
+verdict caught "a sleep after a command substitution in double quotes with a quoted quote" <<'S'
+for i in $(seq 3); do
+  split="$(tr -d '"' < f | tr ',' '\t')"
+  sleep 1
+done
+S
 verdict quiet "a marked repetition loop" <<'S'
 # not a wait: measurement repetitions
 for run in $(seq "$RUNS"); do measure; sleep 2; done

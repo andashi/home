@@ -13,11 +13,13 @@
 #
 # How it reads bash, and where it stops: quoted text ('...', "...",
 # $'...', with backslash escapes), comments and heredoc bodies are set aside
-# first; `do`/`done` count only where they start a command; a loop closes
-# only after its own `do`. It is a reader for this repository's scripts,
-# not a bash parser: `eval`, loops built in strings and aliases are beyond
-# it. check-waits.test.sh holds every shape it is known to read, including
-# the ones that once fooled it.
+# first, with the quoting context carried across lines and through $( ... );
+# `do`/`done` count only where they start a command; a loop closes only
+# after its own `do`. It is a reader for this repository's scripts, not a
+# bash parser. What it cannot read fails loudly rather than passing: eval,
+# an alias, code handed to another shell with -c, and a loop it never saw
+# close. check-waits.test.sh holds every shape it is known to read,
+# including the ones that once fooled it.
 #
 #   e2e/check-waits.sh [dir]        # exit 1 and name every counting wait
 set -euo pipefail
@@ -32,33 +34,78 @@ import re, sys
 LOOP = re.compile(r'^\s*(for\s+\w+\s+in\s+\$\(seq\b[^)]*\)|for\s*\(\(|(while|until)\b)')
 
 
-def scan(line):
-    """(code, uncommented) for one line, read the way bash reads it.
+def scan(line, stack=None):
+    """(code, uncommented, stack) for one line, read the way bash reads it.
 
     code: quoted text blanked, comment removed - for keywords and `sleep`.
     uncommented: only the comment removed, strings kept - for the
-    condition. Handles '...', "...", $'...' (whose \\' does not end it), and
-    backslash escapes outside quotes and inside double quotes."""
-    out, quote, i = [], None, 0
+    condition. The stack carries the quoting context across lines: '...',
+    "...", $'...' (whose \\' does not end it), and $( ... ), which opens a
+    fresh context even inside double quotes, as in "$(tr -d '"')". Backslash
+    escapes apply outside quotes and inside double quotes."""
+    stack = list(stack or [])
+    out, i = [], 0
     while i < len(line):
         c = line[i]
-        if quote is None:
+        top = stack[-1] if stack else None
+        if top in ("'", "$'"):
+            if c == "\\" and top == "$'":
+                out.append("  "); i += 2; continue
+            if c == "'":
+                stack.pop()
+            out.append(" "); i += 1; continue
+        if top == '"':
             if c == "\\":
                 out.append("  "); i += 2; continue
-            if c == "$" and line[i + 1:i + 2] == "'":
-                quote = "$'"; out.append("  "); i += 2; continue
-            if c in "'\"":
-                quote = c; out.append(" "); i += 1; continue
-            if c == "#" and (i == 0 or line[i - 1].isspace() or line[i - 1] in ";&|("):
-                return "".join(out), line[:i]
-            out.append(c); i += 1; continue
-        # inside quotes
-        if c == "\\" and quote in ('"', "$'"):
+            if c == "$" and line[i + 1:i + 2] == "(":
+                stack.append("("); out.append("  "); i += 2; continue
+            if c == '"':
+                stack.pop()
+            out.append(" "); i += 1; continue
+        # unquoted, at top level or inside $( ... )
+        if c == "\\":
             out.append("  "); i += 2; continue
-        if (quote == "$'" and c == "'") or c == quote:
-            quote = None
-        out.append(" "); i += 1
-    return "".join(out), line
+        if c == "$" and line[i + 1:i + 2] == "'":
+            stack.append("$'"); out.append("  "); i += 2; continue
+        if c == "$" and line[i + 1:i + 2] == "(":
+            stack.append("("); out.append("$("); i += 2; continue
+        if c in "'\"":
+            stack.append(c); out.append(" "); i += 1; continue
+        if top == "(" and c == "(":
+            stack.append("("); out.append(c); i += 1; continue
+        if top == "(" and c == ")":
+            stack.pop(); out.append(c); i += 1; continue
+        if c == "#" and (i == 0 or line[i - 1].isspace() or line[i - 1] in ";&|("):
+            return "".join(out), line[:i], stack
+        out.append(c); i += 1
+    return "".join(out), line, stack
+
+
+def scan_file(lines):
+    """scan() over a whole file, so a string that spans lines (an awk or
+    Python program in single quotes) stays a string on every line of it."""
+    views, stack = [], []
+    for raw in lines:
+        code, uncommented, stack = scan(raw, stack)
+        views.append((code, uncommented))
+    return views
+
+
+UNREADABLE = ("eval", "alias")
+
+
+def unreadable(code):
+    """The construct in this code the guard cannot look inside, or None:
+    eval, an alias, or code handed to another shell with -c."""
+    for segment in re.split(r"[;&|()]|&&|\|\|", code):
+        words = segment.split()
+        if not words:
+            continue
+        if words[0] in UNREADABLE:
+            return words[0]
+        if words[0] in ("bash", "sh") and "-c" in words[1:2]:
+            return words[0] + " -c"
+    return None
 
 
 def keywords(code):
@@ -96,9 +143,17 @@ for path in sys.argv[1:]:
         m = re.search(r"<<-?\s*['\"]?(\w+)['\"]?", scan(raw)[1])
         if m:
             heredoc = m.group(1)
+    views = scan_file(lines)
+    # What the guard cannot read fails loudly, never silently: it cannot see
+    # a wait inside eval, an alias or another shell's -c string.
+    for n, raw in enumerate(lines):
+        what = unreadable(views[n][0])
+        if what:
+            print(f"::error file=e2e/{path},line={n + 1}::cannot read inside `{what}`, so a wait there would pass unseen; write it out: {raw.strip()}")
+            found = 1
     i = 0
     while i < len(lines):
-        if not LOOP.match(lines[i]):
+        if not LOOP.match(views[i][0]):
             i += 1
             continue
         start = i
@@ -108,7 +163,7 @@ for path in sys.argv[1:]:
         # its own `do` has appeared.
         depth, seen_do, body = 0, False, []
         while i < len(lines):
-            code, _ = scan(lines[i])
+            code = views[i][0]
             opened, closed = keywords(code)
             seen_do = seen_do or opened > 0
             depth += opened - closed
@@ -116,6 +171,13 @@ for path in sys.argv[1:]:
             i += 1
             if seen_do and depth <= 0:
                 break
+        else:
+            # The file ended inside the loop: one the guard did not
+            # understand, not one it may pass.
+            print(f"::error file=e2e/{path},line={start + 1}::a loop the guard never saw close, so it cannot tell whether it waits: {lines[start].strip()}")
+            found = 1
+            i = start + 1
+            continue
         # The marker may head a comment block that runs onto more lines, as
         # long as nothing but comments stands between it and the loop.
         k = start - 1
@@ -124,7 +186,7 @@ for path in sys.argv[1:]:
         marked = k >= 0 and lines[k].strip().startswith("# not a wait:")
         # A loop whose condition is the clock is a deadline, not a count.
         # Only the condition, the text before `do`, counts.
-        condition = re.split(r"\bdo\b", scan(lines[start])[1], maxsplit=1)[0]
+        condition = re.split(r"\bdo\b", views[start][1], maxsplit=1)[0]
         marked = marked or "$SECONDS" in condition
         if not marked and any(re.search(r"\bsleep\b", l) for l in body):
             print(f"::error file=e2e/{path},line={start + 1}::counts rounds instead of waiting against a deadline: {lines[start].strip()}")
