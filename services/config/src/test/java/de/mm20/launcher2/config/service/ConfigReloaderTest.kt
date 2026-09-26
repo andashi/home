@@ -306,7 +306,7 @@ class ConfigReloaderTest {
         val store = FakeConfigStore(state = foldState(6).copy(search = SearchState(contacts = true)))
         val reportStore = ReloadReportStore(context)
         var granted = true
-        val reloader = ConfigReloader(store, reportStore, capabilities = CapabilityDiagnostics(contactsGranted = { granted }, callGranted = { true }))
+        val reloader = ConfigReloader(store, reportStore, capabilities = CapabilityDiagnostics(contactsGranted = { granted }, callGranted = { true }, transliteratorAvailable = { true }))
         reloader.reload(text, ReloadTrigger.Broadcast)
         // Revoked since the push: the file and the grid are as they were, the
         // warning is new (#178 review).
@@ -410,11 +410,69 @@ class ConfigReloaderTest {
 
     // ----- what the file asks for that this profile cannot do (#140) -----
 
-    private fun reloaderWith(store: FakeConfigStore, contactsGranted: Boolean = true, callGranted: Boolean = true) =
+    private fun reloaderWith(
+        store: FakeConfigStore,
+        contactsGranted: Boolean = true,
+        callGranted: Boolean = true,
+        availableTransliterators: Set<String>? = null,
+    ) =
         ConfigReloader(
             store, ReloadReportStore(context),
-            capabilities = CapabilityDiagnostics(contactsGranted = { contactsGranted }, callGranted = { callGranted }),
+            capabilities = CapabilityDiagnostics(
+                contactsGranted = { contactsGranted },
+                callGranted = { callGranted },
+                transliteratorAvailable = { id -> availableTransliterators?.contains(id) ?: true },
+            ),
         )
+
+    /**
+     * #3 slice 1: a transliterator this device's ICU lacks is a device
+     * condition, like a missing permission. The file is not rejected for it -
+     * one file serves devices with different ICU versions - it is applied as
+     * written, and the report says search falls back to stripping accents.
+     */
+    @Test
+    fun `a transliterator the device does not have is applied as written and reported`() = runTest {
+        val store = FakeConfigStore()
+
+        val report = reloaderWith(store, availableTransliterators = setOf("Any-Latin"))
+            .reload("""{"schemaVersion": 2, "search": {"transliterator": "No-Such"}}""")
+
+        assertTrue(report.success)
+        assertEquals(listOf("read", "apply:[search]"), store.events)
+        val diagnostic = report.diagnostics.single { it.code == "transliterator-unavailable" }
+        assertEquals(Severity.Warning, diagnostic.severity)
+        assertEquals("search.transliterator", diagnostic.path)
+        assertEquals(
+            "search.transliterator is \"No-Such\", which this device's ICU does not have; " +
+                "search matching falls back to stripping accents",
+            diagnostic.message,
+        )
+    }
+
+    /** Control: an id the device has, and the two words, are not reported. */
+    @Test
+    fun `an available transliterator, auto and off are not reported`() = runTest {
+        for (id in listOf("Any-Latin", "auto", "off")) {
+            val report = reloaderWith(FakeConfigStore(), availableTransliterators = setOf("Any-Latin"))
+                .reload("""{"schemaVersion": 2, "search": {"transliterator": "$id"}}""")
+
+            assertTrue(id, report.diagnostics.none { it.code == "transliterator-unavailable" })
+        }
+    }
+
+    /** Like contacts: a failed search section left the transliterator as it was, so nothing unavailable is in effect. */
+    @Test
+    fun `a transliterator in a search section that failed to apply is not reported`() = runTest {
+        val store = FakeConfigStore(
+            applyDiagnostics = listOf(Diagnostic(Severity.Error, "apply-failed", "search", "datastore gone")),
+        )
+
+        val report = reloaderWith(store, availableTransliterators = emptySet())
+            .reload("""{"schemaVersion": 2, "search": {"transliterator": "No-Such"}}""")
+
+        assertEquals(listOf("apply-failed"), report.diagnostics.map { it.code })
+    }
 
     /**
      * #3 slice 1: without CALL_PHONE a tap on a number dials instead of

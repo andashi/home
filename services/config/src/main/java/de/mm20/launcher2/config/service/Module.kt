@@ -1,5 +1,6 @@
 package de.mm20.launcher2.config.service
 
+import android.icu.text.Transliterator
 import de.mm20.launcher2.glass.GlassBackdropSource
 import de.mm20.launcher2.homegrid.HomeGridWriteBack
 import de.mm20.launcher2.homegrid.MeasuredGridRows
@@ -56,6 +57,8 @@ val configModule = module {
             capabilities = CapabilityDiagnostics(
                 contactsGranted = { permissions.checkPermissionOnce(PermissionGroup.Contacts) },
                 callGranted = { permissions.checkPermissionOnce(PermissionGroup.Call) },
+                // The lookup the normalizer makes, so the report and the search agree.
+                transliteratorAvailable = { id -> runCatching { Transliterator.getInstance(id) }.isSuccess },
             ),
         )
     }

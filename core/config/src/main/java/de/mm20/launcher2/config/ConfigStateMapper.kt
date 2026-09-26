@@ -40,6 +40,11 @@ fun ConfigState.toLauncherConfig(): LauncherConfig {
             listIcons = search.listIcons,
             appDetails = search.appDetails,
             contactsCallOnTap = search.contactsCallOnTap,
+            frequentlyUsed = search.frequentlyUsed,
+            frequentlyUsedRows = search.frequentlyUsedRows,
+            favoritesEditButton = search.favoritesEditButton,
+            compactTags = search.compactTags,
+            transliterator = search.transliterator,
         ),
         icons = IconsConfig(
             themed = themedIcons,

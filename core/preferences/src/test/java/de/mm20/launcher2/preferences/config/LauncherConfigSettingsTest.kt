@@ -376,6 +376,8 @@ class LauncherConfigSettingsTest {
                 searchBarKeyboard = false, searchLaunchOnEnter = false, searchResultsReversed = true,
                 hiddenItemsShowButton = true, gridListIcons = false, appsShowDetails = false,
                 contactSearchCallOnTap = true,
+                favoritesFrequentlyUsed = false, favoritesFrequentlyUsedRows = 3, favoritesEditButton = false,
+                favoritesCompactTags = true, localeTransliterator = "Any-Latin",
             )
         )
 
@@ -385,6 +387,8 @@ class LauncherConfigSettingsTest {
                 contacts = false, shortcuts = false, filterBar = false, openKeyboard = false,
                 launchOnEnter = false, reversed = true, hiddenItemsButton = true,
                 listIcons = false, appDetails = false, contactsCallOnTap = true,
+                frequentlyUsed = false, frequentlyUsedRows = 3, favoritesEditButton = false,
+                compactTags = true, transliterator = "Any-Latin",
             ),
             gateway.readState().search,
         )
@@ -418,6 +422,46 @@ class LauncherConfigSettingsTest {
         )
 
         assertEquals(seed.copy(gridListIcons = false, appsShowDetails = false, contactSearchCallOnTap = true), updated)
+    }
+
+    @Test
+    fun `apply SetSearch writes the favorites keys and the transliterator to their own fields`() = runTest {
+        val seed = LauncherSettingsData()
+        val gateway = createGateway(seed)
+
+        val updated = gateway.applyAndReturn(
+            listOf(
+                ConfigMutation.SetSearch(
+                    SearchConfig(
+                        frequentlyUsed = false, frequentlyUsedRows = 3, favoritesEditButton = false,
+                        compactTags = true, transliterator = "Any-Latin",
+                    )
+                )
+            )
+        )
+
+        assertEquals(
+            seed.copy(
+                favoritesFrequentlyUsed = false, favoritesFrequentlyUsedRows = 3, favoritesEditButton = false,
+                favoritesCompactTags = true, localeTransliterator = "Any-Latin",
+            ),
+            updated,
+        )
+    }
+
+    /** The stored transliterator is null for off and "" for auto; the file says the words. */
+    @Test
+    fun `the transliterator words map to the stored null and empty values and back`() = runTest {
+        // One gateway: a second DataStore on the same file is refused.
+        val gateway = createGateway(LauncherSettingsData(localeTransliterator = null))
+        assertEquals("off", gateway.readState().search.transliterator)
+
+        val auto = gateway.applyAndReturn(listOf(ConfigMutation.SetSearch(SearchConfig(transliterator = "auto"))))
+        assertEquals("", auto.localeTransliterator)
+        assertEquals("auto", gateway.readState().search.transliterator)
+
+        val off = gateway.applyAndReturn(listOf(ConfigMutation.SetSearch(SearchConfig(transliterator = "off"))))
+        assertEquals(null, off.localeTransliterator)
     }
 
     @Test

@@ -70,6 +70,11 @@ data class SearchState(
     val listIcons: Boolean = SearchDefaults.ListIcons,
     val appDetails: Boolean = SearchDefaults.AppDetails,
     val contactsCallOnTap: Boolean = SearchDefaults.ContactsCallOnTap,
+    val frequentlyUsed: Boolean = SearchDefaults.FrequentlyUsed,
+    val frequentlyUsedRows: Int = SearchDefaults.FrequentlyUsedRows,
+    val favoritesEditButton: Boolean = SearchDefaults.FavoritesEditButton,
+    val compactTags: Boolean = SearchDefaults.CompactTags,
+    val transliterator: String = SearchDefaults.Transliterator,
 )
 
 sealed class ConfigMutation {
@@ -210,6 +215,11 @@ object ConfigDiffer {
                 listIcons = search.listIcons?.takeIf { it != current.listIcons },
                 appDetails = search.appDetails?.takeIf { it != current.appDetails },
                 contactsCallOnTap = search.contactsCallOnTap?.takeIf { it != current.contactsCallOnTap },
+                frequentlyUsed = search.frequentlyUsed?.takeIf { it != current.frequentlyUsed },
+                frequentlyUsedRows = search.frequentlyUsedRows?.takeIf { it != current.frequentlyUsedRows },
+                favoritesEditButton = search.favoritesEditButton?.takeIf { it != current.favoritesEditButton },
+                compactTags = search.compactTags?.takeIf { it != current.compactTags },
+                transliterator = search.transliterator?.takeIf { it != current.transliterator },
             )
             if (changed != SearchConfig()) mutations += ConfigMutation.SetSearch(changed)
         }
