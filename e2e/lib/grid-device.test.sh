@@ -613,7 +613,7 @@ chmod +x "$WORK/reports/adb"
 serve_report() { printf 'Row: 0 json=%s\n' "$1" > "$WORK/reports/now"; }
 push_report_found() { # $1 = report before the push, $2 = report now, $3 = hash pushed
   serve_report "$2"
-  ( PATH="$WORK/reports:$PATH"; wait_push_report "$1" "$3" 3 test ) >/dev/null 2>&1
+  ( PATH="$WORK/reports:$PATH"; wait_push_report "$1" "$3" 1 test ) >/dev/null 2>&1
 }
 takes_a_report_whatever_caused_it() {
   push_report_found '{"configSha256":"a","trigger":"broadcast"}' '{"configSha256":"a","trigger":"grid-measured"}' a

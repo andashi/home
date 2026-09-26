@@ -135,9 +135,6 @@ query_json() { # $1 = provider path (config|diagnostics)
 # Waits for a /diagnostics report matching the jq filter; the match is left in
 # LAST_REPORT for the caller to assert on.
 LAST_REPORT=""
-# Waits for a /diagnostics report matching the jq filter; the match is left in
-# LAST_REPORT for the caller to assert on.
-LAST_REPORT=""
 LAST_SEEN_REPORT=""
 report_matches() { # $1 = jq filter
   # A failed query keeps the last report seen, for the timeout message.
@@ -154,10 +151,9 @@ wait_report() { # $1 = jq filter, $2 = timeout (s), $3 = description
 }
 
 # The report about a push is the one carrying its hash that was not there
-# before the push. Never its trigger: that names what caused the reload, and
-# the grid's first measurement can reload a pushed file before or after the
-# watcher does, replacing the watcher's report (ADR 0003, section 4). A step
-# claiming a cause (the broadcast reached the receiver) still asserts it.
+# before the push, never the one with an expected trigger (ADR 0003, section
+# 4: a measurement reload can replace the watcher's report). A step that
+# claims a cause asserts the trigger itself, with wait_report.
 report_now() { # the current report, or null before the first one
   query_json diagnostics 2>/dev/null || echo null
 }
@@ -188,7 +184,9 @@ push_config() { # $1 = local file, $2 = stage name
   h="$(sha256sum "$1" | cut -d' ' -f1)"
   before="$(report_now)"
   write_config "$1"
+  log "$2: waiting for the reload of the pushed file (hash ${h:0:12}...)"
   wait_push_report "$before" "$h" 60 "$2: reload of the pushed file"
+  log "$2: broadcasting explicit reload"
   before="$(report_now)"
   reload_broadcast
   wait_push_report "$before" "$h" 30 "$2: broadcast report"

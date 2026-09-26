@@ -137,7 +137,9 @@ does, or right after it, and then its report is the one about that push. In
 the L4 scenario the watcher's report of a pushed file stood for 1.2 s before
 the first measurement replaced it, and a wait for `file-watcher` timed out
 (2026-09-26). A consumer asserts a trigger only when it claims a cause, as
-"the explicit broadcast reached the receiver" does.
+"the explicit broadcast reached the receiver" does. The report carries no
+sequence number, so "not the one there before" compares whole reports: two
+reloads of one file that report the same thing cannot be told apart.
 
 ### 5. Write-back: every section follows the device
 

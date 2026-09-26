@@ -111,21 +111,6 @@ trap cleanup EXIT
 # shellcheck source=lib/grid-device.sh
 . "$(dirname "$0")/lib/grid-device.sh"
 
-# The reports of a push found by hash and freshness, not by trigger: the
-# grid's first measurement can reload the pushed file and replace the
-# watcher's report (wait_push_report, ADR 0003 section 4).
-settle_then_broadcast() { # $1 = local config file, $2 = sha256, $3 = stage name
-  local before
-  before="$(report_now)"
-  write_config "$1"
-  log "$3: waiting for the reload of the pushed file (hash ${2:0:12}...)"
-  wait_push_report "$before" "$2" 30 "$3: report of the pushed file"
-  log "$3: broadcasting explicit reload"
-  before="$(report_now)"
-  reload_broadcast
-  wait_push_report "$before" "$2" 30 "$3: report after the broadcast"
-}
-
 # --- screen helpers ----------------------------------------------------
 
 device_config_sha() {
@@ -327,10 +312,7 @@ printf '{ "schemaVersion": 2, "home": { not json at all\n' > "$MALFORMED_CONFIG"
 
 H_LEGACY="$(sha256sum "$LEGACY_CONFIG" | cut -d' ' -f1)"
 H_GRID="$(sha256sum "$GRID_CONFIG" | cut -d' ' -f1)"
-H_PUSHDOWN="$(sha256sum "$PUSHDOWN_CONFIG" | cut -d' ' -f1)"
-H_TOO_SMALL="$(sha256sum "$TOO_SMALL_CONFIG" | cut -d' ' -f1)"
 H_TOO_LARGE="$(sha256sum "$TOO_LARGE_CONFIG" | cut -d' ' -f1)"
-H_MALFORMED="$(sha256sum "$MALFORMED_CONFIG" | cut -d' ' -f1)"
 H_LOCKED="$(sha256sum "$LOCKED_CONFIG" | cut -d' ' -f1)"
 
 # --- boot + install ----------------------------------------------------
@@ -410,7 +392,7 @@ ok "default favorites row measured on screen"
 
 if [ "$HAVE_CLOCK" = 1 ]; then
   # --- 2. a configured grid, on screen where the file says -------------
-  settle_then_broadcast "$GRID_CONFIG" "$H_GRID" "grid"
+  push_config "$GRID_CONFIG" "grid"
   assert_jq "$LAST_REPORT" '.success == true and (((.diagnostics // []) | map(select(.severity == "error")) | length) == 0)' \
     "grid config applied without errors"
   show_home
@@ -516,7 +498,7 @@ PY
     warn "steps 5 to 7 (push-down, minimum, locked) are phone-layout fixtures; skipped in FOLD mode"
   else
   # --- 5. push-down ----------------------------------------------------
-  settle_then_broadcast "$PUSHDOWN_CONFIG" "$H_PUSHDOWN" "push-down"
+  push_config "$PUSHDOWN_CONFIG" "push-down"
   assert_jq "$LAST_REPORT" '.success == true' "push-down config applied"
   # The file keeps where it put the clocks; the report says where they went.
   assert_jq "$LAST_REPORT" \
@@ -531,7 +513,7 @@ PY
   ok "push-down: the clock moved down, the rest followed"
 
   # --- 6. below the declared minimum -----------------------------------
-  settle_then_broadcast "$TOO_SMALL_CONFIG" "$H_TOO_SMALL" "too-small"
+  push_config "$TOO_SMALL_CONFIG" "too-small"
   assert_jq "$LAST_REPORT" \
     '.success == true and (((.diagnostics // []) | map(select(.code == "widget-too-small")) | length) > 0)' \
     "an item below its provider minimum is reported"
@@ -545,7 +527,7 @@ PY
   # --- 6b. above what fits (#140) ------------------------------------------
   # Read-back serves what is in effect, the file keeps what it asked for, and
   # the report says why the two differ.
-  settle_then_broadcast "$TOO_LARGE_CONFIG" "$H_TOO_LARGE" "too-large"
+  push_config "$TOO_LARGE_CONFIG" "too-large"
   assert_jq "$LAST_REPORT" \
     '.success == true and ([.diagnostics[]? | select(.code == "widget-too-large" and .path == "home.grid.layouts.phone.items[0]" and (.message | contains("asks for 1x7 cells, more than the grid")))] | length) == 1' \
     "the dock above the grid's rows is reported, with the grid as what set the limit"
@@ -558,7 +540,7 @@ PY
   ok "above what fits: widget-too-large reported, read-back 6, the file keeps 7"
 
   # --- 7. a locked layout refuses edit mode ------------------------------
-  settle_then_broadcast "$LOCKED_CONFIG" "$H_LOCKED" "locked"
+  push_config "$LOCKED_CONFIG" "locked"
   show_home
   wake_screen
   assert_cells $'digital 0 0 3 1\nanalog 0 1 2 2\ndock 0 5 4 1' "locked grid on screen"
@@ -579,7 +561,7 @@ fi
 # clock is installed, the default one otherwise.
 
 good_grid="$(query_json config | jq -c '.home.grid')" || die "could not query /config"
-settle_then_broadcast "$MALFORMED_CONFIG" "$H_MALFORMED" "malformed"
+push_config "$MALFORMED_CONFIG" "malformed"
 assert_jq "$LAST_REPORT" \
   '.success == false and ([.diagnostics[] | select(.severity == "error" and .code == "malformed-json")] | length > 0)' \
   "malformed config yields a failed report"
