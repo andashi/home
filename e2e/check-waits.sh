@@ -25,10 +25,18 @@ LOOP = re.compile(r'^\s*(for\s+\w+\s+in\s+\$\(seq\b[^)]*\)|for\s*\(\(|(while|unt
 
 
 def strip_comment(line):
-    """The line without its comment; a # inside quotes is not one."""
+    """The line without its comment, read the way bash reads it: a # inside
+    quotes or escaped is not one, a backslash escapes the next character
+    outside quotes and inside double quotes, and is literal inside single
+    quotes."""
     quote = None
+    escaped = False
     for i, c in enumerate(line):
-        if quote:
+        if escaped:
+            escaped = False
+        elif c == "\\" and quote != "'":
+            escaped = True
+        elif quote:
             if c == quote:
                 quote = None
         elif c in "'\"":
