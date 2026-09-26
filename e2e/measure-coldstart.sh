@@ -69,7 +69,19 @@ cleanup() {
       "$SERIAL" "$LOCK_OWNER" >&2
     keep_lock=1
   fi
-  for n in "${names[@]}"; do adb -s "$SERIAL" emu avd snapshot delete "$n" >/dev/null 2>&1 || true; done
+  # Each run-specific snapshot is ~3.5 GB: a delete that fails silently
+  # would let them pile up. One retry, then name whatever is left.
+  local left=()
+  for n in "${names[@]}"; do
+    adb -s "$SERIAL" emu avd snapshot delete "$n" >/dev/null 2>&1 \
+      || { sleep 2; adb -s "$SERIAL" emu avd snapshot delete "$n" >/dev/null 2>&1; } || true
+  done
+  if [ "${#names[@]}" -gt 0 ]; then
+    local listed
+    listed="$(adb -s "$SERIAL" emu avd snapshot list 2>/dev/null || true)"
+    for n in "${names[@]}"; do grep -qF "$n" <<<"$listed" && left+=("$n"); done
+    [ "${#left[@]}" -eq 0 ] || printf 'x snapshots left on %s, delete them by hand: %s\n' "$SERIAL" "${left[*]}" >&2
+  fi
   [ "$HELD_BEFORE" = 1 ] || [ "$keep_lock" = 1 ] || "$LOCK" release "$LOCK_OWNER" "$SERIAL" >/dev/null 2>&1 || true
 }
 trap cleanup EXIT
