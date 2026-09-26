@@ -70,16 +70,21 @@ class IcuStringNormalizerTest {
             Transliterator.getInstance(id)
         }
         val start = java.util.concurrent.CountDownLatch(1)
+        // A worker's failure is its own thread's; carry it back here, or a
+        // wrong result on a worker would leave this test green.
+        val results = java.util.concurrent.ConcurrentLinkedQueue<Result<String>>()
         val threads = List(8) {
             Thread {
                 start.await()
-                assertEquals("apfel", n.normalize("Äpfel"))
+                results += runCatching { n.normalize("Äpfel") }
             }.apply { start() }
         }
 
         start.countDown()
         threads.forEach { it.join(5_000) }
 
+        assertEquals("every worker finished", 0, threads.count { it.isAlive })
+        assertEquals(List(8) { "apfel" }, results.map { it.getOrThrow() })
         assertEquals(1, lookups.get())
     }
 }
