@@ -83,6 +83,9 @@ class HomeGridUnfoldTest {
     val koin = KoinSettingsRule()
 
     @get:Rule(order = 1)
+    val viewModels = ViewModelScopeRule()
+
+    @get:Rule(order = 2)
     val composeRule = createComposeRule()
 
     @Before
@@ -114,7 +117,7 @@ class HomeGridUnfoldTest {
         assertDockAtColumn7()
     }
 
-    private fun foldVm() = HomeGridVM(
+    private fun foldVm() = viewModels.track(HomeGridVM(
         repository = FakeHomeGridRepository(
             mapOf(HomeGridLayouts.Fold to listOf(dockItem(7, 0, 1, 6, HomeGridLayouts.Fold))),
         ),
@@ -126,7 +129,7 @@ class HomeGridUnfoldTest {
         writeBack = FakeWriteBack(),
         itemLimits = GridItemLimits.Unbounded,
         locked = MutableStateFlow(false),
-    )
+    ))
 
     private fun waitForDock() = composeRule.waitUntil(5_000) {
         composeRule.onAllNodesWithTag("grid-item:dock").fetchSemanticsNodes().any { it.size.height > 0 }
@@ -146,7 +149,7 @@ class HomeGridUnfoldTest {
         val repository = FakeHomeGridRepository(
             mapOf(HomeGridLayouts.Fold to listOf(dockItem(7, 0, 1, 6, HomeGridLayouts.Fold))),
         )
-        val vm = HomeGridVM(
+        val vm = viewModels.track(HomeGridVM(
             repository = repository,
             uiSettings = GlobalContext.get().get<UiSettings>(),
             formFactorDetector = FakeFormFactorDetector(FormFactor.Fold),
@@ -156,7 +159,7 @@ class HomeGridUnfoldTest {
             writeBack = FakeWriteBack(),
             itemLimits = GridItemLimits.Unbounded,
             locked = MutableStateFlow(false),
-        )
+        ))
         var width by mutableStateOf(396.dp)
         composeRule.setContent {
             MaterialTheme {
