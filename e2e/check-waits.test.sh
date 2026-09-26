@@ -72,6 +72,25 @@ PY
 echo later
 sleep 1
 S
+# What the guard cannot read fails loudly instead of passing silently: it
+# does not look inside eval, aliases or code handed to another shell, and a
+# loop it cannot close is one it did not understand (#179 review).
+verdict caught "eval: a construct the guard cannot read" <<'S'
+eval "for i in 1 2 3; do sleep 1; done"
+S
+verdict caught "an alias: a construct the guard cannot read" <<'S'
+alias pause='sleep 1'
+S
+verdict caught "code handed to another shell" <<'S'
+bash -c 'for i in $(seq 3); do sleep 1; done'
+S
+verdict caught "a loop that never closes" <<'S'
+for i in $(seq 3); do
+  echo "$i"
+S
+verdict quiet "the word eval as an argument (control)" <<'S'
+echo eval alias "bash -c"
+S
 verdict quiet "a marked repetition loop" <<'S'
 # not a wait: measurement repetitions
 for run in $(seq "$RUNS"); do measure; sleep 2; done
