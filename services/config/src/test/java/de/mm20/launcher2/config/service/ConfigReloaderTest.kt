@@ -6,6 +6,7 @@ import de.mm20.launcher2.config.ConfigMutation
 import de.mm20.launcher2.config.ConfigState
 import de.mm20.launcher2.config.SearchState
 import de.mm20.launcher2.config.Diagnostic
+import de.mm20.launcher2.config.ReloadTrigger
 import de.mm20.launcher2.config.Severity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -33,6 +34,8 @@ class ConfigReloaderTest {
         var applyDelayMs: Long = 0,
         var readFailure: Exception? = null,
         var applyFailure: Exception? = null,
+        /** The state an apply leaves behind; null keeps [state]. */
+        var stateAfterApply: ConfigState? = null,
     ) : ConfigStore {
         val events = Collections.synchronizedList(mutableListOf<String>())
         var applyCount = 0
@@ -48,6 +51,7 @@ class ConfigReloaderTest {
             events += "apply:${mutations.map { it.section }}"
             if (applyDelayMs > 0) delay(applyDelayMs)
             applyFailure?.let { throw it }
+            stateAfterApply?.let { state = it }
             return applyDiagnostics
         }
     }
@@ -189,6 +193,168 @@ class ConfigReloaderTest {
 
         assertTrue(report.success)
         assertEquals(listOf("home.grid"), report.appliedMutations)
+    }
+
+    /**
+     * A layout kept as written because its rows were not measured yet is
+     * fitted once they are: the reload for the measurement applies the grid
+     * even though the file and what is stored agree, which is exactly the
+     * state a layout kept as written is in.
+     */
+    @Test
+    fun `a reload for a new grid measurement applies the grid the file and the store agree on`() = runTest {
+        val layout = """{"items": [{"id": "dock", "widget": "favorites", "x": 4, "y": 6, "w": 4, "h": 1}]}"""
+        val text = """{"schemaVersion": 2, "home": {"grid": {"layouts": {"fold": $layout}}}}"""
+        val stored = ConfigState(
+            gridLayouts = mapOf(
+                "fold" to de.mm20.launcher2.config.GridLayoutConfig(
+                    listOf(de.mm20.launcher2.config.GridItemConfig(id = "dock", widget = "favorites", x = 4, y = 6, w = 4, h = 1)),
+                ),
+            ),
+        )
+
+        val control = FakeConfigStore(state = stored)
+        newReloader(control).first.reload(text, ReloadTrigger.Broadcast)
+        val measured = FakeConfigStore(state = stored)
+        newReloader(measured).first.reload(text, ReloadTrigger.GridMeasured)
+
+        assertEquals(listOf("read", "apply:[]"), control.events)
+        // The second read is the check whether the fit changed anything.
+        assertEquals(listOf("read", "apply:[home.grid]", "read"), measured.events)
+    }
+
+    // A measurement reload must not supersede the report a push is waited on
+    // by, unless it changed something the reader has to know (#178 review).
+
+    private val foldText =
+        """{"schemaVersion": 2, "home": {"grid": {"layouts": {"fold": {"items": [{"id": "dock", "widget": "favorites", "x": 4, "y": 6, "w": 4, "h": 1}]}}}}}"""
+
+    private fun foldState(y: Int) = ConfigState(
+        gridLayouts = mapOf(
+            "fold" to de.mm20.launcher2.config.GridLayoutConfig(
+                listOf(de.mm20.launcher2.config.GridItemConfig(id = "dock", widget = "favorites", x = 4, y = y, w = 4, h = 1)),
+            ),
+        ),
+    )
+
+    @Test
+    fun `a measurement reload that changes nothing leaves the last report as it was`() = runTest {
+        val store = FakeConfigStore(state = foldState(6))
+        val (reloader, reportStore) = newReloader(store)
+        reloader.reload(foldText, ReloadTrigger.Broadcast)
+
+        reloader.reload(foldText, ReloadTrigger.GridMeasured)
+
+        assertEquals(listOf("read", "apply:[]", "read", "apply:[home.grid]", "read"), store.events)
+        assertEquals(ReloadTrigger.Broadcast, reportStore.read()!!.trigger)
+    }
+
+    // Silent only for a true no-op: a measurement reload that met a file the
+    // last report does not describe, or applied anything besides the forced
+    // grid, has something to say (#178 review). Each test below changes one
+    // of the two, so each condition is guarded on its own.
+
+    @Test
+    fun `a measurement reload of a file the last report does not describe replaces it`() = runTest {
+        val store = FakeConfigStore(state = foldState(6))
+        val (reloader, reportStore) = newReloader(store)
+        reloader.reload(foldText, ReloadTrigger.Broadcast)
+        // The same settings in a new file: only the hash tells them apart.
+        val newer = "$foldText\n"
+
+        val report = reloader.reload(newer, ReloadTrigger.GridMeasured)
+
+        assertEquals(listOf("home.grid"), report.appliedMutations)
+        assertEquals(report.configSha256, reportStore.read()!!.configSha256)
+        assertEquals(ReloadTrigger.GridMeasured, reportStore.read()!!.trigger)
+    }
+
+    @Test
+    fun `a measurement reload that applied more than the grid replaces the last report`() = runTest {
+        val text = foldText.replace("\"schemaVersion\": 2,", "\"schemaVersion\": 2, \"icons\": {\"themed\": false},")
+        val store = FakeConfigStore(state = foldState(6).copy(themedIcons = false))
+        val (reloader, reportStore) = newReloader(store)
+        val pushed = reloader.reload(text, ReloadTrigger.Broadcast)
+        // Changed on the device since the push; the same file puts it back.
+        store.state = store.state.copy(themedIcons = true)
+
+        val report = reloader.reload(text, ReloadTrigger.GridMeasured)
+
+        assertEquals(pushed.configSha256, report.configSha256)
+        assertEquals(listOf("icons", "home.grid"), report.appliedMutations)
+        assertEquals(ReloadTrigger.GridMeasured, reportStore.read()!!.trigger)
+    }
+
+    @Test
+    fun `a measurement reload that restored a grid setting replaces the last report`() = runTest {
+        val text = foldText.replace("\"grid\": {", "\"grid\": {\"columns\": 4, ")
+        val store = FakeConfigStore(state = foldState(6))
+        val (reloader, reportStore) = newReloader(store)
+        reloader.reload(text, ReloadTrigger.Broadcast)
+        // Changed on the device since the push; the file's forced SetGrid puts
+        // it back without the layouts changing (#178 review).
+        store.state = store.state.copy(gridColumns = 5)
+
+        reloader.reload(text, ReloadTrigger.GridMeasured)
+
+        assertEquals(ReloadTrigger.GridMeasured, reportStore.read()!!.trigger)
+    }
+
+    @Test
+    fun `a measurement reload whose capability warning changed replaces the last report`() = runTest {
+        val text = foldText.replace("\"schemaVersion\": 2,", "\"schemaVersion\": 2, \"search\": {\"contacts\": true},")
+        val store = FakeConfigStore(state = foldState(6).copy(search = SearchState(contacts = true)))
+        val reportStore = ReloadReportStore(context)
+        var granted = true
+        val reloader = ConfigReloader(store, reportStore, capabilities = CapabilityDiagnostics { granted })
+        reloader.reload(text, ReloadTrigger.Broadcast)
+        // Revoked since the push: the file and the grid are as they were, the
+        // warning is new (#178 review).
+        granted = false
+
+        reloader.reload(text, ReloadTrigger.GridMeasured)
+
+        val stored = reportStore.read()!!
+        assertEquals(ReloadTrigger.GridMeasured, stored.trigger)
+        assertEquals(listOf("permission-missing"), stored.diagnostics.map { it.code })
+    }
+
+    @Test
+    fun `a successful measurement reload replaces a failed report of the same file`() = runTest {
+        val store = FakeConfigStore(state = foldState(6), readFailure = IllegalStateException("datastore gone"))
+        val (reloader, reportStore) = newReloader(store)
+        val failed = reloader.reload(foldText, ReloadTrigger.Broadcast)
+        store.readFailure = null
+
+        val report = reloader.reload(foldText, ReloadTrigger.GridMeasured)
+
+        assertEquals(failed.configSha256, report.configSha256)
+        assertTrue(report.success)
+        assertTrue(reportStore.read()!!.success)
+    }
+
+    @Test
+    fun `a measurement reload that fitted the grid differently replaces the last report`() = runTest {
+        val store = FakeConfigStore(state = foldState(6))
+        val (reloader, reportStore) = newReloader(store)
+        reloader.reload(foldText, ReloadTrigger.Broadcast)
+        store.stateAfterApply = foldState(5)
+
+        reloader.reload(foldText, ReloadTrigger.GridMeasured)
+
+        assertEquals(ReloadTrigger.GridMeasured, reportStore.read()!!.trigger)
+    }
+
+    @Test
+    fun `a measurement reload with a correction to report replaces the last report`() = runTest {
+        val store = FakeConfigStore(state = foldState(6))
+        val (reloader, reportStore) = newReloader(store)
+        reloader.reload(foldText, ReloadTrigger.Broadcast)
+        store.applyDiagnostics = listOf(Diagnostic(Severity.Warning, "grid-overflow", "home.grid.layouts.fold.items[0]", "dropped"))
+
+        reloader.reload(foldText, ReloadTrigger.GridMeasured)
+
+        assertEquals(ReloadTrigger.GridMeasured, reportStore.read()!!.trigger)
     }
 
     @Test

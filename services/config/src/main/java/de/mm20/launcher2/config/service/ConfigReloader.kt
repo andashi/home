@@ -1,6 +1,7 @@
 package de.mm20.launcher2.config.service
 
 import de.mm20.launcher2.config.ConfigDiffer
+import de.mm20.launcher2.config.ConfigMutation
 import de.mm20.launcher2.config.ConfigParser
 import de.mm20.launcher2.config.ConfigState
 import de.mm20.launcher2.config.Diagnostic
@@ -117,7 +118,13 @@ class ConfigReloader(
         }
 
         val (before, mutations) = try {
-            configStore.readState().let { it to ConfigDiffer.diff(config, it) }
+            configStore.readState().let { state ->
+                // A new measurement fits the layouts the file names even where
+                // the store agrees with the file: a layout kept as written
+                // before its rows were known is exactly that (GridRowsSource).
+                val compared = if (trigger == ReloadTrigger.GridMeasured) state.copy(gridInitialized = false) else state
+                state to ConfigDiffer.diff(config, compared)
+            }
         } catch (e: Exception) {
             return persist(
                 ReloadReport(
@@ -173,16 +180,29 @@ class ConfigReloader(
         }
 
         recordBaseline(configSha256, before, applied)
-        return persist(
-            ReloadReport(
-                success = applyDiagnostics.none { it.severity == Severity.Error },
-                schemaVersion = config.schemaVersion,
-                diagnostics = parseResult.diagnostics + applyDiagnostics + capabilityDiagnostics,
-                appliedMutations = appliedSections,
-                configSha256 = configSha256,
-                trigger = trigger,
-            )
+        val report = ReloadReport(
+            success = applyDiagnostics.none { it.severity == Severity.Error },
+            schemaVersion = config.schemaVersion,
+            diagnostics = parseResult.diagnostics + applyDiagnostics + capabilityDiagnostics,
+            appliedMutations = appliedSections,
+            configSha256 = configSha256,
+            trigger = trigger,
         )
+        // A measurement reload that has nothing new to say leaves the last
+        // report alone: that report is what a push is waited on by, and it
+        // still describes the device. Nothing new means the last report is of
+        // this very file with the same diagnostics - a correction or a
+        // capability warning that appeared or went away is news, and a failed
+        // report differs by its error - only the forced layouts were applied
+        // (a grid setting in SetGrid is a correction the differ found), and
+        // the fit changed no layout. A measurement reload that met a newly
+        // pushed file has to say so (#178 review).
+        val noOp = trigger == ReloadTrigger.GridMeasured &&
+            mutations.all { it.isForcedLayoutsOnly() } &&
+            lastReport()?.let { it.configSha256 == configSha256 && it.diagnostics == report.diagnostics } == true &&
+            !gridChanged(before)
+        if (noOp) return report
+        return persist(report)
     }
 
     /**
@@ -207,6 +227,22 @@ class ConfigReloader(
         } catch (_: Exception) {
             // Without a baseline a write-back skips and says so; the reload stands.
         }
+    }
+
+    private suspend fun lastReport(): ReloadReport? = try {
+        reportStore.read()
+    } catch (e: Exception) {
+        null
+    }
+
+    private fun ConfigMutation.isForcedLayoutsOnly(): Boolean =
+        this is ConfigMutation.SetGrid && columns == null && locked == null && labels == null
+
+    /** Whether the grid the store holds now differs from [before]; unreadable counts as changed. */
+    private suspend fun gridChanged(before: ConfigState): Boolean = try {
+        configStore.readState().gridLayouts != before.gridLayouts
+    } catch (e: Exception) {
+        true
     }
 
     private suspend fun persist(report: ReloadReport): ReloadReport {

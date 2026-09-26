@@ -108,6 +108,27 @@ hash matches that report is not reloaded. Only a `self-write` report counts;
 a push of unchanged bytes after any other reload still reloads, because
 provisioning waits for the watcher's report of its write.
 
+A fourth trigger, `grid-measured`, fits the grid once its rows are known.
+Only the device that draws a layout knows its rows (#90), and only after the
+first draw. A file applied before that keeps its layouts as written, instead
+of fitting them to a guess: a guess of six dropped the Fold's seventh row. The
+first measurement, and any later change of the rows, reloads the file and
+applies its layouts even where the file and the store agree. A plain reload
+would find them agreeing - that is exactly the state of a layout kept as
+written - and fit nothing.
+
+Its report replaces the last one only when it has something to say, because
+provisioning waits on that report. It stays silent when the last report is
+of this very file and says the same (equal diagnostics: a new correction, a
+capability warning that appeared or went away, or a failure all differ),
+the reload applied the forced layouts and nothing else, and the fit changed
+no layout. A measurement reload that meets a newly pushed file, restores a
+drifted setting, fits a layout differently or has anything else to report
+writes its own, with trigger `grid-measured`. A measurement that could not be fitted
+yet (no file, or a file caught half-written) stays pending and is retried
+after the next reload; one that arrives during a reload is never cleared by
+it.
+
 ### 5. Write-back: every section follows the device
 
 Added 2026-09-22 for the home grid (ADR 0001, #23); extended to every

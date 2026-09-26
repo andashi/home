@@ -2,6 +2,7 @@ package de.mm20.launcher2.config.service
 
 import de.mm20.launcher2.glass.GlassBackdropSource
 import de.mm20.launcher2.homegrid.HomeGridWriteBack
+import de.mm20.launcher2.homegrid.MeasuredGridRows
 import de.mm20.launcher2.permissions.PermissionGroup
 import de.mm20.launcher2.permissions.PermissionsManager
 import org.koin.android.ext.koin.androidContext
@@ -60,7 +61,11 @@ val configModule = module {
     // What the grid's edit mode calls on Done (data/homegrid's interface).
     single<HomeGridWriteBack> { HomeGridWriteBackAdapter(get()) }
     single(createdAtStart = true) {
-        ConfigWatcher(androidContext(), get(), get(), baselineStore = get()).also { it.start() }
+        ConfigWatcher(
+            androidContext(), get(), get(), baselineStore = get(),
+            // A layout kept as written before its rows were measured is fitted once they are (#90).
+            measurements = get<MeasuredGridRows>().measurements,
+        ).also { it.start() }
     }
     // Every change on the device goes back into the file (#3 slice 4).
     single(createdAtStart = true) {

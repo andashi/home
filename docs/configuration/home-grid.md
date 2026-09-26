@@ -28,7 +28,10 @@ away in search. Design background:
 Rows are not configured. The launcher derives them from the screen, so a cell
 stays square: the phone instance these screenshots come from has 6 rows, the
 Pixel Fold has 7 on both displays. `y` is absolute, so each layout puts its
-bottom row (a bottom dock, say) at its own device's last row.
+bottom row (a bottom dock, say) at its own device's last row. A file pushed
+before the launcher has drawn its grid is kept as written, since its rows are
+not known yet. Once the grid is first measured, the layout is fitted and the
+corrections are reported, with trigger `grid-measured` in the reload report.
 
 | Labels on (default) | `labels: false` |
 |---|---|

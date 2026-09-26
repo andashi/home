@@ -7,12 +7,18 @@ import de.mm20.launcher2.config.ReloadTrigger
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.IOException
+import java.util.concurrent.atomic.AtomicLong
 
 /**
  * Fork addition (Phase 2, ADR 0003): the convenience reload path for
@@ -38,11 +44,20 @@ class ConfigWatcher(
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO),
     private val debounceMs: Long = DefaultDebounceMs,
     private val baselineStore: AppliedBaselineStore? = null,
+    /** This device's measured grid rows (MeasuredGridRows); null when nothing measures. */
+    private val measurements: Flow<Map<String, Int>>? = null,
 ) {
     private val appContext = context.applicationContext
 
     private var observer: FileObserver? = null
     private var startJob: Job? = null
+    private var measureJob: Job? = null
+    // Each new measurement is a generation; a fit clears only the one it read
+    // before its reload, so a measurement arriving during a reload stays
+    // pending (#178 review). Written by the collector, read under fitLock.
+    private val measuredGeneration = AtomicLong(0)
+    private var fittedGeneration = 0L
+    private val fitLock = Mutex()
     internal var debounceJob: Job? = null
 
     /**
@@ -68,11 +83,14 @@ class ConfigWatcher(
             startObserver(dir)
             startupCheck()
         }
+        if (measureJob?.isActive != true) measureJob = watchMeasurements()
     }
 
     fun stop() {
         startJob?.cancel()
         startJob = null
+        measureJob?.cancel()
+        measureJob = null
         debounceJob?.cancel()
         debounceJob = null
         observer?.stopWatching()
@@ -115,6 +133,7 @@ class ConfigWatcher(
                 return@launch
             }
             reloader.reload(file, ReloadTrigger.FileWatcher)
+            fitPendingMeasurement()
         }
     }
 
@@ -143,6 +162,41 @@ class ConfigWatcher(
         null
     }
 
+    /**
+     * Fits a layout that was kept as written because its rows were not known
+     * yet (GridRowsSource): each new measurement reloads the config with
+     * [ReloadTrigger.GridMeasured], which applies the grid even where the
+     * file and the store agree. Without this, a config pushed before the
+     * first draw would stay unfitted, and unreported, until an unrelated
+     * change reloaded it.
+     */
+    internal fun watchMeasurements(): Job? {
+        val measurements = measurements ?: return null
+        return scope.launch {
+            measurements.filter { it.isNotEmpty() }.distinctUntilChanged().collect {
+                measuredGeneration.incrementAndGet()
+                fitPendingMeasurement()
+            }
+        }
+    }
+
+    /**
+     * A measurement is pending until a reload has fitted the grid to it. One
+     * that could not run (no config directory or file yet) or failed (a file
+     * caught half-written) would otherwise be lost: a later reload finds the
+     * file and the store agreeing and fits nothing, and a startup check that
+     * knows the file skips it. So it is retried after each file-watcher reload
+     * and after the startup check, until one succeeds (#178 review).
+     */
+    private suspend fun fitPendingMeasurement() = fitLock.withLock {
+        val generation = measuredGeneration.get()
+        if (generation == fittedGeneration) return@withLock
+        val file = ConfigLocation.configFile(appContext) ?: return@withLock
+        if (!file.exists()) return@withLock
+        val report = reloader.reload(file, ReloadTrigger.GridMeasured)
+        if (report.success || GridSection in report.appliedMutations) fittedGeneration = generation
+    }
+
     internal fun startupCheck(): Job? {
         val file = ConfigLocation.configFile(appContext) ?: return null
         return scope.launch {
@@ -156,11 +210,13 @@ class ConfigWatcher(
             if (report == null || report.configSha256 != hash || noBaseline) {
                 reloader.reload(file, ReloadTrigger.StartupCheck)
             }
+            fitPendingMeasurement()
         }
     }
 
     companion object {
         const val DefaultDebounceMs = 300L
+        private const val GridSection = "home.grid"
         private const val StartupRetryCount = 40
         private const val StartupRetryDelayMs = 250L
         private const val TAG = "ConfigWatcher"
