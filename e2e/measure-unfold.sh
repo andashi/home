@@ -92,7 +92,7 @@ rev() { printf '%s' "${revs[$1]:-unknown}"; }
 restore() {
   "$RUN" restore "$1" >/dev/null
   timeout 20 adb -s "$SERIAL" wait-for-device \
-    || { adb reconnect offline >/dev/null; timeout 30 adb -s "$SERIAL" wait-for-device; } \
+    || { timeout 10 adb -s "$SERIAL" reconnect >/dev/null 2>&1; timeout 30 adb -s "$SERIAL" wait-for-device; } \
     || die "$SERIAL stayed offline after loading $1"
 }
 

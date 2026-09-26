@@ -228,13 +228,16 @@ check "wait_desc gives up after its timeout" bounded wait_desc Search 3 test
 check "wait_id gives up after its timeout" bounded wait_id grid-edit-done 3 test
 check "wait_cells gives up after its timeout" bounded wait_cells 1 3
 check "wait_report gives up after its timeout" bounded "wait_report '.success' 3 test"
-# wait_on_home is bounded by rounds, each capped through adb_t by ROUND_CAP:
-# on a wedged device it ends after rounds x (cap + 1 s pause) plus the
-# diagnosis's own 2 s. 3 rounds at a 1 s cap: 3 x 2 + 2 = 8 s.
+# wait_on_home is bounded by rounds: each round's dump capped by ROUND_CAP,
+# its recovery by RECOVERY_CAP, a 1 s pause between rounds, then the
+# diagnosis's own 2 s. At 1 s caps, 3 rounds: 3 x (1 + 1) + 2 + 2 = 10 s.
+# SECONDS counts whole seconds and a loaded CI runner adds scheduling time,
+# so the check allows 3 s on top (review on #163). A regression to an
+# unbounded wait would be 60 s, far outside it.
 wait_on_home_is_bounded_by_its_rounds() {
-  local start=$SECONDS
-  ( PATH="$WORK/wedged:$PATH" timeout 30 bash -c "$(declare -f); $(declare -p SERIAL PKG WORK STATE_URI 2>/dev/null); ROUND_CAP=1 wait_on_home grid-item:dock 3" ) >/dev/null 2>&1 && return 1
-  [ $((SECONDS - start)) -le $((3 * (1 + 1) + 2)) ]
+  local start=$SECONDS nominal=$((3 * (1 + 1) + 2 + 2))
+  ( PATH="$WORK/wedged:$PATH" timeout 60 bash -c "$(declare -f); $(declare -p SERIAL PKG WORK STATE_URI 2>/dev/null); ROUND_CAP=1 RECOVERY_CAP=1 wait_on_home grid-item:dock 3" ) >/dev/null 2>&1 && return 1
+  [ $((SECONDS - start)) -le $((nominal + 3)) ]
 }
 check "wait_on_home gives up after its rounds on a wedged device" wait_on_home_is_bounded_by_its_rounds
 

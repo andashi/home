@@ -67,15 +67,22 @@ shows() { [ -n "$("$@" 2>/dev/null)" ]; }
 # asserting once failed right there (emulator-5560, 2026-09-25 22:11). So
 # it is polled against a real deadline, reconnecting an offline transport
 # in between.
+# The reconnect names this serial and is bounded like every other call: a
+# bare `adb reconnect offline` reaches every emulator on the host, including
+# instances other sessions hold under their locks.
 is_unrooted_shell() {
   [ "$(adb_t shell id -u 2>/dev/null | tr -d '\r')" = 2000 ] && return 0
-  adb reconnect offline >/dev/null 2>&1 || true
+  adb_t reconnect >/dev/null 2>&1 || true
   return 1
 }
 unrooted_shell() { # [$1 = timeout (s), default 60]
+  # One deadline for the whole operation: a hanging `adb unroot` must not
+  # start the clock late.
+  local timeout=${1:-60}
+  local ADB_DEADLINE=$((SECONDS + timeout))
   adb_t unroot >/dev/null 2>&1 || true
-  retry_for "${1:-60}" is_unrooted_shell \
-    || die "adb is not the unrooted shell (uid 2000) after ${1:-60}s"
+  retry_for "$((ADB_DEADLINE - SECONDS))" is_unrooted_shell \
+    || die "adb is not the unrooted shell (uid 2000) after ${timeout}s"
   log "adb as unrooted shell (uid 2000)"
 }
 
@@ -408,12 +415,20 @@ resolve_postures() {
 # wall-clock bound meant 3 rounds on one and 2 on the other, and one dump
 # cannot tell "not yet" from "not coming". So: 3 rounds (the clean
 # measurement on emulator-5560, 8 posture changes, never needed more than 2),
-# each capped by ROUND_CAP through adb_t, so a wedged device still ends after
-# at most 3 x (ROUND_CAP + 1) s. A success logs the rounds and the seconds, so
-# a slow host shows as slow instead of hiding inside a round count. Device
-# runs on one host go one at a time all the same: every cost here assumes an
-# unloaded host.
-home_shows() { shows id_bounds "$1" && return 0; wake_screen; show_home; return 1; }
+# each capped by ROUND_CAP through adb_t. The recovery that follows a miss
+# (wake, reopen home) gets RECOVERY_CAP of its own, since a dump that used up
+# the round would otherwise leave it no time and the next round would look
+# at the same screen. A wedged device still ends after at most
+# 3 x (ROUND_CAP + RECOVERY_CAP + 1) s, plus 2 s of diagnosis. A success
+# logs the rounds and the seconds, so a slow host shows as slow instead of
+# hiding inside a round count. Device runs on one host go one at a time all
+# the same: every cost here assumes an unloaded host.
+home_shows() {
+  shows id_bounds "$1" && return 0
+  local ADB_DEADLINE=$((SECONDS + ${RECOVERY_CAP:-5}))
+  wake_screen; show_home
+  return 1
+}
 wait_on_home() { # $1 = resource id, [$2 = rounds, default 3]
   local rounds=${2:-3} t0=$SECONDS focus shot="${MISS_DIR:-${TMPDIR:-/tmp}}/wait_on_home-$SERIAL-$(date +%s).png"
   if retry_rounds "$rounds" "${ROUND_CAP:-20}" home_shows "$1"; then

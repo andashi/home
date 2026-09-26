@@ -11,7 +11,14 @@
 set -euo pipefail
 cd "${1:-$(dirname "$0")}"  # a directory laid out like e2e/, for the tests
 
-defined() { grep -oE '^[a-z_][a-z0-9_]*\(\)' "$1" | tr -d '()' | sort -u; }
+# Every form Bash accepts for a declaration, indented or not:
+#   name() {   name () {   function name() {   function name {
+# (e2e/check-helpers.test.sh runs this against a table of them). A call, a
+# comment or a string that contains "name()" is not a declaration.
+defined() {
+  grep -E '^[[:space:]]*(function[[:space:]]+[A-Za-z_][A-Za-z0-9_]*([[:space:]]*\([[:space:]]*\))?[[:space:]]*(\{|$)|[A-Za-z_][A-Za-z0-9_]*[[:space:]]*\([[:space:]]*\))' "$1" \
+    | sed -E 's/^[[:space:]]*(function[[:space:]]+)?([A-Za-z_][A-Za-z0-9_]*).*/\2/' | sort -u
+}
 
 lib="$(defined lib/grid-device.sh)"
 found=0
