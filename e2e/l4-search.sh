@@ -181,9 +181,11 @@ ok "without READ_CONTACTS: permission-missing reported, read-back true, the bann
 # Control: once the profile holds the permission, a reload reports nothing.
 adb -s "$SERIAL" shell pm grant "$PKG" android.permission.READ_CONTACTS || die "could not grant READ_CONTACTS"
 reload_broadcast
-wait_report '.trigger == "broadcast"' 30 "the reload after the grant"
-assert_jq "$(query_json diagnostics)" '([.diagnostics[]? | select(.code == "permission-missing")] | length) == 0' \
-  "with READ_CONTACTS held nothing is reported"
+# The report before the grant is a broadcast report too, so waiting for any
+# broadcast report could match it (#172 review): wait for one without the
+# warning, which only the reload after the grant can write.
+wait_report '.trigger == "broadcast" and .success == true and ([.diagnostics[]? | select(.code == "permission-missing")] | length) == 0' \
+  30 "a reload after the grant that no longer reports permission-missing"
 ok "with READ_CONTACTS: the reload reports nothing"
 
 ok "l4-search passed"

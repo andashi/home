@@ -166,12 +166,21 @@ class ConfigReloader(
             .distinct()
             .filter { section -> failedSections.none { it.isInSection(section) } }
 
+        // A key whose section failed to apply is not in effect, so no
+        // permission is missing for it: the failure is what the report says.
+        // One the device already had is in effect, applied or not. A failure
+        // with no path is the whole apply's, and covers every section.
+        val capabilityDiagnostics = capabilities.of(config).filter { diagnostic ->
+            val section = diagnostic.path.substringBefore('.').substringBefore('[')
+            failedSections.none { it.isEmpty() || it.isInSection(section) }
+        }
+
         recordBaseline(configSha256, before, applied)
         return persist(
             ReloadReport(
                 success = applyDiagnostics.none { it.severity == Severity.Error },
                 schemaVersion = config.schemaVersion,
-                diagnostics = parseResult.diagnostics + applyDiagnostics + capabilities.of(config),
+                diagnostics = parseResult.diagnostics + applyDiagnostics + capabilityDiagnostics,
                 appliedMutations = appliedSections,
                 configSha256 = configSha256,
                 trigger = trigger,

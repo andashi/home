@@ -292,6 +292,51 @@ class ConfigReloaderTest {
         }
     }
 
+    /**
+     * A section that failed to apply is not in effect, so no permission is
+     * missing for it: the failure is what the report says (#172 review).
+     */
+    @Test
+    fun `contacts in a search section that failed to apply is not reported as a permission problem`() = runTest {
+        val store = FakeConfigStore(
+            state = ConfigState(search = SearchState(contacts = false)),
+            applyDiagnostics = listOf(Diagnostic(Severity.Error, "apply-failed", "search", "datastore gone")),
+        )
+
+        val report = reloaderWith(store, contactsGranted = false)
+            .reload("""{"schemaVersion": 2, "search": {"contacts": true}}""")
+
+        assertFalse(report.success)
+        assertEquals(listOf("apply-failed"), report.diagnostics.map { it.code })
+    }
+
+    /** The same when the whole apply threw: its failure names no section. */
+    @Test
+    fun `contacts in a reload whose apply threw is not reported as a permission problem`() = runTest {
+        val store = FakeConfigStore(
+            state = ConfigState(search = SearchState(contacts = false)),
+            applyFailure = IllegalStateException("disk full"),
+        )
+
+        val report = reloaderWith(store, contactsGranted = false)
+            .reload("""{"schemaVersion": 2, "search": {"contacts": true}}""")
+
+        assertEquals(listOf("apply-failed"), report.diagnostics.map { it.code })
+    }
+
+    /**
+     * Already in effect, so no mutation and no section applied - and still
+     * reported: the setting is on, the permission is not there.
+     */
+    @Test
+    fun `contacts the device already has is reported without anything applied`() = runTest {
+        val report = reloaderWith(FakeConfigStore(state = ConfigState(search = SearchState(contacts = true))), contactsGranted = false)
+            .reload("""{"schemaVersion": 2, "search": {"contacts": true}}""")
+
+        assertEquals(emptyList<String>(), report.appliedMutations)
+        assertEquals(listOf("permission-missing"), report.diagnostics.map { it.code })
+    }
+
     /** Nothing was applied, and nothing depends on a key that did not land. */
     @Test
     fun `an invalid file is not reported for contacts`() = runTest {
