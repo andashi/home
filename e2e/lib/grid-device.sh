@@ -217,7 +217,7 @@ wait_id() { # $1 = resource-id (test tag), $2 = timeout (s), $3 = description
 
 tap_bounds() { # $1 = "l t r b"
   set -- $1
-  adb -s "$SERIAL" shell input tap $(( ($1 + $3) / 2 )) $(( ($2 + $4) / 2 ))
+  adb_t shell input tap $(( ($1 + $3) / 2 )) $(( ($2 + $4) / 2 ))
 }
 
 tap_desc() { # $1 = content-desc
@@ -449,15 +449,27 @@ ime_read() {
 ime_shown() { ime_read && [ "$IME" = shown ]; }
 ime_hidden() { ime_read && [ "$IME" = hidden ]; }
 
-# Opens search from the launcher's bar and types $1, if given. Tap and wait
-# share one deadline, SEARCH_TIMEOUT (10 s).
+# Opens search from the launcher's bar and types $1, if given.
+#
+# Bounded by rounds, and each round re-issues the tap: opening search is an
+# action that can be lost, and a tap that did not register cannot be waited
+# out, only repeated (#164). A wall-clock 10 s had room for about two looks
+# on the software-rendered fold (a dump about 4 s), and config-screenshots
+# failed there on 2026-09-26. Up to 3 rounds, each capped by ROUND_CAP
+# through adb_t. A success logs its rounds and seconds, so the need behind
+# the 3 is recorded, not guessed.
+search_open_round() {
+  search_is_open && return 0
+  local b
+  b="$(desc_bounds Search 2>/dev/null)" || b=""
+  [ -n "$b" ] && tap_bounds "$b"
+  search_is_open
+}
 open_search() { # [$1 = text to type]
-  local timeout=${SEARCH_TIMEOUT:-10}
-  local d
-  d=$(deadline_in "$timeout")
-  local ADB_DEADLINE=$d
-  tap_desc Search
-  retry_for "$((ADB_DEADLINE - SECONDS))" search_is_open || die "tapping the bar did not open search within ${timeout}s"
+  local t0=$SECONDS
+  retry_rounds 3 "${ROUND_CAP:-20}" search_open_round \
+    || die "search did not open after 3 rounds of tapping the bar ($((SECONDS - t0)) s)"
+  log "search open after $ROUNDS_USED rounds, $((SECONDS - t0)) s"
   [ -z "${1:-}" ] || adb_t shell input text "$1"
 }
 
