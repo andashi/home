@@ -317,8 +317,9 @@ run_cycle() { # $1 = run number
   # open: holding the HOME role changes what it does at startup (widget host,
   # shortcut queries) and therefore what it costs.
   # Startup and runtime figures of a launcher that is not home would not be a
-  # launcher's.
-  grant_home_role 0
+  # launcher's. Its log line goes to stderr like every other one here:
+  # run_cycle's stdout is the TSV records.
+  grant_home_role 0 >&2
 
   # The battery is unplugged before anything is measured, and this is not a
   # detail. NavBarEffects (removed in this series, but the point stands for
