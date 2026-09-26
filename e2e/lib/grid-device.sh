@@ -153,6 +153,18 @@ wait_report() { # $1 = jq filter, $2 = timeout (s), $3 = description
   die "timed out (${2}s) waiting for report: $3"
 }
 
+# The report about a push is the one carrying its hash that was not there
+# before the push. Never its trigger: that names what caused the reload, and
+# the grid's first measurement can reload a pushed file before or after the
+# watcher does, replacing the watcher's report (ADR 0003, section 4). A step
+# claiming a cause (the broadcast reached the receiver) still asserts it.
+report_now() { # the current report, or null before the first one
+  query_json diagnostics 2>/dev/null || echo null
+}
+wait_push_report() { # $1 = report_now before the push, $2 = sha256 pushed, $3 = timeout (s), $4 = description
+  wait_report ".configSha256 == \"$2\" and . != $1" "$3" "$4"
+}
+
 write_config() { # $1 = local file
   local out
   out="$(adb_out shell content write --uri "$INGEST_URI" < "$1" 2>&1)" \
@@ -172,12 +184,14 @@ reload_broadcast() {
 
 # Push a file and wait until the launcher reports it applied (by hash).
 push_config() { # $1 = local file, $2 = stage name
-  local h
+  local h before
   h="$(sha256sum "$1" | cut -d' ' -f1)"
+  before="$(report_now)"
   write_config "$1"
-  wait_report ".configSha256 == \"$h\"" 60 "$2: reload of the pushed file"
+  wait_push_report "$before" "$h" 60 "$2: reload of the pushed file"
+  before="$(report_now)"
   reload_broadcast
-  wait_report ".configSha256 == \"$h\" and .trigger == \"broadcast\"" 30 "$2: broadcast report"
+  wait_push_report "$before" "$h" 30 "$2: broadcast report"
 }
 
 wake_screen() {
