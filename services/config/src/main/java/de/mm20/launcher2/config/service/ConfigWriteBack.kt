@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.jsonObject
@@ -157,7 +158,24 @@ class ConfigWriteBack(
         val changes = WriteBackPlan.changes(literal, baseline.effective, device, canonical = effectiveTree(config))
             // W2: a locked grid is not the device's to change, whatever else is.
             .filterNot { gridLocked && it.path.take(2) == listOf("home", "grid") }
-        if (changes.isEmpty()) return WriteBackResult.Unchanged
+        // A colour scheme a person made has no slug, so the read-back leaves
+        // colors out and the plan writes nothing there: the file keeps what
+        // it asked, and the report says why the effect differs (#3 slice 3).
+        val keptColors = if (literal.at(ThemeColorsPath) != null && device.at(ThemeColorsPath).let { it == null || it is JsonNull }) {
+            Diagnostic(
+                Severity.Warning,
+                SkipCodePrefix + "colors-custom",
+                ThemeColorsPath.joinToString("."),
+                "the device uses a colour scheme a person made, which appearance.theme.colors cannot name; " +
+                    "the file keeps its value",
+            )
+        } else {
+            null
+        }
+        if (changes.isEmpty()) {
+            keptColors?.let { recordSkipWarning(it) }
+            return WriteBackResult.Unchanged
+        }
 
         val spliced = WriteBackPlan.splice(text, changes)
             ?: return skipped("malformed-config", "could not locate the changed keys in ${file.name}")
@@ -197,6 +215,7 @@ class ConfigWriteBack(
                     appliedMutations = changes.map { it.path.joinToString(".") },
                     configSha256 = written,
                     trigger = ReloadTrigger.SelfWrite,
+                    diagnostics = listOfNotNull(keptColors),
                 )
             )
         } catch (e: Exception) {
@@ -208,17 +227,16 @@ class ConfigWriteBack(
     }
 
     /** The skip, as a warning on the last reload report; the report itself stays what it was. */
-    private suspend fun recordSkip(skip: WriteBackResult.Skipped) {
+    private suspend fun recordSkip(skip: WriteBackResult.Skipped) =
+        recordSkipWarning(Diagnostic(Severity.Warning, SkipCodePrefix + skip.code, "", skip.reason))
+
+    /** [warning] in place of any earlier skip warning on the last reload report. */
+    private suspend fun recordSkipWarning(warning: Diagnostic) {
         try {
             val last = reportStore.read() ?: return
-            val code = SkipCodePrefix + skip.code
-            if (last.diagnostics.any { it.code == code && it.message == skip.reason }) return
+            if (last.diagnostics.any { it.code == warning.code && it.message == warning.message }) return
             val others = last.diagnostics.filterNot { it.code.startsWith(SkipCodePrefix) }
-            reportStore.save(
-                last.copy(
-                    diagnostics = others + Diagnostic(Severity.Warning, code, "", skip.reason),
-                )
-            )
+            reportStore.save(last.copy(diagnostics = others + warning))
         } catch (e: Exception) {
             Log.w(TAG, "could not record the skipped write-back", e)
         }
@@ -233,5 +251,7 @@ class ConfigWriteBack(
 
         /** A skipped write-back in the reload report: `write-back-skipped:<code>`. */
         const val SkipCodePrefix = "write-back-skipped:"
+
+        private val ThemeColorsPath = listOf("appearance", "theme", "colors")
     }
 }

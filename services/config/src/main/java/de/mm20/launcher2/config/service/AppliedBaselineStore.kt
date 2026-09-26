@@ -63,6 +63,7 @@ internal val ConfigSections = listOf(
     "icons",
     "appearance.glass",
     "appearance.wallpaper",
+    "appearance.theme",
     "search",
     "search.actions",
     "home.searchBar",
