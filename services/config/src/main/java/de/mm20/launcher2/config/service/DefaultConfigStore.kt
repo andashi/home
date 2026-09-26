@@ -594,6 +594,9 @@ private val ConfigMutation.isSettingsBacked: Boolean
     get() = when (this) {
         is ConfigMutation.SetIcons,
         is ConfigMutation.SetSearchBarPosition,
+        is ConfigMutation.SetSearchBarFixed,
+        is ConfigMutation.SetSystemBars,
+        is ConfigMutation.SetRotationLock,
         is ConfigMutation.SetWidgetsEnabled,
         // columns and locked live in settings; layouts are applied below too.
         is ConfigMutation.SetGrid,
