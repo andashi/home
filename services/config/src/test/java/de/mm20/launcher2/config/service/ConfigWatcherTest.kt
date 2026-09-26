@@ -2,8 +2,10 @@ package de.mm20.launcher2.config.service
 
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
+import de.mm20.launcher2.config.Diagnostic
 import de.mm20.launcher2.config.ReloadReport
 import de.mm20.launcher2.config.ReloadTrigger
+import de.mm20.launcher2.config.Severity
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -308,7 +310,10 @@ class ConfigWatcherTest {
      */
     @Test
     fun `the first measurement of the grid reloads the config to fit it`() = runTest {
-        val store = FakeConfigStore()
+        // A fit with a correction to report, so the reload writes its report.
+        val store = FakeConfigStore(
+            applyDiagnostics = listOf(Diagnostic(Severity.Warning, "grid-overflow", "home.grid.layouts.fold.items[0]", "dropped")),
+        )
         val reportStore = ReloadReportStore(context)
         val measurements = MutableStateFlow<Map<String, Int>>(emptyMap())
         writeConfig()
@@ -319,9 +324,12 @@ class ConfigWatcherTest {
         measurements.value = mapOf("fold" to 7)
         runCurrent()
         store.awaitApplies(1)
+        // The report is saved after the apply, on the IO pool: wait for it too.
+        withContext(Dispatchers.Default) {
+            withTimeout(5_000) { while (reportStore.read()?.trigger != ReloadTrigger.GridMeasured) delay(5) }
+        }
 
         assertEquals(1, store.applyCount)
-        assertEquals(ReloadTrigger.GridMeasured, reportStore.read()!!.trigger)
         job.cancel()
     }
 
@@ -358,6 +366,76 @@ class ConfigWatcherTest {
         withContext(Dispatchers.Default) { delay(200) }
 
         assertEquals(0, store.applyCount)
+        job.cancel()
+    }
+
+    // A measurement stays pending until a reload has fitted the grid: one that
+    // could not run, or failed, would otherwise lose it, since a later reload
+    // finds the file and the store agreeing (#178 review).
+
+    @Test
+    fun `a measurement that arrives before the file exists is fitted after the file's first reload`() = runTest {
+        val store = FakeConfigStore()
+        val measurements = MutableStateFlow<Map<String, Int>>(emptyMap())
+        val watcher = measuringWatcher(store, measurements)
+        val job = watcher.watchMeasurements()!!
+        measurements.value = mapOf("fold" to 7)
+        runCurrent()
+        withContext(Dispatchers.Default) { delay(200) }
+        assertEquals("no file, nothing to reload yet", 0, store.applyCount)
+
+        writeConfig()
+        watcher.onConfigFileEvent()
+        advanceTimeBy(ConfigWatcher.DefaultDebounceMs)
+        watcher.debounceJob!!.join()
+        store.awaitApplies(2)
+
+        assertEquals("the file-watcher reload, then the pending measurement's", 2, store.applyCount)
+        job.cancel()
+    }
+
+    @Test
+    fun `a measurement whose reload failed is fitted once the file is valid`() = runTest {
+        val store = FakeConfigStore()
+        val measurements = MutableStateFlow<Map<String, Int>>(emptyMap())
+        val watcher = measuringWatcher(store, measurements)
+        writeConfig("""{"schemaVersion": 2, "icons": """)
+        val job = watcher.watchMeasurements()!!
+        measurements.value = mapOf("fold" to 7)
+        runCurrent()
+        withContext(Dispatchers.Default) { delay(200) }
+        assertEquals("a malformed file applies nothing", 0, store.applyCount)
+
+        writeConfig()
+        watcher.onConfigFileEvent()
+        advanceTimeBy(ConfigWatcher.DefaultDebounceMs)
+        watcher.debounceJob!!.join()
+        store.awaitApplies(2)
+
+        assertEquals(2, store.applyCount)
+        job.cancel()
+    }
+
+    @Test
+    fun `a pending measurement is fitted after a startup check that skipped the reload`() = runTest {
+        val store = FakeConfigStore()
+        val reportStore = ReloadReportStore(context)
+        val measurements = MutableStateFlow<Map<String, Int>>(emptyMap())
+        val watcher = measuringWatcher(store, measurements, reportStore)
+        val job = watcher.watchMeasurements()!!
+        measurements.value = mapOf("fold" to 7)
+        runCurrent()
+        withContext(Dispatchers.Default) { delay(200) }
+        // The file appears with a report that already knows it, so the startup
+        // check itself has nothing to reload.
+        writeConfig()
+        val hash = configFile().readBytes().sha256Hex()
+        reportStore.save(ReloadReport(success = true, configSha256 = hash))
+
+        watcher.startupCheck()!!.join()
+        store.awaitApplies(1)
+
+        assertEquals("only the pending measurement's reload", 1, store.applyCount)
         job.cancel()
     }
 }

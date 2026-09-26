@@ -10,6 +10,8 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -49,6 +51,8 @@ class ConfigWatcher(
     private var observer: FileObserver? = null
     private var startJob: Job? = null
     private var measureJob: Job? = null
+    @Volatile private var measurementPending = false
+    private val fitLock = Mutex()
     internal var debounceJob: Job? = null
 
     /**
@@ -124,6 +128,7 @@ class ConfigWatcher(
                 return@launch
             }
             reloader.reload(file, ReloadTrigger.FileWatcher)
+            fitPendingMeasurement()
         }
     }
 
@@ -164,10 +169,26 @@ class ConfigWatcher(
         val measurements = measurements ?: return null
         return scope.launch {
             measurements.filter { it.isNotEmpty() }.distinctUntilChanged().collect {
-                val file = ConfigLocation.configFile(appContext) ?: return@collect
-                if (file.exists()) reloader.reload(file, ReloadTrigger.GridMeasured)
+                measurementPending = true
+                fitPendingMeasurement()
             }
         }
+    }
+
+    /**
+     * A measurement is pending until a reload has fitted the grid to it. One
+     * that could not run (no config directory or file yet) or failed (a file
+     * caught half-written) would otherwise be lost: a later reload finds the
+     * file and the store agreeing and fits nothing, and a startup check that
+     * knows the file skips it. So it is retried after each file-watcher reload
+     * and after the startup check, until one succeeds (#178 review).
+     */
+    private suspend fun fitPendingMeasurement() = fitLock.withLock {
+        if (!measurementPending) return@withLock
+        val file = ConfigLocation.configFile(appContext) ?: return@withLock
+        if (!file.exists()) return@withLock
+        val report = reloader.reload(file, ReloadTrigger.GridMeasured)
+        if (report.success || GridSection in report.appliedMutations) measurementPending = false
     }
 
     internal fun startupCheck(): Job? {
@@ -183,11 +204,13 @@ class ConfigWatcher(
             if (report == null || report.configSha256 != hash || noBaseline) {
                 reloader.reload(file, ReloadTrigger.StartupCheck)
             }
+            fitPendingMeasurement()
         }
     }
 
     companion object {
         const val DefaultDebounceMs = 300L
+        private const val GridSection = "home.grid"
         private const val StartupRetryCount = 40
         private const val StartupRetryDelayMs = 250L
         private const val TAG = "ConfigWatcher"

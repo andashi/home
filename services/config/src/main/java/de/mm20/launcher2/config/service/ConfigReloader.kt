@@ -179,16 +179,21 @@ class ConfigReloader(
         }
 
         recordBaseline(configSha256, before, applied)
-        return persist(
-            ReloadReport(
-                success = applyDiagnostics.none { it.severity == Severity.Error },
-                schemaVersion = config.schemaVersion,
-                diagnostics = parseResult.diagnostics + applyDiagnostics + capabilityDiagnostics,
-                appliedMutations = appliedSections,
-                configSha256 = configSha256,
-                trigger = trigger,
-            )
+        val report = ReloadReport(
+            success = applyDiagnostics.none { it.severity == Severity.Error },
+            schemaVersion = config.schemaVersion,
+            diagnostics = parseResult.diagnostics + applyDiagnostics + capabilityDiagnostics,
+            appliedMutations = appliedSections,
+            configSha256 = configSha256,
+            trigger = trigger,
         )
+        // A measurement reload that fitted nothing differently and has no
+        // correction of its own leaves the last report alone: that report is
+        // what a push is waited on by, and it still describes the device. The
+        // capability warnings are left out of the test because every reload of
+        // this file carries them (#178 review).
+        if (trigger == ReloadTrigger.GridMeasured && applyDiagnostics.isEmpty() && !gridChanged(before)) return report
+        return persist(report)
     }
 
     /**
@@ -213,6 +218,13 @@ class ConfigReloader(
         } catch (_: Exception) {
             // Without a baseline a write-back skips and says so; the reload stands.
         }
+    }
+
+    /** Whether the grid the store holds now differs from [before]; unreadable counts as changed. */
+    private suspend fun gridChanged(before: ConfigState): Boolean = try {
+        configStore.readState().gridLayouts != before.gridLayouts
+    } catch (e: Exception) {
+        true
     }
 
     private suspend fun persist(report: ReloadReport): ReloadReport {

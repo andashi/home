@@ -34,6 +34,8 @@ class ConfigReloaderTest {
         var applyDelayMs: Long = 0,
         var readFailure: Exception? = null,
         var applyFailure: Exception? = null,
+        /** The state an apply leaves behind; null keeps [state]. */
+        var stateAfterApply: ConfigState? = null,
     ) : ConfigStore {
         val events = Collections.synchronizedList(mutableListOf<String>())
         var applyCount = 0
@@ -49,6 +51,7 @@ class ConfigReloaderTest {
             events += "apply:${mutations.map { it.section }}"
             if (applyDelayMs > 0) delay(applyDelayMs)
             applyFailure?.let { throw it }
+            stateAfterApply?.let { state = it }
             return applyDiagnostics
         }
     }
@@ -216,7 +219,58 @@ class ConfigReloaderTest {
         newReloader(measured).first.reload(text, ReloadTrigger.GridMeasured)
 
         assertEquals(listOf("read", "apply:[]"), control.events)
-        assertEquals(listOf("read", "apply:[home.grid]"), measured.events)
+        // The second read is the check whether the fit changed anything.
+        assertEquals(listOf("read", "apply:[home.grid]", "read"), measured.events)
+    }
+
+    // A measurement reload must not supersede the report a push is waited on
+    // by, unless it changed something the reader has to know (#178 review).
+
+    private val foldText =
+        """{"schemaVersion": 2, "home": {"grid": {"layouts": {"fold": {"items": [{"id": "dock", "widget": "favorites", "x": 4, "y": 6, "w": 4, "h": 1}]}}}}}"""
+
+    private fun foldState(y: Int) = ConfigState(
+        gridLayouts = mapOf(
+            "fold" to de.mm20.launcher2.config.GridLayoutConfig(
+                listOf(de.mm20.launcher2.config.GridItemConfig(id = "dock", widget = "favorites", x = 4, y = y, w = 4, h = 1)),
+            ),
+        ),
+    )
+
+    @Test
+    fun `a measurement reload that changes nothing leaves the last report as it was`() = runTest {
+        val store = FakeConfigStore(state = foldState(6))
+        val (reloader, reportStore) = newReloader(store)
+        reloader.reload(foldText, ReloadTrigger.Broadcast)
+
+        reloader.reload(foldText, ReloadTrigger.GridMeasured)
+
+        assertEquals(listOf("read", "apply:[]", "read", "apply:[home.grid]", "read"), store.events)
+        assertEquals(ReloadTrigger.Broadcast, reportStore.read()!!.trigger)
+    }
+
+    @Test
+    fun `a measurement reload that fitted the grid differently replaces the last report`() = runTest {
+        val store = FakeConfigStore(state = foldState(6))
+        val (reloader, reportStore) = newReloader(store)
+        reloader.reload(foldText, ReloadTrigger.Broadcast)
+        store.stateAfterApply = foldState(5)
+
+        reloader.reload(foldText, ReloadTrigger.GridMeasured)
+
+        assertEquals(ReloadTrigger.GridMeasured, reportStore.read()!!.trigger)
+    }
+
+    @Test
+    fun `a measurement reload with a correction to report replaces the last report`() = runTest {
+        val store = FakeConfigStore(state = foldState(6))
+        val (reloader, reportStore) = newReloader(store)
+        reloader.reload(foldText, ReloadTrigger.Broadcast)
+        store.applyDiagnostics = listOf(Diagnostic(Severity.Warning, "grid-overflow", "home.grid.layouts.fold.items[0]", "dropped"))
+
+        reloader.reload(foldText, ReloadTrigger.GridMeasured)
+
+        assertEquals(ReloadTrigger.GridMeasured, reportStore.read()!!.trigger)
     }
 
     @Test

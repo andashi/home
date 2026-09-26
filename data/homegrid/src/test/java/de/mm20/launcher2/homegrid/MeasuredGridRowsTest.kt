@@ -1,6 +1,8 @@
 package de.mm20.launcher2.homegrid
 
 import org.junit.Assert.assertEquals
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
 
@@ -50,15 +52,24 @@ class MeasuredGridRowsTest {
         assertEquals(null, rows.rows(HomeGridLayouts.Fold))
     }
 
-    /** What the config store waits for to fit a layout it kept as written. */
+    /**
+     * What the config store waits for to fit a layout it kept as written:
+     * collected, the same rows twice are one emission, and a change is another
+     * (#178 review: the final value alone would not show a repeat).
+     */
     @Test
     fun `the measurements are observable, a repeated one once`() = runTest {
         val rows = MeasuredGridRows(ownLayout = HomeGridLayouts.Fold)
-        assertEquals(emptyMap<String, Int>(), rows.measurements.value)
+        val seen = mutableListOf<Map<String, Int>>()
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { rows.measurements.collect { seen += it } }
 
         rows.update(HomeGridLayouts.Fold, 7)
         rows.update(HomeGridLayouts.Fold, 7)
+        rows.update(HomeGridLayouts.Fold, 6)
 
-        assertEquals(mapOf(HomeGridLayouts.Fold to 7), rows.measurements.value)
+        assertEquals(
+            listOf(emptyMap(), mapOf(HomeGridLayouts.Fold to 7), mapOf(HomeGridLayouts.Fold to 6)),
+            seen,
+        )
     }
 }
