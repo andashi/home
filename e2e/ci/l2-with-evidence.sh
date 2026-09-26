@@ -176,7 +176,13 @@ press_wait_on_foreign() { # $@ = the foreign packages
       pause="$(wleft)"
       [ "$ANR_RECHECK_SLEEP" = 0 ] || sleep "$(( ANR_RECHECK_SLEEP < pause ? ANR_RECHECK_SLEEP : pause ))"
       [ "$(wleft)" -gt 0 ] || break
-      now="$(anr_packages "$(wleft)")" || return 1
+      # A read that fails here cannot show the dialog gone, so it cannot
+      # rule out that the tap closed an ANR of ours: flagged the same way.
+      if ! now="$(anr_packages "$(wleft)")"; then
+        WAIT_AMBIGUOUS=1
+        printf '::error::The window list could not be read after pressing Wait on the ANR dialog of %s, so an ANR of the app under test may have been closed instead; the run fails if its tests pass.\n' "$only"
+        return 1
+      fi
       [ "$now" = "$before" ] || break
     done
     # A tap closes one dialog, the topmost. If the one it was meant for is

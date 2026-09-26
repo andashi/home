@@ -46,6 +46,7 @@ case "$*" in
     if [ -e "$work/dumpfail" ] && [ -e "$work/stopped" ]; then exit 1; fi
     if [ -e "$work/dumphang" ] && [ -e "$work/stopped" ]; then sleep 60; fi
     if [ -e "$work/firstfail" ]; then exit 1; fi
+    if [ -e "$work/failaftertap" ] && [ -e "$work/taps" ]; then exit 1; fi
     cat "$work/windows" ;;
   *"am force-stop "*) for a in "$@"; do pkg="$a"; done; echo "$pkg" >> "$work/stopped"
     [ -e "$work/sticky" ] || { grep -v "Application Not Responding: $pkg}" "$work/windows" > "$work/w2" || true; mv "$work/w2" "$work/windows"; } ;;
@@ -80,7 +81,7 @@ export PATH="$WORK/bin:$PATH"
 export ANR_RECHECK_SECONDS=3 ANR_RECHECK_SLEEP=0 ANR_WAIT_SECONDS=3
 
 windows() { # $@ = "Application Not Responding: <pkg>" entries, in z-order
-  : > "$WORK/windows"; rm -f "$WORK/stopped" "$WORK/sticky" "$WORK/dumphang" "$WORK/firstfail" "$WORK/taps" "$WORK/waitsticky" "$WORK/closing" "$WORK/closing.seen" "$WORK/oursondump" "$WORK/dumphangui"
+  : > "$WORK/windows"; rm -f "$WORK/stopped" "$WORK/sticky" "$WORK/dumphang" "$WORK/firstfail" "$WORK/taps" "$WORK/waitsticky" "$WORK/closing" "$WORK/closing.seen" "$WORK/oursondump" "$WORK/dumphangui" "$WORK/failaftertap"
   WAIT_AMBIGUOUS=0
   printf '  Window #1 Window{1 u0 com.example/com.example.Main}:\n' >> "$WORK/windows"
   local i=2 w
@@ -238,6 +239,17 @@ a_clean_wait_flags_nothing() {
   [ "$WAIT_AMBIGUOUS" = 0 ] && ! grep -q '::error::' "$WORK/log"
 }
 check "a Wait that closed its dialog flags nothing" a_clean_wait_flags_nothing
+
+# A read that fails after the tap cannot show the foreign dialog gone, so it
+# cannot rule out that the tap closed an ANR of ours: flagged like a dialog
+# that stayed (#191 review).
+flags_a_failed_read_after_the_tap() {
+  windows "Application Not Responding: com.android.systemui"
+  : > "$WORK/sticky"; : > "$WORK/failaftertap"
+  clear_foreign_anrs > "$WORK/log" 2>&1 || return 1
+  [ "$(taps)" -eq 1 ] && [ "$WAIT_AMBIGUOUS" = 1 ] && grep -q '::error::' "$WORK/log"
+}
+check "a window read that fails after the tap is flagged" flags_a_failed_read_after_the_tap
 
 # And the flag reaches the job: a run whose tests pass fails, so a dismissed
 # ANR of ours cannot turn into a pass.
