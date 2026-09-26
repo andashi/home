@@ -286,9 +286,12 @@ class DefaultConfigStoreTest {
     }
 
     /**
-     * #140: the Fold dock declared `h: 7` was stored and served as 6 with no
-     * diagnostic, because the widget allows six. Read-back serves what is in
-     * effect; the diagnostic says what was asked, what is in effect and why.
+     * #140: a span shrunk to fit was stored and served without a diagnostic.
+     * Here the provider's own maximum sets the limit: `SizeLimits(2, 2, 4, 3)`
+     * allows three rows, and the phone grid has six, so asking for five is
+     * shrunk by the widget, not by the grid (the next test covers that).
+     * Read-back serves what is in effect; the diagnostic says what was asked,
+     * what is in effect and why.
      */
     @Test
     fun `SetGrid shrinks a span above the provider maximum and says so`() = runTest {
