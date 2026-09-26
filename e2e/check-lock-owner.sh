@@ -22,6 +22,9 @@ found=0
 export_re='^[[:space:]]*export[[:space:]]+LOCK_OWNER([=[:space:]]|$)'
 assign_re='^[[:space:]]*LOCK_OWNER='
 call_re='emulator/run\.sh|"\$RUN"'
+# A line that only assigns (RUN="$GOS_REPO/emulator/run.sh") names run.sh
+# without calling it; an assignment prefixed to a command still calls it.
+only_assign_re='^[[:space:]]*(local[[:space:]]+|readonly[[:space:]]+)?[A-Za-z_][A-Za-z0-9_]*=("[^"]*"|'"'"'[^'"'"']*'"'"'|[^[:space:]]*)[[:space:]]*$'
 # Entry points only: lib/ relies on the calling script's export, and a
 # *.test.sh drives fakes, not instances.
 for script in *.sh; do
@@ -31,8 +34,14 @@ for script in *.sh; do
   while IFS= read -r line || [ -n "$line" ]; do
     n=$((n + 1))
     [[ "$line" =~ ^[[:space:]]*# ]] && continue
-    if [[ "$line" =~ $export_re ]]; then exported=1; continue; fi
+    # An export carries an owner only with a value: its own, or an earlier
+    # assignment's. `export LOCK_OWNER` of an unset variable gives none.
+    if [[ "$line" =~ $export_re ]]; then
+      if [[ "$line" =~ LOCK_OWNER= ]] || [ "$assigned" = 1 ]; then exported=1; fi
+      continue
+    fi
     [[ "$line" =~ $assign_re ]] && assigned=1
+    [[ "$line" =~ $only_assign_re ]] && continue
     if [ "$exported" = 0 ] && [ -z "$first_call" ] && [[ "$line" =~ $call_re ]]; then first_call=$n; fi
   done <<<"$(cat "$script")"
   if [ -n "$first_call" ]; then
