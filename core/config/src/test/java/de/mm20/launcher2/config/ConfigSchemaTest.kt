@@ -51,6 +51,26 @@ class ConfigSchemaTest {
     }
 
     /**
+     * Every enum's wire values as the published schema lists them. They are
+     * derived from the enum names in kebab case (FieldEnumSerializer); this
+     * pins them, so renaming an entry, or adding a multi-word one, is a
+     * visible change of the contract rather than a side effect (#3 slice 3).
+     */
+    @Test
+    fun `the enum values the schema publishes are exactly these`() {
+        val root = ConfigParser.json.parseToJsonElement(ConfigSchema.text()).jsonObject
+        fun enumAt(path: String): List<String> =
+            path.split('.').fold(root) { node, key -> node["properties"]!!.jsonObject[key]!!.jsonObject }
+                .getValue("enum").jsonArray.map { it.jsonPrimitive.content }
+
+        assertEquals(listOf("low", "medium", "high"), enumAt("appearance.glass.contrast"))
+        assertEquals(listOf("top", "bottom", "follow"), enumAt("search.barPosition"))
+        assertEquals(listOf("grid", "list"), enumAt("search.layout"))
+        assertEquals(listOf("light", "dark", "system"), enumAt("appearance.theme.mode"))
+        assertEquals(listOf("system", "black-and-white", "high-contrast"), enumAt("appearance.theme.colors"))
+    }
+
+    /**
      * The schema the agreement tests run: the generated one, not the checked-in
      * file. The freshness test holds the two equal, and with `-PupdateSchema`
      * the file is rewritten by whichever test runs first - the agreement tests

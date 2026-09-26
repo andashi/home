@@ -375,6 +375,45 @@ class ConfigParserTest {
         assertTrue(failure.message, failure.message.contains("appearance.glass.contrast"))
     }
 
+    private fun theme(body: String) = ConfigParser.parse(
+        """{ "schemaVersion": 2, "appearance": { "theme": { $body } } }"""
+    )
+
+    /** #3 D7: light/dark/system and a built-in colour scheme by slug. */
+    @Test
+    fun `the theme's mode and colours parse, colour slugs in kebab case`() {
+        val result = theme(""""mode": "dark", "colors": "high-contrast"""")
+
+        assertTrue(result.diagnostics.toString(), result.isSuccess)
+        assertEquals(ThemeConfig(ThemeMode.Dark, ThemeColors.HighContrast), result.config?.appearance?.theme)
+        assertEquals(ThemeColors.BlackAndWhite, theme(""""colors": "black-and-white"""").config?.appearance?.theme?.colors)
+        assertEquals(ThemeColors.System, theme(""""colors": "system"""").config?.appearance?.theme?.colors)
+        assertEquals(ThemeMode.Light, theme(""""mode": "light"""").config?.appearance?.theme?.mode)
+    }
+
+    @Test
+    fun `an unknown theme value is rejected and the message names the field`() {
+        for ((body, path) in listOf(
+            """"mode": "sepia"""" to "appearance.theme.mode",
+            """"colors": "blackandwhite"""" to "appearance.theme.colors",
+        )) {
+            val result = theme(body)
+            assertNull(body, result.config)
+            val failure = result.diagnostics.single { it.code == "decode-failed" }
+            assertTrue(failure.message, failure.message.contains(path))
+        }
+    }
+
+    @Test
+    fun `a misspelled key inside theme is an unknown key`() {
+        val result = theme(""""colours": "system"""")
+
+        assertEquals(
+            listOf("unknown-key"),
+            result.diagnostics.filter { it.path == "appearance.theme.colours" }.map { it.code },
+        )
+    }
+
     @Test
     fun `a misspelled key inside glass is an unknown key`() {
         val result = glass(""""blurr": 10""")
