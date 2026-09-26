@@ -333,7 +333,11 @@ afterthought (see `docs/architecture/adr/0005-testing-strategy.md`):
     spread of -55 to +401 ms.
   - Measure on a quiet host, or say that the host was not quiet: at load
     11-18 these series cannot resolve tens of milliseconds, and a null result
-    from them is not evidence that a cost was looked for and not found.
+    from them is not evidence that a cost was looked for and not found. The
+    same holds one level up, for pass/fail: on 2026-09-26 three L4 scenarios
+    failed at host load 47 for three unrelated reasons, two of them looking
+    exactly like launcher regressions, and came back green on a quiet host.
+    A result without its host load is not evidence.
   - **On this host, under working conditions, they cannot be run at all.**
     #175's pilot, with a ceiling fixed beforehand at the idle floor + 2
     (2.93 + 2), ended in its second round at load 9.67 when another
