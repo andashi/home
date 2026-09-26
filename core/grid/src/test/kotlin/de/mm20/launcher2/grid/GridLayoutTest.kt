@@ -288,9 +288,9 @@ class GridLayoutTest {
         // The slides are said too (#140): each item is in the layout, but not where it asked.
         assertEquals(
             listOf(
-                LayoutIssue.Moved("a", from = Span(3, 5, 2, 2), to = Span(2, 4, 2, 2)),
+                LayoutIssue.Moved("a", from = Span(3, 5, 2, 2), to = Span(2, 4, 2, 2), slid = true),
                 LayoutIssue.OutOfBounds("b", Span(0, 0, 9, 1)),
-                LayoutIssue.Moved("c", from = Span(-1, 0, 1, 1), to = Span(0, 0, 1, 1)),
+                LayoutIssue.Moved("c", from = Span(-1, 0, 1, 1), to = Span(0, 0, 1, 1), slid = true),
             ),
             result.issues,
         )
@@ -350,6 +350,22 @@ class GridLayoutTest {
         val result = GridLayout.normalize(Phone, items)
         assertEquals(listOf("a"), result.items.map { it.id })
         assertEquals(listOf(LayoutIssue.Overlap("a", "b"), LayoutIssue.Overflow("b")), result.issues)
+    }
+
+    // The overlap is found at the slid position, not at the one the file
+    // asked for; the issue says both happened (#174 review).
+    @Test
+    fun `an item slid into the grid and then pushed down says both`() {
+        val items = listOf(item("a", 0, 0, 4, 2), item("b", 3, 1, 2, 1))
+        val result = GridLayout.normalize(Phone, items)
+        assertEquals(Span(2, 2, 2, 1), result.items.spanOf("b"))
+        assertEquals(
+            listOf(
+                LayoutIssue.Overlap("a", "b"),
+                LayoutIssue.Moved("b", from = Span(3, 1, 2, 1), to = Span(2, 2, 2, 1), slid = true, pushedBy = "a"),
+            ),
+            result.issues,
+        )
     }
 
     // Moved-then-dropped reports the drop only, like a fitted-then-dropped item.

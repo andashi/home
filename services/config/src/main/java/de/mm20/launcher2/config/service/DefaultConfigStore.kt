@@ -452,12 +452,19 @@ class DefaultConfigStore(
                 Severity.Warning,
                 "grid-item-moved",
                 path(id),
-                if (pushedBy != null) {
-                    "'$id' asks for x=${from.x} y=${from.y}, which overlaps '$pushedBy'; " +
-                        "it was moved down to x=${to.x} y=${to.y}"
-                } else {
-                    "'$id' asks for x=${from.x} y=${from.y}, which puts its ${to.w}x${to.h} cells " +
-                        "outside the grid; it was moved to x=${to.x} y=${to.y}"
+                when {
+                    // The overlap was found where the slide put it, not where
+                    // the file did (#174 review).
+                    slid && pushedBy != null ->
+                        "'$id' asks for x=${from.x} y=${from.y}, which puts its ${to.w}x${to.h} cells " +
+                            "outside the grid; moved back in, it overlaps '$pushedBy', so it was moved " +
+                            "down to x=${to.x} y=${to.y}"
+                    pushedBy != null ->
+                        "'$id' asks for x=${from.x} y=${from.y}, which overlaps '$pushedBy'; " +
+                            "it was moved down to x=${to.x} y=${to.y}"
+                    else ->
+                        "'$id' asks for x=${from.x} y=${from.y}, which puts its ${to.w}x${to.h} cells " +
+                            "outside the grid; it was moved to x=${to.x} y=${to.y}"
                 },
             )
 

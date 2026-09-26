@@ -198,7 +198,7 @@ object GridLayout {
             // why it was dropped, and nothing else (#170 review).
             issues += fit.issues
             if (slid || blocker != null) {
-                issues += LayoutIssue.Moved(item.id, from = requested, to = span, pushedBy = blocker?.id)
+                issues += LayoutIssue.Moved(item.id, from = requested, to = span, slid = slid, pushedBy = blocker?.id)
             }
             if (x != slidX) issues += LayoutIssue.NudgedOffFold(item.id)
             result += if (span == item.span) item else item.copy(span = span)

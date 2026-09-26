@@ -93,7 +93,14 @@ sealed class LayoutIssue {
      * the grid, or pushed down below [pushedBy], an earlier item it overlapped
      * (#140). A nudge off the fold line is [NudgedOffFold], not this.
      */
-    data class Moved(val id: String, val from: Span, val to: Span, val pushedBy: String? = null) : LayoutIssue()
+    data class Moved(
+        val id: String,
+        val from: Span,
+        val to: Span,
+        /** Slid back into the grid first; a push, if any, found its overlap there. */
+        val slid: Boolean = false,
+        val pushedBy: String? = null,
+    ) : LayoutIssue()
 
     /** The item crossed the fold line and was kept, nudged to one side of it. */
     data class NudgedOffFold(val id: String) : LayoutIssue()

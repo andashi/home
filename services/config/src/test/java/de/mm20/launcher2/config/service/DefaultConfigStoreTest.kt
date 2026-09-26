@@ -376,6 +376,31 @@ class DefaultConfigStoreTest {
         assertEquals("home.grid.layouts.phone.items[1]", diagnostics.single().path)
     }
 
+    // The overlap is found where the item was slid to, not where the file
+    // put it, and the message says so (#174 review).
+    @Test
+    fun `an item slid into the grid and then pushed down is reported with both`() = runTest {
+        gridRows.own = "phone"
+        gridLimits.limits[clockWidget] = ProviderLimits(default = CellSize(2, 1), limits = SizeLimits(1, 1, 4, 6))
+
+        val diagnostics = store.apply(
+            listOf(
+                grid(
+                    GridItemConfig(id = "first", widget = clockWidget, x = 0, y = 0, w = 4, h = 2),
+                    GridItemConfig(id = "second", widget = clockWidget, x = 3, y = 1, w = 2, h = 1),
+                )
+            )
+        )
+
+        assertEquals(
+            listOf(
+                "grid-item-moved" to "'second' asks for x=3 y=1, which puts its 2x1 cells outside the grid; " +
+                    "moved back in, it overlaps 'first', so it was moved down to x=2 y=2",
+            ),
+            diagnostics.map { it.code to it.message },
+        )
+    }
+
     // Nothing was asked, so nothing was overridden: an item without a
     // position is placed, and placing it is not a move. Placement puts
     // "placed" on row 2, the first free one; normalize then pushes "second"
