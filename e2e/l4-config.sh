@@ -92,7 +92,7 @@ export OVERLAY_DIR="${OVERLAY_DIR:-$GOS_REPO/emulator/instances/test}"
 # Unique per run: acquire is re-entrant for the same owner, so two runs of
 # this script on one instance must not share a name, or the second gets in
 # and its cleanup stops the first one's emulator (#27).
-LOCK_OWNER="l4-config@$SERIAL#$$"
+export LOCK_OWNER="l4-config@$SERIAL#$$"
 SNAPSHOT="${SNAPSHOT:-clean}"
 APK="${1:-$(dirname "$0")/../app/app/build/outputs/apk/default/debug/app-default-debug.apk}"
 # Overridable: PKG=org.andashi.home APK=... runs the scenario against the release build.
@@ -128,10 +128,10 @@ cleanup() {
       adb -s "$SERIAL" logcat -d -s ReloadConfigReceiver:* ConfigWatcher:* ConfigIngestProvider:* ConfigReloader:* AndroidRuntime:E ActivityManager:W 2>/dev/null \
         | tr -d '\r' | tail -n 80 >&2 || true
     fi
-    (cd "$GOS_REPO" && SERIAL="$SERIAL" emulator/run.sh stop) >/dev/null 2>&1 || true
-    (cd "$GOS_REPO" && emulator/device-lock.sh release "$LOCK_OWNER" "$SERIAL") >/dev/null 2>&1 || true
+    stop_and_release || STOP_FAILED=1  # prints why, and keeps the lock
   fi
   rm -rf "$WORK"
+  [ "${STOP_FAILED:-0}" = 0 ] || exit 1  # a run that leaves its instance up is not green
 }
 trap cleanup EXIT
 

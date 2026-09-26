@@ -273,15 +273,15 @@ fi
 # Unique per run: acquire is re-entrant for the same owner, so two runs of
 # this script on one instance must not share a name, or the second gets in
 # and its cleanup stops the first one's emulator (#27).
-LOCK_OWNER="measure-footprint@$SERIAL#$$"
+export LOCK_OWNER="measure-footprint@$SERIAL#$$"
 
 # Only a run that holds the lock may stop the instance: a run whose acquire
 # failed must not take down the one that holds it (#27).
 HAVE_LOCK=0
 cleanup() {
   [ "$HAVE_LOCK" = 1 ] || return 0
-  (cd "$GOS_REPO" && SERIAL="$SERIAL" emulator/run.sh stop) >/dev/null 2>&1 || true
-  (cd "$GOS_REPO" && emulator/device-lock.sh release "$LOCK_OWNER" "$SERIAL") >/dev/null 2>&1 || true
+  stop_and_release || STOP_FAILED=1  # prints why, and keeps the lock
+  [ "${STOP_FAILED:-0}" = 0 ] || exit 1  # a run that leaves its instance up is not green
 }
 trap cleanup EXIT
 
@@ -439,7 +439,7 @@ run_cycle() { # $1 = run number
   printf 'mem.code\t%s\tKB\n' "$(mem_field 'Code')"
   printf 'mem.graphics\t%s\tKB\n' "$(mem_field 'Graphics')"
 
-  (cd "$GOS_REPO" && SERIAL="$SERIAL" emulator/run.sh stop) >/dev/null 2>&1 || true
+  stop_instance || die "could not stop $SERIAL between runtime cycles"
 }
 
 # Only well-formed `metric<TAB>value<TAB>unit` lines are data. Anything else

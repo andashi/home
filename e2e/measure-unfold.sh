@@ -60,7 +60,7 @@ RUNS="${RUNS:-5}"
 TP="${TRACE_PROCESSOR:-$(command -v trace_processor || true)}"
 # A session that already holds the instance passes its own owner name; the
 # lock is re-entrant for it and is then left held at the end.
-LOCK_OWNER="${LOCK_OWNER:-measure-unfold@$SERIAL#$$}"
+export LOCK_OWNER="${LOCK_OWNER:-measure-unfold@$SERIAL#$$}"
 WORK="$(mktemp -d)"
 RUN="$GOS_REPO/emulator/run.sh"
 LOCK="$GOS_REPO/emulator/device-lock.sh"

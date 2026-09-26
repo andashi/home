@@ -31,4 +31,8 @@ case_ comment-mentions-run-sh pass '# emulator/run.sh is started by the caller'
 # A long script: `sed | grep -q` under pipefail read an early match as none.
 case_ plain-assignment-in-a-long-script fail "LOCK_OWNER=\"x@\$SERIAL#\$\$\"
 $(for i in $(seq 1 20000); do echo ": filler line $i"; done)"
+# lib/ and test harnesses are not entry points.
+mkdir -p "$WORK/libdir/lib"; printf '%s\n' '(cd "$GOS_REPO" && emulator/run.sh stop)' > "$WORK/libdir/lib/x.sh"
+printf '%s\n' 'LOCK_OWNER=x' > "$WORK/libdir/x.test.sh"
+if "$here/check-lock-owner.sh" "$WORK/libdir" >/dev/null 2>&1; then echo " + lib-and-test-files-skipped"; else echo " x lib-and-test-files-skipped"; failed=1; fi
 exit "$failed"

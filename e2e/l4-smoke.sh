@@ -48,7 +48,7 @@ export OVERLAY_DIR="${OVERLAY_DIR:-$GOS_REPO/emulator/instances/test}"
 # Unique per run: acquire is re-entrant for the same owner, so two runs of
 # this script on one instance must not share a name, or the second gets in
 # and its cleanup stops the first one's emulator (#27).
-LOCK_OWNER="l4-smoke@$SERIAL#$$"
+export LOCK_OWNER="l4-smoke@$SERIAL#$$"
 SNAPSHOT="${SNAPSHOT:-clean}"
 APK="${1:-$(dirname "$0")/../app/app/build/outputs/apk/default/debug/app-default-debug.apk}"
 # Overridable: PKG=org.andashi.home APK=... runs the scenario against the release build.
@@ -57,6 +57,8 @@ PKG="${PKG:-org.andashi.home.debug}"
 c(){ [ -t 1 ] && printf '\033[%sm%s\033[0m\n' "$1" "$2" || printf '%s\n' "$2"; }
 log(){ c '1;34' ":: $*"; }; ok(){ c '1;32' " + $*"; }
 die(){ c '1;31' " x $*" >&2; exit 1; }
+# shellcheck source=lib/grid-device.sh
+. "$(dirname "$0")/lib/grid-device.sh"
 
 [ "$INSTANCE_OVERRIDE" = "" ] || [ "$INSTANCE_OVERRIDE" = "so" ] \
   || die "SERIAL and OVERLAY_DIR name ONE instance - set both or neither (provisioning README, \"Emulator instances\"). Overriding only one runs one instance's disk under another instance's lock, because the lock is keyed by serial"
@@ -68,8 +70,8 @@ die(){ c '1;31' " x $*" >&2; exit 1; }
 HAVE_LOCK=0
 cleanup() {
   [ "$HAVE_LOCK" = 1 ] || return 0
-  (cd "$GOS_REPO" && SERIAL="$SERIAL" emulator/run.sh stop) >/dev/null 2>&1 || true
-  (cd "$GOS_REPO" && emulator/device-lock.sh release "$LOCK_OWNER" "$SERIAL") >/dev/null 2>&1 || true
+  stop_and_release || STOP_FAILED=1  # prints why, and keeps the lock
+  [ "${STOP_FAILED:-0}" = 0 ] || exit 1  # a run that leaves its instance up is not green
 }
 trap cleanup EXIT
 

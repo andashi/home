@@ -31,7 +31,7 @@ INSTANCE_OVERRIDE="${SERIAL:+s}${OVERLAY_DIR:+o}"
 SERIAL="${SERIAL:-emulator-5556}"
 export SERIAL
 export OVERLAY_DIR="${OVERLAY_DIR:-$GOS_REPO/emulator/instances/test}"
-LOCK_OWNER="l4-search-actions@$SERIAL#$$"
+export LOCK_OWNER="l4-search-actions@$SERIAL#$$"
 SNAPSHOT="${SNAPSHOT:-clean}"
 HERE="$(cd "$(dirname "$0")" && pwd)"
 APK="${1:-$HERE/../app/app/build/outputs/apk/default/debug/app-default-debug.apk}"
@@ -52,10 +52,10 @@ WORK="$(mktemp -d)"
 HAVE_LOCK=0
 cleanup() {
   if [ "$HAVE_LOCK" = 1 ]; then
-    (cd "$GOS_REPO" && SERIAL="$SERIAL" emulator/run.sh stop) >/dev/null 2>&1 || true
-    (cd "$GOS_REPO" && emulator/device-lock.sh release "$LOCK_OWNER" "$SERIAL") >/dev/null 2>&1 || true
+    stop_and_release || STOP_FAILED=1  # prints why, and keeps the lock
   fi
   rm -rf "$WORK"
+  [ "${STOP_FAILED:-0}" = 0 ] || exit 1  # a run that leaves its instance up is not green
 }
 trap cleanup EXIT
 
