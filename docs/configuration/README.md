@@ -128,7 +128,9 @@ The report lists `appliedMutations` (the sections that changed) and
   - `permission-missing`: the file asks for something this profile does not
     hold the permission for (`search.contacts` without `READ_CONTACTS`). The
     key is kept and reads back as written, because the permission can be
-    granted at any time; the warning says why it has no effect yet.
+    granted at any time; the warning says why it has no effect yet. It
+    reflects the permission at the reload, so after a grant the next reload
+    no longer carries it.
   - Grid corrections: an item was enlarged to the widget's minimum, shrunk to
     its maximum or the grid, nudged, or did not fit.
   - `write-back-skipped:<code>`: a change made on the device was kept there
