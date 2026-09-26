@@ -30,6 +30,10 @@ class FavoritesGridVM : FavoritesVM() {
     override val tagsExpanded: Flow<Boolean> = flowOf(false)
     override val compactTags: Flow<Boolean> = flowOf(false)
     override fun setTagsExpanded(expanded: Boolean) = Unit
+
+    // Pins only: with the setting on, the frequently-used apps filled the
+    // dock's empty slots, apps no file and no person had pinned there.
+    override fun showsFrequentlyUsed() = false
 }
 
 /**

@@ -49,7 +49,7 @@ abstract class FavoritesVM : ViewModel(), KoinComponent {
                 .transformLatest {
 
                     val columns = it.columns
-                    val includeFrequentlyUsed = it.frequentlyUsed
+                    val includeFrequentlyUsed = it.frequentlyUsed && showsFrequentlyUsed()
                     val frequentlyUsedRows = it.frequentlyUsedRows
 
                     val pinned = favoritesService.getFavorites(
@@ -89,4 +89,11 @@ abstract class FavoritesVM : ViewModel(), KoinComponent {
     }
 
     abstract fun setTagsExpanded(expanded: Boolean)
+
+    /**
+     * Whether the frequently-used apps follow the pins while that setting is
+     * on. A function, not a property: [favorites] is built in this class's
+     * constructor, before a subclass has initialised its own fields.
+     */
+    protected open fun showsFrequentlyUsed(): Boolean = true
 }
