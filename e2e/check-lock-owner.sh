@@ -50,16 +50,19 @@ for script in *.sh; do
     n=$((n + 1))
     [[ "$line" =~ ^[[:space:]]*# ]] && continue
     # A readable line names run.sh once; an export names it not at all.
-    # grep exits 1 on a line without a mention; that one status is a count
-    # of zero, any other aborts.
-    mentions="$( { grep -oE "$mention_re" <<<"$line" || [ $? -eq 1 ]; } | wc -l)"
+    # Counted only on a line that could hold one (a grep per line is slow);
+    # grep exits 1 on a line without a match, that one status is a count of
+    # zero, any other aborts.
+    mentions=0
+    [[ "$line" == *run.sh* || "$line" == *RUN* ]] && mentions="$( { grep -oE "$mention_re" <<<"$line" || [ $? -eq 1 ]; } | wc -l)"
     if [ "$mentions" -gt 1 ] || { [ "$mentions" = 1 ] && [[ "$line" =~ $export_re ]]; }; then
       printf '::error file=e2e/%s,line=%s::names run.sh in a form this guard cannot read; use a form from its contract (e2e/check-lock-owner.sh)\n' "$script" "$n"
       found=1; continue
     fi
     # LOCK_OWNER as a word, not a $-expansion, is read only as an assignment
     # at the start of a line or an export, once per line.
-    owner_words="$( { grep -oE "$owner_word_re" <<<"$line" || [ $? -eq 1 ]; } | wc -l)"
+    owner_words=0
+    [[ "$line" == *LOCK_OWNER* ]] && owner_words="$( { grep -oE "$owner_word_re" <<<"$line" || [ $? -eq 1 ]; } | wc -l)"
     if [ "$owner_words" -gt 1 ] || { [ "$owner_words" = 1 ] && ! [[ "$line" =~ $export_re ]] && ! [[ "$line" =~ $assign_re ]]; }; then
       printf '::error file=e2e/%s,line=%s::changes LOCK_OWNER in a form this guard cannot read; use a form from its contract (e2e/check-lock-owner.sh)\n' "$script" "$n"
       found=1; continue
