@@ -142,19 +142,22 @@ clear_foreign_anrs() {
 # fails a run that passes (WAIT_AMBIGUOUS).
 # Succeeds when none of $@ is left.
 press_wait_on_foreign() { # $@ = the foreign packages
-  local round now pkg bounds count only
+  local round now pkg bounds count only left
   local wdeadline=$((SECONDS + ANR_WAIT_SECONDS))
   wleft() { echo $(( wdeadline - SECONDS > 0 ? wdeadline - SECONDS : 0 )); }
   for round in "$@"; do
-    [ "$(wleft)" -gt 0 ] || { printf 'The Wait fallback ran out of time.\n'; return 1; }
-    timeout "$(wleft)" adb shell uiautomator dump /sdcard/anr-dump.xml >/dev/null 2>&1 || return 1
-    [ "$(wleft)" -gt 0 ] || { printf 'The Wait fallback ran out of time.\n'; return 1; }
-    bounds="$(timeout "$(wleft)" adb shell cat /sdcard/anr-dump.xml 2>/dev/null | tr -d '\r' |
+    # Each step reads what is left once and uses that for its check and its
+    # call: read twice, a tick in between hands timeout 0, which GNU timeout
+    # takes as no limit at all (#191 review).
+    left="$(wleft)"; [ "$left" -gt 0 ] || { printf 'The Wait fallback ran out of time.\n'; return 1; }
+    timeout "$left" adb shell uiautomator dump /sdcard/anr-dump.xml >/dev/null 2>&1 || return 1
+    left="$(wleft)"; [ "$left" -gt 0 ] || { printf 'The Wait fallback ran out of time.\n'; return 1; }
+    bounds="$(timeout "$left" adb shell cat /sdcard/anr-dump.xml 2>/dev/null | tr -d '\r' |
       grep -o 'resource-id="android:id/aerr_wait"[^>]*bounds="\[[0-9]*,[0-9]*\]\[[0-9]*,[0-9]*\]"' |
       sed -n 's/.*bounds="\[\([0-9]*\),\([0-9]*\)\]\[\([0-9]*\),\([0-9]*\)\]".*/\1 \2 \3 \4/p' | head -1)"
     # Read last, right before the tap.
-    [ "$(wleft)" -gt 0 ] || { printf 'The Wait fallback ran out of time.\n'; return 1; }
-    now="$(anr_packages "$(wleft)")" || return 1
+    left="$(wleft)"; [ "$left" -gt 0 ] || { printf 'The Wait fallback ran out of time.\n'; return 1; }
+    now="$(anr_packages "$left")" || return 1
     count="$(printf '%s\n' "$now" | grep -c . || true)"
     [ "$count" -gt 0 ] || return 0
     if [ "$count" -ne 1 ]; then
@@ -167,7 +170,8 @@ press_wait_on_foreign() { # $@ = the foreign packages
     [ -n "$bounds" ] || { printf 'No Wait button in the dump.\n'; return 1; }
     set -- $bounds
     printf 'Pressing Wait on the ANR dialog of %s, which survived force-stop.\n' "$only"
-    timeout "$(( $(wleft) > 0 ? $(wleft) : 1 ))" adb shell input tap $(( ($1 + $3) / 2 )) $(( ($2 + $4) / 2 ))
+    left="$(wleft)"
+    timeout "$(( left > 0 ? left : 1 ))" adb shell input tap $(( ($1 + $3) / 2 )) $(( ($2 + $4) / 2 ))
     # The dialog closes a moment after the tap: the device's first look right
     # after it still found System UI's (#189). Wait for the list to change,
     # within the same deadline.
@@ -175,10 +179,10 @@ press_wait_on_foreign() { # $@ = the foreign packages
     while [ "$SECONDS" -lt "$wdeadline" ]; do
       pause="$(wleft)"
       [ "$ANR_RECHECK_SLEEP" = 0 ] || sleep "$(( ANR_RECHECK_SLEEP < pause ? ANR_RECHECK_SLEEP : pause ))"
-      [ "$(wleft)" -gt 0 ] || break
+      left="$(wleft)"; [ "$left" -gt 0 ] || break
       # A read that fails here cannot show the dialog gone, so it cannot
       # rule out that the tap closed an ANR of ours: flagged the same way.
-      if ! now="$(anr_packages "$(wleft)")"; then
+      if ! now="$(anr_packages "$left")"; then
         WAIT_AMBIGUOUS=1
         printf '::error::The window list could not be read after pressing Wait on the ANR dialog of %s, so an ANR of the app under test may have been closed instead; the run fails if its tests pass.\n' "$only"
         return 1
@@ -195,7 +199,8 @@ press_wait_on_foreign() { # $@ = the foreign packages
       return 1
     fi
   done
-  now="$(anr_packages "$(( $(wleft) > 0 ? $(wleft) : 1 ))")" || return 1
+  left="$(wleft)"
+  now="$(anr_packages "$(( left > 0 ? left : 1 ))")" || return 1
   while IFS= read -r pkg; do
     [ -n "$pkg" ] || continue
     is_ours "$pkg" || return 1

@@ -75,6 +75,17 @@ case "$*" in
 esac
 EOF
 chmod +x "$WORK/bin/adb"
+# GNU timeout reads a duration of 0 as no limit at all, so a call given 0
+# could hang forever: the fake records every such call, and the last check
+# requires none (#191 review). It stays out of the per-check reset, so it
+# covers every scenario of the suite.
+REAL_TIMEOUT="$(command -v timeout)"
+cat > "$WORK/bin/timeout" <<EOF2
+#!/usr/bin/env bash
+case "\$1" in 0|0s|0.0) echo "\$*" >> "$WORK/timeout0" ;; esac
+exec "$REAL_TIMEOUT" "\$@"
+EOF2
+chmod +x "$WORK/bin/timeout"
 export ADB_FAKE_WORK="$WORK"
 export PATH="$WORK/bin:$PATH"
 # The re-check polls; the intervals are the script's own, shortened here so
@@ -337,6 +348,20 @@ does_not_claim_gone_when_the_read_fails() {
   ! grep -qx 'Gone\.' "$WORK/log" && grep -q 'Could not read' "$WORK/log"
 }
 check "a failed window read is not reported as the dialog being gone" does_not_claim_gone_when_the_read_fails
+
+# No timeout in the suite was given 0, which GNU timeout reads as no limit.
+no_timeout_was_unbounded() { [ ! -s "$WORK/timeout0" ] || { cat "$WORK/timeout0" >&2; return 1; }; }
+check "no timeout was given 0, which means no limit" no_timeout_was_unbounded
+
+# A guard that reads the time left and a call that reads it again can see
+# two different values: a tick between them hands the call 0. That tick is
+# too narrow to force with a fake, so the property is held by structure -
+# the Wait fallback reads what is left once per step and passes that value
+# on - and this checks the structure (#191 review).
+reads_the_time_left_once_per_step() {
+  ! grep -nE '(timeout|anr_packages) "\$\(wleft\)"' ./l2-with-evidence.sh
+}
+check "the Wait fallback passes the time left it checked, not a second reading" reads_the_time_left_once_per_step
 
 printf '%s of %s checks passed\n' "$passed" "$total"
 [ "$passed" -eq "$total" ] || { printf 'FAILED\n'; exit 1; }
