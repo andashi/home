@@ -394,8 +394,34 @@ class DefaultConfigStoreTest {
 
         assertEquals(
             listOf(
-                "grid-item-moved" to "'second' asks for x=3 y=1, which puts its 2x1 cells outside the grid; " +
-                    "moved back in, it overlaps 'first', so it was moved down to x=2 y=2",
+                "grid-item-moved" to "'second' asks for x=3 y=1; placed at x=2 y=1, it overlaps 'first', " +
+                    "so it was moved down to x=2 y=2",
+            ),
+            diagnostics.map { it.code to it.message },
+        )
+    }
+
+    @Test
+    fun `an item nudged off the fold and then pushed down names where it overlapped`() = runTest {
+        settings.state = ConfigState(gridColumns = 4)
+        gridLimits.limits[clockWidget] = ProviderLimits(default = CellSize(1, 1), limits = SizeLimits(1, 1, 4, 2))
+
+        val diagnostics = store.apply(
+            listOf(
+                grid(
+                    GridItemConfig(id = "wall", widget = clockWidget, x = 2, y = 0, w = 1, h = 1),
+                    GridItemConfig(id = "clock", widget = clockWidget, x = 3, y = 0, w = 2, h = 1),
+                    layout = "fold",
+                )
+            )
+        )
+
+        assertEquals(
+            listOf(
+                "grid-item-moved" to "'clock' asks for x=3 y=0; placed at x=2 y=0, it overlaps 'wall', " +
+                    "so it was moved down to x=2 y=1",
+                "grid-crosses-fold" to "'clock' spans the fold line, which only the favorites widget may; " +
+                    "it was moved to one side",
             ),
             diagnostics.map { it.code to it.message },
         )

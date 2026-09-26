@@ -398,6 +398,24 @@ class DefaultConfigStore(
      * effective size for an item normalize then dropped (#170). The engine
      * says what it did; this only gives it a name, a path and words.
      */
+    /**
+     * The overlap a push reports is where the engine found it: at the
+     * requested position, or where a slide into the grid or a nudge off the
+     * fold placed the item first. That place is named when it is not the
+     * requested one (#174 review).
+     */
+    private fun movedMessage(id: String, from: Span, to: Span, pushed: LayoutIssue.Push?): String = when {
+        pushed == null ->
+            "'$id' asks for x=${from.x} y=${from.y}, which puts its ${to.w}x${to.h} cells " +
+                "outside the grid; it was moved to x=${to.x} y=${to.y}"
+        pushed.from.x == from.x && pushed.from.y == from.y ->
+            "'$id' asks for x=${from.x} y=${from.y}, which overlaps '${pushed.by}'; " +
+                "it was moved down to x=${to.x} y=${to.y}"
+        else ->
+            "'$id' asks for x=${from.x} y=${from.y}; placed at x=${pushed.from.x} y=${pushed.from.y}, " +
+                "it overlaps '${pushed.by}', so it was moved down to x=${to.x} y=${to.y}"
+    }
+
     private fun LayoutIssue.toDiagnostic(basePath: String, order: Map<String, Int>, spec: GridSpec): Diagnostic? {
         fun path(id: String) = "$basePath[${order[id] ?: -1}]"
         return when (this) {
@@ -452,20 +470,7 @@ class DefaultConfigStore(
                 Severity.Warning,
                 "grid-item-moved",
                 path(id),
-                when {
-                    // The overlap was found where the slide put it, not where
-                    // the file did (#174 review).
-                    slid && pushedBy != null ->
-                        "'$id' asks for x=${from.x} y=${from.y}, which puts its ${to.w}x${to.h} cells " +
-                            "outside the grid; moved back in, it overlaps '$pushedBy', so it was moved " +
-                            "down to x=${to.x} y=${to.y}"
-                    pushedBy != null ->
-                        "'$id' asks for x=${from.x} y=${from.y}, which overlaps '$pushedBy'; " +
-                            "it was moved down to x=${to.x} y=${to.y}"
-                    else ->
-                        "'$id' asks for x=${from.x} y=${from.y}, which puts its ${to.w}x${to.h} cells " +
-                            "outside the grid; it was moved to x=${to.x} y=${to.y}"
-                },
+                movedMessage(id, from, to, pushed),
             )
 
             // The engine nudges a crossing item to one side (the right thing

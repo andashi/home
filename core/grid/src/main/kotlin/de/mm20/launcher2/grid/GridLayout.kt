@@ -180,7 +180,10 @@ object GridLayout {
                 issues += LayoutIssue.CrossesFold(item.id)
                 continue
             }
-            var span = Span(x, y, w, h)
+            // Where the item was placed, after any slide or nudge: where an
+            // overlap is found, and so what a push reports (#174 review).
+            val placed = Span(x, y, w, h)
+            var span = placed
             val blocker = result.firstOrNull { it.span.overlaps(span) }
             if (blocker != null) {
                 issues += LayoutIssue.Overlap(blocker.id, item.id)
@@ -198,7 +201,7 @@ object GridLayout {
             // why it was dropped, and nothing else (#170 review).
             issues += fit.issues
             if (slid || blocker != null) {
-                issues += LayoutIssue.Moved(item.id, from = requested, to = span, slid = slid, pushedBy = blocker?.id)
+                issues += LayoutIssue.Moved(item.id, from = requested, to = span, pushed = blocker?.let { LayoutIssue.Push(it.id, placed) })
             }
             if (x != slidX) issues += LayoutIssue.NudgedOffFold(item.id)
             result += if (span == item.span) item else item.copy(span = span)
