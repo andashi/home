@@ -86,16 +86,12 @@ restore() {
     || { adb reconnect offline >/dev/null; timeout 30 adb -s "$SERIAL" wait-for-device; } \
     || die "$SERIAL stayed offline after loading $1"
 }
+pkg_gone() { ! sh_ pidof "$PKG" >/dev/null 2>&1; }
 cold_start() {
   # Only a start from no process is a cold start: a failed force-stop, or a
   # process still there after it, would measure a warm one.
   sh_ am force-stop "$PKG" >/dev/null 2>&1 || die "am force-stop $PKG failed"
-  local gone=0
-  for _ in 1 2 3 4 5 6 7 8 9 10; do
-    if ! sh_ pidof "$PKG" >/dev/null 2>&1; then gone=1; break; fi
-    sleep 0.5
-  done
-  [ "$gone" = 1 ] || die "$PKG still running 5 s after force-stop"
+  retry_for 5 pkg_gone || die "$PKG still running 5 s after force-stop"
   sleep 1
   sh_ am start -W -n "$LAUNCHER_ACTIVITY" 2>/dev/null | tr -d '\r' | awk -F': *' '/^TotalTime/ { print $2; exit }'
 }
@@ -156,6 +152,7 @@ OUT="${OUT:-$HERE/measurements/coldstart-${revlist%-}.tsv}"
   printf 'build\trun\tstart\thostload\ttotal_ms\n'
 } > "$OUT"
 
+# not a wait: RUNS measurement repetitions
 for run in $(seq "$RUNS"); do
   # Once per round, before its first build: a round either starts under the
   # ceiling and runs complete, or does not start. A check between its builds
@@ -174,6 +171,7 @@ for run in $(seq "$RUNS"); do
   for name in "${order[@]}"; do
     restore "$name"
     sleep 3; wake_screen; sleep 2
+    # not a wait: STARTS cold starts per round
     for start in $(seq "$STARTS"); do
       load="$(cut -d' ' -f1 /proc/loadavg)"
       # A failed force-stop ends the run here, with its own message.
