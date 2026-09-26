@@ -847,5 +847,34 @@ EOF2
   gos_run_case 'export LOCK_OWNER="me@fake#1"' && grep -qx "run.sh start owner=me@fake#1 snapshot=clean serial=fake" "$CALLS"
 }
 check "gos_run passes SERIAL and an env prefix through to run.sh" passes_the_env_prefix
+# A run's snapshots are ~3.5 GB each. Deleting them is checked against the
+# list afterwards, and a list that could not be read is not an empty one:
+# taken for one, it reported nothing left whatever was left.
+mkdir -p "$WORK/snaps"
+cat > "$WORK/snaps/adb" <<EOF
+#!/usr/bin/env bash
+case "\$*" in
+  *"snapshot delete"*) : ;;
+  *"snapshot list"*) [ -e "$WORK/snaps/list-fails" ] && exit 1; cat "$WORK/snaps/list" ;;
+esac
+EOF
+chmod +x "$WORK/snaps/adb"
+snapshots_after() { # $1 = what the list shows afterwards, or "fails"
+  rm -f "$WORK/snaps/list-fails"
+  if [ "$1" = fails ]; then : > "$WORK/snaps/list-fails"; else printf '%s\n' "$1" > "$WORK/snaps/list"; fi
+  ( PATH="$WORK/snaps:$PATH"; delete_snapshots cold-1-m0 cold-1-m1 ) 2>&1
+}
+passes_when_all_are_gone() { snapshots_after "clean" >/dev/null; }
+check "delete_snapshots passes when none of the run's snapshots is listed" passes_when_all_are_gone
+names_what_is_left() {
+  local out; out="$(snapshots_after $'clean\ncold-1-m1')" && return 1
+  grep -q "cold-1-m1" <<<"$out" && ! grep -q "cold-1-m0" <<<"$out"
+}
+check "delete_snapshots fails and names exactly what is left" names_what_is_left
+fails_on_an_unread_list() {
+  local out; out="$(snapshots_after fails)" && return 1
+  grep -q "cold-1-m0" <<<"$out" && grep -q "cold-1-m1" <<<"$out"
+}
+check "delete_snapshots fails, naming every snapshot, when the list cannot be read" fails_on_an_unread_list
 
 exit "$failed"
