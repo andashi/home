@@ -39,7 +39,11 @@ STARTS="${STARTS:-3}"
 # The host's 1-minute load average may not exceed this when a round starts;
 # a round above it ends the run. Set before the first sample, never judged
 # afterwards: a series on a busy host cannot resolve tens of milliseconds.
+# The harness loads the host itself (a booted emulator, adb), so the ceiling
+# is meaningful only against that floor: LOAD_FLOOR is the load measured with
+# the instance booted and idle, recorded next to the ceiling.
 MAX_LOAD="${MAX_LOAD:-}"
+LOAD_FLOOR="${LOAD_FLOOR:-unmeasured}"
 LOCK_OWNER="${LOCK_OWNER:-measure-coldstart@$SERIAL#$$}"
 WORK="$(mktemp -d)"
 RUN="$GOS_REPO/emulator/run.sh"
@@ -137,8 +141,8 @@ revlist=""
 for k in "${!apks[@]}"; do revlist+="$(rev "$k")-"; done
 OUT="${OUT:-$HERE/measurements/coldstart-${revlist%-}.tsv}"
 {
-  printf '# serial %s, overlay %s, GPU %s, adb uid 2000, runs %s, starts %s, max load %s\n' \
-    "$SERIAL" "$(basename "$OVERLAY_DIR")" "$GPU" "$RUNS" "$STARTS" "${MAX_LOAD:-none}"
+  printf '# serial %s, overlay %s, GPU %s, adb uid 2000, runs %s, starts %s, load floor %s, max load %s\n' \
+    "$SERIAL" "$(basename "$OVERLAY_DIR")" "$GPU" "$RUNS" "$STARTS" "$LOAD_FLOOR" "${MAX_LOAD:-none}"
   for k in "${!apks[@]}"; do
     printf '# %s = rev %s, apk sha256 %s\n' "${names[k]}" "$(rev "$k")" "$(sha256sum "${apks[k]}" | cut -d' ' -f1)"
   done
