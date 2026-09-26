@@ -77,6 +77,9 @@ class HomeGridEditUiTest {
     val koin = KoinSettingsRule()
 
     @get:Rule(order = 1)
+    val viewModels = ViewModelScopeRule()
+
+    @get:Rule(order = 2)
     val composeRule = createComposeRule()
 
 
@@ -104,7 +107,7 @@ class HomeGridEditUiTest {
 
     private fun vm(): HomeGridVM {
         val uiSettings: UiSettings = GlobalContext.get().get()
-        return HomeGridVM(
+        return viewModels.track(HomeGridVM(
             repository = repository,
             uiSettings = uiSettings,
             formFactorDetector = FakeFormFactorDetector(FormFactor.Phone),
@@ -116,7 +119,7 @@ class HomeGridEditUiTest {
                 if (item.id == "clock") SizeLimits(minW = 1, minH = 1, maxW = 3, maxH = 2) else SizeLimits.Unbounded
             },
             locked = locked,
-        )
+        ))
     }
 
     private fun show(vm: HomeGridVM, reducedMotion: Boolean = true) {

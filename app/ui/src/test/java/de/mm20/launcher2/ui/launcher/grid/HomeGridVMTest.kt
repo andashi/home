@@ -13,7 +13,6 @@ import de.mm20.launcher2.homegrid.HomeGridWidgets
 import de.mm20.launcher2.homegrid.MeasuredGridRows
 import de.mm20.launcher2.preferences.ui.UiSettings
 import de.mm20.launcher2.ui.settings.KoinSettingsRule
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filterNotNull
@@ -21,14 +20,10 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.StandardTestDispatcher
-import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
-import kotlinx.coroutines.test.setMain
-import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
-import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -39,20 +34,13 @@ import org.robolectric.RobolectricTestRunner
 @RunWith(RobolectricTestRunner::class)
 class HomeGridVMTest {
 
-    @get:Rule
+    @get:Rule(order = 0)
     val koin = KoinSettingsRule()
 
     private val dispatcher = StandardTestDispatcher()
 
-    @Before
-    fun setUp() {
-        Dispatchers.setMain(dispatcher)
-    }
-
-    @After
-    fun tearDown() {
-        Dispatchers.resetMain()
-    }
+    @get:Rule(order = 1)
+    val viewModels = ViewModelScopeRule(dispatcher)
 
 
     private fun vm(
@@ -63,7 +51,7 @@ class HomeGridVMTest {
     ): HomeGridVM {
         val uiSettings: UiSettings = GlobalContext.get().get()
         val flag = FakeInitFlag(initialized)
-        return HomeGridVM(
+        return viewModels.track(HomeGridVM(
             repository = repository,
             uiSettings = uiSettings,
             formFactorDetector = FakeFormFactorDetector(formFactor),
@@ -73,7 +61,7 @@ class HomeGridVMTest {
             writeBack = FakeWriteBack(),
             itemLimits = GridItemLimits.Unbounded,
             locked = flowOf(false),
-        )
+        ))
     }
 
     @Test

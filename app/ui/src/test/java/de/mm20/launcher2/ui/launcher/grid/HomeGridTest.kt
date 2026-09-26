@@ -54,6 +54,9 @@ class HomeGridTest {
     val koin = KoinSettingsRule()
 
     @get:Rule(order = 1)
+    val viewModels = ViewModelScopeRule()
+
+    @get:Rule(order = 2)
     val composeRule = createComposeRule()
 
 
@@ -87,7 +90,7 @@ class HomeGridTest {
     @Test
     fun `cells are on screen with their ids and the unbound widget shows the banner`() {
         val uiSettings: UiSettings = GlobalContext.get().get()
-        val vm = HomeGridVM(
+        val vm = viewModels.track(HomeGridVM(
             repository = repository,
             uiSettings = uiSettings,
             formFactorDetector = FakeFormFactorDetector(FormFactor.Phone),
@@ -97,7 +100,7 @@ class HomeGridTest {
             writeBack = FakeWriteBack(),
             itemLimits = GridItemLimits.Unbounded,
             locked = flowOf(false),
-        )
+        ))
 
         composeRule.setContent {
             MaterialTheme {
@@ -135,7 +138,7 @@ class HomeGridTest {
     // ----- labels (#75) -----
 
     private fun showGrid() {
-        val vm = HomeGridVM(
+        val vm = viewModels.track(HomeGridVM(
             repository = repository,
             uiSettings = GlobalContext.get().get(),
             formFactorDetector = FakeFormFactorDetector(FormFactor.Phone),
@@ -145,7 +148,7 @@ class HomeGridTest {
             writeBack = FakeWriteBack(),
             itemLimits = GridItemLimits.Unbounded,
             locked = flowOf(false),
-        )
+        ))
         composeRule.setContent {
             MaterialTheme {
                 ProvideAppWidgetHost {

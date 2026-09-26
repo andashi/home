@@ -15,7 +15,6 @@ import de.mm20.launcher2.homegrid.FormFactor
 import de.mm20.launcher2.preferences.ui.UiSettings
 import de.mm20.launcher2.ui.settings.KoinSettingsRule
 import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -27,15 +26,11 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
-import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
-import kotlinx.coroutines.test.setMain
-import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
-import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -51,20 +46,13 @@ import org.robolectric.RobolectricTestRunner
 @RunWith(RobolectricTestRunner::class)
 class HomeGridEditVMTest {
 
-    @get:Rule
+    @get:Rule(order = 0)
     val koin = KoinSettingsRule()
 
     private val dispatcher = StandardTestDispatcher()
 
-    @Before
-    fun setUp() {
-        Dispatchers.setMain(dispatcher)
-    }
-
-    @After
-    fun tearDown() {
-        Dispatchers.resetMain()
-    }
+    @get:Rule(order = 1)
+    val viewModels = ViewModelScopeRule(dispatcher)
 
 
     private val clock = gridItem("clock", 0, 0, 2, 2, position = 0)
@@ -93,7 +81,7 @@ class HomeGridEditVMTest {
         val repository = FakeHomeGridRepository(mapOf(HomeGridLayouts.Phone to items))
         val lockedFlow = MutableStateFlow(locked)
         val uiSettings: UiSettings = GlobalContext.get().get()
-        val vm = HomeGridVM(
+        val vm = viewModels.track(HomeGridVM(
             repository = repository,
             uiSettings = uiSettings,
             formFactorDetector = FakeFormFactorDetector(FormFactor.Phone),
@@ -103,7 +91,7 @@ class HomeGridEditVMTest {
             writeBack = writeBack,
             itemLimits = GridItemLimits { item, _ -> limits[item.id] ?: SizeLimits.Unbounded },
             locked = lockedFlow,
-        )
+        ))
         val events = mutableListOf<GridEditEvent>()
         // Subscribed first, then measured: the order the composable has.
         backgroundScope.launch { vm.items.collect {} }
@@ -240,7 +228,7 @@ class HomeGridEditVMTest {
         }
         val f = fixture(writeBack = FakeWriteBack())
         f.vm.cells()
-        val vm = HomeGridVM(
+        val vm = viewModels.track(HomeGridVM(
             repository = f.repository,
             uiSettings = GlobalContext.get().get(),
             formFactorDetector = FakeFormFactorDetector(FormFactor.Phone),
@@ -250,7 +238,7 @@ class HomeGridEditVMTest {
             writeBack = throwing,
             itemLimits = GridItemLimits.Unbounded,
             locked = f.locked,
-        )
+        ))
         vm.measure(396f, 622f)
         val events = mutableListOf<GridEditEvent>()
         backgroundScope.launch { vm.items.collect {} }
@@ -311,7 +299,7 @@ class HomeGridEditVMTest {
         }
         val f = fixture(writeBack = FakeWriteBack())
         f.vm.cells()
-        val vm = HomeGridVM(
+        val vm = viewModels.track(HomeGridVM(
             repository = f.repository,
             uiSettings = GlobalContext.get().get(),
             formFactorDetector = FakeFormFactorDetector(FormFactor.Phone),
@@ -321,7 +309,7 @@ class HomeGridEditVMTest {
             writeBack = slow,
             itemLimits = GridItemLimits.Unbounded,
             locked = f.locked,
-        )
+        ))
         vm.measure(396f, 622f)
         backgroundScope.launch { vm.items.collect {} }
         vm.cells()
