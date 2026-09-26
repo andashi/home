@@ -574,4 +574,17 @@ refuses_a_prefix_match() {
 check "grant_home_role does not take org.andashi.home.debug for org.andashi.home" refuses_a_prefix_match
 check "grant_home_role gives up on a wedged device" bounded "ADB_DEADLINE=\$((SECONDS + 3)) PKG=org.andashi.home grant_home_role"
 
+# Pushing a config gives up at the deadline, and says it failed: a wedged
+# content write or broadcast must neither hold the caller, and with it the
+# device lock, nor pass for a success (#175 review). Checked in a shell
+# without pipefail, as a caller's may be.
+echo '{}' > "$WORK/config.json"
+fails_in_time() { # $@ = a call that must fail within 6 s on a wedged device
+  local start=$SECONDS
+  ( PATH="$WORK/wedged:$PATH" timeout 20 bash -c "$(declare -f); $(declare -p SERIAL PKG WORK INGEST_URI RECEIVER ACTION 2>/dev/null); $*" ) >/dev/null 2>&1 && return 1
+  [ $((SECONDS - start)) -le 6 ]
+}
+check "write_config fails at the deadline while the content write hangs" fails_in_time "ADB_DEADLINE=\$((SECONDS + 3)) write_config $WORK/config.json"
+check "reload_broadcast fails at the deadline while the broadcast hangs" fails_in_time "ADB_DEADLINE=\$((SECONDS + 3)) reload_broadcast"
+
 exit "$failed"
