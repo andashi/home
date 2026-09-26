@@ -93,8 +93,6 @@
     <string name="preference_grid_labels_summary">Näita ikooni all rakenduse nime</string>
     <string name="preference_grid_list_icons_summary">Näita nimekirja vaates ikoone</string>
     <string name="preference_category_widgets">Vidinad</string>
-    <string name="preference_clock_widget_time_format">Kellaaja vorming</string>
-    <string name="preference_clock_widget_time_format_24h">24-tundi</string>
     <string name="widget_use_theme_colors">Kasuta teema värvi</string>
     <string name="preference_clockwidget_favorites_part">Dokk</string>
     <string name="preference_clockwidget_favorites_part_summary">Näita kinnitatud rakenduste esimest rida</string>
@@ -225,7 +223,6 @@
     <string name="preference_category_links">Lingid</string>
     <string name="preference_system_bar_icons_auto">Automaatne</string>
     <string name="preference_about_telegram">Telegrammi grupp</string>
-    <string name="preference_clock_widget_time_format_12h">12-tundi</string>
     <string name="preference_debug_reinstall_iconpacks">Paigalda ikoonipaketid uuesti</string>
     <string name="preference_icon_shape">Kujund</string>
     <string name="preference_hide_status_bar">Peida staatuseriba</string>

@@ -329,9 +329,6 @@
     <string name="preference_compact_tags">Tag compatti</string>
     <string name="preference_compact_tags_summary">Nascondi le etichette o le icone dei tag per ridurre lo spazio occupato dai tag</string>
     <string name="widget_removed">Widget rimosso</string>
-    <string name="preference_clock_widget_time_format">Formato ora</string>
-    <string name="preference_clock_widget_time_format_24h">24 ore</string>
-    <string name="preference_clock_widget_time_format_12h">12 ore</string>
     <string name="preference_grid_list_style">Mostra le app come lista</string>
     <string name="preference_grid_list_style_summary">Sotituisci la griglia delle app con una lista</string>
     <string name="preference_grid_list_icons">Mostra le icone delle app nella lista</string>
@@ -413,9 +410,6 @@
     <string name="remove_font_style">Rimuovi questo stile del font</string>
     <string name="preference_category_donate">Sostieni lo sviluppo</string>
     <string name="gesture_action_widgets_indexed">Widget (%1$d)</string>
-    <string name="preference_calendar_system">Il sistema di calendario preferito (ad esempio calendario gregoriano, calendario ebraico, calendario persiano)</string>
-    <string name="preference_calendar_system_primary">Calendario primario</string>
-    <string name="preference_calendar_system_secondary">Calendario secondario</string>
     <string name="gesture_action_category_launcher">Pagine del launcher</string>
     <string name="gesture_action_category_system">Azioni di sistema</string>
     <string name="gesture_action_category_apps">App e scorciatoie</string>

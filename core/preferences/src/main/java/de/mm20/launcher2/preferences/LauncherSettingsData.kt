@@ -7,7 +7,6 @@ import de.mm20.launcher2.search.SearchFilters
 import de.mm20.launcher2.serialization.UUIDSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.JsonNames
 import java.util.UUID
 
 @Serializable
@@ -127,23 +126,11 @@ data class LauncherSettingsData internal constructor(
     ),
 
 
-    @JsonNames("clockWidgetTimeFormat")
-    val localeTimeFormat: TimeFormat = TimeFormat.System,
     /**
      * The ID of the transliterator to use. The empty string means to pick a transliterator
      * automatically. null disables the transliterator.
      */
     val localeTransliterator: String? = "",
-
-    /**
-     * The ICU id of the primary calendar. `null` to use the default.
-     */
-    val localePrimaryCalendar: String? = null,
-
-    /**
-     * The ICU id of the secondary calendar. `null` to disable.
-     */
-    val localeSecondaryCalendar: String? = null,
 
 
     val feedProviderPackage: String? = null
@@ -285,12 +272,6 @@ enum class KeyboardFilterBarItem {
     @SerialName("hidden") HiddenResults,
 }
 
-@Serializable
-enum class TimeFormat {
-    @SerialName("system") System,
-    @SerialName("12h") TwelveHour,
-    @SerialName("24h") TwentyFourHour
-}
 
 
 

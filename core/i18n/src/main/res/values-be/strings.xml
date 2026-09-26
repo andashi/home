@@ -364,9 +364,6 @@
     <string name="preference_typography_fonts">Стылі шрыфтоў</string>
     <string name="font_category_device_default">Налады прылады</string>
     <string name="preference_contacts_call_on_tap">Націсніце, каб патэлефанаваць</string>
-    <string name="preference_clock_widget_time_format">Фармат часу</string>
-    <string name="preference_clock_widget_time_format_24h">24 гадзіны</string>
-    <string name="preference_clock_widget_time_format_12h">12 гадзін</string>
     <string name="preference_widgets_on_home_screen">Віджэты на галоўным экране</string>
     <string name="preference_widgets_on_home_screen_summary">Паказваць віджэты на галоўным экране, а не на дадатковай старонцы</string>
     <string name="bad_configuration_summary">Вы знайшлі канфігурацыю, пры якой нельга адкрыць ні пошук, ні налады, тым самым зрабіўшы праграму непрыгоднай для выкарыстання</string>
@@ -413,9 +410,6 @@
     <string name="preference_form_of_address_masc">Мужчынскі</string>
     <string name="preference_transliteration">Прыярытэтная сістэма транслітарацыі</string>
     <string name="preference_transliteration_auto">Аўтаматчна</string>
-    <string name="preference_calendar_system">Каляндарная сістэма</string>
-    <string name="preference_calendar_system_primary">Асноўны каляндар</string>
-    <string name="preference_calendar_system_secondary">Другасны каляндар</string>
     <string name="select_tag">Выбраць тэг</string>
     <string name="create_tag_title">Новы тэг</string>
     <string name="edit_tag_title">Рэдагаваць тэг</string>

@@ -316,9 +316,6 @@
     </plurals>
     <string name="customize_item_visibility">顯示於</string>
     <string name="contact_info_mobile">手機</string>
-    <string name="preference_clock_widget_time_format_24h">24 小時制</string>
-    <string name="preference_clock_widget_time_format_12h">12 小時制</string>
-    <string name="preference_clock_widget_time_format">時間格式</string>
     <string name="widget_removed">小工具已移除</string>
     <string name="preference_contacts_call_on_tap">輕觸以撥打</string>
     <string name="preference_contacts_call_on_tap_summary">輕觸電話號碼時不經確認立即撥號</string>
@@ -396,9 +393,6 @@
     <string name="typo_preview_extra_short"/>
     <string name="typo_preview_short1"/>
     <string name="gesture_action_widgets_indexed">小工具（第 %1$d 頁）</string>
-    <string name="preference_calendar_system">曆制</string>
-    <string name="preference_calendar_system_primary">主曆制</string>
-    <string name="preference_calendar_system_secondary">第二曆制</string>
     <string name="preference_category_donate">支持開發</string>
     <string name="gesture_action_category_system">系統動作</string>
     <string name="gesture_action_category_launcher">啟動器頁面</string>

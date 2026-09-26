@@ -108,9 +108,9 @@
     "contacts",
     "hidden"
   ],
-  "localeTimeFormat": "system",
+  "localeTimeFormat": "24h",
   "localeTransliterator": "",
-  "localePrimaryCalendar": null,
-  "localeSecondaryCalendar": null,
+  "localePrimaryCalendar": "hebrew",
+  "localeSecondaryCalendar": "islamic",
   "feedProviderPackage": null
 }

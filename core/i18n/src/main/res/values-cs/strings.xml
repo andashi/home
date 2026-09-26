@@ -329,9 +329,6 @@
     <string name="preference_compact_tags">Kompaktní štítky</string>
     <string name="preference_compact_tags_summary">Skrýt popisky nebo ikony štítků, aby se zmenšilo místo jimi zabrané</string>
     <string name="widget_removed">Widget odstraněn</string>
-    <string name="preference_clock_widget_time_format">Formát času</string>
-    <string name="preference_clock_widget_time_format_24h">24hodinový</string>
-    <string name="preference_clock_widget_time_format_12h">12hodinový</string>
     <string name="missing_permission_call_contacts_settings">Pro provádění hovorů je vyžadováno oprávnění k telefonu</string>
     <string name="preference_contacts_call_on_tap">Klepněte pro vytočení</string>
     <string name="preference_contacts_call_on_tap_summary">Po klepnutí na telefonní číslo zahájit hovor bez potvrzení</string>
@@ -412,9 +409,6 @@
     <string name="typo_preview_medium2">Náhled</string>
     <string name="typo_preview_long">Hleď, příliš žluťoučký kůň úpěl ďábelské ódy.\n1234567890</string>
     <string name="gesture_action_widgets_indexed">Widgety (%1$d)</string>
-    <string name="preference_calendar_system">Kalendářový systém</string>
-    <string name="preference_calendar_system_primary">Primární kalendář</string>
-    <string name="preference_calendar_system_secondary">Sekundární kalendář</string>
     <string name="preference_category_donate">Podpořte vývoj</string>
     <string name="gesture_action_category_launcher">Stránky spouštěče</string>
     <string name="gesture_action_category_system">Systémové akce</string>

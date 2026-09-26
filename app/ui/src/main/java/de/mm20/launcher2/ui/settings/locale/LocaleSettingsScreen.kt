@@ -1,7 +1,6 @@
 package de.mm20.launcher2.ui.settings.locale
 
 import android.content.Intent
-import android.icu.text.ListFormatter
 import android.icu.text.Transliterator
 import android.icu.util.Currency
 import android.icu.util.ULocale
@@ -18,13 +17,11 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.NavKey
 import de.mm20.launcher2.ktx.tryStartActivity
-import de.mm20.launcher2.preferences.TimeFormat
 import de.mm20.launcher2.ui.R
 import de.mm20.launcher2.ui.component.preferences.ListPreference
 import de.mm20.launcher2.ui.component.preferences.Preference
 import de.mm20.launcher2.ui.component.preferences.PreferenceCategory
 import de.mm20.launcher2.ui.component.preferences.PreferenceScreen
-import de.mm20.launcher2.ui.locals.LocalBackStack
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -36,11 +33,7 @@ fun LocaleSettingsScreen() {
     val resources = LocalResources.current
     val viewModel: LocaleSettingsScreenVM = viewModel()
 
-    val backstack = LocalBackStack.current
-
-    val timeFormat by viewModel.timeFormat.collectAsStateWithLifecycle(null)
     val transliterator by viewModel.transliterator.collectAsStateWithLifecycle(null)
-    val calendars by viewModel.calendars.collectAsStateWithLifecycle(emptyList())
 
     // The language that has been selected by the user, or null to use the system language
     val selectedLocale = remember {
@@ -168,52 +161,6 @@ fun LocaleSettingsScreen() {
                         },
                     )
                 }
-            }
-        }
-        item {
-            PreferenceCategory {
-                ListPreference(
-                    icon = R.drawable.schedule_24px,
-                    title = stringResource(R.string.preference_clock_widget_time_format),
-                    value = timeFormat,
-                    onValueChanged = {
-                        if (it != null) viewModel.setTimeFormat(it)
-                    },
-                    items = listOf(
-                        stringResource(R.string.preference_value_system_default) to TimeFormat.System,
-                        stringResource(R.string.preference_clock_widget_time_format_12h) to TimeFormat.TwelveHour,
-                        stringResource(R.string.preference_clock_widget_time_format_24h) to TimeFormat.TwentyFourHour,
-                    )
-                )
-                Preference(
-                    title = stringResource(R.string.preference_calendar_system),
-                    icon = R.drawable.calendar_today_24px,
-                    onClick = {
-                        backstack += CalendarSettingsRoute
-                    },
-                    summary = remember(calendars) {
-                        val primary = calendars.getOrNull(0)
-                        val secondary = calendars.getOrNull(1)
-
-                        val primaryName = if (primary == null) {
-                            resources.getString(R.string.preference_value_system_default)
-                        } else {
-                            ULocale.getDefault().setKeywordValue("calendar", primary)
-                                .getDisplayKeywordValue("calendar")
-                        }
-
-                        val secondaryName = if (secondary == null) {
-                            null
-                        } else {
-                            ULocale.getDefault().setKeywordValue("calendar", secondary)
-                                .getDisplayKeywordValue("calendar")
-                        }
-
-                        ListFormatter.getInstance().format(
-                            listOfNotNull(primaryName, secondaryName)
-                        )
-                    }
-                )
             }
         }
     }

@@ -342,9 +342,6 @@
     <string name="profile_private_profile_action_lock">Заблокировать личное пространство</string>
     <string name="preference_compact_tags">Компактные теги</string>
     <string name="preference_compact_tags_summary">Скройте метки тегов или значки, чтобы уменьшить пространство, занимаемое тегами</string>
-    <string name="preference_clock_widget_time_format">Формат времени</string>
-    <string name="preference_clock_widget_time_format_24h">24-часовой</string>
-    <string name="preference_clock_widget_time_format_12h">12-часовой</string>
     <string name="theme_import_title">Импортировать тему</string>
     <string name="import_theme_contents">Содержание</string>
     <string name="preference_colors_high_contrast">Высокая контрастность</string>

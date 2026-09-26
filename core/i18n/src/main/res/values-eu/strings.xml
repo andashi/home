@@ -292,9 +292,6 @@
     <string name="preference_contacts_call_on_tap">Deitzeko sakatu</string>
     <string name="preference_contacts_call_on_tap_summary">Dei bat hasi baieztapenik gabe telefono zenbaki bat sakatzean</string>
     <string name="action_done">Egina</string>
-    <string name="preference_clock_widget_time_format">Ordu formatua</string>
-    <string name="preference_clock_widget_time_format_24h">24 ordu</string>
-    <string name="preference_clock_widget_time_format_12h">12 ordu</string>
     <string name="widget_removed">Trepeta ezabatua</string>
     <string name="missing_permission_call_contacts_settings">Telefonoa erabiltzeko baimena behar da deiak hasteko</string>
     <string name="widget_name_apps">Aplikazioak</string>

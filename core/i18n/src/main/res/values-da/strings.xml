@@ -295,9 +295,6 @@
     <string name="preference_customize_filter_bar_summary">Tilpas hvilke elementer, der vises i filterlinjen</string>
     <string name="profile_work_profile_state_locked">Arbejdsapps er sat på pause.</string>
     <string name="hint_drag_and_drop_reorder">Hold og træk elementer for at omarrangere dem</string>
-    <string name="preference_clock_widget_time_format">Tidsformat</string>
-    <string name="preference_clock_widget_time_format_24h">24 timer</string>
-    <string name="preference_clock_widget_time_format_12h">12 timer</string>
     <string name="menu_show_filters">Vis filtre</string>
     <string name="menu_hide_filters">Skjul filtre</string>
     <plurals name="contact_email_addresses">

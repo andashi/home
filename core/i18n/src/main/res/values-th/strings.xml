@@ -316,10 +316,7 @@
     <string name="item_visibility_hidden">ไม่ต้องแสดง</string>
     <string name="preference_compact_tags">แท็กขนาดกะทัดรัด</string>
     <string name="preference_compact_tags_summary">ซ่อนชื่อหรือไอคอนของแท็กเพื่อทำให้แท็กใช้พื้นที่น้อยลง</string>
-    <string name="preference_clock_widget_time_format">รูปแบบเวลา</string>
-    <string name="preference_clock_widget_time_format_24h">24 ชั่วโมง</string>
     <string name="widget_removed">ลบวิดเจ็ตแล้ว</string>
-    <string name="preference_clock_widget_time_format_12h">12 ชั่วโมง</string>
     <string name="preference_grid_list_icons">แสดงไอคอนแอปในรายการ</string>
     <string name="preference_grid_list_style_summary">แสดงแอปแบบเรียงรายการ แทนการแสดงแอปแบบเรียงเป็นตาราง</string>
     <string name="preference_grid_list_icons_summary">แสดงไอคอนในรายการแอป</string>
@@ -400,9 +397,6 @@
     <string name="preference_form_of_address_masc">เพศชาย</string>
     <string name="preference_transliteration">การทับศัพท์ที่ต้องการใช้</string>
     <string name="preference_transliteration_auto">อัตโนมัติ</string>
-    <string name="preference_calendar_system">ระบบปฏิทิน</string>
-    <string name="preference_calendar_system_primary">ปฏิทินหลัก</string>
-    <string name="preference_calendar_system_secondary">ปฏิทินรอง</string>
     <string name="select_tag">เลือกแท็ก</string>
     <string name="create_tag_title">แท็กใหม่</string>
     <string name="edit_tag_title">แก้ไขแท็ก</string>

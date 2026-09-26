@@ -323,9 +323,6 @@
     <string name="preference_compact_tags">Kompakt címkék</string>
     <string name="preference_compact_tags_summary">Címkenevek vagy ikonok elrejtése a címkék által elfoglalt hely csökkentése érdekében</string>
     <string name="widget_removed">Modul törölve</string>
-    <string name="preference_clock_widget_time_format">Időformátum</string>
-    <string name="preference_clock_widget_time_format_24h">24 órás</string>
-    <string name="preference_clock_widget_time_format_12h">12 órás</string>
     <string name="preference_grid_list_style">Alkalmazások megjelenítése listában</string>
     <string name="preference_grid_list_icons">Alkalmazások ikonjainak megjelenítése listában</string>
     <string name="preference_grid_list_style_summary">Alkalmazások listában történő megjelenítése rács helyett</string>
@@ -406,9 +403,6 @@
     <string name="add_font_style">Betűtípus hozzáadása</string>
     <string name="remove_font_style">Betűtípus eltávolítása</string>
     <string name="gesture_action_widgets_indexed">Modulok (%1$d)</string>
-    <string name="preference_calendar_system">Naptárrendszer</string>
-    <string name="preference_calendar_system_primary">Elsődleges naptár</string>
-    <string name="preference_calendar_system_secondary">Másodlagos naptár</string>
     <string name="preference_category_donate">Fejlesztés támogatása</string>
     <string name="gesture_action_category_launcher">Indítólapok</string>
     <string name="gesture_action_category_system">Rendszerműveletek</string>

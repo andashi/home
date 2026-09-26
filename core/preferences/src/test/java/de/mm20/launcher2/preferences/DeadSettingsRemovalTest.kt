@@ -30,6 +30,9 @@ class DeadSettingsRemovalTest {
         "uiBaseLayout", "wallpaperBlur", "wallpaperBlurRadius", "mediaAllowList", "mediaDenyList",
         "homeScreenDock", "homeScreenDockRows", "contactSearchEnabled", "separateWorkProfile",
         "iconsPackThemed", "easterEgg", "surfacesOpacity", "surfacesBorderWidth",
+        // Nothing reads them since the clock, the calendar widgets and calendar
+        // search went (#20); their controls went with them (#3 slice 1 audit).
+        "localeTimeFormat", "localePrimaryCalendar", "localeSecondaryCalendar",
     )
 
     private suspend fun rewritten(): JsonObject {

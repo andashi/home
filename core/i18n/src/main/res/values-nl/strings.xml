@@ -323,9 +323,6 @@
     <string name="preference_compact_tags_summary">Labels of pictogrammen verbergen om de ruimte die door labels wordt ingenomen te verkleinen</string>
     <string name="preference_compact_tags">Compacte labels</string>
     <string name="widget_removed">Widget verwijderd</string>
-    <string name="preference_clock_widget_time_format">Tijdformaat</string>
-    <string name="preference_clock_widget_time_format_24h">24-uur</string>
-    <string name="preference_clock_widget_time_format_12h">12-uur</string>
     <string name="preference_grid_list_style">Apps in een lijst weergeven</string>
     <string name="preference_grid_list_icons">App-pictogrammen in lijst weergeven</string>
     <string name="preference_grid_list_style_summary">Apps weergeven in een lijst in plaats van in een raster</string>
@@ -406,9 +403,6 @@
     <string name="add_font_style">Lettertypestijl toevoegen</string>
     <string name="remove_font_style">Deze lettertypestijl verwijderen</string>
     <string name="gesture_action_widgets_indexed">Widgets %1$d</string>
-    <string name="preference_calendar_system">Kalendersysteem</string>
-    <string name="preference_calendar_system_primary">Voorkeurskalender</string>
-    <string name="preference_calendar_system_secondary">Bijkomende kalender</string>
     <string name="preference_category_donate">Ondersteun de ontwikkeling</string>
     <string name="gesture_action_category_launcher">Startschermpagina\'s</string>
     <string name="gesture_action_category_system">Systeemacties</string>
