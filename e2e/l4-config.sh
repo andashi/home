@@ -10,7 +10,7 @@
 #      the test instance (default emulator-5556 with its own qcow2 overlays
 #      under <gos-repo>/emulator/instances/test; SERIAL and OVERLAY_DIR pick
 #      another one) from the `clean` snapshot, installs the debug APK
-#   2. writes a known JSONC config (icons, glass, search bar,
+#   2. writes a known JSONC config (icons, glass, theme, search bar,
 #      favorites, widgets switch, grid; empty favorites so no
 #      installed-package assumptions)
 #      through the shell-gated ingest provider (`content write`), the
@@ -24,7 +24,7 @@
 #   5. re-writes the unchanged config and asserts the follow-up broadcast
 #      report is successful with no applied mutations (watcher settled first)
 #   6. writes a second config that changes EVERY section (icons off, other
-#      glass values, search bar top, widgets off, other grid) and
+#      glass values, another theme, search bar top, widgets off, other grid) and
 #      asserts the read-back shows the new values and the report
 #      lists every section as applied; then writes the first config again
 #      and asserts the read-back is back to the first values - the
@@ -184,6 +184,8 @@ cat > "$VALID_CONFIG" <<'EOF'
   "appearance": {
     // Not the defaults, so applying it is a real change.
     "glass": { "blur": 16, "tint": 0.5, "radius": 20, "contrast": "high", "wallpaperBlur": false, "searchWallpaperBlur": false },
+    // Both away from the system default (#3 slice 3).
+    "theme": { "mode": "dark", "colors": "high-contrast" },
   },
   // Four keys away from their defaults (#91), so applying them is a change.
   "search": { "favorites": false, "layout": "list", "reversed": true, "contacts": false, "barPosition": "bottom" },
@@ -219,6 +221,8 @@ cat > "$UNKNOWN_KEYS_CONFIG" <<'EOF'
   "appearance": {
     // Not the defaults, so applying it is a real change.
     "glass": { "blur": 16, "tint": 0.5, "radius": 20, "contrast": "high", "wallpaperBlur": false, "searchWallpaperBlur": false },
+    // Both away from the system default (#3 slice 3).
+    "theme": { "mode": "dark", "colors": "high-contrast" },
   },
   // Four keys away from their defaults (#91), so applying them is a change.
   "search": { "favorites": false, "layout": "list", "reversed": true, "contacts": false, "barPosition": "bottom" },
@@ -253,6 +257,7 @@ cat > "$CHANGED_CONFIG" <<'EOF'
   },
   "appearance": {
     "glass": { "blur": 32, "tint": 0.2, "radius": 12, "contrast": "low", "wallpaperBlur": true, "searchWallpaperBlur": true },
+    "theme": { "mode": "light", "colors": "black-and-white" },
   },
   "search": { "favorites": true, "layout": "grid", "reversed": false, "contacts": true, "barPosition": "top" },
   "home": {
@@ -360,6 +365,7 @@ EFFECTIVE_FILTER='
   and .icons.themed == true
   and .icons.enforceThemed == true
   and .appearance.glass == {"blur":16.0,"tint":0.5,"radius":20.0,"contrast":"high","wallpaperBlur":false,"searchWallpaperBlur":false}
+  and .appearance.theme == {"mode":"dark","colors":"high-contrast"}
   and (.appearance | has("transparency") | not)
   and (.search | del(.actions)) == {"favorites":false,"allApps":true,"layout":"list","labels":true,"contacts":false,"shortcuts":true,"filterBar":true,"openKeyboard":true,"launchOnEnter":true,"reversed":true,"hiddenItemsButton":false,"barPosition":"bottom","listIcons":true,"appDetails":true,"contactsCallOnTap":false}
   and .search.actions == [{"type":"call"},{"type":"message"},{"type":"email"},{"type":"contact"},{"type":"alarm"},{"type":"timer"},{"type":"calendar"},{"type":"website"},{"type":"websearch"}]
@@ -377,6 +383,7 @@ CHANGED_FILTER='
   and .icons.themed == false
   and .icons.enforceThemed == false
   and .appearance.glass == {"blur":32.0,"tint":0.2,"radius":12.0,"contrast":"low","wallpaperBlur":true,"searchWallpaperBlur":true}
+  and .appearance.theme == {"mode":"light","colors":"black-and-white"}
   and (.search | del(.actions)) == {"favorites":true,"allApps":true,"layout":"grid","labels":true,"contacts":true,"shortcuts":true,"filterBar":true,"openKeyboard":true,"launchOnEnter":true,"reversed":false,"hiddenItemsButton":false,"barPosition":"top","listIcons":true,"appDetails":true,"contactsCallOnTap":false}
   and .home.searchBar.position == "top"
   and .home.favorites == []
@@ -390,7 +397,7 @@ CHANGED_FILTER='
 # The sections a full VALID <-> CHANGED convergence must report as applied.
 ALL_SECTIONS_FILTER='
   ((.appliedMutations // []) | sort) ==
-  ["appearance.glass", "home.grid", "home.searchBar",
+  ["appearance.glass", "appearance.theme", "home.grid", "home.searchBar",
    "home.widgets.enabled", "icons", "search"]
 '
 
