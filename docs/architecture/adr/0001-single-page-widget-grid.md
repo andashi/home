@@ -94,7 +94,9 @@ removed afterwards (PR 5b, decided 2026-09-22): the launcher has one page.
   `minWidth`/`minHeight`, the smallest from `minResizeWidth`/`minResizeHeight`,
   the largest from `maxResize*`, converted to cells the way Launcher3 does
   (rounded up, the larger of portrait and landscape). A config that asks for
-  less gets `widget-too-small` and the minimum. Scaling a widget below its
+  less gets `widget-too-small` and the minimum; one that asks for more than
+  the widget's maximum or the grid gets `widget-too-large` and the size that
+  fits (#140). Scaling a widget below its
   minimum is a knowingly non-contractual mode and stays a later per-item opt-in.
   Android enforces nothing here; the minimum is a convention, and Launcher3's
   policy is what every user knows as "how widgets behave".

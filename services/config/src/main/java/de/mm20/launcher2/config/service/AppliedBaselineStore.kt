@@ -26,7 +26,7 @@ data class AppliedBaseline(
  *
  * A write-back compares the device with it, not with the file's literal
  * values: the launcher applies some values differently from how they are
- * written (a widget height clamped to what the widget allows, #140), and only
+ * written (a widget height clamped to what the widget or the grid allows, #140), and only
  * the state after the apply knows that. Nothing in it is not already in the
  * config file and the settings.
  *

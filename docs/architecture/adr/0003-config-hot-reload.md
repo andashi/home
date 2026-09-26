@@ -124,7 +124,7 @@ locked, like `home.grid.locked`.
   left as written.
 - **The device is compared with what the file produced, not with what it
   says.** The launcher applies some values differently from their text: a
-  widget height clamped to what the widget allows (#140), a favorite whose
+  widget height clamped to what the widget or the grid allows (#140), a favorite whose
   app is not installed here. Write-back records what a person changed on the
   device, never what the launcher failed to do, so such a value keeps its
   written text. What the file produced is the *baseline*: the effective

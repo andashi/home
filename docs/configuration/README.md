@@ -125,8 +125,8 @@ The report lists `appliedMutations` (the sections that changed) and
 - **Warnings** still apply the file:
   - `unknown-key`: a misspelled or unknown key, which is ignored.
   - `inert-key`: a key this build accepts but does not act on, with the reason.
-  - Grid corrections: an item was enlarged to the widget's minimum, nudged, or
-    did not fit.
+  - Grid corrections: an item was enlarged to the widget's minimum, shrunk to
+    its maximum or the grid, nudged, or did not fit.
   - `write-back-skipped:<code>`: a change made on the device was kept there
     but not written into the file, and why (next section).
 
@@ -140,7 +140,7 @@ it did not have. Everything else in the file, comments included, stays as
 it was.
 
 What the file says but the launcher could not do as written - a widget
-height clamped to what the widget allows, a favorite whose app is not
+height clamped to what the widget or the grid allows, a favorite whose app is not
 installed - keeps its written value: write-back records what someone
 changed, not what the launcher adjusted. It is one rule for both: a list
 applied with some entries left out had an effect, the entries it wrote, and

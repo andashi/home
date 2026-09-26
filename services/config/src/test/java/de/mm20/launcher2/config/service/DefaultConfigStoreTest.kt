@@ -285,6 +285,81 @@ class DefaultConfigStoreTest {
         assertEquals(Severity.Warning, diagnostics.single().severity)
     }
 
+    /**
+     * #140: a span shrunk to fit was stored and served without a diagnostic.
+     * Here the provider's own maximum sets the limit: `SizeLimits(2, 2, 4, 3)`
+     * allows three rows, and the phone grid has six, so asking for five is
+     * shrunk by the widget, not by the grid (the next test covers that).
+     * Read-back serves what is in effect; the diagnostic says what was asked,
+     * what is in effect and why.
+     */
+    @Test
+    fun `SetGrid shrinks a span above the provider maximum and says so`() = runTest {
+        gridLimits.limits[clockWidget] = ProviderLimits(default = CellSize(4, 2), limits = SizeLimits(2, 2, 4, 3))
+
+        val diagnostics = store.apply(
+            listOf(grid(GridItemConfig(id = "clock", widget = clockWidget, x = 0, y = 0, w = 4, h = 5)))
+        )
+
+        val clock = homeGridRepository.layouts["phone"]!!.single()
+        assertEquals(3, clock.h)
+        val diagnostic = diagnostics.single()
+        assertEquals("widget-too-large", diagnostic.code)
+        assertEquals("home.grid.layouts.phone.items[0]", diagnostic.path)
+        assertEquals(Severity.Warning, diagnostic.severity)
+        assertEquals(
+            "'clock' asks for 4x5 cells, above the widget's maximum; it was shrunk to 4x3",
+            diagnostic.message,
+        )
+    }
+
+    @Test
+    fun `SetGrid shrinks a span larger than the grid and says the grid set the limit`() = runTest {
+        // This device's own layout, so its rows are the device's, not sized to the items.
+        gridRows.own = "phone"
+        gridLimits.limits[clockWidget] = ProviderLimits(default = CellSize(2, 2), limits = SizeLimits(1, 1, 8, 20))
+
+        val diagnostics = store.apply(
+            listOf(grid(GridItemConfig(id = "clock", widget = clockWidget, x = 0, y = 0, w = 2, h = 9)))
+        )
+
+        val clock = homeGridRepository.layouts["phone"]!!.single()
+        assertEquals(gridRows.rows, clock.h)
+        assertEquals(
+            "'clock' asks for 2x9 cells, more than the grid's ${4}x${gridRows.rows}; it was shrunk to 2x${gridRows.rows}",
+            diagnostics.single { it.code == "widget-too-large" }.message,
+        )
+    }
+
+    // An item without a position is sized by placement, not by normalize, and
+    // used to be fitted there without a word in either direction (#170 review).
+    @Test
+    fun `an item without a position that is too large is reported like a placed one`() = runTest {
+        gridLimits.limits[clockWidget] = ProviderLimits(default = CellSize(4, 2), limits = SizeLimits(2, 2, 4, 3))
+
+        val diagnostics = store.apply(
+            listOf(grid(GridItemConfig(id = "clock", widget = clockWidget, w = 4, h = 5)))
+        )
+
+        assertEquals(3, homeGridRepository.layouts["phone"]!!.single().h)
+        assertEquals(
+            listOf("widget-too-large" to "'clock' asks for 4x5 cells, above the widget's maximum; it was shrunk to 4x3"),
+            diagnostics.map { it.code to it.message },
+        )
+    }
+
+    @Test
+    fun `an item without a position that is too small is reported like a placed one`() = runTest {
+        gridLimits.limits[clockWidget] = ProviderLimits(default = CellSize(4, 2), limits = SizeLimits(2, 2, 4, 3))
+
+        val diagnostics = store.apply(
+            listOf(grid(GridItemConfig(id = "clock", widget = clockWidget, w = 4, h = 1)))
+        )
+
+        assertEquals(2, homeGridRepository.layouts["phone"]!!.single().h)
+        assertEquals(listOf("widget-too-small"), diagnostics.map { it.code })
+    }
+
     @Test
     fun `SetGrid drops what does not fit and reports it`() = runTest {
         gridRows.rows = 2
