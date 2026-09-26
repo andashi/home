@@ -310,6 +310,23 @@ class ConfigReloaderTest {
         assertEquals(listOf("apply-failed"), report.diagnostics.map { it.code })
     }
 
+    /**
+     * What counts is whether contact search is on after the reload: a failed
+     * search section leaves it as it was, and it was on (#172 review).
+     */
+    @Test
+    fun `contacts already on stays reported when its search section fails for another key`() = runTest {
+        val store = FakeConfigStore(
+            state = ConfigState(search = SearchState(contacts = true)),
+            applyDiagnostics = listOf(Diagnostic(Severity.Error, "apply-failed", "search", "datastore gone")),
+        )
+
+        val report = reloaderWith(store, contactsGranted = false)
+            .reload("""{"schemaVersion": 2, "search": {"contacts": true, "labels": false}}""")
+
+        assertEquals(listOf("apply-failed", "permission-missing"), report.diagnostics.map { it.code })
+    }
+
     /** The same when the whole apply threw: its failure names no section. */
     @Test
     fun `contacts in a reload whose apply threw is not reported as a permission problem`() = runTest {

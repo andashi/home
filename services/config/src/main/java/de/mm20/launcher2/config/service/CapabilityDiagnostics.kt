@@ -1,5 +1,6 @@
 package de.mm20.launcher2.config.service
 
+import de.mm20.launcher2.config.ConfigState
 import de.mm20.launcher2.config.Diagnostic
 import de.mm20.launcher2.config.LauncherConfig
 import de.mm20.launcher2.config.Severity
@@ -15,9 +16,17 @@ import de.mm20.launcher2.config.Severity
  */
 class CapabilityDiagnostics(private val contactsGranted: () -> Boolean) {
 
-    /** Only keys the file sets: what it leaves out is not its request (ADR 0002). */
-    fun of(config: LauncherConfig): List<Diagnostic> = buildList {
-        if (config.search?.contacts == true && !contactsGranted()) {
+    /**
+     * Only keys the file sets, since what it leaves out is not its request
+     * (ADR 0002), and only a key that is on after the reload: as the file says
+     * when its section applied, as it was [before] when the section failed
+     * ([sectionFailed]). A failed section that left contact search off has no
+     * permission to be missing for it; one that left it on still does (#172
+     * review).
+     */
+    fun of(config: LauncherConfig, before: ConfigState, sectionFailed: (String) -> Boolean): List<Diagnostic> = buildList {
+        val contactsOn = if (sectionFailed("search")) before.search.contacts else config.search?.contacts == true
+        if (config.search?.contacts == true && contactsOn && !contactsGranted()) {
             add(
                 Diagnostic(
                     Severity.Warning,
