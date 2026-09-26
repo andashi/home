@@ -70,6 +70,10 @@ unreadable_case unreadable-eval 'eval "emulator/run.sh stop"'
 unreadable_case unreadable-unquoted-run '$RUN stop'
 unreadable_case unreadable-braced-run '"${RUN}" stop'
 unreadable_case unreadable-bare-path 'emulator/run.sh stop'
+# A readable call is the only mention on its line, and an export names no
+# run.sh at all: a substitution in the export runs before the export does.
+unreadable_case unreadable-eval-after-a-readable-call 'if "$RUN" stop; then eval "emulator/run.sh start"; fi'
+unreadable_case unreadable-mention-in-an-export 'export LOCK_OWNER="$(emulator/run.sh status)"'
 # Every form the contract names, after the export: all pass.
 case_ contract-forms pass 'export LOCK_OWNER="x@$SERIAL#$$"
 RUN="$GOS_REPO/emulator/run.sh"
