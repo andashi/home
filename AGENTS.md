@@ -149,32 +149,39 @@ from the base or does not. Check it mechanically:
 
 ```bash
 pr=<n>
-base=$(gh pr view "$pr" --json baseRefOid --jq .baseRefOid)
-head=$(gh pr view "$pr" --json headRefOid --jq .headRefOid)
 gh api graphql -f query='
 { repository(owner:"andashi", name:"home") { pullRequest(number:'"$pr"') {
+    baseRefOid
+    headRefOid
     reviews(last:100) { nodes { author{login} submittedAt lastEditedAt body } }
     comments(orderBy:{field:UPDATED_AT, direction:DESC}, first:30) {
       nodes { author{login} createdAt updatedAt body } } } } }' \
-  --jq '[ (.data.repository.pullRequest.reviews.nodes[]
-           | select(.author.login=="coderabbitai")
-           | {at:(.lastEditedAt // .submittedAt), body:.body}),
-          (.data.repository.pullRequest.comments.nodes[]
-           | select(.author.login=="coderabbitai")
-           | {at:(.updatedAt // .createdAt), body:.body}) ]
+  --jq '.data.repository.pullRequest as $pr
+        | [ ($pr.reviews.nodes[]  | select(.author.login=="coderabbitai")
+             | {at:(.lastEditedAt // .submittedAt), body:.body}),
+            ($pr.comments.nodes[] | select(.author.login=="coderabbitai")
+             | {at:(.updatedAt    // .createdAt),   body:.body}) ]
         | map(select(.body | test("Reviewing files that changed")))
         | sort_by(.at) | last
-        | if . == null then "NO REVIEW AT ALL"
+        | if . == null then "NO REVIEW RANGE FOUND"
           else .body | capture("between (?<a>[0-9a-f]+) and (?<b>[0-9a-f]+)")
-                     | "\(.a) \(.b)" end'
-echo "base $base"
-echo "head $head"
+                     | "\(.a) \(.b)" end
+        | "reviewed  \(.)\nbase head \($pr.baseRefOid) \($pr.headRefOid)"'
 ```
 
-The pair it prints must be exactly `base head`. `NO REVIEW AT ALL` means
-CodeRabbit has not reviewed this pull request in any form - it is printed rather
-than left blank on purpose, because an empty line here reads as "nothing to
-worry about" and means the opposite.
+The two lines it prints must match. `NO REVIEW RANGE FOUND` means no CodeRabbit
+record carries a range line - either it has not reviewed the pull request, or it
+has and said so in a form this command cannot read, which is the same thing for
+the purpose of merging. It is printed rather than left blank on purpose, because
+an empty line here reads as "nothing to worry about" and means the opposite.
+
+**One request, not three.** The base and head come out of the same call as the
+review records, and that is not tidiness. Fetching them separately leaves a
+window in which a push can land between reading the head and reading the
+reviews, and the failure is the dangerous direction: the head reads as the
+commit the review covered, the command prints a match, and the merge takes a
+newer commit nothing has read. Caught in review on this very section, which had
+three calls.
 
 **The comments are ordered by `UPDATED_AT`, and that is load-bearing.** The
 rolling summary comment is created early and edited on every later run, so
