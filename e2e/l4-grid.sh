@@ -354,11 +354,7 @@ done
 # Binding an AppWidget without a dialog needs the HOME role (the widget
 # service whitelists the role holder); the fresh snapshot holds it for
 # launcher3. Shell may hand it over on this build.
-adb -s "$SERIAL" shell cmd role add-role-holder android.app.role.HOME "$PKG" >/dev/null 2>&1 \
-  || die "could not grant the HOME role to $PKG"
-adb -s "$SERIAL" shell dumpsys role 2>/dev/null | tr -d '\r' | grep -A2 'android.app.role.HOME' | grep -q "holders=$PKG" \
-  || die "$PKG does not hold the HOME role after add-role-holder"
-ok "HOME role granted to $PKG"
+grant_home_role
 
 # The HOME role does not carry the bind-widget grant (measured 2026-09-22 on
 # the foldable instance: role held, dumpsys appwidget "Grants:" empty, every

@@ -95,6 +95,9 @@ c(){ [ -t 1 ] && printf '\033[%sm%s\033[0m\n' "$1" "$2" || printf '%s\n' "$2"; }
 show_path() { case "$1" in "$REPO"/*) printf '%s\n' "${1#"$REPO"/}" ;; *) printf '%s\n' "$1" ;; esac; }
 log(){ c '1;34' ":: $*"; }; ok(){ c '1;32' " + $*"; }; warn(){ c '1;33' " ! $*"; }
 die(){ c '1;31' " x $*" >&2; exit 1; }
+# The device helpers, grant_home_role among them (#181).
+# shellcheck source=lib/grid-device.sh
+. "$(dirname "$0")/lib/grid-device.sh"
 
 usage() {
   sed -n '2,36p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
@@ -313,13 +316,10 @@ run_cycle() { # $1 = run number
   # The launcher is measured as the home app, not as an app that happens to be
   # open: holding the HOME role changes what it does at startup (widget host,
   # shortcut queries) and therefore what it costs.
-  adb -s "$SERIAL" shell cmd role add-role-holder --user 0 android.app.role.HOME "$PKG" >/dev/null 2>&1 || true
-  local holder
-  holder="$(adb -s "$SERIAL" shell cmd role get-role-holders --user 0 android.app.role.HOME 2>/dev/null | tr -d '\r')"
-  case "$holder" in
-    *"$PKG"*) ;;
-    *) die "HOME role is '$holder', not $PKG - startup and runtime figures would not be a launcher's" ;;
-  esac
+  # Startup and runtime figures of a launcher that is not home would not be a
+  # launcher's. Its log line goes to stderr like every other one here:
+  # run_cycle's stdout is the TSV records.
+  grant_home_role 0 >&2
 
   # The battery is unplugged before anything is measured, and this is not a
   # detail. NavBarEffects (removed in this series, but the point stands for

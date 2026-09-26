@@ -110,8 +110,7 @@ log "booting $SERIAL from snapshot '$SNAPSHOT' (overlays: $OVERLAY_DIR)"
 (cd "$GOS_REPO" && SNAPSHOT="$SNAPSHOT" emulator/run.sh start)
 unrooted_shell
 adb -s "$SERIAL" install -r "$APK" | grep -q Success || die "launcher install failed"
-adb -s "$SERIAL" shell cmd role add-role-holder android.app.role.HOME "$PKG" >/dev/null 2>&1 \
-  || die "could not grant the HOME role to $PKG"
+grant_home_role
 
 # --- 1. a commented file -------------------------------------------------
 log "pushing a commented file"

@@ -181,7 +181,7 @@ unrooted_shell
 adb -s "$SERIAL" install -r "$LAWNICONS_APK" | grep -q Success || die "Lawnicons install failed"
 adb -s "$SERIAL" install -r "$APK" | grep -q Success || die "launcher install failed"
 adb -s "$SERIAL" shell appwidget grantbind --package "$PKG" --user 0 >/dev/null
-adb -s "$SERIAL" shell cmd role add-role-holder android.app.role.HOME "$PKG" >/dev/null 2>&1 || true
+grant_home_role
 # The scenes set `search.contacts: true`, and since #172 the launcher
 # reports that as permission-missing when it does not hold READ_CONTACTS,
 # which fails every scene's clean-report check and puts a permission banner

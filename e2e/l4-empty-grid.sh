@@ -65,11 +65,7 @@ log "booting $SERIAL from snapshot '$SNAPSHOT' (overlays: $OVERLAY_DIR)"
 (cd "$GOS_REPO" && SNAPSHOT="$SNAPSHOT" emulator/run.sh start)
 unrooted_shell
 adb -s "$SERIAL" install -r "$APK" | grep -q Success || die "launcher install failed"
-adb -s "$SERIAL" shell cmd role add-role-holder android.app.role.HOME "$PKG" >/dev/null 2>&1 \
-  || die "could not grant the HOME role to $PKG"
-roles="$(adb -s "$SERIAL" shell dumpsys role 2>/dev/null | tr -d '\r')"
-grep -A2 'android.app.role.HOME' <<<"$roles" | grep -q "holders=$PKG" \
-  || die "$PKG does not hold the HOME role after add-role-holder"
+grant_home_role
 ok "launcher installed and home, not yet in the foreground"
 
 log "pushing a config with empty phone and fold layouts before the first foreground"

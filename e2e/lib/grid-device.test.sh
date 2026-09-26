@@ -541,4 +541,37 @@ no_round_starts_late() {
 }
 check "retry_rounds starts no round after an outer deadline" no_round_starts_late
 
+# grant_home_role: the one place that makes the launcher the home app (#181).
+# Eleven inline copies discarded the command's own error; the helper reports
+# it, and checks the holder afterwards by exact package name.
+mkdir -p "$WORK/role"
+cat > "$WORK/role/adb" <<EOF
+#!/usr/bin/env bash
+case "\$*" in
+  *"add-role-holder"*)
+    [ -e "$WORK/role/refuse" ] && { echo "Error: role not available for this package"; exit 1; }
+    : ;;
+  *"get-role-holders"*) cat "$WORK/role/holders" ;;
+esac
+EOF
+chmod +x "$WORK/role/adb"
+role_case() { # $1 = holders file content, [$2 = refuse]
+  printf '%s\n' "$1" > "$WORK/role/holders"; rm -f "$WORK/role/refuse"
+  [ -z "${2:-}" ] || : > "$WORK/role/refuse"
+  ( PATH="$WORK/role:$PATH"; PKG=org.andashi.home; grant_home_role ) 2>&1
+}
+grants_when_it_holds() { role_case "org.andashi.home" >/dev/null; }
+check "grant_home_role succeeds when the package then holds the role" grants_when_it_holds
+reports_the_commands_error() {
+  local out; out="$(role_case "com.android.launcher3" refuse)" && return 1
+  grep -q "role not available for this package" <<<"$out"
+}
+check "grant_home_role puts the command's own error into the failure" reports_the_commands_error
+refuses_a_prefix_match() {
+  local out; out="$(role_case "org.andashi.home.debug")" && return 1
+  grep -q "org.andashi.home.debug" <<<"$out"
+}
+check "grant_home_role does not take org.andashi.home.debug for org.andashi.home" refuses_a_prefix_match
+check "grant_home_role gives up on a wedged device" bounded "ADB_DEADLINE=\$((SECONDS + 3)) PKG=org.andashi.home grant_home_role"
+
 exit "$failed"

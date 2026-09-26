@@ -155,7 +155,7 @@ log "booting $SERIAL from snapshot '$SNAPSHOT' (overlays: $OVERLAY_DIR)"
 (cd "$GOS_REPO" && SNAPSHOT="$SNAPSHOT" emulator/run.sh start)
 unrooted_shell
 adb -s "$SERIAL" install -r "$APK" 2>&1 | grep -q Success || die "adb install failed"
-adb -s "$SERIAL" shell cmd role add-role-holder android.app.role.HOME "$PKG" >/dev/null 2>&1 || die "HOME role"
+grant_home_role
 adb -s "$SERIAL" shell appwidget grantbind --package "$PKG" --user 0 >/dev/null 2>&1 || die "grantbind"
 adb -s "$SERIAL" shell settings put global animator_duration_scale 0 >/dev/null 2>&1 || true
 FAVS="$(installed_favorites)"
