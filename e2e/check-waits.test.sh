@@ -64,6 +64,14 @@ verdict caught "a marker separated from its loop by code" <<'S'
 echo unrelated
 for i in $(seq 3); do sleep 1; done
 S
+verdict quiet "a while loop in another language inside a heredoc" <<'S'
+python3 - <<'PY'
+while node is not None:
+    node = node.parent
+PY
+echo later
+sleep 1
+S
 verdict quiet "a marked repetition loop" <<'S'
 # not a wait: measurement repetitions
 for run in $(seq "$RUNS"); do measure; sleep 2; done

@@ -11,6 +11,14 @@
 # A loop that sleeps but is not a wait (an animation, a measurement's
 # repetitions) says so on the line above it:  # not a wait: <why>
 #
+# How it reads bash, and where it stops: quoted text ('...', "...",
+# $'...', with backslash escapes), comments and heredoc bodies are set aside
+# first; `do`/`done` count only where they start a command; a loop closes
+# only after its own `do`. It is a reader for this repository's scripts,
+# not a bash parser: `eval`, loops built in strings and aliases are beyond
+# it. check-waits.test.sh holds every shape it is known to read, including
+# the ones that once fooled it.
+#
 #   e2e/check-waits.sh [dir]        # exit 1 and name every counting wait
 set -euo pipefail
 cd "${1:-$(dirname "$0")}"  # a directory laid out like e2e/, for the tests
@@ -24,26 +32,49 @@ import re, sys
 LOOP = re.compile(r'^\s*(for\s+\w+\s+in\s+\$\(seq\b[^)]*\)|for\s*\(\(|(while|until)\b)')
 
 
-def strip_comment(line):
-    """The line without its comment, read the way bash reads it: a # inside
-    quotes or escaped is not one, a backslash escapes the next character
-    outside quotes and inside double quotes, and is literal inside single
-    quotes."""
-    quote = None
-    escaped = False
-    for i, c in enumerate(line):
-        if escaped:
-            escaped = False
-        elif c == "\\" and quote != "'":
-            escaped = True
-        elif quote:
-            if c == quote:
-                quote = None
-        elif c in "'\"":
-            quote = c
-        elif c == "#" and (i == 0 or line[i - 1].isspace() or line[i - 1] == ";"):
-            return line[:i]
-    return line
+def scan(line):
+    """(code, uncommented) for one line, read the way bash reads it.
+
+    code: quoted text blanked, comment removed - for keywords and `sleep`.
+    uncommented: only the comment removed, strings kept - for the
+    condition. Handles '...', "...", $'...' (whose \\' does not end it), and
+    backslash escapes outside quotes and inside double quotes."""
+    out, quote, i = [], None, 0
+    while i < len(line):
+        c = line[i]
+        if quote is None:
+            if c == "\\":
+                out.append("  "); i += 2; continue
+            if c == "$" and line[i + 1:i + 2] == "'":
+                quote = "$'"; out.append("  "); i += 2; continue
+            if c in "'\"":
+                quote = c; out.append(" "); i += 1; continue
+            if c == "#" and (i == 0 or line[i - 1].isspace() or line[i - 1] in ";&|("):
+                return "".join(out), line[:i]
+            out.append(c); i += 1; continue
+        # inside quotes
+        if c == "\\" and quote in ('"', "$'"):
+            out.append("  "); i += 2; continue
+        if (quote == "$'" and c == "'") or c == quote:
+            quote = None
+        out.append(" "); i += 1
+    return "".join(out), line
+
+
+def keywords(code):
+    """How many `do` and `done` start a command in this code."""
+    opened = closed = 0
+    for segment in re.split(r"[;&|()]|&&|\|\|", code):
+        words = segment.split()
+        if not words:
+            continue
+        if words[0] == "do":
+            opened += 1
+        elif words[0] == "done":
+            closed += 1
+    return opened, closed
+
+
 found = 0
 for path in sys.argv[1:]:
     # Test files hold loops as fixtures. The library is checked too: its
@@ -52,6 +83,19 @@ for path in sys.argv[1:]:
     if path.endswith(".test.sh"):
         continue
     lines = open(path).read().split("\n")
+    # Heredoc bodies are another language or plain data, never bash loops:
+    # blank them before scanning (a Python `while` in one had been read as
+    # a bash loop that never met its `do`).
+    heredoc = None
+    for n, raw in enumerate(lines):
+        if heredoc is not None:
+            if raw.strip() == heredoc:
+                heredoc = None
+            lines[n] = ""
+            continue
+        m = re.search(r"<<-?\s*['\"]?(\w+)['\"]?", scan(raw)[1])
+        if m:
+            heredoc = m.group(1)
     i = 0
     while i < len(lines):
         if not LOOP.match(lines[i]):
@@ -60,13 +104,17 @@ for path in sys.argv[1:]:
         start = i
         # The loop body: up to the `done` that closes this loop, counting
         # nested do/done pairs; a one-line loop closes on its own line.
-        depth, body = 0, []
+        # A `do` on a later line still opens it; the loop closes only after
+        # its own `do` has appeared.
+        depth, seen_do, body = 0, False, []
         while i < len(lines):
-            line = strip_comment(lines[i])
-            depth += len(re.findall(r"\bdo\b", line)) - len(re.findall(r"\bdone\b", line))
-            body.append(line)
+            code, _ = scan(lines[i])
+            opened, closed = keywords(code)
+            seen_do = seen_do or opened > 0
+            depth += opened - closed
+            body.append(code)
             i += 1
-            if depth <= 0:
+            if seen_do and depth <= 0:
                 break
         # The marker may head a comment block that runs onto more lines, as
         # long as nothing but comments stands between it and the loop.
@@ -76,7 +124,7 @@ for path in sys.argv[1:]:
         marked = k >= 0 and lines[k].strip().startswith("# not a wait:")
         # A loop whose condition is the clock is a deadline, not a count.
         # Only the condition, the text before `do`, counts.
-        condition = re.split(r"\bdo\b", strip_comment(lines[start]), maxsplit=1)[0]
+        condition = re.split(r"\bdo\b", scan(lines[start])[1], maxsplit=1)[0]
         marked = marked or "$SECONDS" in condition
         if not marked and any(re.search(r"\bsleep\b", l) for l in body):
             print(f"::error file=e2e/{path},line={start + 1}::counts rounds instead of waiting against a deadline: {lines[start].strip()}")
