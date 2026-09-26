@@ -172,7 +172,7 @@ press_wait_on_foreign() { # $@ = the foreign packages
     # after it still found System UI's (#189). Wait for the list to change,
     # within the same deadline.
     local before="$now" pause
-    while [ "$(wleft)" -gt 0 ]; do
+    while [ "$SECONDS" -lt "$wdeadline" ]; do
       pause="$(wleft)"
       [ "$ANR_RECHECK_SLEEP" = 0 ] || sleep "$(( ANR_RECHECK_SLEEP < pause ? ANR_RECHECK_SLEEP : pause ))"
       [ "$(wleft)" -gt 0 ] || break
