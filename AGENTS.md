@@ -338,13 +338,18 @@ afterthought (see `docs/architecture/adr/0005-testing-strategy.md`):
     failed at host load 47 for three unrelated reasons, two of them looking
     exactly like launcher regressions, and came back green on a quiet host.
     A result without its host load is not evidence.
-  - **On this host, under working conditions, they cannot be run at all.**
-    #175's pilot, with a ceiling fixed beforehand at the idle floor + 2
-    (2.93 + 2), ended in its second round at load 9.67 when another
-    session's build started. The harness's own working load was 4.2-4.8,
-    within a point of the ceiling. A series that resolves tens of
-    milliseconds needs the machine to itself: a pilot of about 15 minutes to
-    estimate the spread, and if that allows it, up to about 90 minutes more.
+  - **A series that resolves tens of milliseconds needs the machine to
+    itself**: a pilot of about 15 minutes to estimate the spread and, if
+    that allows it, up to about 90 minutes more, with no other session
+    building or running an emulator. #175's pilot, with a ceiling fixed
+    beforehand at the idle floor + 2 (2.93 + 2), ended in its second round
+    at load 9.67 when another session's build started; the harness's own
+    working load was 4.2-4.8, within a point of the ceiling. Quiet windows
+    do exist (load 2.1-2.8 for a function check the same day). For #167 we
+    **chose not to spend one**: its start-up burst was gone (five write-back
+    passes per cold start to one, #171), and no decision turned on a
+    first-frame figure. That is a judgement about the cost, not a claim that
+    the measurement is impossible.
 
 ## CI
 
