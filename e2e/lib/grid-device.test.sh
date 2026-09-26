@@ -645,4 +645,30 @@ report_now_fails_on_a_failed_query() {
 }
 check "report_now fails, and does not say null, when the query fails" report_now_fails_on_a_failed_query
 
+# A wait that succeeds says how long it took, so a bound that is about to
+# start failing shows it first: 9.8 s of 10 is not the same pass as 0.2 s.
+# It says so on stderr, never stdout, because callers capture stdout:
+# diag="$(query_json_as_user ...)" wraps a retry_for (#182 follow-up).
+reports_elapsed_on_stderr_only() {
+  local out err n=0
+  second_try() { n=$((n + 1)); [ "$n" -ge 2 ] && echo value; }
+  out="$( { retry_for 5 second_try 2>"$WORK/err"; } )" || return 1
+  err="$(cat "$WORK/err")"
+  [ "$out" = value ] && grep -qE "after [0-9]+ s of 5 s" <<<"$err" && grep -q "second_try" <<<"$err"
+}
+check "a successful retry_for reports its elapsed time on stderr, and stdout is untouched" reports_elapsed_on_stderr_only
+
+# Nested inside a shorter outer wait, the line reports the bound that was in
+# force, not the one asked for: "after 1 s of 30 s" under an outer 3 s
+# would claim headroom that never existed (#184 review).
+reports_the_effective_bound() {
+  local n=0 err
+  later() { n=$((n + 1)); [ "$n" -ge 2 ]; }
+  inner() { retry_for 30 later; }
+  retry_for 3 inner 2>"$WORK/nested-err" >/dev/null || return 1
+  err="$(grep "later" "$WORK/nested-err")"
+  grep -qE "of [0-3] s" <<<"$err" && ! grep -q "of 30 s" <<<"$err"
+}
+check "a nested retry_for reports the bound in force, not the one asked for" reports_the_effective_bound
+
 exit "$failed"
