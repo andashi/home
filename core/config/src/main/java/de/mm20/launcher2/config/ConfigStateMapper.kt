@@ -39,6 +39,7 @@ fun ConfigState.toLauncherConfig(): LauncherConfig {
             actions = searchActions,
             listIcons = search.listIcons,
             appDetails = search.appDetails,
+            contactsCallOnTap = search.contactsCallOnTap,
         ),
         icons = IconsConfig(
             themed = themedIcons,

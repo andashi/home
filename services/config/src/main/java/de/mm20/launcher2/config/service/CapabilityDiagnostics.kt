@@ -14,7 +14,10 @@ import de.mm20.launcher2.config.Severity
  * for a size the grid shrinks: the file keeps what it asked, the report says
  * what is in effect and why.
  */
-class CapabilityDiagnostics(private val contactsGranted: () -> Boolean) {
+class CapabilityDiagnostics(
+    private val contactsGranted: () -> Boolean,
+    private val callGranted: () -> Boolean,
+) {
 
     /**
      * Only keys the file sets, since what it leaves out is not its request
@@ -38,10 +41,27 @@ class CapabilityDiagnostics(private val contactsGranted: () -> Boolean) {
                 )
             )
         }
+        // #3 slice 1: without CALL_PHONE the tap dials instead (callOrDial).
+        val callOnTapOn = if (failedAt("search.contactsCallOnTap")) {
+            before.search.contactsCallOnTap
+        } else {
+            config.search?.contactsCallOnTap == true
+        }
+        if (config.search?.contactsCallOnTap == true && callOnTapOn && !callGranted()) {
+            add(
+                Diagnostic(
+                    Severity.Warning,
+                    "permission-missing",
+                    "search.contactsCallOnTap",
+                    "search.contactsCallOnTap is true, but this profile does not hold CALL_PHONE; " +
+                        "a tap on a number opens the dialer instead of calling",
+                )
+            )
+        }
     }
 
     companion object {
         /** No checks: for a reloader that is not the device's own. */
-        val None = CapabilityDiagnostics { true }
+        val None = CapabilityDiagnostics(contactsGranted = { true }, callGranted = { true })
     }
 }

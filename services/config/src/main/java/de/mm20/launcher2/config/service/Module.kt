@@ -53,7 +53,10 @@ val configModule = module {
         val permissions = get<PermissionsManager>()
         ConfigReloader(
             get(), get(), get(), get(),
-            capabilities = CapabilityDiagnostics { permissions.checkPermissionOnce(PermissionGroup.Contacts) },
+            capabilities = CapabilityDiagnostics(
+                contactsGranted = { permissions.checkPermissionOnce(PermissionGroup.Contacts) },
+                callGranted = { permissions.checkPermissionOnce(PermissionGroup.Call) },
+            ),
         )
     }
     single { ConfigWriteBack(androidContext(), get(), get(), get(), get()) }

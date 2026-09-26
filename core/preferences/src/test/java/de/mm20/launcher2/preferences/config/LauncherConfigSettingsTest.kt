@@ -375,6 +375,7 @@ class LauncherConfigSettingsTest {
                 contactSearchProviders = emptySet(), shortcutSearchEnabled = false, searchFilterBar = false,
                 searchBarKeyboard = false, searchLaunchOnEnter = false, searchResultsReversed = true,
                 hiddenItemsShowButton = true, gridListIcons = false, appsShowDetails = false,
+                contactSearchCallOnTap = true,
             )
         )
 
@@ -383,7 +384,7 @@ class LauncherConfigSettingsTest {
                 favorites = false, allApps = false, layout = SearchResultLayout.List, labels = false,
                 contacts = false, shortcuts = false, filterBar = false, openKeyboard = false,
                 launchOnEnter = false, reversed = true, hiddenItemsButton = true,
-                listIcons = false, appDetails = false,
+                listIcons = false, appDetails = false, contactsCallOnTap = true,
             ),
             gateway.readState().search,
         )
@@ -408,15 +409,15 @@ class LauncherConfigSettingsTest {
     }
 
     @Test
-    fun `apply SetSearch writes list icons and app details to their own fields`() = runTest {
+    fun `apply SetSearch writes list icons, app details and call on tap to their own fields`() = runTest {
         val seed = LauncherSettingsData()
         val gateway = createGateway(seed)
 
         val updated = gateway.applyAndReturn(
-            listOf(ConfigMutation.SetSearch(SearchConfig(listIcons = false, appDetails = false)))
+            listOf(ConfigMutation.SetSearch(SearchConfig(listIcons = false, appDetails = false, contactsCallOnTap = true)))
         )
 
-        assertEquals(seed.copy(gridListIcons = false, appsShowDetails = false), updated)
+        assertEquals(seed.copy(gridListIcons = false, appsShowDetails = false, contactSearchCallOnTap = true), updated)
     }
 
     @Test

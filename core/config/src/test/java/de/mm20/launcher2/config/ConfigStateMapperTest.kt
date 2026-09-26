@@ -184,16 +184,21 @@ class ConfigStateMapperTest {
                 contacts = true, shortcuts = true, filterBar = true, openKeyboard = true,
                 launchOnEnter = true, reversed = false, hiddenItemsButton = false,
                 barPosition = InSearchBarPosition.Follow, listIcons = true, appDetails = true,
+                contactsCallOnTap = false,
             ),
             defaults,
         )
         val set = ConfigState(
-            search = SearchState(layout = SearchResultLayout.List, reversed = true, listIcons = false, appDetails = false),
+            search = SearchState(
+                layout = SearchResultLayout.List, reversed = true, listIcons = false, appDetails = false,
+                contactsCallOnTap = true,
+            ),
         ).toLauncherConfig().search
         assertEquals(SearchResultLayout.List, set?.layout)
         assertEquals(true, set?.reversed)
         assertEquals(false, set?.listIcons)
         assertEquals(false, set?.appDetails)
+        assertEquals(true, set?.contactsCallOnTap)
     }
 
     /** #3 D6: following is a value now, so the read-back serves it and `search` is complete. */

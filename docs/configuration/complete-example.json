@@ -107,6 +107,7 @@
     "hiddenItemsButton": true,
     "listIcons": false,
     "appDetails": false,
+    "contactsCallOnTap": true,
     "barPosition": "bottom",
     "actions": [
       {

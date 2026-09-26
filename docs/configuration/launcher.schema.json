@@ -510,6 +510,9 @@
                 },
                 "appDetails": {
                     "type": "boolean"
+                },
+                "contactsCallOnTap": {
+                    "type": "boolean"
                 }
             },
             "additionalProperties": false

@@ -69,6 +69,7 @@ data class SearchState(
     val barPosition: InSearchBarPosition = InSearchBarPosition.Follow,
     val listIcons: Boolean = SearchDefaults.ListIcons,
     val appDetails: Boolean = SearchDefaults.AppDetails,
+    val contactsCallOnTap: Boolean = SearchDefaults.ContactsCallOnTap,
 )
 
 sealed class ConfigMutation {
@@ -208,6 +209,7 @@ object ConfigDiffer {
                 barPosition = search.barPosition?.takeIf { it != current.barPosition },
                 listIcons = search.listIcons?.takeIf { it != current.listIcons },
                 appDetails = search.appDetails?.takeIf { it != current.appDetails },
+                contactsCallOnTap = search.contactsCallOnTap?.takeIf { it != current.contactsCallOnTap },
             )
             if (changed != SearchConfig()) mutations += ConfigMutation.SetSearch(changed)
         }

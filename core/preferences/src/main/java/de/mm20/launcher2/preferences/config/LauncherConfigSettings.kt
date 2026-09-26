@@ -115,6 +115,7 @@ internal class LauncherConfigSettingsImpl(
                 },
                 listIcons = data.gridListIcons,
                 appDetails = data.appsShowDetails,
+                contactsCallOnTap = data.contactSearchCallOnTap,
             ),
             searchBarPosition = if (data.searchBarBottom) {
                 SearchBarPosition.Bottom
@@ -205,6 +206,7 @@ internal class LauncherConfigSettingsImpl(
                     },
                     gridListIcons = listIcons ?: gridListIcons,
                     appsShowDetails = appDetails ?: appsShowDetails,
+                    contactSearchCallOnTap = contactsCallOnTap ?: contactSearchCallOnTap,
                 )
             }
 

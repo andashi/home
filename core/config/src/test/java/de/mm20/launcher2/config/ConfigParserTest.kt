@@ -912,7 +912,7 @@ class ConfigParserTest {
             "favorites": false, "allApps": false, "layout": "list", "labels": false,
             "contacts": false, "shortcuts": false, "filterBar": false, "openKeyboard": false,
             "launchOnEnter": false, "reversed": true, "hiddenItemsButton": true,
-            "listIcons": false, "appDetails": false
+            "listIcons": false, "appDetails": false, "contactsCallOnTap": true
           }
         }
     """.trimIndent()
@@ -928,7 +928,7 @@ class ConfigParserTest {
                 favorites = false, allApps = false, layout = SearchResultLayout.List, labels = false,
                 contacts = false, shortcuts = false, filterBar = false, openKeyboard = false,
                 launchOnEnter = false, reversed = true, hiddenItemsButton = true,
-                listIcons = false, appDetails = false,
+                listIcons = false, appDetails = false, contactsCallOnTap = true,
             ),
             result.config?.search,
         )

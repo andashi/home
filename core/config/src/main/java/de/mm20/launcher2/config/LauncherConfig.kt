@@ -403,6 +403,11 @@ data class SearchConfig(
     val listIcons: Boolean? = null,
     /** An expanded app shows its version and package details. */
     val appDetails: Boolean? = null,
+    /**
+     * A tap on a contact's number calls it instead of opening the dialer.
+     * Needs CALL_PHONE; without it the tap dials, and the report says so.
+     */
+    val contactsCallOnTap: Boolean? = null,
 )
 
 /**
@@ -487,4 +492,5 @@ object SearchDefaults {
     const val HiddenItemsButton = false
     const val ListIcons = true
     const val AppDetails = true
+    const val ContactsCallOnTap = false
 }

@@ -465,6 +465,7 @@ class ConfigDifferTest {
             SearchConfig(launchOnEnter = false), SearchConfig(reversed = true),
             SearchConfig(hiddenItemsButton = true),
             SearchConfig(listIcons = false), SearchConfig(appDetails = false),
+            SearchConfig(contactsCallOnTap = true),
         )
         for (search in each) {
             assertEquals(listOf(ConfigMutation.SetSearch(search)), diff(search))
