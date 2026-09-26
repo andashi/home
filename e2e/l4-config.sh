@@ -558,7 +558,10 @@ ok "previous effective config intact"
 
 # --- 8. unknown keys: warnings, successful apply -----------------------
 
-push_config "$UNKNOWN_KEYS_CONFIG" "unknown-keys"
+# The declaration is the assertion: exactly these three keys are reported
+# unknown, no fewer and no more.
+push_config "$UNKNOWN_KEYS_CONFIG" "unknown-keys" \
+  --ignored "futureTopLevelKey icons.futureIconsKey home.grid.futureGridKey"
 assert_jq "$LAST_REPORT" \
   '.success == true and ([.diagnostics[] | select(.severity == "warning" and .code == "unknown-key")] | length >= 3)' \
   "unknown keys yield warning diagnostics and a successful apply"
@@ -570,7 +573,7 @@ ok "effective config unchanged (unknown keys ignored)"
 
 # --- 10. schema version 1: migrated, not rejected ------------------------
 
-push_config "$LEGACY_CONFIG" "legacy-v1"
+push_config "$LEGACY_CONFIG" "legacy-v1" --ignored "appearance.transparency"
 assert_jq "$LAST_REPORT" \
   '.success == true and ([.diagnostics[] | select(.severity == "error")] | length == 0)' \
   "a schemaVersion 1 file applies without errors"
