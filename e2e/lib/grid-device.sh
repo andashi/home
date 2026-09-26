@@ -72,6 +72,8 @@ retry_rounds() { # $1 = rounds, $2 = cap per round (s), $3... = command
     # pause and another round (#179 review).
     [ -z "${ADB_DEADLINE:-}" ] || [ $((ADB_DEADLINE - SECONDS)) -gt 1 ] || break
     sleep 1
+    # And again after it: a slow host can stretch the pause past a second.
+    [ -z "${ADB_DEADLINE:-}" ] || [ "$ADB_DEADLINE" -gt "$SECONDS" ] || break
   done
   return 1
 }

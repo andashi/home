@@ -50,7 +50,15 @@ anr_packages() { # [$1 = seconds for the read, default 10] one package per ANR w
 }
 
 clear_stock_launcher_anr() {
-  local pkgs; pkgs="$(anr_packages)"
+  local pkgs
+  # Split from the declaration, and checked: a read that failed or timed out
+  # leaves the list empty, and an empty list must not read as "no ANR
+  # window" - the dialog could still be there (#179 review). Say so and run
+  # the tests; this step never fails the job.
+  if ! pkgs="$(anr_packages)"; then
+    printf 'Could not read the window list before the tests; not claiming there is no ANR dialog.\n'
+    return 0
+  fi
   [ -n "$pkgs" ] || return 0
   printf '::group::#113 ANR windows on screen before the tests\n%s\n::endgroup::\n' "$pkgs"
   if ! printf '%s\n' "$pkgs" | grep -Fxq -- "$STOCK_HOME"; then
