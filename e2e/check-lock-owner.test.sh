@@ -28,4 +28,7 @@ emulator/run.sh stop'
 case_ run-sh-without-an-owner fail '(cd "$GOS_REPO" && SERIAL="$SERIAL" emulator/run.sh stop)'
 case_ no-run-sh-no-owner pass 'adb -s "$SERIAL" shell true'
 case_ comment-mentions-run-sh pass '# emulator/run.sh is started by the caller'
+# A long script: `sed | grep -q` under pipefail read an early match as none.
+case_ plain-assignment-in-a-long-script fail "LOCK_OWNER=\"x@\$SERIAL#\$\$\"
+$(for i in $(seq 1 20000); do echo ": filler line $i"; done)"
 exit "$failed"
