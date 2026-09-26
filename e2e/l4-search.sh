@@ -204,11 +204,16 @@ ok "without CALL_PHONE: permission-missing reported, read-back true"
 # the fix the call was refused and the tap did nothing at all.
 CONTACT="Slice Onetest"
 NUMBER="5550100"
+# `content insert` does not return the new row, so the raw contact carries a
+# marker of this run in its free sync1 column and is found by it (#181
+# review). account_name cannot carry it: a local contact has neither an
+# account name nor a type, and the provider wants both or neither.
+MARK="l4-search-$$"
 adb -s "$SERIAL" shell content insert --uri content://com.android.contacts/raw_contacts \
-  --bind account_type:n: --bind account_name:n: >/dev/null || die "could not insert a contact"
+  --bind account_type:n: --bind account_name:n: --bind sync1:s:"$MARK" >/dev/null || die "could not insert a contact"
 raw_id="$(adb -s "$SERIAL" shell content query --uri content://com.android.contacts/raw_contacts --projection _id \
-  | tr -d '\r' | sed -n 's/.*_id=\([0-9]*\).*/\1/p' | tail -1)"
-[ -n "$raw_id" ] || die "could not read the new contact's id"
+  --where "\"sync1='$MARK'\"" | tr -d '\r' | sed -n 's/.*_id=\([0-9]*\).*/\1/p')"
+[ "$(wc -w <<<"$raw_id")" = 1 ] || die "expected exactly one raw contact marked $MARK, got: '${raw_id}'"
 adb -s "$SERIAL" shell content insert --uri content://com.android.contacts/data --bind raw_contact_id:i:"$raw_id" \
   --bind mimetype:s:vnd.android.cursor.item/name --bind data1:s:"'$CONTACT'" >/dev/null
 adb -s "$SERIAL" shell content insert --uri content://com.android.contacts/data --bind raw_contact_id:i:"$raw_id" \
