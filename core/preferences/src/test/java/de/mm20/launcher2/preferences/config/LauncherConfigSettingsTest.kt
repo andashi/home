@@ -22,6 +22,8 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -39,6 +41,19 @@ class LauncherConfigSettingsTest {
     private fun createGateway(seed: LauncherSettingsData = LauncherSettingsData()): LauncherConfigSettingsImpl {
         seedSettingsFile(context, seed)
         return LauncherConfigSettingsImpl(LauncherDataStore(context))
+    }
+
+    /**
+     * #167: write-back combines this with its other sources, and combine
+     * waits for every source's first value - a changes() that never emitted
+     * would switch write-back off entirely, silently, not just lose this
+     * source's changes. Its KDoc promises an emission on collection; this
+     * checks it.
+     */
+    @Test
+    fun `changes emits on collection`() = runBlocking {
+        val settings = createGateway()
+        withTimeout(10_000) { settings.changes().first() }
     }
 
     @Test
