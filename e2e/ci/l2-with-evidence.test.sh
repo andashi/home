@@ -63,6 +63,7 @@ case "$*" in
       echo '<hierarchy/>'
     fi ;;
   *"input tap "*) echo "$*" >> "$work/taps"
+    [ ! -e "$work/taphang" ] || sleep 5
     if [ ! -e "$work/waitsticky" ]; then
       # The topmost ANR window, not the focus line; it closes on a later read.
       top="$(grep 'Window #.*Application Not Responding: ' "$work/windows" | tail -1 |
@@ -81,7 +82,7 @@ export PATH="$WORK/bin:$PATH"
 export ANR_RECHECK_SECONDS=3 ANR_RECHECK_SLEEP=0 ANR_WAIT_SECONDS=3
 
 windows() { # $@ = "Application Not Responding: <pkg>" entries, in z-order
-  : > "$WORK/windows"; rm -f "$WORK/stopped" "$WORK/sticky" "$WORK/dumphang" "$WORK/firstfail" "$WORK/taps" "$WORK/waitsticky" "$WORK/closing" "$WORK/closing.seen" "$WORK/oursondump" "$WORK/dumphangui" "$WORK/failaftertap"
+  : > "$WORK/windows"; rm -f "$WORK/stopped" "$WORK/sticky" "$WORK/dumphang" "$WORK/firstfail" "$WORK/taps" "$WORK/waitsticky" "$WORK/closing" "$WORK/closing.seen" "$WORK/oursondump" "$WORK/dumphangui" "$WORK/failaftertap" "$WORK/taphang"
   WAIT_AMBIGUOUS=0
   printf '  Window #1 Window{1 u0 com.example/com.example.Main}:\n' >> "$WORK/windows"
   local i=2 w
@@ -250,6 +251,18 @@ flags_a_failed_read_after_the_tap() {
   [ "$(taps)" -eq 1 ] && [ "$WAIT_AMBIGUOUS" = 1 ] && grep -q '::error::' "$WORK/log"
 }
 check "a window read that fails after the tap is flagged" flags_a_failed_read_after_the_tap
+
+# A tap that uses up the whole deadline leaves no read after it: the loop
+# ends on the list read before the tap, which still has the foreign dialog,
+# so it is flagged - never passed on to the last read, which follows only a
+# tap that a read showed closing its dialog (#191 review).
+flags_a_tap_that_used_the_deadline() {
+  windows "Application Not Responding: com.android.systemui"
+  : > "$WORK/sticky"; : > "$WORK/taphang"
+  clear_foreign_anrs > "$WORK/log" 2>&1 || return 1
+  [ "$(taps)" -eq 1 ] && [ "$WAIT_AMBIGUOUS" = 1 ] && grep -q '::error::' "$WORK/log"
+}
+check "a tap that uses up the deadline is flagged" flags_a_tap_that_used_the_deadline
 
 # And the flag reaches the job: a run whose tests pass fails, so a dismissed
 # ANR of ours cannot turn into a pass.
