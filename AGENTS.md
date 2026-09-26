@@ -140,8 +140,9 @@ base=$(gh pr view "$pr" --json baseRefOid --jq .baseRefOid)
 head=$(gh pr view "$pr" --json headRefOid --jq .headRefOid)
 gh api graphql -f query='
 { repository(owner:"andashi", name:"home") { pullRequest(number:'"$pr"') {
-    reviews(last:30) { nodes { author{login} submittedAt lastEditedAt body } }
-    comments(last:30){ nodes { author{login} createdAt  updatedAt    body } } } } }' \
+    reviews(last:100) { nodes { author{login} submittedAt lastEditedAt body } }
+    comments(orderBy:{field:UPDATED_AT, direction:DESC}, first:30) {
+      nodes { author{login} createdAt updatedAt body } } } } }' \
   --jq '[ (.data.repository.pullRequest.reviews.nodes[]
            | select(.author.login=="coderabbitai")
            | {at:(.lastEditedAt // .submittedAt), body:.body}),
@@ -160,7 +161,23 @@ echo "head $head"
 The pair it prints must be exactly `base head`. `NO REVIEW AT ALL` means
 CodeRabbit has not reviewed this pull request in any form - it is printed rather
 than left blank on purpose, because an empty line here reads as "nothing to
-worry about" and means the opposite. Read **both** the reviews and the
+worry about" and means the opposite.
+
+**The comments are ordered by `UPDATED_AT`, and that is load-bearing.** The
+rolling summary comment is created early and edited on every later run, so
+taking the most recently *created* comments drops it as soon as thirty comments
+follow it, and the command then prints `NO REVIEW AT ALL` for a pull request
+that has in fact been reviewed. The first version of this section did exactly
+that, and review caught it: on #170 the rolling comment was created at 07:07 and
+last edited at 07:44, which put it second by edit time and outside the three
+newest by creation time. The failure is at least safe - a missing record blocks
+a merge rather than waving one through - but a check that cries wolf is one
+people learn to skip, and that is how it fails the other way in the end.
+
+The reviews cannot be ordered that way; the API offers no `orderBy` there. A
+plain `last:100` is enough for them because CodeRabbit submits a *new* review
+per full run rather than editing an old one, so the newest is the newest by
+submission time. Read **both** the reviews and the
 rolling comment, and sort by the edit time rather than the creation time: a
 re-requested full review arrives as a review, an automatic incremental one
 arrives as an edit to a comment created much earlier, and sorting on
