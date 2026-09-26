@@ -157,16 +157,19 @@ one of the built-in schemes; it cannot define a palette. `black-and-white`
 and `high-contrast` replace the zone's palette in the launcher's own
 colours.
 
-What each key changes on the glass look, measured on the fold's inner
-display with search open (emulator, the system itself in light mode):
+On the home screen the glass is the dominant visual element by design
+([ADR 0004](../architecture/adr/0004-liquid-glass-design.md)): a surface is
+the wallpaper behind it, carrying the scheme's surface colour only at the
+glass tint (0.12 by default). The theme therefore acts on what sits on the
+glass, not on the glass itself. Measured on the fold's inner display with
+search open (emulator, the system itself in light mode):
 
-- `mode` turns the text white on `dark` and dark on `light`, and darkens the
-  glass slightly (the search bar's mean brightness 219 on `light`, 206 on
-  `dark`, out of 255).
-- `colors` shows only in the text's tone: `black-and-white` is pure black
-  where `system` is a tinted dark grey. The glass itself stays the same
-  (219.4 against 219.9): it carries the scheme's surface colour only at the
-  glass tint, 0.12 by default, and the wallpaper behind it dominates.
+- `mode` flips the text - white on `dark`, dark on `light` - and darkens the
+  glass a little (the search bar's mean brightness 219 on `light`, 206 on
+  `dark`, out of 255), rather than recolouring the screen.
+- `colors` reaches the text's tone: `black-and-white` sets it pure black
+  where `system` gives a dark grey tinted by the zone's palette. The glass
+  stays the wallpaper (219.4 against 219.9).
 
 | <img alt="search results, mode light, colors system, fold inner" src="img/theme-mode-light-fold-inner.jpg" width="260"> | <img alt="search results, mode dark, colors system, fold inner" src="img/theme-mode-dark-fold-inner.jpg" width="260"> |
 |---|---|
