@@ -90,6 +90,27 @@ S
 verdict caught "a sleep after an escaped # outside quotes (control)" <<'S'
 for i in $(seq 3); do echo a \# b; sleep 1; done
 S
+verdict caught "a sleep after an ANSI-C quoted string with an escaped quote and a #" <<'S'
+for i in $(seq 3); do echo $'x\' #'; sleep 1; done
+S
+verdict caught "a sleep after a command that prints the word done" <<'S'
+for i in $(seq 3); do
+  echo done
+  sleep 1
+done
+S
+verdict caught "do on the line after while" <<'S'
+while ! ready
+do
+  sleep 1
+done
+S
+verdict quiet "a loop whose do is on its own line, without a sleep (control)" <<'S'
+for i in 1 2 3
+do
+  echo "$i"
+done
+S
 verdict caught "\$SECONDS only in the body of a counted loop" <<'S'
 for i in $(seq 5); do echo "$SECONDS"; sleep 1; done
 S
