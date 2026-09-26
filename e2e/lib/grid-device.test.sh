@@ -210,4 +210,187 @@ says_why_when_the_dump_fails() { # $1 = helper, $2 = argument
 check "tap_desc says why when the dump fails" says_why_when_the_dump_fails tap_desc Search
 check "tap_id says why when the dump fails" says_why_when_the_dump_fails tap_id grid-edit-done
 
+# Every other wait loop in the library has the same contract: its timeout is
+# wall-clock time, whatever the device does. This fake hangs on every call,
+# as a wedged adb connection does. An outer timeout keeps a red run short.
+mkdir -p "$WORK/wedged"
+cat > "$WORK/wedged/adb" <<'EOF'
+#!/usr/bin/env bash
+sleep 60
+EOF
+chmod +x "$WORK/wedged/adb"
+bounded() { # $@ = a wait call with a 3 s timeout
+  local start=$SECONDS
+  ( PATH="$WORK/wedged:$PATH" timeout 20 bash -c "$(declare -f); $(declare -p SERIAL PKG WORK STATE_URI 2>/dev/null); $*" ) >/dev/null 2>&1
+  [ $((SECONDS - start)) -le 6 ]
+}
+check "wait_desc gives up after its timeout" bounded wait_desc Search 3 test
+check "wait_id gives up after its timeout" bounded wait_id grid-edit-done 3 test
+check "wait_cells gives up after its timeout" bounded wait_cells 1 3
+check "wait_report gives up after its timeout" bounded "wait_report '.success' 3 test"
+# wait_on_home is bounded by rounds: each round's dump capped by ROUND_CAP,
+# its recovery by RECOVERY_CAP, a 1 s pause between rounds, then the
+# diagnosis's own 2 s. At 1 s caps, 3 rounds: 3 x (1 + 1) + 2 + 2 = 10 s.
+# SECONDS counts whole seconds and a loaded CI runner adds scheduling time,
+# so the check allows 3 s on top (review on #163). A regression to an
+# unbounded wait would be 60 s, far outside it.
+wait_on_home_is_bounded_by_its_rounds() {
+  local start=$SECONDS nominal=$((3 * (1 + 1) + 2 + 2))
+  ( PATH="$WORK/wedged:$PATH" timeout 60 bash -c "$(declare -f); $(declare -p SERIAL PKG WORK STATE_URI 2>/dev/null); ROUND_CAP=1 RECOVERY_CAP=1 wait_on_home grid-item:dock 3" ) >/dev/null 2>&1 && return 1
+  [ $((SECONDS - start)) -le $((nominal + 3)) ]
+}
+check "wait_on_home gives up after its rounds on a wedged device" wait_on_home_is_bounded_by_its_rounds
+
+# Controls: a device that answers ends each wait at once, so a loop that
+# "passes" the tests above by always giving up would fail here.
+mkdir -p "$WORK/answering"
+cat > "$WORK/answering/adb" <<'EOF'
+#!/usr/bin/env bash
+case "$*" in
+  *"cat /sdcard/grid-dump.xml"*)
+    echo '<hierarchy><node content-desc="Search" bounds="[0,100][200,300]"/></hierarchy>' ;;
+  *"content query"*"/diagnostics"*) echo 'Row: 0 json={"success":true}' ;;
+esac
+EOF
+chmod +x "$WORK/answering/adb"
+answers_at_once() { # $@ = a wait call with a 3 s timeout
+  local start=$SECONDS
+  ( PATH="$WORK/answering:$PATH"; "$@" ) >/dev/null 2>&1 && [ $((SECONDS - start)) -lt 3 ]
+}
+check "wait_desc returns at once when the node is on screen" answers_at_once wait_desc Search 3 test
+check "wait_report returns at once when the report matches" answers_at_once wait_report '.success == true' 3 test
+
+# A timeout on a device that answers, but without the node, names what had
+# focus and leaves a picture of the screen.
+python3 -c 'import base64,sys; sys.stdout.buffer.write(base64.b64decode("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="))' > "$WORK/one.png"
+mkdir -p "$WORK/nodock" "$WORK/shots"
+cat > "$WORK/nodock/adb" <<EOF
+#!/usr/bin/env bash
+case "\$*" in
+  *"cat /sdcard/grid-dump.xml"*) echo '<hierarchy><node resource-id="grid-item:analog" bounds="[0,0][1,1]"/></hierarchy>' ;;
+  *"dumpsys window"*) echo '  mCurrentFocus=Window{1 u0 com.example/.Other}' ;;
+  *"screencap"*) cat "$WORK/one.png" ;;
+esac
+EOF
+chmod +x "$WORK/nodock/adb"
+a_timeout_says_why() {
+  local out shot
+  out="$( ( PATH="$WORK/nodock:$PATH" MISS_DIR="$WORK/shots"; wait_on_home grid-item:dock 3 ) 2>&1 )" && return 1
+  grep -q "focus: com.example/.Other}" <<<"$out" || { printf '%s\n' "$out" >&2; return 1; }
+  shot="$(sed -n 's/.*screen: \([^)]*\)).*/\1/p' <<<"$out")"
+  [ -n "$shot" ] && file "$shot" | grep -q 'PNG image'
+}
+check "a wait_on_home timeout names the focus and leaves a screenshot" a_timeout_says_why
+
+# After a snapshot load the device answers `adb` a moment later than the
+# emulator says it is up; the first `id -u` fails or answers for the wrong
+# user (seen 2026-09-25 on emulator-5560, 22:11). unrooted_shell waits for
+# uid 2000 against a real deadline instead of asserting it once.
+mkdir -p "$WORK/late"
+cat > "$WORK/late/adb" <<EOF
+#!/usr/bin/env bash
+case "\$*" in
+  *"shell id -u"*)
+    n=\$(( \$(cat "$WORK/late/calls" 2>/dev/null || echo 0) + 1 )); echo "\$n" > "$WORK/late/calls"
+    [ "\$n" -ge 3 ] && echo 2000 || exit 1 ;;
+esac
+EOF
+chmod +x "$WORK/late/adb"
+waits_for_the_shell() {
+  rm -f "$WORK/late/calls"
+  ( PATH="$WORK/late:$PATH"; unrooted_shell 10 ) >/dev/null 2>&1
+}
+check "unrooted_shell waits until adb answers as uid 2000" waits_for_the_shell
+cat > "$WORK/late/root" <<'EOF'
+#!/usr/bin/env bash
+case "$*" in *"shell id -u"*) echo 0 ;; esac
+EOF
+mkdir -p "$WORK/rooted"; mv "$WORK/late/root" "$WORK/rooted/adb"; chmod +x "$WORK/rooted/adb"
+refuses_root() {
+  local start=$SECONDS
+  ( PATH="$WORK/rooted:$PATH"; unrooted_shell 3 ) >/dev/null 2>&1 && return 1
+  [ $((SECONDS - start)) -le 6 ]
+}
+check "unrooted_shell refuses a root shell once its timeout is up" refuses_root
+
+# A loaded host makes each observation slow, not the device: 2 rounds in 30 s
+# on emulator-5560 while a second emulator ran (2026-09-25 22:58). The dock
+# that appears on the third dump must be waited for however long a dump
+# takes, and the success must say what it cost.
+mkdir -p "$WORK/slow"
+cat > "$WORK/slow/adb" <<EOF
+#!/usr/bin/env bash
+case "\$*" in
+  *"uiautomator dump"*) sleep 11 ;;
+  *"cat /sdcard/grid-dump.xml"*)
+    n=\$(( \$(cat "$WORK/slow/dumps" 2>/dev/null || echo 0) + 1 )); echo "\$n" > "$WORK/slow/dumps"
+    [ "\$n" -ge 3 ] && echo '<hierarchy><node resource-id="grid-item:dock" bounds="[0,0][9,9]"/></hierarchy>' \
+      || echo '<hierarchy/>' ;;
+esac
+EOF
+chmod +x "$WORK/slow/adb"
+waits_three_slow_rounds() {
+  local out
+  rm -f "$WORK/slow/dumps"
+  out="$( ( PATH="$WORK/slow:$PATH"; log() { printf '%s\n' "$*"; }; wait_on_home grid-item:dock ) 2>&1 )" || { printf '%s\n' "$out" >&2; return 1; }
+  grep -qE "after 3 rounds, [0-9]+ s" <<<"$out"
+}
+check "wait_on_home waits three rounds on a slow host and says what they cost" waits_three_slow_rounds
+
+# Every device command is scoped to $SERIAL. An unscoped `adb reconnect
+# offline` reaches every emulator on the host, including instances other
+# sessions hold under their locks (review on #163).
+mkdir -p "$WORK/record"
+cat > "$WORK/record/adb" <<EOF
+#!/usr/bin/env bash
+echo "\$*" >> "$WORK/record/calls"
+case "\$*" in
+  *"shell id -u"*)
+    n=\$(( \$(cat "$WORK/record/n" 2>/dev/null || echo 0) + 1 )); echo "\$n" > "$WORK/record/n"
+    [ "\$n" -ge 2 ] && echo 2000 || exit 1 ;;
+esac
+EOF
+chmod +x "$WORK/record/adb"
+reconnect_is_scoped() {
+  rm -f "$WORK/record/calls" "$WORK/record/n"
+  ( PATH="$WORK/record:$PATH"; unrooted_shell 10 ) >/dev/null 2>&1 || return 1
+  grep -q "reconnect" "$WORK/record/calls" || { echo "no reconnect attempted" >&2; return 1; }
+  ! grep -v "^-s fake " "$WORK/record/calls" | grep -q .
+}
+check "unrooted_shell scopes every adb call, the reconnect included, to its serial" reconnect_is_scoped
+
+# unrooted_shell's timeout covers the whole operation, the unroot included:
+# a hanging `adb unroot` must not delay the deadline.
+mkdir -p "$WORK/stuckroot"
+cat > "$WORK/stuckroot/adb" <<'EOF'
+#!/usr/bin/env bash
+case "$*" in *" unroot"*) sleep 60 ;; *"shell id -u"*) echo 2000 ;; esac
+EOF
+chmod +x "$WORK/stuckroot/adb"
+unroot_is_under_the_deadline() {
+  local start=$SECONDS
+  ( PATH="$WORK/stuckroot:$PATH"; timeout 30 bash -c "$(declare -f); $(declare -p SERIAL PKG WORK 2>/dev/null); unrooted_shell 3" ) >/dev/null 2>&1
+  [ $((SECONDS - start)) -le 6 ]
+}
+check "unrooted_shell's timeout covers a hanging unroot" unroot_is_under_the_deadline
+
+# A round whose dump uses up ROUND_CAP still wakes the device and reopens
+# home: the recovery gets time of its own, or the next round looks at the
+# same screen (review on #163).
+mkdir -p "$WORK/slowdump"
+cat > "$WORK/slowdump/adb" <<EOF
+#!/usr/bin/env bash
+case "\$*" in
+  *"uiautomator dump"*) sleep 60 ;;
+  *"KEYCODE_WAKEUP"*|*"am start"*) echo "\$*" >> "$WORK/slowdump/recovery" ;;
+esac
+EOF
+chmod +x "$WORK/slowdump/adb"
+recovery_runs_after_a_slow_dump() {
+  rm -f "$WORK/slowdump/recovery"
+  ( PATH="$WORK/slowdump:$PATH"; ROUND_CAP=1; wait_on_home grid-item:dock 2 ) >/dev/null 2>&1
+  grep -q KEYCODE_WAKEUP "$WORK/slowdump/recovery" 2>/dev/null && grep -q "am start" "$WORK/slowdump/recovery"
+}
+check "a round whose dump used up its cap still wakes the device and reopens home" recovery_runs_after_a_slow_dump
+
 exit "$failed"

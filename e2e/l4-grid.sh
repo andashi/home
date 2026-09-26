@@ -68,12 +68,6 @@ LOCK_OWNER="l4-grid@$SERIAL#$$"
 SNAPSHOT="${SNAPSHOT:-clean}"
 APK="${1:-$(dirname "$0")/../app/app/build/outputs/apk/default/debug/app-default-debug.apk}"
 PKG="${PKG:-org.andashi.home.debug}"
-RECEIVER="$PKG/de.mm20.launcher2.config.service.ReloadConfigReceiver"
-ACTION="$PKG.action.RELOAD_CONFIG"
-STATE_URI="content://$PKG.state"
-INGEST_URI="content://$PKG.config-ingest/launcher.json"
-LAUNCHER_ACTIVITY="$PKG/de.mm20.launcher2.ui.launcher.LauncherActivity"
-DEVICE_CONFIG="/storage/emulated/0/Android/data/$PKG/files/config/launcher.json"
 FOLD="${FOLD:-0}"
 if [ "$FOLD" = 1 ]; then LAYOUT=fold; DOCK_W=8; else LAYOUT=phone; DOCK_W=4; fi
 CLOCK_PKG="com.android.deskclock"
@@ -108,58 +102,10 @@ cleanup() {
 }
 trap cleanup EXIT
 
-# --- adb helpers (as in l4-config.sh) ------------------------------------
-
-query_json() { # $1 = provider path (config|diagnostics)
-  local out
-  out="$(adb -s "$SERIAL" shell content query --uri "$STATE_URI/$1" 2>&1 | tr -d '\r')" \
-    || { printf 'content query failed: %s\n' "$out" >&2; return 1; }
-  case "$out" in
-    "Row: 0 json="*) printf '%s' "${out#Row: 0 json=}" ;;
-    *) printf 'unexpected provider output: %s\n' "$out" >&2; return 1 ;;
-  esac
-}
-
-LAST_REPORT=""
-wait_report() { # $1 = jq filter, $2 = timeout (s), $3 = description
-  local filter="$1" timeout="$2" what="$3" elapsed=0 report=""
-  while [ "$elapsed" -lt "$timeout" ]; do
-    if report="$(query_json diagnostics 2>/dev/null)" && [ -n "$report" ]; then
-      if jq -e "$filter" >/dev/null 2>&1 <<<"$report"; then
-        LAST_REPORT="$report"
-        return 0
-      fi
-    fi
-    sleep 1
-    elapsed=$((elapsed + 1))
-  done
-  printf 'last /diagnostics report:\n%s\n' "$report" >&2
-  die "timed out (${timeout}s) waiting for report: $what"
-}
-
-assert_jq() { # $1 = json, $2 = jq filter, $3 = description
-  if ! jq -e "$2" >/dev/null 2>&1 <<<"$1"; then
-    printf 'offending json:\n%s\n' "$1" >&2
-    die "assertion failed: $3"
-  fi
-}
-
-write_config() { # $1 = local file
-  local out
-  out="$(adb -s "$SERIAL" shell content write --uri "$INGEST_URI" < "$1" 2>&1 | tr -d '\r')" \
-    || { printf '%s\n' "$out" >&2; die "content write failed"; }
-  [ -z "$out" ] || { printf '%s\n' "$out" >&2; die "content write reported an error"; }
-}
-
-reload_broadcast() {
-  local out
-  out="$(adb -s "$SERIAL" shell am broadcast -n "$RECEIVER" -a "$ACTION" 2>&1 | tr -d '\r')" \
-    || { printf '%s\n' "$out" >&2; die "am broadcast failed"; }
-  case "$out" in
-    *"Broadcast completed"*) ;;
-    *) printf '%s\n' "$out" >&2; die "am broadcast did not complete" ;;
-  esac
-}
+# The device helpers, their constants (STATE_URI, DEVICE_CONFIG, ...) and
+# LAST_REPORT live in the shared library (#126).
+# shellcheck source=lib/grid-device.sh
+. "$(dirname "$0")/lib/grid-device.sh"
 
 settle_then_broadcast() { # $1 = local config file, $2 = sha256, $3 = stage name
   write_config "$1"
@@ -172,155 +118,8 @@ settle_then_broadcast() { # $1 = local config file, $2 = sha256, $3 = stage name
 
 # --- screen helpers ----------------------------------------------------
 
-# The foldable instance sleeps and locks between steps; a dump then shows
-# only the keyguard. Harmless on the phone instance.
-wake_screen() {
-  adb -s "$SERIAL" shell svc power stayon true >/dev/null 2>&1 || true
-  adb -s "$SERIAL" shell input keyevent KEYCODE_WAKEUP >/dev/null 2>&1 || true
-  adb -s "$SERIAL" shell wm dismiss-keyguard >/dev/null 2>&1 || true
-  adb -s "$SERIAL" shell cmd statusbar collapse >/dev/null 2>&1 || true
-}
-
-# Brings the home screen to the front: the grid renders (and on first start
-# writes its default favorites row) only while the launcher is in the
-# foreground. No sleep here: whatever follows polls for what it expects
-# (wait_until, assert_cells), because a first cold start plus the default row
-# plus the DataStore flag takes longer than any fixed pause on a fresh install.
-show_home() {
-  wake_screen
-  adb -s "$SERIAL" shell am start -n "$LAUNCHER_ACTIVITY" >/dev/null 2>&1 || true
-}
-
-# Prints "left top right bottom" of the first node with the resource id (a
-# test tag the grid root exposes, #117), or nothing.
-id_bounds() { # $1 = resource-id
-  adb -s "$SERIAL" shell rm -f /sdcard/l4-grid.xml >/dev/null 2>&1 || true
-  adb -s "$SERIAL" shell uiautomator dump /sdcard/l4-grid.xml >/dev/null 2>&1 || return 1
-  adb -s "$SERIAL" shell cat /sdcard/l4-grid.xml | tr -d '\r' > "$WORK/dump.xml"
-  python3 - "$WORK/dump.xml" "$1" <<'PY'
-import re, sys
-try:
-    import defusedxml.ElementTree as ET
-except ImportError:
-    import xml.etree.ElementTree as ET
-root = ET.parse(sys.argv[1]).getroot()
-for node in root.iter("node"):
-    if node.get("resource-id", "") == sys.argv[2]:
-        m = re.match(r"\[(\d+),(\d+)\]\[(\d+),(\d+)\]", node.get("bounds", ""))
-        if m:
-            print(*m.groups()); break
-PY
-}
-
-wait_id() { # $1 = resource-id, $2 = timeout (s), $3 = description
-  local elapsed=0
-  while [ "$elapsed" -lt "$2" ]; do
-    [ -n "$(id_bounds "$1")" ] && return 0
-    sleep 1; elapsed=$((elapsed + 1))
-  done
-  die "timed out (${2}s) waiting for '$1' on screen: $3"
-}
-
-tap_id() { # $1 = resource-id
-  local b
-  b="$(id_bounds "$1")" || die "uiautomator dump failed while looking for '$1'"
-  [ -n "$b" ] || die "'$1' is not on screen"
-  set -- $b
-  adb -s "$SERIAL" shell input tap $(( ($1 + $3) / 2 )) $(( ($2 + $4) / 2 ))
-}
-
-# Centre of a grid cell on screen, "x y".
-cell_center() { # $1 = id
-  local line
-  line="$(dump_cells | awk -v id="$1" '$1 == id')"
-  [ -n "$line" ] || return 1
-  set -- $line
-  printf '%s %s\n' $(( ($2 + $4) / 2 )) $(( ($3 + $5) / 2 ))
-}
-
-# The centre of a free cell: [DOCK_W - 1] columns right of the dock's left
-# edge, two rows above the dock, which every fixture leaves empty.
-free_cell_point() {
-  local dock gap scale
-  dock="$(dump_cells | awk '$1 == "dock"')"
-  [ -n "$dock" ] || return 1
-  scale="$(density_scale)"
-  gap="$(awk -v s="$scale" 'BEGIN { print 8 * s }')"
-  python3 - "$dock" "$gap" "$DOCK_W" <<'PY'
-import sys
-_, l, t, r, b = sys.argv[1].split(); l, t, r, b = map(int, (l, t, r, b))
-gap = float(sys.argv[2]); w = int(sys.argv[3])
-pitch = (r - l + gap) / w
-print(int(l + (w - 0.5) * pitch), int(t - 1.5 * pitch))
-PY
-}
-
-# Long-presses a free cell (input swipe of zero length) and waits for the
-# edit bar. The launcher's own long-press detector on the grid is what
-# consumes it; the scaffold's gesture never fires.
-enter_edit_mode() {
-  local point
-  point="$(free_cell_point)" || die "no dock on screen to locate a free cell from"
-  set -- $point
-  adb -s "$SERIAL" shell input swipe "$1" "$2" "$1" "$2" 900
-  wait_id grid-edit-done 15 "edit bar after the long press"
-}
-
-# Drags a cell by whole cells with explicit motion events: `input swipe`
-# interpolates its moves and the last one lands short of the end point,
-# which rounds the drop to the wrong row; DOWN, eight MOVEs and an UP at
-# the exact target are deterministic (measured on emulator-5556).
-drag_cell() { # $1 = id, $2 = dx cells, $3 = dy cells
-  local from pitch scale gap dock x y tx ty i
-  from="$(cell_center "$1")" || die "cell $1 not on screen"
-  dock="$(dump_cells | awk '$1 == "dock"')"
-  scale="$(density_scale)"
-  gap="$(awk -v s="$scale" 'BEGIN { print 8 * s }')"
-  pitch="$(python3 - "$dock" "$gap" "$DOCK_W" <<'PY'
-import sys
-_, l, t, r, b = sys.argv[1].split(); l, r = int(l), int(r)
-print(int((r - l + float(sys.argv[2])) / int(sys.argv[3])))
-PY
-)"
-  x="${from%% *}"; y="${from##* }"
-  tx=$(( x + $2 * pitch )); ty=$(( y + $3 * pitch ))
-  adb -s "$SERIAL" shell input motionevent DOWN "$x" "$y"
-  for i in 1 2 3 4 5 6 7 8; do
-    adb -s "$SERIAL" shell input motionevent MOVE $(( x + ($2 * pitch * i) / 8 )) $(( y + ($3 * pitch * i) / 8 ))
-  done
-  adb -s "$SERIAL" shell input motionevent UP "$tx" "$ty"
-}
-
 device_config_sha() {
   adb -s "$SERIAL" shell sha256sum "$DEVICE_CONFIG" 2>/dev/null | tr -d '\r' | cut -d' ' -f1
-}
-
-# Posture ids by name: the GrapheneOS fold instance counts CLOSED from 0
-# (with a rear-display state), the SDK's 7.6" foldable from 1. Resolved
-# once from `print-states`; `posture closed|half|opened` uses them.
-resolve_postures() {
-  local states
-  states="$(adb -s "$SERIAL" shell cmd device_state print-states 2>/dev/null | tr -d '\r')"
-  POSTURE_CLOSED="$(sed -n "s/.*identifier=\([0-9]*\), name='CLOSED'.*/\1/p" <<<"$states" | head -1)"
-  POSTURE_HALF="$(sed -n "s/.*identifier=\([0-9]*\), name='HALF_OPENED'.*/\1/p" <<<"$states" | head -1)"
-  POSTURE_OPENED="$(sed -n "s/.*identifier=\([0-9]*\), name='OPENED'.*/\1/p" <<<"$states" | head -1)"
-  [ -n "$POSTURE_CLOSED" ] && [ -n "$POSTURE_HALF" ] && [ -n "$POSTURE_OPENED" ] \
-    || die "FOLD=1 but $SERIAL has no CLOSED/HALF_OPENED/OPENED postures: $states"
-  log "postures: closed=$POSTURE_CLOSED half=$POSTURE_HALF opened=$POSTURE_OPENED"
-}
-
-posture() { # $1 = closed | half | opened
-  local id
-  case "$1" in
-    closed) id="$POSTURE_CLOSED" ;;
-    half) id="$POSTURE_HALF" ;;
-    opened) id="$POSTURE_OPENED" ;;
-    *) die "unknown posture $1" ;;
-  esac
-  adb -s "$SERIAL" shell cmd device_state state "$id" >/dev/null 2>&1 || die "cmd device_state state $id ($1) failed"
-  sleep 4
-  wake_screen
-  show_home
 }
 
 # Polls the /config read-back until the jq filter holds. Sets LAST_CONFIG.
@@ -339,33 +138,6 @@ wait_until() { # $1 = jq filter over /config, $2 = timeout (s), $3 = description
   done
   printf 'last /config read-back:\n%s\n' "$config" >&2
   die "timed out (${timeout}s) waiting for read-back: $what"
-}
-
-# Prints "id left top right bottom" for every grid cell on screen, in px.
-dump_cells() {
-  adb -s "$SERIAL" shell rm -f /sdcard/l4-grid.xml >/dev/null 2>&1 || true
-  adb -s "$SERIAL" shell uiautomator dump /sdcard/l4-grid.xml >/dev/null 2>&1 || { printf "uiautomator dump failed\n" >&2; return 1; }
-  adb -s "$SERIAL" shell cat /sdcard/l4-grid.xml | tr -d '\r' > "$WORK/dump.xml"
-  python3 - "$WORK/dump.xml" <<'PY'
-import re, sys
-try:
-    import defusedxml.ElementTree as ET  # the dump comes from the device: parse it defensively
-except ImportError:
-    import xml.etree.ElementTree as ET
-root = ET.parse(sys.argv[1]).getroot()
-for node in root.iter("node"):
-    tag = node.get("resource-id", "")
-    if not tag.startswith("grid-item:"):
-        continue
-    m = re.match(r"\[(\d+),(\d+)\]\[(\d+),(\d+)\]", node.get("bounds", ""))
-    if m:
-        print(tag[len("grid-item:"):], *m.groups())
-PY
-}
-
-# The device's density scale (dp -> px), from `wm density`.
-density_scale() {
-  adb -s "$SERIAL" shell wm density | tr -d '\r' | awk '/density/ { print $NF / 160; exit }'
 }
 
 # Checks every cell of the dumped screen against the expected geometry:
@@ -538,9 +310,7 @@ HAVE_LOCK=1
 
 log "booting $SERIAL from snapshot '$SNAPSHOT' (overlays: $OVERLAY_DIR)"
 (cd "$GOS_REPO" && SNAPSHOT="$SNAPSHOT" emulator/run.sh start)
-adb -s "$SERIAL" unroot >/dev/null 2>&1 || true
-adb -s "$SERIAL" wait-for-device
-[ "$(adb -s "$SERIAL" shell id -u | tr -d '\r')" = "2000" ] || die "adb is not running as shell after unroot"
+unrooted_shell
 
 log "installing $(basename "$APK")"
 install_out="$(adb -s "$SERIAL" install -r "$APK" 2>&1)" || { printf '%s\n' "$install_out" >&2; die "adb install failed"; }
@@ -665,9 +435,9 @@ if [ "$HAVE_CLOCK" = 1 ]; then
 
   # --- 3. edit by hand, then the file follows ----------------------------
   wake_screen
-  enter_edit_mode
+  enter_edit_mode "$DOCK_W"
   ok "edit mode entered by long press"
-  drag_cell digital 0 3
+  drag_cell digital 0 3 "$DOCK_W"
   sleep 1
   tap_id grid-edit-done
   wait_report '.trigger == "self-write" and .success == true' 30 "the launcher's own write-back report"
@@ -747,9 +517,8 @@ PY
   show_home
   wake_screen
   assert_cells $'digital 0 0 3 1\nanalog 0 1 2 2\ndock 0 5 4 1' "locked grid on screen"
-  point="$(free_cell_point)" || die "no dock on screen"
-  set -- $point
-  adb -s "$SERIAL" shell input swipe "$1" "$2" "$1" "$2" 900
+  point="$(free_cell_point "$DOCK_W")" || die "no dock on screen"
+  long_press "$point"
   sleep 3
   [ -z "$(id_bounds grid-edit-done)" ] || die "a locked layout entered edit mode"
   [ "$(device_config_sha)" = "$H_LOCKED" ] || die "the locked file changed on the device"

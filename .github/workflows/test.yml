@@ -34,12 +34,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      # Seconds, no JDK and no device: the e2e library's own tests, with a
-      # fake adb. Nothing else in CI runs the e2e scripts.
+      # Seconds, no JDK and no device: nothing else in CI runs the e2e
+      # scripts. The library's own tests, with a fake adb, and the check that
+      # no script redefines a library helper (#126).
       - name: e2e library tests
         run: e2e/lib/grid-device.test.sh
       - name: CI wrapper tests
         run: e2e/ci/l2-with-evidence.test.sh
+      - name: e2e duplicate check recognises every declaration form
+        run: e2e/check-helpers.test.sh
+      - name: e2e scripts share one copy of each helper
+        run: e2e/check-helpers.sh
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:

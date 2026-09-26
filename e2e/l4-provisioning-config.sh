@@ -89,8 +89,6 @@ APK="${1:-$(dirname "$0")/../app/app/build/outputs/apk/default/debug/app-default
 PKG="${PKG:-org.andashi.home.debug}"
 # The theming.json launcher entry whose pkg matches PKG.
 LAUNCHER_CONFIG_KEY="${LAUNCHER_CONFIG_KEY:-andashi-home-debug}"
-STATE_URI="content://$PKG.state"
-INGEST_URI="content://$PKG.config-ingest/launcher.json"
 PROFILES_JSON="$GOS_REPO/config/profiles.json"
 WORK="$(mktemp -d)"
 # The configs the provisioning step pushes are generated here for the launcher
@@ -139,6 +137,12 @@ cleanup() {
   rm -rf "$WORK"
 }
 trap cleanup EXIT
+
+# The device helpers and their constants (STATE_URI, INGEST_URI, ...) live
+# in the shared library (#126). This script's per-user reads stay its own,
+# as query_json_as_user.
+# shellcheck source=lib/grid-device.sh
+. "$(dirname "$0")/lib/grid-device.sh"
 
 # --- helpers -------------------------------------------------------------
 
@@ -236,7 +240,9 @@ pkg_installed_for_user() { # $1 = pkg, $2 = uid
 # storage lag behind its RUNNING_UNLOCKED state for a moment (measured on
 # 2026-09-19 from the provisioning chain and here). Exactly these two
 # transient messages are retried, bounded; anything else fails at once.
-query_json() { # $1 = provider path (config|diagnostics), $2 = uid
+# Not the library's query_json: it asks one user's provider (--user) and
+# waits for it to come up, since a zone's launcher process starts on demand.
+query_json_as_user() { # $1 = provider path (config|diagnostics), $2 = uid
   local out attempt=0
   while :; do
     out="$(adb -s "$SERIAL" shell content query --uri "$STATE_URI/$1" --user "$2" 2>&1 | tr -d '\r')" || true
@@ -249,13 +255,6 @@ query_json() { # $1 = provider path (config|diagnostics), $2 = uid
       *) printf 'unexpected provider output (user %s): %s\n' "$2" "$out" >&2; return 1 ;;
     esac
   done
-}
-
-assert_jq() { # $1 = json, $2 = jq filter, $3 = description
-  if ! jq -e "$2" >/dev/null 2>&1 <<<"$1"; then
-    printf 'offending json:\n%s\n' "$1" >&2
-    die "assertion failed: $3"
-  fi
 }
 
 # Streams the file into the target user's ingest provider. `content write`
@@ -283,7 +282,7 @@ broadcast_user() { # $1 = uid
 wait_diagnostics_sha() { # $1 = uid, $2 = sha256, $3 = timeout seconds
   local elapsed=0 diag=""
   while [ "$elapsed" -lt "$3" ]; do
-    if diag="$(query_json diagnostics "$1" 2>/dev/null)" \
+    if diag="$(query_json_as_user diagnostics "$1" 2>/dev/null)" \
        && jq -e ".success == true and .configSha256 == \"$2\"" >/dev/null 2>&1 <<<"$diag"; then
       LAST_DIAG="$diag"
       return 0
@@ -422,12 +421,12 @@ for key in "${PROFILE_KEYS[@]}"; do
   [ -f "$cfgfile" ] || die "generated config missing: $cfgfile (run config/gen-launcher.sh)"
   want_sha="$(sha256sum "$cfgfile" | cut -d' ' -f1)"
 
-  diag="$(query_json diagnostics "$uid")" || die "profile '$key' (user $uid): /diagnostics not served"
+  diag="$(query_json_as_user diagnostics "$uid")" || die "profile '$key' (user $uid): /diagnostics not served"
   assert_jq "$diag" \
     ".success == true and .configSha256 == \"$want_sha\"" \
     "profile '$key' (user $uid): diagnostics success + sha256 of config/launcher/$key.json"
 
-  eff="$(query_json config "$uid")" || die "profile '$key' (user $uid): /config not served"
+  eff="$(query_json_as_user config "$uid")" || die "profile '$key' (user $uid): /config not served"
   # /config serves the *effective* document, re-serialised from the decoded
   # model. Two consequences for favorites: a bare package name comes back as an
   # object, and `profile` is absent when it is the default, because the config
@@ -518,7 +517,7 @@ write_config_user "$OVERRIDE_CONFIG" "$OVERRIDE_UID"
 broadcast_user "$OVERRIDE_UID"
 wait_diagnostics_sha "$OVERRIDE_UID" "$OVERRIDE_SHA" 30
 
-override_eff="$(query_json config "$OVERRIDE_UID")" \
+override_eff="$(query_json_as_user config "$OVERRIDE_UID")" \
   || die "profile '$OVERRIDE_KEY': /config not served after isolation override"
 assert_jq "$override_eff" \
   '.appearance.transparency.background == 0.42' \
@@ -527,7 +526,7 @@ assert_jq "$override_eff" \
 BASE_BACKGROUND="$(jq -e '.appearance.transparency.background' "$LAUNCHER_CFG_DIR/$BASE_KEY.json")" \
   || die "could not read appearance.transparency.background from $LAUNCHER_CFG_DIR/$BASE_KEY.json"
 [ "$BASE_BACKGROUND" != "0.42" ] || die "isolation check needs a base value other than the override (0.42)"
-base_eff="$(query_json config "$BASE_UID")" \
+base_eff="$(query_json_as_user config "$BASE_UID")" \
   || die "profile '$BASE_KEY': /config not served during isolation check"
 assert_jq "$base_eff" \
   ".appearance.transparency.background == $BASE_BACKGROUND" \

@@ -1,8 +1,11 @@
 #!/usr/bin/env bash
-# Device helpers shared by the grid scripts (e2e/l4-grid.sh carries its own
-# copy today; e2e/screenshots.sh sources this file). Everything talks to the
-# launcher through its public surface: the ingest provider, the reload
-# broadcast, the read-back provider, `input` and `uiautomator dump`.
+# Device helpers shared by the e2e scripts. Everything talks to the launcher
+# through its public surface: the ingest provider, the reload broadcast, the
+# read-back provider, `input` and `uiautomator dump`.
+#
+# One definition per helper, here (#126): a script that needs different
+# behaviour gets a parameter, or a function under its own name.
+# e2e/check-helpers.sh fails CI when a script redefines one of these.
 #
 # Expects: SERIAL, PKG, WORK (a scratch dir), and the log/die functions.
 
@@ -13,22 +16,105 @@ INGEST_URI="content://$PKG.config-ingest/launcher.json"
 LAUNCHER_ACTIVITY="$PKG/de.mm20.launcher2.ui.launcher.LauncherActivity"
 DEVICE_CONFIG="/storage/emulated/0/Android/data/$PKG/files/config/launcher.json"
 
-query_json() { # $1 = provider path (config|diagnostics)
-  # The provider answers one row whose json value spans many lines.
-  adb -s "$SERIAL" shell content query --uri "$STATE_URI/$1" 2>/dev/null | tr -d '\r' \
-    | sed '1s/^Row: 0 json=//'
+# One adb call, cut off at ADB_DEADLINE (a $SECONDS value) when a caller has
+# set one, 60 s from now otherwise. A wedged connection hangs adb for good;
+# every helper a wait loop calls goes through this, so the loop's timeout is
+# wall-clock time and not a count of attempts (#126, #147).
+adb_t() {
+  local left=$(( ${ADB_DEADLINE:-$((SECONDS + 60))} - SECONDS ))
+  [ "$left" -gt 0 ] || return 124
+  timeout "$left" adb -s "$SERIAL" "$@"
 }
 
-wait_report() { # $1 = jq filter, $2 = timeout (s), $3 = description
-  local elapsed=0 report
-  while [ "$elapsed" -lt "$2" ]; do
-    if report="$(query_json diagnostics 2>/dev/null)" && [ -n "$report" ] \
-      && jq -e "$1" <<<"$report" >/dev/null 2>&1; then
-      return 0
-    fi
-    sleep 1; elapsed=$((elapsed + 1))
+# Runs "$@" until it succeeds or $1 seconds have passed, and fails then. The
+# adb calls of every attempt share that deadline, so one slow call cannot
+# carry the loop past it: a uiautomator dump alone took 3.84 s on the
+# emulator (#127).
+retry_for() { # $1 = timeout (s), $2... = command
+  local ADB_DEADLINE=$((SECONDS + $1))
+  shift
+  while [ "$ADB_DEADLINE" -gt "$SECONDS" ]; do
+    "$@" && return 0
+    [ $((ADB_DEADLINE - SECONDS)) -gt 1 ] || break
+    sleep 1
   done
-  die "timed out (${2}s) waiting for a report: $3"
+  return 1
+}
+
+# Runs "$@" up to $1 times, the adb calls of each attempt capped at $2
+# seconds, so the total is bounded by construction (rounds x (cap + 1 s)).
+# For waits whose question is "did it happen", where the cost of asking
+# varies with host load and has nothing to do with the answer. Leaves the
+# attempt count in ROUNDS_USED.
+ROUNDS_USED=0
+retry_rounds() { # $1 = rounds, $2 = cap per round (s), $3... = command
+  local rounds=$1 cap=$2 i
+  shift 2
+  for ((i = 1; i <= rounds; i++)); do
+    ROUNDS_USED=$i
+    ADB_DEADLINE=$((SECONDS + cap)) "$@" && return 0
+    [ "$i" -lt "$rounds" ] && sleep 1
+  done
+  return 1
+}
+
+# Succeeds when "$@" prints anything.
+shows() { [ -n "$("$@" 2>/dev/null)" ]; }
+
+# adb as the unrooted shell (uid 2000), which is what a release build
+# offers. After `run.sh start` loads a snapshot, adbd answers a moment
+# later than the emulator reports up, and `adb unroot` restarts it again;
+# asserting once failed right there (emulator-5560, 2026-09-25 22:11). So
+# it is polled against a real deadline, reconnecting an offline transport
+# in between.
+# The reconnect names this serial and is bounded like every other call: a
+# bare `adb reconnect offline` reaches every emulator on the host, including
+# instances other sessions hold under their locks.
+is_unrooted_shell() {
+  [ "$(adb_t shell id -u 2>/dev/null | tr -d '\r')" = 2000 ] && return 0
+  adb_t reconnect >/dev/null 2>&1 || true
+  return 1
+}
+unrooted_shell() { # [$1 = timeout (s), default 60]
+  # One deadline for the whole operation: a hanging `adb unroot` must not
+  # start the clock late.
+  local timeout=${1:-60}
+  local ADB_DEADLINE=$((SECONDS + timeout))
+  adb_t unroot >/dev/null 2>&1 || true
+  retry_for "$((ADB_DEADLINE - SECONDS))" is_unrooted_shell \
+    || die "adb is not the unrooted shell (uid 2000) after ${timeout}s"
+  log "adb as unrooted shell (uid 2000)"
+}
+
+query_json() { # $1 = provider path (config|diagnostics)
+  # The provider answers one row whose json value spans many lines. Anything
+  # else is an error, never an empty answer: a caller reading "" as "no
+  # config" would pass for the wrong reason.
+  local out
+  out="$(adb_t shell content query --uri "$STATE_URI/$1" 2>&1 | tr -d '\r')" \
+    || { printf 'content query failed: %s\n' "$out" >&2; return 1; }
+  case "$out" in
+    "Row: 0 json="*) printf '%s' "${out#Row: 0 json=}" ;;
+    *) printf 'unexpected provider output: %s\n' "$out" >&2; return 1 ;;
+  esac
+}
+
+# Waits for a /diagnostics report matching the jq filter; the match is left in
+# LAST_REPORT for the caller to assert on.
+LAST_REPORT=""
+# Waits for a /diagnostics report matching the jq filter; the match is left in
+# LAST_REPORT for the caller to assert on.
+LAST_REPORT=""
+LAST_SEEN_REPORT=""
+report_matches() { # $1 = jq filter
+  LAST_SEEN_REPORT="$(query_json diagnostics 2>/dev/null)" && [ -n "$LAST_SEEN_REPORT" ] \
+    && jq -e "$1" <<<"$LAST_SEEN_REPORT" >/dev/null 2>&1 && LAST_REPORT="$LAST_SEEN_REPORT"
+}
+wait_report() { # $1 = jq filter, $2 = timeout (s), $3 = description
+  LAST_SEEN_REPORT=""
+  retry_for "$2" report_matches "$1" && return 0
+  printf 'last /diagnostics report:\n%s\n' "$LAST_SEEN_REPORT" >&2
+  die "timed out (${2}s) waiting for report: $3"
 }
 
 write_config() { # $1 = local file
@@ -59,25 +145,32 @@ push_config() { # $1 = local file, $2 = stage name
 }
 
 wake_screen() {
-  adb -s "$SERIAL" shell svc power stayon true >/dev/null 2>&1 || true
-  adb -s "$SERIAL" shell input keyevent KEYCODE_WAKEUP >/dev/null 2>&1 || true
-  adb -s "$SERIAL" shell wm dismiss-keyguard >/dev/null 2>&1 || true
-  adb -s "$SERIAL" shell cmd statusbar collapse >/dev/null 2>&1 || true
+  adb_t shell svc power stayon true >/dev/null 2>&1 || true
+  adb_t shell input keyevent KEYCODE_WAKEUP >/dev/null 2>&1 || true
+  adb_t shell wm dismiss-keyguard >/dev/null 2>&1 || true
+  adb_t shell cmd statusbar collapse >/dev/null 2>&1 || true
 }
 
 show_home() {
   wake_screen
-  adb -s "$SERIAL" shell am start -n "$LAUNCHER_ACTIVITY" >/dev/null 2>&1 || true
+  adb_t shell am start -n "$LAUNCHER_ACTIVITY" >/dev/null 2>&1 || true
 }
 
 # Prints "left top right bottom" of the first node matching the attribute.
+# Dumps the screen into $WORK/dump.xml. The dump and its read-back are both
+# adb calls under the caller's deadline. A dump taken while the device is
+# still busy can come back empty; that is "not on screen yet", for the
+# caller to retry, not a parse error.
+dump_screen() {
+  adb_t shell rm -f /sdcard/grid-dump.xml >/dev/null 2>&1 || true
+  adb_t shell uiautomator dump /sdcard/grid-dump.xml >/dev/null 2>&1 || return 1
+  adb_t shell cat /sdcard/grid-dump.xml > "$WORK/dump.raw" 2>/dev/null || return 1
+  tr -d '\r' < "$WORK/dump.raw" > "$WORK/dump.xml"
+  [ -s "$WORK/dump.xml" ]
+}
+
 node_bounds() { # $1 = attribute (resource-id|content-desc|text), $2 = value
-  adb -s "$SERIAL" shell rm -f /sdcard/grid-dump.xml >/dev/null 2>&1 || true
-  adb -s "$SERIAL" shell uiautomator dump /sdcard/grid-dump.xml >/dev/null 2>&1 || return 1
-  adb -s "$SERIAL" shell cat /sdcard/grid-dump.xml | tr -d '\r' > "$WORK/dump.xml"
-  # A dump taken while the device is still busy can come back empty; that is
-  # "not on screen yet", for the caller to retry, not a parse error.
-  [ -s "$WORK/dump.xml" ] || return 1
+  dump_screen || return 1
   python3 - "$WORK/dump.xml" "$1" "$2" <<'PY'
 import re, sys
 try:
@@ -100,21 +193,11 @@ desc_bounds() { node_bounds content-desc "$1"; }
 id_bounds() { node_bounds resource-id "$1"; }
 
 wait_desc() { # $1 = content-desc, $2 = timeout (s), $3 = description
-  local elapsed=0
-  while [ "$elapsed" -lt "$2" ]; do
-    [ -n "$(desc_bounds "$1")" ] && return 0
-    sleep 1; elapsed=$((elapsed + 1))
-  done
-  die "timed out (${2}s) waiting for '$1' on screen: $3"
+  retry_for "$2" shows desc_bounds "$1" || die "timed out (${2}s) waiting for '$1' on screen: $3"
 }
 
 wait_id() { # $1 = resource-id (test tag), $2 = timeout (s), $3 = description
-  local elapsed=0
-  while [ "$elapsed" -lt "$2" ]; do
-    [ -n "$(id_bounds "$1")" ] && return 0
-    sleep 1; elapsed=$((elapsed + 1))
-  done
-  die "timed out (${2}s) waiting for '$1' on screen: $3"
+  retry_for "$2" shows id_bounds "$1" || die "timed out (${2}s) waiting for '$1' on screen: $3"
 }
 
 tap_bounds() { # $1 = "l t r b"
@@ -203,20 +286,7 @@ PY
 
 # "id left top right bottom" for every grid cell on screen.
 dump_cells() {
-  adb -s "$SERIAL" shell rm -f /sdcard/grid-dump.xml >/dev/null 2>&1 || true
-  # DUMP_TIMEOUT bounds the dump and the read-back together (s): a caller
-  # with a deadline passes what is left of it, so a wedged device cannot hold
-  # the caller past it.
-  local end=$((SECONDS + ${DUMP_TIMEOUT:-60}))
-  timeout "$((end - SECONDS))" adb -s "$SERIAL" shell uiautomator dump /sdcard/grid-dump.xml >/dev/null 2>&1 \
-    || { printf "uiautomator dump failed\n" >&2; return 1; }
-  [ "$end" -gt "$SECONDS" ] || { printf "no time left to read the dump\n" >&2; return 1; }
-  timeout "$((end - SECONDS))" adb -s "$SERIAL" shell cat /sdcard/grid-dump.xml > "$WORK/dump.raw" 2>/dev/null \
-    || { printf "reading the dump failed\n" >&2; return 1; }
-  tr -d '\r' < "$WORK/dump.raw" > "$WORK/dump.xml"
-  # A dump taken while the device is still busy can come back empty; that is
-  # "not on screen yet", for the caller to retry, not a parse error.
-  [ -s "$WORK/dump.xml" ] || return 1
+  dump_screen || { printf "uiautomator dump failed\n" >&2; return 1; }
   python3 - "$WORK/dump.xml" <<'PY'
 import re, sys
 try:
@@ -234,13 +304,9 @@ for node in root.iter("node"):
 PY
 }
 
+has_cells() { [ "$(dump_cells 2>/dev/null | wc -l)" -ge "$1" ]; }
 wait_cells() { # $1 = expected count, $2 = timeout (s)
-  local elapsed=0
-  while [ "$elapsed" -lt "$2" ]; do
-    [ "$(dump_cells 2>/dev/null | wc -l)" -ge "$1" ] && return 0
-    sleep 1; elapsed=$((elapsed + 1))
-  done
-  die "timed out (${2}s) waiting for $1 cells on screen"
+  retry_for "$2" has_cells "$1" || die "timed out (${2}s) waiting for $1 cells on screen"
 }
 
 density_scale() {
@@ -255,16 +321,8 @@ cell_center() { # $1 = id
   printf '%s %s\n' $(( ($2 + $4) / 2 )) $(( ($3 + $5) / 2 ))
 }
 
-# $2 is wall-clock time. Each round dumps the screen, 3.84 s on the emulator
-# (#127), so counting rounds overran it several times over; the dump gets
-# only what is left of the deadline.
 wait_cell() { # $1 = id, $2 = timeout (s), $3 = message
-  local deadline=$((SECONDS + $2)) left
-  while left=$((deadline - SECONDS)); [ "$left" -gt 0 ]; do
-    DUMP_TIMEOUT="$left" cell_center "$1" >/dev/null 2>&1 && return 0
-    [ $((deadline - SECONDS)) -gt 1 ] && sleep 1 || break
-  done
-  die "timed out (${2}s) waiting for cell '$1': $3"
+  retry_for "$2" shows cell_center "$1" || die "timed out (${2}s) waiting for cell '$1': $3"
 }
 
 # Cell pitch in px from the dock's width and its span in cells.
@@ -342,10 +400,52 @@ resolve_postures() {
   POSTURE_HALF="$(sed -n "s/.*identifier=\([0-9]*\), name='HALF_OPENED'.*/\1/p" <<<"$states" | sed -n 1p)"
   POSTURE_OPENED="$(sed -n "s/.*identifier=\([0-9]*\), name='OPENED'.*/\1/p" <<<"$states" | sed -n 1p)"
   [ -n "$POSTURE_CLOSED" ] && [ -n "$POSTURE_HALF" ] && [ -n "$POSTURE_OPENED" ] \
-    || die "$SERIAL has no CLOSED/HALF_OPENED/OPENED postures: $states"
+    || die "$SERIAL has no CLOSED/HALF_OPENED/OPENED postures (not a foldable?): $states"
+  log "postures: closed=$POSTURE_CLOSED half=$POSTURE_HALF opened=$POSTURE_OPENED"
 }
 
-posture() { # $1 = closed | half | opened
+# Waits until the node with resource id $1 is on the home screen, waking and
+# re-showing home in between: after a posture change the activity comes back
+# on the other display, and a check made before that sees the blank in
+# between (it did: 2 frames on the cover).
+#
+# Bounded by rounds, not seconds (#126). What it waits for costs the device
+# 2-3 s; what varies is the observation, a uiautomator dump, which took about
+# 4 s on an unloaded host and about 15 s with a second emulator running. A
+# wall-clock bound meant 3 rounds on one and 2 on the other, and one dump
+# cannot tell "not yet" from "not coming". So: 3 rounds (the clean
+# measurement on emulator-5560, 8 posture changes, never needed more than 2),
+# each capped by ROUND_CAP through adb_t. The recovery that follows a miss
+# (wake, reopen home) gets RECOVERY_CAP of its own, since a dump that used up
+# the round would otherwise leave it no time and the next round would look
+# at the same screen. A wedged device still ends after at most
+# 3 x (ROUND_CAP + RECOVERY_CAP + 1) s, plus 2 s of diagnosis. A success
+# logs the rounds and the seconds, so a slow host shows as slow instead of
+# hiding inside a round count. Device runs on one host go one at a time all
+# the same: every cost here assumes an unloaded host.
+home_shows() {
+  shows id_bounds "$1" && return 0
+  local ADB_DEADLINE=$((SECONDS + ${RECOVERY_CAP:-5}))
+  wake_screen; show_home
+  return 1
+}
+wait_on_home() { # $1 = resource id, [$2 = rounds, default 3]
+  local rounds=${2:-3} t0=$SECONDS focus shot="${MISS_DIR:-${TMPDIR:-/tmp}}/wait_on_home-$SERIAL-$(date +%s).png"
+  if retry_rounds "$rounds" "${ROUND_CAP:-20}" home_shows "$1"; then
+    log "'$1' on home after $ROUNDS_USED rounds, $((SECONDS - t0)) s"
+    return 0
+  fi
+  # The diagnosis shares 2 s of its own: on a wedged connection it must not
+  # carry the wait further than its rounds did. The picture goes through
+  # `screenshot`, which picks the display on a foldable, and outside $WORK,
+  # which is gone at exit. A failed picture never masks the failure.
+  local ADB_DEADLINE=$((SECONDS + 2))
+  focus="$(adb_t shell dumpsys window 2>/dev/null | tr -d '\r' | awk '/mCurrentFocus/ { print $NF; exit }')"
+  ( screenshot "$shot" ) >/dev/null 2>&1 || shot="none"
+  die "'$1' did not come back on the home screen after $rounds rounds ($((SECONDS - t0)) s; focus: ${focus:-unknown}; screen: $shot)"
+}
+
+posture() { # $1 = closed | half | opened, [$2 = resource id to wait for on home]
   local id
   case "$1" in
     closed) id="$POSTURE_CLOSED" ;;
@@ -356,6 +456,7 @@ posture() { # $1 = closed | half | opened
   adb -s "$SERIAL" shell cmd device_state state "$id" >/dev/null 2>&1 || die "cmd device_state state $id ($1) failed"
   sleep 4
   show_home
+  [ -z "${2:-}" ] || wait_on_home "$2"
   sleep 3
 }
 
@@ -363,7 +464,7 @@ posture() { # $1 = closed | half | opened
 active_display() {
   # One DisplayDeviceInfo line per panel; nested braces inside, so match the
   # whole line rather than a brace-delimited run.
-  adb -s "$SERIAL" shell dumpsys display | tr -d '\r' \
+  adb_t shell dumpsys display | tr -d '\r' \
     | grep 'DisplayDeviceInfo{' | grep 'state ON' \
     | sed -n 's/.*uniqueId="local:\([0-9]*\)".*/\1/p' | sed -n 1p
 }
@@ -372,11 +473,11 @@ active_display() {
 screenshot() { # $1 = output file
   local id
   id="$(active_display 2>/dev/null || true)"
-  if [ -n "$id" ] && adb -s "$SERIAL" exec-out screencap -d "$id" -p > "$1" 2>/dev/null \
+  if [ -n "$id" ] && adb_t exec-out screencap -d "$id" -p > "$1" 2>/dev/null \
     && file "$1" | grep -q 'PNG image'; then
     return 0
   fi
-  adb -s "$SERIAL" exec-out screencap -p > "$1" 2>/dev/null
+  adb_t exec-out screencap -p > "$1" 2>/dev/null
   file "$1" | grep -q 'PNG image' || die "screencap did not produce a PNG for $1"
 }
 

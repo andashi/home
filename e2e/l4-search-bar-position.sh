@@ -79,10 +79,7 @@ screen_height() {
 HAVE_LOCK=1
 log "booting $SERIAL from snapshot '$SNAPSHOT' (overlays: $OVERLAY_DIR)"
 (cd "$GOS_REPO" && SNAPSHOT="$SNAPSHOT" emulator/run.sh start)
-adb -s "$SERIAL" unroot >/dev/null 2>&1 || true
-adb -s "$SERIAL" wait-for-device
-[ "$(adb -s "$SERIAL" shell id -u | tr -d '\r')" = "2000" ] || die "adb is not the unrooted shell"
-ok "adb as unrooted shell (uid 2000)"
+unrooted_shell
 adb -s "$SERIAL" install -r "$APK" | grep -q Success || die "launcher install failed"
 adb -s "$SERIAL" shell cmd role add-role-holder android.app.role.HOME "$PKG" >/dev/null 2>&1 \
   || die "could not grant the HOME role to $PKG"
@@ -109,7 +106,7 @@ sleep 2
 read -r home_y _ _ <<<"$(node_y Search)"
 [ "$home_y" -gt $((H * 3 / 4)) ] || die "home: the bar is at y $home_y of $H, not in the bottom quarter"
 ok "home: the bar is at y $home_y of $H (bottom quarter)"
-[ -z "${SHOTS:-}" ] || adb -s "$SERIAL" exec-out screencap -p > "$SHOTS/home.png"
+[ -z "${SHOTS:-}" ] || screenshot "$SHOTS/home.png"
 
 log "opening search"
 tap_desc Search
@@ -126,7 +123,7 @@ gap=$((match_top - bar_bottom))
 limit="$(awk -v s="$(density_scale)" 'BEGIN { printf "%d", 200 * s }')"
 [ "$gap" -le "$limit" ] || die "search: $gap px between the field and the best match's label (limit $limit px, 200 dp)"
 ok "search: the best match's label is $gap px below the field (limit $limit px)"
-[ -z "${SHOTS:-}" ] || adb -s "$SERIAL" exec-out screencap -p > "$SHOTS/search.png"
+[ -z "${SHOTS:-}" ] || screenshot "$SHOTS/search.png"
 
 log "closing search"
 adb -s "$SERIAL" shell input keyevent KEYCODE_BACK

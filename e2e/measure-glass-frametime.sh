@@ -189,17 +189,14 @@ EOF
 HAVE_LOCK=1
 log "booting $SERIAL from snapshot '$SNAPSHOT' (overlays: $OVERLAY_DIR)"
 (cd "$GOS_REPO" && SNAPSHOT="$SNAPSHOT" emulator/run.sh start)
-adb -s "$SERIAL" unroot >/dev/null 2>&1 || true
-adb -s "$SERIAL" wait-for-device
 # A cold boot (SNAPSHOT=) is still booting here; a snapshot load is not.
-booted=0
-for _ in $(seq 180); do
-  [ "$(adb -s "$SERIAL" shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" = 1 ] && { booted=1; break; }
-  sleep 2
-done
-[ "$booted" = 1 ] || die "$SERIAL did not finish booting within 6 minutes"
-[ "$(adb -s "$SERIAL" shell id -u | tr -d '\r')" = "2000" ] || die "adb is not the unrooted shell"
-ok "adb as unrooted shell (uid 2000)"
+# 180 rounds of a getprop were not 6 minutes: a hanging getprop stretched
+# each round. retry_for makes it 6 minutes of wall-clock time.
+boot_completed() { [ "$(adb_t shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" = 1 ]; }
+retry_for 360 boot_completed || die "$SERIAL did not finish booting within 6 minutes"
+# After the boot wait, not before: on a cold boot adbd is not up for a while,
+# and unrooted_shell's deadline is for a device that is up.
+unrooted_shell
 
 if [ -n "${LAWNICONS_APK:-}" ]; then
   adb -s "$SERIAL" install -r "$LAWNICONS_APK" | grep -q Success || die "Lawnicons install failed"
@@ -207,29 +204,7 @@ if [ -n "${LAWNICONS_APK:-}" ]; then
 fi
 adb -s "$SERIAL" install -r "$APK" | grep -q Success || die "install failed"
 adb -s "$SERIAL" shell appwidget grantbind --package "$PKG" --user 0 >/dev/null
-resolve_postures() {
-  local states
-  states="$(adb -s "$SERIAL" shell cmd device_state print-states 2>/dev/null | tr -d '\r')"
-  POSTURE_CLOSED="$(sed -n "s/.*identifier=\([0-9]*\), name='CLOSED'.*/\1/p" <<<"$states" | head -1)"
-  POSTURE_OPENED="$(sed -n "s/.*identifier=\([0-9]*\), name='OPENED'.*/\1/p" <<<"$states" | head -1)"
-  [ -n "$POSTURE_CLOSED" ] && [ -n "$POSTURE_OPENED" ] || die "$SERIAL is not a foldable: $states"
-}
 resolve_postures
-posture() { # $1 = closed | opened
-  local id i; [ "$1" = closed ] && id="$POSTURE_CLOSED" || id="$POSTURE_OPENED"
-  adb -s "$SERIAL" shell cmd device_state state "$id" >/dev/null
-  sleep 4
-  show_home
-  # The activity is recreated on the other display; a series started before
-  # the grid is back measures the blank in between (it did: 2 frames on the
-  # cover). Wait for the dock cell.
-  for i in $(seq 30); do
-    [ -n "$(id_bounds grid-item:dock 2>/dev/null)" ] && break
-    wake_screen; show_home; sleep 1
-  done
-  [ -n "$(id_bounds grid-item:dock 2>/dev/null)" ] || die "the grid did not come back after posture $1"
-  sleep 2
-}
 
 show_home
 sleep 5
@@ -296,7 +271,9 @@ for variant in $VARIANTS; do
   adb -s "$SERIAL" shell am force-stop "$PKG"
   adb -s "$SERIAL" logcat -c
   for display in cover inner; do
-    [ "$display" = cover ] && posture closed || posture opened
+    # Waits for the dock: a series started before the grid is back on the
+    # other display measures the blank in between.
+    [ "$display" = cover ] && posture closed grid-item:dock || posture opened grid-item:dock
     if [ -n "${SCREENSHOTS:-}" ]; then
       mkdir -p "$SCREENSHOTS"
       capture "$SCREENSHOTS/$variant-$display.png"
