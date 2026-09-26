@@ -7,6 +7,8 @@
 #
 # 1. takes the instance's device lock, boots it from `clean`, installs the
 #    launcher and makes it the home app;
+# 1b. pins two apps and launches a third from search: search's favorites row
+#    shows it as frequently used, the dock shows the two pins and nothing else;
 # 2. opens search by tapping the bar and types a query, then leaves it three
 #    ways - the Back key (3-button navigation, a keyboard), a swipe down on
 #    the results, the Home button - and asserts each time that the home
@@ -100,6 +102,127 @@ assert_home_stays() { # $1 = how search was left
   [ "$SCREEN" = home ] || die "$1: home did not stay (screen: $SCREEN)"
   ok "$1: back on the home screen, and it stays"
 }
+
+# --- the dock shows the pins, nothing else --------------------------------
+# With "frequently used" on (the default), the frequently-used apps filled
+# the dock's empty slots after the pins: a provisioned dock showed apps the
+# file never listed. Two pins in a dock four wide, then one launch from
+# search, which is all "frequently used" takes (launchCount > 0).
+log "the dock: two pins, then an app launched from search"
+on_top() { # $1 = package
+  local top
+  top="$(adb_t shell dumpsys activity activities | tr -d '\r' \
+    | sed -n 's/.*topResumedActivity=ActivityRecord{[^ ]* [^ ]* \([^ ]*\) .*/\1/p' | head -1)"
+  case "$top" in "$1"/*) return 0 ;; *) return 1 ;; esac
+}
+dock_descs() { # the content descriptions inside the dock's cell, sorted, one per line
+  dump_screen || return 1
+  python3 - "$WORK/dump.xml" <<'PY'
+import re, sys
+try:
+    import defusedxml.ElementTree as ET
+except ImportError:
+    import xml.etree.ElementTree as ET
+def box(n):
+    m = re.match(r"\[(\d+),(\d+)\]\[(\d+),(\d+)\]", n.get("bounds", ""))
+    return tuple(map(int, m.groups())) if m else None
+nodes = list(ET.parse(sys.argv[1]).getroot().iter("node"))
+dock = next((box(n) for n in nodes if n.get("resource-id") == "grid-item:dock"), None)
+if dock is None:
+    sys.exit(1)
+inside = sorted({n.get("content-desc") for n in nodes if n.get("content-desc") and (b := box(n))
+                 and b[0] >= dock[0] and b[1] >= dock[1] and b[2] <= dock[2] and b[3] <= dock[3]})
+print("\n".join(inside))
+PY
+}
+DOCK=""
+# The last reading that saw the dock is kept: on a failing build the wait
+# runs to its deadline, and the attempt the deadline cuts off reads nothing,
+# which would overwrite what the dock showed (the sixth run lost it that way).
+dock_is_the_pins() {
+  local d
+  d="$(dock_descs | paste -sd, -)" || true
+  [ -z "$d" ] || DOCK="$d"
+  [ "$d" = "Contacts,Settings" ]
+}
+# For a failure that has to say what was there: every grid cell, and every
+# content description with its bounds.
+dock_diagnosis() {
+  dump_screen || { echo "(no dump)"; return; }
+  python3 - "$WORK/dump.xml" <<'PY'
+import sys
+try:
+    import defusedxml.ElementTree as ET
+except ImportError:
+    import xml.etree.ElementTree as ET
+nodes = list(ET.parse(sys.argv[1]).getroot().iter("node"))
+cells = [f'{n.get("resource-id")}{n.get("bounds")}' for n in nodes if n.get("resource-id", "").startswith("grid-item:")]
+descs = [f'{n.get("content-desc")}{n.get("bounds")}' for n in nodes if n.get("content-desc")]
+print("cells: " + (" ".join(cells) or "none") + " | descriptions: " + (" ".join(descs) or "none"))
+PY
+}
+# home.widgets.enabled is the master switch for the grid, and so for the
+# dock in it: without it the home screen shows no grid at all (the first run
+# of this step found "cells: none").
+cat > "$WORK/pins.json" <<'EOF'
+{ "schemaVersion": 2,
+  "home": { "widgets": { "enabled": true }, "favorites": ["com.android.settings", "com.android.contacts"] } }
+EOF
+push_config "$WORK/pins.json" "two pins"
+# "Cloc", so the only "Clock" on screen is the result, not the typed text.
+# Twice: the first launch of an app with no row yet inserts it with
+# launchCount 0 (SearchableDao.touch increments before it inserts), so only
+# the second makes it frequently used. The first version of this step
+# launched once and the control below found Clock missing from the row.
+# Search keeps its last query when it is opened again (the fifth run of this
+# step found "Cloc" still in the field at the control), so each use empties it.
+clear_search_query() {
+  adb_t shell input keyevent KEYCODE_MOVE_END $(printf 'KEYCODE_DEL %.0s' $(seq 1 12)) >/dev/null
+}
+launch_clock_from_search() {
+  open_search_field
+  clear_search_query
+  adb_t shell input text "Cloc"
+  wait_text "Clock" 20
+  tap_text "Clock" || die "the Clock result is not where a tap reaches it"
+  retry_for 15 on_top com.android.deskclock || die "Clock did not open from search"
+  adb -s "$SERIAL" shell input keyevent KEYCODE_HOME
+}
+launch_clock_from_search
+launch_clock_from_search
+# Control: the launch counted. Search's favorites row, the same flow as the
+# dock's, shows Clock after the pins now. Not just "Clock on screen": with an
+# empty query search lists all apps too, Clock among them, so the first
+# version of this control saw Clock whether the launch counted or not. The
+# favorites row is the top row that holds a pin; Clock has to be in it.
+FAV_ROWS=""
+clock_in_favorites_row() {
+  dump_screen || return 1
+  FAV_ROWS="$(python3 - "$WORK/dump.xml" <<'PY'
+import re, sys
+try:
+    import defusedxml.ElementTree as ET
+except ImportError:
+    import xml.etree.ElementTree as ET
+rows = {}
+for n in ET.parse(sys.argv[1]).getroot().iter("node"):
+    m = re.match(r"\[(\d+),(\d+)\]\[(\d+),(\d+)\]", n.get("bounds", ""))
+    if n.get("text") and m:
+        rows.setdefault(int(m.group(2)) // 20, []).append(n.get("text"))
+tops = sorted(k for k, texts in rows.items() if "Settings" in texts or "Contacts" in texts)
+print(" / ".join(",".join(rows[k]) for k in sorted(rows)))
+sys.exit(0 if tops and "Clock" in rows[tops[0]] else 3)
+PY
+)"
+}
+open_search_field
+clear_search_query
+retry_for 15 clock_in_favorites_row || die "Clock is not in search's favorites row after the launch; rows: $FAV_ROWS"
+log "search's rows after the launch: $FAV_ROWS"
+adb -s "$SERIAL" shell input keyevent KEYCODE_HOME
+assert_home_stays "Home button after the favorites row"
+retry_for 15 dock_is_the_pins || die "the dock shows '$DOCK', not only the two pins; on screen: $(dock_diagnosis)"
+ok "the dock shows the two pins and not the frequently used Clock ($DOCK)"
 
 log "leaving search with the Back key"
 enter_search
