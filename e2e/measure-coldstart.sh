@@ -68,11 +68,13 @@ cleanup() {
   # user of the instance must not find a build of ours installed. If that
   # fails, the lock stays held, and says so, rather than hand on a dirty
   # instance.
-  local keep_lock=0
+  # Any step below that fails leaves the instance other than it was found,
+  # and then the run has not succeeded, whatever it measured.
+  local keep_lock=0 unclean=0
   if [ "${#names[@]}" -gt 0 ] && ! "$RUN" restore clean >/dev/null 2>&1; then
     printf 'x could not restore clean on %s; keeping the lock (%s) so nobody inherits this run\n' \
       "$SERIAL" "$LOCK_OWNER" >&2
-    keep_lock=1
+    keep_lock=1; unclean=1
   fi
   # Each run-specific snapshot is ~3.5 GB: a delete that fails silently
   # would let them pile up. One retry, then name whatever is left.
@@ -84,12 +86,16 @@ cleanup() {
     done
     listed="$(ADB_DEADLINE=$(deadline_in 15) adb_t emu avd snapshot list 2>/dev/null || true)"
     for n in "${names[@]}"; do grep -qF "$n" <<<"$listed" && left+=("$n"); done
-    [ "${#left[@]}" -eq 0 ] || printf 'x snapshots left on %s, delete them by hand: %s\n' "$SERIAL" "${left[*]}" >&2
+    [ "${#left[@]}" -eq 0 ] \
+      || { printf 'x snapshots left on %s, delete them by hand: %s\n' "$SERIAL" "${left[*]}" >&2; unclean=1; }
   fi
-  [ "$HELD_BEFORE" = 1 ] || [ "$keep_lock" = 1 ] || "$LOCK" release "$LOCK_OWNER" "$SERIAL" >/dev/null 2>&1 || true
-  # A run that leaves the instance dirty and locked has not succeeded,
-  # whatever it measured; an earlier failure keeps its own status.
-  if [ "$keep_lock" = 1 ] && [ "$rc" -eq 0 ]; then exit 1; fi
+  if [ "$HELD_BEFORE" != 1 ] && [ "$keep_lock" != 1 ] \
+    && ! "$LOCK" release "$LOCK_OWNER" "$SERIAL" >/dev/null 2>&1; then
+    printf 'x could not release the lock (%s) on %s; release it by hand\n' "$LOCK_OWNER" "$SERIAL" >&2
+    unclean=1
+  fi
+  # An earlier failure keeps its own status.
+  if [ "$unclean" = 1 ] && [ "$rc" -eq 0 ]; then exit 1; fi
 }
 trap cleanup EXIT
 
