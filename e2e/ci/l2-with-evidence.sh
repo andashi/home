@@ -36,9 +36,16 @@ set -uo pipefail
 # Ours is named exactly and never as a pattern: a package that only looks
 # like one of ours, or matches one only as a regex, is foreign.
 #
-# An ANR that fires after this check - a slower boot - still lands on a test,
-# and the post-failure dump names it there instead. That is the right
-# failure mode: this removes a known obstruction, it does not promise a clear
+# #168 and the widening after #189 fixed *what* is dismissed; neither fixed
+# *when*. One look at the start is timed to miss: the stock launcher's ANR
+# lands 45-55 s after boot, which is when this wrapper starts, and on #190 the
+# look ran 0.3 s before the dialog existed while the tests began 137 s later.
+# So the look is repeated in the background until the tests are about to
+# start - until the test APK is installed, which gradle does right before it
+# instruments - and then nothing is touched. Before that point no tap can
+# land on a test; after it, a tap could, so there is none. An ANR that fires
+# during the tests still lands on one, and the post-failure dump names it
+# there: this removes a known obstruction, it does not promise a clear
 # screen.
 #
 # The app under test: the instrumentation package of :app:ui's tests, and the
@@ -53,6 +60,11 @@ set -uo pipefail
 # The Wait fallback has one wall-clock deadline of its own: the dump, the
 # read, the tap and the re-check after it all share it (#191 review).
 : "${ANR_WAIT_SECONDS:=10}"
+# The watch until the tests start: its own deadline, its pause between looks,
+# and the package whose install means the tests are about to start (:app:ui's
+# test APK).
+: "${ANR_WATCH_SECONDS:=900}" "${ANR_WATCH_SLEEP:=2}"
+: "${INSTRUMENTATION_PACKAGE:=de.mm20.launcher2.ui.test}"
 # Set when a Wait left its foreign dialog up, the one signature under which a
 # tap may have closed an ANR of ours instead; it fails a run that passes.
 WAIT_AMBIGUOUS=0
@@ -60,6 +72,16 @@ WAIT_AMBIGUOUS=0
 anr_packages() { # [$1 = seconds for the read, default 10] one package per ANR window on screen
   timeout "${1:-10}" adb shell dumpsys window windows |
     sed -n 's/.*Application Not Responding: \([A-Za-z0-9_.]*\).*/\1/p' | sort -u
+}
+
+# Whether the tests are about to start: the test APK is installed. Only a
+# positive "not installed" keeps the watch going - an adb that fails or hangs
+# counts as started, because a watch that went on into the tests could tap
+# one.
+tests_starting() {
+  local out
+  out="$(timeout 10 adb shell pm list packages "$INSTRUMENTATION_PACKAGE" 2>/dev/null)" || return 0
+  printf '%s\n' "$out" | tr -d '\r' | grep -qx "package:$INSTRUMENTATION_PACKAGE"
 }
 
 is_ours() { # $1 = package; exact string equality, never a pattern
@@ -173,6 +195,12 @@ press_wait_on_foreign() { # $@ = the foreign packages
     is_ours "$only" && return 0
     [ -n "$bounds" ] || { printf 'No Wait button in the dump.\n'; return 1; }
     set -- $bounds
+    # The last look before the tap: the dump takes seconds, and the tests
+    # may have begun meanwhile.
+    if tests_starting; then
+      printf 'The tests are starting; not pressing Wait on the ANR dialog of %s.\n' "$only"
+      return 1
+    fi
     printf 'Pressing Wait on the ANR dialog of %s, which survived force-stop.\n' "$only"
     left="$(wleft)"
     timeout "$(( left > 0 ? left : 1 ))" adb shell input tap $(( ($1 + $3) / 2 )) $(( ($2 + $4) / 2 ))
@@ -212,12 +240,42 @@ press_wait_on_foreign() { # $@ = the foreign packages
   return 0
 }
 
+# Looks again whenever the ANR windows on screen change, until the tests are
+# about to start, the watch's deadline passes, or the wrapper kills it. Only
+# a change is acted on: a dialog that survives its dismissal is reported
+# once, not retried every round (#168). It runs in a subshell, so a flag it
+# raises is handed back through $1.
+watch_until_tests_start() { # $1 = file that a flagged Wait marks
+  local deadline=$((SECONDS + ANR_WATCH_SECONDS)) last="" now left
+  while [ "$SECONDS" -lt "$deadline" ]; do
+    tests_starting && return 0
+    if now="$(anr_packages 10)" && [ "$now" != "$last" ]; then
+      if [ -n "$now" ]; then
+        clear_foreign_anrs
+        [ "$WAIT_AMBIGUOUS" = 0 ] || echo ambiguous > "$1"
+        now="$(anr_packages 10)" || now="$last"
+      fi
+      last="$now"
+    fi
+    left=$((deadline - SECONDS))
+    [ "$left" -gt 0 ] || break
+    sleep "$(( ANR_WATCH_SLEEP < left ? ANR_WATCH_SLEEP : left ))"
+  done
+}
+
 [ "${BASH_SOURCE[0]}" = "$0" ] || return 0
 
 clear_foreign_anrs
 
+watch_flag="$(mktemp)"
+watch_until_tests_start "$watch_flag" &
+watcher=$!
 "$@"
 status=$?
+kill "$watcher" 2>/dev/null
+wait "$watcher" 2>/dev/null
+[ ! -s "$watch_flag" ] || WAIT_AMBIGUOUS=1
+rm -f "$watch_flag"
 if [ "$status" -eq 0 ] && [ "$WAIT_AMBIGUOUS" = 1 ]; then
   printf '::error::The tests passed, but a Wait before them may have closed an ANR of the app under test (see above); failing the run so it is not taken for a pass.\n'
   status=1
