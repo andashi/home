@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="430" viewBox="0 0 980 430">
+  <defs>
+    <filter id="soft" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="22"/>
+    </filter>
+    <filter id="soft2" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="5"/>
+    </filter>
+    <linearGradient id="rim" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.95"/>
+      <stop offset="0.5" stop-color="#ffffff" stop-opacity="0.25"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0.05"/>
+    </linearGradient>
+    <linearGradient id="spec" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0"/>
+      <stop offset="0.5" stop-color="#ffffff" stop-opacity="0.9"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+    <style>
+      .title { font: 600 12.5px ui-monospace, Menlo, Consolas, monospace; letter-spacing: 1.5px; fill: #5d7086; }
+      .co { font: 600 10.5px ui-monospace, Menlo, Consolas, monospace; fill: #16324f; }
+      .cod { font: 9.5px ui-monospace, Menlo, Consolas, monospace; fill: #5d7086; }
+      .lead { stroke: #5d7086; stroke-width: 1; fill: none; }
+      .dot { fill: #5d7086; }
+    </style>
+  </defs>
+  <rect width="980" height="430" rx="14" fill="#f4f7fb"/>
+  <text class="title" x="40" y="34">A GLASS SURFACE, LAYER BY LAYER</text>
+
+  <!-- the wallpaper backdrop -->
+  <rect x="40" y="56" width="470" height="330" rx="16" fill="#dfe7f0" stroke="#b6c2d4"/>
+  <g filter="url(#soft)">
+    <ellipse cx="140" cy="140" rx="90" ry="70" fill="#7ba05b"/>
+    <ellipse cx="330" cy="110" rx="100" ry="75" fill="#5b8dd9"/>
+    <ellipse cx="240" cy="280" rx="110" ry="80" fill="#d9a05b"/>
+    <ellipse cx="430" cy="300" rx="80" ry="70" fill="#9b5bd9"/>
+  </g>
+  <text class="cod" x="56" y="376">the wallpaper, blurred (blur: 24 dp)</text>
+
+  <!-- the glass card -->
+  <rect x="130" y="120" width="300" height="180" rx="28" fill="#ffffff" fill-opacity="0.14"/>
+  <rect x="130" y="120" width="300" height="180" rx="28" fill="none" stroke="#ffffff" stroke-opacity="0.35" stroke-width="7" filter="url(#soft2)"/>
+  <rect x="130" y="120" width="300" height="180" rx="28" fill="none" stroke="url(#rim)" stroke-width="1.8"/>
+  <rect x="190" y="122" width="180" height="2.5" rx="1.2" fill="url(#spec)"/>
+  <text class="co" x="280" y="204" text-anchor="middle" fill-opacity="0.85">a card</text>
+  <text class="cod" x="280" y="222" text-anchor="middle">widget, dock, chip, search pill</text>
+
+  <!-- callouts -->
+  <circle class="dot" cx="133" cy="127" r="3"/>
+  <path class="lead" d="M133 127 L560 76"/>
+  <text class="co" x="566" y="72">edge lens</text>
+  <text class="cod" x="566" y="86">the border bends the backdrop, like a lens — no key, one look</text>
+
+  <circle class="dot" cx="250" cy="121" r="3"/>
+  <path class="lead" d="M250 121 L560 126"/>
+  <text class="co" x="566" y="122">specular</text>
+  <text class="cod" x="566" y="136">a short highlight along the top edge</text>
+
+  <circle class="dot" cx="140" cy="132" r="3"/>
+  <path class="lead" d="M140 132 L560 176"/>
+  <text class="co" x="566" y="172">rim light</text>
+  <text class="cod" x="566" y="186">bright at the top-left, fading around the corner</text>
+
+  <circle class="dot" cx="430" cy="240" r="3"/>
+  <path class="lead" d="M430 240 L560 226"/>
+  <text class="co" x="566" y="222">radius: 28 dp</text>
+  <text class="cod" x="566" y="236">corner radius of cards, the dock and the open search bar (0–64)</text>
+
+  <circle class="dot" cx="280" cy="260" r="3"/>
+  <path class="lead" d="M280 260 L560 276"/>
+  <text class="co" x="566" y="272">tint: 0.12</text>
+  <text class="cod" x="566" y="286">the zone's Material You surface color over the backdrop (0–1)</text>
+
+  <circle class="dot" cx="90" cy="330" r="3"/>
+  <path class="lead" d="M90 330 L560 326"/>
+  <text class="co" x="566" y="322">backdrop</text>
+  <text class="cod" x="566" y="336">the blurred wallpaper under the glass; contrast scales blur and tint</text>
+
+  <text class="cod" x="40" y="412">Every card, the dock, the search pill and every icon chip is this surface; the keys: appearance.glass.*</text>
+</svg>

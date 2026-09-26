@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="440" viewBox="0 0 920 440">
+  <defs>
+    <style>
+      .title { font: 600 12px ui-monospace, Menlo, Consolas, monospace; letter-spacing: 1px; fill: #5d7086; }
+      .lbl { font: 600 10px ui-monospace, Menlo, Consolas, monospace; text-anchor: middle; }
+      .sec { font: 10px ui-monospace, Menlo, Consolas, monospace; fill: #5d7086; }
+      .cap { font: 10.5px ui-monospace, Menlo, Consolas, monospace; fill: #16324f; text-anchor: middle; }
+      .pill { fill: #2563eb; fill-opacity: 0.10; stroke: #2563eb; stroke-width: 1.5; }
+      .fav { fill: #b45309; fill-opacity: 0.25; stroke: #b45309; stroke-width: 1.5; }
+      .app { fill: #2563eb; fill-opacity: 0.22; stroke: #2563eb; stroke-width: 1.5; }
+      .li { fill: #64748b; fill-opacity: 0.08; stroke: #64748b; stroke-width: 1.2; }
+      .lit { font: 9px ui-monospace, Menlo, Consolas, monospace; fill: #64748b; text-anchor: middle; }
+    </style>
+  </defs>
+  <rect width="920" height="440" rx="14" fill="#f4f7fb"/>
+
+  <!-- phone / cover -->
+  <text class="title" x="60" y="36">PHONE / COVER — one pane</text>
+  <rect class="pill" x="60" y="56" width="194" height="34" rx="17"/>
+  <text class="lbl" x="157" y="77" fill="#2563eb">search bar</text>
+  <text class="sec" x="60" y="116">favorites row</text>
+  <circle class="fav" cx="82" cy="142" r="16"/><circle class="fav" cx="132" cy="142" r="16"/>
+  <circle class="fav" cx="182" cy="142" r="16"/><circle class="fav" cx="232" cy="142" r="16"/>
+  <text class="sec" x="60" y="186">apps — the home grid's columns</text>
+  <circle class="app" cx="82" cy="212" r="16"/><circle class="app" cx="132" cy="212" r="16"/>
+  <circle class="app" cx="182" cy="212" r="16"/><circle class="app" cx="232" cy="212" r="16"/>
+  <circle class="app" cx="82" cy="262" r="16"/><circle class="app" cx="132" cy="262" r="16"/>
+  <circle class="app" cx="182" cy="262" r="16"/><circle class="app" cx="232" cy="262" r="16"/>
+  <circle class="app" cx="82" cy="312" r="16"/><circle class="app" cx="132" cy="312" r="16"/>
+  <circle class="app" cx="182" cy="312" r="16"/><circle class="app" cx="232" cy="312" r="16"/>
+  <text class="sec" x="60" y="352">at the home grid's pitch and the dock's icon size</text>
+
+  <!-- fold inner -->
+  <text class="title" x="420" y="36">FOLD, OPENED — two panes at the fold line</text>
+  <rect class="pill" x="420" y="56" width="426" height="34" rx="17"/>
+  <text class="lbl" x="633" y="77" fill="#2563eb">the search bar spans both panes</text>
+
+  <text class="sec" x="420" y="116">left pane: shortcuts, contacts</text>
+  <rect class="li" x="420" y="128" width="170" height="30" rx="6"/>
+  <text class="lit" x="505" y="147">shortcut</text>
+  <rect class="li" x="420" y="166" width="170" height="30" rx="6"/>
+  <text class="lit" x="505" y="185">contact</text>
+  <rect class="li" x="420" y="204" width="170" height="30" rx="6"/>
+  <text class="lit" x="505" y="223">contact</text>
+  <rect class="li" x="420" y="242" width="170" height="30" rx="6"/>
+  <text class="lit" x="505" y="261">filter / action</text>
+  <rect class="li" x="420" y="280" width="170" height="30" rx="6"/>
+  <text class="lit" x="505" y="299">result</text>
+
+  <text class="sec" x="620" y="116">right pane: the half the cover shows</text>
+  <circle class="fav" cx="642" cy="142" r="16"/><circle class="fav" cx="692" cy="142" r="16"/>
+  <circle class="fav" cx="742" cy="142" r="16"/><circle class="fav" cx="792" cy="142" r="16"/>
+  <text class="sec" x="620" y="186">favorites + apps at the grid's pitch</text>
+  <circle class="app" cx="642" cy="212" r="16"/><circle class="app" cx="692" cy="212" r="16"/>
+  <circle class="app" cx="742" cy="212" r="16"/><circle class="app" cx="792" cy="212" r="16"/>
+  <circle class="app" cx="642" cy="262" r="16"/><circle class="app" cx="692" cy="262" r="16"/>
+  <circle class="app" cx="742" cy="262" r="16"/><circle class="app" cx="792" cy="262" r="16"/>
+  <circle class="app" cx="642" cy="312" r="16"/><circle class="app" cx="692" cy="312" r="16"/>
+  <circle class="app" cx="742" cy="312" r="16"/><circle class="app" cx="792" cy="312" r="16"/>
+
+  <line x1="617" y1="100" x2="617" y2="336" stroke="#dc2626" stroke-width="2" stroke-dasharray="6 4"/>
+  <text class="lbl" x="617" y="356" fill="#dc2626">fold line — nothing crosses the hinge</text>
+
+  <text class="cap" x="460" y="396">An app in search sits in the column it would have on the home screen: closing the Fold keeps</text>
+  <text class="cap" x="460" y="412">favorites and apps where they were; opening it gives shortcuts, contacts and filters their own pane.</text>
+</svg>

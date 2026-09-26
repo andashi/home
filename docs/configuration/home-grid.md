@@ -47,6 +47,13 @@ corrections are reported, with trigger `grid-measured` in the reload report.
   display: opening the device adds the left half, and what is on the cover
   stays where it was.
 
+<img alt="The same coordinate system through three windows: a phone's four columns, the Fold's eight columns opened with the fold line in the middle, and the cover as a window onto columns four to seven" src="img/grid-windows.svg" width="860">
+
+Opening the Fold moves nothing: the right half keeps its place, its pixels and
+its coordinates, and the left half is added.
+
+<img alt="Closed, the cover shows columns 4 to 7; opened, the left half appears and the right half is unchanged" src="img/grid-unfold.svg" width="700">
+
 A device uses exactly one of them. A layout the file does not name is left as
 it is on the device. `"items": []` is an empty screen, even when the config
 arrives before the launcher was ever opened: a fresh launcher puts a default
@@ -114,6 +121,8 @@ never has a label. Its shape is your choice:
 | A column on the side | `{ "id": "dock", "widget": "favorites", "x": 3, "y": 0, "w": 1, "h": 6 }` (`"x": 7, "h": 7` on the Fold, the right edge of both displays; the Fold's default) |
 | Two rows | `{ "id": "dock", "widget": "favorites", "x": 0, "y": 4, "w": 4, "h": 2 }` |
 | None | leave the item out |
+
+<img alt="The four dock shapes on a phone grid: a bottom strip, a side column, two rows, and a two-by-two icon grid" src="img/grid-dock-shapes.svg" width="760">
 
 Fewer favorites than cells are **centred**: each row's icons sit in its
 middle, and the used rows sit in the middle of the dock's height. Three

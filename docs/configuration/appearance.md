@@ -10,6 +10,8 @@ the blurred wallpaper under it, bent at the edge like a lens, a tint of the
 zone's color, a light rim that is bright at the top-left, and a short
 specular at the top edge.
 
+<img alt="A glass surface, layer by layer: the blurred wallpaper backdrop, the tint, the edge lens, the rim light and the specular" src="img/glass-anatomy.svg" width="720">
+
 <!-- config -->
 ```json
 {

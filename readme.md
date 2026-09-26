@@ -81,6 +81,8 @@ field by field. The [andashi provisioning](https://andashi.org) does this for
 every zone in well under a minute, replacing what used to be 27 minutes of UI
 automation.
 
+<img alt="The configuration loop: push through the ingest provider, reload and converge, read back and verify, and write-back from edit mode" src="docs/configuration/img/config-flow.svg" width="760">
+
 For the owner profile, plain `adb push` into the app's config directory works
 too; the file watcher picks it up. That is the dotfiles workflow: edit, save,
 done.

@@ -1,0 +1,112 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1260" height="540" viewBox="0 0 1260 540">
+  <defs>
+    <pattern id="cells50" width="50" height="50" patternUnits="userSpaceOnUse">
+      <rect width="44" height="44" rx="6" fill="none" stroke="#b6c2d4" stroke-dasharray="4 3"/>
+    </pattern>
+    <pattern id="hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <line x1="0" y1="0" x2="0" y2="8" stroke="#64748b" stroke-width="1.4" opacity="0.4"/>
+    </pattern>
+    <style>
+      .title { font: 600 12.5px ui-monospace, Menlo, Consolas, monospace; letter-spacing: 1.5px; fill: #5d7086; }
+      .ruler { font: 10px ui-monospace, Menlo, Consolas, monospace; fill: #5d7086; text-anchor: middle; }
+      .ruler-off { font: 10px ui-monospace, Menlo, Consolas, monospace; fill: #b6c2d4; text-anchor: middle; }
+      .lbl { font: 600 10px ui-monospace, Menlo, Consolas, monospace; text-anchor: middle; }
+      .meta { font: 10.5px ui-monospace, Menlo, Consolas, monospace; fill: #5d7086; }
+      .ib { fill: #2563eb; fill-opacity: 0.10; stroke: #2563eb; stroke-width: 1.5; }
+      .id { fill: #b45309; fill-opacity: 0.14; stroke: #b45309; stroke-width: 1.5; }
+      .ii { fill: #64748b; fill-opacity: 0.08; stroke: #64748b; stroke-width: 1.5; }
+      .tb { fill: #2563eb; } .td { fill: #b45309; } .ti { fill: #64748b; }
+    </style>
+  </defs>
+  <rect width="1260" height="540" rx="14" fill="#f4f7fb"/>
+
+  <!-- ================= PHONE ================= -->
+  <text class="title" x="60" y="40">PHONE — layouts.phone</text>
+  <text class="ruler" x="82" y="64">0</text><text class="ruler" x="132" y="64">1</text>
+  <text class="ruler" x="182" y="64">2</text><text class="ruler" x="232" y="64">3</text>
+  <rect x="60" y="72" width="194" height="294" fill="url(#cells50)"/>
+  <rect class="ib" x="60" y="72" width="144" height="94" rx="6"/>
+  <text class="lbl tb" x="132" y="114">x0 y0</text><text class="lbl tb" x="132" y="128">3&#215;2</text>
+  <rect class="ib" x="60" y="172" width="144" height="44" rx="6"/>
+  <text class="lbl tb" x="132" y="197">x0 y2 3&#215;1</text>
+  <rect class="ib" x="60" y="222" width="144" height="94" rx="6"/>
+  <text class="lbl tb" x="132" y="264">x0 y3</text><text class="lbl tb" x="132" y="278">3&#215;2</text>
+  <rect class="ib" x="60" y="322" width="144" height="44" rx="6"/>
+  <text class="lbl tb" x="132" y="347">x0 y5 3&#215;1</text>
+  <rect class="id" x="210" y="72" width="44" height="294" rx="6"/>
+  <text class="lbl td" x="232" y="213">dock</text><text class="lbl td" x="232" y="227">x3 1&#215;6</text>
+  <text class="meta" x="60" y="392">4 columns (configured) &#215; 6 rows (derived)</text>
+  <text class="meta" x="60" y="408">y is absolute: a bottom dock sits at y = rows &#8722; h</text>
+
+  <!-- legend -->
+  <rect class="ib" x="60" y="440" width="14" height="14" rx="3"/>
+  <text class="meta" x="82" y="451">on both displays (right half)</text>
+  <rect class="ii" x="60" y="462" width="14" height="14" rx="3"/>
+  <rect x="60" y="462" width="14" height="14" rx="3" fill="url(#hatch)"/>
+  <text class="meta" x="82" y="473">inner-only (left half)</text>
+  <rect class="id" x="60" y="484" width="14" height="14" rx="3"/>
+  <text class="meta" x="82" y="495">dock = the favorites widget</text>
+
+  <!-- ================= FOLD, OPENED ================= -->
+  <text class="title" x="330" y="40">FOLD, OPENED — layouts.fold, inner display</text>
+  <text class="ruler" x="352" y="64">0</text><text class="ruler" x="402" y="64">1</text>
+  <text class="ruler" x="452" y="64">2</text><text class="ruler" x="502" y="64">3</text>
+  <text class="ruler" x="552" y="64">4</text><text class="ruler" x="602" y="64">5</text>
+  <text class="ruler" x="652" y="64">6</text><text class="ruler" x="702" y="64">7</text>
+  <rect x="330" y="72" width="426" height="344" fill="url(#cells50)"/>
+  <rect class="ii" x="330" y="72" width="194" height="144" rx="6"/>
+  <rect x="330" y="72" width="194" height="144" rx="6" fill="url(#hatch)"/>
+  <text class="lbl ti" x="427" y="139">x0 y0 4&#215;3</text><text class="lbl ti" x="427" y="153">inner-only</text>
+  <rect class="ii" x="330" y="222" width="194" height="144" rx="6"/>
+  <rect x="330" y="222" width="194" height="144" rx="6" fill="url(#hatch)"/>
+  <text class="lbl ti" x="427" y="289">x0 y3 4&#215;3</text><text class="lbl ti" x="427" y="303">inner-only</text>
+  <rect class="ii" x="330" y="372" width="194" height="44" rx="6"/>
+  <rect x="330" y="372" width="194" height="44" rx="6" fill="url(#hatch)"/>
+  <text class="lbl ti" x="427" y="397">x0 y6 4&#215;1 &#183; inner-only</text>
+  <rect class="ib" x="530" y="72" width="144" height="94" rx="6"/>
+  <text class="lbl tb" x="602" y="114">x4 y0</text><text class="lbl tb" x="602" y="128">3&#215;2</text>
+  <rect class="ib" x="530" y="172" width="144" height="44" rx="6"/>
+  <text class="lbl tb" x="602" y="197">x4 y2 3&#215;1</text>
+  <rect class="ib" x="530" y="222" width="144" height="94" rx="6"/>
+  <text class="lbl tb" x="602" y="264">x4 y3</text><text class="lbl tb" x="602" y="278">3&#215;2</text>
+  <rect class="ib" x="530" y="322" width="144" height="44" rx="6"/>
+  <text class="lbl tb" x="602" y="347">x4 y5 3&#215;1</text>
+  <rect class="ib" x="530" y="372" width="144" height="44" rx="6"/>
+  <text class="lbl tb" x="602" y="397">x4 y6 3&#215;1</text>
+  <rect class="id" x="680" y="72" width="44" height="344" rx="6"/>
+  <text class="lbl td" x="702" y="238">dock</text><text class="lbl td" x="702" y="252">x7 1&#215;7</text>
+  <line x1="527" y1="66" x2="527" y2="422" stroke="#dc2626" stroke-width="2" stroke-dasharray="6 4"/>
+  <text class="lbl" x="527" y="440" fill="#dc2626">fold line between x3 and x4</text>
+  <text class="meta" x="330" y="462">8 columns (= 2 &#215; configured) &#215; 7 rows (derived)</text>
+  <text class="meta" x="330" y="478">right half = on both displays &#183; left half (hatched) = inner-only</text>
+
+  <!-- ================= FOLD, CLOSED ================= -->
+  <text class="title" x="810" y="40">FOLD, CLOSED — cover display</text>
+  <text class="ruler-off" x="832" y="64">0</text><text class="ruler-off" x="882" y="64">1</text>
+  <text class="ruler-off" x="932" y="64">2</text><text class="ruler-off" x="982" y="64">3</text>
+  <text class="ruler" x="1032" y="64">4</text><text class="ruler" x="1082" y="64">5</text>
+  <text class="ruler" x="1132" y="64">6</text><text class="ruler" x="1182" y="64">7</text>
+  <rect x="810" y="72" width="426" height="344" fill="url(#cells50)"/>
+  <rect class="ii" x="810" y="72" width="194" height="144" rx="6"/>
+  <rect class="ii" x="810" y="222" width="194" height="144" rx="6"/>
+  <rect class="ii" x="810" y="372" width="194" height="44" rx="6"/>
+  <rect class="ib" x="1010" y="72" width="144" height="94" rx="6"/>
+  <text class="lbl tb" x="1082" y="114">x4 y0</text><text class="lbl tb" x="1082" y="128">3&#215;2</text>
+  <rect class="ib" x="1010" y="172" width="144" height="44" rx="6"/>
+  <text class="lbl tb" x="1082" y="197">x4 y2 3&#215;1</text>
+  <rect class="ib" x="1010" y="222" width="144" height="94" rx="6"/>
+  <text class="lbl tb" x="1082" y="264">x4 y3</text><text class="lbl tb" x="1082" y="278">3&#215;2</text>
+  <rect class="ib" x="1010" y="322" width="144" height="44" rx="6"/>
+  <text class="lbl tb" x="1082" y="347">x4 y5 3&#215;1</text>
+  <rect class="ib" x="1010" y="372" width="144" height="44" rx="6"/>
+  <text class="lbl tb" x="1082" y="397">x4 y6 3&#215;1</text>
+  <rect class="id" x="1160" y="72" width="44" height="344" rx="6"/>
+  <text class="lbl td" x="1182" y="238">dock</text><text class="lbl td" x="1182" y="252">x7 1&#215;7</text>
+  <rect x="810" y="72" width="197" height="344" fill="#f4f7fb" opacity="0.78"/>
+  <line x1="1007" y1="66" x2="1007" y2="422" stroke="#dc2626" stroke-width="2" stroke-dasharray="6 4"/>
+  <text class="lbl" x="908" y="216" fill="#5d7086">columns 0–3</text>
+  <text class="lbl" x="908" y="230" fill="#5d7086">clipped away</text>
+  <text class="lbl" x="908" y="244" fill="#5d7086">(inner-only)</text>
+  <text class="meta" x="810" y="462">the cover is a window onto columns 4–7</text>
+  <text class="meta" x="810" y="478">same layout, same coordinates, same cell size</text>
+</svg>
