@@ -21,7 +21,21 @@ import re, sys
 # A counted for loop, or any while/until loop: `while :` with an attempt
 # counter counts rounds just the same. A loop that does not sleep (a
 # `while read`) is left alone below.
-LOOP = re.compile(r'^\s*(for\s+\w+\s+in\s+\$\(seq\b[^)]*\)|(while|until)\b)')
+LOOP = re.compile(r'^\s*(for\s+\w+\s+in\s+\$\(seq\b[^)]*\)|for\s*\(\(|(while|until)\b)')
+
+
+def strip_comment(line):
+    """The line without its comment; a # inside quotes is not one."""
+    quote = None
+    for i, c in enumerate(line):
+        if quote:
+            if c == quote:
+                quote = None
+        elif c in "'\"":
+            quote = c
+        elif c == "#" and (i == 0 or line[i - 1].isspace() or line[i - 1] == ";"):
+            return line[:i]
+    return line
 found = 0
 for path in sys.argv[1:]:
     # Test files hold loops as fixtures. The library is checked too: its
@@ -40,15 +54,22 @@ for path in sys.argv[1:]:
         # nested do/done pairs; a one-line loop closes on its own line.
         depth, body = 0, []
         while i < len(lines):
-            line = re.sub(r"#.*$", "", lines[i])
+            line = strip_comment(lines[i])
             depth += len(re.findall(r"\bdo\b", line)) - len(re.findall(r"\bdone\b", line))
             body.append(line)
             i += 1
             if depth <= 0:
                 break
-        marked = start > 0 and lines[start - 1].strip().startswith("# not a wait:")
+        # The marker may head a comment block that runs onto more lines, as
+        # long as nothing but comments stands between it and the loop.
+        k = start - 1
+        while k >= 0 and lines[k].strip().startswith("#") and not lines[k].strip().startswith("# not a wait:"):
+            k -= 1
+        marked = k >= 0 and lines[k].strip().startswith("# not a wait:")
         # A loop whose condition is the clock is a deadline, not a count.
-        marked = marked or "$SECONDS" in lines[start]
+        # Only the condition, the text before `do`, counts.
+        condition = re.split(r"\bdo\b", strip_comment(lines[start]), maxsplit=1)[0]
+        marked = marked or "$SECONDS" in condition
         if not marked and any(re.search(r"\bsleep\b", l) for l in body):
             print(f"::error file=e2e/{path},line={start + 1}::counts rounds instead of waiting against a deadline: {lines[start].strip()}")
             found = 1

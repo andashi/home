@@ -74,17 +74,18 @@ SETTINGS_ACTIVITY="$PKG/de.mm20.launcher2.ui.settings.SettingsActivity"
 # the middle when the row is on screen, else further down, then back up.
 tap_setting() { # $1 = visible text
   local tries=0 bounds
-  # not a wait: up to 8 scroll attempts, each lookup bounded through adb_t
+  # not a wait: up to 8 scroll attempts; every lookup, tap and swipe in them
+  # goes through adb_t, so a wedged transport cannot hold an attempt
   until tap_text "$1"; do
     tries=$((tries + 1))
     [ "$tries" -le 8 ] || die "the setting '$1' is not where a tap reaches it"
     bounds="$(node_bounds text "$1")" || bounds=""   # a failed dump: scroll and retry
     if [ -n "$bounds" ] && [ "$(awk '{ print int(($2 + $4) / 2) }' <<<"$bounds")" -lt 960 ]; then
-      adb -s "$SERIAL" shell input swipe 540 700 540 1100 300   # high up: bring it down
+      adb_t shell input swipe 540 700 540 1100 300   # high up: bring it down
     elif [ -n "$bounds" ] || [ "$tries" -le 3 ]; then
-      adb -s "$SERIAL" shell input swipe 540 1500 540 700 300
+      adb_t shell input swipe 540 1500 540 700 300
     else
-      adb -s "$SERIAL" shell input swipe 540 700 540 1500 300
+      adb_t shell input swipe 540 700 540 1500 300
     fi
     sleep 1
   done

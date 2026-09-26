@@ -62,7 +62,11 @@ clear_stock_launcher_anr() {
   local deadline=$((SECONDS + ANR_RECHECK_SECONDS)) after
   # Bounded by `deadline`; each read gets what is left of it.
   while [ "$SECONDS" -lt "$deadline" ]; do
-    [ "$ANR_RECHECK_SLEEP" = 0 ] || sleep "$ANR_RECHECK_SLEEP"
+    # The pause is capped by what is left, and the time is checked again
+    # after it: a read never starts past the deadline (#179 review).
+    local left=$((deadline - SECONDS))
+    [ "$ANR_RECHECK_SLEEP" = 0 ] || sleep "$(( ANR_RECHECK_SLEEP < left ? ANR_RECHECK_SLEEP : left ))"
+    [ "$SECONDS" -lt "$deadline" ] || break
     # Split from the declaration: `local after=$(...)` reports the
     # declaration's status, not the read's, and a screen that could not be
     # read would then look like an empty one.

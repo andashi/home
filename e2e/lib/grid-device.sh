@@ -63,10 +63,15 @@ ROUNDS_USED=0
 retry_rounds() { # $1 = rounds, $2 = cap per round (s), $3... = command
   local rounds=$1 cap=$2 i
   shift 2
+  # not a wait: bounded rounds, each capped, stopping at an outer deadline
   for ((i = 1; i <= rounds; i++)); do
     ROUNDS_USED=$i
     ADB_DEADLINE=$(deadline_in "$cap") "$@" && return 0
-    [ "$i" -lt "$rounds" ] && sleep 1
+    [ "$i" -lt "$rounds" ] || break
+    # Inside a wall-clock wait, stop once its deadline has no room for a
+    # pause and another round (#179 review).
+    [ -z "${ADB_DEADLINE:-}" ] || [ $((ADB_DEADLINE - SECONDS)) -gt 1 ] || break
+    sleep 1
   done
   return 1
 }
@@ -122,8 +127,11 @@ LAST_REPORT=""
 LAST_REPORT=""
 LAST_SEEN_REPORT=""
 report_matches() { # $1 = jq filter
-  LAST_SEEN_REPORT="$(query_json diagnostics 2>/dev/null)" && [ -n "$LAST_SEEN_REPORT" ] \
-    && jq -e "$1" <<<"$LAST_SEEN_REPORT" >/dev/null 2>&1 && LAST_REPORT="$LAST_SEEN_REPORT"
+  # A failed query keeps the last report seen, for the timeout message.
+  local got
+  got="$(query_json diagnostics 2>/dev/null)" && [ -n "$got" ] || return 1
+  LAST_SEEN_REPORT="$got"
+  jq -e "$1" <<<"$got" >/dev/null 2>&1 && LAST_REPORT="$got"
 }
 wait_report() { # $1 = jq filter, $2 = timeout (s), $3 = description
   LAST_SEEN_REPORT=""
@@ -239,7 +247,7 @@ tap_id() { # $1 = resource-id (test tag)
 # bound past any screen for a bar that is hidden or absent. With several
 # displays (the Fold) the union, which refuses more rather than less.
 system_bars() {
-  adb -s "$SERIAL" shell dumpsys window | tr -d '\r' | awk '
+  adb_t shell dumpsys window | tr -d '\r' | awk '
     / InsetsSource id=/ && /visible=true/ && match($0, /frame=\[[0-9]+,[0-9]+\]\[[0-9]+,[0-9]+\]/) {
       split(substr($0, RSTART + 6, RLENGTH - 6), f, /[^0-9]+/)
       if (/ type=statusBars / && f[5] > top) top = f[5]
@@ -296,7 +304,7 @@ print(x, y)
 PY
 )"
   [ -n "$point" ] || return 1
-  adb -s "$SERIAL" shell input tap $point
+  adb_t shell input tap $point
 }
 
 # "id left top right bottom" for every grid cell on screen.

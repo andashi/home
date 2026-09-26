@@ -287,9 +287,11 @@ broadcast_user() { # $1 = uid
 
 SEEN_DIAG=""
 diagnostics_show_sha() { # $1 = uid, $2 = sha256
-  SEEN_DIAG="$(query_json_as_user diagnostics "$1" 2>/dev/null)" \
-    && jq -e ".success == true and .configSha256 == \"$2\"" >/dev/null 2>&1 <<<"$SEEN_DIAG" \
-    && LAST_DIAG="$SEEN_DIAG"
+  # A failed query keeps the last report seen, for the timeout message.
+  local got
+  got="$(query_json_as_user diagnostics "$1" 2>/dev/null)" || return 1
+  SEEN_DIAG="$got"
+  jq -e ".success == true and .configSha256 == \"$2\"" >/dev/null 2>&1 <<<"$got" && LAST_DIAG="$got"
 }
 wait_diagnostics_sha() { # $1 = uid, $2 = sha256, $3 = timeout seconds
   SEEN_DIAG=""

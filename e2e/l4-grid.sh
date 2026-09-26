@@ -132,8 +132,11 @@ device_config_sha() {
 LAST_CONFIG=""
 SEEN_CONFIG=""
 config_matches() { # $1 = jq filter
-  SEEN_CONFIG="$(query_json config 2>/dev/null)" && [ -n "$SEEN_CONFIG" ] \
-    && jq -e "$1" >/dev/null 2>&1 <<<"$SEEN_CONFIG" && LAST_CONFIG="$SEEN_CONFIG"
+  # A failed query keeps the last read-back seen, for the timeout message.
+  local got
+  got="$(query_json config 2>/dev/null)" && [ -n "$got" ] || return 1
+  SEEN_CONFIG="$got"
+  jq -e "$1" >/dev/null 2>&1 <<<"$got" && LAST_CONFIG="$got"
 }
 wait_until() { # $1 = jq filter over /config, $2 = timeout (s), $3 = description
   SEEN_CONFIG=""

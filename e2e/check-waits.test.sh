@@ -54,6 +54,16 @@ S
 verdict quiet "a while read loop" <<'S'
 while IFS=$'\t' read -r n t; do echo "$n"; done < list
 S
+verdict quiet "a marker whose explanation runs onto a second comment line" <<'S'
+# not a wait: up to 8 scroll attempts, each one
+# bounded through adb_t
+until tap_it; do swipe; sleep 1; done
+S
+verdict caught "a marker separated from its loop by code" <<'S'
+# not a wait: something else
+echo unrelated
+for i in $(seq 3); do sleep 1; done
+S
 verdict quiet "a marked repetition loop" <<'S'
 # not a wait: measurement repetitions
 for run in $(seq "$RUNS"); do measure; sleep 2; done
