@@ -429,6 +429,22 @@ resolve_postures() {
   log "postures: closed=$POSTURE_CLOSED half=$POSTURE_HALF opened=$POSTURE_OPENED"
 }
 
+# Makes $PKG the home app, and checks afterwards that it holds the role, by
+# exact package name: org.andashi.home.debug is not org.andashi.home. The
+# command's own output goes into the failure. Eleven inline copies sent it to
+# /dev/null, and on 2026-09-26 11:33 a failure could not be told apart from
+# a slow emulator afterwards.
+grant_home_role() { # [$1 = user, default 0]
+  local user=${1:-0} out holders
+  out="$(adb_t shell cmd role add-role-holder --user "$user" android.app.role.HOME "$PKG" 2>&1 | tr -d '\r')" \
+    || die "could not grant the HOME role to $PKG (user $user): ${out:-no output}"
+  holders="$(adb_t shell cmd role get-role-holders --user "$user" android.app.role.HOME 2>&1 | tr -d '\r')" \
+    || die "could not read the HOME role holders (user $user): ${holders:-no output}"
+  grep -Fxq "$PKG" <<<"$holders" \
+    || die "the HOME role is held by '${holders:-nobody}', not $PKG (user $user)${out:+; add-role-holder said: $out}"
+  log "HOME role held by $PKG (user $user)"
+}
+
 # What the screen shows, from one dump: "search" while search is open (its
 # filter button is on screen), "home" while the launcher's bar is on screen
 # without it, "unknown" for a failed or empty dump or anything else, which

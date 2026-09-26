@@ -143,7 +143,7 @@ for k in "${!apks[@]}"; do
   log "preparing $name from $(basename "$apk")"
   restore clean
   adb -s "$SERIAL" install -r "$apk" >/dev/null
-  sh_ cmd role add-role-holder android.app.role.HOME "$PKG"
+  grant_home_role
   sh_ cmd device_state state "$POSTURE_OPENED" >/dev/null
   show_home; sleep 5
   adb -s "$SERIAL" shell content write --uri "content://$PKG.config-ingest/wallpapers/mauritius.jpg" \

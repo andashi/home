@@ -67,15 +67,7 @@ unrooted_shell
 adb -s "$SERIAL" install -r "$APK" | grep -q Success || die "launcher install failed"
 # The Home-button step needs this launcher to be home: in another launcher
 # it would pass without testing anything.
-# The command's own output goes into the failure: on 2026-09-26 11:33 this
-# failed with the reason sent to /dev/null, and it could not be told apart
-# afterwards from the emulator being slow under load.
-out="$(adb -s "$SERIAL" shell cmd role add-role-holder android.app.role.HOME "$PKG" 2>&1)" \
-  || die "could not grant the HOME role to $PKG: ${out:-no output}"
-roles="$(adb -s "$SERIAL" shell dumpsys role 2>/dev/null | tr -d '\r')"
-grep -A2 'android.app.role.HOME' <<<"$roles" | grep -q "holders=$PKG" \
-  || die "$PKG does not hold the HOME role after add-role-holder"
-ok "HOME role granted to $PKG"
+grant_home_role
 show_home
 wait_desc Search 30 "the launcher's search bar"
 
