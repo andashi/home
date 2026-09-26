@@ -306,6 +306,38 @@ afterthought (see `docs/architecture/adr/0005-testing-strategy.md`):
     wrong reason, and red after it, which a count of the passes read as
     green.
 
+### Ways a test runs and tests nothing
+
+Seven distinct mechanisms, all met in this repository within one week. None is
+carelessness; every one of them looks correct while you are writing it. That is
+why a green run is not evidence and the deliberate break is, and it is why the
+test policy above asks for the break rather than the pass.
+
+1. **The task did not run.** A test reading a file outside its source set
+   without declaring it as an input leaves the task `UP-TO-DATE`, so a changed
+   file runs nothing (`ConfigParserTest` and ADR 0002).
+2. **`set -e` inside an `if`.** Ignored there, even in a subshell, so a helper
+   run as `if helper; then` cannot exit on an error (#155).
+3. **The suite executed no case.** A shell test that sources the script under
+   test inherits its `exit`, ending the file before a single check runs. It
+   passed, and the exit code said so (#168).
+4. **A name changed meaning under a rebase.** `open_search` moved into the
+   shared library keeping its name and losing what it did. No conflict, nothing
+   red, and the step waited for an answer to a query nobody had made (#164).
+5. **The assertion target went inert.** An isolation check overrode
+   `appearance.transparency.background`, accepted but not served since #24, so
+   it compared a value neither profile ever had (#176).
+6. **A blind control.** The control tapped through an empty query, which lists
+   every app, so the item it looked for was on screen whatever the code did -
+   and the unfixed build passed (#187).
+7. **The assertion ran off the test thread.** A concurrent test asserting on a
+   worker thread never sees the failure, so a wrong result stays green (#190).
+
+The check that catches all seven is the same one: break what the test guards,
+and watch **that** test go red and the others stay green. It costs a minute.
+Say in the pull request which tests fall over without the change and which are
+deliberate controls that pass in both states.
+
 **Two rules for the shared shell library in `e2e/lib/`, both learned the hard
 way in one day.**
 
