@@ -768,27 +768,42 @@ check "push_config rejects --ignored followed by another option" rejects_a_flag_
 # A run boots the instance it needs when it is down, and says so, so that it
 # stops only what it booted: a hand-booted emulator-5562 ran unlocked for
 # five hours after the check that needed it (2026-09-26).
+# The instance's state is $WORK/boot/state: down, up, or offline (running,
+# but adbd restarting, as right after `run.sh start` ends with `adb root`).
 mkdir -p "$WORK/boot"
 cat > "$WORK/boot/adb" <<EOF
 #!/usr/bin/env bash
-case "\$*" in
-  *"get-state"*) [ -e "$WORK/boot/up" ] && echo device || { echo "error: device not found" >&2; exit 1; } ;;
+case "\$(cat "$WORK/boot/state")" in
+  up) echo device ;;
+  offline) echo "error: device offline" >&2; exit 1 ;;
+  *) echo "error: device 'fake' not found" >&2; exit 1 ;;
 esac
+EOF
+cat > "$WORK/boot/pgrep" <<EOF
+#!/usr/bin/env bash
+[ "\$(cat "$WORK/boot/state")" != down ] && echo 4242
 EOF
 cat > "$WORK/boot/run.sh" <<EOF
 #!/usr/bin/env bash
 echo "\$*" >> "$WORK/boot/calls"
 EOF
-chmod +x "$WORK/boot/adb" "$WORK/boot/run.sh"
-booted_after() { # $1 = up|down; prints BOOTED and the run.sh calls
-  rm -f "$WORK/boot/calls" "$WORK/boot/up"
-  [ "$1" = down ] || : > "$WORK/boot/up"
-  ( PATH="$WORK/boot:$PATH"; boot_instance "$WORK/boot/run.sh"; printf '%s|%s' "$BOOTED" "$(cat "$WORK/boot/calls" 2>/dev/null)" )
+chmod +x "$WORK/boot/adb" "$WORK/boot/pgrep" "$WORK/boot/run.sh"
+booted_after() { # $1 = down|up|offline; prints BOOTED and the run.sh calls
+  rm -f "$WORK/boot/calls"
+  echo "$1" > "$WORK/boot/state"
+  ( PATH="$WORK/boot:$PATH"; SERIAL=emulator-5562; boot_instance "$WORK/boot/run.sh"; printf '%s|%s' "$BOOTED" "$(cat "$WORK/boot/calls" 2>/dev/null)" )
 }
 boots_a_down_instance() { [ "$(booted_after down)" = "1|start" ]; }
 check "boot_instance boots a down instance and says it did" boots_a_down_instance
 leaves_a_running_instance() { [ "$(booted_after up)" = "0|" ]; }
 check "boot_instance leaves a running instance alone and says it did not boot it" leaves_a_running_instance
+# Running is the emulator process, as run.sh itself decides it: an adb
+# transport that is offline for a moment is not a down instance. adbd answers
+# later than the emulator reports up, and `adb unroot` restarts it again
+# (measured, see is_unrooted_shell); taken for down, a running instance would
+# be booted over and then stopped by a run that did not start it.
+leaves_an_offline_instance() { [ "$(booted_after offline)" = "0|" ]; }
+check "boot_instance leaves a running instance alone while its adb is offline" leaves_an_offline_instance
 
 # gos_run is the one way to run.sh. It checks the owner at the moment of the
 # call, so no reading of the script's text can be fooled: exported and
