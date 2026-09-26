@@ -598,7 +598,7 @@
                 },
                 "transliterator": {
                     "type": "string",
-                    "pattern": "^[A-Za-z0-9_/-]{1,64}$"
+                    "pattern": "^(?=.{1,64}$)[A-Za-z0-9_]+(?:-[A-Za-z0-9_]+)*(?:/[A-Za-z0-9_]+)?$"
                 }
             },
             "additionalProperties": false

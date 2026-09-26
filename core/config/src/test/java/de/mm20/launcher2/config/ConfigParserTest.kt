@@ -1182,7 +1182,12 @@ class ConfigParserTest {
      */
     @Test
     fun `a transliterator that cannot be one ICU id fails at its path`() {
-        for (id in listOf("", "Any-Latin;Latin-ASCII", "a b", "x".repeat(65), "Latin\u0000")) {
+        for (id in listOf(
+            "", "Any-Latin;Latin-ASCII", "a b", "x".repeat(65), "Latin\u0000",
+            // The right characters, but not Source-Target/Variant with every
+            // part there: an empty part, or a second variant (#190 review).
+            "/", "Latin/", "/Latin", "-Latin", "Any-", "Any--Latin", "Any-Latin//BGN", "Any-Latin/BGN/X",
+        )) {
             val result = ConfigParser.parse("""{ "schemaVersion": 2, "search": { "transliterator": "$id" } }""")
 
             assertFalse("id '$id'", result.isSuccess)
@@ -1193,7 +1198,7 @@ class ConfigParserTest {
     /** Control: the words and real ids, including ones with a variant, are accepted. */
     @Test
     fun `auto, off and single ICU ids are accepted as transliterators`() {
-        for (id in listOf("auto", "off", "Any-Latin", "ru-ru_Latn/BGN", "Cyrillic-Latin")) {
+        for (id in listOf("auto", "off", "Any-Latin", "ru-ru_Latn/BGN", "Cyrillic-Latin", "Latin", "Han-Latin/Names", "Hex-Any/Java")) {
             val result = ConfigParser.parse("""{ "schemaVersion": 2, "search": { "transliterator": "$id" } }""")
 
             assertTrue("id '$id'", result.isSuccess)

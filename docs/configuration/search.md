@@ -54,7 +54,7 @@
 | `search.frequentlyUsedRows` | How many rows of frequently used apps | 1–4 | `1` |
 | `search.favoritesEditButton` | An edit button at the end of the favorites row | boolean | `true` |
 | `search.compactTags` | The favorites row's tags as small chips | boolean | `false` |
-| `search.transliterator` | How search matches across scripts: `auto` picks from the device's languages, `off` only strips accents, or one ICU transliterator id such as `Any-Latin`. An id this device's ICU does not have is kept, reported (`transliterator-unavailable`), and matching falls back to stripping accents | `auto`, `off`, an ICU id | `auto` |
+| `search.transliterator` | How search matches across scripts: `auto` picks from the device's languages, `off` only strips accents, or one ICU transliterator id such as `Any-Latin`. An id this device's ICU does not have is kept, reported (`transliterator-unavailable`), and matching falls back to stripping accents. An id that is not one, such as `Latin/`, fails the file (`invalid-search`) | `auto`, `off`, one ICU id: `Source-Target/Variant` of letters, digits and `_`, up to 64 characters | `auto` |
 | `search.contactsCallOnTap` | A tap on a contact's number calls it instead of opening the dialer. Needs the call permission: without it the tap opens the dialer, and the report says so (`permission-missing`) | boolean | `false` |
 | `search.barPosition` | Where the search bar sits while search is open. `follow` puts it where [`home.searchBar.position`](search-bar.md) does | `top`, `bottom`, `follow` | `follow` |
 | `search.actions` | The search actions: the chips under the search bar and the recognisers for numbers, addresses and times, in order ([below](#search-actions)) | list | the device's own |

@@ -18,8 +18,15 @@ object ConfigValidator {
     const val MaxGlassBlur = 64f
 
     const val MaxTransliteratorIdLength = 64
-    /** One ICU transliterator id, or the words auto and off, which it also matches. */
-    val transliteratorIdRegex = Regex("^[A-Za-z0-9_/-]{1,$MaxTransliteratorIdLength}$")
+    /**
+     * One ICU transliterator id, or the words auto and off, which it also
+     * matches: Source-Target/Variant, every part present - `/` and `Latin/`
+     * are refused here rather than reported later as missing from the device
+     * (#190 review). The lookahead keeps the length in the one pattern, which
+     * the schema publishes.
+     */
+    val transliteratorIdRegex =
+        Regex("^(?=.{1,$MaxTransliteratorIdLength}$)[A-Za-z0-9_]+(?:-[A-Za-z0-9_]+)*(?:/[A-Za-z0-9_]+)?$")
     const val MaxGlassTint = 1f
     const val MaxGlassRadius = 64f
     const val MaxPackageNameLength = 256
@@ -85,7 +92,7 @@ object ConfigValidator {
                     "search.transliterator",
                     "Transliterator must be \"${SearchDefaults.TransliteratorAuto}\", " +
                         "\"${SearchDefaults.TransliteratorOff}\" or one ICU transliterator id " +
-                        "(letters, digits, '_', '/', '-'; up to $MaxTransliteratorIdLength), got \"$id\"",
+                        "(Source-Target/Variant of letters, digits and '_'; up to $MaxTransliteratorIdLength), got \"$id\"",
                 )
             }
         }
