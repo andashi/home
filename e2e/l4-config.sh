@@ -198,11 +198,17 @@ cat > "$VALID_CONFIG" <<'EOF'
   "appearance": {
     // Not the defaults, so applying it is a real change.
     "glass": { "blur": 16, "tint": 0.5, "radius": 20, "contrast": "high", "wallpaperBlur": false, "searchWallpaperBlur": false },
+    // #3 slice 1: both bars away from their defaults.
+    "systemBars": {
+      "statusBar": { "hidden": true, "icons": "dark" },
+      "navigationBar": { "hidden": false, "icons": "light" },
+    },
   },
   // Four keys away from their defaults (#91), so applying them is a change.
   "search": { "favorites": false, "layout": "list", "reversed": true, "contacts": false, "barPosition": "bottom" },
   "home": {
-    "searchBar": { "position": "bottom" },
+    "searchBar": { "position": "bottom", "fixed": true },
+    "lockRotation": true,
     // Empty on purpose: favorites reference installed packages.
     "favorites": [],
     "widgets": { "enabled": true },
@@ -267,10 +273,15 @@ cat > "$CHANGED_CONFIG" <<'EOF'
   },
   "appearance": {
     "glass": { "blur": 32, "tint": 0.2, "radius": 12, "contrast": "low", "wallpaperBlur": true, "searchWallpaperBlur": true },
+    "systemBars": {
+      "statusBar": { "hidden": false, "icons": "light" },
+      "navigationBar": { "hidden": true, "icons": "dark" },
+    },
   },
   "search": { "favorites": true, "layout": "grid", "reversed": false, "contacts": true, "barPosition": "top" },
   "home": {
-    "searchBar": { "position": "top" },
+    "searchBar": { "position": "top", "fixed": false },
+    "lockRotation": false,
     "favorites": [],
     "widgets": { "enabled": false },
     "grid": {
@@ -383,6 +394,9 @@ EFFECTIVE_FILTER='
   and (.search | del(.actions)) == {"favorites":false,"allApps":true,"layout":"list","labels":true,"contacts":false,"shortcuts":true,"filterBar":true,"openKeyboard":true,"launchOnEnter":true,"reversed":true,"hiddenItemsButton":false,"barPosition":"bottom","listIcons":true,"appDetails":true,"contactsCallOnTap":false}
   and .search.actions == [{"type":"call"},{"type":"message"},{"type":"email"},{"type":"contact"},{"type":"alarm"},{"type":"timer"},{"type":"calendar"},{"type":"website"},{"type":"websearch"}]
   and .home.searchBar.position == "bottom"
+  and .home.searchBar.fixed == true
+  and .home.lockRotation == true
+  and .appearance.systemBars == {"statusBar":{"hidden":true,"icons":"dark"},"navigationBar":{"hidden":false,"icons":"light"}}
   and .home.favorites == []
   and .home.widgets.enabled == true
   and .home.grid.columns == 4
@@ -398,6 +412,9 @@ CHANGED_FILTER='
   and .appearance.glass == {"blur":32.0,"tint":0.2,"radius":12.0,"contrast":"low","wallpaperBlur":true,"searchWallpaperBlur":true}
   and (.search | del(.actions)) == {"favorites":true,"allApps":true,"layout":"grid","labels":true,"contacts":true,"shortcuts":true,"filterBar":true,"openKeyboard":true,"launchOnEnter":true,"reversed":false,"hiddenItemsButton":false,"barPosition":"top","listIcons":true,"appDetails":true,"contactsCallOnTap":false}
   and .home.searchBar.position == "top"
+  and .home.searchBar.fixed == false
+  and .home.lockRotation == false
+  and .appearance.systemBars == {"statusBar":{"hidden":false,"icons":"light"},"navigationBar":{"hidden":true,"icons":"dark"}}
   and .home.favorites == []
   and .home.widgets.enabled == false
   and .home.grid.columns == 5
@@ -409,8 +426,8 @@ CHANGED_FILTER='
 # The sections a full VALID <-> CHANGED convergence must report as applied.
 ALL_SECTIONS_FILTER='
   ((.appliedMutations // []) | sort) ==
-  ["appearance.glass", "home.grid", "home.searchBar",
-   "home.widgets.enabled", "icons", "search"]
+  ["appearance.glass", "appearance.systemBars", "home.grid", "home.lockRotation",
+   "home.searchBar", "home.widgets.enabled", "icons", "search"]
 '
 
 # --- 1. boot + install -------------------------------------------------
