@@ -242,19 +242,25 @@ pkg_installed_for_user() { # $1 = pkg, $2 = uid
 # transient messages are retried, bounded; anything else fails at once.
 # Not the library's query_json: it asks one user's provider (--user) and
 # waits for it to come up, since a zone's launcher process starts on demand.
+# The wait is 30 s of wall-clock time through retry_for (#164), and inside
+# another wait it gets only what that one has left.
+QJ_OUT=""
+QJ_FATAL=0
+provider_answers() { # $1 = provider path, $2 = uid; succeeds on an answer or a fatal error
+  QJ_OUT="$(adb_t shell content query --uri "$STATE_URI/$1" --user "$2" 2>&1 | tr -d '\r')" || true
+  case "$QJ_OUT" in
+    "Row: 0 json="*) return 0 ;;
+    *"Could not find provider"*|*"External files directory unavailable"*|"") return 1 ;;
+    *) QJ_FATAL=1; return 0 ;;
+  esac
+}
 query_json_as_user() { # $1 = provider path (config|diagnostics), $2 = uid
-  local out attempt=0
-  while :; do
-    out="$(adb -s "$SERIAL" shell content query --uri "$STATE_URI/$1" --user "$2" 2>&1 | tr -d '\r')" || true
-    case "$out" in
-      "Row: 0 json="*) printf '%s' "${out#Row: 0 json=}"; return 0 ;;
-      *"Could not find provider"*|*"External files directory unavailable"*)
-        attempt=$((attempt + 1))
-        [ "$attempt" -lt 15 ] || { printf 'provider for user %s did not come up within 30s: %s\n' "$2" "$out" >&2; return 1; }
-        sleep 2 ;;
-      *) printf 'unexpected provider output (user %s): %s\n' "$2" "$out" >&2; return 1 ;;
-    esac
-  done
+  QJ_FATAL=0
+  if ! retry_for 30 provider_answers "$1" "$2"; then
+    printf 'provider for user %s did not come up within 30s: %s\n' "$2" "$QJ_OUT" >&2; return 1
+  fi
+  [ "$QJ_FATAL" = 0 ] || { printf 'unexpected provider output (user %s): %s\n' "$2" "$QJ_OUT" >&2; return 1; }
+  printf '%s' "${QJ_OUT#Row: 0 json=}"
 }
 
 # Streams the file into the target user's ingest provider. `content write`
@@ -279,19 +285,19 @@ broadcast_user() { # $1 = uid
   esac
 }
 
+SEEN_DIAG=""
+diagnostics_show_sha() { # $1 = uid, $2 = sha256
+  # A failed query keeps the last report seen, for the timeout message.
+  local got
+  got="$(query_json_as_user diagnostics "$1" 2>/dev/null)" || return 1
+  SEEN_DIAG="$got"
+  jq -e ".success == true and .configSha256 == \"$2\"" >/dev/null 2>&1 <<<"$got" && LAST_DIAG="$got"
+}
 wait_diagnostics_sha() { # $1 = uid, $2 = sha256, $3 = timeout seconds
-  local elapsed=0 diag=""
-  while [ "$elapsed" -lt "$3" ]; do
-    if diag="$(query_json_as_user diagnostics "$1" 2>/dev/null)" \
-       && jq -e ".success == true and .configSha256 == \"$2\"" >/dev/null 2>&1 <<<"$diag"; then
-      LAST_DIAG="$diag"
-      return 0
-    fi
-    sleep 1
-    elapsed=$((elapsed + 1))
-  done
-  printf 'last diagnostics for user %s:\n%s\n' "$1" "$diag" >&2
-  die "timed out waiting for diagnostics sha256 $2 for user $1"
+  SEEN_DIAG=""
+  retry_for "$3" diagnostics_show_sha "$1" "$2" && return 0
+  printf 'last diagnostics for user %s:\n%s\n' "$1" "$SEEN_DIAG" >&2
+  die "timed out (${3}s) waiting for diagnostics sha256 $2 for user $1"
 }
 
 # --- 1. lock + boot ------------------------------------------------------
@@ -313,10 +319,7 @@ ok "profiles reconciled"
 
 # run.sh start leaves adbd rooted (userdebug). Release GrapheneOS has no adb
 # root, so from here on everything must work as the plain shell user.
-adb -s "$SERIAL" unroot >/dev/null 2>&1 || true
-adb -s "$SERIAL" wait-for-device
-[ "$(adb -s "$SERIAL" shell id -u | tr -d '\r')" = "2000" ] || die "adb is not running as shell after unroot"
-ok "adb running as unrooted shell"
+unrooted_shell
 
 log "installing $(basename "$APK") into user 0"
 install_out="$(adb -s "$SERIAL" install -r "$APK" 2>&1)" || { printf '%s\n' "$install_out" >&2; die "adb install failed"; }
@@ -552,12 +555,8 @@ ok "per-user isolation: '$OVERRIDE_KEY' changed, '$BASE_KEY' unchanged"
 FG_KEY="$OVERRIDE_KEY"; FG_UID="$OVERRIDE_UID"
 log "switching to profile '$FG_KEY' (user $FG_UID) so its wallpaper gets rendered"
 adb -s "$SERIAL" shell am switch-user "$FG_UID" </dev/null >/dev/null || die "am switch-user $FG_UID failed"
-for _i in $(seq 1 30); do
-  [ "$(adb -s "$SERIAL" shell am get-current-user </dev/null 2>/dev/null | tr -d '\r')" = "$FG_UID" ] && break
-  sleep 1
-done
-[ "$(adb -s "$SERIAL" shell am get-current-user </dev/null 2>/dev/null | tr -d '\r')" = "$FG_UID" ] \
-  || die "user $FG_UID did not become the current user within 30 s"
+user_is_current() { [ "$(adb_t shell am get-current-user </dev/null 2>/dev/null | tr -d '\r')" = "$FG_UID" ]; }
+retry_for 30 user_is_current || die "user $FG_UID did not become the current user within 30 s"
 # The launcher under test is not the HOME role holder here (40-theming.sh is
 # not part of this scenario) and a fresh profile may still show the setup
 # wizard, so its activity would never resume on its own: start it explicitly.
@@ -565,13 +564,15 @@ done
 adb -s "$SERIAL" shell am start --user "$FG_UID" -n "$PKG/de.mm20.launcher2.ui.launcher.LauncherActivity" </dev/null >/dev/null 2>&1 \
   || die "could not start the launcher activity for user $FG_UID"
 cropped=""
-for _i in $(seq 1 30); do
-  crop="$(adb -s "$SERIAL" shell dumpsys wallpaper 2>/dev/null | tr -d '\r' \
+crop=""
+wallpaper_cropped() {
+  crop="$(adb_t shell dumpsys wallpaper 2>/dev/null | tr -d '\r' \
     | awk -v u="User $FG_UID:" '/wallpaper state:/ { in_sys = (index($0, "System wallpaper state:") > 0); next }
         in_sys && index($0, u) { f = 1; next } f && /mCropHint=/ { print; exit }')"
   # dumpsys prints "Rect(0, 0 - 0, 0)" with spaces; compare without them.
-  case "${crop//[[:space:]]/}" in *"Rect(0,0-0,0)"*|"") sleep 1 ;; *) cropped="${crop//[[:space:]]/}"; break ;; esac
-done
+  case "${crop//[[:space:]]/}" in *"Rect(0,0-0,0)"*|"") return 1 ;; *) cropped="${crop//[[:space:]]/}" ;; esac
+}
+retry_for 30 wallpaper_cropped || true
 [ -n "$cropped" ] || die "profile '$FG_KEY' (user $FG_UID): wallpaper still has no crop 30 s after foregrounding (dumpsys: '${crop:-none}')"
 ok "profile '$FG_KEY' (user $FG_UID): wallpaper rendered after foregrounding ($cropped)"
 hook="$(adb -s "$SERIAL" logcat -d -s WallpaperForegroundFix:* 2>/dev/null | tr -d '\r' | grep -c "Re-applied the config wallpaper" || true)"

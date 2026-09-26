@@ -37,15 +37,28 @@ set -uo pipefail
 # failure mode: this removes a known obstruction, it does not promise a clear
 # screen.
 STOCK_HOME=com.android.launcher3
-: "${ANR_RECHECK_TRIES:=5}" "${ANR_RECHECK_SLEEP:=1}"
+# The re-check after the dismissal is wall-clock time (#164): "5 tries, 1 s
+# apart" read as five seconds, but each try is a dumpsys over adb, and on a
+# loaded runner five unbounded dumpsys calls take however long they take.
+# Self-contained on purpose: e2e/ci/ runs on a bare runner, without the
+# device library.
+: "${ANR_RECHECK_SECONDS:=5}" "${ANR_RECHECK_SLEEP:=1}"
 
-anr_packages() { # one package per "Application Not Responding" window on screen
-  adb shell dumpsys window windows |
+anr_packages() { # [$1 = seconds for the read, default 10] one package per ANR window on screen
+  timeout "${1:-10}" adb shell dumpsys window windows |
     sed -n 's/.*Application Not Responding: \([A-Za-z0-9_.]*\).*/\1/p' | sort -u
 }
 
 clear_stock_launcher_anr() {
-  local pkgs; pkgs="$(anr_packages)"
+  local pkgs
+  # Split from the declaration, and checked: a read that failed or timed out
+  # leaves the list empty, and an empty list must not read as "no ANR
+  # window" - the dialog could still be there (#179 review). Say so and run
+  # the tests; this step never fails the job.
+  if ! pkgs="$(anr_packages)"; then
+    printf 'Could not read the window list before the tests; not claiming there is no ANR dialog.\n'
+    return 0
+  fi
   [ -n "$pkgs" ] || return 0
   printf '::group::#113 ANR windows on screen before the tests\n%s\n::endgroup::\n' "$pkgs"
   if ! printf '%s\n' "$pkgs" | grep -Fxq -- "$STOCK_HOME"; then
@@ -54,18 +67,22 @@ clear_stock_launcher_anr() {
   fi
   printf 'Dismissing the stock launcher ANR dialog (%s) so it cannot cover a test.\n' "$STOCK_HOME"
   adb shell am force-stop "$STOCK_HOME"
-  local i=0 after
-  while [ "$i" -lt "$ANR_RECHECK_TRIES" ]; do
-    [ "$ANR_RECHECK_SLEEP" = 0 ] || sleep "$ANR_RECHECK_SLEEP"
+  local deadline=$((SECONDS + ANR_RECHECK_SECONDS)) after
+  # Bounded by `deadline`; each read gets what is left of it.
+  while [ "$SECONDS" -lt "$deadline" ]; do
+    # The pause is capped by what is left, and the time is checked again
+    # after it: a read never starts past the deadline (#179 review).
+    local left=$((deadline - SECONDS))
+    [ "$ANR_RECHECK_SLEEP" = 0 ] || sleep "$(( ANR_RECHECK_SLEEP < left ? ANR_RECHECK_SLEEP : left ))"
+    [ "$SECONDS" -lt "$deadline" ] || break
     # Split from the declaration: `local after=$(...)` reports the
     # declaration's status, not the read's, and a screen that could not be
     # read would then look like an empty one.
-    if ! after="$(anr_packages)"; then
+    if ! after="$(anr_packages "$(( deadline - SECONDS > 0 ? deadline - SECONDS : 1 ))")"; then
       printf 'Could not read the window list; not claiming the dialog is gone.\n'
       return 0
     fi
     printf '%s\n' "$after" | grep -Fxq -- "$STOCK_HOME" || { printf 'Gone.\n'; return 0; }
-    i=$((i + 1))
   done
   # HOME restarts after a force-stop and can ANR again on a slow boot.
   # Saying so once is worth more than looping: the tests and the evidence

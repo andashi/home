@@ -231,6 +231,7 @@ series() { # $1 = label
   size="$(adb -s "$SERIAL" shell wm size | tr -d '\r' | awk '/size/ {s=$NF} END {print s}')"
   w="${size%x*}"; h="${size#*x}"
   adb -s "$SERIAL" shell dumpsys gfxinfo "$PKG" reset >/dev/null
+  # not a wait: RUNS measured transitions, each held a fixed 1.2 s
   for i in $(seq "$RUNS"); do
     adb -s "$SERIAL" shell input swipe $((w / 2)) $((h * 3 / 4)) $((w / 2)) $((h / 4)) 250
     sleep 1.2

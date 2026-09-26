@@ -97,13 +97,11 @@ jq -e '.home.grid.layouts.phone.items == [] and .home.grid.layouts.fold.items ==
   || { printf '%s\n' "$config" | jq -c '.home.grid.layouts' >&2; die "the read-back is no longer empty"; }
 ok "read-back: both layouts still empty"
 # dump_cells fails on a failed or empty dump; that proves nothing, so retry
-# (bounded) and never read a missing dump as "no cells".
-dumped=0
-for _ in $(seq 1 10); do
-  if cells="$(dump_cells)"; then dumped=1; break; fi
-  sleep 1
-done
-[ "$dumped" = 1 ] || die "could not dump the screen to look for grid cells"
+# and never read a missing dump as "no cells". Bounded by rounds (#164): the
+# question is whether a readable dump can be taken at all.
+cells=""
+read_cells() { cells="$(dump_cells)"; }
+retry_rounds 3 "${ROUND_CAP:-20}" read_cells || die "could not dump the screen to look for grid cells"
 [ -z "$cells" ] || { printf '%s\n' "$cells" >&2; die "grid cells are on screen"; }
 ok "no grid cell on screen"
 

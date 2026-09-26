@@ -26,13 +26,26 @@ adb_t() {
   timeout "$left" adb -s "$SERIAL" "$@"
 }
 
+# The deadline $1 seconds from now, but never later than one a caller has
+# already set: a wait inside a wait gets what is left of the outer one at
+# most (query_json_as_user runs inside wait_diagnostics_sha, #164).
+deadline_in() { # $1 = seconds
+  local d=$((SECONDS + $1))
+  [ -n "${ADB_DEADLINE:-}" ] && [ "$ADB_DEADLINE" -lt "$d" ] && d=$ADB_DEADLINE
+  echo "$d"
+}
+
 # Runs "$@" until it succeeds or $1 seconds have passed, and fails then. The
 # adb calls of every attempt share that deadline, so one slow call cannot
 # carry the loop past it: a uiautomator dump alone took 3.84 s on the
 # emulator (#127).
 retry_for() { # $1 = timeout (s), $2... = command
-  local ADB_DEADLINE=$((SECONDS + $1))
+  # Computed before `local` shadows the caller's deadline.
+  local d
+  d=$(deadline_in "$1")
+  local ADB_DEADLINE=$d
   shift
+  # not a wait: the deadline mechanism itself, bounded by ADB_DEADLINE
   while [ "$ADB_DEADLINE" -gt "$SECONDS" ]; do
     "$@" && return 0
     [ $((ADB_DEADLINE - SECONDS)) -gt 1 ] || break
@@ -50,10 +63,17 @@ ROUNDS_USED=0
 retry_rounds() { # $1 = rounds, $2 = cap per round (s), $3... = command
   local rounds=$1 cap=$2 i
   shift 2
+  # not a wait: bounded rounds, each capped, stopping at an outer deadline
   for ((i = 1; i <= rounds; i++)); do
     ROUNDS_USED=$i
-    ADB_DEADLINE=$((SECONDS + cap)) "$@" && return 0
-    [ "$i" -lt "$rounds" ] && sleep 1
+    ADB_DEADLINE=$(deadline_in "$cap") "$@" && return 0
+    [ "$i" -lt "$rounds" ] || break
+    # Inside a wall-clock wait, stop once its deadline has no room for a
+    # pause and another round (#179 review).
+    [ -z "${ADB_DEADLINE:-}" ] || [ $((ADB_DEADLINE - SECONDS)) -gt 1 ] || break
+    sleep 1
+    # And again after it: a slow host can stretch the pause past a second.
+    [ -z "${ADB_DEADLINE:-}" ] || [ "$ADB_DEADLINE" -gt "$SECONDS" ] || break
   done
   return 1
 }
@@ -79,7 +99,9 @@ unrooted_shell() { # [$1 = timeout (s), default 60]
   # One deadline for the whole operation: a hanging `adb unroot` must not
   # start the clock late.
   local timeout=${1:-60}
-  local ADB_DEADLINE=$((SECONDS + timeout))
+  local d
+  d=$(deadline_in "$timeout")
+  local ADB_DEADLINE=$d
   adb_t unroot >/dev/null 2>&1 || true
   retry_for "$((ADB_DEADLINE - SECONDS))" is_unrooted_shell \
     || die "adb is not the unrooted shell (uid 2000) after ${timeout}s"
@@ -107,8 +129,11 @@ LAST_REPORT=""
 LAST_REPORT=""
 LAST_SEEN_REPORT=""
 report_matches() { # $1 = jq filter
-  LAST_SEEN_REPORT="$(query_json diagnostics 2>/dev/null)" && [ -n "$LAST_SEEN_REPORT" ] \
-    && jq -e "$1" <<<"$LAST_SEEN_REPORT" >/dev/null 2>&1 && LAST_REPORT="$LAST_SEEN_REPORT"
+  # A failed query keeps the last report seen, for the timeout message.
+  local got
+  got="$(query_json diagnostics 2>/dev/null)" && [ -n "$got" ] || return 1
+  LAST_SEEN_REPORT="$got"
+  jq -e "$1" <<<"$got" >/dev/null 2>&1 && LAST_REPORT="$got"
 }
 wait_report() { # $1 = jq filter, $2 = timeout (s), $3 = description
   LAST_SEEN_REPORT=""
@@ -202,7 +227,7 @@ wait_id() { # $1 = resource-id (test tag), $2 = timeout (s), $3 = description
 
 tap_bounds() { # $1 = "l t r b"
   set -- $1
-  adb -s "$SERIAL" shell input tap $(( ($1 + $3) / 2 )) $(( ($2 + $4) / 2 ))
+  adb_t shell input tap $(( ($1 + $3) / 2 )) $(( ($2 + $4) / 2 ))
 }
 
 tap_desc() { # $1 = content-desc
@@ -224,7 +249,7 @@ tap_id() { # $1 = resource-id (test tag)
 # bound past any screen for a bar that is hidden or absent. With several
 # displays (the Fold) the union, which refuses more rather than less.
 system_bars() {
-  adb -s "$SERIAL" shell dumpsys window | tr -d '\r' | awk '
+  adb_t shell dumpsys window | tr -d '\r' | awk '
     / InsetsSource id=/ && /visible=true/ && match($0, /frame=\[[0-9]+,[0-9]+\]\[[0-9]+,[0-9]+\]/) {
       split(substr($0, RSTART + 6, RLENGTH - 6), f, /[^0-9]+/)
       if (/ type=statusBars / && f[5] > top) top = f[5]
@@ -281,7 +306,7 @@ print(x, y)
 PY
 )"
   [ -n "$point" ] || return 1
-  adb -s "$SERIAL" shell input tap $point
+  adb_t shell input tap $point
 }
 
 # "id left top right bottom" for every grid cell on screen.
@@ -404,6 +429,81 @@ resolve_postures() {
   log "postures: closed=$POSTURE_CLOSED half=$POSTURE_HALF opened=$POSTURE_OPENED"
 }
 
+# What the screen shows, from one dump: "search" while search is open (its
+# filter button is on screen), "home" while the launcher's bar is on screen
+# without it, "unknown" for a failed or empty dump or anything else, which
+# is never taken for either. So a failed look cannot pass a check.
+screen_state() {
+  dump_screen || { echo unknown; return 0; }
+  if grep -q 'content-desc="Show filters"' "$WORK/dump.xml"; then echo search
+  elif grep -q 'content-desc="Search"' "$WORK/dump.xml"; then echo home
+  else echo unknown; fi
+}
+search_is_open() { [ "$(screen_state)" = search ]; }
+home_is_shown() { [ "$(screen_state)" = home ]; }
+# One valid look, left in SCREEN: fails only on "unknown", so a caller can
+# retry for a readable dump without retrying for the answer it wants.
+SCREEN=unknown
+screen_known() { SCREEN="$(screen_state)"; [ "$SCREEN" != unknown ]; }
+
+# The soft keyboard's state, left in IME: shown, hidden, or unknown when adb
+# did not answer. "Not shown" is only ever a positive answer.
+IME=unknown
+ime_read() {
+  local state
+  # Captured first: grep -q stops at the first match, and under pipefail the
+  # writer's SIGPIPE would read as "not shown".
+  state="$(adb_t shell dumpsys input_method 2>/dev/null | tr -d '\r')" || { IME=unknown; return 1; }
+  if grep -q 'mInputShown=true' <<<"$state"; then IME=shown; else IME=hidden; fi
+}
+ime_shown() { ime_read && [ "$IME" = shown ]; }
+ime_hidden() { ime_read && [ "$IME" = hidden ]; }
+
+# Opens search from the launcher's bar and types $1, if given.
+#
+# Named open_search_field, not open_search, on purpose (#164): l4-search.sh
+# had an open_search that also typed a letter and closed the keyboard. A
+# function that moves into the library keeps its name only if it keeps its
+# behaviour; a different behaviour gets a different name, so a call site
+# that still means the old one fails loudly instead of changing silently.
+# #172's contacts step did exactly that on a conflict-free rebase.
+#
+# Bounded by rounds, and each round re-issues the tap: opening search is an
+# action that can be lost, and a tap that did not register cannot be waited
+# out, only repeated (#164). A wall-clock 10 s had room for about two looks
+# on the software-rendered fold (a dump about 4 s), and config-screenshots
+# failed there on 2026-09-26. Up to 3 rounds, each capped by ROUND_CAP
+# through adb_t. A success logs its rounds and seconds, so the need behind
+# the 3 is recorded, not guessed.
+search_open_round() {
+  search_is_open && return 0
+  local b
+  b="$(desc_bounds Search 2>/dev/null)" || b=""
+  [ -n "$b" ] && tap_bounds "$b"
+  search_is_open
+}
+open_search_field() { # [$1 = text to type]
+  local t0=$SECONDS
+  retry_rounds 3 "${ROUND_CAP:-20}" search_open_round \
+    || die "search did not open after 3 rounds of tapping the bar ($((SECONDS - t0)) s)"
+  log "search open after $ROUNDS_USED rounds, $((SECONDS - t0)) s"
+  [ -z "${1:-}" ] || adb_t shell input text "$1"
+}
+
+# Closes the soft keyboard if it comes up. It comes up a moment after the
+# field is focused, so a single look right away misses it. It takes the
+# first Back for itself, which would otherwise close search under a test
+# of Back. KEYBOARD_TIMEOUT (5 s) for it to come up, twice that to close.
+dismiss_keyboard() {
+  local timeout=${KEYBOARD_TIMEOUT:-5}
+  if ! retry_for "$timeout" ime_shown; then
+    [ "$IME" = hidden ] && return 0
+    die "could not read the keyboard's state within ${timeout}s"
+  fi
+  adb_t shell input keyevent KEYCODE_BACK >/dev/null 2>&1 || true
+  retry_for "$((2 * timeout))" ime_hidden || die "the keyboard did not close within $((2 * timeout))s"
+}
+
 # Waits until the node with resource id $1 is on the home screen, waking and
 # re-showing home in between: after a posture change the activity comes back
 # on the other display, and a check made before that sees the blank in
@@ -425,6 +525,9 @@ resolve_postures() {
 # the same: every cost here assumes an unloaded host.
 home_shows() {
   shows id_bounds "$1" && return 0
+  # Deliberately not deadline_in: the recovery may run past the round's cap,
+  # which a slow dump can use up entirely (review on #163). The bound
+  # 3 x (ROUND_CAP + RECOVERY_CAP + 1) s counts it.
   local ADB_DEADLINE=$((SECONDS + ${RECOVERY_CAP:-5}))
   wake_screen; show_home
   return 1
@@ -493,9 +596,5 @@ pull_config() { # $1 = local file
 }
 
 wait_text() { # $1 = visible text, $2 = timeout (s)
-  local elapsed=0
-  until [ -n "$(node_bounds text "$1")" ]; do
-    [ "$elapsed" -lt "$2" ] || die "timed out (${2}s) waiting for '$1' on screen"
-    sleep 1; elapsed=$((elapsed + 1))
-  done
+  retry_for "$2" shows node_bounds text "$1" || die "timed out (${2}s) waiting for '$1' on screen"
 }

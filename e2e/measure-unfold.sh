@@ -86,6 +86,7 @@ read -r -a revs <<<"${REVS:-}"
 resolve_postures   # POSTURE_CLOSED / POSTURE_OPENED: the ids differ between instances
 
 sh_() { adb -s "$SERIAL" shell "$@"; }
+perfetto_finished() { adb_t shell pidof perfetto >/dev/null 2>&1; [ $? = 1 ]; }
 rev() { printf '%s' "${revs[$1]:-unknown}"; }
 # A snapshot load can leave the host's adb transport offline for good (seen
 # on emulator-5562 after `run.sh start` plus `adb unroot`); reconnect it.
@@ -166,6 +167,7 @@ OUT="${OUT:-$HERE/measurements/unfold-${revlist%-}.tsv}"
   printf 'build\trun\thostload\tconfig_ms\tframe_start_ms\tframe_end_ms\tframe_ms\tscreen_on_ms\tdelay\tanim\tlayout\trecord\tsync\tissue\tswap\ttotal\n'
 } > "$OUT"
 
+# not a wait: RUNS measurement repetitions
 for run in $(seq "$RUNS"); do
   for name in "${names[@]}"; do
     restore "$name"
@@ -183,10 +185,13 @@ for run in $(seq "$RUNS"); do
       < "$WORK/trace.pbtx" >/dev/null
     sleep 2.5
     load="$(cut -d' ' -f1 /proc/loadavg)"
+    # not a wait: the hinge sweep, an animation at 40 ms per step
     for a in $(seq 10 10 180); do adb -s "$SERIAL" emu sensor set hinge-angle0 "$a" >/dev/null; sleep 0.04; done
     sleep 2
     sh_ dumpsys gfxinfo "$PKG" framestats > "$WORK/f.framestats"
-    for _ in $(seq 40); do sh_ pidof perfetto >/dev/null 2>&1 || break; sleep 0.5; done
+    # Up to 20 s of wall-clock time for perfetto to finish the trace (#164).
+    # Only pidof's "not found" (1) counts; a timed-out call (124) does not.
+    retry_for 20 perfetto_finished || log "$name: perfetto still running after 20 s; the trace may be cut short"
     adb -s "$SERIAL" pull /data/misc/perfetto-traces/unfold.pftrace "$WORK/t.pftrace" >/dev/null 2>&1
     split="$("$TP" -q "$WORK/split.sql" "$WORK/t.pftrace" 2>/dev/null | tail -n +2 | tr -d '"' | tr ',' '\t')"
     # The same frame in framestats, by its vsync id (the last column).

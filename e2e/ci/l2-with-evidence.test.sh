@@ -28,6 +28,8 @@ work="$ADB_FAKE_WORK"
 case "$*" in
   *"dumpsys window windows"*)
     if [ -e "$work/dumpfail" ] && [ -e "$work/stopped" ]; then exit 1; fi
+    if [ -e "$work/dumphang" ] && [ -e "$work/stopped" ]; then sleep 60; fi
+    if [ -e "$work/firstfail" ]; then exit 1; fi
     cat "$work/windows" ;;
   *"am force-stop "*) for a in "$@"; do pkg="$a"; done; echo "$pkg" >> "$work/stopped"
     [ -e "$work/sticky" ] || { grep -v "Application Not Responding: $pkg}" "$work/windows" > "$work/w2" || true; mv "$work/w2" "$work/windows"; } ;;
@@ -40,10 +42,10 @@ export ADB_FAKE_WORK="$WORK"
 export PATH="$WORK/bin:$PATH"
 # The re-check polls; the intervals are the script's own, shortened here so
 # the suite stays in seconds. The bound itself is what is under test.
-export ANR_RECHECK_TRIES=3 ANR_RECHECK_SLEEP=0
+export ANR_RECHECK_SECONDS=3 ANR_RECHECK_SLEEP=0
 
 windows() { # $@ = "Application Not Responding: <pkg>" entries, in z-order
-  : > "$WORK/windows"; rm -f "$WORK/stopped" "$WORK/sticky"
+  : > "$WORK/windows"; rm -f "$WORK/stopped" "$WORK/sticky" "$WORK/dumphang" "$WORK/firstfail"
   printf '  Window #1 Window{1 u0 com.example/com.example.Main}:\n' >> "$WORK/windows"
   local i=2 w
   for w in "$@"; do printf '  Window #%s Window{%s u0 %s}:\n' "$i" "$i" "$w" >> "$WORK/windows"; i=$((i + 1)); done
@@ -96,6 +98,41 @@ survives_a_dialog_that_comes_back() {
     grep -qi 'still' "$WORK/log"
 }
 check "a dialog that survives the dismissal is reported once, not looped on" survives_a_dialog_that_comes_back
+
+# The re-check is wall-clock time (#164). "5 tries, 1 s apart" read as five
+# seconds, but each try is a dumpsys over adb with no bound, so on a loaded
+# runner it lasted however long five of them took. A read that hangs must
+# not carry the re-check past ANR_RECHECK_SECONDS, and it must still end in
+# "running the tests anyway", never in a failed job.
+recheck_is_wall_clock() {
+  windows "Application Not Responding: com.android.launcher3"
+  : > "$WORK/sticky"; : > "$WORK/dumphang"
+  local start=$SECONDS
+  clear_stock_launcher_anr > "$WORK/log" 2>&1 || return 1
+  [ $((SECONDS - start)) -le $((ANR_RECHECK_SECONDS + 3)) ]
+}
+check "a hanging window read cannot carry the re-check past its deadline" recheck_is_wall_clock
+
+# The pause between reads is capped by what is left: a sleep longer than the
+# deadline must not start a read after it (#179 review).
+sleep_is_capped_by_the_deadline() {
+  windows "Application Not Responding: com.android.launcher3"
+  : > "$WORK/sticky"
+  local start=$SECONDS
+  ANR_RECHECK_SECONDS=3 ANR_RECHECK_SLEEP=5 clear_stock_launcher_anr > "$WORK/log" 2>&1 || return 1
+  [ $((SECONDS - start)) -le 4 ]
+}
+check "the re-check's pause cannot carry it past its deadline" sleep_is_capped_by_the_deadline
+
+# A first read of the window list that fails is said out loud, never taken
+# for "no ANR window": the dialog could still be there (#179 review).
+a_failed_first_read_is_reported() {
+  windows "Application Not Responding: com.android.launcher3"
+  : > "$WORK/firstfail"
+  clear_stock_launcher_anr > "$WORK/log" 2>&1 || return 1
+  grep -qi "could not read" "$WORK/log"
+}
+check "a failed first window read is reported, not taken for no ANR" a_failed_first_read_is_reported
 
 # The count, not the colour: a suite that reports only its passes hides the
 # checks that never ran (AGENTS.md, test policy).

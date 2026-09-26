@@ -182,6 +182,14 @@ adb -s "$SERIAL" install -r "$LAWNICONS_APK" | grep -q Success || die "Lawnicons
 adb -s "$SERIAL" install -r "$APK" | grep -q Success || die "launcher install failed"
 adb -s "$SERIAL" shell appwidget grantbind --package "$PKG" --user 0 >/dev/null
 adb -s "$SERIAL" shell cmd role add-role-holder android.app.role.HOME "$PKG" >/dev/null 2>&1 || true
+# The scenes set `search.contacts: true`, and since #172 the launcher
+# reports that as permission-missing when it does not hold READ_CONTACTS,
+# which fails every scene's clean-report check and puts a permission banner
+# into pictures about the search layout. Granting it is the state a user who
+# turned contact search on is in. The other way out, `contacts: false` in
+# the fixtures, is a smaller diff but would change what the pictures show.
+out="$(adb -s "$SERIAL" shell pm grant "$PKG" android.permission.READ_CONTACTS 2>&1)" \
+  || die "could not grant READ_CONTACTS to $PKG: ${out:-no output}"
 
 FOLDABLE=0
 states="$(adb -s "$SERIAL" shell cmd device_state print-states 2>/dev/null | tr -d '\r')"
@@ -202,18 +210,15 @@ wait_grid() { wait_on_home grid-item:dock; }
 # mean it is rendered (review on #89). Wait until the system reports a set
 # system wallpaper (id > 0) for user 0, as e2e/l4-config.sh reads it.
 wallpaper_id() {
-  adb -s "$SERIAL" shell dumpsys wallpaper 2>/dev/null | tr -d '\r' \
+  adb_t shell dumpsys wallpaper 2>/dev/null | tr -d '\r' \
     | awk '/wallpaper state:/ { in_sec = (index($0, "System wallpaper state:") > 0); next }
            in_sec && index($0, "User 0:") { if (match($0, /id=[0-9]+/)) { print substr($0, RSTART+3, RLENGTH-3); exit } }'
 }
+WALLPAPER_ID=""
+wallpaper_rendered() { WALLPAPER_ID="$(wallpaper_id)"; [ -n "$WALLPAPER_ID" ] && [ "$WALLPAPER_ID" != 0 ]; }
 wait_wallpaper() {
-  local i id
-  for i in $(seq 60); do
-    id="$(wallpaper_id)"
-    [ -n "$id" ] && [ "$id" != 0 ] && return 0
-    sleep 1
-  done
-  die "the wallpaper was not rendered within 60 s (system id ${id:-none})"
+  retry_for 60 wallpaper_rendered \
+    || die "the wallpaper was not rendered within 60 s (system id ${WALLPAPER_ID:-none})"
 }
 
 
@@ -234,45 +239,24 @@ capture() { # $1 = output jpg, $2 = width
   die "no display matched $size"
 }
 
-# Opens search from the launcher's own bar (content-desc "Search"; the grid's
-# search widgets only carry that as text) and types the scene's query.
-# Closes search again after the picture, so the next scene starts on home.
-ime_shown() {
-  # Captured first: `grep -q` stops at the first match, the writer upstream
-  # dies of SIGPIPE, and under pipefail a match would read as "not shown".
-  local state
-  state="$(adb -s "$SERIAL" shell dumpsys input_method | tr -d '\r')"
-  grep -q 'mInputShown=true' <<<"$state"
-}
-
-search_is_open() { [ -n "$(desc_bounds 'Show filters')" ]; }
-
-# Opens search from the launcher's own bar (content-desc "Search"; the grid's
-# search widgets only carry that as text), types the scene's query and
+# Opens search for a scene and types its query ("@open" types nothing), then
 # closes the keyboard, which would cover the results the picture is about.
-open_search() { # $1 = scene
-  local query="${SCENE_QUERY[$1]:-}" i
+# open_search_field, dismiss_keyboard and screen_state are the library's (#164).
+open_scene_search() { # $1 = scene
+  local query="${SCENE_QUERY[$1]:-}"
   [ -n "$query" ] || return 0
-  tap_desc Search
-  for i in $(seq 10); do search_is_open && break; sleep 1; done
-  search_is_open || die "$1: tapping the bar did not open search"
-  [ "$query" = @open ] || adb -s "$SERIAL" shell input text "$query"
-  # The keyboard comes up a moment after the field is focused.
-  for i in $(seq 5); do ime_shown && break; sleep 1; done
-  if ime_shown; then
-    adb -s "$SERIAL" shell input keyevent KEYCODE_BACK
-    for i in $(seq 10); do ime_shown || break; sleep 1; done
-  fi
+  if [ "$query" = @open ]; then open_search_field; else open_search_field "$query"; fi
+  dismiss_keyboard
   sleep 2
 }
 
-# Back from search to home, so the next scene starts there (#95).
-close_search() { # $1 = scene
-  local i
+# Back from search to home, so the next scene starts there (#95). "Left" is
+# a readable screen that is not search: a failed dump does not count.
+search_left() { screen_known && [ "$SCREEN" != search ]; }
+close_scene_search() { # $1 = scene
   [ -n "${SCENE_QUERY[$1]:-}" ] || return 0
   adb -s "$SERIAL" shell input keyevent KEYCODE_BACK
-  for i in $(seq 5); do search_is_open || return 0; sleep 1; done
-  die "$1: Back did not leave search"
+  retry_rounds 3 "${ROUND_CAP:-20}" search_left || die "$1: Back did not leave search (screen: $SCREEN)"
 }
 
 mkdir -p "$OUT"
@@ -292,22 +276,22 @@ for name in $SCENES; do
   if [ "$FOLDABLE" = 1 ]; then
     posture closed grid-item:dock
     wait_wallpaper
-    open_search "$name"
+    open_scene_search "$name"
     capture "$OUT/$name-fold-cover.jpg" 540
-    close_search "$name"
+    close_scene_search "$name"
     posture opened grid-item:dock
     wait_wallpaper
-    open_search "$name"
+    open_scene_search "$name"
     capture "$OUT/$name-fold-inner.jpg" 780
-    close_search "$name"
+    close_scene_search "$name"
   else
     show_home
     wait_grid
     wait_wallpaper
     sleep 3
-    open_search "$name"
+    open_scene_search "$name"
     capture "$OUT/$name-phone.jpg" 540
-    close_search "$name"
+    close_scene_search "$name"
   fi
 done
 ok "scenes written to $OUT"

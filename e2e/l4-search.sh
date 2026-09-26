@@ -67,8 +67,11 @@ unrooted_shell
 adb -s "$SERIAL" install -r "$APK" | grep -q Success || die "launcher install failed"
 # The Home-button step needs this launcher to be home: in another launcher
 # it would pass without testing anything.
-adb -s "$SERIAL" shell cmd role add-role-holder android.app.role.HOME "$PKG" >/dev/null 2>&1 \
-  || die "could not grant the HOME role to $PKG"
+# The command's own output goes into the failure: on 2026-09-26 11:33 this
+# failed with the reason sent to /dev/null, and it could not be told apart
+# afterwards from the emulator being slow under load.
+out="$(adb -s "$SERIAL" shell cmd role add-role-holder android.app.role.HOME "$PKG" 2>&1)" \
+  || die "could not grant the HOME role to $PKG: ${out:-no output}"
 roles="$(adb -s "$SERIAL" shell dumpsys role 2>/dev/null | tr -d '\r')"
 grep -A2 'android.app.role.HOME' <<<"$roles" | grep -q "holders=$PKG" \
   || die "$PKG does not hold the HOME role after add-role-holder"
@@ -76,83 +79,44 @@ ok "HOME role granted to $PKG"
 show_home
 wait_desc Search 30 "the launcher's search bar"
 
-# What the screen shows, from one valid dump: "search" while search is open
-# (its filter button is on screen), "home" while the launcher's bar is on
-# screen without it, "unknown" for an empty dump or anything else - which is
-# never taken for either, so a failed look cannot pass an exit check.
-screen_state() {
-  local i
-  for i in $(seq 5); do
-    adb -s "$SERIAL" shell rm -f /sdcard/grid-dump.xml >/dev/null 2>&1 || true
-    if adb -s "$SERIAL" shell uiautomator dump /sdcard/grid-dump.xml >/dev/null 2>&1; then
-      adb -s "$SERIAL" shell cat /sdcard/grid-dump.xml | tr -d '\r' > "$WORK/state.xml"
-      if [ -s "$WORK/state.xml" ]; then
-        if grep -q 'content-desc="Show filters"' "$WORK/state.xml"; then echo search; return; fi
-        if grep -q 'content-desc="Search"' "$WORK/state.xml"; then echo home; return; fi
-      fi
-    fi
-    sleep 1
-  done
-  echo unknown
-}
-search_open() { [ "$(screen_state)" = search ]; }
-
-ime_shown() {
-  # Captured first: `grep -q` stops at the first match, the writer upstream
-  # dies of SIGPIPE, and under pipefail a match would read as "not shown".
-  local state
-  state="$(adb -s "$SERIAL" shell dumpsys input_method | tr -d '\r')"
-  grep -q 'mInputShown=true' <<<"$state"
+# Opens search and types a letter, then closes the keyboard: it takes the
+# first Back for itself, and that is not under test. Search must still be
+# open afterwards. screen_state, open_search_field and dismiss_keyboard are the
+# library's (#164).
+enter_search() {
+  open_search_field c
+  dismiss_keyboard
+  search_is_open || die "search closed with the keyboard"
 }
 
-open_search() {
-  tap_desc Search
-  local i
-  for i in $(seq 10); do search_open && break; sleep 1; done
-  search_open || die "tapping the bar did not open search"
-  adb -s "$SERIAL" shell input text c
-  # The keyboard takes the first Back for itself; that is not under test. It
-  # comes up a moment after the field is focused - a single look right away
-  # missed it, and the Back under test then only closed the keyboard.
-  for i in $(seq 5); do ime_shown && break; sleep 1; done
-  if ime_shown; then
-    adb -s "$SERIAL" shell input keyevent KEYCODE_BACK
-    for i in $(seq 10); do ime_shown || break; sleep 1; done
-    ime_shown && die "the keyboard did not close"
-  fi
-  search_open || die "search closed with the keyboard"
-}
-
-# Home must come back within 5 s and still be there 3 s later: the defect
-# closed search and reopened it within 50 ms, so one early look would pass.
-# Both looks must positively see home.
+# Home must come back and still be there 3 s later: the defect closed search
+# and reopened it within 50 ms, so one early look would pass. Both looks
+# must positively see home. The first gets 3 looks, bounded by rounds (#126):
+# a dump takes about 4 s on the emulator, so "within 5 s" had room for one
+# look, while the loop it replaces allowed up to 25 dumps. The second look
+# retries only for a readable dump, never for a second chance at home.
 assert_home_stays() { # $1 = how search was left
-  local _ state=unknown
-  for _ in $(seq 5); do
-    state="$(screen_state)"
-    [ "$state" = home ] && break
-    sleep 1
-  done
-  [ "$state" = home ] || die "$1: not back on the home screen (screen: $state)"
+  retry_rounds 3 "${ROUND_CAP:-20}" home_is_shown \
+    || die "$1: not back on the home screen after 3 looks (screen: $(screen_state))"
   sleep 3
-  state="$(screen_state)"
-  [ "$state" = home ] || die "$1: home did not stay (screen: $state)"
+  retry_rounds 3 "${ROUND_CAP:-20}" screen_known || true
+  [ "$SCREEN" = home ] || die "$1: home did not stay (screen: $SCREEN)"
   ok "$1: back on the home screen, and it stays"
 }
 
 log "leaving search with the Back key"
-open_search
+enter_search
 adb -s "$SERIAL" shell input keyevent KEYCODE_BACK
 assert_home_stays "Back key"
 
 log "leaving search with a swipe down on the results"
-open_search
+enter_search
 read -r width height < <(adb -s "$SERIAL" shell wm size | tr -d '\r' | awk '/size/ {s=$NF} END {split(s, a, "x"); print a[1], a[2]}')
 adb -s "$SERIAL" shell input swipe $((width / 2)) $((height / 4)) $((width / 2)) $((height * 3 / 4)) 250
 assert_home_stays "swipe down"
 
 log "leaving search with the Home button"
-open_search
+enter_search
 adb -s "$SERIAL" shell input keyevent KEYCODE_HOME
 assert_home_stays "Home button"
 
@@ -171,7 +135,10 @@ assert_jq "$report" \
   '.success == true and ([.diagnostics[]? | select(.code == "permission-missing" and .path == "search.contacts" and .severity == "warning")] | length) == 1' \
   "the report says contact search cannot work here"
 assert_jq "$(query_json config)" '.search.contacts == true' "the read-back keeps what the file asked for"
-open_search
+# enter_search: #172 wrote this against the script's former open_search,
+# which also typed a letter and closed the keyboard. The library's
+# open_search_field types nothing, and the banner answers a query.
+enter_search
 wait_text "Contacts permission is required to search your contacts" 15
 wait_text "Turn off" 5
 adb -s "$SERIAL" shell input keyevent KEYCODE_HOME

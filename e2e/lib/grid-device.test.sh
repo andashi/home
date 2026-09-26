@@ -225,6 +225,7 @@ bounded() { # $@ = a wait call with a 3 s timeout
   [ $((SECONDS - start)) -le 6 ]
 }
 check "wait_desc gives up after its timeout" bounded wait_desc Search 3 test
+check "wait_text gives up after its timeout" bounded wait_text "Grid and icons" 3
 check "wait_id gives up after its timeout" bounded wait_id grid-edit-done 3 test
 check "wait_cells gives up after its timeout" bounded wait_cells 1 3
 check "wait_report gives up after its timeout" bounded "wait_report '.success' 3 test"
@@ -392,5 +393,152 @@ recovery_runs_after_a_slow_dump() {
   grep -q KEYCODE_WAKEUP "$WORK/slowdump/recovery" 2>/dev/null && grep -q "am start" "$WORK/slowdump/recovery"
 }
 check "a round whose dump used up its cap still wakes the device and reopens home" recovery_runs_after_a_slow_dump
+
+# The search helpers config-screenshots.sh and l4-search.sh each carried a
+# copy of (#164). screen_state reads one dump; the waits around it are
+# bounded like every other wait in the library.
+mkdir -p "$WORK/search"
+cat > "$WORK/search/adb" <<EOF
+#!/usr/bin/env bash
+case "\$*" in
+  *"cat /sdcard/grid-dump.xml"*) cat "$WORK/search/screen.xml" ;;
+  *"dumpsys input_method"*) cat "$WORK/search/ime.txt" ;;
+  *"KEYCODE_BACK"*) echo "  mInputShown=false" > "$WORK/search/ime.txt" ;;
+  *"input tap"*) echo '<hierarchy><node content-desc="Show filters" bounds="[0,0][9,9]"/></hierarchy>' > "$WORK/search/screen.xml" ;;
+esac
+EOF
+chmod +x "$WORK/search/adb"
+home_screen() { echo '<hierarchy><node content-desc="Search" bounds="[0,0][9,9]"/></hierarchy>' > "$WORK/search/screen.xml"; }
+screen_state_reads_the_screen() {
+  local home search none
+  home_screen; home="$(PATH="$WORK/search:$PATH" screen_state)"
+  echo '<hierarchy><node content-desc="Show filters" bounds="[0,0][9,9]"/><node content-desc="Search" bounds="[0,0][9,9]"/></hierarchy>' > "$WORK/search/screen.xml"
+  search="$(PATH="$WORK/search:$PATH" screen_state)"
+  : > "$WORK/search/screen.xml"; none="$(PATH="$WORK/search:$PATH" screen_state)"
+  [ "$home/$search/$none" = "home/search/unknown" ]
+}
+check "screen_state tells home from search, and an empty dump from both" screen_state_reads_the_screen
+opens_search_and_dismisses_the_keyboard() {
+  home_screen; echo "  mInputShown=true" > "$WORK/search/ime.txt"
+  ( PATH="$WORK/search:$PATH"; open_search_field c && dismiss_keyboard ) >/dev/null 2>&1 \
+    && grep -q "mInputShown=false" "$WORK/search/ime.txt"
+}
+check "open_search_field opens search, dismiss_keyboard closes the keyboard" opens_search_and_dismisses_the_keyboard
+# 3 rounds at a 1 s cap, each a look, a tap lookup and a look: 3 x 1 + 2 s
+# of pauses = 5 s nominal, plus 3 s for whole-second rounding and scheduling.
+open_search_is_bounded_by_its_rounds() {
+  local start=$SECONDS
+  ( PATH="$WORK/wedged:$PATH" timeout 60 bash -c "$(declare -f); $(declare -p SERIAL PKG WORK STATE_URI 2>/dev/null); ROUND_CAP=1 open_search_field c" ) >/dev/null 2>&1 && return 1
+  [ $((SECONDS - start)) -le $((3 * 1 + 2 + 3)) ]
+}
+check "open_search_field gives up after its rounds on a wedged device" open_search_is_bounded_by_its_rounds
+check "dismiss_keyboard gives up after its timeout on a wedged device" bounded "KEYBOARD_TIMEOUT=1 dismiss_keyboard"
+
+# A wait inside a wait cannot extend the outer deadline: the inner retry_for
+# gets what is left of the outer one at most (#164, query_json_as_user is
+# called inside wait_diagnostics_sha).
+nested_waits_share_the_outer_deadline() {
+  local start=$SECONDS
+  never() { sleep 1; return 1; }
+  inner() { retry_for 30 never; return 1; }
+  retry_for 3 inner
+  [ $((SECONDS - start)) -le 6 ]
+}
+check "a nested retry_for cannot extend the outer deadline" nested_waits_share_the_outer_deadline
+
+# Opening search is an action that can be lost: a tap that did not register
+# cannot be waited out, only repeated. On the fold with software rendering a
+# dump took about 4 s, so a 10 s bound had room for two looks, and
+# config-screenshots.sh failed there (#164, 2026-09-26 10:11). open_search_field
+# makes up to 3 rounds, each re-issuing the tap, each capped, and says what
+# they cost. The fake loses the first two taps.
+mkdir -p "$WORK/slowsearch"
+cat > "$WORK/slowsearch/adb" <<EOF
+#!/usr/bin/env bash
+case "\$*" in
+  *"uiautomator dump"*) sleep 4 ;;
+  *"input tap"*)
+    n=\$(( \$(cat "$WORK/slowsearch/taps" 2>/dev/null || echo 0) + 1 )); echo "\$n" > "$WORK/slowsearch/taps" ;;
+  *"cat /sdcard/grid-dump.xml"*)
+    # the first two taps are lost; search opens on the third
+    if [ "\$(cat "$WORK/slowsearch/taps" 2>/dev/null || echo 0)" -ge 3 ]; then echo '<hierarchy><node content-desc="Show filters" bounds="[0,0][9,9]"/></hierarchy>'
+    else echo '<hierarchy><node content-desc="Search" bounds="[0,0][9,9]"/></hierarchy>'; fi ;;
+esac
+EOF
+chmod +x "$WORK/slowsearch/adb"
+open_search_waits_three_slow_rounds() {
+  local out
+  rm -f "$WORK/slowsearch/taps"
+  out="$( ( PATH="$WORK/slowsearch:$PATH"; log() { printf '%s\n' "$*"; }; open_search_field ) 2>&1 )" || { printf '%s\n' "$out" >&2; return 1; }
+  grep -qE "search open after 3 rounds, [0-9]+ s" <<<"$out"
+}
+check "open_search_field waits three rounds on a slow host and says what they cost" open_search_waits_three_slow_rounds
+
+# The old name is gone on purpose: a call site that still means the
+# script's former open_search (type a letter, close the keyboard) must fail
+# with "command not found", never run the library's different function.
+old_open_search_is_gone() { ! declare -F open_search >/dev/null; }
+check "no open_search exists, so an old call site fails loudly" old_open_search_is_gone
+
+# Round-based waits inside a wall-clock wait stop at the outer deadline too:
+# the pause and the next round are skipped once it has passed (#179 review).
+rounds_keep_the_outer_deadline() {
+  local start=$SECONDS
+  failing() { sleep 1; return 1; }
+  retry_for 2 retry_rounds 5 1 failing
+  [ $((SECONDS - start)) -le 3 ]
+}
+check "retry_rounds inside retry_for stops at the outer deadline" rounds_keep_the_outer_deadline
+# tap_text's own adb calls (the window insets it measures, the tap itself)
+# are bounded like every other call: a fake that finds the node but hangs on
+# them must not hold tap_text past its deadline (#179 review).
+mkdir -p "$WORK/tapwedge"
+cat > "$WORK/tapwedge/adb" <<'EOF'
+#!/usr/bin/env bash
+case "$*" in
+  *"cat /sdcard/grid-dump.xml"*) echo '<hierarchy><node text="Search" bounds="[100,900][300,1000]"/></hierarchy>' ;;
+  *"dumpsys window"*|*"input tap"*) sleep 60 ;;
+  *"wm size"*) echo "Physical size: 1080x1920" ;;
+esac
+EOF
+chmod +x "$WORK/tapwedge/adb"
+tap_text_is_bounded() {
+  local start=$SECONDS
+  ( PATH="$WORK/tapwedge:$PATH" timeout 60 bash -c "$(declare -f); $(declare -p SERIAL PKG WORK 2>/dev/null); ADB_DEADLINE=\$((SECONDS + 3)); tap_text Search" ) >/dev/null 2>&1
+  [ $((SECONDS - start)) -le 6 ]
+}
+check "tap_text's own adb calls give up at the deadline" tap_text_is_bounded
+
+# A timed-out wait_report prints the last report it saw, even when the query
+# after it failed: a failed query must not wipe the evidence (#179 review).
+mkdir -p "$WORK/flaky"
+cat > "$WORK/flaky/adb" <<EOF
+#!/usr/bin/env bash
+case "\$*" in
+  *"content query"*"/diagnostics"*)
+    n=\$(( \$(cat "$WORK/flaky/n" 2>/dev/null || echo 0) + 1 )); echo "\$n" > "$WORK/flaky/n"
+    [ "\$n" = 1 ] && echo 'Row: 0 json={"success":false,"marker":"seen"}' || exit 1 ;;
+esac
+EOF
+chmod +x "$WORK/flaky/adb"
+timeout_keeps_the_last_report() {
+  local out
+  rm -f "$WORK/flaky/n"
+  out="$( ( PATH="$WORK/flaky:$PATH"; wait_report '.success == true' 3 test ) 2>&1 )" && return 1
+  grep -q '"marker":"seen"' <<<"$out"
+}
+check "a wait_report timeout prints the last report seen, not what a failed query left" timeout_keeps_the_last_report
+
+# No round starts after an outer deadline has passed: the time is checked
+# again after the pause, not only before it (#179 review).
+no_round_starts_late() {
+  local deadline_at starts=()
+  record() { echo "$SECONDS" >> "$WORK/starts"; sleep 1; return 1; }
+  rm -f "$WORK/starts"
+  deadline_at=$((SECONDS + 2))
+  ( ADB_DEADLINE=$deadline_at; retry_rounds 5 1 record ) || true
+  while read -r t; do [ "$t" -le "$deadline_at" ] || return 1; done < "$WORK/starts"
+}
+check "retry_rounds starts no round after an outer deadline" no_round_starts_late
 
 exit "$failed"
