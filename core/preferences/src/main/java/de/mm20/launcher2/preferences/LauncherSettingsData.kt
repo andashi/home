@@ -151,6 +151,19 @@ enum class ColorScheme {
     System,
 }
 
+/**
+ * The ids of the built-in colour schemes, the one place they are defined:
+ * data/themes names its built-ins by these, and `appearance.theme.colors`
+ * maps its slugs onto them (#3 slice 3). Any other id is a scheme a person
+ * made.
+ */
+object BuiltInColorSchemes {
+    /** Follows the system (Monet) palette; also the default of every theme part. */
+    val System: UUID = UUID(0L, 0L)
+    val BlackAndWhite: UUID = UUID(0L, 1L)
+    val HighContrast: UUID = UUID(0L, 2L)
+}
+
 @Serializable
 enum class SearchBarStyle {
     Transparent,

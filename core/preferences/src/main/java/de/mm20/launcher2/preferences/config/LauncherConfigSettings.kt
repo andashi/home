@@ -6,6 +6,10 @@ import de.mm20.launcher2.config.ConfigMutation
 import de.mm20.launcher2.config.ConfigState
 import de.mm20.launcher2.config.InSearchBarPosition
 import de.mm20.launcher2.config.SearchBarPosition
+import de.mm20.launcher2.config.ThemeColors
+import de.mm20.launcher2.config.ThemeMode
+import de.mm20.launcher2.preferences.BuiltInColorSchemes
+import de.mm20.launcher2.preferences.ColorScheme
 import de.mm20.launcher2.preferences.LauncherDataStore
 import de.mm20.launcher2.preferences.LauncherSettingsData
 import kotlinx.coroutines.flow.Flow
@@ -95,6 +99,18 @@ internal class LauncherConfigSettingsImpl(
             glassContrast = data.glassContrast,
             glassWallpaperBlur = data.glassWallpaperBlur,
             glassSearchWallpaperBlur = data.glassSearchWallpaperBlur,
+            themeMode = when (data.uiColorScheme) {
+                ColorScheme.Light -> ThemeMode.Light
+                ColorScheme.Dark -> ThemeMode.Dark
+                ColorScheme.System -> ThemeMode.System
+            },
+            // A scheme a person made has no slug: null, and the file keeps its own.
+            themeColors = when (data.uiColorsId) {
+                BuiltInColorSchemes.System -> ThemeColors.System
+                BuiltInColorSchemes.BlackAndWhite -> ThemeColors.BlackAndWhite
+                BuiltInColorSchemes.HighContrast -> ThemeColors.HighContrast
+                else -> null
+            },
             // search (#91): upstream's own settings, which the search UI reads.
             search = SearchState(
                 favorites = data.favoritesEnabled,
@@ -177,6 +193,21 @@ internal class LauncherConfigSettingsImpl(
                 glassContrast = mutation.contrast ?: glassContrast,
                 glassWallpaperBlur = mutation.wallpaperBlur ?: glassWallpaperBlur,
                 glassSearchWallpaperBlur = mutation.searchWallpaperBlur ?: glassSearchWallpaperBlur,
+            )
+
+            is ConfigMutation.SetTheme -> copy(
+                uiColorScheme = when (mutation.mode) {
+                    ThemeMode.Light -> ColorScheme.Light
+                    ThemeMode.Dark -> ColorScheme.Dark
+                    ThemeMode.System -> ColorScheme.System
+                    null -> uiColorScheme
+                },
+                uiColorsId = when (mutation.colors) {
+                    ThemeColors.System -> BuiltInColorSchemes.System
+                    ThemeColors.BlackAndWhite -> BuiltInColorSchemes.BlackAndWhite
+                    ThemeColors.HighContrast -> BuiltInColorSchemes.HighContrast
+                    null -> uiColorsId
+                },
             )
 
             is ConfigMutation.SetSearch -> with(mutation.search) {
