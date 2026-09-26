@@ -202,6 +202,12 @@ afterthought (see `docs/architecture/adr/0005-testing-strategy.md`):
   <before>.tsv <after>.tsv` prints the deltas and names the permissions that
   appeared or disappeared. Every module-diet PR (#20) carries a before/after
   from it.
+- **Cold start and unfold, build against build**: `e2e/measure-coldstart.sh`
+  (`am start -W` TotalTime) and `e2e/measure-unfold.sh` (the first frame
+  after an unfold). Each prepares one snapshot per APK and alternates the
+  builds round by round; compare them **pairwise** (same round, same start),
+  never by unpaired medians: on a loaded host those can land the wrong way
+  round (#167).
 
 ## CI
 
