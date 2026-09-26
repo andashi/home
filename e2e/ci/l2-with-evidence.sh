@@ -10,10 +10,9 @@
 # crash lines name that surface, whichever test it lands on. Every logcat
 # line is stamped in seconds since boot, and so are the tests' starts and
 # failures, which is what tells whether the surface comes at a fixed time
-# after boot. One dialog is dismissed before the run, and exactly one: the
-# CI emulator's own launcher, named below. Nothing else is touched or
-# suppressed - a dialog of the launcher under test must stay as visible as
-# any other, and the evidence printed on failure is what names it.
+# after boot. Before the run, the ANR dialogs of every package but the app
+# under test are dismissed; the app under test's own stays as visible as any
+# failure, and the evidence printed on failure is what names it.
 set -uo pipefail
 
 # Sourcing this file defines its functions and runs nothing, so
@@ -22,21 +21,29 @@ set -uo pipefail
 # below ends the test file before a single check runs - silently, and
 # looking exactly like a passing suite.
 
-# The CI emulator's own launcher ANRs on roughly one boot in ten, about 45 s
-# before the first test, and the "Application Not Responding" dialog it
-# leaves never goes away on its own. It sits above everything with a dim
-# layer, so every screen-sampling test whose sample falls under it fails on
-# pixels rather than on a name (#113).
+# An "Application Not Responding" dialog never goes away on its own. It sits
+# above everything with a dim layer, so every screen-sampling test whose
+# sample falls under it fails on pixels rather than on a name (#113). The
+# CI emulator's own launcher ANRs on roughly one boot in ten, about 45 s
+# before the first test; #189 met one of System UI's.
 #
-# Only that one package is touched, named exactly and never as a pattern. An
-# ANR of the launcher under test, or of anything else, is reported here and
-# left where it is: the tests must see it, and the evidence below names it.
+# The rule: an ANR of the app under test is reported and left where it is,
+# because the tests must see it and the evidence below names it. Any other
+# package's is dismissed: its dialog carries no signal about us and covers
+# any test's window. The first version dismissed only the stock launcher and
+# left everything else, which drew the line one case short (#189).
+#
+# Ours is named exactly and never as a pattern: a package that only looks
+# like one of ours, or matches one only as a regex, is foreign.
 #
 # An ANR that fires after this check - a slower boot - still lands on a test,
 # and the post-failure dump names it there instead. That is the right
 # failure mode: this removes a known obstruction, it does not promise a clear
 # screen.
-STOCK_HOME=com.android.launcher3
+#
+# The app under test: the instrumentation package of :app:ui's tests, and the
+# launcher's own ids. A caller running another app's tests sets it.
+: "${APP_UNDER_TEST:=de.mm20.launcher2.ui.test org.andashi.home org.andashi.home.debug}"
 # The re-check after the dismissal is wall-clock time (#164): "5 tries, 1 s
 # apart" read as five seconds, but each try is a dumpsys over adb, and on a
 # loaded runner five unbounded dumpsys calls take however long they take.
@@ -49,7 +56,13 @@ anr_packages() { # [$1 = seconds for the read, default 10] one package per ANR w
     sed -n 's/.*Application Not Responding: \([A-Za-z0-9_.]*\).*/\1/p' | sort -u
 }
 
-clear_stock_launcher_anr() {
+is_ours() { # $1 = package; exact string equality, never a pattern
+  local p
+  for p in $APP_UNDER_TEST; do [ "$1" = "$p" ] && return 0; done
+  return 1
+}
+
+clear_foreign_anrs() {
   local pkgs
   # Split from the declaration, and checked: a read that failed or timed out
   # leaves the list empty, and an empty list must not read as "no ANR
@@ -61,40 +74,104 @@ clear_stock_launcher_anr() {
   fi
   [ -n "$pkgs" ] || return 0
   printf '::group::#113 ANR windows on screen before the tests\n%s\n::endgroup::\n' "$pkgs"
-  if ! printf '%s\n' "$pkgs" | grep -Fxq -- "$STOCK_HOME"; then
-    printf 'Leaving them: none is %s. The tests will show what they cover.\n' "$STOCK_HOME"
-    return 0
-  fi
-  printf 'Dismissing the stock launcher ANR dialog (%s) so it cannot cover a test.\n' "$STOCK_HOME"
-  adb shell am force-stop "$STOCK_HOME"
-  local deadline=$((SECONDS + ANR_RECHECK_SECONDS)) after
+  local pkg foreign=()
+  while IFS= read -r pkg; do
+    if is_ours "$pkg"; then
+      printf 'Leaving %s: it is the app under test, and the tests must see it.\n' "$pkg"
+    else
+      foreign+=("$pkg")
+    fi
+  done <<<"$pkgs"
+  [ "${#foreign[@]}" -gt 0 ] || return 0
+  for pkg in "${foreign[@]}"; do
+    printf 'Dismissing the ANR dialog of %s, which is not the app under test, so it cannot cover a test.\n' "$pkg"
+    adb shell am force-stop "$pkg"
+  done
+  local deadline=$((SECONDS + ANR_RECHECK_SECONDS)) after left
   # Bounded by `deadline`; each read gets what is left of it.
   while [ "$SECONDS" -lt "$deadline" ]; do
     # The pause is capped by what is left, and the time is checked again
     # after it: a read never starts past the deadline (#179 review).
-    local left=$((deadline - SECONDS))
+    left=$((deadline - SECONDS))
     [ "$ANR_RECHECK_SLEEP" = 0 ] || sleep "$(( ANR_RECHECK_SLEEP < left ? ANR_RECHECK_SLEEP : left ))"
     [ "$SECONDS" -lt "$deadline" ] || break
     # Split from the declaration: `local after=$(...)` reports the
     # declaration's status, not the read's, and a screen that could not be
     # read would then look like an empty one.
     if ! after="$(anr_packages "$(( deadline - SECONDS > 0 ? deadline - SECONDS : 1 ))")"; then
-      printf 'Could not read the window list; not claiming the dialog is gone.\n'
+      printf 'Could not read the window list; not claiming the dialogs are gone.\n'
       return 0
     fi
-    printf '%s\n' "$after" | grep -Fxq -- "$STOCK_HOME" || { printf 'Gone.\n'; return 0; }
+    local remaining=0
+    for pkg in "${foreign[@]}"; do
+      if printf '%s\n' "$after" | grep -Fxq -- "$pkg"; then remaining=1; fi
+    done
+    [ "$remaining" = 1 ] || { printf 'Gone.\n'; return 0; }
   done
-  # HOME restarts after a force-stop and can ANR again on a slow boot.
-  # Saying so once is worth more than looping: the tests and the evidence
-  # below are the honest reporters, and a second attempt would only spend
-  # the job's time.
+  # Still there. A persistent process (System UI) survives force-stop: on the
+  # device its pid stayed the same and the dialog stayed up (#189). Its
+  # dialog's Wait button closes it without killing anything. The button
+  # cannot be tied to a package in the dump, so it is pressed only while no
+  # ANR window of ours is on screen - the one pressed could be ours.
+  if press_wait_on_foreign "${foreign[@]}"; then
+    printf 'Gone after Wait.\n'
+    return 0
+  fi
+  # A dismissed app restarts after a force-stop and can ANR again on a slow
+  # boot. Saying so once is worth more than looping: the tests and the
+  # evidence below are the honest reporters, and a second attempt would only
+  # spend the job's time.
   printf 'Still there after the dismissal; leaving it and running the tests anyway.\n'
+  return 0
+}
+
+# Presses the Wait button (android:id/aerr_wait) of the topmost ANR dialog,
+# once per foreign package, while every ANR window on screen is foreign.
+# Succeeds when none of $@ is left.
+press_wait_on_foreign() { # $@ = the foreign packages
+  local round now pkg bounds
+  for round in "$@"; do
+    now="$(anr_packages 5)" || return 1
+    local left=0 ours_up=0
+    while IFS= read -r pkg; do
+      [ -n "$pkg" ] || continue
+      if is_ours "$pkg"; then ours_up=1; else left=1; fi
+    done <<<"$now"
+    [ "$left" = 1 ] || return 0
+    if [ "$ours_up" = 1 ]; then
+      printf 'An ANR window of the app under test is up too; not pressing Wait, it could be ours.\n'
+      return 1
+    fi
+    timeout 10 adb shell uiautomator dump /sdcard/anr-dump.xml >/dev/null 2>&1 || return 1
+    bounds="$(timeout 10 adb shell cat /sdcard/anr-dump.xml 2>/dev/null | tr -d '\r' |
+      grep -o 'resource-id="android:id/aerr_wait"[^>]*bounds="\[[0-9]*,[0-9]*\]\[[0-9]*,[0-9]*\]"' |
+      sed -n 's/.*bounds="\[\([0-9]*\),\([0-9]*\)\]\[\([0-9]*\),\([0-9]*\)\]".*/\1 \2 \3 \4/p' | head -1)"
+    [ -n "$bounds" ] || { printf 'No Wait button in the dump.\n'; return 1; }
+    set -- $bounds
+    printf 'Pressing Wait on the ANR dialog that survived force-stop.\n'
+    timeout 10 adb shell input tap $(( ($1 + $3) / 2 )) $(( ($2 + $4) / 2 ))
+    # The dialog closes a moment after the tap: the device's first look right
+    # after it still found System UI's (#189). Wait for the list to change,
+    # bounded like the re-check above.
+    local before="$now" deadline=$((SECONDS + ANR_RECHECK_SECONDS)) pause
+    while [ "$SECONDS" -lt "$deadline" ]; do
+      pause=$((deadline - SECONDS))
+      [ "$ANR_RECHECK_SLEEP" = 0 ] || sleep "$(( ANR_RECHECK_SLEEP < pause ? ANR_RECHECK_SLEEP : pause ))"
+      now="$(anr_packages "$(( deadline - SECONDS > 0 ? deadline - SECONDS : 1 ))")" || return 1
+      [ "$now" = "$before" ] || break
+    done
+  done
+  now="$(anr_packages 5)" || return 1
+  while IFS= read -r pkg; do
+    [ -n "$pkg" ] || continue
+    is_ours "$pkg" || return 1
+  done <<<"$now"
   return 0
 }
 
 [ "${BASH_SOURCE[0]}" = "$0" ] || return 0
 
-clear_stock_launcher_anr
+clear_foreign_anrs
 
 "$@"
 status=$?
