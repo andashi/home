@@ -320,10 +320,10 @@ afterthought (see `docs/architecture/adr/0005-testing-strategy.md`):
 - **Cold start and unfold, build against build**: `e2e/measure-coldstart.sh`
   (`am start -W` TotalTime) and `e2e/measure-unfold.sh` (the first frame
   after an unfold). Each prepares one snapshot per APK and alternates the
-  builds round by round. `measure-coldstart.sh` also **alternates their
-  order** within a round: with a fixed order, a load trend within a round
-  always lands on the same build. `measure-unfold.sh` still runs a fixed
-  order until this is carried over.
+  builds round by round, **alternating their order** within a round: with a
+  fixed order, a load trend within a round always lands on the same build.
+  `measure-unfold.sh` ran a fixed order before #175, so every unfold series
+  committed before it, #158's included, carries that position bias.
   - Compare **pairwise** (same round, same start), never by unpaired
     medians. On #167, a fixed-order series at host load 11-15 had the
     unpaired medians put the build with extra start-up work 140 ms *faster*
