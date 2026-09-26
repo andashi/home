@@ -155,14 +155,22 @@ device has.
 from the system (its Monet seed), and the launcher follows it. A file names
 one of the built-in schemes; it cannot define a palette. `black-and-white`
 and `high-contrast` replace the zone's palette in the launcher's own
-colours. On the glass surfaces that is slight: they carry the scheme's
-surface colour only at the glass tint (0.12 by default), so the wallpaper
-behind them still dominates. `mode` is the visible switch: dark glass and
-light text, or the reverse.
+colours.
 
-| <img alt="search open, theme system/system, fold inner" src="img/theme-system-fold-inner.jpg" width="260"> | <img alt="search open, theme dark/high-contrast, fold inner" src="img/theme-dark-high-contrast-fold-inner.jpg" width="260"> | <img alt="search open, theme light/black-and-white, fold inner" src="img/theme-light-black-and-white-fold-inner.jpg" width="260"> |
-|---|---|---|
-| `system`, `system` (light on this device) | `dark`, `high-contrast` | `light`, `black-and-white` |
+What each key changes on the glass look, measured on the fold's inner
+display with search open (emulator, the system itself in light mode):
+
+- `mode` turns the text white on `dark` and dark on `light`, and darkens the
+  glass slightly (the search bar's mean brightness 219 on `light`, 206 on
+  `dark`, out of 255).
+- `colors` shows only in the text's tone: `black-and-white` is pure black
+  where `system` is a tinted dark grey. The glass itself stays the same
+  (219.4 against 219.9): it carries the scheme's surface colour only at the
+  glass tint, 0.12 by default, and the wallpaper behind it dominates.
+
+| <img alt="search results, mode light, colors system, fold inner" src="img/theme-mode-light-fold-inner.jpg" width="260"> | <img alt="search results, mode dark, colors system, fold inner" src="img/theme-mode-dark-fold-inner.jpg" width="260"> |
+|---|---|
+| `"mode": "light"` | `"mode": "dark"` |
 
 On the device, a person can also pick a colour scheme they made themselves.
 The file cannot name one, so write-back leaves `colors` as the file wrote it,
