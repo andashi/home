@@ -317,6 +317,22 @@ afterthought (see `docs/architecture/adr/0005-testing-strategy.md`):
   <before>.tsv <after>.tsv` prints the deltas and names the permissions that
   appeared or disappeared. Every module-diet PR (#20) carries a before/after
   from it.
+- **Cold start and unfold, build against build**: `e2e/measure-coldstart.sh`
+  (`am start -W` TotalTime) and `e2e/measure-unfold.sh` (the first frame
+  after an unfold). Each prepares one snapshot per APK and alternates the
+  builds round by round, **in alternating order**: with a fixed order, a
+  load trend within a round always lands on the same build.
+  (`measure-unfold.sh` still runs a fixed order until this is carried over.)
+  - Compare **pairwise** (same round, same start), never by unpaired
+    medians. On #167, a fixed-order series at host load 11-15 had the
+    unpaired medians put the build with extra start-up work 140 ms *faster*
+    (626 against 766 ms), opposite to the hypothesis - the spread dominated.
+  - A median whose paired spread dwarfs it is not quoted, not even as
+    colour: "351 ms before, 341 after" in the v0.8.0 notes sat on a paired
+    spread of -55 to +401 ms.
+  - Measure on a quiet host, or say that the host was not quiet: at load
+    11-18 these series cannot resolve tens of milliseconds, and a null result
+    from them is not evidence that a cost was looked for and not found.
 
 ## CI
 
