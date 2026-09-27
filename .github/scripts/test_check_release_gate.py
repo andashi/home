@@ -63,6 +63,34 @@ class ReleaseGateTest(unittest.TestCase):
         found = gate.violations(workflow)
         self.assertIn("jobs.release pins no release certificate SHA-256 (RELEASE_CERT_SHA256, 64 hex)", found)
 
+    # A check whose failure is swallowed is the defect #204 fixed, again.
+    def test_a_masked_signer_check_is_a_violation(self):
+        mask = lambda line: line + " || true" if "check-release-signer.py" in line else line
+        found = gate.violations(release_with(mask))
+        self.assertIn('jobs.release does not check the signer with check-release-signer.py "$RELEASE_CERT_SHA256"', found)
+
+    def test_a_negated_signer_check_is_a_violation(self):
+        negate = lambda line: line.replace("python3", "! python3") if "check-release-signer.py" in line else line
+        found = gate.violations(release_with(negate))
+        self.assertIn('jobs.release does not check the signer with check-release-signer.py "$RELEASE_CERT_SHA256"', found)
+
+    def test_errexit_turned_off_before_the_signer_check_is_a_violation(self):
+        off = lambda line: line.replace("set -euo pipefail", "set +e") if "set -euo pipefail" in line else line
+        found = gate.violations(release_with(off))
+        self.assertIn('jobs.release does not check the signer with check-release-signer.py "$RELEASE_CERT_SHA256"', found)
+
+    # The digest counts only in the step that runs the check (#204 review).
+    def test_a_digest_in_another_step_is_a_violation(self):
+        workflow = release_with(lambda line: line)
+        steps = workflow["jobs"]["release"]["steps"]
+        digest = None
+        for step in steps:
+            digest = (step.get("env") or {}).pop("RELEASE_CERT_SHA256", None) or digest
+        other = next(s for s in steps if "check-release-signer.py" not in str(s.get("run", "")))
+        other.setdefault("env", {})["RELEASE_CERT_SHA256"] = digest
+        found = gate.violations(workflow)
+        self.assertIn("jobs.release pins no release certificate SHA-256 (RELEASE_CERT_SHA256, 64 hex)", found)
+
     def test_a_short_release_digest_is_a_violation(self):
         workflow = release_with(lambda line: line)
         for step in workflow["jobs"]["release"]["steps"]:
