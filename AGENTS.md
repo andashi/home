@@ -664,6 +664,16 @@ name exist nowhere, so any stale call site goes red; a library test asserts
 **Three ways a checker's own plumbing lies.** All three were found in checkers
 rather than in product code, which is where they prefer to live.
 
+**They share a site, and naming it is more useful than naming the causes: an
+assignment from a command substitution is where a `set -euo pipefail` script dies
+without a message.** `x=$(cmd | ...)` fails, `set -e` exits, and the script never
+reaches anything that would print why - so the symptom is a bare non-zero status
+and no output. Three instances in one day, all assignments: a merge gate's
+`shared=$(… | grep …)`, a fixture's `bt="$(ls -d "$sdk"/build-tools/*/ …)"` on an
+SDK with no build tools, and the same gate's base lookup. **When a script exits
+non-zero and silent, look at its assignments first**; and in a checker, guard the
+lookups so the failure gets to speak.
+
 - **`grep` exiting 1 on no match kills a `set -euo pipefail` script**, and
   `pipefail` is the load-bearing half: with `set -e` alone the pipeline reports
   the status of its **last** command, so `x=$(cmd | grep -E pat | head -5)`
