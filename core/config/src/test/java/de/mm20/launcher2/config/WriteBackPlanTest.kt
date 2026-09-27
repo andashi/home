@@ -211,6 +211,61 @@ class WriteBackPlanTest {
         )
     }
 
+    private fun apps(json: String) = """{"schemaVersion":2,"apps":$json}"""
+
+    private fun appsChange(literal: String, applied: String, device: String) =
+        WriteBackPlan.changes(tree(apps(literal)), tree(apps(applied)), tree(apps(device))).single().value
+
+    /**
+     * An app entry is its app - package, profile, activity - as a grid item
+     * is its id: a label changed on the device is that entry changed, never
+     * a new entry next to the old one, which the file would then list twice
+     * (review on #207).
+     */
+    @Test
+    fun `an app renamed on the device is its entry, changed`() {
+        assertEquals(
+            ConfigParser.json.parseToJsonElement(
+                """[{"packageName":"org.b","visibility":"hidden"},{"packageName":"org.a","label":"New"}]"""
+            ),
+            appsChange(
+                literal = """[{"packageName":"org.a","label":"Old"},{"packageName":"org.b","visibility":"hidden"}]""",
+                applied = """[{"packageName":"org.a","label":"Old"},{"packageName":"org.b","visibility":"hidden"}]""",
+                device = """[{"packageName":"org.b","visibility":"hidden"},{"packageName":"org.a","label":"New"}]""",
+            ),
+        )
+    }
+
+    /** A profile left out is the personal one: the same app however it is written. */
+    @Test
+    fun `an app written with its default profile is the device's entry without it`() {
+        assertEquals(
+            ConfigParser.json.parseToJsonElement("""[{"packageName":"org.a","profile":"personal","label":"New"}]"""),
+            appsChange(
+                literal = """[{"packageName":"org.a","profile":"personal","label":"Old"}]""",
+                applied = """[{"packageName":"org.a","label":"Old"}]""",
+                device = """[{"packageName":"org.a","label":"New"}]""",
+            ),
+        )
+    }
+
+    /** Control: another profile or another activity of the same package is another app. */
+    @Test
+    fun `the same package in another profile or activity is another entry`() {
+        assertEquals(
+            ConfigParser.json.parseToJsonElement(
+                """[{"packageName":"org.a","label":"A"},{"packageName":"org.a","profile":"work","label":"Work"},""" +
+                    """{"packageName":"org.a","activity":"org.a.Second","label":"Second"}]"""
+            ),
+            appsChange(
+                literal = """[{"packageName":"org.a","label":"A"},{"packageName":"org.a","profile":"work","label":"W"}]""",
+                applied = """[{"packageName":"org.a","label":"A"},{"packageName":"org.a","profile":"work","label":"W"}]""",
+                device = """[{"packageName":"org.a","label":"A"},{"packageName":"org.a","profile":"work","label":"Work"},""" +
+                    """{"packageName":"org.a","activity":"org.a.Second","label":"Second"}]""",
+            ),
+        )
+    }
+
     private fun favorites(json: String) = """{"schemaVersion":2,"home":{"favorites":$json}}"""
 
     private fun favoritesChange(literal: String, applied: String, device: String) =

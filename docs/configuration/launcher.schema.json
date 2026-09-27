@@ -603,6 +603,50 @@
             },
             "additionalProperties": false
         },
+        "apps": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "packageName": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z][A-Za-z0-9_]*(\\.[A-Za-z][A-Za-z0-9_]*)+$",
+                        "maxLength": 256
+                    },
+                    "profile": {
+                        "type": "string",
+                        "enum": [
+                            "personal",
+                            "work",
+                            "private"
+                        ]
+                    },
+                    "activity": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z_$][A-Za-z0-9_$]*(\\.[A-Za-z_$][A-Za-z0-9_$]*)*$",
+                        "maxLength": 256
+                    },
+                    "label": {
+                        "type": "string",
+                        "maxLength": 100,
+                        "pattern": "^(?=.*\\S)[^\\u0000-\\u001F\\u007F-\\u009F\\u2028\\u2029]*$"
+                    },
+                    "visibility": {
+                        "type": "string",
+                        "enum": [
+                            "default",
+                            "search-only",
+                            "hidden"
+                        ]
+                    }
+                },
+                "required": [
+                    "packageName"
+                ],
+                "additionalProperties": false
+            },
+            "maxItems": 512
+        },
         "gestures": {
             "type": "object",
             "properties": {

@@ -71,6 +71,8 @@ class DefaultConfigStore(
     private val profileResolver: ProfileResolver,
     private val wallpapers: WallpaperStore,
     private val searchActions: SearchActionStore,
+    /** `apps` (#3 slice 4): an app's own name and visibility. */
+    private val apps: AppCustomizationStore,
 ) : ConfigStore {
 
     private fun favoriteApps() = searchableRepository.get(
@@ -99,6 +101,7 @@ class DefaultConfigStore(
             settings.changes(),
             favoriteApps().map { apps -> apps.map { it.key } }.distinctUntilChanged().map { },
             searchActions.changes(),
+            apps.changes(),
         ) + GridLayouts.All.map { layout -> homeGridRepository.observe(layout).distinctUntilChanged().map { } },
     ) { }
 
@@ -124,6 +127,7 @@ class DefaultConfigStore(
             gridLayouts = gridLayouts,
             gridInitialized = gridInitialized,
             searchActions = searchActions.read(),
+            apps = apps.read(),
             wallpaperImage = wallpaper?.image,
             wallpaperTarget = wallpaper?.target,
             gestures = gesturesOf(settingsState.gestures),
@@ -200,6 +204,15 @@ class DefaultConfigStore(
                     val (replaced, actions) = searchActions.replaceAndRead(mutation.actions, "search.actions")
                     diagnostics += replaced
                     written = written.copy(searchActions = actions)
+                    sections += mutation.section
+                } catch (e: Exception) {
+                    diagnostics += mutation.applyFailed(e)
+                }
+
+                is ConfigMutation.SetApps -> try {
+                    val (replaced, customizations) = apps.replaceAndRead(mutation.apps)
+                    diagnostics += replaced
+                    written = written.copy(apps = customizations)
                     sections += mutation.section
                 } catch (e: Exception) {
                     diagnostics += mutation.applyFailed(e)
@@ -579,7 +592,7 @@ class DefaultConfigStore(
     }
 
     private suspend fun resolve(favorite: Favorite): Resolved {
-        val profile = profileResolver.getProfile(favorite.profile.type) ?: return Resolved.NoProfile
+        val profile = profileResolver.getProfile(favorite.profile.toProfileType()) ?: return Resolved.NoProfile
         val app = appRepository.findOne(favorite.packageName, profile.userHandle).first() ?: return Resolved.NotInstalled
         return Resolved.App(app)
     }
@@ -602,7 +615,7 @@ class DefaultConfigStore(
                 is GestureConfig.Action -> actions[gesture] = value.action
                 is GestureConfig.App -> when (val found = resolve(value.app)) {
                     is Resolved.App -> {
-                        searchableRepository.insertAwaited(found.app)
+                        searchableRepository.insertAwaited(listOf(found.app))
                         launches[gesture] = found.app.key
                     }
                     Resolved.NoProfile -> diagnostics += Diagnostic(
@@ -641,15 +654,10 @@ class DefaultConfigStore(
 
     private suspend fun SavableSearchable.toFavorite(): Favorite? {
         val app = this as? Application ?: return null
-        val profileType = profileResolver.getProfile(app.user)?.type ?: return null
-        val configProfile = when (profileType) {
-            Profile.Type.Personal -> ConfigProfile.Personal
-            Profile.Type.Work -> ConfigProfile.Work
-            Profile.Type.Private -> ConfigProfile.Private
-        }
+        val profile = profileResolver.getProfile(app.user)?.type ?: return null
         return Favorite(
             packageName = app.componentName.packageName,
-            profile = configProfile,
+            profile = profile.toConfigProfile(),
         )
     }
 
@@ -688,6 +696,7 @@ private val ConfigMutation.isSettingsBacked: Boolean
 
         // Gestures are settings too, but their apps are resolved here first.
         is ConfigMutation.SetFavorites,
+        is ConfigMutation.SetApps,
         is ConfigMutation.SetSearchActions,
         is ConfigMutation.SetWallpaper,
         is ConfigMutation.SetGestures,

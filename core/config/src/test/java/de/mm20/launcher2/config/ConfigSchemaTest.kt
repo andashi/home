@@ -228,7 +228,12 @@ class ConfigSchemaTest {
         return when (keyword) {
             "minimum" -> past(-1)
             "maximum" -> past(+1)
-            "pattern" -> JsonPrimitive("!")
+            // The first of these the pattern itself refuses: "!" breaks a name
+            // pattern, but is a fine label, which only white space or a
+            // control character breaks (#3 slice 4).
+            "pattern" -> listOf("!", " ", "a\u0007").map(::JsonPrimitive)
+                .firstOrNull { !Regex(limit.content).containsMatchIn(it.content) }
+                ?: error("no candidate breaks the pattern ${limit.content}")
             "maxLength" -> JsonPrimitive("a." + "a".repeat(limit.int)) // a package name in form, one too long
             "maxItems" -> JsonArray(List(limit.int + 1) { current.jsonArray.first() })
             // Inside the range, between the steps.

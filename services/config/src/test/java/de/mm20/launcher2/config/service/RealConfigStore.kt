@@ -30,6 +30,7 @@ internal class RealConfigStore(
     val grid = FakeHomeGridRepository()
     val searchables = FakeSavableSearchableRepository()
     val actions = FakeSearchActionStore()
+    val customizations = FakeAppCustomizationStore()
 
     val store: DefaultConfigStore
 
@@ -58,6 +59,7 @@ internal class RealConfigStore(
             ),
             FakeWallpaperStore(),
             actions,
+            customizations,
         )
     }
 

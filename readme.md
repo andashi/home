@@ -105,13 +105,15 @@ Built for GrapheneOS and held to its standards:
 
 | Section | Keys |
 |---|---|
-| `icons` | themed icons, enforce themed, icon pack (Lawnicons by default when installed) |
+| `icons` | themed icons, enforce themed, icon pack (Lawnicons by default when installed), icon size, adaptify, badges |
 | `appearance.glass` | blur, tint, radius, contrast, wallpaper blur on home and behind search |
+| `appearance.theme` | light, dark or system; a built-in colour scheme by slug |
+| `appearance.systemBars` | status and navigation bar: hidden, icon colour |
 | `appearance.wallpaper` | image (uploaded via `wallpapers/<name>`), target home, lock or both |
-| `home.searchBar` | position |
+| `home.searchBar` | position, fixed |
 | `home.favorites` | the pinned apps, per profile |
-| `home.widgets`, `home.grid` | the widget grid: columns, lock, labels, phone and fold layouts, the dock as a grid item |
-| `search` | favorites row, all apps, grid or list, labels, contacts, shortcuts, filter bar, keyboard, Enter, order, hidden items |
+| `home.widgets`, `home.grid`, `home.lockRotation` | the widget grid: columns, lock, labels, phone and fold layouts, the dock as a grid item; portrait lock |
+| `search` | favorites row, frequently used apps, all apps, grid or list, list icons, labels, app details, contacts (call on tap), shortcuts, filter bar, compact tags, the transliterator, keyboard, Enter, order, hidden items |
 
 Every key, with screenshots on a phone and a Pixel Fold, is in
 [docs/configuration](docs/configuration/README.md). Coverage of the remaining

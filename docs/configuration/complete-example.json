@@ -141,6 +141,17 @@
       }
     ]
   },
+  "apps": [
+    { "packageName": "com.android.stk", "visibility": "hidden" },
+    { "packageName": "org.thoughtcrime.securesms", "label": "Chat" },
+    {
+      "packageName": "com.example.work.mail",
+      "profile": "work",
+      "activity": "com.example.work.mail.InboxActivity",
+      "label": "Work mail",
+      "visibility": "search-only"
+    }
+  ],
   "gestures": {
     "swipeDown": "notifications",
     "swipeUp": "quick-settings",

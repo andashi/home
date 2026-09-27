@@ -3,7 +3,6 @@ package de.mm20.launcher2.config.service
 import android.os.UserHandle
 import de.mm20.launcher2.profiles.Profile
 import de.mm20.launcher2.profiles.ProfileManager
-import de.mm20.launcher2.config.Profile as ConfigProfile
 import kotlinx.coroutines.flow.first
 
 /**
@@ -47,11 +46,3 @@ class ProfileManagerProfileResolver(
 
     override suspend fun awaitRead() = profileManager.awaitRead()
 }
-
-/** The profile type a file's `profile` names. */
-internal val ConfigProfile.type: Profile.Type
-    get() = when (this) {
-        ConfigProfile.Personal -> Profile.Type.Personal
-        ConfigProfile.Work -> Profile.Type.Work
-        ConfigProfile.Private -> Profile.Type.Private
-    }

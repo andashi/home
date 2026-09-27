@@ -31,6 +31,22 @@ object ConfigValidator {
     const val MaxGlassRadius = 64f
     const val MaxPackageNameLength = 256
     const val MaxFavorites = 64
+    /** `apps` (#3 slice 4): past any phone's app count, well short of a denial of service. */
+    const val MaxApps = 512
+    const val MaxLabelLength = 100
+    /**
+     * What a label may contain, as the schema publishes it: something that
+     * is not white space, and no control characters or line breaks. The
+     * validator checks the same in code (its length in characters, not
+     * UTF-16 units); this is the schema's form of it.
+     */
+    const val labelCharsPattern = "^(?=.*\\S)[^\\u0000-\\u001F\\u007F-\\u009F\\u2028\\u2029]*$"
+    /**
+     * A launcher activity's class name, fully qualified as the system names a
+     * launcher entry: dot-separated Java identifiers. Unlike [classNameRegex]
+     * there is no relative `.Main` form, which no launcher entry could match.
+     */
+    internal val activityNameRegex = Regex("^[A-Za-z_$][A-Za-z0-9_$]*(\\.[A-Za-z_$][A-Za-z0-9_$]*)*$")
     const val MaxGridItems = 32
     const val MaxSearchActions = 32
     const val MinGridColumns = 2
@@ -169,6 +185,8 @@ object ConfigValidator {
 
         config.home?.grid?.let { grid -> validateGrid(grid, diagnostics) }
 
+        config.apps?.let { apps -> validateApps(apps, diagnostics) }
+
         // #3 slice 2: an app a gesture launches is named like a favorite.
         config.gestures?.byGesture()?.forEach { (gesture, value) ->
             if (value is GestureConfig.App) {
@@ -177,6 +195,50 @@ object ConfigValidator {
         }
 
         return diagnostics
+    }
+
+    /**
+     * `apps` (#3 slice 4). The file is untrusted input and a label ends up on
+     * the screen, so a label is a name: one to [MaxLabelLength] characters,
+     * not blank, and no control characters or line breaks.
+     */
+    private fun validateApps(apps: List<AppConfig>, out: MutableList<Diagnostic>) {
+        if (apps.size > MaxApps) {
+            out += Diagnostic(Severity.Error, "invalid-apps", "apps", "The apps list exceeds the maximum of $MaxApps entries")
+        }
+        val seen = mutableSetOf<Triple<String, Profile, String?>>()
+        apps.forEachIndexed { index, app ->
+            val path = "apps[$index]"
+            validatePackageName(app.packageName, "$path.packageName", out)
+            app.activity?.let { activity ->
+                if (activity.length > MaxPackageNameLength || !activityNameRegex.matches(activity)) {
+                    out += Diagnostic(
+                        Severity.Error, "invalid-apps", "$path.activity",
+                        "'$activity' is not a valid activity class name",
+                    )
+                }
+            }
+            app.label?.let { label ->
+                val length = label.codePointCount(0, label.length)
+                val badChar = label.codePoints().anyMatch {
+                    Character.isISOControl(it) ||
+                        Character.getType(it) == Character.LINE_SEPARATOR.toInt() ||
+                        Character.getType(it) == Character.PARAGRAPH_SEPARATOR.toInt()
+                }
+                if (label.isBlank() || length > MaxLabelLength || badChar) {
+                    out += Diagnostic(
+                        Severity.Error, "invalid-apps", "$path.label",
+                        "A label is 1 to $MaxLabelLength characters, not blank, without control characters or line breaks",
+                    )
+                }
+            }
+            if (!seen.add(Triple(app.packageName, app.profile, app.activity))) {
+                out += Diagnostic(
+                    Severity.Error, "duplicate-app", path,
+                    "'${app.packageName}' (${app.profile.name.lowercase()}) is listed twice",
+                )
+            }
+        }
     }
 
     /** `home.grid` (D5): every violation is an Error at the item's path. */

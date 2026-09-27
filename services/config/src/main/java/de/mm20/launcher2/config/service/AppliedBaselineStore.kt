@@ -72,6 +72,7 @@ internal val ConfigSections = listOf(
     "home.widgets.enabled",
     "home.grid",
     "home.lockRotation",
+    "apps",
     "gestures",
 )
 

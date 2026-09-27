@@ -22,6 +22,9 @@
 #    number then opens the dialer instead of doing nothing; search's
 #    favorites row keys and its transliterator read back, and one this
 #    device's ICU lacks is reported and kept;
+# 4b. #3 slice 4: a renamed app shows under its new name in search and a
+#    hidden one does not, an app that is not installed is reported, and
+#    `"apps": []` gives both back;
 # 5. stops the instance and releases the lock.
 #
 # Runs as the unrooted shell (uid 2000, asserted).
@@ -410,5 +413,82 @@ assert_jq "$(query_json diagnostics)" \
 assert_jq "$(query_json config)" '.search.transliterator == "No-Such-Transliterator"' \
   "the read-back keeps what the file asked for"
 ok "unavailable transliterator: reported, kept"
+
+# F. apps (#3 slice 4): a renamed app, a hidden app, and one that is not installed.
+log "slice 4: a renamed app, a hidden app, an app that is not installed"
+cat > "$WORK/apps.json" <<'EOF'
+{ "schemaVersion": 2,
+  "apps": [
+    { "packageName": "com.android.deskclock", "label": "Camera Clock" },
+    { "packageName": "app.grapheneos.camera", "visibility": "hidden" },
+    { "packageName": "com.example.not.installed", "label": "Nowhere" }
+  ] }
+EOF
+push_config "$WORK/apps.json" "apps"
+assert_jq "$(query_json diagnostics)" \
+  '.success == true and ([.diagnostics[]? | select(.code == "app-unavailable" and .path == "apps[2]" and .severity == "warning")] | length) == 1
+   and ([.diagnostics[]? | select(.severity == "error")] | length) == 0' \
+  "the app that is not installed is reported, and the rest applies"
+assert_jq "$(query_json config)" \
+  '.apps == [{"packageName":"app.grapheneos.camera","visibility":"hidden"},{"packageName":"com.android.deskclock","label":"Camera Clock"}]' \
+  "the read-back serves the two installed apps, sorted, and not the missing one"
+# A text in search, split by whether it is the query field: the field's text
+# is the query, so a result named like the query is only told apart from it
+# by the node's class. The fourth run of this step found "Camera" hidden and
+# on screen, and the "Camera" it found was the query.
+search_text_bounds() { # $1 = field|result, $2 = text
+  dump_screen || return 1
+  python3 - "$WORK/dump.xml" "$1" "$2" <<'PY'
+import re, sys
+try:
+    import defusedxml.ElementTree as ET
+except ImportError:
+    import xml.etree.ElementTree as ET
+want_field = sys.argv[2] == "field"
+for node in ET.parse(sys.argv[1]).getroot().iter("node"):
+    if node.get("text", "") != sys.argv[3]:
+        continue
+    if (node.get("class", "") == "android.widget.EditText") != want_field:
+        continue
+    m = re.match(r"\[(\d+),(\d+)\]\[(\d+),(\d+)\]", node.get("bounds", ""))
+    if m:
+        print(*m.groups()); break
+PY
+}
+# Types $1 into search's field, emptied first, and checks it holds exactly $1.
+search_for() {
+  open_search_field
+  clear_search_query
+  adb_t shell input text "$1"
+  retry_for 10 shows search_text_bounds field "$1" \
+    || die "search's field does not hold exactly '$1'; on screen: $(screen_texts)"
+}
+# One query answers both: the renamed Clock and Camera match "Camera".
+# The renamed one on screen is the anchor that the results are there, so
+# Camera missing from the same results is its being hidden, not a slow list.
+# Not Contacts: "Contacts" is also a filter chip's text, on screen with or
+# without the app. The field keeps the last query (see clear_search_query);
+# the first two runs of this step searched "OnetestContact" and found nothing.
+search_for "Camera"
+retry_for 20 shows search_text_bounds result "Camera Clock" \
+  || die "search for 'Camera' does not show the renamed Clock; on screen: $(screen_texts)"
+if shows search_text_bounds result "Camera"; then
+  die "Camera is hidden and still in search's results; on screen: $(screen_texts)"
+fi
+ok "search shows Clock by its new name and not the hidden Camera"
+adb -s "$SERIAL" shell input keyevent KEYCODE_HOME
+
+# The sharp edge: an empty list clears every customization.
+printf '{ "schemaVersion": 2, "apps": [] }\n' > "$WORK/apps-empty.json"
+push_config "$WORK/apps-empty.json" "no apps"
+assert_jq "$(query_json config)" '.apps == []' "an empty list leaves no app customized"
+search_for "Camera"
+retry_for 20 shows search_text_bounds result "Camera" \
+  || die "with no apps customized, search for 'Camera' does not show Camera; on screen: $(screen_texts)"
+if shows search_text_bounds result "Camera Clock"; then
+  die "an empty apps list left Clock renamed; on screen: $(screen_texts)"
+fi
+ok "\"apps\": [] gave Clock its own name back and showed Camera again"
+adb -s "$SERIAL" shell input keyevent KEYCODE_HOME
 
 ok "l4-search passed"

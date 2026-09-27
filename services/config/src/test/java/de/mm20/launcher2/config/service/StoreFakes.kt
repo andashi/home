@@ -34,6 +34,7 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import de.mm20.launcher2.config.Profile as ConfigProfile
 
 /** Fakes for [DefaultConfigStore]'s dependencies, shared by its tests and the round trip. */
@@ -105,6 +106,25 @@ internal class FakeLauncherConfigSettings(
         )
         launchKeys = launchKeys - actions.keys + launches
         return state
+    }
+}
+
+/** `apps` (#3 slice 4) as a list: what was replaced, and what reads back. */
+internal class FakeAppCustomizationStore(
+    var apps: List<de.mm20.launcher2.config.AppConfig> = emptyList(),
+) : AppCustomizationStore {
+    val replaced = mutableListOf<List<de.mm20.launcher2.config.AppConfig>>()
+    private val changed = kotlinx.coroutines.flow.MutableStateFlow(0)
+
+    override suspend fun read() = apps
+
+    override fun changes(): Flow<Unit> = changed.map { }
+
+    override suspend fun replaceAndRead(apps: List<de.mm20.launcher2.config.AppConfig>): Pair<List<Diagnostic>, List<de.mm20.launcher2.config.AppConfig>> {
+        replaced += apps
+        this.apps = apps
+        changed.value++
+        return emptyList<Diagnostic>() to apps
     }
 }
 
@@ -204,9 +224,12 @@ internal class FakeSavableSearchableRepository : SavableSearchableRepository {
     /** What [insertAwaited] saved, by key; [getByKeys] serves these and the pins. */
     val saved = linkedMapOf<String, SavableSearchable>()
 
-    override suspend fun insertAwaited(searchable: SavableSearchable) {
-        saved.putIfAbsent(searchable.key, searchable)
+    override suspend fun insertAwaited(searchables: Collection<SavableSearchable>) {
+        for (searchable in searchables) saved.putIfAbsent(searchable.key, searchable)
     }
+
+    override suspend fun setVisibilitiesAwaited(visibilities: Map<SavableSearchable, VisibilityLevel>) =
+        throw NotImplementedError()
 
     override fun insert(searchable: SavableSearchable) = throw NotImplementedError()
     override fun upsert(

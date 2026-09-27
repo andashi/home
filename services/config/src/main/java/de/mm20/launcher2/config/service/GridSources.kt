@@ -45,7 +45,7 @@ class AppWidgetGridLimitsSource(
 
     override fun lookup(widget: String, profile: ConfigProfile?, columns: Int): ProviderLimits? {
         val component = ComponentName.unflattenFromString(widget) ?: return null
-        val userHandle = profileResolver.getProfile((profile ?: ConfigProfile.Personal).type)?.userHandle ?: return null
+        val userHandle = profileResolver.getProfile((profile ?: ConfigProfile.Personal).toProfileType())?.userHandle ?: return null
         val manager = AppWidgetManager.getInstance(context) ?: return null
         val info = manager.getInstalledProvidersForProfile(userHandle)
             .firstOrNull { it.provider == component } ?: return null

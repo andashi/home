@@ -40,6 +40,8 @@ data class ConfigState(
     val search: SearchState = SearchState(),
     /** The manually pinned apps, in order: `home.favorites`. */
     val favorites: List<Favorite> = emptyList(),
+    /** Apps with a name or a visibility of their own (#3 slice 4): `apps`. */
+    val apps: List<AppConfig> = emptyList(),
     /** The search actions in effect, in order: `search.actions` (#106); null when unknown. */
     val searchActions: List<SearchActionConfig>? = null,
     val widgetsEnabled: Boolean = false,
@@ -158,6 +160,13 @@ sealed class ConfigMutation {
         val favorites: List<Favorite>,
     ) : ConfigMutation() {
         override val section = "home.favorites"
+    }
+
+    /** `apps` (#3 slice 4): the whole desired list, customizations only. */
+    data class SetApps(
+        val apps: List<AppConfig>,
+    ) : ConfigMutation() {
+        override val section = "apps"
     }
 
     data class SetSearchActions(
@@ -317,6 +326,15 @@ object ConfigDiffer {
         desired.home?.favorites?.let { favorites ->
             if (favorites != current.favorites) {
                 mutations += ConfigMutation.SetFavorites(favorites)
+            }
+        }
+
+        // The whole list, compared as customizations: order, and entries that
+        // ask only for defaults, are no difference (#3 slice 4).
+        desired.apps?.let { apps ->
+            val wanted = apps.normalizedApps()
+            if (wanted != current.apps.normalizedApps()) {
+                mutations += ConfigMutation.SetApps(wanted)
             }
         }
 

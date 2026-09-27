@@ -117,12 +117,22 @@ interface SavableSearchableRepository {
     suspend fun replaceManuallySortedAwaited(types: List<String>, items: List<SavableSearchable>)
 
     /**
-     * Fork addition (#3 slice 2): [insert], returning once committed. A
-     * gesture that opens an app names it by key, and the launcher looks the
-     * item up by that key; saved first, it is there when the setting names
-     * it. A row that exists is kept as it is.
+     * Fork addition (#3 slice 4): sets each item's visibility in one
+     * transaction and returns once it is committed, so a config reload can
+     * read back what it wrote. Only the visibility changes; an item without
+     * a row gets one, as [upsert] would give it.
      */
-    suspend fun insertAwaited(searchable: SavableSearchable)
+    suspend fun setVisibilitiesAwaited(visibilities: Map<SavableSearchable, VisibilityLevel>)
+
+    /**
+     * Fork addition (#3 slice 4): a row for each of [searchables] that has
+     * none, written when this returns - [insert] is fire-and-forget. What a
+     * customization is anchored to before it is written: the cleanup removes
+     * a label whose item has no row. An existing row is left as it is. A
+     * gesture that opens an app (#3 slice 2) saves it here too: the launcher
+     * looks the item up by the key the setting names.
+     */
+    suspend fun insertAwaited(searchables: Collection<SavableSearchable>)
 
     /**
      * Returns the given keys sorted by relevance.
@@ -165,21 +175,7 @@ internal class SavableSearchableRepositoryImpl(
     private val scope = CoroutineScope(Job() + Dispatchers.Default)
 
     override fun insert(searchable: SavableSearchable) {
-        scope.launch { insertAwaited(searchable) }
-    }
-
-    override suspend fun insertAwaited(searchable: SavableSearchable) {
-        database.searchableDao().insert(
-            SavedSearchableEntity(
-                key = searchable.key,
-                type = searchable.domain,
-                serializedSearchable = searchable.serialize() ?: return,
-                visibility = VisibilityLevel.Default.value,
-                launchCount = 0,
-                weight = 0.0,
-                pinPosition = 0,
-            )
-        )
+        scope.launch { insertAwaited(listOf(searchable)) }
     }
 
 
@@ -414,6 +410,50 @@ internal class SavableSearchableRepositoryImpl(
             }
         }
         done.await()
+    }
+
+    // Fork addition (#3 slice 4), see interface.
+    override suspend fun setVisibilitiesAwaited(visibilities: Map<SavableSearchable, VisibilityLevel>) {
+        if (visibilities.isEmpty()) return
+        val dao = database.searchableDao()
+        database.withTransaction {
+            for ((searchable, visibility) in visibilities) {
+                val serialized = searchable.serialize() ?: continue
+                val entity = dao.getByKey(searchable.key).firstOrNull()
+                dao.upsert(
+                    SavedSearchableEntity(
+                        key = searchable.key,
+                        type = searchable.domain,
+                        visibility = visibility.value,
+                        pinPosition = entity?.pinPosition ?: 0,
+                        launchCount = entity?.launchCount ?: 0,
+                        weight = entity?.weight ?: 0.0,
+                        serializedSearchable = serialized,
+                    )
+                )
+            }
+        }
+    }
+
+    // Fork addition (#3 slice 4), see interface.
+    override suspend fun insertAwaited(searchables: Collection<SavableSearchable>) {
+        if (searchables.isEmpty()) return
+        val dao = database.searchableDao()
+        database.withTransaction {
+            for (searchable in searchables) {
+                dao.insert(
+                    SavedSearchableEntity(
+                        key = searchable.key,
+                        type = searchable.domain,
+                        serializedSearchable = searchable.serialize() ?: continue,
+                        visibility = VisibilityLevel.Default.value,
+                        launchCount = 0,
+                        weight = 0.0,
+                        pinPosition = 0,
+                    )
+                )
+            }
+        }
     }
 
     /**

@@ -46,8 +46,17 @@ object ConfigParser {
             "appearance" to KeyEffect.Applied,
             "home" to KeyEffect.Applied,
             "search" to KeyEffect.Applied,
+            // #3 slice 4.
+            "apps" to KeyEffect.Applied,
             // #3 slice 2.
             "gestures" to KeyEffect.Applied,
+        ),
+        "apps[]" to mapOf(
+            "packageName" to KeyEffect.Applied,
+            "profile" to KeyEffect.Applied,
+            "activity" to KeyEffect.Applied,
+            "label" to KeyEffect.Applied,
+            "visibility" to KeyEffect.Applied,
         ),
         "gestures" to Gesture.entries.associate { it.key to KeyEffect.Applied },
         // #91: search's behavior; its look is appearance.glass. #107: barPosition.
