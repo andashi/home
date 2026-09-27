@@ -216,12 +216,10 @@ class ConfigWatcher(
             // `apps` and records the form; one that does not needs no form,
             // and an empty record says the reload has run (review on #207).
             val noNaming = appNaming != null && !appNaming.recorded()
+            // The reload makes the record if it goes through (ConfigReloader);
+            // a failed one leaves none, and the next start tries again.
             if (report == null || report.configSha256 != hash || noBaseline || noNaming) {
-                val reloaded = reloader.reload(file, ReloadTrigger.StartupCheck)
-                // Only a reload that went through made the record; after a
-                // failed one the marker would claim a form nobody recorded,
-                // and no later start would try again (review on #214).
-                if (noNaming && reloaded.success && !appNaming!!.recorded()) appNaming.replace(emptyMap())
+                reloader.reload(file, ReloadTrigger.StartupCheck)
             }
             fitPendingMeasurement()
         }

@@ -66,6 +66,8 @@ val configModule = module {
                 // What ScreenOffComponent and the others check before they act.
                 accessibilityOn = { permissions.checkPermissionOnce(PermissionGroup.Accessibility) },
             ),
+            // Every reload that goes through records the apps' form where none exists (review on #214).
+            appNaming = get(),
         )
     }
     single { ConfigWriteBack(androidContext(), get(), get(), get(), get(), appNaming = get()) }

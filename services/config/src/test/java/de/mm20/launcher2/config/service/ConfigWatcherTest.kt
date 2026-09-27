@@ -183,7 +183,7 @@ class ConfigWatcherTest {
         val baselines = AppliedBaselineStore(context)
         val naming = FakeAppNaming(recorded = false)
         val watcher = ConfigWatcher(
-            context, ConfigReloader(store, reportStore), reportStore, scope = this,
+            context, ConfigReloader(store, reportStore, appNaming = naming), reportStore, scope = this,
             baselineStore = baselines, appNaming = naming,
         )
         writeConfig()
@@ -211,7 +211,7 @@ class ConfigWatcherTest {
         val baselines = AppliedBaselineStore(context)
         val naming = FakeAppNaming(recorded = false)
         val watcher = ConfigWatcher(
-            context, ConfigReloader(store, reportStore), reportStore, scope = this,
+            context, ConfigReloader(store, reportStore, appNaming = naming), reportStore, scope = this,
             baselineStore = baselines, appNaming = naming,
         )
         writeConfig()
