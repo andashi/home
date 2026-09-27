@@ -30,7 +30,7 @@ An entry is always an object, never a bare package name. An app named twice
 (same package, profile and entry) is an error, `duplicate-app`. Only the device
 knows which entry is a package's first, so an entry without `activity` and one
 naming that first activity are the same app there: the first of the two applies,
-and the second is reported as a `duplicate-app` warning. An app that is
+and the second is reported as a `duplicate-app-on-device` warning. An app that is
 not installed is reported, and its entry stays in the file: when the app is
 installed again, the next reload gives it its name back.
 

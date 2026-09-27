@@ -3,6 +3,7 @@ package de.mm20.launcher2.config.service
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import de.mm20.launcher2.config.Diagnostic
+import de.mm20.launcher2.config.DiagnosticCode
 import de.mm20.launcher2.config.ReloadReport
 import de.mm20.launcher2.config.ReloadTrigger
 import de.mm20.launcher2.config.Severity
@@ -209,7 +210,7 @@ class ConfigWatcherTest {
      */
     @Test
     fun `a failed startup reload leaves the record unmade, and the next start retries`() = runTest {
-        val store = FakeConfigStore(applyDiagnostics = listOf(Diagnostic(Severity.Error, "apply-failed", "", "datastore gone")))
+        val store = FakeConfigStore(applyDiagnostics = listOf(Diagnostic(DiagnosticCode.ApplyFailed, "", "datastore gone")))
         val reportStore = ReloadReportStore(context)
         val baselines = AppliedBaselineStore(context)
         val naming = FakeAppNaming(recorded = false)
@@ -409,7 +410,7 @@ class ConfigWatcherTest {
     fun `the first measurement of the grid reloads the config to fit it`() = runTest {
         // A fit with a correction to report, so the reload writes its report.
         val store = FakeConfigStore(
-            applyDiagnostics = listOf(Diagnostic(Severity.Warning, "grid-overflow", "home.grid.layouts.fold.items[0]", "dropped")),
+            applyDiagnostics = listOf(Diagnostic(DiagnosticCode.GridOverflow, "home.grid.layouts.fold.items[0]", "dropped")),
         )
         val reportStore = ReloadReportStore(context)
         val measurements = MutableStateFlow<Map<String, Int>>(emptyMap())
@@ -577,10 +578,11 @@ class ConfigWatcherTest {
             scope = this, arrivals = arrivals ?: kotlinx.coroutines.flow.emptyFlow(),
         )
 
+    /** Built from the table entry, so a waiting code that is not one fails here (#215). */
     private suspend fun lastReportWaitsOn(code: String?) = ReloadReportStore(context).save(
         ReloadReport(
             success = true,
-            diagnostics = listOfNotNull(code?.let { Diagnostic(Severity.Warning, it, "x", "absent") }),
+            diagnostics = listOfNotNull(code?.let { c -> Diagnostic(DiagnosticCode.entries.single { it.code == c }, "x", "absent") }),
         ),
     )
 
@@ -701,7 +703,7 @@ class ConfigWatcherTest {
     @Test
     fun `a signal from the flow reloads while something waits`() = runTest {
         // Every reload reports the absence again, so something waits throughout.
-        val store = FakeConfigStore(applyDiagnostics = listOf(Diagnostic(Severity.Warning, "app-unavailable", "apps[0]", "absent")))
+        val store = FakeConfigStore(applyDiagnostics = listOf(Diagnostic(DiagnosticCode.AppUnavailable, "apps[0]", "absent")))
         writeConfig()
         lastReportWaitsOn("app-unavailable")
         val signals = kotlinx.coroutines.channels.Channel<String>()

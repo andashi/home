@@ -4,6 +4,7 @@ import de.mm20.launcher2.applications.AppRepository
 import de.mm20.launcher2.config.ConfigMutation
 import de.mm20.launcher2.config.ConfigState
 import de.mm20.launcher2.config.Diagnostic
+import de.mm20.launcher2.config.DiagnosticCode
 import de.mm20.launcher2.config.Favorite
 import de.mm20.launcher2.config.Gesture
 import de.mm20.launcher2.config.GestureActionName
@@ -248,8 +249,7 @@ class DefaultConfigStore(
         // waiting for the profile to be looked at (#37).
         wallpapers.pending()?.let {
             diagnostics += Diagnostic(
-                Severity.Warning,
-                "wallpaper-pending-foreground",
+                DiagnosticCode.WallpaperPendingForeground,
                 "appearance.wallpaper.image",
                 "'${it.image}' is recorded but not set yet: the system crops a static " +
                         "wallpaper only for the current user, so applying it now would cost " +
@@ -321,8 +321,7 @@ class DefaultConfigStore(
             } else {
                 gridLimits.lookup(item.widget, item.profile, columns) ?: run {
                     diagnostics += Diagnostic(
-                        Severity.Warning,
-                        "unknown-widget-provider",
+                        DiagnosticCode.UnknownWidgetProvider,
                         "$basePath[$index]",
                         "No installed widget provider matches '${item.widget}'" +
                                 item.profile?.let { " in the ${it.name.lowercase()} profile" }.orEmpty() +
@@ -371,8 +370,7 @@ class DefaultConfigStore(
             val free = GridLayout.place(spec, placed, candidate)
             if (free == null) {
                 diagnostics += Diagnostic(
-                    Severity.Warning,
-                    "grid-overflow",
+                    DiagnosticCode.GridOverflow,
                     "$basePath[${s.index}]",
                     "No free ${w}x$h cells left for '${item.id}'; the item was dropped",
                 )
@@ -467,31 +465,27 @@ class DefaultConfigStore(
         fun path(id: String) = "$basePath[${order[id] ?: -1}]"
         return when (this) {
             is LayoutIssue.BelowMinimum -> Diagnostic(
-                Severity.Warning,
-                "widget-too-small",
+                DiagnosticCode.WidgetTooSmall,
                 path(id),
                 "'$id' asks for ${requested.w}x${requested.h} cells, below the widget's " +
                         "minimum; it was enlarged to ${clamped.w}x${clamped.h}",
             )
 
             is LayoutIssue.OutOfBounds -> Diagnostic(
-                Severity.Warning,
-                "grid-out-of-bounds",
+                DiagnosticCode.GridOutOfBounds,
                 path(id),
                 "'$id' does not fit the grid at ${span.w}x${span.h} cells; the item was dropped",
             )
 
             is LayoutIssue.CrossesFold -> Diagnostic(
-                Severity.Warning,
-                "grid-crosses-fold",
+                DiagnosticCode.GridCrossesFold,
                 path(id),
                 "'$id' spans the fold line, which only the favorites widget may, and is too wide " +
                         "for either side; the item was dropped",
             )
 
             is LayoutIssue.Overflow -> Diagnostic(
-                Severity.Warning,
-                "grid-overflow",
+                DiagnosticCode.GridOverflow,
                 path(id),
                 "No free cells left for '$id'; the item was dropped",
             )
@@ -500,8 +494,7 @@ class DefaultConfigStore(
             // effect; the file keeps what it asked for, and this says why the
             // two differ.
             is LayoutIssue.AboveMaximum -> Diagnostic(
-                Severity.Warning,
-                "widget-too-large",
+                DiagnosticCode.WidgetTooLarge,
                 path(id),
                 "'$id' asks for ${requested.w}x${requested.h} cells, " +
                     when (bound) {
@@ -514,8 +507,7 @@ class DefaultConfigStore(
             // #140: the file keeps where it put the item; the report says
             // where the item went and why. The move itself is unchanged.
             is LayoutIssue.Moved -> Diagnostic(
-                Severity.Warning,
-                "grid-item-moved",
+                DiagnosticCode.GridItemMoved,
                 path(id),
                 movedMessage(id, from, to, pushed),
             )
@@ -526,8 +518,7 @@ class DefaultConfigStore(
             // differs from what it pushed. Reported from what the engine did,
             // not recomputed from the file (#174 simplify).
             is LayoutIssue.NudgedOffFold -> Diagnostic(
-                Severity.Warning,
-                "grid-crosses-fold",
+                DiagnosticCode.GridCrossesFold,
                 path(id),
                 "'$id' spans the fold line, which only the favorites widget may; it was moved to one side",
             )
@@ -572,15 +563,13 @@ class DefaultConfigStore(
             when (val found = resolve(favorite)) {
                 is Resolved.App -> resolved += found.app
                 Resolved.NoProfile -> diagnostics += Diagnostic(
-                    Severity.Error,
-                    "profile-unavailable",
+                    DiagnosticCode.ProfileUnavailable,
                     path,
                     "The ${favorite.profile.name.lowercase()} profile does not exist " +
                             "on this device; favorite '${favorite.packageName}' was skipped",
                 )
                 Resolved.NotInstalled -> diagnostics += Diagnostic(
-                    Severity.Error,
-                    "favorite-unavailable",
+                    DiagnosticCode.FavoriteUnavailable,
                     path,
                     "App '${favorite.packageName}' is not installed in the " +
                             "${favorite.profile.name.lowercase()} profile; it was skipped",
@@ -629,15 +618,13 @@ class DefaultConfigStore(
                         launches[gesture] = found.app.key
                     }
                     Resolved.NoProfile -> diagnostics += Diagnostic(
-                        Severity.Error,
-                        "profile-unavailable",
+                        DiagnosticCode.ProfileUnavailable,
                         path,
                         "The ${value.app.profile.name.lowercase()} profile does not exist on this device; " +
                             "$path keeps what it did",
                     )
                     Resolved.NotInstalled -> diagnostics += Diagnostic(
-                        Severity.Error,
-                        "gesture-app-unavailable",
+                        DiagnosticCode.GestureAppUnavailable,
                         path,
                         "App '${value.app.packageName}' is not installed in the " +
                             "${value.app.profile.name.lowercase()} profile; $path keeps what it did",
@@ -673,8 +660,7 @@ class DefaultConfigStore(
 
     private fun ConfigMutation.applyFailed(cause: Exception): Diagnostic {
         return Diagnostic(
-            Severity.Error,
-            "apply-failed",
+            DiagnosticCode.ApplyFailed,
             section,
             "Failed to apply section '$section': ${cause.message ?: cause.javaClass.simpleName}",
         )

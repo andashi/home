@@ -288,7 +288,7 @@ class AndroidAppCustomizationStoreTest {
         )
 
         assertEquals(listOf("apps[1]"), diagnostics.map { it.path })
-        assertTrue(diagnostics.all { it.code == "duplicate-app" && it.severity == Severity.Warning })
+        assertTrue(diagnostics.all { it.code == "duplicate-app-on-device" && it.severity == Severity.Warning })
         assertEquals(mapOf(twoFirst.key to "First"), labels.value)
         // The second entry's hidden did not apply either.
         assertEquals(emptyMap<String, VisibilityLevel>(), levels.value)

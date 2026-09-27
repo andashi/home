@@ -3,6 +3,7 @@ package de.mm20.launcher2.config.service
 import android.content.Context
 import android.content.Intent
 import de.mm20.launcher2.config.Diagnostic
+import de.mm20.launcher2.config.DiagnosticCode
 import de.mm20.launcher2.config.SearchActionConfig
 import de.mm20.launcher2.config.SearchActionTypes
 import de.mm20.launcher2.config.Severity
@@ -93,8 +94,7 @@ internal class AndroidSearchActionStore(
                     val activity = searchActivityOf(context, packageName)
                     if (activity == null) {
                         diagnostics += Diagnostic(
-                            Severity.Warning,
-                            "search-action-app-not-searchable",
+                            DiagnosticCode.SearchActionAppNotSearchable,
                             path,
                             "'$packageName' has no search this profile can open; the action was left out",
                         )
@@ -108,8 +108,7 @@ internal class AndroidSearchActionStore(
                 }
                 SearchActionTypes.Intent -> intents[action.label]?.removeFirstOrNull() ?: run {
                     diagnostics += Diagnostic(
-                        Severity.Warning,
-                        "search-action-intent-missing",
+                        DiagnosticCode.SearchActionIntentMissing,
                         path,
                         "no intent action '${action.label}' on this device; a file cannot create one, it was left out",
                     )
@@ -118,8 +117,7 @@ internal class AndroidSearchActionStore(
                 // Validated before: a built-in by its stored key.
                 else -> builtIns[action.type] ?: run {
                     diagnostics += Diagnostic(
-                        Severity.Warning,
-                        "search-action-unavailable",
+                        DiagnosticCode.SearchActionUnavailable,
                         path,
                         "'${action.type}' is not available on this device; the action was left out",
                     )

@@ -3,6 +3,7 @@ package de.mm20.launcher2.config.service
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import de.mm20.launcher2.config.Diagnostic
+import de.mm20.launcher2.config.DiagnosticCode
 import de.mm20.launcher2.config.ReloadReport
 import de.mm20.launcher2.config.ReloadTrigger
 import de.mm20.launcher2.config.Severity
@@ -30,8 +31,8 @@ class ReloadReportStoreTest {
             success = false,
             schemaVersion = 1,
             diagnostics = listOf(
-                Diagnostic(Severity.Warning, "unknown-key", "foo", "Unknown key 'foo' is ignored"),
-                Diagnostic(Severity.Error, "favorite-unavailable", "home.dock.favorites[0]", "skipped"),
+                Diagnostic(DiagnosticCode.UnknownKey, "foo", "Unknown key 'foo' is ignored"),
+                Diagnostic(DiagnosticCode.ApplyFailed, "home.favorites", "datastore gone"),
             ),
             appliedMutations = listOf("icons", "home.clock"),
             errorMessage = null,

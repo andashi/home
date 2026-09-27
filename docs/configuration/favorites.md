@@ -30,8 +30,9 @@ A favorite can be written as a bare package name, which means the personal
 profile, or as an object. The read-back always writes the object form and
 leaves out a `personal` profile.
 
-An app that is not installed is reported (`favorite-unavailable`) and skipped.
-The rest of the list still applies.
+An app that is not installed is reported (`favorite-unavailable`, a warning) and
+skipped; the rest of the list still applies, and the push counts as applied. The
+same goes for a profile the device does not have (`profile-unavailable`).
 
 ## What the list manages, and what it leaves alone
 
