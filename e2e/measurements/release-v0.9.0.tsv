@@ -1,0 +1,16 @@
+# label: release-v0.9.0
+# commit: a98804fd20d3d9ed69b1e20abdf838d99500d991
+# apk: release-v0.9.0.apk
+# measured: 2026-09-27T14:25:59Z
+apk.size.file	16937300	bytes
+apk.size.download	8202181	bytes
+apk.size.arsc	1150880	bytes
+apk.size.assets	9727	bytes
+apk.size.dex	12771900	bytes
+apk.size.lib	73584	bytes
+apk.size.other	197661	bytes
+apk.size.res	4720540	bytes
+dex.files	2	count
+dex.method_refs	89531	count
+manifest.permissions	12	count
+gradle.modules	35	count

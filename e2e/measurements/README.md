@@ -57,6 +57,23 @@ disappeared. That permission list is the point as much as the byte counts:
 several security issues close in this series by a permission no longer being
 requested at all.
 
+## Release builds between releases
+
+The `release-*` files measure what ships: minified release builds
+(`assembleDefaultRelease`, unsigned without the keystore), each measured from
+its own checkout so `gradle.modules` is that commit's. `release-v0.9.0-published`
+is the APK attached to the v0.9.0 release, measured to check that a tag build
+is the shipped one. Against `release-v0.9.0` it has the same dex, method
+references, permissions and modules; only the native-library bytes and the
+file size differ, by the signing and alignment of the published file.
+
+`release-v0.9.0` against `release-6c84e2acf` is what landed after v0.9.0:
+gestures (#210), app names and visibility (#207), the startup-race fix (#206)
+and smaller changes. The APK grew by 64 KB (0.4%), almost all of it dex, with
+354 more method references; permissions stayed at 12 and none appeared or
+disappeared; modules stayed at 35. Runtime (cold start, memory, CPU) was not
+measured: the host ran at load 18 to 28 from other sessions' work throughout.
+
 ## What the metrics mean
 
 | Metric | Meaning |

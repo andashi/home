@@ -1,0 +1,16 @@
+# label: release-6c84e2acf
+# commit: 6c84e2acf4efdb6d5c1c2116718e28799793f4c9
+# apk: release-6c84e2acf.apk
+# measured: 2026-09-27T14:27:25Z
+apk.size.file	17002836	bytes
+apk.size.download	8226539	bytes
+apk.size.arsc	1150880	bytes
+apk.size.assets	9747	bytes
+apk.size.dex	12835720	bytes
+apk.size.lib	73584	bytes
+apk.size.other	197661	bytes
+apk.size.res	4720540	bytes
+dex.files	2	count
+dex.method_refs	89885	count
+manifest.permissions	12	count
+gradle.modules	35	count
