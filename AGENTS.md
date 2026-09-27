@@ -466,6 +466,18 @@ test policy above asks for the break rather than the pass.
    wiring test (#211). **A fake must match reality in whatever dimension the
    code is sensitive to** - speed, size, ordering - and must be able to lie in
    the specific way the code exists to catch.
+9. **The fixture was a state the system cannot be in.** The fixture-side of 8,
+   and it produces a red test that proves the wrong thing. Chasing the
+   `apps` write-back defect on #207, a reproduction set the *applied* baseline to
+   an entry carrying an explicit `activity` - but the applied state is the
+   store's read-back, and the store never emits one there. The case went red, it
+   was targeted, the other 28 passed: every signal a good reproduction gives. It
+   demonstrated a silent loss of the activity, while what actually happens with a
+   reachable baseline is a **duplicate entry carrying a stale label** - which was
+   what the review had said, and what the reproduction was taken as disproving.
+   Both faults are real; only one occurs. **A red test is evidence only if its
+   fixture is reachable**, so derive the baseline from what the producing code
+   emits, never from what makes the case read well.
 
 The check that catches all of them is the same one: break what the test guards,
 and watch **that** test go red and the others stay green. It costs a minute.
