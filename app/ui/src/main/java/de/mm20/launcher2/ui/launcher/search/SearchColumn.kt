@@ -166,6 +166,9 @@ fun SearchColumn(
         )
         ProvideSearchGrid(layout) {
             val columns = LocalGridSettings.current.columnCount
+            // The favorites row is drawn in these columns; it fetches for them
+            // too, not for upstream's grid setting.
+            LaunchedEffect(columns) { favoritesVM.setRowColumns(columns) }
             AnimatedContent(showFilters && !twoPane) { fullScreenFilters ->
                 if (fullScreenFilters) {
                     BackHandler {

@@ -31,6 +31,17 @@ abstract class FavoritesVM : ViewModel(), KoinComponent {
 
     val selectedTag = MutableStateFlow<String?>(null)
 
+    /**
+     * The columns the row is drawn in, once its composable says so: search's
+     * row is laid out in the home grid's columns (#91), not in upstream's grid
+     * setting, and fetching for the setting asked for the wrong number of
+     * frequently-used apps (a 5-column count into a 4-column row). Declared
+     * before [favorites], which is built in the constructor and reads it.
+     * Until it is set - the dock, and the moment before search is composed -
+     * the setting decides, as it always has.
+     */
+    private val rowColumns = MutableStateFlow<Int?>(null)
+
     val showEditButton =
         settings.showEditButton.stateIn(viewModelScope, SharingStarted.Lazily, false)
     abstract val tagsExpanded: Flow<Boolean>
@@ -46,11 +57,10 @@ abstract class FavoritesVM : ViewModel(), KoinComponent {
     open val favorites: Flow<List<SavableSearchable>> = selectedTag.flatMapLatest { tag ->
         if (tag == null) {
             settings
-                .transformLatest {
-
-                    val columns = it.columns
-                    val includeFrequentlyUsed = it.frequentlyUsed && showsFrequentlyUsed()
-                    val frequentlyUsedRows = it.frequentlyUsedRows
+                .combine(rowColumns) { settings, row -> settings to (row ?: settings.columns) }
+                .transformLatest { (row, columns) ->
+                    val includeFrequentlyUsed = row.frequentlyUsed && showsFrequentlyUsed()
+                    val frequentlyUsedRows = row.frequentlyUsedRows
 
                     val pinned = favoritesService.getFavorites(
                         excludeTypes = listOf("tag"),
@@ -83,6 +93,10 @@ abstract class FavoritesVM : ViewModel(), KoinComponent {
         }
     }.shareIn(viewModelScope, SharingStarted.WhileSubscribed(), replay = 1)
 
+
+    fun setRowColumns(columns: Int) {
+        rowColumns.value = columns
+    }
 
     fun selectTag(tag: String?) {
         selectedTag.value = tag
