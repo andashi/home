@@ -43,8 +43,8 @@ if [ -n "$outside" ]; then
   printf '::error file=e2e/%s::run.sh may be named only inside gos_run:\n%s\n' "$lib" "$outside"
   found=1
 fi
-for script in *.sh */*.sh; do
-  [ -f "$script" ] || continue
+while IFS= read -r -d '' script; do
+  script="${script#./}"
   case "$script" in "$lib" | *.test.sh | check-gos-run.sh) continue ;; esac
   hits="$(mentions "$script")"
   [ -z "$hits" ] && continue
@@ -52,6 +52,6 @@ for script in *.sh */*.sh; do
     printf '::error file=e2e/%s,line=%s::names run.sh outside gos_run; call gos_run instead\n' "$script" "${hit%%:*}"
   done <<<"$hits"
   found=1
-done
+done < <(find . -name '*.sh' -type f -print0 | sort -z)
 [ "$found" = 0 ] && echo "run.sh is reached only through gos_run"
 exit "$found"
