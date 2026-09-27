@@ -45,8 +45,10 @@
 # Instance: SERIAL + OVERLAY_DIR (default emulator-5562, instances/test-fold-gpu,
 # a foldable that runs GPU=host since its first start), snapshot `clean`,
 # under the instance's device lock. Everything runs as the unrooted shell
-# (uid 2000, asserted); `run.sh start` ends with `adb root`, so run
-# `adb -s $SERIAL unroot` after starting the instance. Needs `trace_processor`
+# (uid 2000, asserted; the script unroots after `run.sh start`'s `adb root`).
+# Lifecycle: boots the instance if it is down and stops it at the end unless
+# you held its lock before the run and pass that owner as LOCK_OWNER
+# (finish_instance; AGENTS.md, "Emulator"). Needs `trace_processor`
 # (TRACE_PROCESSOR, else on PATH).
 set -euo pipefail
 
@@ -63,25 +65,38 @@ TP="${TRACE_PROCESSOR:-$(command -v trace_processor || true)}"
 export LOCK_OWNER="${LOCK_OWNER:-measure-unfold@$SERIAL#$$}"
 WORK="$(mktemp -d)"
 LOCK="$GOS_REPO/emulator/device-lock.sh"
-HELD_BEFORE=0
-"$LOCK" status 2>/dev/null | grep -qF "device $SERIAL held by: $LOCK_OWNER " && HELD_BEFORE=1
+HELD_BEFORE=0 HAVE_LOCK=0
+# `holder` prints the owner and nothing else; `status` is prose for a person,
+# and a rewording of it would flip this decision silently.
+[ "$("$LOCK" holder "$SERIAL" 2>/dev/null)" = "$LOCK_OWNER" ] && HELD_BEFORE=1
 
 log() { printf ':: %s\n' "$*"; }
 die() { printf 'x %s\n' "$*" >&2; exit 1; }
 names=()
-cleanup() {
-  rm -rf "$WORK"
-  # Its own snapshots, ~3.5 GB each; `clean` stays.
-  for n in "${names[@]}"; do adb -s "$SERIAL" emu avd snapshot delete "$n" >/dev/null 2>&1 || true; done
-  [ "$HELD_BEFORE" = 1 ] || "$LOCK" release "$LOCK_OWNER" "$SERIAL" >/dev/null 2>&1 || true
-}
-trap cleanup EXIT
+# Sourced before the trap exists: the trap calls finish_instance.
 # shellcheck source=lib/grid-device.sh
 . "$HERE/lib/grid-device.sh"
+cleanup() {
+  # Any step below that fails leaves the instance other than it was found,
+  # and then the run has not succeeded, whatever it measured.
+  local rc=$? unclean=0
+  rm -rf "$WORK"
+  # Its own snapshots, ~3.5 GB each; `clean` stays.
+  delete_snapshots "${names[@]}" || unclean=1
+  # finish_instance only for an instance this run locked.
+  if [ "$HAVE_LOCK" = 1 ]; then
+    finish_instance || unclean=1
+  fi
+  # An earlier failure keeps its own status.
+  if [ "$unclean" = 1 ] && [ "$rc" -eq 0 ]; then exit 1; fi
+}
+trap cleanup EXIT
 
 [ $# -ge 1 ] || die "usage: $0 a.apk [b.apk ...]"
 [ -x "$TP" ] || die "trace_processor not found (TRACE_PROCESSOR)"
 "$LOCK" acquire "$LOCK_OWNER" "$SERIAL" >/dev/null || die "$SERIAL is locked by someone else"
+HAVE_LOCK=1
+boot_instance
 unrooted_shell
 read -r -a revs <<<"${REVS:-}"
 resolve_postures   # POSTURE_CLOSED / POSTURE_OPENED: the ids differ between instances

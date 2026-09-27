@@ -679,6 +679,11 @@ check "a nested retry_for reports the bound in force, not the one asked for" rep
 mkdir -p "$WORK/gos/emulator"
 cat > "$WORK/gos/emulator/run.sh" <<'EOF2'
 #!/usr/bin/env bash
+# `running` answers from BOOT_STATE (the boot tests) and is not logged.
+if [ "$1" = running ]; then
+  [ -n "${BOOT_STATE:-}" ] && [ "$(cat "$BOOT_STATE")" != down ] && { echo 4242; exit 0; }
+  exit 1
+fi
 echo "run.sh $* owner=${LOCK_OWNER:-}" >> "$CALLS"
 [ "${FAKE_STOP_RC:-0}" = 0 ] || { echo " x held by someone, refusing to stop it"; exit 1; }
 EOF2
@@ -766,6 +771,44 @@ rejects_a_flag_as_the_value() {
 }
 check "push_config rejects --ignored followed by another option" rejects_a_flag_as_the_value
 
+# A run boots the instance it needs when it is down, as its lock owner, and
+# records that in BOOTED; finish_instance uses it only to decide whether to
+# warn. The instance's state is $WORK/boot/state: down, up, or offline
+# (running, but adbd restarting, as right after `run.sh start` ends with
+# `adb root`). "Running" is `run.sh running`'s answer, the one definition
+# (provisioning 514d9c6): the adb fake turns the offline case red if the check
+# goes back to asking adb, and a pgrep that never finds anything turns the up
+# case red if it goes back to a private pgrep. run.sh is the stop_and_release
+# fake above.
+mkdir -p "$WORK/boot"
+cat > "$WORK/boot/adb" <<EOF
+#!/usr/bin/env bash
+case "\$(cat "$WORK/boot/state")" in
+  up) echo device ;;
+  offline) echo "error: device offline" >&2; exit 1 ;;
+  *) echo "error: device 'fake' not found" >&2; exit 1 ;;
+esac
+EOF
+printf '#!/usr/bin/env bash\nexit 1\n' > "$WORK/boot/pgrep"
+chmod +x "$WORK/boot/adb" "$WORK/boot/pgrep"
+booted_after() { # $1 = down|up|offline; prints BOOTED and the run.sh calls
+  export CALLS="$WORK/calls"; : > "$CALLS"
+  echo "$1" > "$WORK/boot/state"
+  ( PATH="$WORK/boot:$PATH" SERIAL=emulator-5562 GOS_REPO="$WORK/gos" LOCK_OWNER="me@fake#1" BOOT_STATE="$WORK/boot/state"
+    export LOCK_OWNER BOOT_STATE; boot_instance; printf '%s|%s' "$BOOTED" "$(cat "$CALLS")" )
+}
+boots_a_down_instance() { [ "$(booted_after down)" = "1|run.sh start owner=me@fake#1" ]; }
+check "boot_instance boots a down instance and says it did" boots_a_down_instance
+leaves_a_running_instance() { [ "$(booted_after up)" = "0|" ]; }
+check "boot_instance leaves a running instance alone and says it did not boot it" leaves_a_running_instance
+# Running is the emulator process, as run.sh itself decides it: an adb
+# transport that is offline for a moment is not a down instance. adbd answers
+# later than the emulator reports up, and `adb unroot` restarts it again
+# (measured, see is_unrooted_shell); taken for down, a running instance would
+# be booted over and then stopped by a run that did not start it.
+leaves_an_offline_instance() { [ "$(booted_after offline)" = "0|" ]; }
+check "boot_instance leaves a running instance alone while its adb is offline" leaves_an_offline_instance
+
 # gos_run is the one way to run.sh. It checks the owner at the moment of the
 # call, so no reading of the script's text can be fooled: exported and
 # non-empty, or it refuses before run.sh runs.
@@ -808,5 +851,62 @@ EOF2
   gos_run_case 'export LOCK_OWNER="me@fake#1"' && grep -qx "run.sh start owner=me@fake#1 snapshot=clean serial=fake" "$CALLS"
 }
 check "gos_run passes SERIAL and an env prefix through to run.sh" passes_the_env_prefix
+# A run's snapshots are ~3.5 GB each. Deleting them is checked against the
+# list afterwards, and a list that could not be read is not an empty one:
+# taken for one, it reported nothing left whatever was left.
+mkdir -p "$WORK/snaps"
+cat > "$WORK/snaps/adb" <<EOF
+#!/usr/bin/env bash
+case "\$*" in
+  *"snapshot delete"*) : ;;
+  *"snapshot list"*) [ -e "$WORK/snaps/list-fails" ] && exit 1; cat "$WORK/snaps/list" ;;
+esac
+EOF
+chmod +x "$WORK/snaps/adb"
+snapshots_after() { # $1 = what the list shows afterwards, or "fails"
+  rm -f "$WORK/snaps/list-fails"
+  if [ "$1" = fails ]; then : > "$WORK/snaps/list-fails"; else printf '%s\n' "$1" > "$WORK/snaps/list"; fi
+  ( PATH="$WORK/snaps:$PATH"; delete_snapshots cold-1-m0 cold-1-m1 ) 2>&1
+}
+passes_when_all_are_gone() { snapshots_after "clean" >/dev/null; }
+check "delete_snapshots passes when none of the run's snapshots is listed" passes_when_all_are_gone
+names_what_is_left() {
+  local out; out="$(snapshots_after $'clean\ncold-1-m1')" && return 1
+  grep -q "cold-1-m1" <<<"$out" && ! grep -q "cold-1-m0" <<<"$out"
+}
+check "delete_snapshots fails and names exactly what is left" names_what_is_left
+fails_on_an_unread_list() {
+  local out; out="$(snapshots_after fails)" && return 1
+  grep -q "cold-1-m0" <<<"$out" && grep -q "cold-1-m1" <<<"$out"
+}
+check "delete_snapshots fails, naming every snapshot, when the list cannot be read" fails_on_an_unread_list
+# A name is matched whole: another run's cold-1-m10 is not this run's
+# cold-1-m1 left behind (#198 review).
+ignores_a_longer_name() { snapshots_after $'clean\ncold-1-m10' >/dev/null; }
+check "delete_snapshots does not take a longer name for one of its own" ignores_a_longer_name
+# A hyphen ends a grep word: cold-1-m1-old is not cold-1-m1 either (#198 review).
+ignores_a_hyphenated_longer_name() { snapshots_after $'--  clean  1.2G\n--  cold-1-m1-old  3.5G' >/dev/null; }
+check "delete_snapshots does not take a hyphenated longer name for one of its own" ignores_a_hyphenated_longer_name
+
+# The end of a run: a running instance nobody holds is a stray, whoever
+# booted it, so it is stopped and released - unless the caller held the lock
+# before the run and so owns the instance's lifecycle. Stopping one the run
+# did not boot is said out loud, with what would have kept it.
+finish_case() { # $1 = HELD_BEFORE, $2 = BOOTED; prints the calls, stderr in $WORK/finish.err
+  export CALLS="$WORK/calls"; : > "$CALLS"
+  ( GOS_REPO="$WORK/gos" LOCK_OWNER="me@fake#1" FAKE_STOP_RC=0 HELD_BEFORE="$1" BOOTED="$2"
+    export LOCK_OWNER FAKE_STOP_RC; finish_instance ) 2>"$WORK/finish.err"
+}
+leaves_what_the_caller_holds() { finish_case 1 0 && [ ! -s "$CALLS" ]; }
+check "finish_instance leaves an instance whose lock the caller held before the run" leaves_what_the_caller_holds
+stops_what_it_booted_quietly() {
+  finish_case 0 1 && grep -q "^run.sh stop" "$CALLS" && grep -q "release" "$CALLS" && ! grep -q "hold its lock" "$WORK/finish.err"
+}
+check "finish_instance stops and releases what the run booted, without a warning" stops_what_it_booted_quietly
+stops_a_stray_out_loud() {
+  finish_case 0 0 && grep -q "^run.sh stop" "$CALLS" && grep -q "release" "$CALLS" \
+    && grep -q "nobody held its lock" "$WORK/finish.err" && grep -q "hold its lock" "$WORK/finish.err"
+}
+check "finish_instance stops a running instance nobody held, and says what would have kept it" stops_a_stray_out_loud
 
 exit "$failed"

@@ -128,6 +128,46 @@ unrooted_shell() { # [$1 = timeout (s), default 60]
   log "adb as unrooted shell (uid 2000)"
 }
 
+# Boots SERIAL's instance when it is down, from SNAPSHOT (default clean), with
+# the instance's lock held, and leaves BOOTED=1 when it did; finish_instance
+# ends it. Running is `run.sh running`'s answer, the one definition: the qemu
+# process on the port (provisioning 514d9c6), not adb's answer, which is
+# briefly offline after a boot and after `adb unroot`. Needs GOS_REPO, SERIAL
+# and an exported LOCK_OWNER.
+BOOTED=0
+boot_instance() {
+  gos_run running >/dev/null 2>&1 && return 0
+  log "booting $SERIAL from ${SNAPSHOT:-clean}"
+  SNAPSHOT="${SNAPSHOT:-clean}" gos_run start >/dev/null || die "could not boot $SERIAL"
+  BOOTED=1
+}
+
+# Deletes a run's own snapshots (~3.5 GB each), one retry each, and checks
+# the list afterwards: fails and names what is left, or every one of them
+# when the list cannot be read, since an unread list is not an empty one.
+delete_snapshots() { # $@ = snapshot names
+  [ $# -gt 0 ] || return 0
+  local n listed left=()
+  for n in "$@"; do
+    # A failed delete is not fatal here: the list below is the check.
+    ADB_DEADLINE=$(deadline_in 30) adb_t emu avd snapshot delete "$n" >/dev/null 2>&1 \
+      || { sleep 2; ADB_DEADLINE=$(deadline_in 30) adb_t emu avd snapshot delete "$n" >/dev/null 2>&1; } \
+      || :
+  done
+  if ! listed="$(ADB_DEADLINE=$(deadline_in 15) adb_out emu avd snapshot list 2>/dev/null)"; then
+    printf 'x could not list the snapshots on %s; check by hand for: %s\n' "$SERIAL" "$*" >&2
+    return 1
+  fi
+  # A name is a whole field of the list: neither another run's cold-1-m10
+  # nor its cold-1-m1-old is this run's cold-1-m1.
+  for n in "$@"; do
+    awk -v n="$n" '{ for (i = 1; i <= NF; i++) if ($i == n) { found = 1; exit } } END { exit !found }' <<<"$listed" \
+      && left+=("$n")
+  done
+  [ "${#left[@]}" -eq 0 ] \
+    || { printf 'x snapshots left on %s, delete them by hand: %s\n' "$SERIAL" "${left[*]}" >&2; return 1; }
+}
+
 query_json() { # $1 = provider path (config|diagnostics)
   # The provider answers one row whose json value spans many lines. Anything
   # else is an error, never an empty answer: a caller reading "" as "no
@@ -272,6 +312,18 @@ stop_and_release() {
   local out
   out="$(cd "$GOS_REPO" && emulator/device-lock.sh release "$LOCK_OWNER" "$SERIAL" 2>&1)" \
     || { printf 'could not release the lock on %s (%s):\n%s\n' "$SERIAL" "$LOCK_OWNER" "$out" >&2; return 1; }
+}
+
+# The end of a run on the instance it locked. A running instance nobody holds
+# is a stray, whoever booted it, so it is stopped and released - unless the
+# caller held the lock before the run (HELD_BEFORE=1) and so owns the
+# instance's lifecycle. Stopping one this run did not boot (BOOTED=0) is said
+# out loud, with what would have kept it running.
+finish_instance() {
+  [ "${HELD_BEFORE:-0}" = 1 ] && return 0
+  [ "${BOOTED:-0}" = 1 ] || printf ':: stopping %s: it was running and nobody held its lock. To keep an instance across a run, hold its lock before the run (device-lock.sh acquire <owner> %s) and pass that owner as LOCK_OWNER.\n' \
+    "$SERIAL" "$SERIAL" >&2
+  stop_and_release
 }
 
 wake_screen() {

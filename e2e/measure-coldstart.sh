@@ -22,7 +22,9 @@
 # Instance: SERIAL + OVERLAY_DIR (default emulator-5562, instances/test-fold-gpu),
 # snapshot `clean`, under the instance's device lock, as the unrooted shell
 # (uid 2000; `run.sh start` ends with `adb root`, and the script unroots
-# through the library's unrooted_shell). Robust by construction
+# through the library's unrooted_shell). Lifecycle: boots the instance if it
+# is down and stops it at the end unless you held its lock before the run
+# and pass that owner as LOCK_OWNER (finish_instance; AGENTS.md, "Emulator"). Robust by construction
 # to prior state (the snapshot) and to host load (the interleaving); not to a
 # concurrent workload on the same instance - pin ANDROID_SERIAL on every
 # Gradle device task elsewhere (AGENTS.md, "Emulator").
@@ -50,8 +52,10 @@ LOAD_FLOOR="${LOAD_FLOOR:-unmeasured}"
 export LOCK_OWNER="${LOCK_OWNER:-measure-coldstart@$SERIAL#$$}"
 WORK="$(mktemp -d)"
 LOCK="$GOS_REPO/emulator/device-lock.sh"
-HELD_BEFORE=0
-"$LOCK" status 2>/dev/null | grep -qF "device $SERIAL held by: $LOCK_OWNER " && HELD_BEFORE=1
+HELD_BEFORE=0 HAVE_LOCK=0
+# `holder` prints the owner and nothing else; `status` is prose for a person,
+# and a rewording of it would flip this decision silently.
+[ "$("$LOCK" holder "$SERIAL" 2>/dev/null)" = "$LOCK_OWNER" ] && HELD_BEFORE=1
 
 log() { printf ':: %s\n' "$*"; }
 die() { printf 'x %s\n' "$*" >&2; exit 1; }
@@ -76,22 +80,11 @@ cleanup() {
     keep_lock=1; unclean=1
   fi
   # Each run-specific snapshot is ~3.5 GB: a delete that fails silently
-  # would let them pile up. One retry, then name whatever is left.
-  if [ "${#names[@]}" -gt 0 ]; then
-    local n listed left=()
-    for n in "${names[@]}"; do
-      ADB_DEADLINE=$(deadline_in 30) adb_t emu avd snapshot delete "$n" >/dev/null 2>&1 \
-        || { sleep 2; ADB_DEADLINE=$(deadline_in 30) adb_t emu avd snapshot delete "$n" >/dev/null 2>&1; } || true
-    done
-    listed="$(ADB_DEADLINE=$(deadline_in 15) adb_t emu avd snapshot list 2>/dev/null || true)"
-    for n in "${names[@]}"; do grep -qF "$n" <<<"$listed" && left+=("$n"); done
-    [ "${#left[@]}" -eq 0 ] \
-      || { printf 'x snapshots left on %s, delete them by hand: %s\n' "$SERIAL" "${left[*]}" >&2; unclean=1; }
-  fi
-  if [ "$HELD_BEFORE" != 1 ] && [ "$keep_lock" != 1 ] \
-    && ! "$LOCK" release "$LOCK_OWNER" "$SERIAL" >/dev/null 2>&1; then
-    printf 'x could not release the lock (%s) on %s; release it by hand\n' "$LOCK_OWNER" "$SERIAL" >&2
-    unclean=1
+  # would let them pile up.
+  delete_snapshots "${names[@]}" || unclean=1
+  # finish_instance only for an instance this run locked.
+  if [ "$HAVE_LOCK" = 1 ] && [ "$keep_lock" != 1 ]; then
+    finish_instance || unclean=1
   fi
   # An earlier failure keeps its own status.
   if [ "$unclean" = 1 ] && [ "$rc" -eq 0 ]; then exit 1; fi
@@ -108,6 +101,8 @@ if [ -n "$MAX_LOAD" ]; then
     || die "MAX_LOAD needs LOAD_FLOOR: the idle load of the booted instance, measured before the first sample"
 fi
 "$LOCK" acquire "$LOCK_OWNER" "$SERIAL" >/dev/null || die "$SERIAL is locked by someone else"
+HAVE_LOCK=1
+boot_instance
 # `run.sh start` leaves adb as root; a release build offers the unrooted shell.
 unrooted_shell
 read -r -a revs <<<"${REVS:-}"
