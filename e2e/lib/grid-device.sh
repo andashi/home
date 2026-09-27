@@ -128,18 +128,19 @@ unrooted_shell() { # [$1 = timeout (s), default 60]
   log "adb as unrooted shell (uid 2000)"
 }
 
-# Boots SERIAL's instance through run.sh ($1) when it is down, from SNAPSHOT
-# (default clean), and leaves BOOTED=1 when it did. A run stops only what it
-# booted, and an instance someone else started stays as it was. Call it with
-# the instance's lock held: a hand-booted emulator-5562 ran unlocked for five
-# hours after the check that needed it (2026-09-26).
-# Running means the emulator process on the port, as run.sh decides it, not
-# adb's answer: adbd is briefly offline after a boot and after `adb unroot`.
+# Boots SERIAL's instance when it is down, from SNAPSHOT (default clean), and
+# leaves BOOTED=1 when it did; finish_instance ends it. Call it with the
+# instance's lock held: a hand-booted emulator-5562 ran unlocked for five
+# hours after the check that needed it (2026-09-26). Running means the
+# emulator process on the port, as run.sh decides it, not adb's answer: adbd
+# is briefly offline after a boot and after `adb unroot`. Needs GOS_REPO,
+# SERIAL and an exported LOCK_OWNER.
 BOOTED=0
-boot_instance() { # $1 = run.sh
+boot_instance() {
   pgrep -f "qemu-system.* -port ${SERIAL#emulator-}( |$)" >/dev/null 2>&1 && return 0
   log "booting $SERIAL from ${SNAPSHOT:-clean}"
-  SNAPSHOT="${SNAPSHOT:-clean}" "$1" start >/dev/null || die "could not boot $SERIAL"
+  (cd "$GOS_REPO" && SERIAL="$SERIAL" SNAPSHOT="${SNAPSHOT:-clean}" emulator/run.sh start >/dev/null) \
+    || die "could not boot $SERIAL"
   BOOTED=1
 }
 
@@ -308,6 +309,19 @@ stop_and_release() {
   local out
   out="$(cd "$GOS_REPO" && emulator/device-lock.sh release "$LOCK_OWNER" "$SERIAL" 2>&1)" \
     || { printf 'could not release the lock on %s (%s):\n%s\n' "$SERIAL" "$LOCK_OWNER" "$out" >&2; return 1; }
+}
+
+# The end of a run on the instance it locked. A running instance nobody holds
+# is a stray, whoever booted it, so it is stopped and released - unless the
+# caller held the lock before the run (HELD_BEFORE=1) and so owns the
+# instance's lifecycle. Stopping one this run did not boot (BOOTED=0) is said
+# out loud, with what would have kept it running.
+finish_instance() {
+  [ "${HELD_BEFORE:-0}" = 1 ] && return 0
+  [ "${BOOTED:-0}" = 1 ] || printf '%s\n' \
+    ":: $SERIAL was already running when this run took it, and nobody held its lock: stopping it now." \
+    ":: To keep an instance running across a run, hold its lock before the run starts (device-lock.sh acquire <owner> $SERIAL) and pass that owner as LOCK_OWNER." >&2
+  stop_and_release
 }
 
 wake_screen() {

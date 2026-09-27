@@ -590,6 +590,13 @@ target `sdk_phone64_x86_64-cur-userdebug`, test-keys), operated via
 - Respect `device-lock.sh`: the lock is **per instance** (serial as argument, or
   `SERIAL`/`ADB_SERIAL`). Never start, stop or adb into an instance another
   session holds. `device-lock.sh status` lists every held instance.
+- A running instance nobody holds is a stray, whoever booted it: the
+  measurement scripts stop one at the end of their run and say so. An
+  instance you booted by hand and want to keep: hold its lock
+  (`device-lock.sh acquire <owner> <serial>`) and pass that owner as
+  `LOCK_OWNER` to the scripts you run on it. A hand-booted emulator-5562 ran
+  unlocked for five hours on 2026-09-26, and another session's cleanup
+  stopped a locked one an hour later.
 - Gradle's device tasks are adb commands too, and they fan out:
   `connectedDebugAndroidTest` installs the APKs and runs the instrumentation,
   and `install*` installs, on **every** connected device unless

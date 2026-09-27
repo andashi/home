@@ -783,15 +783,15 @@ cat > "$WORK/boot/pgrep" <<EOF
 #!/usr/bin/env bash
 [ "\$(cat "$WORK/boot/state")" != down ] && echo 4242
 EOF
-cat > "$WORK/boot/run.sh" <<EOF
+mkdir -p "$WORK/boot/emulator"; cat > "$WORK/boot/emulator/run.sh" <<EOF
 #!/usr/bin/env bash
 echo "\$*" >> "$WORK/boot/calls"
 EOF
-chmod +x "$WORK/boot/adb" "$WORK/boot/pgrep" "$WORK/boot/run.sh"
+chmod +x "$WORK/boot/adb" "$WORK/boot/pgrep" "$WORK/boot/emulator/run.sh"
 booted_after() { # $1 = down|up|offline; prints BOOTED and the run.sh calls
   rm -f "$WORK/boot/calls"
   echo "$1" > "$WORK/boot/state"
-  ( PATH="$WORK/boot:$PATH"; SERIAL=emulator-5562; boot_instance "$WORK/boot/run.sh"; printf '%s|%s' "$BOOTED" "$(cat "$WORK/boot/calls" 2>/dev/null)" )
+  ( PATH="$WORK/boot:$PATH"; SERIAL=emulator-5562; GOS_REPO="$WORK/boot"; boot_instance; printf '%s|%s' "$BOOTED" "$(cat "$WORK/boot/calls" 2>/dev/null)" )
 }
 boots_a_down_instance() { [ "$(booted_after down)" = "1|start" ]; }
 check "boot_instance boots a down instance and says it did" boots_a_down_instance

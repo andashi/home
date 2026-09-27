@@ -45,9 +45,12 @@
 # Instance: SERIAL + OVERLAY_DIR (default emulator-5562, instances/test-fold-gpu,
 # a foldable that runs GPU=host since its first start), snapshot `clean`,
 # under the instance's device lock. Everything runs as the unrooted shell
-# (uid 2000, asserted); `run.sh start` ends with `adb root`, so run
-# `adb -s $SERIAL unroot` after starting the instance. Needs `trace_processor`
-# (TRACE_PROCESSOR, else on PATH).
+# (uid 2000, asserted; the script unroots after `run.sh start`'s `adb root`).
+# The run boots the instance when it is down and stops it at the end,
+# whoever booted it: an instance nobody holds is a stray. To keep one
+# running across a run, hold its lock before the run (device-lock.sh acquire
+# <owner> <serial>) and pass that owner as LOCK_OWNER; the run then leaves it
+# running and locked. Needs `trace_processor` (TRACE_PROCESSOR, else on PATH).
 set -euo pipefail
 
 HERE="$(cd "$(dirname "$0")" && pwd)"
@@ -63,32 +66,28 @@ TP="${TRACE_PROCESSOR:-$(command -v trace_processor || true)}"
 export LOCK_OWNER="${LOCK_OWNER:-measure-unfold@$SERIAL#$$}"
 WORK="$(mktemp -d)"
 LOCK="$GOS_REPO/emulator/device-lock.sh"
-HELD_BEFORE=0
+HELD_BEFORE=0 HAVE_LOCK=0
 "$LOCK" status 2>/dev/null | grep -qF "device $SERIAL held by: $LOCK_OWNER " && HELD_BEFORE=1
 
 log() { printf ':: %s\n' "$*"; }
 die() { printf 'x %s\n' "$*" >&2; exit 1; }
 names=()
-# Sourced before the trap exists: the trap reads BOOTED.
+# Sourced before the trap exists: the trap calls finish_instance.
 # shellcheck source=lib/grid-device.sh
 . "$HERE/lib/grid-device.sh"
 cleanup() {
   # Any step below that fails leaves the instance other than it was found,
   # and then the run has not succeeded, whatever it measured.
-  local rc=$? keep_lock=0 unclean=0
+  local rc=$? unclean=0
   rm -rf "$WORK"
   # Its own snapshots, ~3.5 GB each; `clean` stays.
   delete_snapshots "${names[@]}" || unclean=1
-  # Stopped only if this run booted it. A stop that fails keeps the lock: a
-  # running instance nobody holds is what the locks exist to prevent.
-  if [ "$BOOTED" = 1 ] && ! "$RUN" stop >/dev/null 2>&1; then
-    printf 'x could not stop %s; keeping the lock (%s) - stop it by hand\n' "$SERIAL" "$LOCK_OWNER" >&2
-    keep_lock=1; unclean=1
-  fi
-  if [ "$HELD_BEFORE" != 1 ] && [ "$keep_lock" != 1 ] \
-    && ! "$LOCK" release "$LOCK_OWNER" "$SERIAL" >/dev/null 2>&1; then
-    printf 'x could not release the lock (%s) on %s; release it by hand\n' "$LOCK_OWNER" "$SERIAL" >&2
-    unclean=1
+  # Stopped and released unless the caller held the lock before the run; a
+  # stop that fails keeps the lock (finish_instance, stop_and_release). Only
+  # for an instance this run locked: a run that died before its acquire
+  # leaves everything alone.
+  if [ "$HAVE_LOCK" = 1 ]; then
+    finish_instance || unclean=1
   fi
   # An earlier failure keeps its own status.
   if [ "$unclean" = 1 ] && [ "$rc" -eq 0 ]; then exit 1; fi
@@ -98,7 +97,8 @@ trap cleanup EXIT
 [ $# -ge 1 ] || die "usage: $0 a.apk [b.apk ...]"
 [ -x "$TP" ] || die "trace_processor not found (TRACE_PROCESSOR)"
 "$LOCK" acquire "$LOCK_OWNER" "$SERIAL" >/dev/null || die "$SERIAL is locked by someone else"
-boot_instance "$RUN"
+HAVE_LOCK=1
+boot_instance
 unrooted_shell
 read -r -a revs <<<"${REVS:-}"
 resolve_postures   # POSTURE_CLOSED / POSTURE_OPENED: the ids differ between instances

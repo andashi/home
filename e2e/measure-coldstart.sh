@@ -20,10 +20,13 @@
 # comes from REVS (space-separated, in APK order), else "unknown".
 #
 # Instance: SERIAL + OVERLAY_DIR (default emulator-5562, instances/test-fold-gpu),
-# snapshot `clean`, under the instance's device lock, booted by the run when
-# it is down and then stopped by it too, as the unrooted shell
+# snapshot `clean`, under the instance's device lock, as the unrooted shell
 # (uid 2000; `run.sh start` ends with `adb root`, and the script unroots
-# through the library's unrooted_shell). Robust by construction
+# through the library's unrooted_shell). The run boots the instance when it
+# is down and stops it at the end, whoever booted it: an instance nobody
+# holds is a stray. To keep one running across a run, hold its lock before
+# the run (device-lock.sh acquire <owner> <serial>) and pass that owner as
+# LOCK_OWNER; the run then leaves it running and locked. Robust by construction
 # to prior state (the snapshot) and to host load (the interleaving); not to a
 # concurrent workload on the same instance - pin ANDROID_SERIAL on every
 # Gradle device task elsewhere (AGENTS.md, "Emulator").
@@ -51,7 +54,7 @@ LOAD_FLOOR="${LOAD_FLOOR:-unmeasured}"
 export LOCK_OWNER="${LOCK_OWNER:-measure-coldstart@$SERIAL#$$}"
 WORK="$(mktemp -d)"
 LOCK="$GOS_REPO/emulator/device-lock.sh"
-HELD_BEFORE=0
+HELD_BEFORE=0 HAVE_LOCK=0
 "$LOCK" status 2>/dev/null | grep -qF "device $SERIAL held by: $LOCK_OWNER " && HELD_BEFORE=1
 
 log() { printf ':: %s\n' "$*"; }
@@ -79,16 +82,12 @@ cleanup() {
   # Each run-specific snapshot is ~3.5 GB: a delete that fails silently
   # would let them pile up.
   delete_snapshots "${names[@]}" || unclean=1
-  # Stopped only if this run booted it. A stop that fails keeps the lock: a
-  # running instance nobody holds is what the locks exist to prevent.
-  if [ "$BOOTED" = 1 ] && ! "$RUN" stop >/dev/null 2>&1; then
-    printf 'x could not stop %s; keeping the lock (%s) - stop it by hand\n' "$SERIAL" "$LOCK_OWNER" >&2
-    keep_lock=1; unclean=1
-  fi
-  if [ "$HELD_BEFORE" != 1 ] && [ "$keep_lock" != 1 ] \
-    && ! "$LOCK" release "$LOCK_OWNER" "$SERIAL" >/dev/null 2>&1; then
-    printf 'x could not release the lock (%s) on %s; release it by hand\n' "$LOCK_OWNER" "$SERIAL" >&2
-    unclean=1
+  # Stopped and released unless the caller held the lock before the run; a
+  # stop that fails keeps the lock (finish_instance, stop_and_release). Only
+  # for an instance this run locked: a run that died before its acquire
+  # leaves everything alone.
+  if [ "$HAVE_LOCK" = 1 ] && [ "$keep_lock" != 1 ]; then
+    finish_instance || unclean=1
   fi
   # An earlier failure keeps its own status.
   if [ "$unclean" = 1 ] && [ "$rc" -eq 0 ]; then exit 1; fi
@@ -105,7 +104,8 @@ if [ -n "$MAX_LOAD" ]; then
     || die "MAX_LOAD needs LOAD_FLOOR: the idle load of the booted instance, measured before the first sample"
 fi
 "$LOCK" acquire "$LOCK_OWNER" "$SERIAL" >/dev/null || die "$SERIAL is locked by someone else"
-boot_instance "$RUN"
+HAVE_LOCK=1
+boot_instance
 # `run.sh start` leaves adb as root; a release build offers the unrooted shell.
 unrooted_shell
 read -r -a revs <<<"${REVS:-}"
