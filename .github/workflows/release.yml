@@ -155,6 +155,11 @@ jobs:
         run: ./gradlew :app:app:assembleDefaultRelease
 
       - name: Name, hash and verify the APK
+        env:
+          # The release signing certificate (CN=Andashi Home, O=andashi), as
+          # every release so far carries it. A new key changes this line in
+          # the same pull request, visibly.
+          RELEASE_CERT_SHA256: e42da3c2cf9e682d67b96f3655b2adf1bb22488a064b6ff833520b3c43f2a5ee
         run: |
           set -euo pipefail
           out=app/app/build/outputs/apk/default/release
@@ -174,7 +179,8 @@ jobs:
           badging="$("$bt/aapt2" dump badging "$apk")"
           grep -q "package: name='org.andashi.home'" <<<"$badging"
           "$bt/apksigner" verify --print-certs "$apk" | tee CERTS.txt
-          ! grep -qi "androiddebugkey\|CN=Android Debug" CERTS.txt
+          # Exactly the pinned release key; why, in check-release-signer.py.
+          python3 "$GITHUB_WORKSPACE/.github/scripts/check-release-signer.py" CERTS.txt "$RELEASE_CERT_SHA256"
           echo "APK_PATH=$out/$apk" >> "$GITHUB_ENV"
           echo "SUMS_PATH=$out/SHA256SUMS" >> "$GITHUB_ENV"
           echo "CERTS_PATH=$out/CERTS.txt" >> "$GITHUB_ENV"

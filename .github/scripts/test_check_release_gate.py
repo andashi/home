@@ -10,6 +10,7 @@ import yaml
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 RELEASE = os.path.join(HERE, "..", "workflows", "release.yml")
+NO_SIGNER_CHECK = 'jobs.release does not check the signer with check-release-signer.py "$RELEASE_CERT_SHA256"'
 
 spec = importlib.util.spec_from_file_location("gate", os.path.join(HERE, "check-release-gate.py"))
 gate = importlib.util.module_from_spec(spec)
@@ -49,6 +50,96 @@ class ReleaseGateTest(unittest.TestCase):
     def test_a_commented_out_schema_upload_is_a_violation(self):
         found = gate.violations(release_with(comment_out('"$SCHEMA_PATH"')))
         self.assertIn("jobs.release does not publish launcher.schema.json with the APK", found)
+
+    # The signer check is only worth something while it runs: removing it, or
+    # the digest it compares with, must turn the gate red (#204).
+    def test_a_commented_out_signer_check_is_a_violation(self):
+        found = gate.violations(release_with(comment_out("check-release-signer.py")))
+        self.assertIn('jobs.release does not check the signer with check-release-signer.py "$RELEASE_CERT_SHA256"', found)
+
+    def test_a_missing_release_digest_is_a_violation(self):
+        workflow = release_with(lambda line: line)
+        for step in workflow["jobs"]["release"]["steps"]:
+            (step.get("env") or {}).pop("RELEASE_CERT_SHA256", None)
+        found = gate.violations(workflow)
+        self.assertIn("jobs.release pins no release certificate SHA-256 (RELEASE_CERT_SHA256, 64 hex)", found)
+
+    # A check whose failure is swallowed is the defect #204 fixed, again.
+    def test_a_masked_signer_check_is_a_violation(self):
+        mask = lambda line: line + " || true" if "check-release-signer.py" in line else line
+        found = gate.violations(release_with(mask))
+        self.assertIn('jobs.release does not check the signer with check-release-signer.py "$RELEASE_CERT_SHA256"', found)
+
+    def test_a_negated_signer_check_is_a_violation(self):
+        negate = lambda line: line.replace("python3", "! python3") if "check-release-signer.py" in line else line
+        found = gate.violations(release_with(negate))
+        self.assertIn('jobs.release does not check the signer with check-release-signer.py "$RELEASE_CERT_SHA256"', found)
+
+    def test_errexit_turned_off_before_the_signer_check_is_a_violation(self):
+        off = lambda line: line.replace("set -euo pipefail", "set +e") if "set -euo pipefail" in line else line
+        found = gate.violations(release_with(off))
+        self.assertIn('jobs.release does not check the signer with check-release-signer.py "$RELEASE_CERT_SHA256"', found)
+
+    # A line that only names the checker runs nothing (#204 review).
+    def test_a_printed_signer_check_is_a_violation(self):
+        printed = lambda line: (
+            """          python3 -c 'print(\"\"\"check-release-signer.py CERTS.txt "$RELEASE_CERT_SHA256"\"\"\")'"""
+            if "check-release-signer.py" in line else line)
+        found = gate.violations(release_with(printed))
+        self.assertIn('jobs.release does not check the signer with check-release-signer.py "$RELEASE_CERT_SHA256"', found)
+
+    def test_an_echoed_signer_check_is_a_violation(self):
+        echoed = lambda line: line.replace("python3", "echo") if "check-release-signer.py" in line else line
+        found = gate.violations(release_with(echoed))
+        self.assertIn('jobs.release does not check the signer with check-release-signer.py "$RELEASE_CERT_SHA256"', found)
+
+    # The gate reads the two lines as written, not as a shell would re-parse
+    # them (#204 review): another checker with the same name, a digest Bash
+    # does not expand, a check inside a here-document, a CERTS.txt that does
+    # not come from the APK.
+    def test_a_checker_at_another_path_is_a_violation(self):
+        moved = lambda line: line.replace('"$GITHUB_WORKSPACE/.github/scripts/check-release-signer.py"', "/tmp/check-release-signer.py") if "check-release-signer.py" in line else line
+        found = gate.violations(release_with(moved))
+        self.assertIn(NO_SIGNER_CHECK, found)
+
+    def test_a_single_quoted_digest_is_a_violation(self):
+        literal = lambda line: line.replace('"$RELEASE_CERT_SHA256"', "'$RELEASE_CERT_SHA256'")
+        found = gate.violations(release_with(literal))
+        self.assertIn(NO_SIGNER_CHECK, found)
+
+    def test_a_signer_check_inside_a_here_document_is_a_violation(self):
+        def heredoc(line):
+            if "check-release-signer.py" in line:
+                return "          cat <<'EOF'\n" + line + "\n          EOF"
+            return line
+        found = gate.violations(release_with(heredoc))
+        self.assertIn(NO_SIGNER_CHECK, found)
+
+    def test_certs_not_printed_from_the_apk_is_a_violation(self):
+        forged = lambda line: "          printf 'fixture' > CERTS.txt" if "tee CERTS.txt" in line else line
+        found = gate.violations(release_with(forged))
+        self.assertIn(NO_SIGNER_CHECK, found)
+
+    # The digest counts only in the step that runs the check (#204 review).
+    def test_a_digest_in_another_step_is_a_violation(self):
+        workflow = release_with(lambda line: line)
+        steps = workflow["jobs"]["release"]["steps"]
+        digest = None
+        for step in steps:
+            digest = (step.get("env") or {}).pop("RELEASE_CERT_SHA256", None) or digest
+        other = next(s for s in steps if "check-release-signer.py" not in str(s.get("run", "")))
+        other.setdefault("env", {})["RELEASE_CERT_SHA256"] = digest
+        found = gate.violations(workflow)
+        self.assertIn("jobs.release pins no release certificate SHA-256 (RELEASE_CERT_SHA256, 64 hex)", found)
+
+    def test_a_short_release_digest_is_a_violation(self):
+        workflow = release_with(lambda line: line)
+        for step in workflow["jobs"]["release"]["steps"]:
+            env = step.get("env") or {}
+            if "RELEASE_CERT_SHA256" in env:
+                env["RELEASE_CERT_SHA256"] = env["RELEASE_CERT_SHA256"][:40]
+        found = gate.violations(workflow)
+        self.assertIn("jobs.release pins no release certificate SHA-256 (RELEASE_CERT_SHA256, 64 hex)", found)
 
 
 if __name__ == "__main__":

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Asserts the three properties release.yml must keep (#132, #3).
+"""Asserts the four properties release.yml must keep (#132, #3, #204).
 
 1. Nothing builds before the full test suite is green: `tests` calls
    test.yml, and every other job needs it. Without that a tag ships commits
@@ -17,9 +17,23 @@
    zone's file against the version it deploys. The release job runs only on
    a tag, so without this check a lost upload would show only when someone
    looked for the asset.
+4. The APK is signed by exactly the pinned release key: the release job
+   prints the APK's certificates and runs check-release-signer.py on them
+   against RELEASE_CERT_SHA256, a full SHA-256 in the step's env. The check it replaced could never fail (#204), and a removed
+   check would read the same as a passing one.
+
+What this defends against, and what it does not: accidental weakening - a
+refactor, a copied line, a `set +e` added while debugging, a `!` nobody knew
+could not fail (the defect behind #204). It cannot defend against an author
+who means to defeat it, because whoever can edit release.yml can edit this
+file in the same commit. Against that, the controls are review, branch
+protection, and the pinned digest, which would have to change visibly in the
+same diff. So the checks match the lines release.yml writes, verbatim; do not
+harden them into a shell parser to catch deliberate evasion.
 
 Exits non-zero naming every violation.
 """
+import re
 import sys
 
 import yaml
@@ -84,7 +98,38 @@ def violations(workflow):
     publish = [line for line in release_steps.splitlines() if '"$APK_PATH"' in line]
     if not any('"$SCHEMA_PATH"' in line for line in publish):
         found.append("jobs.release does not publish launcher.schema.json with the APK")
+
+    signer_steps = [step for step in (jobs.get("release") or {}).get("steps") or [] if checks_signer(step)]
+    if not signer_steps:
+        found.append('jobs.release does not check the signer with check-release-signer.py "$RELEASE_CERT_SHA256"')
+    # Only the signer step's own env reaches the check.
+    digests = [str((step.get("env") or {}).get("RELEASE_CERT_SHA256", "")) for step in signer_steps]
+    if not any(re.fullmatch(r"[0-9a-f]{64}", d) for d in digests):
+        found.append("jobs.release pins no release certificate SHA-256 (RELEASE_CERT_SHA256, 64 hex)")
     return found
+
+
+# The two lines that make property 4, as release.yml writes them. Matched
+# verbatim rather than re-parsed: a shell-word parse forgets the quoting Bash
+# acts on and cannot tell a checker at another path, or a certificate list
+# that is not the APK's, from the real one (#204 review).
+PRINTS_CERTS = '"$bt/apksigner" verify --print-certs "$apk" | tee CERTS.txt'
+RUNS_CHECK = 'python3 "$GITHUB_WORKSPACE/.github/scripts/check-release-signer.py" CERTS.txt "$RELEASE_CERT_SHA256"'
+
+
+def checks_signer(step):
+    """Whether `step` prints the APK's certificates and then runs the signer
+    check so that its failure fails the step: both lines exactly as written,
+    in that order, with nothing around the check (`!`, `||`, `if` can swallow
+    its failure, the defect #204 fixed), no `set +e` and no here-document
+    opened before it (its body is data, not commands)."""
+    lines = [line.strip() for line in executable_lines(step.get("run", ""))]
+    if RUNS_CHECK not in lines:
+        return False
+    before = lines[:lines.index(RUNS_CHECK)]
+    return (PRINTS_CERTS in before
+            and not any(re.search(r"\bset\s+\+e", line) for line in before)
+            and not any(re.search(r"(?<!<)<<(?!<)", line) for line in before))
 
 
 def main(path):
@@ -95,7 +140,7 @@ def main(path):
         print(f"::error file={path}::{line}")
     if found:
         return 1
-    print(f"{path}: every job needs the full suite, only a tag push signs, and the schema ships")
+    print(f"{path}: every job needs the full suite, only a tag push signs, the schema ships, and the signer is pinned")
     return 0
 
 
