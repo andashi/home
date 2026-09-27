@@ -345,10 +345,13 @@ MALFORMED_CONFIG="$WORK/malformed.jsonc"
 printf '{ "schemaVersion": 2, "icons": { not json at all\n' > "$MALFORMED_CONFIG"
 
 # The first file the fresh install ever sees: one favorite and nothing
-# else. Measured on the clean snapshot, a first reload of this file skipped
-# the favorite 5 of 5 times before the startup-race fix and 0 of 5 after;
-# VALID_CONFIG as the first file hid it, since its settings writes come
-# first and give the app list time to load.
+# else. This asserts the behaviour; it is not a reliable detector of the
+# startup race it was added for. Ingested the moment the install returns, a
+# file like this was skipped 5 of 5 times before the fix and 0 of 5 after,
+# but within this scenario the pre-fix build passed twice: the window is
+# under a second, and the steps between install and ingest close it. The
+# unit tests (AppRepositoryTest, ProfileManagerTest, DefaultConfigStoreTest)
+# are what guards the fix.
 FIRST_CONFIG="$WORK/first.json"
 printf '{ "schemaVersion": 2, "home": { "favorites": ["com.android.settings"] } }\n' > "$FIRST_CONFIG"
 H_FIRST="$(sha256sum "$FIRST_CONFIG" | cut -d' ' -f1)"
