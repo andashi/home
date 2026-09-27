@@ -10,11 +10,11 @@
 #      the test instance (default emulator-5556 with its own qcow2 overlays
 #      under <gos-repo>/emulator/instances/test; SERIAL and OVERLAY_DIR pick
 #      another one) from the `clean` snapshot, installs the debug APK
-#   2. writes a known JSONC config (icons, glass, theme, search bar,
-#      favorites, widgets switch, grid; one favorite, Settings, which every
+#   2. first ingests a file with one favorite only (Settings, which every
 #      Android has) and asserts that the very first reload, right after the
 #      process starts, applies it (the startup race: nothing read yet read
-#      as "not installed")
+#      as "not installed"); then writes a known JSONC config (icons, glass,
+#      theme, search bar, favorites, widgets switch, grid)
 #      through the shell-gated ingest provider (`content write`), the
 #      provisioning transport (ADR 0003 §1a)
 #   3. proves the explicit, shell-gated ReloadConfigReceiver is reachable
@@ -344,6 +344,15 @@ EOF
 MALFORMED_CONFIG="$WORK/malformed.jsonc"
 printf '{ "schemaVersion": 2, "icons": { not json at all\n' > "$MALFORMED_CONFIG"
 
+# The first file the fresh install ever sees: one favorite and nothing
+# else. Measured on the clean snapshot, a first reload of this file skipped
+# the favorite 5 of 5 times before the startup-race fix and 0 of 5 after;
+# VALID_CONFIG as the first file hid it, since its settings writes come
+# first and give the app list time to load.
+FIRST_CONFIG="$WORK/first.json"
+printf '{ "schemaVersion": 2, "home": { "favorites": ["com.android.settings"] } }\n' > "$FIRST_CONFIG"
+H_FIRST="$(sha256sum "$FIRST_CONFIG" | cut -d' ' -f1)"
+
 H_VALID="$(sha256sum "$VALID_CONFIG" | cut -d' ' -f1)"
 H_CHANGED="$(sha256sum "$CHANGED_CONFIG" | cut -d' ' -f1)"
 
@@ -447,25 +456,28 @@ ok "package installed: $PKG"
 
 # --- 2./3. write known config, prove the explicit broadcast works ------
 
-write_config "$VALID_CONFIG"
+write_config "$FIRST_CONFIG"
 
 # The ingest starts the app process (the provider is exported), and the
 # startup drift check or the watcher reloads the file. The install is fresh,
 # so there is no report before this one: any report of the hash is the
-# ingest's, whatever caused it. Letting it settle first makes the broadcast
-# below unambiguous: its trigger must flip to "broadcast", which only the
-# explicit receiver can cause. Generous timeout: cold process start plus
+# ingest's, whatever caused it. Generous timeout: cold process start plus
 # Koin on the emulator.
 log "waiting for the first reload of the ingested config (starts the app process)"
-wait_push_report null "$H_VALID" 90 "first report of the ingested config"
+wait_push_report null "$H_FIRST" 90 "first report of the ingested config"
 # The first reload runs right after the process starts. Before the startup
 # race was fixed it read "no apps read yet" as "not installed" and skipped
 # the favorite; a second reload applied it, which is what hid the defect.
 assert_jq "$LAST_REPORT" \
   '[(.diagnostics // [])[] | select(.code == "favorite-unavailable" or .code == "profile-unavailable")] | length == 0' \
   "the first reload after the process starts finds the favorite installed"
+assert_jq "$LAST_REPORT" '.success == true' "first ingested config applied"
+ok "first reload after the process starts applied the favorite (trigger=$(jq -r .trigger <<<"$LAST_REPORT"))"
+
+# Settled, so the broadcast below is unambiguous: its trigger must flip to
+# "broadcast", which only the explicit receiver can cause.
+push_config "$VALID_CONFIG" "valid"
 assert_jq "$LAST_REPORT" '.success == true' "ingested config applied"
-ok "first reload applied the favorite (no favorite-unavailable)"
 ok "ingested config applied (trigger=$(jq -r .trigger <<<"$LAST_REPORT"))"
 
 log "broadcasting explicit reload to the shell-gated receiver"
