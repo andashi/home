@@ -50,6 +50,28 @@ class ReleaseGateTest(unittest.TestCase):
         found = gate.violations(release_with(comment_out('"$SCHEMA_PATH"')))
         self.assertIn("jobs.release does not publish launcher.schema.json with the APK", found)
 
+    # The signer check is only worth something while it runs: removing it, or
+    # the digest it compares with, must turn the gate red (#204).
+    def test_a_commented_out_signer_check_is_a_violation(self):
+        found = gate.violations(release_with(comment_out("check-release-signer.py")))
+        self.assertIn('jobs.release does not check the signer with check-release-signer.py "$RELEASE_CERT_SHA256"', found)
+
+    def test_a_missing_release_digest_is_a_violation(self):
+        workflow = release_with(lambda line: line)
+        for step in workflow["jobs"]["release"]["steps"]:
+            (step.get("env") or {}).pop("RELEASE_CERT_SHA256", None)
+        found = gate.violations(workflow)
+        self.assertIn("jobs.release pins no release certificate SHA-256 (RELEASE_CERT_SHA256, 64 hex)", found)
+
+    def test_a_short_release_digest_is_a_violation(self):
+        workflow = release_with(lambda line: line)
+        for step in workflow["jobs"]["release"]["steps"]:
+            env = step.get("env") or {}
+            if "RELEASE_CERT_SHA256" in env:
+                env["RELEASE_CERT_SHA256"] = env["RELEASE_CERT_SHA256"][:40]
+        found = gate.violations(workflow)
+        self.assertIn("jobs.release pins no release certificate SHA-256 (RELEASE_CERT_SHA256, 64 hex)", found)
+
 
 if __name__ == "__main__":
     unittest.main()
