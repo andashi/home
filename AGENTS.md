@@ -1015,9 +1015,11 @@ target `sdk_phone64_x86_64-cur-userdebug`, test-keys), operated via
 - **The shell cannot change a system app's component state** on this image
   (`pm disable`/`enable` refused in states 2 and 3). So a widget-only app arrival
   cannot be staged by disabling a system app's launcher activity; it needs a
-  fixture APK, built at test time from the SDK's
-  `aapt2`/`javac`/`d8`/`zipalign`/`apksigner` with no Gradle module - and it must
-  **fail loudly** when those tools are absent rather than skip the step.
+  fixture APK, built at test time with no Gradle module from the SDK build tools
+  (`aapt2`, `d8`, `zipalign`, `apksigner`, taken from the newest
+  `build-tools/*/`) plus the JDK's `javac` - two installations, which is worth
+  spelling out because a missing tool sends you to whichever one you assumed. It
+  must **fail loudly** when any of them is absent rather than skip the step.
 - Known emulator limits: nothing Google-server-side can be validated there
   (sandboxed Play, Play Integrity, push); wallpapers apply only after reboot;
   test-keys mean results do not equal "tested on release GrapheneOS".
