@@ -53,7 +53,9 @@ export LOCK_OWNER="${LOCK_OWNER:-measure-coldstart@$SERIAL#$$}"
 WORK="$(mktemp -d)"
 LOCK="$GOS_REPO/emulator/device-lock.sh"
 HELD_BEFORE=0 HAVE_LOCK=0
-"$LOCK" status 2>/dev/null | grep -qF "device $SERIAL held by: $LOCK_OWNER " && HELD_BEFORE=1
+# `holder` prints the owner and nothing else; `status` is prose for a person,
+# and a rewording of it would flip this decision silently.
+[ "$("$LOCK" holder "$SERIAL" 2>/dev/null)" = "$LOCK_OWNER" ] && HELD_BEFORE=1
 
 log() { printf ':: %s\n' "$*"; }
 die() { printf 'x %s\n' "$*" >&2; exit 1; }

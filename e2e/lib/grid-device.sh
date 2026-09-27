@@ -130,14 +130,13 @@ unrooted_shell() { # [$1 = timeout (s), default 60]
 
 # Boots SERIAL's instance when it is down, from SNAPSHOT (default clean), with
 # the instance's lock held, and leaves BOOTED=1 when it did; finish_instance
-# ends it. Running means the emulator process on the port, as run.sh decides
-# it, not adb's answer: adbd is briefly offline after a boot and after
-# `adb unroot`. Needs GOS_REPO, SERIAL and an exported LOCK_OWNER.
+# ends it. Running is `run.sh running`'s answer, the one definition: the qemu
+# process on the port (provisioning 514d9c6), not adb's answer, which is
+# briefly offline after a boot and after `adb unroot`. Needs GOS_REPO, SERIAL
+# and an exported LOCK_OWNER.
 BOOTED=0
 boot_instance() {
-  # Anchored to the program itself: a shell whose command line merely names
-  # the pattern would otherwise pass for a running emulator.
-  pgrep -f "^[^ ]*qemu-system[^ ]* .* -port ${SERIAL#emulator-}( |\$)" >/dev/null 2>&1 && return 0
+  (cd "$GOS_REPO" && SERIAL="$SERIAL" emulator/run.sh running >/dev/null 2>&1) && return 0
   log "booting $SERIAL from ${SNAPSHOT:-clean}"
   (cd "$GOS_REPO" && SERIAL="$SERIAL" SNAPSHOT="${SNAPSHOT:-clean}" emulator/run.sh start >/dev/null) \
     || die "could not boot $SERIAL"
@@ -160,7 +159,12 @@ delete_snapshots() { # $@ = snapshot names
     printf 'x could not list the snapshots on %s; check by hand for: %s\n' "$SERIAL" "$*" >&2
     return 1
   fi
-  for n in "$@"; do grep -qwF -- "$n" <<<"$listed" && left+=("$n"); done
+  # A name is a whole field of the list: neither another run's cold-1-m10
+  # nor its cold-1-m1-old is this run's cold-1-m1.
+  for n in "$@"; do
+    awk -v n="$n" '{ for (i = 1; i <= NF; i++) if ($i == n) { found = 1; exit } } END { exit !found }' <<<"$listed" \
+      && left+=("$n")
+  done
   [ "${#left[@]}" -eq 0 ] \
     || { printf 'x snapshots left on %s, delete them by hand: %s\n' "$SERIAL" "${left[*]}" >&2; return 1; }
 }
