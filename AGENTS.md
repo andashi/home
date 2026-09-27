@@ -157,6 +157,16 @@ be a true answer about a false state. A thread the bot closed with no reply
 naming a fix commit has not been shown to be addressed; read it before it
 counts.
 
+**If you automate that check, the bot has two names in one response.**
+`resolvedBy.login` comes back as `coderabbitai[bot]`, while the same actor is
+`coderabbitai` in `comments.nodes[].author.login`. A condition comparing the
+resolver to `coderabbitai` therefore matches nothing and counts zero - and zero
+is exactly what "no bot-resolved threads" looks like, so it reads as a pass. It
+sat dead in the merge gate from the day it was written until #212, where the bot
+resolved its own thread and the gate waved it through. Strip the `[bot]` suffix
+before comparing, on both sides, and prove it by resolving a thread as the bot
+and watching the gate refuse.
+
 **A base behind `main` is only a problem when it overlaps - with one caveat
 that review caught in this very section.** The rebase rule protects against a
 review of a tree whose *relevant* parts have moved, so the first question is
