@@ -332,7 +332,8 @@ finish_instance() {
 require_apk_package() { # $1 = expected package, $2... = apks
   local want="$1" aapt2 apk got
   shift
-  aapt2="${AAPT2:-$(command -v aapt2 || ls -d "${ANDROID_HOME:-/opt/android-sdk}"/build-tools/*/aapt2 2>/dev/null | sort -V | tail -1)}"
+  # A lookup that finds nothing is empty, not an exit: the check below says so.
+  aapt2="${AAPT2:-$(command -v aapt2 || { ls -d "${ANDROID_HOME:-/opt/android-sdk}"/build-tools/*/aapt2 2>/dev/null || true; } | sort -V | tail -1)}"
   [ -x "$aapt2" ] || die "aapt2 not found (set AAPT2): it checks what each APK installs as"
   for apk in "$@"; do
     [ -f "$apk" ] || die "no such APK: $apk"
