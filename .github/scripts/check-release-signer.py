@@ -12,7 +12,10 @@ pinned one, whole, and an empty expectation matches nothing.
 import re
 import sys
 
-DIGEST = re.compile(r"^(?:Signer #\d+|V\d+ Signer:) certificate SHA-256 digest: ([0-9a-f]+)$", re.MULTILINE)
+# (label, digest). A `Signer #N` label names a signer; `Vn Signer:` lines are
+# one signing scheme's view of a signer, so V2 and V3 lines of one key are one
+# signer, while Signer #1 and Signer #2 are two even with the same certificate.
+DIGEST = re.compile(r"^(Signer #\d+|V\d+ Signer:) certificate SHA-256 digest: ([0-9a-f]+)$", re.MULTILINE)
 
 
 def problems(certs: str, expected: str) -> list:
@@ -21,11 +24,13 @@ def problems(certs: str, expected: str) -> list:
     expected = expected.strip().lower()
     if not re.fullmatch(r"[0-9a-f]{64}", expected):
         found.append(f"no release certificate digest to compare with (got {expected!r})")
-    digests = sorted(set(DIGEST.findall(certs)))
-    if not digests:
+    records = DIGEST.findall(certs)
+    numbered = {label for label, _ in records if label.startswith("Signer #")}
+    digests = sorted({digest for _, digest in records})
+    if not records:
         found.append("apksigner printed no signer certificate")
-    elif len(digests) > 1:
-        found.append(f"more than one signer: {', '.join(digests)}")
+    elif len(numbered) > 1 or len(digests) > 1:
+        found.append(f"more than one signer: {', '.join(sorted(numbered) or digests)}")
     elif expected and digests[0] != expected:
         found.append(f"signed by {digests[0]}, not the release key {expected}")
     if re.search(r"androiddebugkey|CN=Android Debug", certs, re.IGNORECASE):
