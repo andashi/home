@@ -939,5 +939,17 @@ refuses_a_missing_apk() {
   grep -q "no such APK" <<<"$out"
 }
 check "require_apk_package refuses a missing file as missing" refuses_a_missing_apk
+# No aapt2 anywhere, under the callers' `set -euo pipefail`: the lookup must
+# reach its own message, not end the script silently in the assignment
+# (#201 review).
+mkdir -p "$WORK/noaapt"
+for t in ls sort tail; do ln -sf "$(command -v "$t")" "$WORK/noaapt/$t"; done
+says_aapt2_is_missing() {
+  local out
+  out="$( ( timeout 20 env -u AAPT2 PATH="$WORK/noaapt" ANDROID_HOME="$WORK/no-sdk" "$BASH" -c \
+    "set -euo pipefail; $(declare -f); require_apk_package org.andashi.home $WORK/apks/release.apk" ) 2>&1 )" && return 1
+  grep -q "aapt2 not found" <<<"$out"
+}
+check "require_apk_package says aapt2 is missing, under set -euo pipefail" says_aapt2_is_missing
 
 exit "$failed"
