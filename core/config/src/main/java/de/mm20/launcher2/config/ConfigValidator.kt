@@ -16,6 +16,17 @@ package de.mm20.launcher2.config
 object ConfigValidator {
     const val MinGlass = 0f
     const val MaxGlassBlur = 64f
+
+    const val MaxTransliteratorIdLength = 64
+    /**
+     * One ICU transliterator id, or the words auto and off, which it also
+     * matches: Source-Target/Variant, every part present - `/` and `Latin/`
+     * are refused here rather than reported later as missing from the device
+     * (#190 review). The lookahead keeps the length in the one pattern, which
+     * the schema publishes.
+     */
+    val transliteratorIdRegex =
+        Regex("^(?=.{1,$MaxTransliteratorIdLength}$)[A-Za-z0-9_]+(?:-[A-Za-z0-9_]+)*(?:/[A-Za-z0-9_]+)?$")
     const val MaxGlassTint = 1f
     const val MaxGlassRadius = 64f
     const val MaxPackageNameLength = 256
@@ -58,6 +69,32 @@ object ConfigValidator {
         // "none" is the apps' own icons, chosen (#3 D6); anything else names a pack.
         config.icons?.pack?.takeIf { it != IconsConfig.NoPack }?.let { pack ->
             validatePackageName(pack, "icons.pack", diagnostics)
+        }
+        config.search?.frequentlyUsedRows?.let { rows ->
+            if (rows !in SearchDefaults.MinFrequentlyUsedRows..SearchDefaults.MaxFrequentlyUsedRows) {
+                diagnostics += Diagnostic(
+                    Severity.Error,
+                    "invalid-search",
+                    "search.frequentlyUsedRows",
+                    "Frequently used rows must be between ${SearchDefaults.MinFrequentlyUsedRows} and " +
+                        "${SearchDefaults.MaxFrequentlyUsedRows}, got $rows",
+                )
+            }
+        }
+        // One ICU id: the launcher appends its own base transliterator, so a
+        // compound id (with ';') is refused. Whether this device's ICU has it
+        // is reported by the device, not decided here (#3 slice 1).
+        config.search?.transliterator?.let { id ->
+            if (!transliteratorIdRegex.matches(id)) {
+                diagnostics += Diagnostic(
+                    Severity.Error,
+                    "invalid-search",
+                    "search.transliterator",
+                    "Transliterator must be \"${SearchDefaults.TransliteratorAuto}\", " +
+                        "\"${SearchDefaults.TransliteratorOff}\" or one ICU transliterator id " +
+                        "(Source-Target/Variant of letters, digits and '_'; up to $MaxTransliteratorIdLength), got \"$id\"",
+                )
+            }
         }
         // Only the steps the settings screen offers: a write-back produces
         // nothing else, and the file is untrusted input (#3 slice 1).

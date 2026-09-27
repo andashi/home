@@ -6,6 +6,7 @@ import de.mm20.launcher2.config.ConfigMutation
 import de.mm20.launcher2.config.ConfigState
 import de.mm20.launcher2.config.InSearchBarPosition
 import de.mm20.launcher2.config.SearchBarPosition
+import de.mm20.launcher2.config.SearchDefaults
 import de.mm20.launcher2.config.ThemeColors
 import de.mm20.launcher2.config.ThemeMode
 import de.mm20.launcher2.preferences.BuiltInColorSchemes
@@ -137,6 +138,15 @@ internal class LauncherConfigSettingsImpl(
                 listIcons = data.gridListIcons,
                 appDetails = data.appsShowDetails,
                 contactsCallOnTap = data.contactSearchCallOnTap,
+                frequentlyUsed = data.favoritesFrequentlyUsed,
+                frequentlyUsedRows = data.favoritesFrequentlyUsedRows,
+                favoritesEditButton = data.favoritesEditButton,
+                compactTags = data.favoritesCompactTags,
+                transliterator = when (val id = data.localeTransliterator) {
+                    null -> SearchDefaults.TransliteratorOff
+                    "" -> SearchDefaults.TransliteratorAuto
+                    else -> id
+                },
             ),
             searchBarPosition = if (data.searchBarBottom) {
                 SearchBarPosition.Bottom
@@ -261,6 +271,16 @@ internal class LauncherConfigSettingsImpl(
                     gridListIcons = listIcons ?: gridListIcons,
                     appsShowDetails = appDetails ?: appsShowDetails,
                     contactSearchCallOnTap = contactsCallOnTap ?: contactSearchCallOnTap,
+                    favoritesFrequentlyUsed = frequentlyUsed ?: favoritesFrequentlyUsed,
+                    favoritesFrequentlyUsedRows = frequentlyUsedRows ?: favoritesFrequentlyUsedRows,
+                    favoritesEditButton = favoritesEditButton ?: this@apply.favoritesEditButton,
+                    favoritesCompactTags = compactTags ?: favoritesCompactTags,
+                    localeTransliterator = when (val id = transliterator) {
+                        null -> localeTransliterator
+                        SearchDefaults.TransliteratorOff -> null
+                        SearchDefaults.TransliteratorAuto -> ""
+                        else -> id
+                    },
                 )
             }
 

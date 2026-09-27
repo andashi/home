@@ -581,6 +581,24 @@
                 },
                 "contactsCallOnTap": {
                     "type": "boolean"
+                },
+                "frequentlyUsed": {
+                    "type": "boolean"
+                },
+                "frequentlyUsedRows": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 4
+                },
+                "favoritesEditButton": {
+                    "type": "boolean"
+                },
+                "compactTags": {
+                    "type": "boolean"
+                },
+                "transliterator": {
+                    "type": "string",
+                    "pattern": "^(?=.{1,64}$)[A-Za-z0-9_]+(?:-[A-Za-z0-9_]+)*(?:/[A-Za-z0-9_]+)?$"
                 }
             },
             "additionalProperties": false
