@@ -526,7 +526,10 @@ case "$home_activity" in
   "$PKG"/*) ;;
   *) die "could not resolve the launcher's HOME activity (got '$home_activity')" ;;
 esac
-adb -s "$SERIAL" shell am start -W -n "$home_activity" >/dev/null || die "am start $home_activity failed"
+# By the HOME intent, as the system does; by component the launcher would
+# land in a task of its own that the first Home press replaces.
+adb -s "$SERIAL" shell am start -W -a android.intent.action.MAIN -c android.intent.category.HOME "$PKG" >/dev/null \
+  || die "am start of the HOME intent for $PKG failed"
 ok "launcher in the foreground ($home_activity)"
 
 id_before="$(wallpaper_id)"
