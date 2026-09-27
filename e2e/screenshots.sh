@@ -129,7 +129,6 @@ config_with_grid() {
 {
   "schemaVersion": 2,
   "icons": { "themed": true, "enforceThemed": true },
-  "appearance": { "transparency": { "background": 0.5, "surface": 0.7, "elevatedSurface": 0.9 } },
   "home": {
     // note: this comment must survive a write-back
     "searchBar": { "position": "bottom" },

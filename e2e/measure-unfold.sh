@@ -150,7 +150,7 @@ for k in "${!apks[@]}"; do
   show_home; sleep 5
   adb -s "$SERIAL" shell content write --uri "content://$PKG.config-ingest/wallpapers/mauritius.jpg" \
     < "$GOS_REPO/themes/mauritius/tall/wallpaper.jpg"
-  push_config "$WORK/fold.jsonc" "fold fixture" || push_config "$WORK/fold.jsonc" "fold fixture, again"
+  push_config "$WORK/fold.jsonc" "fold fixture"
   sh_ cmd device_state state "$POSTURE_CLOSED" >/dev/null; sleep 3; wake_screen; sleep 1
   sh_ cmd device_state state "$POSTURE_OPENED" >/dev/null; sleep 3; wake_screen; sleep 2
   sh_ cmd device_state state "$POSTURE_CLOSED" >/dev/null; sleep 3; show_home; sleep 5

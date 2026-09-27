@@ -228,7 +228,6 @@ cat > "$LEGACY_CONFIG" <<'EOF'
 {
   "schemaVersion": 1,
   "icons": { "themed": true, "enforceThemed": true },
-  "appearance": { "transparency": { "background": 0.5, "surface": 0.7, "elevatedSurface": 0.9 } },
   "home": {
     "searchBar": { "position": "bottom" },
     "dock": { "enabled": true, "favorites": [] },
@@ -247,7 +246,6 @@ cat > "$GRID_CONFIG" <<EOF
     // note: this comment must survive a write-back (PR 6)
     "themed": true, "enforceThemed": true,
   },
-  "appearance": { "transparency": { "background": 0.5, "surface": 0.7, "elevatedSurface": 0.9 } },
   "home": {
     "searchBar": { "position": "bottom" },
     "favorites": [],
