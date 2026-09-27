@@ -636,17 +636,28 @@ refuses_another_files_report() {
   ! push_report_found '{"configSha256":"a","trigger":"broadcast"}' '{"configSha256":"b","trigger":"file-watcher"}' a
 }
 check "wait_push_report does not take another file's report" refuses_another_files_report
-# And wait_push_report waits for exactly that filter. A fake adb that takes
-# 1.5 s per query would have failed the old cases every time; here it only
-# has to answer within the wait, which it does.
+# And wait_push_report waits for exactly that filter. The fake has to be able
+# to give the answer the filter must refuse: its first query returns the
+# report from before the push - same hash - and only later ones the push's.
+# A wait on the hash alone takes the first and stops; the case checks which
+# report the wait kept (#211 review: a fake that always answered with the
+# new report passed a hash-only wait too). 1.5 s per query, inside a 10 s
+# wait: the old cases' one second would not have covered a single answer.
 mkdir -p "$WORK/slowreports"
-printf '#!/usr/bin/env bash\nsleep 1.5\ncat "%s/reports/now"\n' "$WORK" > "$WORK/slowreports/adb"
+cat > "$WORK/slowreports/adb" <<EOF
+#!/usr/bin/env bash
+sleep 1.5
+if [ -e "$WORK/slowreports/asked" ]; then cat "$WORK/reports/now"; else : > "$WORK/slowreports/asked"; cat "$WORK/slowreports/before"; fi
+EOF
 chmod +x "$WORK/slowreports/adb"
 waits_for_the_push_filter() {
+  local before='{"configSha256":"a","trigger":"broadcast"}'
+  rm -f "$WORK/slowreports/asked"
+  printf 'Row: 0 json=%s\n' "$before" > "$WORK/slowreports/before"
   serve_report '{"configSha256":"a","trigger":"grid-measured"}'
-  ( PATH="$WORK/slowreports:$PATH"; wait_push_report '{"configSha256":"a","trigger":"broadcast"}' a 10 test ) >/dev/null 2>&1
+  ( PATH="$WORK/slowreports:$PATH"; wait_push_report "$before" a 10 test >/dev/null 2>&1 && jq -e '.trigger == "grid-measured"' <<<"$LAST_REPORT" >/dev/null )
 }
-check "wait_push_report finds the push's report through a slow provider" waits_for_the_push_filter
+check "wait_push_report passes over the report from before the push, through a slow provider" waits_for_the_push_filter
 # The provider answers the JSON literal null before the first report
 # (ConfigStateProvider). A failed query is not that answer: taken for it, an
 # older report of the same hash would pass as the push's (#192 review).
