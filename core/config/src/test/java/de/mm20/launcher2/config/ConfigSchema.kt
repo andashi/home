@@ -158,6 +158,7 @@ internal object ConfigSchema {
             GlassContrastSerializer, SearchBarPositionInSearchSerializer, SearchResultLayoutSerializer,
             ThemeModeSerializer, ThemeColorsSerializer,
             StatusBarIconsSerializer, NavigationBarIconsSerializer,
+            AppVisibilitySerializer,
         )
             .associateBy { it.descriptor.serialName }
 
@@ -217,6 +218,16 @@ internal object ConfigSchema {
         "search.transliterator" to pattern(ConfigValidator.transliteratorIdRegex),
         "search.actions[].url" to mapOf("pattern" to JsonPrimitive(literal(SearchActionTypes.QueryPlaceholder))),
         "search.actions[].package" to packageNameLimits(),
+        // #3 slice 4.
+        "apps" to maxItems(ConfigValidator.MaxApps),
+        "apps[].packageName" to packageNameLimits(),
+        "apps[].activity" to pattern(ConfigValidator.activityNameRegex) +
+            mapOf("maxLength" to JsonPrimitive(ConfigValidator.MaxPackageNameLength)),
+        // Empty and blank are refused by the pattern, which needs one character that is not white space.
+        "apps[].label" to mapOf(
+            "maxLength" to JsonPrimitive(ConfigValidator.MaxLabelLength),
+            "pattern" to JsonPrimitive(ConfigValidator.labelCharsPattern),
+        ),
     )
 
     // ---- helpers ----

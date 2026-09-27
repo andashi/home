@@ -91,5 +91,8 @@ fun ConfigState.toLauncherConfig(): LauncherConfig {
             ),
             lockRotation = rotationLocked,
         ),
+        // Always present, so the read-back is a document that can be pasted
+        // as it is; an empty list is a device without customizations.
+        apps = apps.normalizedApps(),
     )
 }

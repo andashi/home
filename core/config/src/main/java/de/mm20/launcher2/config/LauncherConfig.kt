@@ -19,7 +19,60 @@ data class LauncherConfig(
     val appearance: AppearanceConfig? = null,
     val home: HomeConfig? = null,
     val search: SearchConfig? = null,
+    /**
+     * An app's own name and visibility on this launcher (#3 slice 4). The
+     * whole desired state, like `home.favorites`: an app not listed has
+     * neither, and a key an entry leaves out is its default - so an empty
+     * list clears every customization. Absent, nothing is managed.
+     */
+    val apps: List<AppConfig>? = null,
 )
+
+/**
+ * One app's customization (#3 slice 4). Named by package and profile, as a
+ * favorite is; [activity] picks one launcher entry of a package that has
+ * several, and without it the package's first one is meant.
+ */
+@Serializable
+data class AppConfig(
+    val packageName: String,
+    val profile: Profile = Profile.Personal,
+    val activity: String? = null,
+    /** The name the launcher shows instead of the app's own. */
+    val label: String? = null,
+    /**
+     * Where the app appears. Hiding is tidying, not a lock: the hidden-items
+     * button shows every hidden app to whoever holds the phone. An app a
+     * zone must not have is not installed there.
+     */
+    @Serializable(with = AppVisibilitySerializer::class)
+    val visibility: AppVisibility? = null,
+)
+
+/** `apps[].visibility`: shown normally, in search only, or not at all. */
+enum class AppVisibility { Default, SearchOnly, Hidden }
+
+internal object AppVisibilitySerializer : FieldEnumSerializer<AppVisibility>(
+    "de.mm20.launcher2.config.AppVisibility", "apps[].visibility", AppVisibility.entries,
+)
+
+/**
+ * The customizations an entry actually asks for, or null when it asks for
+ * nothing but defaults - which is the same as not being listed.
+ */
+fun AppConfig.normalized(): AppConfig? {
+    val visibility = visibility.takeIf { it != AppVisibility.Default }
+    if (label == null && visibility == null) return null
+    return copy(visibility = visibility)
+}
+
+/**
+ * The list as a set of real customizations, in a stable order: what two
+ * lists are compared on, and what the read-back serves.
+ */
+fun List<AppConfig>.normalizedApps(): List<AppConfig> =
+    mapNotNull { it.normalized() }
+        .sortedWith(compareBy<AppConfig>({ it.profile }, { it.packageName }, { it.activity ?: "" }))
 
 @Serializable
 data class IconsConfig(
