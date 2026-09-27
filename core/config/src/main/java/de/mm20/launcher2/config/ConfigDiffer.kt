@@ -179,14 +179,14 @@ sealed class ConfigMutation {
         override val section = "home.favorites"
     }
 
-    /** `apps` (#3 slice 4): the whole desired list, customizations only. */
+    /** `apps` (#3 slice 4): the whole desired list, as the file writes it: its order names its diagnostics. */
     data class SetApps(
         val apps: List<AppConfig>,
     ) : ConfigMutation() {
         override val section = "apps"
     }
 
-    /** `tags` (#3 slice 4): the whole desired list, the apps' part of each tag. */
+    /** `tags` (#3 slice 4): the whole desired list, as the file writes it: its order names its diagnostics. */
     data class SetTags(
         val tags: List<TagConfig>,
     ) : ConfigMutation() {
@@ -357,19 +357,21 @@ object ConfigDiffer {
         }
 
         // The whole list, compared as customizations: order, and entries that
-        // ask only for defaults, are no difference (#3 slice 4).
+        // ask only for defaults, are no difference (#3 slice 4). The mutation
+        // carries the file's list as written: the store names a diagnostic by
+        // the entry's index, and the first of two entries that are one app is
+        // the one that applies (review on #224).
         desired.apps?.let { apps ->
-            val wanted = apps.normalizedApps()
-            if (wanted != current.apps.normalizedApps()) {
-                mutations += ConfigMutation.SetApps(wanted)
+            if (apps.normalizedApps() != current.apps.normalizedApps()) {
+                mutations += ConfigMutation.SetApps(apps)
             }
         }
 
         // As a set: the order of the tags and of a tag's apps is no difference.
+        // Carried as written, as the apps are.
         desired.tags?.let { tags ->
-            val wanted = tags.normalizedTags()
-            if (wanted != current.tags.normalizedTags()) {
-                mutations += ConfigMutation.SetTags(wanted)
+            if (tags.normalizedTags() != current.tags.normalizedTags()) {
+                mutations += ConfigMutation.SetTags(tags)
             }
         }
 

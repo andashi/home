@@ -652,4 +652,50 @@ class ConfigDifferTest {
 
         assertEquals(emptyList<ConfigMutation>(), mutations)
     }
+
+    // ---- apps and tags carry the file's own order (review on #224) ----
+
+    /**
+     * The stores name a diagnostic by the entry's index in the list they are
+     * given (`apps[1].icon`, `tags[0].apps[2]`), and the first of two entries
+     * that are one app is the one that applies. So the mutation carries the
+     * file's list as written; the comparison alone is order-blind.
+     */
+    @Test
+    fun `SetApps carries the file's entries in the file's order`() {
+        val apps = listOf(
+            AppConfig("org.z", label = "Z"),
+            AppConfig("org.a"),
+            AppConfig("org.m", visibility = AppVisibility.Hidden),
+        )
+
+        val mutations = ConfigDiffer.diff(LauncherConfig(2, apps = apps), baseState)
+
+        assertEquals(listOf(ConfigMutation.SetApps(apps)), mutations)
+    }
+
+    @Test
+    fun `SetTags carries the file's tags and their apps in the file's order`() {
+        val tags = listOf(
+            TagConfig("Work", apps = listOf(TagApp("org.z"), TagApp("org.a"))),
+            TagConfig("Music", icon = TagIcon.Pack("missing.pack", "d"), apps = listOf(TagApp("org.b"))),
+        )
+
+        val mutations = ConfigDiffer.diff(LauncherConfig(2, tags = tags), baseState)
+
+        assertEquals(listOf(ConfigMutation.SetTags(tags)), mutations)
+    }
+
+    /** Control: the same tags in another order are no difference. */
+    @Test
+    fun `tags in another order are nothing to do`() {
+        val tags = listOf(
+            TagConfig("Work", apps = listOf(TagApp("org.z"), TagApp("org.a"))),
+            TagConfig("Music", apps = listOf(TagApp("org.b"))),
+        )
+
+        val mutations = ConfigDiffer.diff(LauncherConfig(2, tags = tags), baseState.copy(tags = tags.reversed().normalizedTags()))
+
+        assertEquals(emptyList<ConfigMutation>(), mutations)
+    }
 }

@@ -127,7 +127,8 @@ class TagConfigTest {
 
         assertEquals(emptyList<ConfigMutation>(), ConfigDiffer.diff(LauncherConfig(2, tags = file), ConfigState(tags = device)))
         assertEquals(
-            listOf(ConfigMutation.SetTags(file.normalizedTags())),
+            // As written: the store names its diagnostics by the file's own positions.
+            listOf(ConfigMutation.SetTags(file)),
             ConfigDiffer.diff(LauncherConfig(2, tags = file), ConfigState(tags = device.dropLast(1))),
         )
     }
