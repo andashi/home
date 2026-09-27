@@ -43,6 +43,8 @@ internal class AndroidAppCustomizationStore(
     private val profileResolver: ProfileResolver,
     private val customAttributes: CustomAttributesRepository,
     private val searchables: SavableSearchableRepository,
+    /** How the file wrote each app it customizes; see [AppNaming]. */
+    private val naming: AppNaming,
 ) : AppCustomizationStore {
 
     private fun keysAt(level: VisibilityLevel) = searchables.getKeys(
@@ -61,7 +63,8 @@ internal class AndroidAppCustomizationStore(
         customAttributes.getAppLabels(),
         keysAt(VisibilityLevel.SearchOnly),
         keysAt(VisibilityLevel.Hidden),
-    ) { apps, labels, searchOnly, hidden -> Snapshot(apps, labels, searchOnly.toSet(), hidden.toSet()) }
+        naming.observe(),
+    ) { apps, labels, searchOnly, hidden, written -> Snapshot(apps, labels, searchOnly.toSet(), hidden.toSet(), written) }
         .map { describe(it) }
         .distinctUntilChanged()
 
@@ -78,6 +81,8 @@ internal class AndroidAppCustomizationStore(
         // package's first launcher entry, so naming that activity too is the
         // same app twice, which the validator cannot see (review on #207).
         val claimedBy = mutableMapOf<String, Int>()
+        // How each claiming entry wrote its app, so it reads back that way.
+        val written = mutableMapOf<String, String?>()
 
         apps.forEachIndexed { index, entry ->
             val path = "apps[$index]"
@@ -112,10 +117,13 @@ internal class AndroidAppCustomizationStore(
                 return@forEachIndexed
             }
             claimedBy[app.key] = index
+            written[app.key] = entry.activity
             entry.label?.let { labels[app.key] = it }
             wanted[app.key] = entry.visibility.toLevel()
         }
 
+        // Before the labels: the change their write sets off must read the new form.
+        naming.replace(written)
         customAttributes.replaceCustomLabelsAwaited(installed, labels)
 
         // Only what differs is written: an app shown normally that stays so
@@ -144,7 +152,8 @@ internal class AndroidAppCustomizationStore(
         AppConfig(
             packageName = app.componentName.packageName,
             profile = profile,
-            activity = activityOf(app, snapshot.apps),
+            // As the file wrote it, where the file customizes this app; else by the rule.
+            activity = if (app.key in snapshot.written) snapshot.written[app.key] else activityOf(app, snapshot.apps),
             label = label,
             visibility = visibility,
         )
@@ -178,5 +187,6 @@ internal class AndroidAppCustomizationStore(
         val labels: Map<String, String>,
         val searchOnly: Set<String>,
         val hidden: Set<String>,
+        val written: Map<String, String?>,
     )
 }

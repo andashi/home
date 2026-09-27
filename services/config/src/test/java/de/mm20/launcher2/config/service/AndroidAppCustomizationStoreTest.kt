@@ -135,7 +135,17 @@ class AndroidAppCustomizationStoreTest {
         work = Profile(Profile.Type.Work, work, 10),
     )
 
-    private val store = AndroidAppCustomizationStore(apps, profiles, attributes, searchables)
+    /** How the file wrote each app, as the real one keeps it: a map that outlives a store. */
+    private val naming = object : AppNaming {
+        val written = MutableStateFlow<Map<String, String?>>(emptyMap())
+        override fun observe(): Flow<Map<String, String?>> = written
+        override suspend fun replace(naming: Map<String, String?>) {
+            written.value = naming
+        }
+        override suspend fun recorded() = true
+    }
+
+    private val store = AndroidAppCustomizationStore(apps, profiles, attributes, searchables, naming)
 
     // ---- reading ----
 
@@ -308,6 +318,70 @@ class AndroidAppCustomizationStoreTest {
         assertEquals(emptyMap<String, String>(), labels.value)
         assertEquals(VisibilityLevel.Default, levels.value[stk.key])
         assertEquals(emptyList<AppConfig>(), written)
+    }
+
+    // ---- how the file wrote an app (review on #207, WriteBackPlan thread) ----
+
+    /**
+     * The file may spell out a package's first activity, which an entry could
+     * also leave out. The store reads the app back as the file wrote it, so
+     * the baseline, the device and the file all have one form and write-back
+     * pairs them: read in the other form, a rename on the device came back as
+     * a second entry next to the stale one.
+     */
+    @Test
+    fun `an entry that spells out the first activity reads back with it`() = runTest {
+        val (_, written) = store.replaceAndRead(
+            listOf(AppConfig("com.example.two", activity = "com.example.two.First", label = "One")),
+        )
+
+        assertEquals(listOf(AppConfig("com.example.two", activity = "com.example.two.First", label = "One")), written)
+    }
+
+    /** A rename made on the phone later keeps the form, which is what write-back pairs on. */
+    @Test
+    fun `a rename on the phone keeps the activity the file wrote`() = runTest {
+        store.replaceAndRead(listOf(AppConfig("com.example.two", activity = "com.example.two.First", label = "One")))
+
+        labels.value = mapOf(twoFirst.key to "Uno")
+
+        assertEquals(listOf(AppConfig("com.example.two", activity = "com.example.two.First", label = "Uno")), store.read())
+    }
+
+    /** Write-back can run after a restart: the form is kept, not held in memory. */
+    @Test
+    fun `the form survives a new store`() = runTest {
+        store.replaceAndRead(listOf(AppConfig("com.example.two", activity = "com.example.two.First", label = "One")))
+
+        val restarted = AndroidAppCustomizationStore(apps, profiles, attributes, searchables, naming)
+
+        assertEquals(listOf(AppConfig("com.example.two", activity = "com.example.two.First", label = "One")), restarted.read())
+    }
+
+    /** Controls: what the file left out stays out, and an app the file never named reads back by the rule. */
+    @Test
+    fun `an entry without the activity, and an app only the phone customized, read back without it`() = runTest {
+        store.replaceAndRead(listOf(AppConfig("com.example.two", label = "One")))
+        labels.value = labels.value + (signal.key to "Chat")
+
+        assertEquals(
+            listOf(
+                AppConfig("com.example.two", label = "One"),
+                AppConfig("org.thoughtcrime.securesms", label = "Chat"),
+            ),
+            store.read(),
+        )
+    }
+
+    /** `[]` names no app, so nothing is remembered from the list before. */
+    @Test
+    fun `an empty list forgets how the list before wrote its apps`() = runTest {
+        store.replaceAndRead(listOf(AppConfig("com.example.two", activity = "com.example.two.First", label = "One")))
+        store.replaceAndRead(emptyList())
+
+        labels.value = mapOf(twoFirst.key to "Uno")
+
+        assertEquals(listOf(AppConfig("com.example.two", label = "Uno")), store.read())
     }
 
     // ---- changes ----

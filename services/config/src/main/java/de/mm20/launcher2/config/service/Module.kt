@@ -44,7 +44,9 @@ val configModule = module {
             apps = get(),
         )
     }
-    factory<AppCustomizationStore> { AndroidAppCustomizationStore(get(), get(), get(), get()) }
+    factory<AppCustomizationStore> { AndroidAppCustomizationStore(get(), get(), get(), get(), get()) }
+    // One instance: it holds the form every store reads apps back in (review on #207).
+    single<AppNaming> { FileAppNaming(androidContext()) }
     factory<SearchActionStore> { AndroidSearchActionStore(androidContext(), get()) }
     single { ReloadReportStore(androidContext()) }
     // One lock around launcher.json: reloads (watcher, receiver) and every
@@ -75,6 +77,8 @@ val configModule = module {
             androidContext(), get(), get(), baselineStore = get(),
             // A layout kept as written before its rows were measured is fitted once they are (#90).
             measurements = get<MeasuredGridRows>().measurements,
+            // A build updated from one without the record reloads once to make it (review on #207).
+            appNaming = get(),
         ).also { it.start() }
     }
     // Every change on the device goes back into the file (#3 slice 4).
