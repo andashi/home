@@ -611,9 +611,14 @@ esac
 EOF
 chmod +x "$WORK/reports/adb"
 serve_report() { printf 'Row: 0 json=%s\n' "$1" > "$WORK/reports/now"; }
+# Which report is the push's is a question about the filter, not about time:
+# the cases run it on the report directly. Through wait_push_report they ran
+# under a one-second deadline around a fake adb and jq, and a busy host
+# spent that second on starting processes - the positive cases went red at
+# host load 18 and green at 2 to 4. The wait around the filter is covered
+# where it has room: push_config against the fake provider.
 push_report_found() { # $1 = report before the push, $2 = report now, $3 = hash pushed
-  serve_report "$2"
-  ( PATH="$WORK/reports:$PATH"; wait_push_report "$1" "$3" 1 test ) >/dev/null 2>&1
+  jq -e "$(push_report_filter "$1" "$3")" <<<"$2" >/dev/null 2>&1
 }
 takes_a_report_whatever_caused_it() {
   push_report_found '{"configSha256":"a","trigger":"broadcast"}' '{"configSha256":"a","trigger":"grid-measured"}' a
@@ -631,6 +636,17 @@ refuses_another_files_report() {
   ! push_report_found '{"configSha256":"a","trigger":"broadcast"}' '{"configSha256":"b","trigger":"file-watcher"}' a
 }
 check "wait_push_report does not take another file's report" refuses_another_files_report
+# And wait_push_report waits for exactly that filter. A fake adb that takes
+# 1.5 s per query would have failed the old cases every time; here it only
+# has to answer within the wait, which it does.
+mkdir -p "$WORK/slowreports"
+printf '#!/usr/bin/env bash\nsleep 1.5\ncat "%s/reports/now"\n' "$WORK" > "$WORK/slowreports/adb"
+chmod +x "$WORK/slowreports/adb"
+waits_for_the_push_filter() {
+  serve_report '{"configSha256":"a","trigger":"grid-measured"}'
+  ( PATH="$WORK/slowreports:$PATH"; wait_push_report '{"configSha256":"a","trigger":"broadcast"}' a 10 test ) >/dev/null 2>&1
+}
+check "wait_push_report finds the push's report through a slow provider" waits_for_the_push_filter
 # The provider answers the JSON literal null before the first report
 # (ConfigStateProvider). A failed query is not that answer: taken for it, an
 # older report of the same hash would pass as the push's (#192 review).
