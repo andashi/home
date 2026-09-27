@@ -445,6 +445,11 @@ for key in "${PROFILE_KEYS[@]}"; do
   # (#45), so canonicalise both sides instead of calling that a mismatch. The
   # exact serialisation is L1's job; this level asks whether the favorite
   # arrived at the right profile.
+  # Only the keys the file writes are compared, each down to its value (a list
+  # whole): /config also serves every key the file leaves out, at its value on
+  # the device, and comparing whole sections called each new key the launcher
+  # learned a mismatch (#181 onwards, found by the v0.9.0 release suite; the
+  # provisioning host's convergence check made the same change in e8f6fa8).
   mism="$(jq -r -n --argjson eff "$eff" --slurpfile want "$cfgfile" '
     def canon:
       if ((.home.favorites // null) | type) == "array" then
@@ -455,8 +460,9 @@ for key in "${PROFILE_KEYS[@]}"; do
       else . end;
     ($want[0] | canon) as $w
     | ($eff | canon) as $e
-    | [ "schemaVersion", "icons", "appearance", "home" ]
-    | map(select($e[.] != $w[.]))
+    | [ $w | paths(type != "object") | select(all(.[]; type == "string")) ]
+    | map(select(.[0] as $s | [ "schemaVersion", "icons", "appearance", "home" ] | index($s)))
+    | map(select(. as $p | ($e | getpath($p)) != ($w | getpath($p))) | join("."))
     | join(", ")')"
   [ -z "$mism" ] || { printf 'effective config for user %s:\n%s\n' "$uid" "$eff" >&2; \
     die "profile '$key' (user $uid): /config differs from generated file in: $mism"; }
