@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- An icon pack with two drawables and no code: the launcher finds a pack by
+     this activity's intent filter and indexes it from res/xml/appfilter.xml
+     (l4-config step 10f, #3 slice 4). The activity is never started; it names
+     the framework's class so the package needs none of its own. Built by
+     build.sh for the emulator; never shipped. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="org.andashi.fixture.iconpack"
+    android:versionCode="1"
+    android:versionName="1">
+
+    <uses-sdk android:minSdkVersion="36" android:targetSdkVersion="36" />
+
+    <application android:label="Fixture icons" android:hasCode="false">
+        <activity
+            android:name="android.app.Activity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="org.adw.launcher.THEMES" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+    </application>
+</manifest>
