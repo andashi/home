@@ -511,10 +511,19 @@ test policy above asks for the break rather than the pass.
    fixture is reachable**, so derive the baseline from what the producing code
    emits, never from what makes the case read well.
 
-One check catches 1 to 8: break what the test guards, and watch **that** test go
-red and the others stay green. It costs a minute.
+The check is one minute of work and three questions, and the first alone does not
+finish it: **break what the test guards, and watch that test go red and the
+others stay green.**
 
-**It does not catch 9, and 9 is the case that looks most like a pass.** An
+**Break it in the input the guard is about.** For a test that reads a document
+outside its source set, change the **document**, not the code - a break in a
+declared input re-runs the task and tells you nothing about whether the
+undeclared one would. That is mechanism 1, and it is invisible to a code break by
+construction: `ConfigParserTest` was verified by breaking ADR 0002's example, and
+it passed because it had not run. Breaking the parser instead would have gone red
+and proved the wrong thing.
+
+**And it does not catch 9 at all, which is the case that looks most like a pass.** An
 unreachable fixture produces exactly that result - the case goes red, it is
 targeted, the others stay green - and proves the wrong thing. So the check has a
 second half that cannot be skipped for a new test: **ask whether the fixture is a
