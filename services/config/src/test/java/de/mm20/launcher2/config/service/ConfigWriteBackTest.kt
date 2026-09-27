@@ -700,6 +700,20 @@ class ConfigWriteBackTest {
      * fails here until [ConfigWriteBack] explains it. `searchActions` is not
      * among them: its null means "not read", and the store always reads it.
      */
+    /**
+     * The README lists the kept-value warnings a reader will meet. Written by
+     * hand, it missed the two the completeness test below found (#210
+     * review); held to the registered codes here, it cannot drift again.
+     */
+    @Test
+    fun `the configuration README names every kept-value warning`() {
+        val readme = File(System.getProperty("repoRoot"), "docs/configuration/README.md").readText()
+        val codes = ConfigWriteBack.KeptReasons.values.map { it.code.removePrefix(ConfigWriteBack.SkipCodePrefix) }.toSortedSet()
+
+        assertTrue("the table must have codes, or this proves nothing", codes.isNotEmpty())
+        assertEquals("kept-value codes the README does not name", emptyList<String>(), codes.filter { "`$it`" !in readme })
+    }
+
     @Test
     fun `every path a write-back can keep for the device has a reason in the report`() {
         val nothingNameable = ConfigState(
