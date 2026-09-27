@@ -522,9 +522,12 @@ screen_size() {
 }
 
 # "package/activity" of the resumed activity in front; empty when there is none.
+# Captured first, like frames_rendered: the dump is long, and a reader that
+# stops early fails the pipe under pipefail.
 top_activity() {
-  adb_t shell dumpsys activity activities | tr -d '\r' \
-    | sed -n 's/.*topResumedActivity=ActivityRecord{[^ ]* [^ ]* \([^ ]*\) .*/\1/p' | head -1
+  local dump
+  dump="$(adb_out shell dumpsys activity activities)" || return 1
+  sed -n 's/.*topResumedActivity=ActivityRecord{[^ ]* [^ ]* \([^ ]*\) .*/\1/p' <<<"$dump" | head -1
 }
 
 on_top() { # $1 = package
@@ -532,8 +535,13 @@ on_top() { # $1 = package
 }
 
 # "Total frames rendered" of $PKG; empty when gfxinfo does not say.
+# Captured first: the dump runs on for thousands of lines, an awk that
+# stops at the first match would close the pipe on it, and under pipefail
+# that fails the read (touch_ready said "frames: no count" on the device).
 frames_rendered() {
-  adb_t shell dumpsys gfxinfo "$PKG" | tr -d '\r' | awk '/Total frames rendered/ { print $NF; exit }'
+  local dump
+  dump="$(adb_out shell dumpsys gfxinfo "$PKG")" || return 1
+  awk '/Total frames rendered/ { print $NF; exit }' <<<"$dump"
 }
 
 # Whether an injected touch would reach the launcher now: it has focus, no
