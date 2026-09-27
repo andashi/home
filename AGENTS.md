@@ -124,13 +124,23 @@ And a recount cannot see a *push* in the same gap - the verification would be of
 one head and the merge of another, with nothing to say so. `gh pr merge
 --match-head-commit <sha>` refuses when the head has moved.
 
-**`--delete-branch` makes `gh` check out `main` locally after the merge**, which
-fails whenever `main` is checked out in another worktree - and the command then
-exits non-zero for a merge that **has already succeeded**, leaving the branch
-behind. Found on #207. Merge without the flag, confirm `state == MERGED` through
-the API, then delete the ref through the API. Every other failure in this
-document points the other way, where a broken check answers permissively; this
-one is a correct action reporting failure, and it is no better: a caller either
+**On `gh` before v2.99.0, `--delete-branch` makes `gh` check out `main` locally
+after the merge**, which fails whenever `main` is checked out in another
+worktree - and the command then exits non-zero for a merge that **has already
+succeeded**, leaving the branch behind. Fired on #207, because this clone runs
+2.98.0; upstream fixed it in v2.99.0 (`fix(pr merge): safely handle
+--delete-branch with linked worktrees`, cli/cli#14007). **So the first remedy is
+to upgrade `gh`**, and the version-independent one is to merge without the flag,
+confirm `state == MERGED` through the API, then delete the ref through the API.
+
+The scoping matters as much as the trap: the first draft of this paragraph
+claimed it of `gh` in general, and review caught it. A tool bug written down
+without its version outlives the bug and sends the next reader to work around
+something that was fixed.
+
+The lesson under it is not version-scoped. Every other failure in this document
+points the other way, where a broken check answers permissively; this one is a
+**correct action reporting failure**, and it is no better: a caller either
 retries a merge that happened, or reports that it did not.
 
 **Check what the merge goes into, not only the pull request.** The CI section
