@@ -5,6 +5,9 @@ import de.mm20.launcher2.config.ConfigMutation
 import de.mm20.launcher2.config.ConfigState
 import de.mm20.launcher2.config.Diagnostic
 import de.mm20.launcher2.config.Favorite
+import de.mm20.launcher2.config.Gesture
+import de.mm20.launcher2.config.GestureActionName
+import de.mm20.launcher2.config.GestureConfig
 import de.mm20.launcher2.config.GridItemConfig
 import de.mm20.launcher2.config.GridLayoutConfig
 import de.mm20.launcher2.config.GridLayouts
@@ -52,6 +55,9 @@ import de.mm20.launcher2.config.Profile as ConfigProfile
  *   [AppRepository] + [ProfileResolver] and written with
  *   [SavableSearchableRepository.replaceManuallySortedAwaited]. User serials never
  *   appear in config state or diagnostics.
+ * - Gestures (`gestures`, #3 slice 2) are settings, written apart from the
+ *   others because an app they open is resolved like a favorite first and
+ *   saved where the launcher looks it up.
  */
 class DefaultConfigStore(
     private val settings: LauncherConfigSettings,
@@ -120,6 +126,7 @@ class DefaultConfigStore(
             searchActions = searchActions.read(),
             wallpaperImage = wallpaper?.image,
             wallpaperTarget = wallpaper?.target,
+            gestures = gesturesOf(settingsState.gestures),
         )
     }
 
@@ -175,6 +182,15 @@ class DefaultConfigStore(
                     val (applied, favorites) = applyFavorites(mutation)
                     diagnostics += applied
                     written = written.copy(favorites = favorites)
+                    sections += mutation.section
+                } catch (e: Exception) {
+                    diagnostics += mutation.applyFailed(e)
+                }
+
+                is ConfigMutation.SetGestures -> try {
+                    val (applied, gestures) = applyGestures(mutation)
+                    diagnostics += applied
+                    written = written.copy(gestures = gestures)
                     sections += mutation.section
                 } catch (e: Exception) {
                     diagnostics += mutation.applyFailed(e)
@@ -530,40 +546,103 @@ class DefaultConfigStore(
 
         mutation.favorites.forEachIndexed { index, favorite ->
             val path = "home.favorites[$index]"
-            val profileType = when (favorite.profile) {
-                ConfigProfile.Personal -> Profile.Type.Personal
-                ConfigProfile.Work -> Profile.Type.Work
-                ConfigProfile.Private -> Profile.Type.Private
-            }
-            val profile = profileResolver.getProfile(profileType)
-            if (profile == null) {
-                diagnostics += Diagnostic(
+            when (val found = resolve(favorite)) {
+                is Resolved.App -> resolved += found.app
+                Resolved.NoProfile -> diagnostics += Diagnostic(
                     Severity.Error,
                     "profile-unavailable",
                     path,
                     "The ${favorite.profile.name.lowercase()} profile does not exist " +
                             "on this device; favorite '${favorite.packageName}' was skipped",
                 )
-                return@forEachIndexed
-            }
-            val app = appRepository.findOne(favorite.packageName, profile.userHandle).first()
-            if (app == null) {
-                diagnostics += Diagnostic(
+                Resolved.NotInstalled -> diagnostics += Diagnostic(
                     Severity.Error,
                     "favorite-unavailable",
                     path,
                     "App '${favorite.packageName}' is not installed in the " +
                             "${favorite.profile.name.lowercase()} profile; it was skipped",
                 )
-                return@forEachIndexed
             }
-            resolved += app
         }
 
         // One transaction reads the other pins and writes the new order, so a
         // pin made while this reload runs is never replaced by a stale copy.
         searchableRepository.replaceManuallySortedAwaited(types = listOf(AppDomain), items = resolved)
         return diagnostics to resolved.mapNotNull { it.toFavorite() }
+    }
+
+    /** An app the file names, as installed here. */
+    private sealed interface Resolved {
+        data class App(val app: Application) : Resolved
+        data object NoProfile : Resolved
+        data object NotInstalled : Resolved
+    }
+
+    private suspend fun resolve(favorite: Favorite): Resolved {
+        val profileType = when (favorite.profile) {
+            ConfigProfile.Personal -> Profile.Type.Personal
+            ConfigProfile.Work -> Profile.Type.Work
+            ConfigProfile.Private -> Profile.Type.Private
+        }
+        val profile = profileResolver.getProfile(profileType) ?: return Resolved.NoProfile
+        val app = appRepository.findOne(favorite.packageName, profile.userHandle).first() ?: return Resolved.NotInstalled
+        return Resolved.App(app)
+    }
+
+    /**
+     * Writes the gestures (#3 slice 2): actions by name, an app by the key of
+     * the installed app, saved first where the launcher looks it up. An app
+     * that is not here leaves its gesture as it was, reported like a
+     * favorite. Returns the diagnostics and the gestures as written.
+     */
+    private suspend fun applyGestures(
+        mutation: ConfigMutation.SetGestures,
+    ): Pair<List<Diagnostic>, Map<Gesture, GestureConfig?>> {
+        val diagnostics = mutableListOf<Diagnostic>()
+        val actions = mutableMapOf<Gesture, GestureActionName>()
+        val launches = mutableMapOf<Gesture, String>()
+        val apps = mutableMapOf<Gesture, GestureConfig>()
+        for ((gesture, value) in mutation.gestures) {
+            val path = "gestures.${gesture.key}"
+            when (value) {
+                is GestureConfig.Action -> actions[gesture] = value.action
+                is GestureConfig.App -> when (val found = resolve(value.app)) {
+                    is Resolved.App -> {
+                        searchableRepository.insertAwaited(found.app)
+                        launches[gesture] = found.app.key
+                        apps[gesture] = value
+                    }
+                    Resolved.NoProfile -> diagnostics += Diagnostic(
+                        Severity.Error,
+                        "profile-unavailable",
+                        path,
+                        "The ${value.app.profile.name.lowercase()} profile does not exist on this device; " +
+                            "$path keeps what it did",
+                    )
+                    Resolved.NotInstalled -> diagnostics += Diagnostic(
+                        Severity.Error,
+                        "gesture-app-unavailable",
+                        path,
+                        "App '${value.app.packageName}' is not installed in the " +
+                            "${value.app.profile.name.lowercase()} profile; $path keeps what it did",
+                    )
+                }
+            }
+        }
+        val written = settings.applyGestures(actions, launches)
+        return diagnostics to written.gestures + apps
+    }
+
+    /**
+     * The settings' gestures with each launch named (#3 slice 2): the app it
+     * opens, or null for what the file cannot name - a shortcut, or an app
+     * that is gone.
+     */
+    private suspend fun gesturesOf(settingsGestures: Map<Gesture, GestureConfig?>): Map<Gesture, GestureConfig?> {
+        val keys = settings.readGestureLaunchKeys()
+        if (keys.isEmpty()) return settingsGestures
+        val items = searchableRepository.getByKeys(keys.values.distinct()).first().associateBy { it.key }
+        return settingsGestures + keys.mapValues { (_, key) -> items[key]?.toFavorite()?.let { GestureConfig.App(it) } }
     }
 
     private suspend fun SavableSearchable.toFavorite(): Favorite? {
@@ -613,8 +692,10 @@ private val ConfigMutation.isSettingsBacked: Boolean
         is ConfigMutation.SetSearch,
         -> true
 
+        // Gestures are settings too, but their apps are resolved here first.
         is ConfigMutation.SetFavorites,
         is ConfigMutation.SetSearchActions,
         is ConfigMutation.SetWallpaper,
+        is ConfigMutation.SetGestures,
         -> false
     }

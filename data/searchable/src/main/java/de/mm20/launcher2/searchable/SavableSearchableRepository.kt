@@ -117,6 +117,14 @@ interface SavableSearchableRepository {
     suspend fun replaceManuallySortedAwaited(types: List<String>, items: List<SavableSearchable>)
 
     /**
+     * Fork addition (#3 slice 2): [insert], returning once committed. A
+     * gesture that opens an app names it by key, and the launcher looks the
+     * item up by that key; saved first, it is there when the setting names
+     * it. A row that exists is kept as it is.
+     */
+    suspend fun insertAwaited(searchable: SavableSearchable)
+
+    /**
      * Returns the given keys sorted by relevance.
      * The first item in the list is the most relevant.
      * Unknown keys will not be included in the result.
@@ -157,20 +165,21 @@ internal class SavableSearchableRepositoryImpl(
     private val scope = CoroutineScope(Job() + Dispatchers.Default)
 
     override fun insert(searchable: SavableSearchable) {
-        val dao = database.searchableDao()
-        scope.launch {
-            dao.insert(
-                SavedSearchableEntity(
-                    key = searchable.key,
-                    type = searchable.domain,
-                    serializedSearchable = searchable.serialize() ?: return@launch,
-                    visibility = VisibilityLevel.Default.value,
-                    launchCount = 0,
-                    weight = 0.0,
-                    pinPosition = 0,
-                )
+        scope.launch { insertAwaited(searchable) }
+    }
+
+    override suspend fun insertAwaited(searchable: SavableSearchable) {
+        database.searchableDao().insert(
+            SavedSearchableEntity(
+                key = searchable.key,
+                type = searchable.domain,
+                serializedSearchable = searchable.serialize() ?: return,
+                visibility = VisibilityLevel.Default.value,
+                launchCount = 0,
+                weight = 0.0,
+                pinPosition = 0,
             )
-        }
+        )
     }
 
 

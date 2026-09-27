@@ -5,6 +5,7 @@ import android.util.Log
 import de.mm20.launcher2.config.ConfigMigrations
 import de.mm20.launcher2.config.ConfigParser
 import de.mm20.launcher2.config.Diagnostic
+import de.mm20.launcher2.config.Gesture
 import de.mm20.launcher2.config.ReloadReport
 import de.mm20.launcher2.config.ReloadTrigger
 import de.mm20.launcher2.config.Severity
@@ -264,7 +265,7 @@ class ConfigWriteBack(
          * the paths that have a reason to give. A kept path without one (an
          * inert key, a key of a newer build) needs no warning.
          */
-        private val KeptReasons: Map<List<String>, Diagnostic> = mapOf(
+        internal val KeptReasons: Map<List<String>, Diagnostic> = mapOf(
             listOf("appearance", "theme", "colors") to Diagnostic(
                 Severity.Warning,
                 SkipCodePrefix + "colors-custom",
@@ -272,7 +273,32 @@ class ConfigWriteBack(
                 "the device uses a colour scheme a person made, which appearance.theme.colors cannot name; " +
                     "the file keeps its value",
             ),
-        )
+            // Found by the test that every keepable path has a reason (#3 slice 2).
+            listOf("icons", "pack") to Diagnostic(
+                Severity.Warning,
+                SkipCodePrefix + "icons-default",
+                "icons.pack",
+                "the device uses the launcher's default icons (Lawnicons where installed), which icons.pack cannot name; " +
+                    "the file keeps its value",
+            ),
+            listOf("appearance", "wallpaper") to Diagnostic(
+                Severity.Warning,
+                SkipCodePrefix + "wallpaper-unmanaged",
+                "appearance.wallpaper",
+                "the device's wallpaper is not the one appearance.wallpaper set (changed on the device, or not set yet), " +
+                    "and a wallpaper picked there has no upload name; the file keeps its value",
+            ),
+        ) + Gesture.entries.associate { gesture ->
+            // #3 slice 2: a shortcut, or an app that is gone.
+            val path = "gestures.${gesture.key}"
+            listOf("gestures", gesture.key) to Diagnostic(
+                Severity.Warning,
+                SkipCodePrefix + "gesture-inexpressible",
+                path,
+                "the device's $path opens something $path cannot name (a shortcut, or an app that is not installed); " +
+                    "the file keeps its value",
+            )
+        }
         private val KeptCodes = KeptReasons.values.map { it.code }.toSet()
     }
 }

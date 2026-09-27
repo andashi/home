@@ -697,14 +697,15 @@ class ConfigWriteBackTest {
      * file can name there carries a reason, so a kept value is never silent.
      * The device side has every field that can be absent from the read-back
      * left out at once; a new such field belongs in this state, and then
-     * fails here until [ConfigWriteBack] explains it.
+     * fails here until [ConfigWriteBack] explains it. `searchActions` is not
+     * among them: its null means "not read", and the store always reads it.
      */
     @Test
     fun `every path a write-back can keep for the device has a reason in the report`() {
         val nothingNameable = ConfigState(
             iconPack = null,
             themeColors = null,
-            searchActions = null,
+            searchActions = emptyList(),
             wallpaperImage = null,
             wallpaperTarget = null,
             gestures = Gesture.entries.associateWith { null },

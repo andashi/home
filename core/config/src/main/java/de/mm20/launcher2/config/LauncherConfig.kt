@@ -189,7 +189,10 @@ internal abstract class FieldEnumSerializer<E : Enum<E>>(
      * published value, so a new or renamed entry is a visible change.
      */
     private val byName = entries.associateBy { it.name.replace(KebabBoundary, "$1-$2").lowercase() }
-    private val nameOf = byName.entries.associate { (name, entry) -> entry to name }
+    private val wireNames = byName.entries.associate { (name, entry) -> entry to name }
+
+    /** [value] as the file writes it. */
+    fun nameOf(value: E): String = wireNames.getValue(value)
 
     /** The values the contract accepts, as written; the JSON Schema lists these. */
     val names: List<String> = byName.keys.toList()
@@ -197,7 +200,7 @@ internal abstract class FieldEnumSerializer<E : Enum<E>>(
     override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor(serialName, PrimitiveKind.STRING)
 
     override fun serialize(encoder: Encoder, value: E) {
-        encoder.encodeString(nameOf.getValue(value))
+        encoder.encodeString(nameOf(value))
     }
 
     override fun deserialize(decoder: Decoder): E {
@@ -689,6 +692,9 @@ enum class GestureActionName { None, Search, Notifications, QuickSettings, Scree
 internal object GestureActionNameSerializer : FieldEnumSerializer<GestureActionName>(
     "de.mm20.launcher2.config.GestureActionName", "a gesture", GestureActionName.entries,
 )
+
+/** The action as the file names it: `screen-lock` for [GestureActionName.ScreenLock]. */
+val GestureActionName.fileName: String get() = GestureActionNameSerializer.nameOf(this)
 
 /** A string is an action by name; an object is an app, decoded as a favorite's object form. */
 internal object GestureConfigSerializer : KSerializer<GestureConfig> {
