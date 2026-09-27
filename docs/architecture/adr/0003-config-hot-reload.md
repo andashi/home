@@ -130,10 +130,10 @@ after the next reload; one that arrives during a reload is never cleared by
 it.
 
 A fifth trigger, `apps-changed`, applies what the file names once it is
-installed. A favorite, a widget provider, an app's label or visibility, or a
-profile's entry that names something absent is skipped and reported
-(`favorite-unavailable`, `unknown-widget-provider`, `app-unavailable`,
-`profile-unavailable`). When the app arrives the file has not changed, so no
+installed. A favorite, a widget provider, an app's label or visibility, a
+gesture's app, or a profile's entry that names something absent is skipped and
+reported (`favorite-unavailable`, `unknown-widget-provider`, `app-unavailable`,
+`gesture-app-unavailable`, `profile-unavailable`). When the app arrives the file has not changed, so no
 watcher event and no startup drift would apply it. The watcher therefore
 follows the installed apps, and an arrival reloads the file while the last
 report carries one of those codes. An app leaving, the first read of the list,

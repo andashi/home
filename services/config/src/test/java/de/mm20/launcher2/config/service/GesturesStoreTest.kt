@@ -123,6 +123,23 @@ class GesturesStoreTest {
         assertEquals(GestureDefaults.All[Gesture.SwipeLeft], applied.written.gestures[Gesture.SwipeLeft])
     }
 
+    /**
+     * The file keeps the app "for the day it is installed" (gestures.md), and
+     * that day is an arrival: the code the store reports for the missing app
+     * has to be one the watcher reloads for. Read from what the store emits,
+     * so a code added here later cannot silently fall outside the set
+     * (review on #213).
+     */
+    @Test
+    fun `a gesture's missing app is something an arrival reloads for`() = runTest {
+        val applied = store.applyAndCapture(
+            listOf(ConfigMutation.SetGestures(mapOf(Gesture.SwipeLeft to GestureConfig.App(Favorite("com.example.missing"))))),
+        )
+
+        val code = applied.diagnostics.single().code
+        assertTrue("$code is not in ${ConfigWatcher.WaitingCodes}", code in ConfigWatcher.WaitingCodes)
+    }
+
     @Test
     fun `an app in a profile the device does not have is reported`() = runTest {
         val applied = store.applyAndCapture(

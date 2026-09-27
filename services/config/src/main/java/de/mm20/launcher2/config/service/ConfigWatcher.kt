@@ -295,6 +295,8 @@ class ConfigWatcher(
             "unknown-widget-provider",
             "app-unavailable",
             "profile-unavailable",
+            // A gesture's app (#3 slice 2): the file keeps it for the day it is installed.
+            "gesture-app-unavailable",
         )
         private const val GridSection = "home.grid"
         private const val StartupRetryCount = 40
