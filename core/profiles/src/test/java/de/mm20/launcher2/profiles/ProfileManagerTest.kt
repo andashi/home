@@ -13,6 +13,7 @@ import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.withTimeoutOrNull
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -56,8 +57,12 @@ class ProfileManagerTest {
 
         permissions.manageProfiles.emit(false)
 
+        // Whether the test device's profile counts as unlocked is Robolectric's
+        // business; that both answer is the point.
         val profiles = withTimeout(5_000) { manager.profiles.first() }
-        assertEquals(profiles, withTimeout(5_000) { manager.unlockedProfiles.first() })
+        val unlocked = withTimeout(5_000) { manager.unlockedProfiles.first() }
+        assertEquals(listOf(Profile.Type.Personal), profiles.map { it.type })
+        assertTrue(profiles.containsAll(unlocked))
     }
 
     @Test

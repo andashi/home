@@ -19,6 +19,8 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
@@ -45,24 +47,31 @@ class ProfileManager(
     private val scope = CoroutineScope(Dispatchers.Default + Job())
 
 
+    /**
+     * Null until the first refresh: "no profiles read yet" is not "no
+     * profiles". The flows below wait for it; the synchronous getters answer
+     * null until then, and [awaitProfile] waits.
+     */
     private val profileMap =
-        MutableStateFlow(mapOf<Profile.Type, ProfileWithState>())
+        MutableStateFlow<Map<Profile.Type, ProfileWithState>?>(null)
+
+    private val readProfiles: Flow<Map<Profile.Type, ProfileWithState>> = profileMap.filterNotNull()
 
     /**
      * List of all profiles, sorted by type (Personal, Work, Private)
      */
-    val profiles: Flow<List<Profile>> = profileMap.map {
+    val profiles: Flow<List<Profile>> = readProfiles.map {
         it.values.map { it.profile }.sortedBy { it.type }
     }
 
-    val profileStates: Flow<Map<Profile.Type, Profile.State>> = profileMap.map {
+    val profileStates: Flow<Map<Profile.Type, Profile.State>> = readProfiles.map {
         it.values.associate { it.profile.type to it.state }
     }
 
     /**
      * List of profiles that are currently unlocked
      */
-    val unlockedProfiles: Flow<List<Profile>> = profileMap.map {
+    val unlockedProfiles: Flow<List<Profile>> = readProfiles.map {
         it.values.mapNotNull {
             if (it.state.locked) null else it.profile
         }
@@ -126,7 +135,7 @@ class ProfileManager(
      * Returns the profile for the given user handle, or null if it doesn't exist.
      */
     fun getProfileByUserHandle(userHandle: UserHandle): Flow<Profile?> {
-        return profileMap.map {
+        return readProfiles.map {
             it.values.find { it.profile.userHandle == userHandle }?.profile
         }
     }
@@ -135,14 +144,22 @@ class ProfileManager(
      * Returns the profile of the given type, or null if it doesn't exist.
      */
     fun getProfile(profileType: Profile.Type): Profile? {
-        return profileMap.value[profileType]?.profile
+        return profileMap.value?.get(profileType)?.profile
+    }
+
+    /**
+     * The profile of the given type once the profiles have been read, or null
+     * if the device has none of that type.
+     */
+    suspend fun awaitProfile(profileType: Profile.Type): Profile? {
+        return readProfiles.first()[profileType]?.profile
     }
 
     /**
      * Returns the state of the given profile, or null if it doesn't exist.
      */
     fun getProfileState(profile: Profile): Flow<Profile.State?> {
-        return profileMap.map {
+        return readProfiles.map {
             it[profile.type]?.state
         }
     }
@@ -151,7 +168,7 @@ class ProfileManager(
      * Returns the current state of the given profile, or null if it doesn't exist.
      */
     fun getCurrentProfileState(profile: Profile): Profile.State? {
-        return profileMap.value[profile.type]?.state
+        return profileMap.value?.get(profile.type)?.state
     }
 
 
