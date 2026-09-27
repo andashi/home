@@ -25,6 +25,17 @@ interface CustomAttributesRepository {
     fun setCustomLabel(searchable: SavableSearchable, label: String)
     fun clearCustomLabel(searchable: SavableSearchable)
 
+    /**
+     * Fork addition (#3 slice 4): the labels of [items] become [labels] (by
+     * key) in one transaction, returning once committed, so a config reload
+     * can read back what it wrote. An item of [items] missing from [labels]
+     * loses its label; items not in [items] are left alone.
+     */
+    suspend fun replaceCustomLabelsAwaited(items: List<SavableSearchable>, labels: Map<String, String>)
+
+    /** Fork addition (#3 slice 4): every app's label, by key. */
+    fun getAppLabels(): Flow<Map<String, String>>
+
     fun setTags(searchable: SavableSearchable, tags: List<String>)
     fun getTags(searchable: SavableSearchable): Flow<List<String>>
 
@@ -96,6 +107,21 @@ internal class CustomAttributesRepositoryImpl(
             }
         }
     }
+
+    override suspend fun replaceCustomLabelsAwaited(items: List<SavableSearchable>, labels: Map<String, String>) {
+        // A labelled item keeps a row, as setCustomLabel gives it: the
+        // cleanup removes a label whose item has none. Awaited, so the row
+        // exists before the label does (review on #207).
+        val byKey = items.associateBy { it.key }
+        searchableRepository.insertAwaited(labels.keys.mapNotNull(byKey::get))
+        appDatabase.customAttrsDao().replaceLabels(
+            keys = items.map { it.key },
+            labels = labels.map { (key, label) -> CustomLabel(key = key, label = label).toDatabaseEntity(key) },
+        )
+    }
+
+    override fun getAppLabels(): Flow<Map<String, String>> =
+        appDatabase.customAttrsDao().getAppLabels().map { rows -> rows.associate { it.key to it.value } }
 
     override fun clearCustomLabel(searchable: SavableSearchable) {
         val dao = appDatabase.customAttrsDao()
