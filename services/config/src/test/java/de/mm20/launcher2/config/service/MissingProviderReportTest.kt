@@ -1,11 +1,11 @@
 package de.mm20.launcher2.config.service
 
 import de.mm20.launcher2.config.ReloadReport
-import kotlinx.coroutines.async
-import kotlinx.coroutines.flow.drop
-import kotlinx.coroutines.flow.take
-import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.withTimeoutOrNull
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -91,12 +91,9 @@ class MissingProviderReportTest {
         val text = grid("com.example.gone/.Widget")
         reloadFile(text)
 
-        // The first emission is the state on collection; anything after it is a change.
-        val changes = async { withTimeoutOrNull(2_000) { real.store.changes().drop(1).take(1).toList() } }
-        kotlinx.coroutines.delay(200)
-        reloadFile(text)
+        val change = changeAfter { reloadFile(text) }
 
-        assertEquals("the refit changed nothing the write-back is asked about", null, changes.await())
+        assertEquals("the refit changed nothing the write-back is asked about", null, change)
         val writeBack = ConfigWriteBack(real.context, real.store, reportStore, baselineStore, lock)
         assertTrue(writeBack.write() is WriteBackResult.Unchanged)
     }
@@ -106,10 +103,26 @@ class MissingProviderReportTest {
     fun `a reload that changes the layout is seen by the same watch`() = runBlocking {
         reloadFile(grid("com.example.gone/.Widget"))
 
-        val changes = async { withTimeoutOrNull(2_000) { real.store.changes().drop(1).take(1).toList() } }
-        kotlinx.coroutines.delay(200)
-        reloadFile(grid("com.android.deskclock/.DigitalAppWidgetProvider"))
+        val change = changeAfter { reloadFile(grid("com.android.deskclock/.DigitalAppWidgetProvider")) }
 
-        assertEquals(1, changes.await()?.size)
+        assertEquals(Unit, change)
+    }
+
+    /**
+     * What the store's change stream says after [action]: its next emission,
+     * or null when none comes within two seconds. The stream emits the state
+     * on collection first, and [action] runs only once that has arrived - a
+     * fixed delay instead could let the action's own emission be taken for
+     * the initial one and dropped, and the no-change test would pass blind
+     * (review on #219).
+     */
+    private suspend fun changeAfter(action: suspend () -> Unit): Unit? = coroutineScope {
+        val seen = Channel<Unit>(Channel.UNLIMITED)
+        val watch = launch { real.store.changes().collect { seen.send(Unit) } }
+        withTimeout(5_000) { seen.receive() }
+        action()
+        val change = withTimeoutOrNull(2_000) { seen.receive() }
+        watch.cancel()
+        change
     }
 }
