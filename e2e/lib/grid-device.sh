@@ -160,7 +160,7 @@ delete_snapshots() { # $@ = snapshot names
     printf 'x could not list the snapshots on %s; check by hand for: %s\n' "$SERIAL" "$*" >&2
     return 1
   fi
-  for n in "$@"; do grep -qF "$n" <<<"$listed" && left+=("$n"); done
+  for n in "$@"; do grep -qwF -- "$n" <<<"$listed" && left+=("$n"); done
   [ "${#left[@]}" -eq 0 ] \
     || { printf 'x snapshots left on %s, delete them by hand: %s\n' "$SERIAL" "${left[*]}" >&2; return 1; }
 }
