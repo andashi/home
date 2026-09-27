@@ -540,16 +540,22 @@ frames_rendered() {
 # window transition runs (focus switches while the app-to-home transition
 # still swallows input), and it has drawn no frame for 300 ms, so its main
 # thread is free to handle the events as `input` sends them. Measured on the
-# emulator: AGENTS.md, emulator section. For retry_for.
+# emulator: AGENTS.md, emulator section. For retry_for. Leaves what held it
+# back in TOUCH_READY_WHY, for the caller's failure message: from outside
+# the three conditions look the same.
+TOUCH_READY_WHY=""
 touch_ready() {
   local windows before after
-  windows="$(adb_t shell dumpsys window | tr -d '\r')" || return 1
-  grep -q "mCurrentFocus=.*$PKG/" <<<"$windows" || return 1
-  ! grep -q 'reason=Transition' <<<"$windows" || return 1
-  before="$(frames_rendered)" && [ -n "$before" ] || return 1
+  windows="$(adb_t shell dumpsys window | tr -d '\r')" || { TOUCH_READY_WHY="dumpsys window failed"; return 1; }
+  grep -q "mCurrentFocus=.*$PKG/" <<<"$windows" \
+    || { TOUCH_READY_WHY="focus: $(grep -m1 -o 'mCurrentFocus=.*' <<<"$windows" || echo none)"; return 1; }
+  ! grep -q 'reason=Transition' <<<"$windows" \
+    || { TOUCH_READY_WHY="transition: $(grep -m1 'reason=Transition' <<<"$windows" | sed 's/^ *//')"; return 1; }
+  before="$(frames_rendered)" && [ -n "$before" ] || { TOUCH_READY_WHY="frames: no count"; return 1; }
   sleep 0.3
-  after="$(frames_rendered)" && [ -n "$after" ] || return 1
-  [ "$before" = "$after" ]
+  after="$(frames_rendered)" && [ -n "$after" ] || { TOUCH_READY_WHY="frames: no count"; return 1; }
+  [ "$before" = "$after" ] || { TOUCH_READY_WHY="frames $before->$after in 0.3 s"; return 1; }
+  TOUCH_READY_WHY=""
 }
 
 cell_center() { # $1 = id

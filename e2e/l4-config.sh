@@ -617,7 +617,11 @@ start_home() {
   adb -s "$SERIAL" shell am start -W -a android.intent.action.MAIN -c android.intent.category.HOME "$PKG" >/dev/null \
     || die "am start of the HOME intent for $PKG failed"
 }
-start_home
+# Only when it is not in front already: 6b left it there, and a HOME intent
+# to the resumed launcher is a Home-button press, which VALID_CONFIG's
+# homeButton: search answers by opening search - the feature working, and
+# the keyboard's caret then keeps every frame counter moving.
+retry_for 10 on_top "$PKG" || start_home
 read -r width height < <(screen_size)
 # Across most of the width, over 300 ms: under load `input swipe` gets two
 # to four samples through, Compose then computes a velocity of zero, and
@@ -636,7 +640,7 @@ flick_left() {
 # flick opens exactly the app the file names.
 settings_attempt=""
 for attempt in 1 2; do
-  retry_for 15 touch_ready || die "the launcher never became ready for a touch before flick $attempt"
+  retry_for 15 touch_ready || die "the launcher never became ready for a touch before flick $attempt ($TOUCH_READY_WHY)"
   flick_left
   if retry_for 5 on_top com.android.settings; then settings_attempt=$attempt; break; fi
 done
