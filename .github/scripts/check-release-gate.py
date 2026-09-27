@@ -25,6 +25,7 @@
 Exits non-zero naming every violation.
 """
 import re
+import shlex
 import sys
 
 import yaml
@@ -101,16 +102,23 @@ def violations(workflow):
 
 
 def checks_signer(step):
-    """Whether `step` runs the signer check so that its failure fails the step:
-    not negated, not behind `||`, not in an `if`, and not after `set +e`. A
-    swallowed failure is the defect #204 fixed (`! grep` under set -e)."""
+    """Whether `step` runs the signer check so that its failure fails the step.
+    The line must be exactly `python3 <path>/check-release-signer.py CERTS.txt
+    "$RELEASE_CERT_SHA256"`, as shell words: a line that only names the checker
+    (echo, python3 -c printing it) runs nothing, and anything around the
+    command (`!`, `||`, `if`) can swallow its failure, the defect #204 fixed.
+    No `set +e` may come before it in the step."""
     lines = executable_lines(step.get("run", ""))
     for i, line in enumerate(lines):
-        if "check-release-signer.py" not in line or '"$RELEASE_CERT_SHA256"' not in line:
+        try:
+            words = shlex.split(line)
+        except ValueError:
             continue
-        masked = "||" in line or re.match(r"\s*(!|if\b)", line)
+        runs_it = (len(words) == 4 and words[0] == "python3"
+                   and words[1].endswith("/check-release-signer.py")
+                   and words[2] == "CERTS.txt" and words[3] == "$RELEASE_CERT_SHA256")
         errexit_off = any(re.search(r"\bset\s+\+e", earlier) for earlier in lines[:i])
-        if not masked and not errexit_off:
+        if runs_it and not errexit_off:
             return True
     return False
 
