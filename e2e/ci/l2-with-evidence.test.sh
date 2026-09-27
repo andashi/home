@@ -339,6 +339,19 @@ the_check_after_the_tap_is_bounded() {
 }
 check "the check after the tap is bounded by its own time" the_check_after_the_tap_is_bounded
 
+# The check's last pause can run out its bound, and a dialog that closed
+# during it would then be taken as still up. It gets one read after its last
+# pause (#202 review): a 2 s check pausing 1 s, and a dialog that closes 1.5 s
+# after the tap.
+a_dialog_closing_in_the_last_pause_is_seen() {
+  local ANR_RECHECK_SECONDS=2 ANR_RECHECK_SLEEP=1
+  windows "Application Not Responding: com.android.systemui"
+  : > "$WORK/sticky"; echo 1500 > "$WORK/closedelayms"
+  clear_foreign_anrs > "$WORK/log" 2>&1 || return 1
+  [ "$(taps)" -eq 1 ] && [ "$WAIT_AMBIGUOUS" = 0 ] && grep -q 'Gone after Wait' "$WORK/log"
+}
+check "a dialog that closes in the check's last pause is seen" a_dialog_closing_in_the_last_pause_is_seen
+
 # A flag says what it means: the run cannot be vouched for, which is not a
 # failure of the launcher.
 a_flag_says_what_it_means() {

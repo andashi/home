@@ -251,6 +251,12 @@ press_wait_on_foreign() { # $@ = the foreign packages
       fi
       [ "$now" = "$before" ] || break
     done
+    # The last pause can run out the bound, and a dialog that closed during
+    # it would be taken as still up: one more read, bounded, before deciding
+    # (#202 review). An unreadable screen leaves the last reading standing.
+    if [ "$now" = "$before" ]; then
+      now="$(anr_packages 2)" || now="$before"
+    fi
     # A tap closes one dialog, the topmost. If the one it was meant for is
     # still up, an ANR of ours may have come up just before the tap and been
     # closed instead: that cannot be told apart from Wait not working, so it
