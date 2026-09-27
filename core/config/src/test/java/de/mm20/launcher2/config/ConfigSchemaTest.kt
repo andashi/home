@@ -68,6 +68,12 @@ class ConfigSchemaTest {
         assertEquals(listOf("grid", "list"), enumAt("search.layout"))
         assertEquals(listOf("light", "dark", "system"), enumAt("appearance.theme.mode"))
         assertEquals(listOf("system", "black-and-white", "high-contrast"), enumAt("appearance.theme.colors"))
+        // A gesture is one of these or an app object; never feed, never widgets (#3 slice 2).
+        val swipeDown = root["properties"]!!.jsonObject["gestures"]!!.jsonObject["properties"]!!.jsonObject["swipeDown"]!!.jsonObject
+        assertEquals(
+            listOf("none", "search", "notifications", "quick-settings", "screen-lock", "power-menu", "recents", "launcher-settings"),
+            swipeDown.getValue("oneOf").jsonArray[0].jsonObject.getValue("enum").jsonArray.map { it.jsonPrimitive.content },
+        )
     }
 
     /**
@@ -238,14 +244,19 @@ class ConfigSchemaTest {
 
     /**
      * This element with the value at [segments] replaced. `*` is any key of a
-     * map (the first), `name[]` the first element of a list that has the rest.
+     * map (the first that has the rest: a gesture can be an action string),
+     * `name[]` the first element of a list that has the rest.
      */
     private fun JsonElement.changed(segments: List<String>, change: (JsonElement) -> JsonElement): JsonElement {
         if (segments.isEmpty()) return change(this)
         val head = segments.first()
         val rest = segments.drop(1)
         val obj = jsonObject
-        val key = head.removeSuffix("[]").let { if (it == "*") obj.keys.first() else it }
+        val key = head.removeSuffix("[]").let { name ->
+            if (name != "*") name
+            else obj.keys.firstOrNull { rest.isEmpty() || (obj[it] as? JsonObject)?.containsKey(rest.first().removeSuffix("[]")) == true }
+                ?: throw AssertionError("no entry of the complete example has ${segments.joinToString(".")}")
+        }
         val child = obj[key] ?: throw AssertionError("the complete example has no '$key' for ${segments.joinToString(".")}")
         val newChild = if (!head.endsWith("[]")) child.changed(rest, change) else {
             val list = child.jsonArray

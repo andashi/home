@@ -17,6 +17,9 @@ import de.mm20.launcher2.homegrid.HomeGridInitFlag
 import de.mm20.launcher2.homegrid.HomeGridRepository
 import de.mm20.launcher2.config.ConfigState
 import de.mm20.launcher2.config.Diagnostic
+import de.mm20.launcher2.config.Gesture
+import de.mm20.launcher2.config.GestureActionName
+import de.mm20.launcher2.config.GestureConfig
 import de.mm20.launcher2.icons.StaticLauncherIcon
 import de.mm20.launcher2.preferences.config.LauncherConfigSettings
 import de.mm20.launcher2.profiles.Profile
@@ -84,6 +87,25 @@ internal class FakeLauncherConfigSettings(
                 else -> Unit
             }
         }
+    }
+
+    /** The gestures that launch something, by key (#3 slice 2). */
+    var launchKeys: Map<Gesture, String> = emptyMap()
+    val gestureCalls = mutableListOf<Pair<Map<Gesture, GestureActionName>, Map<Gesture, String>>>()
+    /** Runs as a gesture write starts: what must already hold when the setting names a key. */
+    var beforeGestureWrite: (() -> Unit)? = null
+
+    override suspend fun readGestureLaunchKeys(): Map<Gesture, String> = launchKeys
+
+    override suspend fun applyGestures(actions: Map<Gesture, GestureActionName>, launches: Map<Gesture, String>): ConfigState {
+        gestureCalls += actions to launches
+        beforeGestureWrite?.invoke()
+        applyFailure?.let { throw it }
+        state = state.copy(
+            gestures = state.gestures + actions.mapValues { GestureConfig.Action(it.value) } + launches.mapValues { null },
+        )
+        launchKeys = launchKeys - actions.keys + launches
+        return state
     }
 }
 
@@ -199,10 +221,15 @@ internal class FakeSavableSearchableRepository : SavableSearchableRepository {
         manuallySorted = items + manuallySorted.filter { it.domain !in types }
     }
 
+    /** What [insertAwaited] saved, by key; [getByKeys] serves these and the pins. */
+    val saved = linkedMapOf<String, SavableSearchable>()
+
+    override suspend fun insertAwaited(searchables: Collection<SavableSearchable>) {
+        for (searchable in searchables) saved.putIfAbsent(searchable.key, searchable)
+    }
+
     override suspend fun setVisibilitiesAwaited(visibilities: Map<SavableSearchable, VisibilityLevel>) =
         throw NotImplementedError()
-
-    override suspend fun insertAwaited(searchables: Collection<SavableSearchable>) = throw NotImplementedError()
 
     override fun insert(searchable: SavableSearchable) = throw NotImplementedError()
     override fun upsert(
@@ -257,7 +284,7 @@ internal class FakeSavableSearchableRepository : SavableSearchableRepository {
 
     override fun delete(searchable: SavableSearchable) = throw NotImplementedError()
     override fun getByKeys(keys: List<String>): Flow<List<SavableSearchable>> =
-        throw NotImplementedError()
+        flowOf((saved.values + manuallySorted + automaticallySorted).distinctBy { it.key }.filter { it.key in keys })
 
     override suspend fun cleanupDatabase(): Int = throw NotImplementedError()
 }

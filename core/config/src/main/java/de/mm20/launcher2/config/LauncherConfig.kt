@@ -10,6 +10,7 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.JsonDecoder
+import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 
 @Serializable
@@ -26,6 +27,8 @@ data class LauncherConfig(
      * list clears every customization. Absent, nothing is managed.
      */
     val apps: List<AppConfig>? = null,
+    /** What each home-screen gesture does (#3 slice 2). */
+    val gestures: GesturesConfig? = null,
 )
 
 /**
@@ -239,7 +242,10 @@ internal abstract class FieldEnumSerializer<E : Enum<E>>(
      * published value, so a new or renamed entry is a visible change.
      */
     private val byName = entries.associateBy { it.name.replace(KebabBoundary, "$1-$2").lowercase() }
-    private val nameOf = byName.entries.associate { (name, entry) -> entry to name }
+    private val wireNames = byName.entries.associate { (name, entry) -> entry to name }
+
+    /** [value] as the file writes it. */
+    fun nameOf(value: E): String = wireNames.getValue(value)
 
     /** The values the contract accepts, as written; the JSON Schema lists these. */
     val names: List<String> = byName.keys.toList()
@@ -247,7 +253,7 @@ internal abstract class FieldEnumSerializer<E : Enum<E>>(
     override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor(serialName, PrimitiveKind.STRING)
 
     override fun serialize(encoder: Encoder, value: E) {
-        encoder.encodeString(nameOf.getValue(value))
+        encoder.encodeString(nameOf(value))
     }
 
     override fun deserialize(decoder: Decoder): E {
@@ -661,4 +667,122 @@ object SearchDefaults {
     const val TransliteratorAuto = "auto"
     const val TransliteratorOff = "off"
     const val Transliterator = TransliteratorAuto
+}
+
+/**
+ * `gestures` (#3 slice 2): what each gesture on the home screen does. A key
+ * present manages that gesture; an absent one leaves the device's own.
+ */
+@Serializable
+data class GesturesConfig(
+    val swipeDown: GestureConfig? = null,
+    val swipeUp: GestureConfig? = null,
+    val swipeLeft: GestureConfig? = null,
+    val swipeRight: GestureConfig? = null,
+    val doubleTap: GestureConfig? = null,
+    val longPress: GestureConfig? = null,
+    val homeButton: GestureConfig? = null,
+) {
+    /** The gestures this names, by gesture. */
+    fun byGesture(): Map<Gesture, GestureConfig> = buildMap {
+        for (gesture in Gesture.entries) gesture.of(this@GesturesConfig)?.let { put(gesture, it) }
+    }
+
+    companion object {
+        /** The config naming exactly [gestures]; a null value is left out. */
+        fun of(gestures: Map<Gesture, GestureConfig?>) = GesturesConfig(
+            swipeDown = gestures[Gesture.SwipeDown],
+            swipeUp = gestures[Gesture.SwipeUp],
+            swipeLeft = gestures[Gesture.SwipeLeft],
+            swipeRight = gestures[Gesture.SwipeRight],
+            doubleTap = gestures[Gesture.DoubleTap],
+            longPress = gestures[Gesture.LongPress],
+            homeButton = gestures[Gesture.HomeButton],
+        )
+    }
+}
+
+/** The seven gestures, each with its key under `gestures`. */
+enum class Gesture(val key: String) {
+    SwipeDown("swipeDown"),
+    SwipeUp("swipeUp"),
+    SwipeLeft("swipeLeft"),
+    SwipeRight("swipeRight"),
+    DoubleTap("doubleTap"),
+    LongPress("longPress"),
+    HomeButton("homeButton");
+
+    /** Where this gesture sits in the file: `gestures.swipeLeft`. */
+    val path: String get() = "gestures.$key"
+
+    fun of(config: GesturesConfig): GestureConfig? = when (this) {
+        SwipeDown -> config.swipeDown
+        SwipeUp -> config.swipeUp
+        SwipeLeft -> config.swipeLeft
+        SwipeRight -> config.swipeRight
+        DoubleTap -> config.doubleTap
+        LongPress -> config.longPress
+        HomeButton -> config.homeButton
+    }
+}
+
+/**
+ * One gesture's effect: one of the launcher's own [Action]s by name, or
+ * launching an [App]. An app is always the object form of a favorite, so a
+ * package name can never be read as an action.
+ */
+@Serializable(with = GestureConfigSerializer::class)
+sealed interface GestureConfig {
+    data class Action(val action: GestureActionName) : GestureConfig
+    data class App(val app: Favorite) : GestureConfig
+}
+
+/**
+ * The actions a file can give a gesture. Not the feed: it is hidden in
+ * release builds (FeatureFlags.feed), and a configuration file must never be
+ * a route around a feature flag. Not the widget pages either, which are gone
+ * (Migration6).
+ */
+enum class GestureActionName { None, Search, Notifications, QuickSettings, ScreenLock, PowerMenu, Recents, LauncherSettings }
+
+internal object GestureActionNameSerializer : FieldEnumSerializer<GestureActionName>(
+    "de.mm20.launcher2.config.GestureActionName", "a gesture", GestureActionName.entries,
+)
+
+/** The action as the file names it: `screen-lock` for [GestureActionName.ScreenLock]. */
+val GestureActionName.fileName: String get() = GestureActionNameSerializer.nameOf(this)
+
+/** A string is an action by name; an object is an app, decoded as a favorite's object form. */
+internal object GestureConfigSerializer : KSerializer<GestureConfig> {
+    override val descriptor: SerialDescriptor =
+        PrimitiveSerialDescriptor("de.mm20.launcher2.config.GestureConfig", PrimitiveKind.STRING)
+
+    override fun serialize(encoder: Encoder, value: GestureConfig) = when (value) {
+        is GestureConfig.Action -> GestureActionNameSerializer.serialize(encoder, value.action)
+        is GestureConfig.App -> Favorite.serializer().serialize(encoder, value.app)
+    }
+
+    override fun deserialize(decoder: Decoder): GestureConfig {
+        val jsonDecoder = decoder as? JsonDecoder
+            ?: throw SerializationException("A gesture can only be read from JSON")
+        return when (val element = jsonDecoder.decodeJsonElement()) {
+            is JsonObject -> GestureConfig.App(jsonDecoder.json.decodeFromJsonElement(Favorite.serializer(), element))
+            is JsonPrimitive if element.isString ->
+                GestureConfig.Action(jsonDecoder.json.decodeFromJsonElement(GestureActionNameSerializer, element))
+            else -> throw SerializationException("A gesture must be an action name or an app object")
+        }
+    }
+}
+
+/** The one place the gesture defaults live: the device's, so a file without `gestures` changes nothing. */
+object GestureDefaults {
+    val All: Map<Gesture, GestureConfig?> = mapOf(
+        Gesture.SwipeDown to GestureConfig.Action(GestureActionName.Search),
+        Gesture.SwipeUp to GestureConfig.Action(GestureActionName.Search),
+        Gesture.SwipeLeft to GestureConfig.Action(GestureActionName.None),
+        Gesture.SwipeRight to GestureConfig.Action(GestureActionName.None),
+        Gesture.DoubleTap to GestureConfig.Action(GestureActionName.ScreenLock),
+        Gesture.LongPress to GestureConfig.Action(GestureActionName.None),
+        Gesture.HomeButton to GestureConfig.Action(GestureActionName.None),
+    )
 }

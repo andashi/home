@@ -28,6 +28,7 @@ internal class RealConfigStore(
     val work: UserHandle = TestUsers.userHandleFor(10)
     val apps = FakeAppRepository()
     val grid = FakeHomeGridRepository()
+    val searchables = FakeSavableSearchableRepository()
     val actions = FakeSearchActionStore()
     val customizations = FakeAppCustomizationStore()
 
@@ -50,7 +51,7 @@ internal class RealConfigStore(
             HomeGridInitLock(),
             FakeGridLimitsSource(),
             FakeGridRowsSource(),
-            FakeSavableSearchableRepository(),
+            searchables,
             apps,
             FakeProfileResolver(
                 personal = Profile(Profile.Type.Personal, personal, 0),

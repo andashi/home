@@ -10,7 +10,6 @@ import de.mm20.launcher2.grid.CellMetrics
 import de.mm20.launcher2.grid.CellSize
 import de.mm20.launcher2.grid.ProviderSizes
 import de.mm20.launcher2.grid.SizeLimits
-import de.mm20.launcher2.profiles.Profile
 
 /** What the layout engine needs to know about one AppWidget provider. */
 data class ProviderLimits(

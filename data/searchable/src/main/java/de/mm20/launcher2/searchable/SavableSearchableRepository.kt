@@ -128,7 +128,9 @@ interface SavableSearchableRepository {
      * Fork addition (#3 slice 4): a row for each of [searchables] that has
      * none, written when this returns - [insert] is fire-and-forget. What a
      * customization is anchored to before it is written: the cleanup removes
-     * a label whose item has no row. An existing row is left as it is.
+     * a label whose item has no row. An existing row is left as it is. A
+     * gesture that opens an app (#3 slice 2) saves it here too: the launcher
+     * looks the item up by the key the setting names.
      */
     suspend fun insertAwaited(searchables: Collection<SavableSearchable>)
 
@@ -173,20 +175,7 @@ internal class SavableSearchableRepositoryImpl(
     private val scope = CoroutineScope(Job() + Dispatchers.Default)
 
     override fun insert(searchable: SavableSearchable) {
-        val dao = database.searchableDao()
-        scope.launch {
-            dao.insert(
-                SavedSearchableEntity(
-                    key = searchable.key,
-                    type = searchable.domain,
-                    serializedSearchable = searchable.serialize() ?: return@launch,
-                    visibility = VisibilityLevel.Default.value,
-                    launchCount = 0,
-                    weight = 0.0,
-                    pinPosition = 0,
-                )
-            )
-        }
+        scope.launch { insertAwaited(listOf(searchable)) }
     }
 
 

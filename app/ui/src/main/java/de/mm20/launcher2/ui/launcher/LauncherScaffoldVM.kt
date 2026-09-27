@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import de.mm20.launcher2.searchable.SavableSearchableRepository
 import de.mm20.launcher2.preferences.ColorScheme
+import de.mm20.launcher2.FeatureFlags
 import de.mm20.launcher2.preferences.GestureAction
 import de.mm20.launcher2.preferences.ScreenOrientation
 import de.mm20.launcher2.preferences.SearchBarColors
@@ -78,13 +79,13 @@ class LauncherScaffoldVM : ViewModel(), KoinComponent {
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), SearchBarStyle.Transparent)
 
     val gestureState: StateFlow<GestureState?> = gestureSettings.map { settings ->
-            val swipeLeftAction = settings.swipeLeft
-            val swipeRightAction = settings.swipeRight
-            val swipeDownAction = settings.swipeDown
-            val swipeUpAction = settings.swipeUp
-            val longPressAction = settings.longPress
-            val doubleTapAction = settings.doubleTap
-            val homeButtonAction = settings.homeButton
+            val swipeLeftAction = settings.swipeLeft.inThisBuild()
+            val swipeRightAction = settings.swipeRight.inThisBuild()
+            val swipeDownAction = settings.swipeDown.inThisBuild()
+            val swipeUpAction = settings.swipeUp.inThisBuild()
+            val longPressAction = settings.longPress.inThisBuild()
+            val doubleTapAction = settings.doubleTap.inThisBuild()
+            val homeButtonAction = settings.homeButton.inThisBuild()
 
             val swipeLeftAppKey = (swipeLeftAction as? GestureAction.Launch)?.key
             val swipeRightAppKey = (swipeRightAction as? GestureAction.Launch)?.key
@@ -121,6 +122,15 @@ class LauncherScaffoldVM : ViewModel(), KoinComponent {
             )
         }.stateIn(viewModelScope, SharingStarted.Eagerly, null)
 }
+
+/**
+ * This action as the build can perform it: the feed only where it exists
+ * ([FeatureFlags.feed]). The settings screen never offers it elsewhere, but a
+ * stored value - restored, migrated, or written by another build - must not
+ * open what this build hides (#3 slice 2).
+ */
+internal fun GestureAction.inThisBuild(feedEnabled: Boolean = FeatureFlags.feed): GestureAction =
+    if (this is GestureAction.Feed && !feedEnabled) GestureAction.NoAction else this
 
 data class GestureState(
     val swipeLeftAction: GestureAction = GestureAction.NoAction,

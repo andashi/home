@@ -70,7 +70,7 @@ class CompleteExampleTest {
     private fun keyPaths(element: JsonElement, section: String = ""): Set<Pair<String, String>> {
         val obj = element as? JsonObject ?: return emptySet()
         return obj.flatMap { (key, value) ->
-            val child = if (section.isEmpty()) key else "$section.$key"
+            val child = ConfigParser.childSection(section, key)
             val nested = when (value) {
                 is JsonObject -> keyPaths(value, child)
                 is JsonArray -> value.flatMap { keyPaths(it, "$child[]") }

@@ -61,6 +61,8 @@ val configModule = module {
                 callGranted = { permissions.checkPermissionOnce(PermissionGroup.Call) },
                 // The lookup the normalizer makes, so the report and the search agree.
                 transliteratorAvailable = { id -> runCatching { Transliterator.getInstance(id) }.isSuccess },
+                // What ScreenOffComponent and the others check before they act.
+                accessibilityOn = { permissions.checkPermissionOnce(PermissionGroup.Accessibility) },
             ),
         )
     }

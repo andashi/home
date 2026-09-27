@@ -70,6 +70,12 @@ data class ConfigState(
      */
     val wallpaperImage: String? = null,
     val wallpaperTarget: WallpaperTarget? = null,
+    /**
+     * `gestures` (#3 slice 2), every gesture. Null where the device runs
+     * something the file cannot name - a shortcut, an app no longer installed:
+     * the read-back leaves it out, and write-back keeps the file's value.
+     */
+    val gestures: Map<Gesture, GestureConfig?> = GestureDefaults.All,
 )
 
 /** What `search` reads back as: every key, at its default until a config sets it (#91). */
@@ -209,6 +215,13 @@ sealed class ConfigMutation {
         val labels: Boolean? = null,
     ) : ConfigMutation() {
         override val section = "home.grid"
+    }
+
+    /** `gestures` (#3 slice 2): the gestures that differ from the device. */
+    data class SetGestures(
+        val gestures: Map<Gesture, GestureConfig>,
+    ) : ConfigMutation() {
+        override val section = "gestures"
     }
 }
 
@@ -364,6 +377,12 @@ object ConfigDiffer {
                     labels = labels,
                 )
             }
+        }
+
+        desired.gestures?.let { gestures ->
+            // A gesture the device runs but the file cannot name (null) differs.
+            val changed = gestures.byGesture().filter { (gesture, value) -> value != current.gestures[gesture] }
+            if (changed.isNotEmpty()) mutations += ConfigMutation.SetGestures(changed)
         }
 
         return mutations

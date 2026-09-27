@@ -522,6 +522,56 @@ density_scale() {
   adb -s "$SERIAL" shell wm density | tr -d '\r' | awk '/density/ { print $NF / 160; exit }'
 }
 
+# "width height" of the display in pixels.
+screen_size() {
+  adb_t shell wm size | tr -d '\r' | awk '/size/ {s=$NF} END {split(s, a, "x"); print a[1], a[2]}'
+}
+
+# "package/activity" of the resumed activity in front; empty when there is none.
+# Captured first, like frames_rendered: the dump is long, and a reader that
+# stops early fails the pipe under pipefail.
+top_activity() {
+  local dump
+  dump="$(adb_out shell dumpsys activity activities)" || return 1
+  sed -n 's/.*topResumedActivity=ActivityRecord{[^ ]* [^ ]* \([^ ]*\) .*/\1/p' <<<"$dump" | head -1
+}
+
+on_top() { # $1 = package
+  case "$(top_activity)" in "$1"/*) return 0 ;; *) return 1 ;; esac
+}
+
+# "Total frames rendered" of $PKG; empty when gfxinfo does not say.
+# Captured first: the dump runs on for thousands of lines, an awk that
+# stops at the first match would close the pipe on it, and under pipefail
+# that fails the read (touch_ready said "frames: no count" on the device).
+frames_rendered() {
+  local dump
+  dump="$(adb_out shell dumpsys gfxinfo "$PKG")" || return 1
+  awk '/Total frames rendered/ { print $NF; exit }' <<<"$dump"
+}
+
+# Whether an injected touch would reach the launcher now: it has focus, no
+# window transition runs (focus switches while the app-to-home transition
+# still swallows input), and it has drawn no frame for 300 ms, so its main
+# thread is free to handle the events as `input` sends them. Measured on the
+# emulator: AGENTS.md, emulator section. For retry_for. Leaves what held it
+# back in TOUCH_READY_WHY, for the caller's failure message: from outside
+# the three conditions look the same.
+TOUCH_READY_WHY=""
+touch_ready() {
+  local windows before after
+  windows="$(adb_t shell dumpsys window | tr -d '\r')" || { TOUCH_READY_WHY="dumpsys window failed"; return 1; }
+  grep -q "mCurrentFocus=.*$PKG/" <<<"$windows" \
+    || { TOUCH_READY_WHY="focus: $(grep -m1 -o 'mCurrentFocus=.*' <<<"$windows" || echo none)"; return 1; }
+  ! grep -q 'reason=Transition' <<<"$windows" \
+    || { TOUCH_READY_WHY="transition: $(grep -m1 'reason=Transition' <<<"$windows" | sed 's/^ *//')"; return 1; }
+  before="$(frames_rendered)" && [ -n "$before" ] || { TOUCH_READY_WHY="frames: no count"; return 1; }
+  sleep 0.3
+  after="$(frames_rendered)" && [ -n "$after" ] || { TOUCH_READY_WHY="frames: no count"; return 1; }
+  [ "$before" = "$after" ] || { TOUCH_READY_WHY="frames $before->$after in 0.3 s"; return 1; }
+  TOUCH_READY_WHY=""
+}
+
 cell_center() { # $1 = id
   local line
   line="$(dump_cells | awk -v id="$1" '$1 == id')"

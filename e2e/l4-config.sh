@@ -14,7 +14,7 @@
 #      Android has) and asserts that the very first reload, right after the
 #      process starts, applies it (the startup race: nothing read yet read
 #      as "not installed"); then writes a known JSONC config (icons, glass,
-#      theme, search bar, favorites, widgets switch, grid)
+#      theme, search bar, favorites, widgets switch, grid, gestures)
 #      through the shell-gated ingest provider (`content write`), the
 #      provisioning transport (ADR 0003 §1a)
 #   3. proves the explicit, shell-gated ReloadConfigReceiver is reachable
@@ -35,6 +35,8 @@
 #      writes a config with appearance.wallpaper, asserts the read-back names
 #      the image and that the system wallpaper id changed; writes the same
 #      config again and asserts no mutation and an unchanged id (idempotent)
+#   6c. swipes left on the home screen and asserts Settings, the app
+#      gestures.swipeLeft names, comes to the front
 #   7. writes malformed JSON and asserts a failed report with a
 #      "malformed-json" error diagnostic, and that the previous effective
 #      config remains intact
@@ -196,6 +198,16 @@ cat > "$VALID_CONFIG" <<'EOF'
   },
   // Four keys away from their defaults (#91), so applying them is a change.
   "search": { "favorites": false, "layout": "list", "reversed": true, "contacts": false, "barPosition": "bottom" },
+  // #3 slice 2: six of seven away from their defaults, swipeRight left out
+  // (unmanaged). Settings is on every Android, so the app assumes nothing.
+  "gestures": {
+    "swipeDown": "notifications",
+    "swipeUp": "quick-settings",
+    "swipeLeft": { "packageName": "com.android.settings" },
+    "doubleTap": "none",
+    "longPress": "launcher-settings",
+    "homeButton": "search",
+  },
   "home": {
     "searchBar": { "position": "bottom", "fixed": true },
     "lockRotation": true,
@@ -273,6 +285,15 @@ cat > "$CHANGED_CONFIG" <<'EOF'
     },
   },
   "search": { "favorites": true, "layout": "grid", "reversed": false, "contacts": true, "barPosition": "top" },
+  // Three need the accessibility service, which is off on the clean snapshot.
+  "gestures": {
+    "swipeDown": "search",
+    "swipeUp": "recents",
+    "swipeLeft": "power-menu",
+    "doubleTap": "screen-lock",
+    "longPress": "none",
+    "homeButton": "none",
+  },
   "home": {
     "searchBar": { "position": "top", "fixed": false },
     "lockRotation": false,
@@ -407,6 +428,7 @@ EFFECTIVE_FILTER='
   and .home.grid.locked == false
   and .home.grid.labels == false
   and .home.grid.layouts.phone.items == [{"id":"dock","widget":"favorites","x":0,"y":5,"w":4,"h":1,"borderless":false,"background":true,"themeColors":true}]
+  and .gestures == {"swipeDown":"notifications","swipeUp":"quick-settings","swipeLeft":{"packageName":"com.android.settings"},"swipeRight":"none","doubleTap":"none","longPress":"launcher-settings","homeButton":"search"}
 '
 
 CHANGED_FILTER='
@@ -426,12 +448,13 @@ CHANGED_FILTER='
   and .home.grid.locked == true
   and .home.grid.labels == true
   and .home.grid.layouts.phone.items == [{"id":"dock","widget":"favorites","x":0,"y":0,"w":5,"h":2,"borderless":false,"background":true,"themeColors":true}]
+  and .gestures == {"swipeDown":"search","swipeUp":"recents","swipeLeft":"power-menu","swipeRight":"none","doubleTap":"screen-lock","longPress":"none","homeButton":"none"}
 '
 
 # The sections a full VALID <-> CHANGED convergence must report as applied.
 ALL_SECTIONS_FILTER='
   ((.appliedMutations // []) | sort) ==
-  ["appearance.glass", "appearance.systemBars", "appearance.theme", "home.favorites", "home.grid",
+  ["appearance.glass", "appearance.systemBars", "appearance.theme", "gestures", "home.favorites", "home.grid",
    "home.lockRotation", "home.searchBar", "home.widgets.enabled", "icons", "search"]
 '
 
@@ -517,7 +540,13 @@ push_config "$CHANGED_CONFIG" "change"
 assert_jq "$LAST_REPORT" '.success == true' "changed config applied"
 effective="$(query_json config)" || die "could not query /config"
 assert_jq "$effective" "$CHANGED_FILTER" "effective config shows the changed values in every section"
-ok "changed config: every section flipped (icons, glass, search, search bar, widgets, grid)"
+ok "changed config: every section flipped (icons, glass, search, search bar, widgets, grid, gestures)"
+# The three gestures that need the accessibility service are applied and
+# reported: the clean snapshot has it off, and a file must not turn it on.
+assert_jq "$LAST_REPORT" \
+  '[(.diagnostics // [])[] | select(.code == "permission-missing" and .severity == "warning" and (.path | startswith("gestures."))) | .path] | sort == ["gestures.doubleTap","gestures.swipeLeft","gestures.swipeUp"]' \
+  "screen-lock, power-menu and recents are reported while the accessibility service is off"
+ok "gestures needing the accessibility service reported (permission-missing)"
 
 push_config "$VALID_CONFIG" "change-back"
 assert_jq "$LAST_REPORT" '.success == true' "original config re-applied"
@@ -573,6 +602,52 @@ assert_jq "$LAST_REPORT" '.success == true and ((.appliedMutations // []) == [])
   "re-write of the wallpaper config is a no-op"
 [ "$(wallpaper_id)" = "$id_after" ] || die "wallpaper was set again although nothing changed"
 ok "wallpaper re-write: no mutation, id unchanged ($id_after)"
+
+# --- 6c. a configured gesture does what the file says (#3 slice 2) -------
+
+# VALID_CONFIG's swipeLeft opens Settings; the wallpaper config above leaves
+# gestures unmanaged, so it is still in effect. The launcher is in front
+# (6b); a swipe across the empty middle of the home screen must bring
+# Settings up, resolved from the package the file names.
+log "swiping left on the home screen: the file says it opens Settings"
+# By the HOME intent, as 6b does since #208: started by component the
+# launcher lands in a task of its own, and a gesture is lost when the first
+# Home press replaces it.
+start_home() {
+  adb -s "$SERIAL" shell am start -W -a android.intent.action.MAIN -c android.intent.category.HOME "$PKG" >/dev/null \
+    || die "am start of the HOME intent for $PKG failed"
+}
+# Only when it is not in front already: 6b left it there, and a HOME intent
+# to the resumed launcher is a Home-button press, which VALID_CONFIG's
+# homeButton: search answers by opening search - the feature working, and
+# the keyboard's caret then keeps every frame counter moving.
+retry_for 10 on_top "$PKG" || start_home
+read -r width height < <(screen_size)
+# Across most of the width, over 300 ms: under load `input swipe` gets two
+# to four samples through, Compose then computes a velocity of zero, and
+# only the distance crosses the threshold (AGENTS.md, emulator section).
+flick_left() {
+  adb -s "$SERIAL" shell input swipe $((width * 9 / 10)) $((height / 2)) $((width / 10)) $((height / 2)) 300
+}
+# Each flick waits for touch_ready: focused, no window transition, frames at
+# rest - glass's conditions, one flick in twenty lost after them instead of
+# every other one. The one left is the `input` tool starved by host load,
+# which nothing in the guest can wait away; the second attempt covers that,
+# and the output says on every run which attempt worked, so a count that
+# climbs is visible. The launcher never dropped a flick that reached it;
+# whether the platform delivers such a touch on real hardware is untested
+# (AGENTS.md, emulator section). This step proves the config's effect: a
+# flick opens exactly the app the file names.
+settings_attempt=""
+for attempt in 1 2; do
+  retry_for 15 touch_ready || die "the launcher never became ready for a touch before flick $attempt ($TOUCH_READY_WHY)"
+  flick_left
+  if retry_for 5 on_top com.android.settings; then settings_attempt=$attempt; break; fi
+done
+[ -n "$settings_attempt" ] || die "two swipes left did not open Settings, the app gestures.swipeLeft names"
+ok "gestures.swipeLeft opened Settings on the device (flick $settings_attempt of 2)"
+start_home
+retry_for 10 on_top "$PKG" || die "the launcher did not come back after the gesture"
 
 # --- 7. malformed JSON: failed report, state intact --------------------
 

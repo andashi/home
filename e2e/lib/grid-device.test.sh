@@ -996,5 +996,76 @@ show_home_uses_the_home_intent() {
     && grep -q -- " $PKG\$" <<<"$start" && ! grep -q -- " -n " <<<"$start"
 }
 check "show_home starts the launcher with the HOME intent, not by component" show_home_uses_the_home_intent
+# touch_ready: the launcher receives a touch only once it is focused, no
+# window transition runs, and it has stopped drawing (AGENTS.md, emulator
+# section). The fake serves $WORK/touch/window.txt and a frame counter that
+# either stays put or moves on every read.
+mkdir -p "$WORK/touch"
+cat > "$WORK/touch/adb" <<EOF
+#!/usr/bin/env bash
+case "\$*" in
+  *"dumpsys window"*) cat "$WORK/touch/window.txt" ;;
+  *"dumpsys gfxinfo"*)
+    n=\$(cat "$WORK/touch/frames")
+    [ -f "$WORK/touch/moving" ] && echo \$((n + 1)) > "$WORK/touch/frames"
+    [ -f "$WORK/touch/nogfx" ] || echo "Total frames rendered: \$n" ;;
+esac
+EOF
+chmod +x "$WORK/touch/adb"
+touch_state() { # $1 = focus line, $2 = transition line (or empty); frames still unless moving
+  printf '  mCurrentFocus=%s\n%s\n' "$1" "$2" > "$WORK/touch/window.txt"
+  echo 100 > "$WORK/touch/frames"
+  rm -f "$WORK/touch/moving" "$WORK/touch/nogfx"
+}
+is_touch_ready() { ( PATH="$WORK/touch:$PATH"; touch_ready ) >/dev/null 2>&1; }
+focused="Window{1 u0 $PKG/de.mm20.launcher2.ui.launcher.LauncherActivity}"
+
+ready_when_focused_quiet_and_still() { touch_state "$focused" ""; is_touch_ready; }
+check "touch_ready: focused, no transition, frames still" ready_when_focused_quiet_and_still
+
+not_ready_during_a_transition() { touch_state "$focused" "  mTransition reason=Transition{TRANSIT_TO_FRONT}"; ! is_touch_ready; }
+check "touch_ready waits while a transition runs, even with focus on the launcher" not_ready_during_a_transition
+
+not_ready_while_another_window_has_focus() { touch_state "Window{2 u0 com.android.settings/.Settings}" ""; ! is_touch_ready; }
+check "touch_ready waits while another app has focus" not_ready_while_another_window_has_focus
+
+not_ready_while_drawing() { touch_state "$focused" ""; touch "$WORK/touch/moving"; ! is_touch_ready; }
+check "touch_ready waits while the launcher is still drawing" not_ready_while_drawing
+
+not_ready_without_a_frame_count() { touch_state "$focused" ""; touch "$WORK/touch/nogfx"; ! is_touch_ready; }
+check "touch_ready: no frame count is not frames at rest" not_ready_without_a_frame_count
+
+# Which condition held it back, for the failure message: on the device the
+# three are indistinguishable from outside (l4-config 6c, 2026-09-27).
+touch_ready_says_why() { # $1 = expected text in TOUCH_READY_WHY
+  local PATH="$WORK/touch:$PATH" TOUCH_READY_WHY=""
+  touch_ready >/dev/null 2>&1
+  grep -q -- "$1" <<<"$TOUCH_READY_WHY"
+}
+says_transition() { touch_state "$focused" "  reason=Transition flags=3 display=0"; touch_ready_says_why "transition"; }
+check "touch_ready says a transition held it back" says_transition
+says_focus() { touch_state "Window{2 u0 com.android.settings/.Settings}" ""; touch_ready_says_why "com.android.settings"; }
+check "touch_ready says which window had the focus" says_focus
+says_frames() { touch_state "$focused" ""; touch "$WORK/touch/moving"; touch_ready_says_why "frames 100->101"; }
+check "touch_ready says the frames moved, and by how much" says_frames
+
+# A real gfxinfo dump runs to thousands of lines after the count. An awk
+# that stops at the first match then leaves the producer writing into a
+# closed pipe, and under pipefail - which every L4 script sets - the whole
+# read fails: on the device touch_ready said "frames: no count" for a
+# launcher at rest (l4-config 6c, 2026-09-27).
+mkdir -p "$WORK/longgfx"
+cat > "$WORK/longgfx/adb" <<'EOF'
+#!/usr/bin/env bash
+case "$*" in
+  *"dumpsys gfxinfo"*) echo "Total frames rendered: 100"; yes "  a line of the rest of the dump" | head -n 200000 ;;
+esac
+EOF
+chmod +x "$WORK/longgfx/adb"
+frames_read_from_a_long_dump() {
+  local got
+  got="$( ( set -o pipefail; PATH="$WORK/longgfx:$PATH"; frames_rendered ) 2>/dev/null )" && [ "$got" = 100 ]
+}
+check "frames_rendered reads the count from a dump that goes on, under pipefail" frames_read_from_a_long_dump
 
 exit "$failed"

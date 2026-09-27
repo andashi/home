@@ -2,6 +2,9 @@ package de.mm20.launcher2.config.service
 
 import de.mm20.launcher2.config.ConfigState
 import de.mm20.launcher2.config.Diagnostic
+import de.mm20.launcher2.config.GestureActionName
+import de.mm20.launcher2.config.GestureConfig
+import de.mm20.launcher2.config.fileName
 import de.mm20.launcher2.config.LauncherConfig
 import de.mm20.launcher2.config.SearchDefaults
 import de.mm20.launcher2.config.Severity
@@ -20,6 +23,8 @@ class CapabilityDiagnostics(
     private val callGranted: () -> Boolean,
     /** Whether this device's ICU has a transliterator id; ICU versions differ between devices. */
     private val transliteratorAvailable: (id: String) -> Boolean,
+    /** Whether the launcher's accessibility service is on; only the person can turn it on. */
+    private val accessibilityOn: () -> Boolean,
 ) {
 
     /**
@@ -79,10 +84,36 @@ class CapabilityDiagnostics(
                 )
             )
         }
+        // #3 slice 2: these three go through the accessibility service, which a
+        // file must not turn on; the gesture asks for it when used.
+        val needsService = config.gestures?.byGesture().orEmpty().mapNotNull { (gesture, asked) ->
+            val path = gesture.path
+            val effect = if (failedAt(path)) before.gestures[gesture] else asked
+            val action = (effect as? GestureConfig.Action)?.action?.takeIf { it in ServiceActions }
+            action?.let { path to it }
+        }
+        if (needsService.isNotEmpty() && !accessibilityOn()) {
+            for ((path, action) in needsService) {
+                add(
+                    Diagnostic(
+                        Severity.Warning,
+                        "permission-missing",
+                        path,
+                        "$path is ${action.fileName}, which needs the launcher's accessibility service; " +
+                            "it is off, so the gesture asks for it when used",
+                    )
+                )
+            }
+        }
     }
 
     companion object {
         /** No checks: for a reloader that is not the device's own. */
-        val None = CapabilityDiagnostics(contactsGranted = { true }, callGranted = { true }, transliteratorAvailable = { true })
+        val None = CapabilityDiagnostics(
+            contactsGranted = { true }, callGranted = { true }, transliteratorAvailable = { true }, accessibilityOn = { true },
+        )
+
+        /** What the launcher does through its accessibility service (ScreenOff-, PowerMenu-, RecentsComponent). */
+        private val ServiceActions = setOf(GestureActionName.ScreenLock, GestureActionName.PowerMenu, GestureActionName.Recents)
     }
 }

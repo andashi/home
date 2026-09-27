@@ -306,7 +306,7 @@ class ConfigReloaderTest {
         val store = FakeConfigStore(state = foldState(6).copy(search = SearchState(contacts = true)))
         val reportStore = ReloadReportStore(context)
         var granted = true
-        val reloader = ConfigReloader(store, reportStore, capabilities = CapabilityDiagnostics(contactsGranted = { granted }, callGranted = { true }, transliteratorAvailable = { true }))
+        val reloader = ConfigReloader(store, reportStore, capabilities = CapabilityDiagnostics(contactsGranted = { granted }, callGranted = { true }, transliteratorAvailable = { true }, accessibilityOn = { true }))
         reloader.reload(text, ReloadTrigger.Broadcast)
         // Revoked since the push: the file and the grid are as they were, the
         // warning is new (#178 review).
@@ -415,6 +415,7 @@ class ConfigReloaderTest {
         contactsGranted: Boolean = true,
         callGranted: Boolean = true,
         availableTransliterators: Set<String>? = null,
+        accessibilityOn: Boolean = true,
     ) =
         ConfigReloader(
             store, ReloadReportStore(context),
@@ -422,8 +423,63 @@ class ConfigReloaderTest {
                 contactsGranted = { contactsGranted },
                 callGranted = { callGranted },
                 transliteratorAvailable = { id -> availableTransliterators?.contains(id) ?: true },
+                accessibilityOn = { accessibilityOn },
             ),
         )
+
+    // #3 slice 2: screen lock, the power menu and recents go through the
+    // launcher's accessibility service, which only the person can turn on.
+
+    private val serviceGestures =
+        """{"schemaVersion": 2, "gestures": {"swipeUp": "recents", "swipeLeft": "power-menu", "longPress": "screen-lock"}}"""
+
+    @Test
+    fun `a gesture that needs the accessibility service is applied as written and reported while it is off`() = runTest {
+        val store = FakeConfigStore()
+
+        val report = reloaderWith(store, accessibilityOn = false).reload(serviceGestures)
+
+        assertTrue(report.success)
+        assertEquals(listOf("read", "apply:[gestures]"), store.events)
+        val missing = report.diagnostics.filter { it.code == "permission-missing" }
+        assertEquals(listOf("gestures.swipeUp", "gestures.swipeLeft", "gestures.longPress"), missing.map { it.path })
+        assertTrue(missing.all { it.severity == Severity.Warning })
+        assertEquals(
+            "gestures.swipeUp is recents, which needs the launcher's accessibility service; " +
+                "it is off, so the gesture asks for it when used",
+            missing.first().message,
+        )
+    }
+
+    @Test
+    fun `gestures that need the accessibility service are not reported while it is on`() = runTest {
+        val report = reloaderWith(FakeConfigStore(), accessibilityOn = true).reload(serviceGestures)
+
+        assertTrue(report.diagnostics.none { it.code == "permission-missing" })
+    }
+
+    /** Control: the default double tap locks the screen, but a file that does not set it asks for nothing. */
+    @Test
+    fun `gestures that need no service, or that the file leaves out, are not reported`() = runTest {
+        val report = reloaderWith(FakeConfigStore(), accessibilityOn = false).reload(
+            """{"schemaVersion": 2, "gestures": {"swipeUp": "search", "swipeDown": "notifications", "swipeLeft": {"packageName": "com.android.dialer"}}}""",
+        )
+
+        assertTrue(report.diagnostics.none { it.code == "permission-missing" })
+    }
+
+    /** Like contacts: a failed section left the gestures as they were, a swipe up that searches. */
+    @Test
+    fun `a service gesture in a gestures section that failed to apply is not reported`() = runTest {
+        val store = FakeConfigStore(
+            applyDiagnostics = listOf(Diagnostic(Severity.Error, "apply-failed", "gestures", "datastore gone")),
+        )
+
+        val report = reloaderWith(store, accessibilityOn = false)
+            .reload("""{"schemaVersion": 2, "gestures": {"swipeUp": "recents"}}""")
+
+        assertEquals(listOf("apply-failed"), report.diagnostics.map { it.code })
+    }
 
     /**
      * #3 slice 1: a transliterator this device's ICU lacks is a device

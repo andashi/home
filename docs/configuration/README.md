@@ -22,15 +22,16 @@ Fold (cover and inner display).
 | [Apps](apps.md) | `apps`: an app's own name and visibility - renamed and hidden apps |
 | [Search bar](search-bar.md) | `home.searchBar.position`, `home.searchBar.fixed`, what search looks like |
 | [Search](search.md) | `search`: favorites row, frequently used apps, all apps, grid or list, list icons, labels, app details, contacts (call on tap), shortcuts, filter bar, compact tags, the transliterator, keyboard, Enter, order, hidden items |
+| [Gestures](gestures.md) | `gestures`: what the swipes, double tap, long press and home button do |
 | [Screens](screens.md) | Every scene on the phone, the Fold's cover and its inner display |
 | [Complete example](complete-example.json) | Every key the launcher applies, each off its default, in the form the read-back writes. The round-trip test runs it through parse, apply and read-back (#3) |
 
 ## The file
 
 The top level is `schemaVersion` (required, currently `2`), `icons`,
-`appearance`, `home`, `search` and `apps`. Everything else is optional, and **an
-absent key means "unmanaged", not "off"**: the launcher leaves whatever is set on
-the device. Comments and trailing commas are allowed (JSONC).
+`appearance`, `home`, `search`, `apps` and `gestures`. Everything else is
+optional, and **an absent key means "unmanaged", not "off"**: the launcher leaves
+whatever is set on the device. Comments and trailing commas are allowed (JSONC).
 
 The exceptions, in one place:
 - a grid item's `borderless`, `background` and `themeColors` take their
@@ -169,6 +170,20 @@ A change stays on the device, and the report says why, when:
 - `malformed-config`, `invalid-config`, `schema-version-outdated`: the file
   is broken, has errors, or is an older `schemaVersion`; it is never
   overwritten.
+
+And a change stays on the device while the file keeps its value, the report
+saying why, when the file cannot name what the device now has:
+- `colors-custom`: a colour scheme a person made ([Appearance](appearance.md));
+- `icons-default`: the launcher's default icons (Lawnicons where installed),
+  which `icons.pack` cannot name ([Icons](icons.md));
+- `wallpaper-unmanaged`: a wallpaper that is not the one the file set -
+  picked on the device, or not set yet - which has no upload name to write
+  ([Appearance](appearance.md));
+- `gesture-inexpressible`: a gesture that opens a shortcut
+  ([Gestures](gestures.md)).
+
+A test holds this list to the codes write-back registers, so a new one fails
+the build until it is named here.
 
 What is never written back is listed with the other exceptions under
 [The file](#the-file).

@@ -77,6 +77,11 @@ tasks.withType<Test>().configureEach {
     inputs.file(rootProject.file("docs/configuration/complete-example.json"))
         .withPropertyName("completeExample")
         .withPathSensitivity(PathSensitivity.RELATIVE)
+    // ConfigWriteBackTest holds the README's list of kept-value warnings to
+    // the codes write-back registers (#210 review).
+    inputs.file(rootProject.file("docs/configuration/README.md"))
+        .withPropertyName("configurationReadme")
+        .withPathSensitivity(PathSensitivity.RELATIVE)
     systemProperty("repoRoot", rootProject.rootDir.absolutePath)
 }
 
