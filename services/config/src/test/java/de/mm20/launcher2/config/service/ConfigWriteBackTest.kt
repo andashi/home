@@ -4,6 +4,9 @@ import de.mm20.launcher2.config.ConfigDiffer
 import de.mm20.launcher2.preferences.config.LauncherConfigSettings
 import de.mm20.launcher2.config.ConfigMutation
 import de.mm20.launcher2.config.ConfigParser
+import de.mm20.launcher2.config.TagApp
+import de.mm20.launcher2.config.TagConfig
+import de.mm20.launcher2.config.TagIcon
 import de.mm20.launcher2.config.Diagnostic
 import de.mm20.launcher2.config.LauncherConfig
 import de.mm20.launcher2.config.ReloadTrigger
@@ -795,5 +798,36 @@ class ConfigWriteBackTest {
             emptyList<List<String>>(),
             kept.filter { it !in ConfigWriteBack.KeptReasons },
         )
+    }
+
+    private val tagsFile = """
+        {
+          "schemaVersion": 2,
+          // What plays music.
+          "tags": [{ "name": "Music", "icon": { "text": "M" }, "apps": [{ "packageName": "org.a" }] }]
+        }
+    """.trimIndent()
+
+    /**
+     * An app tagged on the phone joins its tag's entry in the file (#3 slice
+     * 4): one entry, the app written as an object kept, the comment beside
+     * the list kept (the list itself is rewritten whole, as every list). Red
+     * without the tag's identity in the plan: the file then lists "Music"
+     * twice, which the next reload rejects as a duplicate.
+     */
+    @Test
+    fun `an app tagged on the device joins its tag in the file`() = runBlocking {
+        applied(tagsFile)
+        real.tagStore.replaceAndRead(listOf(TagConfig("Music", TagIcon.Text("M"), listOf(TagApp("org.a"), TagApp("org.b")))))
+
+        val result = writeBack.write()
+
+        assertTrue(result.toString(), result is WriteBackResult.Written)
+        val text = file.readText()
+        assertEquals(
+            listOf(TagConfig("Music", TagIcon.Text("M"), listOf(TagApp("org.a"), TagApp("org.b")))),
+            ConfigParser.parse(text).config?.tags,
+        )
+        assertTrue(text, "// What plays music." in text && Regex(""""packageName":\s*"org.a"""").containsMatchIn(text))
     }
 }

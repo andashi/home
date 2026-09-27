@@ -221,7 +221,9 @@ object WriteBackPlan {
     /**
      * Lists whose entries are something with fields that change: an app is
      * its package, profile and activity, whatever its label, visibility or
-     * icon (review on #207). A profile left out is the personal one.
+     * icon (review on #207). A profile left out is the personal one. A tag
+     * is its name, whatever its icon and apps; a tag's apps have nothing
+     * but their identity, so equal is the same app there.
      */
     private val identities: Map<List<String>, (JsonElement) -> List<String?>> = mapOf(
         listOf("apps") to { entry ->
@@ -232,6 +234,7 @@ object WriteBackPlan {
                 (obj?.get("activity") as? JsonPrimitive)?.content,
             )
         },
+        listOf("tags") to { entry -> listOf(((entry as? JsonObject)?.get("name") as? JsonPrimitive)?.content) },
     )
 
     private fun JsonArray?.orEmpty(): JsonArray = this ?: JsonArray(emptyList())

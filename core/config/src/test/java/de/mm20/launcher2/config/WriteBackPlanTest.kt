@@ -240,6 +240,84 @@ class WriteBackPlanTest {
         )
     }
 
+    // ---- tags (#3 slice 4) ----
+
+    private fun tags(json: String) = """{"schemaVersion":2,"tags":$json}"""
+
+    /** As ConfigWriteBack runs it: the canonical tree is the file parsed and written by the model. */
+    private fun tagsChange(literal: String, applied: String, device: String) =
+        WriteBackPlan.changes(
+            literal = tree(tags(literal)),
+            fileEffective = tree(tags(applied)),
+            device = tree(tags(device)),
+            canonical = canonical(tags(literal)),
+        ).single().value
+
+    /**
+     * A tag is its name, as an app entry is its app: an app tagged on the
+     * phone is that tag's entry, changed - never a second entry of the same
+     * name next to the file's, which the validator then rejects as a duplicate.
+     */
+    @Test
+    fun `an app tagged on the device joins its tag's entry`() {
+        assertEquals(
+            ConfigParser.json.parseToJsonElement("""[{"name":"Music","icon":{"text":"M"},"apps":["org.a","org.b"]}]"""),
+            tagsChange(
+                literal = """[{"name":"Music","icon":{"text":"M"},"apps":["org.a"]}]""",
+                applied = """[{"name":"Music","icon":{"text":"M"},"apps":["org.a"]}]""",
+                device = """[{"name":"Music","icon":{"text":"M"},"apps":["org.a","org.b"]}]""",
+            ),
+        )
+    }
+
+    /** An icon picked on the phone is the tag's entry, changed; its apps keep their text. */
+    @Test
+    fun `a tag's icon picked on the device is written into its entry`() {
+        assertEquals(
+            ConfigParser.json.parseToJsonElement(
+                """[{"name":"Work","apps":[{"packageName":"org.a"}],"icon":{"pack":"p.q","drawable":"d"}}]"""
+            ),
+            tagsChange(
+                literal = """[{"name":"Work","apps":[{"packageName":"org.a"}]}]""",
+                applied = """[{"name":"Work","apps":["org.a"]}]""",
+                device = """[{"name":"Work","icon":{"pack":"p.q","drawable":"d"},"apps":["org.a"]}]""",
+            ),
+        )
+    }
+
+    /**
+     * A personal app written as an object is served as its package alone:
+     * the same app, so it keeps its form when the phone tags another one.
+     * And an app the device could not tag (not installed here) never reached
+     * it, so it stays in the entry, where it was.
+     */
+    @Test
+    fun `a tag's apps keep their written form, and one not installed here stays`() {
+        assertEquals(
+            ConfigParser.json.parseToJsonElement(
+                """[{"name":"T","apps":[{"packageName":"org.a"},"org.not.here","org.b"]}]"""
+            ),
+            tagsChange(
+                literal = """[{"name":"T","apps":[{"packageName":"org.a"},"org.not.here"]}]""",
+                applied = """[{"name":"T","apps":["org.a"]}]""",
+                device = """[{"name":"T","apps":["org.a","org.b"]}]""",
+            ),
+        )
+    }
+
+    /** Control: a tag the phone no longer has leaves the list; another tag is another entry. */
+    @Test
+    fun `a tag removed on the device leaves the list, a new one is added`() {
+        assertEquals(
+            ConfigParser.json.parseToJsonElement("""[{"name":"B","apps":["org.b"]}]"""),
+            tagsChange(
+                literal = """[{"name":"A","apps":["org.a"]}]""",
+                applied = """[{"name":"A","apps":["org.a"]}]""",
+                device = """[{"name":"B","apps":["org.b"]}]""",
+            ),
+        )
+    }
+
     /** A profile left out is the personal one: the same app however it is written. */
     @Test
     fun `an app written with its default profile is the device's entry without it`() {
