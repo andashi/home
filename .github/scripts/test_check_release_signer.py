@@ -40,6 +40,17 @@ class CheckReleaseSigner(unittest.TestCase):
         two = V090 + V090.replace("#1", "#2").replace(RELEASE, "1" * 64)
         self.assertNotEqual(signer.problems(two, RELEASE), [])
 
+    def test_two_signers_with_the_same_certificate_fail(self):
+        # Exactly one signer, not one distinct digest (#204 review).
+        two = V090 + V090.replace("#1", "#2")
+        self.assertNotEqual(signer.problems(two, RELEASE), [])
+
+    def test_one_signer_seen_by_two_schemes_passes(self):
+        # V2 and V3 lines are two views of one signer, not two signers.
+        v2 = V090.replace("Signer #1 certificate", "V2 Signer: certificate")
+        v3 = V090.replace("Signer #1 certificate", "V3 Signer: certificate")
+        self.assertEqual(signer.problems(v2 + v3, RELEASE), [])
+
     def test_the_debug_key_fails(self):
         debug = V090.replace("CN=Andashi Home, O=andashi, L=Heidelberg, C=DE", "C=US, O=Android, CN=Android Debug")
         self.assertNotEqual(signer.problems(debug, RELEASE), [])
