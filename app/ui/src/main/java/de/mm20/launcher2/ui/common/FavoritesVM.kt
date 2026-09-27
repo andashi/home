@@ -43,46 +43,57 @@ abstract class FavoritesVM : ViewModel(), KoinComponent {
         it.filterIsInstance<Tag>()
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
 
-    open val favorites: Flow<List<SavableSearchable>> = selectedTag.flatMapLatest { tag ->
+    /**
+     * The pins and the frequently used apps, fetched for the widest row there
+     * can be and cut to a row's width only where it is drawn
+     * ([FavoritesRow.forColumns]). Search's row is laid out in the home grid's
+     * columns (#91), not in upstream's grid setting, and those change with
+     * the window - a fold opening doubles them. Fetching for a width meant a
+     * row drew the list fetched for the width before, if only for a frame;
+     * fetching for every width cuts it in the same frame the width is known.
+     */
+    val row: Flow<FavoritesRow> = selectedTag.flatMapLatest { tag ->
         if (tag == null) {
             settings
                 .transformLatest {
-
-                    val columns = it.columns
                     val includeFrequentlyUsed = it.frequentlyUsed && showsFrequentlyUsed()
                     val frequentlyUsedRows = it.frequentlyUsedRows
 
                     val pinned = favoritesService.getFavorites(
                         excludeTypes = listOf("tag"),
                         minPinnedLevel = PinnedLevel.AutomaticallySorted,
-                        limit = 10 * columns,
-                    )
+                        limit = 10 * FavoritesRow.MaxColumns,
+                    ).withCustomLabels(customAttributesRepository)
                     if (includeFrequentlyUsed) {
                         emitAll(pinned.flatMapLatest { pinned ->
                             favoritesService.getFavorites(
                                 excludeTypes = listOf("tag"),
                                 maxPinnedLevel = PinnedLevel.FrequentlyUsed,
                                 minPinnedLevel = PinnedLevel.FrequentlyUsed,
-                                limit = frequentlyUsedRows * columns - pinned.size % columns,
-                            ).map {
-                                pinned + it
-                            }
+                                limit = frequentlyUsedRows * FavoritesRow.MaxColumns,
+                            )
                                 .withCustomLabels(customAttributesRepository)
+                                .map { FavoritesRow(pinned, it, frequentlyUsedRows) }
                         })
                     } else {
-                        emitAll(
-                            pinned.withCustomLabels(customAttributesRepository)
-                        )
+                        emitAll(pinned.map { FavoritesRow(it, emptyList(), frequentlyUsedRows) })
                     }
                 }
         } else {
             customAttributesRepository
                 .getItemsForTag(tag)
                 .withCustomLabels(customAttributesRepository)
-                .map { it.sortedBy { it } }
+                .map { FavoritesRow(it.sortedBy { it }, emptyList(), 0) }
         }
     }.shareIn(viewModelScope, SharingStarted.WhileSubscribed(), replay = 1)
 
+    /**
+     * The row cut to upstream's grid column count: what every row that is
+     * not search's gets, as before - the dock (pins only), and anything else
+     * that shows favorites.
+     */
+    open val favorites: Flow<List<SavableSearchable>> =
+        row.combine(settings) { row, settings -> row.forColumns(settings.columns) }
 
     fun selectTag(tag: String?) {
         selectedTag.value = tag
@@ -96,4 +107,35 @@ abstract class FavoritesVM : ViewModel(), KoinComponent {
      * constructor, before a subclass has initialised its own fields.
      */
     protected open fun showsFrequentlyUsed(): Boolean = true
+}
+
+/**
+ * A favorites row before it knows its width: the pins, in order, and the
+ * frequently used apps that may follow them, fetched for the widest row.
+ */
+data class FavoritesRow(
+    val pinned: List<SavableSearchable>,
+    val frequentlyUsed: List<SavableSearchable>,
+    val frequentlyUsedRows: Int,
+) {
+    /**
+     * The row [columns] wide: the pins, then as many frequently used apps as
+     * fill [frequentlyUsedRows] rows after them - upstream's count, applied
+     * where the width is known.
+     */
+    fun forColumns(columns: Int): List<SavableSearchable> {
+        if (frequentlyUsed.isEmpty() || columns <= 0) return pinned
+        val room = frequentlyUsedRows * columns - pinned.size % columns
+        return pinned + frequentlyUsed.take(room.coerceAtLeast(0))
+    }
+
+    companion object {
+        /**
+         * The widest a row can be: a fold's inner display, twice the most
+         * home grid columns there are (ConfigValidator.MaxGridColumns).
+         */
+        const val MaxColumns = 16
+
+        val Empty = FavoritesRow(emptyList(), emptyList(), 0)
+    }
 }

@@ -45,6 +45,7 @@ import de.mm20.launcher2.search.Application
 import de.mm20.launcher2.search.Contact
 import de.mm20.launcher2.ui.launcher.search.apps.AppResults
 import de.mm20.launcher2.ui.launcher.search.contacts.ContactResults
+import de.mm20.launcher2.ui.common.FavoritesRow
 import de.mm20.launcher2.ui.launcher.search.favorites.SearchFavorites
 import de.mm20.launcher2.ui.launcher.search.favorites.SearchFavoritesVM
 import de.mm20.launcher2.ui.launcher.search.filters.SearchFilters
@@ -79,7 +80,7 @@ fun SearchColumn(
     val homeGridColumns by viewModel.homeGridColumns.collectAsState(4)
 
     val favoritesVM: SearchFavoritesVM = viewModel()
-    val favorites by favoritesVM.favorites.collectAsState(emptyList())
+    val favoritesRow by favoritesVM.row.collectAsState(FavoritesRow.Empty)
 
     val hideFavs by viewModel.hideFavorites
     val favoritesEnabled by viewModel.favoritesEnabled.collectAsState(false)
@@ -166,6 +167,10 @@ fun SearchColumn(
         )
         ProvideSearchGrid(layout) {
             val columns = LocalGridSettings.current.columnCount
+            // The favorites row is drawn in these columns, and cut to them
+            // here, in the frame the width is known - not to upstream's grid
+            // setting, and not after a fetch for the new width.
+            val favorites = favoritesRow.forColumns(columns)
             AnimatedContent(showFilters && !twoPane) { fullScreenFilters ->
                 if (fullScreenFilters) {
                     BackHandler {

@@ -112,6 +112,11 @@ class FavoritesGridVMTest {
 
         val shown = vm.favorites.first()
 
-        assertEquals((pins + frequentlyUsed).map { it.key }, shown.map { it.key })
+        // The pins, then frequently used apps - as many as the row's width
+        // takes, which the row decides, not this stub (#205).
+        assertEquals(pins.map { it.key }, shown.take(pins.size).map { it.key })
+        val after = shown.drop(pins.size).map { it.key }
+        assertTrue("frequently used apps follow the pins", after.isNotEmpty())
+        assertTrue(after.all { key -> frequentlyUsed.any { it.key == key } })
     }
 }
