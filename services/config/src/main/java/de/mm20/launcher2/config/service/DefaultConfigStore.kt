@@ -579,12 +579,7 @@ class DefaultConfigStore(
     }
 
     private suspend fun resolve(favorite: Favorite): Resolved {
-        val profileType = when (favorite.profile) {
-            ConfigProfile.Personal -> Profile.Type.Personal
-            ConfigProfile.Work -> Profile.Type.Work
-            ConfigProfile.Private -> Profile.Type.Private
-        }
-        val profile = profileResolver.getProfile(profileType) ?: return Resolved.NoProfile
+        val profile = profileResolver.getProfile(favorite.profile.type) ?: return Resolved.NoProfile
         val app = appRepository.findOne(favorite.packageName, profile.userHandle).first() ?: return Resolved.NotInstalled
         return Resolved.App(app)
     }
@@ -601,16 +596,14 @@ class DefaultConfigStore(
         val diagnostics = mutableListOf<Diagnostic>()
         val actions = mutableMapOf<Gesture, GestureActionName>()
         val launches = mutableMapOf<Gesture, String>()
-        val apps = mutableMapOf<Gesture, GestureConfig>()
         for ((gesture, value) in mutation.gestures) {
-            val path = "gestures.${gesture.key}"
+            val path = gesture.path
             when (value) {
                 is GestureConfig.Action -> actions[gesture] = value.action
                 is GestureConfig.App -> when (val found = resolve(value.app)) {
                     is Resolved.App -> {
                         searchableRepository.insertAwaited(found.app)
                         launches[gesture] = found.app.key
-                        apps[gesture] = value
                     }
                     Resolved.NoProfile -> diagnostics += Diagnostic(
                         Severity.Error,
@@ -630,7 +623,8 @@ class DefaultConfigStore(
             }
         }
         val written = settings.applyGestures(actions, launches)
-        return diagnostics to written.gestures + apps
+        // A launch reads as null from the settings; written, it is the file's app.
+        return diagnostics to written.gestures + mutation.gestures.filterKeys(launches::containsKey)
     }
 
     /**

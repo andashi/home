@@ -290,7 +290,7 @@ class ConfigWriteBack(
             ),
         ) + Gesture.entries.associate { gesture ->
             // #3 slice 2: a shortcut, or an app that is gone.
-            val path = "gestures.${gesture.key}"
+            val path = gesture.path
             listOf("gestures", gesture.key) to Diagnostic(
                 Severity.Warning,
                 SkipCodePrefix + "gesture-inexpressible",

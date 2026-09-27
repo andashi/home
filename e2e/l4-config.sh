@@ -611,13 +611,7 @@ ok "wallpaper re-write: no mutation, id unchanged ($id_after)"
 # Settings up, resolved from the package the file names.
 log "swiping left on the home screen: the file says it opens Settings"
 adb -s "$SERIAL" shell am start -W -n "$home_activity" >/dev/null || die "am start $home_activity failed"
-read -r width height < <(adb -s "$SERIAL" shell wm size | tr -d '\r' | awk '/size/ {s=$NF} END {split(s, a, "x"); print a[1], a[2]}')
-on_top() { # $1 = package
-  local top
-  top="$(adb_t shell dumpsys activity activities | tr -d '\r' \
-    | sed -n 's/.*topResumedActivity=ActivityRecord{[^ ]* [^ ]* \([^ ]*\) .*/\1/p' | head -1)"
-  case "$top" in "$1"/*) return 0 ;; *) return 1 ;; esac
-}
+read -r width height < <(screen_size)
 retry_for 10 on_top "$PKG" || die "the launcher is not in front before the swipe"
 # A flick across most of the width: half of it in 200 ms stays under the
 # scaffold's threshold and does nothing (measured on this instance).

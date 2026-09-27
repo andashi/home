@@ -148,8 +148,8 @@ object ConfigParser {
      * what `[]` is to a list's entries.
      */
     internal fun childSection(section: String, key: String, table: Map<String, Map<String, KeyEffect>> = keyEffects): String {
-        val shared = if (section.isEmpty()) "*" else "$section.*"
-        return if (shared in table) shared else if (section.isEmpty()) key else "$section.$key"
+        if (section.isEmpty()) return key
+        return if ("$section.*" in table) "$section.*" else "$section.$key"
     }
 
     private val knownKeys: Map<String, Set<String>> = keyEffects.mapValues { it.value.keys }

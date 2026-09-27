@@ -659,6 +659,9 @@ enum class Gesture(val key: String) {
     LongPress("longPress"),
     HomeButton("homeButton");
 
+    /** Where this gesture sits in the file: `gestures.swipeLeft`. */
+    val path: String get() = "gestures.$key"
+
     fun of(config: GesturesConfig): GestureConfig? = when (this) {
         SwipeDown -> config.swipeDown
         SwipeUp -> config.swipeUp

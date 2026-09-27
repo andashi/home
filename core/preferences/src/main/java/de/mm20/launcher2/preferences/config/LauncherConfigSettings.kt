@@ -372,8 +372,9 @@ private fun GestureActionName.toGestureAction(): GestureAction = GestureActions.
  * A stored action as the file names it. Null for what the file cannot name:
  * a launch (resolved by the store), the feed, the deprecated widget pages.
  */
-private fun GestureAction.toConfig(): GestureConfig? =
-    GestureActions.entries.firstOrNull { it.value == this }?.let { GestureConfig.Action(it.key) }
+private fun GestureAction.toConfig(): GestureConfig? = GestureNames[this]?.let { GestureConfig.Action(it) }
+
+private val GestureNames: Map<GestureAction, GestureActionName> = GestureActions.entries.associate { (name, action) -> action to name }
 
 /** The contact search provider for the device's own contacts (upstream's `local`). */
 private const val ContactsProvider = "local"

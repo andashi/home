@@ -516,6 +516,21 @@ density_scale() {
   adb -s "$SERIAL" shell wm density | tr -d '\r' | awk '/density/ { print $NF / 160; exit }'
 }
 
+# "width height" of the display in pixels.
+screen_size() {
+  adb_t shell wm size | tr -d '\r' | awk '/size/ {s=$NF} END {split(s, a, "x"); print a[1], a[2]}'
+}
+
+# "package/activity" of the resumed activity in front; empty when there is none.
+top_activity() {
+  adb_t shell dumpsys activity activities | tr -d '\r' \
+    | sed -n 's/.*topResumedActivity=ActivityRecord{[^ ]* [^ ]* \([^ ]*\) .*/\1/p' | head -1
+}
+
+on_top() { # $1 = package
+  case "$(top_activity)" in "$1"/*) return 0 ;; *) return 1 ;; esac
+}
+
 cell_center() { # $1 = id
   local line
   line="$(dump_cells | awk -v id="$1" '$1 == id')"

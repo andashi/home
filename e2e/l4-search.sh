@@ -111,12 +111,6 @@ assert_home_stays() { # $1 = how search was left
 # file never listed. Two pins in a dock four wide, then one launch from
 # search, which is all "frequently used" takes (launchCount > 0).
 log "the dock: two pins, then an app launched from search"
-on_top() { # $1 = package
-  local top
-  top="$(adb_t shell dumpsys activity activities | tr -d '\r' \
-    | sed -n 's/.*topResumedActivity=ActivityRecord{[^ ]* [^ ]* \([^ ]*\) .*/\1/p' | head -1)"
-  case "$top" in "$1"/*) return 0 ;; *) return 1 ;; esac
-}
 dock_descs() { # the content descriptions inside the dock's cell, sorted, one per line
   dump_screen || return 1
   python3 - "$WORK/dump.xml" <<'PY'
@@ -233,7 +227,7 @@ assert_home_stays "Back key"
 
 log "leaving search with a swipe down on the results"
 enter_search
-read -r width height < <(adb -s "$SERIAL" shell wm size | tr -d '\r' | awk '/size/ {s=$NF} END {split(s, a, "x"); print a[1], a[2]}')
+read -r width height < <(screen_size)
 adb -s "$SERIAL" shell input swipe $((width / 2)) $((height / 4)) $((width / 2)) $((height * 3 / 4)) 250
 assert_home_stays "swipe down"
 
@@ -376,8 +370,7 @@ retry_for 15 shows number_bounds "$NUMBER" \
 tap_bounds "$(number_bounds "$NUMBER")" || die "could not tap the number"
 TOP=""
 dialer_on_top() {
-  TOP="$(adb_t shell dumpsys activity activities | tr -d '\r' \
-    | sed -n 's/.*topResumedActivity=ActivityRecord{[^ ]* [^ ]* \([^ ]*\) .*/\1/p' | head -1)"
+  TOP="$(top_activity)"
   case "$TOP" in *dialer*|*Dialer*) return 0 ;; *) return 1 ;; esac
 }
 retry_for 10 dialer_on_top || true

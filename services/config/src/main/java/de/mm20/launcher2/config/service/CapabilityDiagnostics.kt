@@ -87,7 +87,7 @@ class CapabilityDiagnostics(
         // #3 slice 2: these three go through the accessibility service, which a
         // file must not turn on; the gesture asks for it when used.
         val needsService = config.gestures?.byGesture().orEmpty().mapNotNull { (gesture, asked) ->
-            val path = "gestures.${gesture.key}"
+            val path = gesture.path
             val effect = if (failedAt(path)) before.gestures[gesture] else asked
             val action = (effect as? GestureConfig.Action)?.action?.takeIf { it in ServiceActions }
             action?.let { path to it }
