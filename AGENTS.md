@@ -515,7 +515,10 @@ The check costs about a minute and is three questions. The first is the one
 everybody means by "break it", and on its own it settles nothing:
 
 **1. Does the break go red in the right place?** Break what the test guards, and
-watch **that** test go red and the others stay green.
+watch the test or tests that cover it go red while the **controls** - the ones
+that deliberately pass in both states - stay green. Not "one test reddens":
+several tests legitimately covering the same behaviour all should, and narrowing
+a break until exactly one goes red is how a real guard gets mistaken for noise.
 
 **2. Is the break in the input the guard is about?** For a test that reads a
 document outside its source set, change the **document**, not the code. A break
