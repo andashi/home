@@ -62,7 +62,6 @@ TP="${TRACE_PROCESSOR:-$(command -v trace_processor || true)}"
 # lock is re-entrant for it and is then left held at the end.
 export LOCK_OWNER="${LOCK_OWNER:-measure-unfold@$SERIAL#$$}"
 WORK="$(mktemp -d)"
-RUN="$GOS_REPO/emulator/run.sh"
 LOCK="$GOS_REPO/emulator/device-lock.sh"
 HELD_BEFORE=0
 "$LOCK" status 2>/dev/null | grep -qF "device $SERIAL held by: $LOCK_OWNER " && HELD_BEFORE=1
@@ -93,7 +92,7 @@ rev() { printf '%s' "${revs[$1]:-unknown}"; }
 # A snapshot load can leave the host's adb transport offline for good (seen
 # on emulator-5562 after `run.sh start` plus `adb unroot`); reconnect it.
 restore() {
-  "$RUN" restore "$1" >/dev/null
+  gos_run restore "$1" >/dev/null
   timeout 20 adb -s "$SERIAL" wait-for-device \
     || { timeout 10 adb -s "$SERIAL" reconnect >/dev/null 2>&1; timeout 30 adb -s "$SERIAL" wait-for-device; } \
     || die "$SERIAL stayed offline after loading $1"
@@ -154,7 +153,7 @@ for k in "${!apks[@]}"; do
   sh_ cmd device_state state "$POSTURE_CLOSED" >/dev/null; sleep 3; wake_screen; sleep 1
   sh_ cmd device_state state "$POSTURE_OPENED" >/dev/null; sleep 3; wake_screen; sleep 2
   sh_ cmd device_state state "$POSTURE_CLOSED" >/dev/null; sleep 3; show_home; sleep 5
-  "$RUN" snapshot "$name" >/dev/null
+  gos_run snapshot "$name" >/dev/null
 done
 
 # --- interleaved unfolds ------------------------------------------------------
@@ -212,5 +211,5 @@ for run in $(seq "$RUNS"); do
     printf '%s\t%s\t%s\t%s\t%s\n' "$name" "$run" "$load" "${split%$'\t'*}" "$phases" | tee -a "$OUT"
   done
 done
-"$RUN" restore clean >/dev/null
+gos_run restore clean >/dev/null
 log "written: $OUT"

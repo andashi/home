@@ -300,7 +300,7 @@ HAVE_LOCK=1
 run_cycle() { # $1 = run number
   local n="$1"
   log "run $n/$RUNS: booting $SERIAL from snapshot '$SNAPSHOT'" >&2
-  (cd "$GOS_REPO" && SNAPSHOT="$SNAPSHOT" emulator/run.sh start) >&2
+  SNAPSHOT="$SNAPSHOT" gos_run start >&2
 
   local install_out
   install_out="$(adb -s "$SERIAL" install -r "$APK" 2>&1)" || { printf '%s\n' "$install_out" >&2; die "adb install failed"; }

@@ -236,6 +236,23 @@ push_config() { # $1 = local file, $2 = stage name, [--ignored "path ..."]...
   check_ignored_keys "$LAST_REPORT" "$ignored" "$stage"
 }
 
+# The one way to run.sh (provisioning's emulator/run.sh), for every verb.
+# run.sh refuses a foreign owner itself (provisioning 08c2834); this checks,
+# at the moment of the call, that the run has an owner to give it: LOCK_OWNER
+# exported and non-empty. Asking the shell instead of reading the script
+# cannot be fooled by quoting, ordering, unset or eval. An env prefix
+# reaches run.sh: SNAPSHOT=clean gos_run start.
+gos_run() { # $1 = verb, $2... = its arguments
+  local attrs
+  attrs="$(declare -p LOCK_OWNER 2>/dev/null)" || attrs=""
+  if [[ "$attrs" != "declare -"*x*" LOCK_OWNER="* ]] || [ -z "${LOCK_OWNER:-}" ]; then
+    printf 'refusing run.sh %s on %s: LOCK_OWNER is not exported with a value (%s)\n' \
+      "$1" "$SERIAL" "${attrs:-unset}" >&2
+    return 1
+  fi
+  (cd "$GOS_REPO" && SERIAL="$SERIAL" emulator/run.sh "$@")
+}
+
 # Cleanup: stop the instance this run holds, then release its lock. run.sh
 # refuses a stop for anyone but LOCK_OWNER (provisioning 08c2834), and a
 # refusal behind `|| true` left the instance running while the release
@@ -243,7 +260,7 @@ push_config() { # $1 = local file, $2 = stage name, [--ignored "path ..."]...
 # stays visibly owned. Needs GOS_REPO, SERIAL and an exported LOCK_OWNER.
 stop_instance() {
   local out
-  out="$(cd "$GOS_REPO" && SERIAL="$SERIAL" emulator/run.sh stop 2>&1)" && return 0
+  out="$(gos_run stop 2>&1)" && return 0
   printf 'could not stop %s as %s:\n%s\n' "$SERIAL" "${LOCK_OWNER:-nobody}" "$out" >&2
   return 1
 }

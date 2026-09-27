@@ -319,7 +319,7 @@ H_LOCKED="$(sha256sum "$LOCKED_CONFIG" | cut -d' ' -f1)"
 HAVE_LOCK=1
 
 log "booting $SERIAL from snapshot '$SNAPSHOT' (overlays: $OVERLAY_DIR)"
-(cd "$GOS_REPO" && SNAPSHOT="$SNAPSHOT" emulator/run.sh start)
+SNAPSHOT="$SNAPSHOT" gos_run start
 unrooted_shell
 
 log "installing $(basename "$APK")"

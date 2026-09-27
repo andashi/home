@@ -188,7 +188,7 @@ EOF
 (cd "$GOS_REPO" && emulator/device-lock.sh acquire "$LOCK_OWNER" "$SERIAL")
 HAVE_LOCK=1
 log "booting $SERIAL from snapshot '$SNAPSHOT' (overlays: $OVERLAY_DIR)"
-(cd "$GOS_REPO" && SNAPSHOT="$SNAPSHOT" emulator/run.sh start)
+SNAPSHOT="$SNAPSHOT" gos_run start
 # A cold boot (SNAPSHOT=) is still booting here; a snapshot load is not.
 # 180 rounds of a getprop were not 6 minutes: a hanging getprop stretched
 # each round. retry_for makes it 6 minutes of wall-clock time.
