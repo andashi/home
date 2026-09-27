@@ -27,10 +27,10 @@ Fold (cover and inner display).
 
 ## The file
 
-The top level has six keys: `schemaVersion` (required, currently `2`),
-`icons`, `appearance`, `home`, `search` and `apps`. Everything else is optional, and **an absent
-key means "unmanaged", not "off"**: the launcher leaves whatever is set on the
-device. Comments and trailing commas are allowed (JSONC).
+The top level is `schemaVersion` (required, currently `2`), `icons`,
+`appearance`, `home`, `search` and `apps`. Everything else is optional, and **an
+absent key means "unmanaged", not "off"**: the launcher leaves whatever is set on
+the device. Comments and trailing commas are allowed (JSONC).
 
 The exceptions, in one place:
 - a grid item's `borderless`, `background` and `themeColors` take their
