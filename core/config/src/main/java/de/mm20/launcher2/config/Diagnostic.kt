@@ -83,8 +83,14 @@ enum class DiagnosticCode(val code: String, val severity: Severity) {
     WriteBackSkipped("write-back-skipped:", Severity.Warning),
 }
 
+/**
+ * One finding of a reload. No data class, on purpose: a data class's `copy`
+ * takes every field, and `copy(severity = ...)` would restate a severity next
+ * to a code - the thing the closed constructor below prevents (review on
+ * #215). Value equality stays, written out, because reports are compared.
+ */
 @Serializable
-data class Diagnostic
+class Diagnostic
 /**
  * Decoding only. The serializer builds a Diagnostic through its own synthetic
  * constructor, not this one, which is why this can be closed to callers: a
@@ -111,7 +117,30 @@ constructor(
         this(code.severity, code.code + reason, path, message) {
         require(code == DiagnosticCode.WriteBackSkipped) { "only a skipped write-back is a family with a reason" }
     }
+
+    override fun equals(other: Any?): Boolean =
+        other is Diagnostic && severity == other.severity && code == other.code && path == other.path && message == other.message
+
+    override fun hashCode(): Int = listOf(severity, code, path, message).hashCode()
+
+    override fun toString(): String = "Diagnostic(severity=$severity, code=$code, path=$path, message=$message)"
 }
+
+/**
+ * The table's entry for [code]: the entry itself, or the family whose prefix
+ * it carries; null for a code this build does not know.
+ */
+fun diagnosticCodeOf(code: String): DiagnosticCode? =
+    DiagnosticCode.entries.firstOrNull { it.code == code }
+        ?: DiagnosticCode.WriteBackSkipped.takeIf { code.startsWith(it.code) }
+
+/**
+ * Whether this diagnostic says what this build's table says about its code.
+ * One decoded from what an older build wrote can disagree (review on #215);
+ * a code this build does not know is not judged.
+ */
+val Diagnostic.agreesWithTable: Boolean
+    get() = diagnosticCodeOf(code)?.let { it.severity == severity } ?: true
 
 data class ConfigParseResult(
     val config: LauncherConfig?,

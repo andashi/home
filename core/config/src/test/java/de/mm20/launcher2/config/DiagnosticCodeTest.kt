@@ -92,4 +92,45 @@ class DiagnosticCodeTest {
         assertTrue("a plain code with a reason", runCatching { Diagnostic(DiagnosticCode.UnknownKey, "why", "", "m") }.isFailure)
         assertTrue("the family without a reason", runCatching { Diagnostic(DiagnosticCode.WriteBackSkipped, "", "m") }.isFailure)
     }
+
+    /**
+     * A data class generates `copy` from every field, so `copy(severity = ...)`
+     * would restate a severity next to a code, which the closed constructor
+     * exists to prevent (review on #215). So Diagnostic is no data class; it
+     * keeps value equality, which report comparisons rely on, and round-trips
+     * through JSON.
+     */
+    @Test
+    fun `a diagnostic has no copy, and keeps value equality and its JSON`() {
+        assertTrue("no copy to restate a severity with", Diagnostic::class.java.methods.none { it.name == "copy" })
+        val a = Diagnostic(DiagnosticCode.FavoriteUnavailable, "home.favorites[0]", "absent")
+        assertEquals(a, Diagnostic(DiagnosticCode.FavoriteUnavailable, "home.favorites[0]", "absent"))
+        assertEquals(a.hashCode(), Diagnostic(DiagnosticCode.FavoriteUnavailable, "home.favorites[0]", "absent").hashCode())
+        assertTrue(a != Diagnostic(DiagnosticCode.FavoriteUnavailable, "home.favorites[1]", "absent"))
+        val json = ConfigParser.json.encodeToString(Diagnostic.serializer(), a)
+        assertEquals(
+            kotlinx.serialization.json.Json.parseToJsonElement("""{"severity":"warning","code":"favorite-unavailable","path":"home.favorites[0]","message":"absent"}"""),
+            kotlinx.serialization.json.Json.parseToJsonElement(json),
+        )
+        assertEquals(a, ConfigParser.json.decodeFromString(Diagnostic.serializer(), json))
+    }
+
+    /**
+     * What an older build wrote can disagree with this table: a report kept
+     * across an update still said favorite-unavailable was an error (review
+     * on #215). A decoded diagnostic agrees when its code is an entry (or of
+     * the write-back family) with the same severity; a code this build does
+     * not know is not judged.
+     */
+    @Test
+    fun `a decoded diagnostic agrees with the table, or says it does not`() {
+        fun decoded(severity: String, code: String) = ConfigParser.json.decodeFromString(
+            Diagnostic.serializer(), """{"severity":"$severity","code":"$code","path":"","message":"m"}""",
+        )
+        assertTrue(decoded("warning", "favorite-unavailable").agreesWithTable)
+        assertEquals(false, decoded("error", "favorite-unavailable").agreesWithTable)
+        assertTrue(decoded("warning", "write-back-skipped:locked").agreesWithTable)
+        assertEquals(false, decoded("error", "write-back-skipped:locked").agreesWithTable)
+        assertTrue("a code this build does not know", decoded("error", "some-future-code").agreesWithTable)
+    }
 }
