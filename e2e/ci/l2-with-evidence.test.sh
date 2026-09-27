@@ -311,10 +311,15 @@ check "a Wait that closed its dialog flags nothing" a_clean_wait_flags_nothing
 # dump took about 8 s of the Wait's 10, the dialog closed 1 s after the tap,
 # and the check had less than that left: a clean Wait was flagged. A slow dump
 # must not starve the check that follows the tap.
+# The timings leave room on a loaded runner and still separate the two
+# designs: the dump leaves 2 s of the Wait budget for the read and the tap,
+# the dialog closes 3.5 s after the tap - past what a shared budget would
+# have left - and the check's own 6 s bound still sees it (#202 review).
 a_slow_dump_leaves_the_check_its_time() {
+  local ANR_WAIT_SECONDS=6 ANR_RECHECK_SECONDS=6
   windows "Application Not Responding: com.android.systemui"
   : > "$WORK/sticky"
-  echo 2.5 > "$WORK/slowdump"; echo 1000 > "$WORK/closedelayms"
+  echo 4 > "$WORK/slowdump"; echo 3500 > "$WORK/closedelayms"
   clear_foreign_anrs > "$WORK/log" 2>&1 || return 1
   [ "$(taps)" -eq 1 ] && [ "$WAIT_AMBIGUOUS" = 0 ] && grep -q 'Gone after Wait' "$WORK/log"
 }
@@ -323,9 +328,10 @@ check "a slow dump leaves the check after the tap its own time" a_slow_dump_leav
 # The check's own bound is a bound: a dialog that never closes is flagged
 # within it, however long the dump took.
 the_check_after_the_tap_is_bounded() {
+  local ANR_WAIT_SECONDS=6 ANR_RECHECK_SECONDS=6
   windows "Application Not Responding: com.android.systemui"
   : > "$WORK/sticky"; : > "$WORK/waitsticky"
-  echo 2.5 > "$WORK/slowdump"
+  echo 4 > "$WORK/slowdump"
   local start=$SECONDS
   clear_foreign_anrs > "$WORK/log" 2>&1 || return 1
   [ "$WAIT_AMBIGUOUS" = 1 ] &&

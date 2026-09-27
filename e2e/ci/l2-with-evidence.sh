@@ -57,8 +57,10 @@ set -uo pipefail
 # Self-contained on purpose: e2e/ci/ runs on a bare runner, without the
 # device library.
 : "${ANR_RECHECK_SECONDS:=5}" "${ANR_RECHECK_SLEEP:=1}"
-# The Wait fallback has one wall-clock deadline of its own: the dump, the
-# read, the tap and the re-check after it all share it (#191 review).
+# The Wait fallback's own wall-clock budget bounds everything before its
+# tap: the dump, the dump read and the window read (#191 review). The check
+# after the tap is bounded separately, by ANR_RECHECK_SECONDS, so a slow dump
+# cannot starve it (#202).
 : "${ANR_WAIT_SECONDS:=10}"
 # The watch until the tests start: its own deadline, its pause between looks,
 # and the package whose install means the tests are about to start (:app:ui's
