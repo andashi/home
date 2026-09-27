@@ -32,6 +32,7 @@ import de.mm20.launcher2.searchable.VisibilityLevel
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
@@ -150,9 +151,12 @@ internal class FakeHomeGridRepository : HomeGridRepository {
     var lockProbe: (() -> Boolean)? = null
     val lockedDuringObserve = mutableListOf<Boolean>()
 
+    /** Bumped by every write, as Room re-queries on every write to the table - equal rows included. */
+    private val writes = kotlinx.coroutines.flow.MutableStateFlow(0)
+
     override fun observe(layout: String): Flow<List<HomeGridItem>> = flow {
         lockProbe?.let { lockedDuringObserve += it() }
-        emit(layouts[layout] ?: emptyList())
+        emitAll(writes.map { layouts[layout] ?: emptyList() })
     }
 
     var lockedDuringReplace: Boolean? = null
@@ -165,6 +169,7 @@ internal class FakeHomeGridRepository : HomeGridRepository {
         replaceCalls++
         onReplace?.invoke()
         layouts[layout] = items
+        writes.value++
         afterReplace?.let { hook -> afterReplace = null; hook(layout) }
     }
 

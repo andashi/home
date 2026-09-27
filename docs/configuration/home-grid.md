@@ -108,6 +108,12 @@ Each correction is reported, and the file is still applied.
 Widgets are named by their provider component. To find one, place it in edit
 mode and read the file back, or run `adb shell dumpsys appwidget`.
 
+A widget whose provider is not installed is kept in the layout as written and
+shown as unavailable, and **every** reload reports it
+(`unknown-widget-provider`), not only the first: a report without it means the
+provider is there. Re-checking the layout on each reload writes nothing back
+to the file.
+
 ## The dock
 
 The dock is not a special bar. It is **the favorites widget on the grid**: an

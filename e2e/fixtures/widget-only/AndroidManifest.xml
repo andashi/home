@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A package that brings only a widget: no launcher entry, so the launcher's
+     app list never shows it (l4-config step 10d, review on #213). Built by
+     build.sh for the emulator; never shipped. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="org.andashi.fixture.widgetonly">
+
+    <uses-sdk android:minSdkVersion="36" android:targetSdkVersion="36" />
+
+    <application android:label="Widget only">
+        <receiver
+            android:name=".OnlyWidget"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/only_widget" />
+        </receiver>
+    </application>
+</manifest>
