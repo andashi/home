@@ -529,27 +529,28 @@ and **passed, because it had not run**; breaking the parser instead would have
 gone red and proved the wrong thing. A green break and a red break, both
 misleading, from the same missing declaration.
 
-**3. Is the fixture a state the system can be in?** Mechanism 9 produces question
-1's passing result exactly - red, targeted, others green - while proving the wrong
-thing, so no amount of the first question reaches it. Answer this one from what
-the producing code emits, never from what makes the case read well.
+**3. Is the fixture a state the system can be in?** Mechanism 9 satisfies
+question 1 completely and still proves the wrong thing, so no amount of the first
+question reaches it. Answer this one from what the producing code emits, never
+from what makes the case read well.
 
-This list has now been wrong about itself twice, in both directions, and both
-times about the same sentence. It first claimed one break caught every mechanism
-on it; review pointed out that item 9 describes that break's own passing result,
-and then that mechanism 1 is unreachable by it. **A sentence that claims to cover
-a list makes a claim about every item on it**, so a list that grows underneath
-such a sentence invalidates it silently - the same failure as the counts removed
-elsewhere in this document, except that a stale count looks stale and a
-summarising claim looks careful.
+This passage was wrong about itself repeatedly while being written, in every way
+it describes, and two rules came out of that rather than out of the code.
 
-There is a third way it was wrong, and it is the one no reviewer caught: after
-those two corrections the passage announced three questions and then called the
-third a "second half", and closed by referring to a claim that had just been
-deleted. Each fix was checked against the finding it answered and **neither was
-checked against the passage**. That is the ordinary shape of documentation rot,
-and it is why this is written as a numbered list now: a claim about a set cannot
-drift out of step with the set if it is the set.
+**A sentence that claims to cover a list makes a claim about every item on it.**
+It began as one claiming a single break caught every mechanism, and it was false
+about two of them. A list that grows underneath such a sentence invalidates it
+silently - the same failure as the counts removed elsewhere in this document,
+except that a stale count looks stale and a summarising claim looks careful. It is
+a numbered list of questions now because a claim about a set cannot drift out of
+step with the set if it *is* the set.
+
+**A fix checked against its finding is not checked against the document.** Every
+correction here was reviewed against the one report that prompted it, and the
+passage still ended up announcing three questions and calling the third a "second
+half", and quoting an earlier question's superseded wording. Nothing catches that
+but reading the whole thing once, afterwards - which is also the only thing that
+caught it.
 
 **A break that does not go red is a finding, not a result.** It means one of two
 things - the test is decoration, or the break was incomplete - and they look
