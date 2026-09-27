@@ -610,36 +610,39 @@ ok "wallpaper re-write: no mutation, id unchanged ($id_after)"
 # (6b); a swipe across the empty middle of the home screen must bring
 # Settings up, resolved from the package the file names.
 log "swiping left on the home screen: the file says it opens Settings"
-adb -s "$SERIAL" shell am start -W -n "$home_activity" >/dev/null || die "am start $home_activity failed"
-read -r width height < <(screen_size)
-retry_for 10 on_top "$PKG" || die "the launcher is not in front before the swipe"
-# A flick across most of the width: half of it in 200 ms stays under the
-# scaffold's threshold and does nothing (measured on this instance).
-#
-# Two attempts, and the output always says which one worked. On a loaded
-# emulator an injected flick can go missing before it reaches the launcher:
-# `input swipe` waits for the app to handle each event, and the transition
-# after returning home swallows touches. Across twelve instrumented runs
-# the launcher never dropped a flick that reached it, and with host GPU and
-# an idle guest ten of ten landed first time. So the allowance compensates
-# for the harness, not for a launcher defect. Whether the platform delivers
-# such a touch on real hardware is untested (AGENTS.md, emulator section).
-# This step proves the config's
-# effect: a flick opens exactly the app the file names. A count that climbs
-# past two is a new failure.
-flick_left() {
-  adb -s "$SERIAL" shell input swipe $((width * 9 / 10)) $((height / 2)) $((width / 10)) $((height / 2)) 120
+# By the HOME intent, as 6b does since #208: started by component the
+# launcher lands in a task of its own, and a gesture is lost when the first
+# Home press replaces it.
+start_home() {
+  adb -s "$SERIAL" shell am start -W -a android.intent.action.MAIN -c android.intent.category.HOME "$PKG" >/dev/null \
+    || die "am start of the HOME intent for $PKG failed"
 }
+start_home
+read -r width height < <(screen_size)
+# Across most of the width, over 300 ms: under load `input swipe` gets two
+# to four samples through, Compose then computes a velocity of zero, and
+# only the distance crosses the threshold (AGENTS.md, emulator section).
+flick_left() {
+  adb -s "$SERIAL" shell input swipe $((width * 9 / 10)) $((height / 2)) $((width / 10)) $((height / 2)) 300
+}
+# Each flick waits for touch_ready: focused, no window transition, frames at
+# rest - glass's conditions, one flick in twenty lost after them instead of
+# every other one. The one left is the `input` tool starved by host load,
+# which nothing in the guest can wait away; the second attempt covers that,
+# and the output says on every run which attempt worked, so a count that
+# climbs is visible. The launcher never dropped a flick that reached it;
+# whether the platform delivers such a touch on real hardware is untested
+# (AGENTS.md, emulator section). This step proves the config's effect: a
+# flick opens exactly the app the file names.
 settings_attempt=""
 for attempt in 1 2; do
+  retry_for 15 touch_ready || die "the launcher never became ready for a touch before flick $attempt"
   flick_left
   if retry_for 5 on_top com.android.settings; then settings_attempt=$attempt; break; fi
 done
 [ -n "$settings_attempt" ] || die "two swipes left did not open Settings, the app gestures.swipeLeft names"
 ok "gestures.swipeLeft opened Settings on the device (flick $settings_attempt of 2)"
-# Back by starting the launcher, as 6b does: this scenario never makes it the
-# home app, so the Home key would open whichever launcher holds the role.
-adb -s "$SERIAL" shell am start -W -n "$home_activity" >/dev/null || die "am start $home_activity failed"
+start_home
 retry_for 10 on_top "$PKG" || die "the launcher did not come back after the gesture"
 
 # --- 7. malformed JSON: failed report, state intact --------------------
