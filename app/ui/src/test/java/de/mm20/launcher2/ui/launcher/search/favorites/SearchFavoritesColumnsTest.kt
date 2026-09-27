@@ -12,11 +12,14 @@ import de.mm20.launcher2.searchable.SavableSearchableRepository
 import de.mm20.launcher2.services.favorites.FavoritesService
 import de.mm20.launcher2.ui.launcher.grid.ViewModelScopeRule
 import de.mm20.launcher2.ui.settings.KoinSettingsRule
+import de.mm20.launcher2.ui.settings.PHONE_QUALIFIERS
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
@@ -29,6 +32,7 @@ import org.koin.core.context.GlobalContext
 import org.koin.core.context.loadKoinModules
 import org.koin.dsl.module
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
 import java.lang.reflect.Proxy
 
 /**
@@ -41,6 +45,10 @@ import java.lang.reflect.Proxy
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 @RunWith(RobolectricTestRunner::class)
+// A 412dp phone: upstream's grid column count defaults to 5 there
+// (values-w400dp), while the home grid has 4 - the mismatch, with nothing
+// written in the test. A write in setUp raced the read and hung on CI.
+@Config(qualifiers = PHONE_QUALIFIERS)
 class SearchFavoritesColumnsTest {
 
     @get:Rule(order = 0)
@@ -101,12 +109,13 @@ class SearchFavoritesColumnsTest {
                 single<CustomAttributesRepository> { attributes }
             }
         )
-        // Upstream's grid column count, as a 400dp phone stores it by default.
-        GlobalContext.get().get<UiSettings>().setGridColumnCount(5)
     }
 
-    /** The write in [setUp] is not awaited: every test waits for it to land before it starts. */
-    private suspend fun columnsSetting() = GlobalContext.get().get<UiSettings>().gridSettings.map { it.columnCount }.first { it == 5 }
+    /** The fixture itself: upstream's count as this screen stores it by default. */
+    private suspend fun columnsSetting() {
+        val stored = GlobalContext.get().get<UiSettings>().gridSettings.map { it.columnCount }.first()
+        assertEquals("a 412dp phone stores 5 columns by default", 5, stored)
+    }
 
     @Test
     fun `the frequently used apps fill the row in the columns it is drawn in`() = runTest(dispatcher) {
@@ -127,16 +136,21 @@ class SearchFavoritesColumnsTest {
     fun `a wider row fetches for its new width`() = runTest(dispatcher) {
         columnsSetting()
         val vm = viewModels.track(SearchFavoritesVM())
-        // Collected throughout, as search does: a fresh first() would only
-        // read the shared flow's replayed value from before the change.
-        backgroundScope.launch { vm.favorites.collect {} }
         vm.setRowColumns(4)
-        advanceUntilIdle()
+        assertEquals(4, vm.favorites.first().size)
 
         vm.setRowColumns(8)
-        advanceUntilIdle()
 
-        assertEquals(listOf(2, 6), frequentlyUsedLimits.distinct().takeLast(2))
+        // Waits for the row itself, in real time, not for the test
+        // scheduler: the settings arrive from DataStore on its own
+        // dispatcher, which the virtual clock skips past. Two pins and six
+        // frequently used apps; before the fix the row stayed at five and
+        // this times out.
+        val widened = withContext(Dispatchers.Default) {
+            withTimeout(10_000) { vm.favorites.first { it.size == 8 } }
+        }
+        assertEquals(8, widened.size)
+        assertEquals(6, frequentlyUsedLimits.last())
     }
 
     /**
