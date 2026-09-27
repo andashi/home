@@ -59,6 +59,7 @@ class GesturesStoreTest {
             FakeWallpaperStore(),
             FakeSearchActionStore(),
             FakeAppCustomizationStore(),
+            FakeTagStore(),
         )
     }
 

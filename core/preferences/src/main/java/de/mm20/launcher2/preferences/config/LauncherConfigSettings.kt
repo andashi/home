@@ -347,6 +347,7 @@ internal class LauncherConfigSettingsImpl(
             // Gestures need the store to resolve their apps: applyGestures.
             is ConfigMutation.SetFavorites,
             is ConfigMutation.SetApps,
+            is ConfigMutation.SetTags,
             is ConfigMutation.SetSearchActions,
             is ConfigMutation.SetWallpaper,
             is ConfigMutation.SetGestures,

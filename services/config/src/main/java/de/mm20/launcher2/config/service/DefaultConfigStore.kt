@@ -74,6 +74,8 @@ class DefaultConfigStore(
     private val searchActions: SearchActionStore,
     /** `apps` (#3 slice 4): an app's own name and visibility. */
     private val apps: AppCustomizationStore,
+    /** `tags` (#3 slice 4): which apps carry which tags, and each tag's icon. */
+    private val tags: TagStore,
 ) : ConfigStore {
 
     private fun favoriteApps() = searchableRepository.get(
@@ -103,6 +105,7 @@ class DefaultConfigStore(
             favoriteApps().map { apps -> apps.map { it.key } }.distinctUntilChanged().map { },
             searchActions.changes(),
             apps.changes(),
+            tags.changes(),
         ) + GridLayouts.All.map { layout -> homeGridRepository.observe(layout).distinctUntilChanged().map { } },
     ) { }
 
@@ -139,6 +142,7 @@ class DefaultConfigStore(
             unsettledGridLayouts = unsettled,
             searchActions = searchActions.read(),
             apps = apps.read(),
+            tags = tags.read(),
             wallpaperImage = wallpaper?.image,
             wallpaperTarget = wallpaper?.target,
             gestures = gesturesOf(settingsState.gestures),
@@ -224,6 +228,15 @@ class DefaultConfigStore(
                     val (replaced, customizations) = apps.replaceAndRead(mutation.apps)
                     diagnostics += replaced
                     written = written.copy(apps = customizations)
+                    sections += mutation.section
+                } catch (e: Exception) {
+                    diagnostics += mutation.applyFailed(e)
+                }
+
+                is ConfigMutation.SetTags -> try {
+                    val (replaced, carried) = tags.replaceAndRead(mutation.tags)
+                    diagnostics += replaced
+                    written = written.copy(tags = carried)
                     sections += mutation.section
                 } catch (e: Exception) {
                     diagnostics += mutation.applyFailed(e)
@@ -693,6 +706,7 @@ private val ConfigMutation.isSettingsBacked: Boolean
         // Gestures are settings too, but their apps are resolved here first.
         is ConfigMutation.SetFavorites,
         is ConfigMutation.SetApps,
+        is ConfigMutation.SetTags,
         is ConfigMutation.SetSearchActions,
         is ConfigMutation.SetWallpaper,
         is ConfigMutation.SetGestures,

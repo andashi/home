@@ -9,6 +9,8 @@ import android.os.UserHandle
 import androidx.test.core.app.ApplicationProvider
 import de.mm20.launcher2.config.WallpaperTarget
 import de.mm20.launcher2.config.ConfigMutation
+import de.mm20.launcher2.config.TagApp
+import de.mm20.launcher2.config.TagConfig
 import de.mm20.launcher2.config.GlassContrast
 import de.mm20.launcher2.config.GridItemConfig
 import de.mm20.launcher2.config.GridLayoutConfig
@@ -53,6 +55,7 @@ class DefaultConfigStoreTest {
     private lateinit var gridLimits: FakeGridLimitsSource
     private lateinit var searchActionStore: FakeSearchActionStore
     private lateinit var customizations: FakeAppCustomizationStore
+    private lateinit var tagStore: FakeTagStore
     private lateinit var gridRows: FakeGridRowsSource
     private lateinit var searchableRepository: FakeSavableSearchableRepository
     private lateinit var appRepository: FakeAppRepository
@@ -80,6 +83,7 @@ class DefaultConfigStoreTest {
         wallpaperStore = FakeWallpaperStore()
         searchActionStore = FakeSearchActionStore()
         customizations = FakeAppCustomizationStore()
+        tagStore = FakeTagStore()
         store = DefaultConfigStore(
             settings,
             homeGridRepository,
@@ -93,6 +97,7 @@ class DefaultConfigStoreTest {
             wallpaperStore,
             searchActionStore,
             customizations,
+            tagStore,
         )
     }
 
@@ -118,6 +123,34 @@ class DefaultConfigStoreTest {
         assertEquals("the current state on collection", 1, seen.size)
 
         customizations.replaceAndRead(listOf(de.mm20.launcher2.config.AppConfig("org.thoughtcrime.securesms", label = "Chat")))
+        testScheduler.advanceUntilIdle()
+
+        assertEquals(2, seen.size)
+        collecting.cancel()
+    }
+
+    /** `tags` (#3 slice 4): applied through its store, captured as written, and read back. */
+    @Test
+    fun `SetTags applies through the tag store and is captured as the tags section`() = runTest {
+        val wanted = listOf(TagConfig("Chat", apps = listOf(TagApp("org.thoughtcrime.securesms"))))
+
+        val applied = store.applyAndCapture(listOf(ConfigMutation.SetTags(wanted)))
+
+        assertEquals(listOf(wanted), tagStore.replaced)
+        assertEquals(wanted, applied.written.tags)
+        assertTrue("tags" in applied.sections)
+        assertEquals(wanted, store.readState().tags)
+    }
+
+    /** A tag set on the phone must reach write-back: the tag store is one of the sources [DefaultConfigStore.changes] combines. */
+    @Test
+    fun `a change of the tags is a change of the store`() = runTest {
+        val seen = mutableListOf<Unit>()
+        val collecting = launch { store.changes().take(2).toList(seen) }
+        testScheduler.advanceUntilIdle()
+        assertEquals("the current state on collection", 1, seen.size)
+
+        tagStore.replaceAndRead(listOf(TagConfig("Chat", apps = listOf(TagApp("org.thoughtcrime.securesms")))))
         testScheduler.advanceUntilIdle()
 
         assertEquals(2, seen.size)

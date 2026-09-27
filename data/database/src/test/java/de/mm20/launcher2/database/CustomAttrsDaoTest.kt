@@ -122,6 +122,18 @@ class CustomAttrsDaoTest {
         assertEquals(listOf("app://a:A" to "a"), icons)
     }
 
+    /** A tag's icon is keyed `tag://<name>`: what the config's `tags` reads, and nothing of an app's. */
+    @Test
+    fun `the tag icons are the icons of tag keys only`() = runBlocking {
+        dao.insertCustomAttributes(
+            listOf(icon("app://a:A", "a"), icon("tag://Work", "t"), CustomAttributeEntity("app://a:A", "tag", "Work")),
+        )
+
+        val icons = dao.getTagAttributes("icon").first().map { it.key to it.value }
+
+        assertEquals(listOf("tag://Work" to "t"), icons)
+    }
+
     // ---- the cleanup ----
 
     private suspend fun searchable(key: String) = database.searchableDao().insert(

@@ -94,4 +94,8 @@ interface CustomAttrsDao {
 
     fun getAppLabels(): Flow<List<CustomAttributeEntity>> = getAppAttributes("label")
 
+    /** Every attribute of [type] of a tag (`tag://` keys): a tag's icon, which the config's `tags` reads. */
+    @Query("SELECT * FROM CustomAttributes WHERE type = :type AND `key` LIKE 'tag://%'")
+    fun getTagAttributes(type: String): Flow<List<CustomAttributeEntity>>
+
 }

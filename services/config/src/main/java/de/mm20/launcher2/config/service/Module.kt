@@ -9,7 +9,11 @@ import de.mm20.launcher2.permissions.PermissionGroup
 import de.mm20.launcher2.permissions.PermissionsManager
 import kotlinx.coroutines.flow.map
 import org.koin.android.ext.koin.androidContext
+import org.koin.core.qualifier.named
 import org.koin.dsl.module
+
+/** The [AppNaming] that records how `tags` writes its apps. */
+private const val TagNaming = "tag-naming"
 
 /**
  * Fork addition (Phase 2, ADR 0003): config convergence services plus the
@@ -44,12 +48,16 @@ val configModule = module {
             wallpapers = get(),
             searchActions = get(),
             apps = get(),
+            tags = get(),
         )
     }
     factory<IconPackIndex> { RoomIconPackIndex(get()) }
     factory<AppCustomizationStore> { AndroidAppCustomizationStore(get(), get(), get(), get(), get(), iconPacks = get()) }
     // One instance: it holds the form every store reads apps back in (review on #207).
     single<AppNaming> { FileAppNaming(androidContext()) }
+    // Its own record: each list replaces its record whole (AndroidTagStore).
+    single<AppNaming>(named(TagNaming)) { FileAppNaming(androidContext(), "tag-naming.json") }
+    factory<TagStore> { AndroidTagStore(get(), get(), get(), get(named(TagNaming)), get()) }
     factory<SearchActionStore> { AndroidSearchActionStore(androidContext(), get()) }
     single { ReloadReportStore(androidContext()) }
     // One lock around launcher.json: reloads (watcher, receiver) and every

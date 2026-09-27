@@ -4,6 +4,7 @@ import de.mm20.launcher2.database.AppDatabase
 import de.mm20.launcher2.searchable.SavableSearchableRepository
 import de.mm20.launcher2.ktx.jsonObjectOf
 import de.mm20.launcher2.search.SavableSearchable
+import de.mm20.launcher2.search.Tag
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
@@ -46,6 +47,28 @@ interface CustomAttributesRepository {
 
     /** Fork addition (#3 slice 4): every app's custom icon, by key, decoded as the picker's are. */
     fun getAppIcons(): Flow<Map<String, CustomIcon>>
+
+    /**
+     * Fork addition (#3 slice 4): the tags of [items] become [tags] (by key)
+     * in one transaction, returning once committed. An item of [items]
+     * missing from [tags] loses its tags; items not in [items] are left
+     * alone. A tagged item is anchored first, as a labelled one is: the
+     * cleanup removes a tag whose item has no row.
+     */
+    suspend fun replaceAppTagsAwaited(items: List<SavableSearchable>, tags: Map<String, Set<String>>)
+
+    /** Fork addition (#3 slice 4): every app's tags, by key. */
+    fun getAppTags(): Flow<Map<String, Set<String>>>
+
+    /**
+     * Fork addition (#3 slice 4): the icons of the tags named [tags] become
+     * [icons] (by tag name), returning once committed. A tag of [tags]
+     * missing from [icons] loses its icon; other tags keep theirs.
+     */
+    suspend fun replaceTagIconsAwaited(tags: Collection<String>, icons: Map<String, CustomIcon>)
+
+    /** Fork addition (#3 slice 4): every tag's custom icon, by tag name. */
+    fun getTagIcons(): Flow<Map<String, CustomIcon>>
 
     fun setTags(searchable: SavableSearchable, tags: List<String>)
     fun getTags(searchable: SavableSearchable): Flow<List<String>>
@@ -145,6 +168,36 @@ internal class CustomAttributesRepositoryImpl(
     override fun getAppIcons(): Flow<Map<String, CustomIcon>> =
         appDatabase.customAttrsDao().getAppAttributes(CustomAttributeType.Icon.value).map { rows ->
             rows.mapNotNull { row -> (CustomAttribute.fromDatabaseEntity(row) as? CustomIcon)?.let { row.key to it } }.toMap()
+        }
+
+    override suspend fun replaceAppTagsAwaited(items: List<SavableSearchable>, tags: Map<String, Set<String>>) {
+        val byKey = items.associateBy { it.key }
+        searchableRepository.insertAwaited(tags.filterValues { it.isNotEmpty() }.keys.mapNotNull(byKey::get))
+        appDatabase.customAttrsDao().replaceAttributes(
+            CustomAttributeType.Tag.value,
+            keys = items.map { it.key },
+            entities = tags.flatMap { (key, names) -> names.map { CustomTag(it).toDatabaseEntity(key) } },
+        )
+    }
+
+    override fun getAppTags(): Flow<Map<String, Set<String>>> =
+        appDatabase.customAttrsDao().getAppAttributes(CustomAttributeType.Tag.value).map { rows ->
+            rows.groupBy({ it.key }, { it.value }).mapValues { it.value.toSet() }
+        }
+
+    override suspend fun replaceTagIconsAwaited(tags: Collection<String>, icons: Map<String, CustomIcon>) {
+        appDatabase.customAttrsDao().replaceAttributes(
+            CustomAttributeType.Icon.value,
+            keys = tags.map { Tag(it).key },
+            entities = icons.map { (tag, icon) -> icon.toDatabaseEntity(Tag(tag).key) },
+        )
+    }
+
+    override fun getTagIcons(): Flow<Map<String, CustomIcon>> =
+        appDatabase.customAttrsDao().getTagAttributes(CustomAttributeType.Icon.value).map { rows ->
+            rows.mapNotNull { row ->
+                (CustomAttribute.fromDatabaseEntity(row) as? CustomIcon)?.let { row.key.removePrefix("${Tag.Domain}://") to it }
+            }.toMap()
         }
 
     override fun clearCustomLabel(searchable: SavableSearchable) {

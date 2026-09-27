@@ -31,6 +31,7 @@ internal class RealConfigStore(
     val searchables = FakeSavableSearchableRepository()
     val actions = FakeSearchActionStore()
     val customizations = FakeAppCustomizationStore()
+    val tagStore = FakeTagStore()
 
     val store: DefaultConfigStore
 
@@ -60,6 +61,7 @@ internal class RealConfigStore(
             FakeWallpaperStore(),
             actions,
             customizations,
+            tagStore,
         )
     }
 

@@ -7,7 +7,6 @@ import de.mm20.launcher2.config.IconBackground
 import de.mm20.launcher2.config.AppVisibility
 import de.mm20.launcher2.config.Diagnostic
 import de.mm20.launcher2.config.DiagnosticCode
-import de.mm20.launcher2.config.Severity
 import de.mm20.launcher2.config.normalized
 import de.mm20.launcher2.config.normalizedApps
 import de.mm20.launcher2.data.customattrs.AdaptifiedLegacyIcon
@@ -21,8 +20,6 @@ import de.mm20.launcher2.search.Application
 import de.mm20.launcher2.search.SavableSearchable
 import de.mm20.launcher2.searchable.SavableSearchableRepository
 import de.mm20.launcher2.searchable.VisibilityLevel
-import kotlinx.coroutines.NonCancellable
-import kotlinx.coroutines.withContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -102,27 +99,12 @@ internal class AndroidAppCustomizationStore(
 
         apps.forEachIndexed { index, entry ->
             val path = "apps[$index]"
-            val profile = profileResolver.getProfile(entry.profile.toProfileType())
-            if (profile == null) {
-                diagnostics += Diagnostic(
-                    DiagnosticCode.ProfileUnavailable, path,
-                    "The ${entry.profile.name.lowercase()} profile does not exist on this device; " +
-                        "the entry for '${entry.packageName}' is kept and applies once it does",
-                )
-                return@forEachIndexed
-            }
-            val entries = installed.filter {
-                it.componentName.packageName == entry.packageName && it.user == profile.userHandle
-            }
-            val app = entry.activity?.let { activity -> entries.firstOrNull { it.componentName.className == activity } }
-                ?: entries.firstOrNull().takeIf { entry.activity == null }
-            if (app == null) {
-                diagnostics += Diagnostic(
-                    DiagnosticCode.AppUnavailable, path,
-                    "'${entry.packageName}'${entry.activity?.let { " ($it)" } ?: ""} is not installed in the " +
-                        "${entry.profile.name.lowercase()} profile; its entry is kept and applies once it is",
-                )
-                return@forEachIndexed
+            val app = when (val found = profileResolver.lookUpApp(installed, entry.packageName, entry.profile, entry.activity, path)) {
+                is AppLookup.Found -> found.app
+                is AppLookup.Missing -> {
+                    diagnostics += found.diagnostic
+                    return@forEachIndexed
+                }
             }
             claimedBy[app.key]?.let { first ->
                 diagnostics += Diagnostic(
@@ -148,37 +130,8 @@ internal class AndroidAppCustomizationStore(
             wanted[app.key] = entry.visibility.toLevel()
         }
 
-        // Before the labels: the change their write sets off must read the new
-        // form. If a device write fails, the apply is reported failed and the
-        // baseline stays as it was, so the record goes back too (review on #214).
-        val before = naming.observe().first()
-        // No record reads as empty; putting "empty" back would make one, and
-        // the next start would not try again (review on #214).
-        val hadRecord = naming.recorded()
-        try {
-            naming.replace(written)
-            writeDeviceState(installed, labels, icons, wanted)
-        } catch (e: Throwable) {
-            // The restore can fail too, and then the record would claim a form
-            // the device is not in; no record is the honest state instead.
-            // Nothing is swallowed: the apply's failure propagates with the
-            // repair's attached (review on #214). A cancelled apply is a
-            // failure as well, and a cancelled coroutine cannot write, so the
-            // repair runs non-cancellable.
-            withContext(NonCancellable) {
-                try {
-                    if (hadRecord) naming.replace(before) else naming.forget()
-                } catch (restore: Throwable) {
-                    e.addSuppressed(restore)
-                    try {
-                        naming.forget()
-                    } catch (forget: Throwable) {
-                        e.addSuppressed(forget)
-                    }
-                }
-            }
-            throw e
-        }
+        // Before the labels: the change their write sets off must read the new form.
+        naming.replaceAround(written) { writeDeviceState(installed, labels, icons, wanted) }
 
         return diagnostics to read()
     }
@@ -240,14 +193,9 @@ internal class AndroidAppCustomizationStore(
                 },
             ),
         )
-        is AppIcon.Pack -> when (val found = iconPacks.resolve(icon.pack, icon.drawable)) {
-            is IconPackIndex.Resolution.Found ->
-                // Unthemed when the file asks for the unthemed variant, or the pack
-                // cannot theme this drawable.
-                StoredIcon.Found(CustomIconPackIcon(icon.pack, found.type, found.drawable, found.extras, found.themed && icon.themed))
-            IconPackIndex.Resolution.PackMissing -> StoredIcon.Missing("The icon pack '${icon.pack}' is not installed")
-            IconPackIndex.Resolution.DrawableMissing ->
-                StoredIcon.Missing("The icon pack '${icon.pack}' has no drawable '${icon.drawable}'")
+        is AppIcon.Pack -> when (val found = iconPacks.stored(icon.pack, icon.drawable, icon.themed)) {
+            is StoredPackIcon.Found -> StoredIcon.Found(found.icon)
+            is StoredPackIcon.Missing -> StoredIcon.Missing(found.what)
         }
     }
 
@@ -273,25 +221,8 @@ internal class AndroidAppCustomizationStore(
                 else -> IconBackground.Color(icon.bgColor)
             },
         )
-        is CustomIconPackIcon -> icon.drawable?.let { drawable ->
-            // `themed: false` only where the pack could have themed it: a drawable
-            // it cannot theme is stored unthemed whatever the file said, and
-            // reading that as a choice would write it into a file that never asked.
-            val themeable = (iconPacks.resolve(icon.iconPackPackage, drawable) as? IconPackIndex.Resolution.Found)?.themed ?: true
-            AppIcon.Pack(icon.iconPackPackage, drawable, themed = icon.allowThemed || !themeable)
-        }
+        is CustomIconPackIcon -> iconPacks.fileForm(icon)?.let { AppIcon.Pack(it.pack, it.drawable, it.themed) }
         else -> null
-    }
-
-    /**
-     * The entry's class name, or null for a package's first launcher entry -
-     * the one an entry without an activity means, as a favorite does.
-     */
-    private fun activityOf(app: Application, installed: List<Application>): String? {
-        val first = installed.firstOrNull {
-            it.componentName.packageName == app.componentName.packageName && it.user == app.user
-        }
-        return if (first?.key == app.key) null else app.componentName.className
     }
 
     private fun levelOf(key: String, searchOnly: Set<String>, hidden: Set<String>) = when (key) {
