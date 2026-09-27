@@ -188,6 +188,26 @@ class SavableSearchableRepositoryTest {
         assertEquals(1, pinPosition("app://auto"))
     }
 
+    /** #3 slice 2: a gesture names the key right after, and the launcher looks the item up by it. */
+    @Test
+    fun insertAwaited_isStoredWhenItReturns() = runBlocking {
+        repository.insertAwaited(TestSearchable("app://a", domain = "app"))
+
+        val row = database.searchableDao().getByKey("app://a").first()
+        assertEquals("app", row?.type)
+        assertEquals(0, row?.pinPosition)
+    }
+
+    /** Saving the app a gesture opens must not reset what the device knows about it. */
+    @Test
+    fun insertAwaited_keepsARowThatIsAlreadyThere() = runBlocking {
+        pinned("app://a", "app", 5)
+
+        repository.insertAwaited(TestSearchable("app://a", domain = "app"))
+
+        assertEquals(5, pinPosition("app://a"))
+    }
+
     @Test
     fun replaceManuallySortedAwaited_keepsAPinThatNoLongerDeserializes() = runBlocking {
         // A shortcut whose app is gone: the row stays, it is never deserialized.

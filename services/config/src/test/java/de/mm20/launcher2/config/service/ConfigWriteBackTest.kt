@@ -32,6 +32,14 @@ import java.util.UUID
 import de.mm20.launcher2.config.ReloadReport
 import de.mm20.launcher2.preferences.BuiltInColorSchemes
 import de.mm20.launcher2.config.ThemeColors
+import de.mm20.launcher2.config.ConfigState
+import de.mm20.launcher2.config.Favorite
+import de.mm20.launcher2.config.Gesture
+import de.mm20.launcher2.config.GestureConfig
+import de.mm20.launcher2.config.WriteBackPlan
+import de.mm20.launcher2.preferences.GestureAction
+import de.mm20.launcher2.preferences.ui.GestureSettings
+import kotlinx.serialization.json.jsonObject
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -612,5 +620,107 @@ class ConfigWriteBackTest {
         assertEquals(items, real.grid.layouts[HomeGridLayouts.Phone])
         assertEquals(text, file.readText())
         assertTrue(reportStore.read()!!.diagnostics.any { it.code == ConfigWriteBack.SkipCodePrefix + "grid-unmanaged" })
+    }
+
+    // ----- gestures (#3 slice 2) -----
+
+    private val gesturesFile = """
+        {
+          // zone: home
+          "schemaVersion": 2,
+          "gestures": { "swipeLeft": { "packageName": "com.example.dialer" } /* the phone */, "swipeUp": "search" }
+        }
+    """.trimIndent()
+
+    /** A gesture set on the device to a shortcut, which the file cannot name. */
+    private suspend fun shortcutOnDevice() {
+        val shortcut = FakeItem("shortcut://com.example.dialer/voicemail", "shortcut")
+        real.searchables.saved[shortcut.key] = shortcut
+        GlobalContext.get().get<GestureSettings>().setSwipeLeft(GestureAction.Launch(shortcut.key))
+        withTimeout(10_000) { while (real.store.readState().gestures[Gesture.SwipeLeft] != null) delay(20) }
+    }
+
+    private fun keptGesture(report: ReloadReport?) =
+        report?.diagnostics?.any {
+            it.code == ConfigWriteBack.SkipCodePrefix + "gesture-inexpressible" && it.path == "gestures.swipeLeft"
+        } == true
+
+    @Test
+    fun `a gesture changed on the device to an action is written into the file`() = runBlocking {
+        real.install("com.example.dialer")
+        applied(gesturesFile)
+        onDevice("""{"schemaVersion":2,"gestures":{"swipeLeft":"recents"}}""")
+
+        val result = writeBack.write()
+
+        assertTrue(result.toString(), result is WriteBackResult.Written)
+        assertEquals(gesturesFile.replace("""{ "packageName": "com.example.dialer" }""", "\"recents\""), file.readText())
+    }
+
+    /** Both apps read as null in the settings: the store has to see that the key moved. */
+    @Test
+    fun `a gesture moved on the device from one app to another is written into the file`() = runBlocking {
+        real.install("com.example.dialer")
+        real.install("com.example.mail")
+        applied(gesturesFile)
+        onDevice("""{"schemaVersion":2,"gestures":{"swipeLeft":{"packageName":"com.example.mail"}}}""")
+
+        val result = writeBack.write()
+
+        assertTrue(result.toString(), result is WriteBackResult.Written)
+        assertEquals(
+            GestureConfig.App(Favorite("com.example.mail")),
+            ConfigParser.parse(file.readText()).config?.gestures?.swipeLeft,
+        )
+    }
+
+    /**
+     * The file keeps what it asked, the report says why the effect differs -
+     * not silence (#3 slice 2). Red without the kept reason: the file is
+     * unchanged either way, so only the warning tells the two apart.
+     */
+    @Test
+    fun `a gesture set on the device to a shortcut leaves the file's app as written, and the report says why`() = runBlocking {
+        real.install("com.example.dialer")
+        applied(gesturesFile)
+        shortcutOnDevice()
+
+        val result = writeBack.write()
+
+        assertEquals(WriteBackResult.Unchanged, result)
+        assertEquals(gesturesFile, file.readText())
+        assertTrue(reportStore.read()?.diagnostics.toString(), keptGesture(reportStore.read()))
+    }
+
+    /**
+     * Every path a write-back can keep because the device has no value the
+     * file can name there carries a reason, so a kept value is never silent.
+     * The device side has every field that can be absent from the read-back
+     * left out at once; a new such field belongs in this state, and then
+     * fails here until [ConfigWriteBack] explains it.
+     */
+    @Test
+    fun `every path a write-back can keep for the device has a reason in the report`() {
+        val nothingNameable = ConfigState(
+            iconPack = null,
+            themeColors = null,
+            searchActions = null,
+            wallpaperImage = null,
+            wallpaperTarget = null,
+            gestures = Gesture.entries.associateWith { null },
+        )
+        val literal = ConfigParser.json.parseToJsonElement(
+            File(System.getProperty("repoRoot"), "docs/configuration/complete-example.json").readText(),
+        ).jsonObject
+        val device = ConfigParser.json.encodeToJsonElement(LauncherConfig.serializer(), nothingNameable.toLauncherConfig()).jsonObject
+
+        val kept = WriteBackPlan.plan(literal, literal, device).kept
+
+        assertTrue("the plan must keep something, or this proves nothing", kept.isNotEmpty())
+        assertEquals(
+            "kept paths without a reason",
+            emptyList<List<String>>(),
+            kept.filter { it !in ConfigWriteBack.KeptReasons },
+        )
     }
 }
