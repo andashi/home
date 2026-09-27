@@ -42,10 +42,15 @@ are the phone's: the file neither lists nor removes them, and a tag that holds
 only them is not in the read-back.
 
 The same tag twice is an error, `duplicate-tag`, and so is the same app twice
-in one tag, `duplicate-app`: the file would say two things about one tag. An
-app that is not installed is reported, `app-unavailable`, and stays in the
-file: when it is installed, the file is applied again and the app carries the
-tag.
+in one tag, `duplicate-app`: the file would say two things about one tag. Two
+entries that differ in the file but are one app on this phone - a package
+without an activity and its first activity spelled out - are counted once and
+the second is reported, `duplicate-app-on-device`. An app that is not installed
+is reported, `app-unavailable`, and stays in the file: when it is installed,
+the file is applied again and the app carries the tag.
+
+An app written with its activity, or as an object, reads back and is written
+back the way the file wrote it, per tag.
 
 ## Icons
 
