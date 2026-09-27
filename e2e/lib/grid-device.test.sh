@@ -765,11 +765,7 @@ rejects_a_flag_as_the_value() {
   grep -q "needs" <<<"$out"
 }
 check "push_config rejects --ignored followed by another option" rejects_a_flag_as_the_value
-# A run boots the instance it needs when it is down, and says so, so that it
-# stops only what it booted: a hand-booted emulator-5562 ran unlocked for
-# five hours after the check that needed it (2026-09-26).
-# The instance's state is $WORK/boot/state: down, up, or offline (running,
-# but adbd restarting, as right after `run.sh start` ends with `adb root`).
+
 # A run boots the instance it needs when it is down, as its lock owner, and
 # records that in BOOTED; finish_instance uses it only to decide whether to
 # warn. The instance's state is $WORK/boot/state: down, up, or offline
