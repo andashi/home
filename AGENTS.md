@@ -427,6 +427,38 @@ and head in the same call as the reviews.
 fourth hole opened its fifth, and consolidating four deadlines into one starved
 the last step. After fixing something in a checker, break it again.
 
+**A third shape, found the day after: the answer was computed and then thrown
+away.** Not a wrong comparison - a discarded one, and it hides in the same place
+for the same reason.
+
+A shell `for` loop exits with its **last** iteration's status. So
+
+    for f in config/*.json; do jq -e . "$f" >/dev/null && echo "ok: $f"; done
+    for f in $(find . -name '*.sh'); do bash -n "$f"; done
+
+validate every file and report only the last one. An invalid config or a syntax
+error anywhere but at the end passes green on every push. Found in the
+provisioning repository's only workflow on 2026-09-27 and demonstrated with three
+files whose middle member was broken: exit 0 before the fix, exit 1 after. Its
+`make check` had it right locally, so **the gate that ran automatically was the
+weaker of the two**, which is the wrong way round. Accumulate into a variable and
+exit on it after the loop, the way `.github/workflows/commit-hygiene.yml` does.
+
+Two things that shape shares with the `[bot]` suffix above. Both produce a
+**quiet success**: one counted zero and called it clean, the other computed every
+answer and kept the last. And both sat in a checker that had never been watched
+to fail - that workflow was also unparseable YAML for a while and did not run at
+all, so it was silently useless twice, in two different ways, while the
+repository looked green throughout. **A gate nobody has ever watched fail is
+indistinguishable from no gate.**
+
+The same scan found nothing of the kind here: `commit-hygiene.yml` accumulates
+`bad=1` and exits after its loop, `check-helpers.test.sh` accumulates `failed=1`
+and exits on it, and `delete_snapshots` ignores its deletes on purpose because
+the list afterwards is the check. Four candidates, four false alarms - which is
+what a heuristic for this looks like when it comes back clean, and worth writing
+down so the next person does not re-run it hopefully.
+
 ### Ways a test runs and tests nothing
 
 The mechanisms below were all met in this repository within one week. None is
