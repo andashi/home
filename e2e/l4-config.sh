@@ -622,7 +622,9 @@ retry_for 10 on_top "$PKG" || die "the launcher is not in front before the swipe
 # after returning home swallows touches. Across twelve instrumented runs
 # the launcher never dropped a flick that reached it, and with host GPU and
 # an idle guest ten of ten landed first time. So the allowance compensates
-# for the harness, not for a launcher defect. This step proves the config's
+# for the harness, not for a launcher defect. Whether the platform delivers
+# such a touch on real hardware is untested (AGENTS.md, emulator section).
+# This step proves the config's
 # effect: a flick opens exactly the app the file names. A count that climbs
 # past two is a new failure.
 flick_left() {
