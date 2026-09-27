@@ -757,4 +757,40 @@ class ConfigWatcherTest {
 
         assertEquals(listOf(FirstIconPackListRead, "p.two:1", "p.one:2"), iconPackGrowth(index).toList())
     }
+
+    /** An index that reads [reads] in turn: a pack's indexing, or its absence. */
+    private fun indexReading(vararg reads: Set<String>) = object : IconPackIndex {
+        override suspend fun resolve(pack: String, drawable: String) = error("not used here")
+        override fun indexed() = kotlinx.coroutines.flow.flowOf(*reads)
+    }
+
+    /**
+     * The two windows of a pack's arrival, each alone (#3 slice 4): the
+     * package event fires at the install, the index grows when the indexing
+     * is done, and either can come first on a given run. Here the event
+     * arrives and the index never grows - the event alone must reach the
+     * watcher. Beside the first reads, which every start signals.
+     */
+    @Test
+    fun `a pack's package event alone is an arrival`() = runTest {
+        val arrivals = packageArrivals(
+            events = kotlinx.coroutines.flow.flowOf("org.pack"),
+            apps = FakeAppRepository(),
+            iconPacks = indexReading(emptySet()),
+        )
+
+        assertEquals(setOf(FirstAppListRead, FirstIconPackListRead, "org.pack"), arrivals.toList().toSet())
+    }
+
+    /** The other window: the index grows and no package event comes - the index alone must reach the watcher. */
+    @Test
+    fun `a pack entering the index without a package event is an arrival`() = runTest {
+        val arrivals = packageArrivals(
+            events = kotlinx.coroutines.flow.emptyFlow(),
+            apps = FakeAppRepository(),
+            iconPacks = indexReading(emptySet(), setOf("org.pack:1")),
+        )
+
+        assertEquals(setOf(FirstAppListRead, FirstIconPackListRead, "org.pack:1"), arrivals.toList().toSet())
+    }
 }

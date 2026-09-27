@@ -2,6 +2,7 @@ package de.mm20.launcher2.config.service
 
 import android.icu.text.Transliterator
 import de.mm20.launcher2.applications.AppRepository
+import de.mm20.launcher2.applications.packageEvents
 import de.mm20.launcher2.glass.GlassBackdropSource
 import de.mm20.launcher2.homegrid.HomeGridWriteBack
 import de.mm20.launcher2.homegrid.MeasuredGridRows
@@ -93,7 +94,7 @@ val configModule = module {
             // A build updated from one without the record reloads once to make it (review on #207).
             appNaming = get(),
             // What the file names and a device lacked is applied when it is installed (#207 review).
-            arrivals = packageArrivals(androidContext(), get<AppRepository>(), get<IconPackIndex>()),
+            arrivals = packageArrivals(packageEvents(androidContext()), get<AppRepository>(), get<IconPackIndex>()),
         ).also { it.start() }
     }
     // Every change on the device goes back into the file (#3 slice 4).

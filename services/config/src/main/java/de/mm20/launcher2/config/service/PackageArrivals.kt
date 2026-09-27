@@ -1,8 +1,6 @@
 package de.mm20.launcher2.config.service
 
-import android.content.Context
 import de.mm20.launcher2.applications.AppRepository
-import de.mm20.launcher2.applications.packageEvents
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
@@ -14,7 +12,7 @@ import kotlinx.coroutines.flow.merge
  * something the file names is absent.
  *
  * Three sources, because none sees everything:
- * - the system's package callbacks ([packageEvents]), which report a package
+ * - the system's package callbacks (`packageEvents`), which report a package
  *   that brings only a widget and so never shows in the app list;
  * - the app list growing, which is how a profile's apps appear when the
  *   profile becomes available, with no package event at all;
@@ -22,11 +20,13 @@ import kotlinx.coroutines.flow.merge
  *   indexing, so a reload on the event can look before the pack is there
  *   (#3 slice 4).
  *
- * A package can arrive through both; the second reload then finds nothing
+ * [events] is the first, a parameter so the three can be tested apart.
+ *
+ * A package can arrive through more than one; a later reload then finds nothing
  * waiting.
  */
-internal fun packageArrivals(context: Context, apps: AppRepository, iconPacks: IconPackIndex): Flow<String> = merge(
-    packageEvents(context),
+internal fun packageArrivals(events: Flow<String>, apps: AppRepository, iconPacks: IconPackIndex): Flow<String> = merge(
+    events,
     appKeyGrowth(apps.findMany().map { list -> list.mapTo(HashSet()) { it.key } }),
     iconPackGrowth(iconPacks),
 )
