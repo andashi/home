@@ -22,6 +22,15 @@
    against RELEASE_CERT_SHA256, a full SHA-256 in the step's env. The check it replaced could never fail (#204), and a removed
    check would read the same as a passing one.
 
+What this defends against, and what it does not: accidental weakening - a
+refactor, a copied line, a `set +e` added while debugging, a `!` nobody knew
+could not fail (the defect behind #204). It cannot defend against an author
+who means to defeat it, because whoever can edit release.yml can edit this
+file in the same commit. Against that, the controls are review, branch
+protection, and the pinned digest, which would have to change visibly in the
+same diff. So the checks match the lines release.yml writes, verbatim; do not
+harden them into a shell parser to catch deliberate evasion.
+
 Exits non-zero naming every violation.
 """
 import re
