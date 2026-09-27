@@ -126,13 +126,22 @@ be a true answer about a false state. A thread the bot closed with no reply
 naming a fix commit has not been shown to be addressed; read it before it
 counts.
 
-**A base behind `main` is only a problem when it overlaps.** The rebase rule
-protects against a review of a tree whose *relevant* parts have moved, so the
-question is whether the commits between the base and `main` touch any file the
-pull request touches. Empty intersection, and the review still means what it
-said. Insisting the base equal `main` instead livelocks a pull request whenever
-a review takes as long as the gap between merges - and a condition that blocks
-for no reason is one somebody carves an exception into.
+**A base behind `main` is only a problem when it overlaps - with one caveat
+that review caught in this very section.** The rebase rule protects against a
+review of a tree whose *relevant* parts have moved, so the first question is
+whether the commits between the base and `main` touch any file the pull request
+touches. Insisting the base equal `main` instead livelocks a pull request
+whenever a review takes as long as the gap between merges, and a condition that
+blocks for no reason is one somebody carves an exception into.
+
+But **an empty pathname intersection does not prove the behaviour is
+unchanged**: a commit to something the pull request's files *call* changes them
+without touching their paths. So the allowance does not apply when any
+intervening commit touches the shared shell library (`e2e/lib/`), a shared
+module (`core/`, `services/`, `data/`), a build file or the version catalog -
+there, rebase and re-review. Outside those, path-disjointness is a heuristic
+that has earned its keep, not a proof, and whoever merges still owns the
+judgement.
 
 **"Reviewed at the head" is not the same as "reviewed".** CodeRabbit reviews a
 push incrementally by default - it re-reads only the commits since its last
