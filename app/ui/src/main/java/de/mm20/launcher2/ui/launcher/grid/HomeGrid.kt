@@ -2,6 +2,7 @@ package de.mm20.launcher2.ui.launcher.grid
 
 import android.appwidget.AppWidgetManager
 import android.provider.Settings
+import android.util.Log
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
@@ -191,7 +192,14 @@ fun HomeGrid(
                 profileManager.getProfile(type)?.userHandle
             }
             packageEvents(context).collect { packageName ->
-                if (!editingNow) viewModel.reconcileArrival(port, packageName)
+                if (editingNow) return@collect
+                val report = viewModel.reconcileArrival(port, packageName)
+                // Their cells show the banner; the config report cannot know,
+                // binding is this side's. A count only: which apps a person
+                // has is theirs.
+                if (report.failed.isNotEmpty()) {
+                    Log.w("HomeGrid", "${report.failed.size} widget(s) still unbound after a package arrived")
+                }
             }
         }
 

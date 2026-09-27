@@ -169,17 +169,45 @@ class HomeGridReconcilerTest {
         assertTrue("every refused id is released, none leaks", port.boundIds().isEmpty())
     }
 
-    /** Control: a failure of another package's widget does not keep an arrival retrying. */
+    /**
+     * Control: an arrival no unbound item waits for runs no pass at all. Most
+     * package events are updates of apps the grid never names, and each pass
+     * holds the grid's reconcile lock (review on #213).
+     */
     @Test
-    fun `an arrival retries only for its own package`() = runBlocking {
+    fun `an arrival nothing waits for runs no pass`() = runBlocking {
         grid.replace(HomeGridLayouts.Phone, listOf(item("other", "org.example.other/.Widget")))
         val port = FakeAppWidgetHostPort(bindable = emptySet())
         var pauses = 0
 
         val report = HomeGridReconciler(grid, port).reconcileArrival("org.example.only", attempts = 5) { pauses++ }
 
-        assertEquals(listOf("other"), report.failed)
-        assertEquals(1, port.bindCalls.size)
+        assertEquals(ReconcileReport(), report)
+        assertTrue(port.bindCalls.isEmpty())
         assertEquals(0, pauses)
+    }
+
+    /**
+     * Items are named per layout, so one id can stand for different widgets on
+     * the phone and on the fold. A refused bind is found on the item itself,
+     * not looked up by id: by id the phone's item answered for the fold's, and
+     * the fold's widget got no retry (review on #213).
+     */
+    @Test
+    fun `an arrival retries a fold item whose id the phone layout also uses`() = runBlocking {
+        grid.replace(HomeGridLayouts.Phone, listOf(item("clock", "org.example.a/.Widget", appWidgetId = 7)))
+        grid.replace(HomeGridLayouts.Fold, listOf(item("clock", "org.example.b/.Widget", layout = HomeGridLayouts.Fold)))
+        val port = LateProvider(
+            FakeAppWidgetHostPort(bound = listOf(7), bindable = setOf("org.example.b/.Widget")),
+            "org.example.b/.Widget", readyAfter = 1,
+        )
+        var pauses = 0
+
+        val report = HomeGridReconciler(grid, port).reconcileArrival("org.example.b", attempts = 5) { pauses++ }
+
+        assertEquals(listOf("clock"), report.bound)
+        assertEquals(1, pauses)
+        assertEquals(7, grid.observe(HomeGridLayouts.Phone).first().single().appWidgetId)
+        assertTrue(grid.observe(HomeGridLayouts.Fold).first().single().appWidgetId != null)
     }
 }

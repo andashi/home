@@ -90,26 +90,33 @@ class HomeGridReconciler(
      * this package is tried again, [attempts] passes in all with a [pause]
      * before each retry. What still fails then stays unbound and reported:
      * no host id is recorded, so the next pass tries again.
+     *
+     * Whether anything waits is read from the items themselves - one naming
+     * the package with no host id, in either layout - before every pass, the
+     * first included: an id can stand for different widgets on the phone and
+     * the fold, and most package events concern nothing the grid names, so
+     * they run no pass at all (review on #213).
      */
     suspend fun reconcileArrival(
         packageName: String,
         attempts: Int = 5,
         pause: suspend () -> Unit = { delay(500) },
     ): ReconcileReport {
-        val prefix = "$packageName/"
+        if (!waitsFor(packageName)) return ReconcileReport()
         var report = reconcile()
         repeat(attempts - 1) {
-            val waiting = report.failed.any { id -> widgetOf(id)?.startsWith(prefix) == true }
-            if (!waiting) return report
+            if (!waitsFor(packageName)) return report
             pause()
             report = reconcile()
         }
         return report
     }
 
-    private suspend fun widgetOf(itemId: String): String? =
-        listOf(HomeGridLayouts.Phone, HomeGridLayouts.Fold).firstNotNullOfOrNull { layout ->
-            homeGridRepository.observe(layout).first().firstOrNull { it.id == itemId }?.widget
+    private suspend fun waitsFor(packageName: String): Boolean =
+        listOf(HomeGridLayouts.Phone, HomeGridLayouts.Fold).any { layout ->
+            homeGridRepository.observe(layout).first().any {
+                !it.isFavorites && it.appWidgetId == null && it.widget.startsWith("$packageName/")
+            }
         }
 
     companion object {
