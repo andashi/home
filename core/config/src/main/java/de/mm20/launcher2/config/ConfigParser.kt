@@ -46,7 +46,10 @@ object ConfigParser {
             "appearance" to KeyEffect.Applied,
             "home" to KeyEffect.Applied,
             "search" to KeyEffect.Applied,
+            // #3 slice 2.
+            "gestures" to KeyEffect.Applied,
         ),
+        "gestures" to Gesture.entries.associate { it.key to KeyEffect.Applied },
         // #91: search's behavior; its look is appearance.glass. #107: barPosition.
         "search" to listOf(
             "favorites", "allApps", "layout", "labels", "contacts", "shortcuts",
@@ -134,7 +137,20 @@ object ConfigParser {
         "home.grid.layouts.fold" to mapOf("items" to KeyEffect.Applied),
         "home.grid.layouts.phone.items[]" to GridItemKeys,
         "home.grid.layouts.fold.items[]" to GridItemKeys,
+        // A gesture that launches an app: the object form of a favorite.
+        "gestures.*" to mapOf("packageName" to KeyEffect.Applied, "profile" to KeyEffect.Applied),
     )
+
+    /**
+     * The table section of [key] under [section]: `section.*` where the
+     * table has one - a section whose values all share one shape, as the
+     * gestures do - and `section.key` otherwise. `*` is to such a section
+     * what `[]` is to a list's entries.
+     */
+    internal fun childSection(section: String, key: String, table: Map<String, Map<String, KeyEffect>> = keyEffects): String {
+        val shared = if (section.isEmpty()) "*" else "$section.*"
+        return if (shared in table) shared else if (section.isEmpty()) key else "$section.$key"
+    }
 
     private val knownKeys: Map<String, Set<String>> = keyEffects.mapValues { it.value.keys }
 
@@ -371,7 +387,7 @@ object ConfigParser {
                     }
                 }
                 for ((key, value) in element) {
-                    val childCanonical = if (canonicalPath.isEmpty()) key else "$canonicalPath.$key"
+                    val childCanonical = childSection(canonicalPath, key, table)
                     val childReport = if (reportPath.isEmpty()) key else "$reportPath.$key"
                     collectUnknownKeys(value, childCanonical, childReport, table, out)
                 }

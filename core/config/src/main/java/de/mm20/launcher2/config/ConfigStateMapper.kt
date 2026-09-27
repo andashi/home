@@ -91,5 +91,7 @@ fun ConfigState.toLauncherConfig(): LauncherConfig {
             ),
             lockRotation = rotationLocked,
         ),
+        // Every gesture the file can name; one it cannot is left out (#3 slice 2).
+        gestures = GesturesConfig.of(gestures),
     )
 }

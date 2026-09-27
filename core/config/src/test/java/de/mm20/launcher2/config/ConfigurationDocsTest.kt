@@ -38,6 +38,8 @@ class ConfigurationDocsTest {
             .replace("home.grid.layouts.phone.items[]", "home.grid.layouts.<layout>.items[]")
             .replace("home.grid.layouts.fold.items[]", "home.grid.layouts.<layout>.items[]")
             .replace(Regex("^home\\.grid\\.layouts\\.(phone|fold)\\.items$"), "home.grid.layouts.<layout>.items")
+            // An app a gesture opens, the same keys under every gesture (#3 slice 2).
+            .replace("gestures.*.", "gestures.<gesture>.")
     }
 
     @Test

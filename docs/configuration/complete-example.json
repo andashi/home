@@ -140,5 +140,17 @@
         "type": "call"
       }
     ]
+  },
+  "gestures": {
+    "swipeDown": "notifications",
+    "swipeUp": "quick-settings",
+    "swipeLeft": {
+      "packageName": "com.example.work.mail",
+      "profile": "work"
+    },
+    "swipeRight": "recents",
+    "doubleTap": "power-menu",
+    "longPress": "launcher-settings",
+    "homeButton": "search"
   }
 }

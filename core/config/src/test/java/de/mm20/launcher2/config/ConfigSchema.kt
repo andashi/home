@@ -122,6 +122,13 @@ internal object ConfigSchema {
                 add(objectSchema(descriptor, path))
             }
         }
+        // An action by name, or an app as a favorite's object form (GestureConfigSerializer, #3 slice 2).
+        if (name == GestureConfigSerializer.descriptor.serialName) return buildJsonObject {
+            putJsonArray("oneOf") {
+                add(enumOf(GestureActionNameSerializer.names))
+                add(objectSchema(Favorite.serializer().descriptor, ConfigParser.childSection(path.substringBeforeLast('.'), path.substringAfterLast('.'))))
+            }
+        }
         return when (val kind = descriptor.kind) {
             PrimitiveKind.BOOLEAN -> type("boolean")
             PrimitiveKind.INT, PrimitiveKind.LONG -> type("integer")
@@ -217,6 +224,7 @@ internal object ConfigSchema {
         "search.transliterator" to pattern(ConfigValidator.transliteratorIdRegex),
         "search.actions[].url" to mapOf("pattern" to JsonPrimitive(literal(SearchActionTypes.QueryPlaceholder))),
         "search.actions[].package" to packageNameLimits(),
+        "gestures.*.packageName" to packageNameLimits(),
     )
 
     // ---- helpers ----

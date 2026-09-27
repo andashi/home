@@ -169,6 +169,13 @@ object ConfigValidator {
 
         config.home?.grid?.let { grid -> validateGrid(grid, diagnostics) }
 
+        // #3 slice 2: an app a gesture launches is named like a favorite.
+        config.gestures?.byGesture()?.forEach { (gesture, value) ->
+            if (value is GestureConfig.App) {
+                validatePackageName(value.app.packageName, "gestures.${gesture.key}.packageName", diagnostics)
+            }
+        }
+
         return diagnostics
     }
 

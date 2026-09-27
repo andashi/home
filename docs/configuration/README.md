@@ -21,13 +21,14 @@ Fold (cover and inner display).
 | [Favorites](favorites.md) | `home.favorites`: the pinned apps the dock shows |
 | [Search bar](search-bar.md) | `home.searchBar.position`, what search looks like |
 | [Search](search.md) | `search`: favorites row, all apps, grid or list, labels, contacts, shortcuts, filter bar, keyboard, Enter, order, hidden items |
+| [Gestures](gestures.md) | `gestures`: what the swipes, double tap, long press and home button do |
 | [Screens](screens.md) | Every scene on the phone, the Fold's cover and its inner display |
 | [Complete example](complete-example.json) | Every key the launcher applies, each off its default, in the form the read-back writes. The round-trip test runs it through parse, apply and read-back (#3) |
 
 ## The file
 
-The top level has five keys: `schemaVersion` (required, currently `2`),
-`icons`, `appearance`, `home` and `search`. Everything else is optional, and **an absent
+The top level has six keys: `schemaVersion` (required, currently `2`),
+`icons`, `appearance`, `home`, `search` and `gestures`. Everything else is optional, and **an absent
 key means "unmanaged", not "off"**: the launcher leaves whatever is set on the
 device. Comments and trailing commas are allowed (JSONC).
 
@@ -168,6 +169,12 @@ A change stays on the device, and the report says why, when:
 - `malformed-config`, `invalid-config`, `schema-version-outdated`: the file
   is broken, has errors, or is an older `schemaVersion`; it is never
   overwritten.
+
+And a change stays on the device while the file keeps its value, the report
+saying why, when the file cannot name what the device now has:
+- `colors-custom`: a colour scheme a person made ([Appearance](appearance.md));
+- `gesture-inexpressible`: a gesture that opens a shortcut
+  ([Gestures](gestures.md)).
 
 What is never written back is listed with the other exceptions under
 [The file](#the-file).
