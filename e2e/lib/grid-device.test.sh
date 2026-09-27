@@ -679,6 +679,11 @@ check "a nested retry_for reports the bound in force, not the one asked for" rep
 mkdir -p "$WORK/gos/emulator"
 cat > "$WORK/gos/emulator/run.sh" <<'EOF2'
 #!/usr/bin/env bash
+# `running` answers from BOOT_STATE (the boot tests) and is not logged.
+if [ "$1" = running ]; then
+  [ -n "${BOOT_STATE:-}" ] && [ "$(cat "$BOOT_STATE")" != down ] && { echo 4242; exit 0; }
+  exit 1
+fi
 echo "run.sh $* owner=${LOCK_OWNER:-}" >> "$CALLS"
 [ "${FAKE_STOP_RC:-0}" = 0 ] || { echo " x held by someone, refusing to stop it"; exit 1; }
 EOF2
@@ -770,8 +775,11 @@ check "push_config rejects --ignored followed by another option" rejects_a_flag_
 # records that in BOOTED; finish_instance uses it only to decide whether to
 # warn. The instance's state is $WORK/boot/state: down, up, or offline
 # (running, but adbd restarting, as right after `run.sh start` ends with
-# `adb root`). The adb fake is what turns the offline case red if the check
-# ever goes back to asking adb. run.sh is the stop_and_release fake above.
+# `adb root`). "Running" is `run.sh running`'s answer, the one definition
+# (provisioning 514d9c6): the adb fake turns the offline case red if the check
+# goes back to asking adb, and a pgrep that never finds anything turns the up
+# case red if it goes back to a private pgrep. run.sh is the stop_and_release
+# fake above.
 mkdir -p "$WORK/boot"
 cat > "$WORK/boot/adb" <<EOF
 #!/usr/bin/env bash
@@ -781,16 +789,13 @@ case "\$(cat "$WORK/boot/state")" in
   *) echo "error: device 'fake' not found" >&2; exit 1 ;;
 esac
 EOF
-cat > "$WORK/boot/pgrep" <<EOF
-#!/usr/bin/env bash
-[ "\$(cat "$WORK/boot/state")" != down ] && echo 4242
-EOF
+printf '#!/usr/bin/env bash\nexit 1\n' > "$WORK/boot/pgrep"
 chmod +x "$WORK/boot/adb" "$WORK/boot/pgrep"
 booted_after() { # $1 = down|up|offline; prints BOOTED and the run.sh calls
   export CALLS="$WORK/calls"; : > "$CALLS"
   echo "$1" > "$WORK/boot/state"
-  ( PATH="$WORK/boot:$PATH" SERIAL=emulator-5562 GOS_REPO="$WORK/gos" LOCK_OWNER="me@fake#1"; export LOCK_OWNER
-    boot_instance; printf '%s|%s' "$BOOTED" "$(cat "$CALLS")" )
+  ( PATH="$WORK/boot:$PATH" SERIAL=emulator-5562 GOS_REPO="$WORK/gos" LOCK_OWNER="me@fake#1" BOOT_STATE="$WORK/boot/state"
+    export LOCK_OWNER BOOT_STATE; boot_instance; printf '%s|%s' "$BOOTED" "$(cat "$CALLS")" )
 }
 boots_a_down_instance() { [ "$(booted_after down)" = "1|run.sh start owner=me@fake#1" ]; }
 check "boot_instance boots a down instance and says it did" boots_a_down_instance
@@ -879,6 +884,9 @@ check "delete_snapshots fails, naming every snapshot, when the list cannot be re
 # cold-1-m1 left behind (#198 review).
 ignores_a_longer_name() { snapshots_after $'clean\ncold-1-m10' >/dev/null; }
 check "delete_snapshots does not take a longer name for one of its own" ignores_a_longer_name
+# A hyphen ends a grep word: cold-1-m1-old is not cold-1-m1 either (#198 review).
+ignores_a_hyphenated_longer_name() { snapshots_after $'--  clean  1.2G\n--  cold-1-m1-old  3.5G' >/dev/null; }
+check "delete_snapshots does not take a hyphenated longer name for one of its own" ignores_a_hyphenated_longer_name
 
 # The end of a run: a running instance nobody holds is a stray, whoever
 # booted it, so it is stopped and released - unless the caller held the lock
