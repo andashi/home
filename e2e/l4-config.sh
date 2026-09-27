@@ -370,7 +370,11 @@ cat > "$FOLD_ROWS_CONFIG" <<'EOF'
 EOF
 
 # The /config read-back is fully populated (ConfigStateMapper), so these are
-# the exact effective values after applying VALID_CONFIG.
+# the exact effective values after applying VALID_CONFIG. The whole objects are
+# compared on purpose: this pins that the read-back is complete, including the
+# keys the fixture leaves out, so a new key updates these filters in the pull
+# request that adds it. That differs from comparing /config with a file made
+# elsewhere, which compares only the keys the file writes (#188, #200).
 EFFECTIVE_FILTER='
   .schemaVersion == 2
   and .icons.themed == true

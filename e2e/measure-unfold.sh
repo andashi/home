@@ -93,6 +93,11 @@ cleanup() {
 trap cleanup EXIT
 
 [ $# -ge 1 ] || die "usage: $0 a.apk [b.apk ...]"
+# Before anything boots: an APK of another package fails here, not after a boot.
+for apk in "$@"; do
+  [ -f "$apk" ] || die "no such APK: $apk"
+  require_apk_package "$apk" "$PKG"
+done
 [ -x "$TP" ] || die "trace_processor not found (TRACE_PROCESSOR)"
 "$LOCK" acquire "$LOCK_OWNER" "$SERIAL" >/dev/null || die "$SERIAL is locked by someone else"
 HAVE_LOCK=1

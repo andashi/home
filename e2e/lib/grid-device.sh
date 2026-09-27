@@ -326,6 +326,18 @@ finish_instance() {
   stop_and_release
 }
 
+# Fails, before anything boots, unless the APK installs as the package the
+# script works with; an unreadable package fails too, since an empty answer
+# is not a match. aapt2 is AAPT2, else on PATH, else the newest build-tools.
+require_apk_package() { # $1 = apk, $2 = expected package
+  local aapt2 got
+  aapt2="${AAPT2:-$(command -v aapt2 || ls -d "${ANDROID_HOME:-/opt/android-sdk}"/build-tools/*/aapt2 2>/dev/null | sort -V | tail -1)}"
+  [ -x "$aapt2" ] || die "aapt2 not found (set AAPT2): it checks what $(basename "$1") installs as"
+  got="$("$aapt2" dump packagename "$1" 2>/dev/null)" && [ -n "$got" ] \
+    || die "could not read the package of $(basename "$1")"
+  [ "$got" = "$2" ] || die "$(basename "$1") installs as $got, but this script works with $2"
+}
+
 wake_screen() {
   adb_t shell svc power stayon true >/dev/null 2>&1 || true
   adb_t shell input keyevent KEYCODE_WAKEUP >/dev/null 2>&1 || true

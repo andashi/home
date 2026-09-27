@@ -92,6 +92,11 @@ cleanup() {
 trap cleanup EXIT
 
 [ $# -ge 1 ] || die "usage: $0 a.apk [b.apk ...]"
+# Before anything boots: an APK of another package fails here, not after a boot.
+for apk in "$@"; do
+  [ -f "$apk" ] || die "no such APK: $apk"
+  require_apk_package "$apk" "$PKG"
+done
 [[ "$RUNS" =~ ^[1-9][0-9]*$ ]] || die "RUNS must be a positive integer, not '$RUNS'"
 [[ "$STARTS" =~ ^[1-9][0-9]*$ ]] || die "STARTS must be a positive integer, not '$STARTS'"
 # A ceiling means something only next to the floor it sits above.
