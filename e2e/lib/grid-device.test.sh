@@ -793,6 +793,12 @@ refuses_after_unset() {
   ! gos_run_case 'export LOCK_OWNER="me@fake#1"; unset LOCK_OWNER' && [ ! -s "$CALLS" ]
 }
 check "gos_run refuses after the owner was unset" refuses_after_unset
+# Hole six of the text scanner (#194): an assignment prefixed to another
+# command gives that command the value and leaves the shell without one.
+refuses_after_a_prefixed_assignment() {
+  ! gos_run_case 'LOCK_OWNER="me@fake#1" true' && [ ! -s "$CALLS" ]
+}
+check "gos_run refuses after LOCK_OWNER=x was only a command's prefix" refuses_after_a_prefixed_assignment
 passes_the_env_prefix() {
   cat > "$WORK/gos/emulator/run.sh" <<'EOF2'
 #!/usr/bin/env bash
