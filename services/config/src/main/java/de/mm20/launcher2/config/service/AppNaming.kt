@@ -38,6 +38,13 @@ interface AppNaming {
      * check reloads once to make it (ConfigWatcher).
      */
     suspend fun recorded(): Boolean
+
+    /**
+     * Removes the record: no record is the honest state when the one written
+     * cannot be put right (a restore that failed). The next start reloads to
+     * make it, and write-back waits until then.
+     */
+    suspend fun forget()
 }
 
 /**
@@ -64,6 +71,11 @@ internal class FileAppNaming(context: Context) : AppNaming {
             file.replaceAtomically(ConfigParser.json.encodeToString(serializer, naming))
         }
         state.value = naming
+    }
+
+    override suspend fun forget() = lock.withLock {
+        withContext(Dispatchers.IO) { file.delete() }
+        state.value = emptyMap()
     }
 
     /** A file that decodes: a corrupt one reads as empty, so it is no record (review on #214). */

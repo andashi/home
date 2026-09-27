@@ -256,6 +256,9 @@ class ConfigWatcherTest {
             written.value = naming
             recorded = true
         }
+        override suspend fun forget() {
+            recorded = false
+        }
     }
 
     @Test

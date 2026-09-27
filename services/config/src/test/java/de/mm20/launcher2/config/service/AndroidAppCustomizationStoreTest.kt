@@ -145,6 +145,9 @@ class AndroidAppCustomizationStoreTest {
             written.value = naming
         }
         override suspend fun recorded() = true
+        override suspend fun forget() {
+            written.value = emptyMap()
+        }
     }
 
     private val store = AndroidAppCustomizationStore(apps, profiles, attributes, searchables, naming)
@@ -402,6 +405,41 @@ class AndroidAppCustomizationStoreTest {
 
         assertTrue(failed.isFailure)
         assertEquals(mapOf(twoFirst.key to "com.example.two.First"), naming.written.value)
+    }
+
+    /**
+     * The restore is a write too, and can fail. The record would then claim a
+     * form the device is not in - the state the restore exists to prevent,
+     * reached by the repair. So it is forgotten instead: no record is the
+     * honest state, which the next start regenerates and write-back waits for.
+     * Neither failure is swallowed; the apply's own propagates, with the
+     * restore's attached.
+     */
+    @Test
+    fun `a restore that fails leaves no record, and the failure is not swallowed`() = runTest {
+        var replaces = 0
+        var forgotten = false
+        val brittle = object : AppNaming {
+            override fun observe(): Flow<Map<String, String?>> = kotlinx.coroutines.flow.flowOf(emptyMap())
+            override suspend fun replace(naming: Map<String, String?>) {
+                replaces++
+                if (replaces == 2) throw java.io.IOException("disk full")
+            }
+            override suspend fun recorded() = !forgotten
+            override suspend fun forget() {
+                forgotten = true
+            }
+        }
+        labelWriteFailure = IllegalStateException("database locked")
+
+        val failed = runCatching {
+            AndroidAppCustomizationStore(apps, profiles, attributes, searchables, brittle)
+                .replaceAndRead(listOf(AppConfig("com.example.two", label = "Two")))
+        }
+
+        assertEquals("database locked", failed.exceptionOrNull()?.message)
+        assertEquals("disk full", failed.exceptionOrNull()?.suppressed?.singleOrNull()?.message)
+        assertTrue("the record is gone", forgotten)
     }
 
     // ---- changes ----

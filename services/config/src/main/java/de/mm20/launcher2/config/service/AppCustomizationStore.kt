@@ -130,7 +130,20 @@ internal class AndroidAppCustomizationStore(
         try {
             writeDeviceState(installed, labels, wanted)
         } catch (e: Throwable) {
-            naming.replace(before)
+            // The restore can fail too, and then the record would claim a form
+            // the device is not in; no record is the honest state instead.
+            // Nothing is swallowed: the apply's failure propagates with the
+            // repair's attached (review on #214).
+            try {
+                naming.replace(before)
+            } catch (restore: Throwable) {
+                e.addSuppressed(restore)
+                try {
+                    naming.forget()
+                } catch (forget: Throwable) {
+                    e.addSuppressed(forget)
+                }
+            }
             throw e
         }
 

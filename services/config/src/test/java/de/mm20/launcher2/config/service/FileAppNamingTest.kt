@@ -79,6 +79,18 @@ class FileAppNamingTest {
         assertEquals(true, FileAppNaming(context).recorded())
     }
 
+    /** Forgotten is no record, on disk and for an observer of the same instance. */
+    @Test
+    fun `a forgotten record is no record`() = runBlocking {
+        val naming = FileAppNaming(context)
+        naming.replace(mapOf("app://a:A" to "a.A"))
+
+        naming.forget()
+
+        assertEquals(false, FileAppNaming(context).recorded())
+        assertEquals(emptyMap<String, String?>(), naming.observe().first())
+    }
+
     @Test
     fun `a replace is seen by an observer of the same instance`() = runBlocking {
         val naming = FileAppNaming(context)
