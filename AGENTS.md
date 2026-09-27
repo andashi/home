@@ -438,6 +438,17 @@ and head in the same call as the reviews.
   careful. The worst of them decided a permission grant. Compare whole fields,
   or use a tool that understands lists.
 
+  **A second instance shows "anchor your patterns" is the wrong fix.** A later
+  `pkill -f 'watch-pr.sh 223'`, written as the first command of a compound line
+  that went on to rebase a branch, matched **its own shell's command line** and
+  killed the whole invocation with status 144 - so the rebase never ran, and the
+  non-zero exit read as "the pkill failed" rather than "everything after the
+  semicolon was cancelled". The pattern was specific enough to look anchored.
+  **Kill by recorded PID, not by pattern**: any `-f` search runs inside a process
+  whose command line contains the pattern, so self-matching is the default rather
+  than an edge case, and the only safe patterns are ones the invoking command line
+  cannot contain - a property you would have to re-establish every time.
+
 **Durable state whose absence carries meaning is a permissive-default factory.**
 One new field - a record of how each app entry spelled its activity - produced
 **seven** defects in review, every one the same shape: the empty marker written
@@ -462,6 +473,20 @@ invites the comparison it forbids. The provisioning session's answer was to emit
 one identity `<` is sound, across two a consumer sees the identity change instead
 of reading 0 as "it went backwards". Two fields, and the rule becomes a check
 somebody can write a test for.
+
+**A check that is meant to stay silent needs its own tests more than a noisy one
+does.** Its correct output and its broken output are the same silence, and - unlike
+an ordinary checker - nobody will trip it by accident and discover it is dead. The
+provisioning repository's tripwire for the widget-diagnostic defect, designed to
+fire the first time any zone declares a widget other than the built-in const and
+to stay quiet for months otherwise, ships with four cases of its own for exactly
+that reason. Four cases for a tripwire is not over-engineering; it is the only way
+to know it still exists.
+
+And phrase such a check as **the question to answer** rather than as an
+instruction - *has andashi/home#219 shipped in the release we install?* An
+instruction goes stale when the situation changes; a question stays answerable, and
+it tells whoever trips it in six weeks what the check was for.
 
 **A fix can produce the next defect.** Two did that night: patching a guard's
 fourth hole opened its fifth, and consolidating four deadlines into one starved
