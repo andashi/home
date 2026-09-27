@@ -42,12 +42,9 @@ class ConfigSchemaTest {
         val generated = ConfigSchema.text()
         if (System.getProperty("updateSchema") == "true") schemaFile.writeText(generated)
 
-        assertEquals(
-            "docs/configuration/launcher.schema.json is stale; regenerate it with " +
-                "./gradlew :core:config:testDebugUnitTest --tests '*ConfigSchemaTest*' -PupdateSchema",
-            generated,
-            schemaFile.takeIf { it.exists() }?.readText(),
-        )
+        val committed = schemaFile.takeIf { it.exists() }?.readText()
+        // What changed leads the message; see ConfigSchema.staleness.
+        if (generated != committed) assertEquals(ConfigSchema.staleness(generated, committed), generated, committed)
     }
 
     /**

@@ -42,6 +42,56 @@ internal object ConfigSchema {
     /** The schema as it is checked in: pretty-printed, stable, one trailing newline. */
     fun text(): String = pretty.encodeToString(JsonObject.serializer(), document()) + "\n"
 
+    /** How to regenerate the checked-in schema, for a change of the contract made on purpose. */
+    const val RegenerateCommand = "./gradlew :core:config:testDebugUnitTest --tests '*ConfigSchemaTest*' -PupdateSchema"
+
+    /**
+     * Every property path in [schema] - `apps[].label`,
+     * `gestures.swipeLeft.packageName` - list items and alternatives
+     * (`oneOf`, `anyOf`, `allOf`) included.
+     */
+    fun keyPaths(schema: JsonObject, at: String = ""): Set<String> = buildSet {
+        (schema["properties"] as? JsonObject)?.forEach { (key, value) ->
+            val path = if (at.isEmpty()) key else "$at.$key"
+            add(path)
+            (value as? JsonObject)?.let { addAll(keyPaths(it, path)) }
+        }
+        (schema["items"] as? JsonObject)?.let { addAll(keyPaths(it, "$at[]")) }
+        for (combinator in listOf("oneOf", "anyOf", "allOf")) {
+            (schema[combinator] as? kotlinx.serialization.json.JsonArray)?.forEach { alternative ->
+                (alternative as? JsonObject)?.let { addAll(keyPaths(it, at)) }
+            }
+        }
+    }
+
+    /**
+     * Why the checked-in schema ([committed]) differs from the [generated]
+     * one, key paths first. A removed path is what a merge or a refactor
+     * that drops a key from ConfigParser.keyEffects looks like, and
+     * regenerating would rewrite the file to match the loss, so then the
+     * message says what it means and nothing about regenerating.
+     */
+    fun staleness(generated: String, committed: String?): String {
+        if (committed == null) return "docs/configuration/launcher.schema.json does not exist; generate it with $RegenerateCommand"
+        val now = keyPaths(Json.parseToJsonElement(generated) as JsonObject)
+        val was = keyPaths(Json.parseToJsonElement(committed) as JsonObject)
+        val removed = (was - now).sorted()
+        val added = (now - was).sorted()
+        val addedLine = if (added.isEmpty()) "" else "key paths added: ${added.joinToString()}"
+        return when {
+            removed.isNotEmpty() ->
+                "key paths removed from the contract: ${removed.joinToString()}. " +
+                    "Keys disappeared: if that was not deliberate, a merge or a refactor lost them from " +
+                    "ConfigParser.keyEffects - find where before touching launcher.schema.json." +
+                    if (addedLine.isEmpty()) "" else " Also $addedLine."
+            added.isNotEmpty() ->
+                "$addedLine. If that is the change you made, regenerate launcher.schema.json with $RegenerateCommand"
+            else ->
+                "no key path added or removed, but launcher.schema.json differs (a limit, a value or a description); " +
+                    "regenerate it with $RegenerateCommand"
+        }
+    }
+
     fun document(): JsonObject = JsonObject(
         mapOf(
             "\$schema" to JsonPrimitive("https://json-schema.org/draft/2020-12/schema"),
