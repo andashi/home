@@ -103,10 +103,14 @@ the list everyone reads while it is still failing builds.
 
 ## Merging a pull request
 
-Three conditions, no exceptions and no judgement about how small the diff is:
-every check green, **zero** unresolved review threads, and CodeRabbit's review
-covering the **current head**. If the hourly quota is exhausted (10 included
-reviews per hour, rolling), wait for it. A pull request that waits an hour
+Every condition in this section holds before a merge, no exceptions and no
+judgement about how small the diff is. **The number is deliberately not given:**
+it was three when this was written and has grown with every hole somebody found,
+and a stale count in a rule is one people stop reading - the merge script said
+"all four conditions hold" while checking seven. The original three: every check
+green, **zero** unresolved review threads, and CodeRabbit's review covering the
+**current head**. If the hourly quota is exhausted (10 included reviews per
+hour, rolling), wait for it. A pull request that waits an hour
 costs an hour; one merged unreviewed costs whatever it broke.
 
 Recount immediately before merging rather than trusting a count from earlier in
@@ -120,11 +124,48 @@ And a recount cannot see a *push* in the same gap - the verification would be of
 one head and the merge of another, with nothing to say so. `gh pr merge
 --match-head-commit <sha>` refuses when the head has moved.
 
+**On `gh` before v2.99.0, `--delete-branch` makes `gh` check out `main` locally
+after the merge**, which fails whenever `main` is checked out in another
+worktree - and the command then exits non-zero for a merge that **has already
+succeeded**, leaving the branch behind. Fired on #207, because this clone runs
+2.98.0; upstream fixed it in v2.99.0 (`fix(pr merge): safely handle
+--delete-branch with linked worktrees`, cli/cli#14007). **So the first remedy is
+to upgrade `gh`**, and the version-independent one is to merge without the flag,
+confirm `state == MERGED` through the API, then delete the ref through the API.
+
+The scoping matters as much as the trap: the first draft of this paragraph
+claimed it of `gh` in general, and review caught it. A tool bug written down
+without its version outlives the bug and sends the next reader to work around
+something that was fixed.
+
+The lesson under it is not version-scoped. Every other failure in this document
+points the other way, where a broken check answers permissively; this one is a
+**correct action reporting failure**, and it is no better: a caller either
+retries a merge that happened, or reports that it did not.
+
+**Check what the merge goes into, not only the pull request.** The CI section
+below says red on `main` is fixed before the next merge, and for a long time
+nothing enforced it - which is #132 exactly. A gate that reads only the pull
+request will merge onto a `main` whose own run is red, or has not finished.
+Refuse both, with **different** messages: an unfinished run means wait, a failed
+one means fix `main` first. One message for both is how the wrong action gets
+taken.
+
 **"Resolved" is not "fixed".** CodeRabbit resolves its own threads on a rebase,
 including ones whose fixes the rebase does not contain - so a count of zero can
 be a true answer about a false state. A thread the bot closed with no reply
 naming a fix commit has not been shown to be addressed; read it before it
 counts.
+
+**If you automate that check, the bot has two names in one response.**
+`resolvedBy.login` comes back as `coderabbitai[bot]`, while the same actor is
+`coderabbitai` in `comments.nodes[].author.login`. A condition comparing the
+resolver to `coderabbitai` therefore matches nothing and counts zero - and zero
+is exactly what "no bot-resolved threads" looks like, so it reads as a pass. It
+sat dead in the merge gate from the day it was written until #212, where the bot
+resolved its own thread and the gate waved it through. Strip the `[bot]` suffix
+before comparing, on both sides, and prove it by resolving a thread as the bot
+and watching the gate refuse.
 
 **A base behind `main` is only a problem when it overlaps - with one caveat
 that review caught in this very section.** The rebase rule protects against a
@@ -386,9 +427,41 @@ and head in the same call as the reviews.
 fourth hole opened its fifth, and consolidating four deadlines into one starved
 the last step. After fixing something in a checker, break it again.
 
+**A third shape, found the day after: the answer was computed and then thrown
+away.** Not a wrong comparison - a discarded one, and it hides in the same place
+for the same reason.
+
+A shell `for` loop exits with its **last** iteration's status. So
+
+    for f in config/*.json; do jq -e . "$f" >/dev/null && echo "ok: $f"; done
+    for f in $(find . -name '*.sh'); do bash -n "$f"; done
+
+validate every file and report only the last one. An invalid config or a syntax
+error anywhere but at the end passes green on every push. Found in the
+provisioning repository's only workflow on 2026-09-27 and demonstrated with three
+files whose middle member was broken: exit 0 before the fix, exit 1 after. Its
+`make check` had it right locally, so **the gate that ran automatically was the
+weaker of the two**, which is the wrong way round. Accumulate into a variable and
+exit on it after the loop, the way `.github/workflows/commit-hygiene.yml` does.
+
+Two things that shape shares with the `[bot]` suffix above. Both produce a
+**quiet success**: one counted zero and called it clean, the other computed every
+answer and kept the last. And both sat in a checker that had never been watched
+to fail - that workflow was also unparseable YAML for a while and did not run at
+all, so it was silently useless twice, in two different ways, while the
+repository looked green throughout. **A gate nobody has ever watched fail is
+indistinguishable from no gate.**
+
+The same scan found nothing of the kind here: `commit-hygiene.yml` accumulates
+`bad=1` and exits after its loop, `check-helpers.test.sh` accumulates `failed=1`
+and exits on it, and `delete_snapshots` ignores its deletes on purpose because
+the list afterwards is the check. Four candidates, four false alarms - which is
+what a heuristic for this looks like when it comes back clean, and worth writing
+down so the next person does not re-run it hopefully.
+
 ### Ways a test runs and tests nothing
 
-Seven distinct mechanisms, all met in this repository within one week. None is
+The mechanisms below were all met in this repository within one week. None is
 carelessness; every one of them looks correct while you are writing it. That is
 why a green run is not evidence and the deliberate break is, and it is why the
 test policy above asks for the break rather than the pass.
@@ -412,9 +485,52 @@ test policy above asks for the break rather than the pass.
    and the unfixed build passed (#187).
 7. **The assertion ran off the test thread.** A concurrent test asserting on a
    worker thread never sees the failure, so a wrong result stays green (#190).
+8. **The fake could not produce the answer the code must reject.** A fake that
+   only ever returns a right-shaped answer proves nothing about the rejection,
+   and it is always the convenient one to write. Three in one day, each found by
+   somebody other than its author: a fake that closed a tapped dialog faster
+   than a device does, so a break stayed green until the fake was made as slow
+   as the device; a one-line `dumpsys gfxinfo` fake that could not fill a pipe
+   buffer, which left `pipefail` plus an early-exiting reader unreachable in the
+   tests while it broke `frames_rendered` on the device (#210); and a fake
+   provider that always returned a report whose hash differed from the previous
+   one, so an implementation regressing to a hash-only predicate passed the new
+   wiring test (#211). **A fake must match reality in whatever dimension the
+   code is sensitive to** - speed, size, ordering - and must be able to lie in
+   the specific way the code exists to catch.
+9. **The fixture was a state the system cannot be in.** The fixture-side of 8,
+   and it produces a red test that proves the wrong thing. Chasing the
+   `apps` write-back defect on #207, a reproduction set the *applied* baseline to
+   an entry carrying an explicit `activity` - but the applied state is the
+   store's read-back, and the store never emits one there. The case went red, it
+   was targeted, the other 28 passed: every signal a good reproduction gives. It
+   demonstrated a silent loss of the activity, while what actually happens with a
+   reachable baseline is a **duplicate entry carrying a stale label** - which was
+   what the review had said, and what the reproduction was taken as disproving.
+   Both faults are real; only one occurs. **A red test is evidence only if its
+   fixture is reachable**, so derive the baseline from what the producing code
+   emits, never from what makes the case read well.
 
-The check that catches all seven is the same one: break what the test guards,
-and watch **that** test go red and the others stay green. It costs a minute.
+The check is one minute of work and three questions, and the first alone does not
+finish it: **break what the test guards, and watch that test go red and the
+others stay green.**
+
+**Break it in the input the guard is about.** For a test that reads a document
+outside its source set, change the **document**, not the code - a break in a
+declared input re-runs the task and tells you nothing about whether the
+undeclared one would. That is mechanism 1, and it is invisible to a code break by
+construction: `ConfigParserTest` was verified by breaking ADR 0002's example, and
+it passed because it had not run. Breaking the parser instead would have gone red
+and proved the wrong thing.
+
+**And it does not catch 9 at all, which is the case that looks most like a pass.** An
+unreachable fixture produces exactly that result - the case goes red, it is
+targeted, the others stay green - and proves the wrong thing. So the check has a
+second half that cannot be skipped for a new test: **ask whether the fixture is a
+state the system can actually be in**, and answer it from what the producing code
+emits rather than from the test reading well. Review caught this contradiction in
+the first draft of this very list, where the sentence above claimed to catch all
+of them while item 9 described its own result.
 
 **A break that does not go red is a finding, not a result.** It means one of two
 things - the test is decoration, or the break was incomplete - and they look
