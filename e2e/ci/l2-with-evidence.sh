@@ -57,8 +57,10 @@ set -uo pipefail
 # Self-contained on purpose: e2e/ci/ runs on a bare runner, without the
 # device library.
 : "${ANR_RECHECK_SECONDS:=5}" "${ANR_RECHECK_SLEEP:=1}"
-# The Wait fallback has one wall-clock deadline of its own: the dump, the
-# read, the tap and the re-check after it all share it (#191 review).
+# The Wait fallback's own wall-clock budget bounds everything before its
+# tap: the dump, the dump read and the window read (#191 review). The check
+# after the tap is bounded separately, by ANR_RECHECK_SECONDS, so a slow dump
+# cannot starve it (#202).
 : "${ANR_WAIT_SECONDS:=10}"
 # The watch until the tests start: its own deadline, its pause between looks,
 # and the package whose install means the tests are about to start (:app:ui's
@@ -230,28 +232,38 @@ press_wait_on_foreign() { # $@ = the foreign packages
     timeout "$(( left > 0 ? left : 1 ))" adb shell input tap $(( ($1 + $3) / 2 )) $(( ($2 + $4) / 2 ))
     # The dialog closes a moment after the tap: the device's first look right
     # after it still found System UI's (#189). Wait for the list to change,
-    # within the same deadline.
-    local before="$now" pause
-    while [ "$SECONDS" -lt "$wdeadline" ]; do
-      pause="$(wleft)"
+    # within a bound of its own. Not the Wait's budget: one budget over the
+    # dump, the read, the tap and this check let a slow dump starve the
+    # check. On main (2026-09-27) the dump took about 8 s of 10, the dialog
+    # closed 1 s after the tap, and the check had less than that left, so a
+    # clean Wait was flagged. Each step is bounded; none can eat another's.
+    local before="$now" pause cdeadline=$((SECONDS + ANR_RECHECK_SECONDS))
+    while [ "$SECONDS" -lt "$cdeadline" ]; do
+      pause=$((cdeadline - SECONDS))
       [ "$ANR_RECHECK_SLEEP" = 0 ] || sleep "$(( ANR_RECHECK_SLEEP < pause ? ANR_RECHECK_SLEEP : pause ))"
-      left="$(wleft)"; [ "$left" -gt 0 ] || break
+      left=$((cdeadline - SECONDS)); [ "$left" -gt 0 ] || break
       # A read that fails here cannot show the dialog gone, so it cannot
       # rule out that the tap closed an ANR of ours: flagged the same way.
       if ! now="$(anr_packages "$left")"; then
         WAIT_AMBIGUOUS=1
-        printf '::error::The window list could not be read after pressing Wait on the ANR dialog of %s, so an ANR of the app under test may have been closed instead; the run fails if its tests pass.\n' "$only"
+        printf '::error::The window list could not be read after pressing Wait on the ANR dialog of %s, so an ANR of the app under test may have been closed instead; the run fails if its tests pass. This is not a launcher failure: the run cannot be vouched for (#113).\n' "$only"
         return 1
       fi
       [ "$now" = "$before" ] || break
     done
+    # The last pause can run out the bound, and a dialog that closed during
+    # it would be taken as still up: one more read, bounded, before deciding
+    # (#202 review). An unreadable screen leaves the last reading standing.
+    if [ "$now" = "$before" ]; then
+      now="$(anr_packages 2)" || now="$before"
+    fi
     # A tap closes one dialog, the topmost. If the one it was meant for is
     # still up, an ANR of ours may have come up just before the tap and been
     # closed instead: that cannot be told apart from Wait not working, so it
     # is flagged, and a run that passes is failed rather than trusted.
     if printf '%s\n' "$now" | grep -Fxq -- "$only"; then
       WAIT_AMBIGUOUS=1
-      printf '::error::Wait left the ANR dialog of %s up. A tap closes the topmost dialog, so an ANR of the app under test may have come up just before it and been closed instead; the run fails if its tests pass.\n' "$only"
+      printf '::error::Wait left the ANR dialog of %s up. A tap closes the topmost dialog, so an ANR of the app under test may have come up just before it and been closed instead; the run fails if its tests pass. This is not a launcher failure: the run cannot be vouched for (#113).\n' "$only"
       return 1
     fi
     [ -z "${WAIT_INFLIGHT:-}" ] || rm -f "$WAIT_INFLIGHT"
