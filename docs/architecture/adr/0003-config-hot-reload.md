@@ -129,6 +129,18 @@ yet (no file, or a file caught half-written) stays pending and is retried
 after the next reload; one that arrives during a reload is never cleared by
 it.
 
+A fifth trigger, `apps-changed`, applies what the file names once it is
+installed. A favorite, a widget provider, an app's label or visibility, a
+gesture's app, or a profile's entry that names something absent is skipped and
+reported (`favorite-unavailable`, `unknown-widget-provider`, `app-unavailable`,
+`gesture-app-unavailable`, `profile-unavailable`). When the app arrives the file has not changed, so no
+watcher event and no startup drift would apply it. The watcher therefore
+follows the installed apps, and an arrival reloads the file while the last
+report carries one of those codes. An app leaving, the first read of the list,
+and an arrival while nothing waits reload nothing. Following the stores instead
+cannot work: an app with no customization yet describes as nothing, so their
+change streams emit nothing when it is installed.
+
 So a consumer waiting for the report about its own push identifies it by
 the config hash, and by the report not being the one there before the push,
 never by the trigger. The trigger names what caused a reload, not which push

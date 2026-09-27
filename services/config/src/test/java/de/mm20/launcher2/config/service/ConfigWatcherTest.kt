@@ -9,7 +9,10 @@ import de.mm20.launcher2.config.Severity
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.test.TestScope
@@ -564,5 +567,171 @@ class ConfigWatcherTest {
 
         assertEquals("only the pending measurement's reload", 1, store.applyCount)
         job.cancel()
+    }
+
+    // ----- an app the file names arrives after the file (#207 review) -----
+
+    private fun TestScope.arrivalWatcher(store: FakeConfigStore, arrivals: kotlinx.coroutines.flow.Flow<String>? = null) =
+        ConfigWatcher(
+            context, ConfigReloader(store, ReloadReportStore(context)), ReloadReportStore(context),
+            scope = this, arrivals = arrivals ?: kotlinx.coroutines.flow.emptyFlow(),
+        )
+
+    private suspend fun lastReportWaitsOn(code: String?) = ReloadReportStore(context).save(
+        ReloadReport(
+            success = true,
+            diagnostics = listOfNotNull(code?.let { Diagnostic(Severity.Warning, it, "x", "absent") }),
+        ),
+    )
+
+    /**
+     * A favorite, a widget, an app's label or visibility, or a profile's entry
+     * that names something absent is skipped and reported, and nothing else
+     * reloads the file when it arrives: the file does not change, and the store
+     * reads the same for an app with no customization yet. So an arrival while
+     * the last reload waits on something absent reloads the file.
+     */
+    @Test
+    fun `an arrival while the last reload waits on something absent reloads the file`() = runTest {
+        val store = FakeConfigStore()
+        writeConfig()
+        val watcher = arrivalWatcher(store)
+
+        for ((i, code) in ConfigWatcher.WaitingCodes.withIndex()) {
+            lastReportWaitsOn(code)
+            watcher.onArrival("com.example.new$i")
+            assertEquals(code, i + 1, store.applyCount)
+        }
+
+        assertEquals(
+            listOf("app-unavailable", "favorite-unavailable", "gesture-app-unavailable", "profile-unavailable", "unknown-widget-provider"),
+            ConfigWatcher.WaitingCodes.sorted(),
+        )
+    }
+
+    /** Controls: nothing absent, or only something no install brings, reloads nothing. */
+    @Test
+    fun `an arrival with nothing waiting reloads nothing`() = runTest {
+        val store = FakeConfigStore()
+        writeConfig()
+        val watcher = arrivalWatcher(store)
+
+        lastReportWaitsOn(null)
+        watcher.onArrival("com.example.a")
+        lastReportWaitsOn("grid-overflow")
+        watcher.onArrival("com.example.b")
+        lastReportWaitsOn("search-action-unavailable")
+        watcher.onArrival("com.example.c")
+
+        assertEquals(0, store.applyCount)
+    }
+
+    @Test
+    fun `an arrival without a config file reloads nothing`() = runTest {
+        val store = FakeConfigStore()
+        lastReportWaitsOn("app-unavailable")
+
+        arrivalWatcher(store).onArrival("com.example.a")
+
+        assertEquals(0, store.applyCount)
+    }
+
+    /**
+     * An app that arrived while the launcher was not running is reported by
+     * no signal again, and the startup check skips a file it knows. So the
+     * watcher decides once when it starts (review on #213). The first version
+     * asserted the opposite - that the first look reloads nothing - which is
+     * worse than no control: it certified the defect.
+     */
+    @Test
+    fun `at start, a report that waits on something absent reloads once`() = runTest {
+        val store = FakeConfigStore()
+        writeConfig()
+        lastReportWaitsOn("favorite-unavailable")
+
+        val job = arrivalWatcher(store).watchArrivals()!!
+        runCurrent()
+        store.awaitApplies(1)
+        job.cancel()
+
+        assertEquals(1, store.applyCount)
+    }
+
+    @Test
+    fun `at start, a report that waits on nothing reloads nothing`() = runTest {
+        val store = FakeConfigStore()
+        writeConfig()
+        lastReportWaitsOn(null)
+        val signals = kotlinx.coroutines.channels.Channel<String>()
+
+        val job = arrivalWatcher(store, signals.consumeAsFlow()).watchArrivals()!!
+        // The start is decided before the first signal is taken: once this
+        // send returns, the start has been decided.
+        signals.send("com.example.a")
+        job.cancel()
+
+        assertEquals(0, store.applyCount)
+    }
+
+    /** The wiring: each signal the flow delivers is decided. */
+    /**
+     * The package callback registers when its flow is collected. Decided
+     * first, the start reload ran with nothing listening, and a package
+     * installed during it was missed for good (review on #213). So the
+     * signals are collected before the start is decided.
+     */
+    @Test
+    fun `the signals are listened to before the start is decided`() = runTest {
+        val store = FakeConfigStore()
+        writeConfig()
+        lastReportWaitsOn("app-unavailable")
+        val arrivals = kotlinx.coroutines.flow.flow<String> {
+            store.events += "subscribed"
+            kotlinx.coroutines.awaitCancellation()
+        }
+        val job = arrivalWatcher(store, arrivals).watchArrivals()!!
+
+        withContext(Dispatchers.Default) { withTimeout(10_000) { while (store.applyCount < 1) delay(10) } }
+        job.cancel()
+
+        val events = store.events.toList()
+        assertTrue("$events", events.indexOf("subscribed") in 0 until events.indexOfFirst { it.startsWith("apply") })
+    }
+
+    @Test
+    fun `a signal from the flow reloads while something waits`() = runTest {
+        // Every reload reports the absence again, so something waits throughout.
+        val store = FakeConfigStore(applyDiagnostics = listOf(Diagnostic(Severity.Warning, "app-unavailable", "apps[0]", "absent")))
+        writeConfig()
+        lastReportWaitsOn("app-unavailable")
+        val signals = kotlinx.coroutines.channels.Channel<String>()
+        val job = arrivalWatcher(store, signals.consumeAsFlow()).watchArrivals()!!
+
+        signals.send("com.example.a")
+        signals.send("com.example.b")
+        // Signals queue from the start (they are listened to before the start
+        // is decided), so the sends say nothing about the decisions: wait for
+        // the reloads themselves - the start's and one per signal.
+        withContext(Dispatchers.Default) { withTimeout(10_000) { while (store.applyCount < 3) delay(10) } }
+        job.cancel()
+
+        assertEquals("the start and each signal reloaded", 3, store.applyCount)
+    }
+
+    /**
+     * The app list's growth is one of the signals: how a profile's apps
+     * appear when the profile becomes available. The first look is a signal
+     * of its own (the watcher decides once more on it), a key leaving is none.
+     */
+    @Test
+    fun `the app list's growth signals the new keys only`() = runTest {
+        val keys = kotlinx.coroutines.flow.flowOf(
+            setOf("app://a"),
+            setOf("app://a", "app://b"),
+            setOf("app://b"),
+            setOf("app://b", "app://c", "app://d"),
+        )
+
+        assertEquals(listOf(FirstAppListRead, "app://b", "app://c", "app://d"), appKeyGrowth(keys).toList())
     }
 }

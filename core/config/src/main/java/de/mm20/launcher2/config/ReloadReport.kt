@@ -35,6 +35,15 @@ enum class ReloadTrigger {
      */
     @SerialName("grid-measured")
     GridMeasured,
+
+    /**
+     * An app was installed (or a profile's apps appeared) while the last
+     * reload was waiting on something absent: a favorite, a widget provider,
+     * an app's label or visibility, or a profile. The file did not change, so
+     * nothing else would apply it now (#207 review).
+     */
+    @SerialName("apps-changed")
+    AppsChanged,
 }
 
 @Serializable

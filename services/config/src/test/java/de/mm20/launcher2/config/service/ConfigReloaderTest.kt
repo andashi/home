@@ -12,9 +12,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -223,6 +226,31 @@ class ConfigReloaderTest {
         assertEquals(listOf("read", "apply:[home.grid]", "read"), measured.events)
     }
 
+    /**
+     * A widget whose provider was missing is kept in the layout as written, so
+     * after its provider arrives the file and the store still agree and a
+     * plain reload fits nothing: the provider would never be looked up again,
+     * and the report would drop unknown-widget-provider with the layout still
+     * on the fallback size (review on #213). An arrival reload applies the grid.
+     */
+    @Test
+    fun `a reload for an app arrival applies the grid the file and the store agree on`() = runTest {
+        val layout = """{"items": [{"id": "clock", "widget": "com.example/.Clock", "x": 0, "y": 0, "w": 4, "h": 2}]}"""
+        val text = """{"schemaVersion": 2, "home": {"grid": {"layouts": {"phone": $layout}}}}"""
+        val stored = ConfigState(
+            gridLayouts = mapOf(
+                "phone" to de.mm20.launcher2.config.GridLayoutConfig(
+                    listOf(de.mm20.launcher2.config.GridItemConfig(id = "clock", widget = "com.example/.Clock", x = 0, y = 0, w = 4, h = 2)),
+                ),
+            ),
+        )
+
+        val arrival = FakeConfigStore(state = stored)
+        newReloader(arrival).first.reload(text, ReloadTrigger.AppsChanged)
+
+        assertEquals("apply:[home.grid]", arrival.events[1])
+    }
+
     // A measurement reload must not supersede the report a push is waited on
     // by, unless it changed something the reader has to know (#178 review).
 
@@ -379,6 +407,49 @@ class ConfigReloaderTest {
         assertTrue(events[3].startsWith("apply:"))
         // Both reloads were applied exactly once.
         assertEquals(setOf("apply:[icons]", "apply:[home.grid]"), setOf(events[1], events[3]))
+    }
+
+    /**
+     * An app arrival decides from the last report whether to reload. Decided
+     * outside the reload lock, it could read the report of before a reload
+     * that is already running - one that read the app list before the app
+     * arrived and is about to report it missing - skip, and the arrival would
+     * be spent (review on #213). Under the lock, the decision waits for that
+     * reload's report.
+     */
+    @Test
+    fun `a conditional reload decides after a running reload has reported`() = runBlocking {
+        val store = FakeConfigStore(
+            applyDelayMs = 300,
+            applyDiagnostics = listOf(Diagnostic(Severity.Warning, "app-unavailable", "apps[0]", "not installed")),
+        )
+        val (reloader, reportStore) = newReloader(store)
+        val file = java.io.File(context.cacheDir, "conditional.json").apply {
+            writeText("""{"schemaVersion": 2, "icons": {"themed": false}}""")
+        }
+
+        val running = async(Dispatchers.Default) { reloader.reload(file, ReloadTrigger.Broadcast) }
+        withTimeout(5_000) { while (store.events.isEmpty()) delay(5) }
+        val decided = reloader.reloadIf(file, ReloadTrigger.AppsChanged) {
+            reportStore.read()?.diagnostics.orEmpty().any { it.code == "app-unavailable" }
+        }
+        running.await()
+
+        assertNotNull("the decision saw the running reload's report", decided)
+        assertEquals(2, store.applyCount)
+    }
+
+    /** Control: a condition that does not hold reloads nothing. */
+    @Test
+    fun `a conditional reload whose condition does not hold reloads nothing`() = runBlocking {
+        val store = FakeConfigStore()
+        val (reloader, _) = newReloader(store)
+        val file = java.io.File(context.cacheDir, "conditional.json").apply {
+            writeText("""{"schemaVersion": 2, "icons": {"themed": false}}""")
+        }
+
+        assertNull(reloader.reloadIf(file, ReloadTrigger.AppsChanged) { false })
+        assertEquals(0, store.applyCount)
     }
 
     @Test

@@ -14,6 +14,7 @@ import de.mm20.launcher2.homegrid.HomeGridArrangement
 import de.mm20.launcher2.homegrid.HomeGridCell
 import de.mm20.launcher2.homegrid.HomeGridGeometry
 import de.mm20.launcher2.homegrid.HomeGridItem
+import de.mm20.launcher2.homegrid.HomeGridLayouts
 import de.mm20.launcher2.homegrid.HomeGridReconciler
 import de.mm20.launcher2.homegrid.HomeGridRepository
 import de.mm20.launcher2.homegrid.HomeGridDefaults
@@ -34,6 +35,7 @@ import kotlinx.coroutines.flow.SharedFlow
 import de.mm20.launcher2.homegrid.MeasuredGridRows
 import de.mm20.launcher2.homegrid.ReconcileReport
 import de.mm20.launcher2.preferences.ui.UiSettings
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -159,8 +161,17 @@ class HomeGridVM(
     suspend fun exitEdit() = exitMutex.withLock {
         // Re-checked under the lock: a second Done (or Done and Back) that
         // waited here finds the copy already written and does nothing.
-        val items = working.value ?: return@withLock
+        val edited = working.value ?: return@withLock
         val geometry = geometry.filterNotNull().first()
+        // A package's arrival can bind a widget while edit mode is open; the
+        // working copy was taken before, with no host id, and would write the
+        // binding away (review on #213). An item keeps a host id it gained
+        // meanwhile, for the same widget in the same profile.
+        val stored = repository.observe(geometry.layout).first().associateBy { it.id }
+        val items = edited.map { item ->
+            val gained = stored[item.id]?.takeIf { it.widget == item.widget && it.profile == item.profile }?.appWidgetId
+            if (item.appWidgetId == null && gained != null) item.copy(appWidgetId = gained) else item
+        }
         val result = try {
             writeBack.write(geometry.layout, items.mapIndexed { index, item -> item.copy(position = index) })
         } catch (e: Exception) {
@@ -408,8 +419,57 @@ class HomeGridVM(
     }
 
     /** Binds what needs binding and releases what nothing references; see [HomeGridReconciler]. */
-    suspend fun reconcile(port: AppWidgetHostPort): ReconcileReport {
-        return HomeGridReconciler(repository, port).reconcile()
+    private val _arrivals = MutableStateFlow(0)
+
+    /**
+     * Moves each time a package arrives that a grid item names: a cell then
+     * looks its provider up again (review on #213).
+     */
+    val arrivals: StateFlow<Int> = _arrivals
+
+    suspend fun onPackageArrived(packageName: String) {
+        val named = listOf(HomeGridLayouts.Phone, HomeGridLayouts.Fold).any { layout ->
+            repository.observe(layout).first().any { !it.isFavorites && it.widget.startsWith("$packageName/") }
+        }
+        if (named) _arrivals.value++
+    }
+
+    // One pass at a time: two passes over the same unbound item would each
+    // allocate and bind a host id for it.
+    private val reconcileLock = Mutex()
+
+    suspend fun reconcile(port: AppWidgetHostPort): ReconcileReport = reconcileLock.withLock {
+        HomeGridReconciler(repository, port).reconcile()
+    }
+
+    /** A pass for [packageName] having arrived (see [HomeGridReconciler.reconcileArrival]). */
+    suspend fun reconcileArrival(port: AppWidgetHostPort, packageName: String): ReconcileReport = reconcileLock.withLock {
+        HomeGridReconciler(repository, port).reconcileArrival(packageName)
+    }
+
+    /**
+     * One package event for the grid: the cells look their providers up
+     * again, and outside edit mode a bind pass runs (leaving edit mode runs
+     * the grid's own). Throws nothing but cancellation: it runs inside the
+     * collection of every later event, which a failed pass would otherwise
+     * end for good (review on #213).
+     */
+    suspend fun onPackageEvent(port: AppWidgetHostPort, packageName: String) {
+        try {
+            onPackageArrived(packageName)
+            if (_editing.value) return
+            val report = reconcileArrival(port, packageName)
+            // Their cells show the banner; the config report cannot know,
+            // binding is this side's. A count only: which apps a person has
+            // is theirs.
+            if (report.failed.isNotEmpty()) {
+                Log.w(Tag, "${report.failed.size} widget(s) still unbound after a package arrived")
+            }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Log.w(Tag, "the bind pass after a package arrived failed", e)
+        }
     }
 
     fun remove(item: HomeGridItem) {

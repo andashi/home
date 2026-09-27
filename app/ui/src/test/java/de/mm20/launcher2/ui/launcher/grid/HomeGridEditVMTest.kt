@@ -416,4 +416,87 @@ class HomeGridEditVMTest {
         assertEquals(listOf(0, 2), f.vm.spanOf("note").let { listOf(it.x, it.y) })
         assertNull(f.vm.selectedId.value)
     }
+
+    /**
+     * A cell looks its provider up again when [HomeGridVM.arrivals] moves
+     * (review on #213). It moves for a package a grid item names, and for no
+     * other: most package events are updates of apps the grid never shows.
+     */
+    @Test
+    fun `arrivals move for a package a grid item names, and only for it`() = runTest(dispatcher) {
+        val only = gridItem("only", 2, 2, 2, 1, widget = "org.example.only/.Widget", position = 2)
+        val f = fixture(items = listOf(clock, note, dock, only))
+
+        f.vm.onPackageArrived("org.example.other")
+        assertEquals("another package", 0, f.vm.arrivals.value)
+        f.vm.onPackageArrived("org.example.only")
+        assertEquals(1, f.vm.arrivals.value)
+    }
+
+    /** A host whose calls throw, until [broken] is cleared; then it binds everything. */
+    private class FlakyPort(var broken: Boolean) : de.mm20.launcher2.homegrid.AppWidgetHostPort {
+        private var next = 100
+        val bound = mutableSetOf<Int>()
+        override fun boundIds(): List<Int> = bound.toList()
+        override fun allocate(): Int {
+            if (broken) error("host gone")
+            return next++.also { bound += it }
+        }
+        override fun release(id: Int) { bound -= id }
+        override fun isProviderAvailable(id: Int) = true
+        override fun bind(id: Int, widget: String, profile: String?) = true
+    }
+
+    /**
+     * A package event is handled whatever the pass does: an exception from
+     * the host must not end the grid's handling of the events after it, which
+     * the collection it runs in would not survive (review on #213).
+     */
+    @Test
+    fun `a package event whose bind pass throws leaves the next event handled`() = runTest(dispatcher) {
+        val only = gridItem("only", 2, 2, 2, 1, widget = "org.example.only/.Widget", position = 2)
+        val f = fixture(items = listOf(clock, note, dock, only))
+        val port = FlakyPort(broken = true)
+
+        f.vm.onPackageEvent(port, "org.example.only")
+        port.broken = false
+        f.vm.onPackageEvent(port, "org.example.only")
+
+        assertTrue("bound on the next event", f.repository.observe(HomeGridLayouts.Phone).first().single { it.id == "only" }.appWidgetId != null)
+        assertEquals("both events moved the cells' lookups", 2, f.vm.arrivals.value)
+    }
+
+    /** Control: in edit mode an event moves the lookups but binds nothing; leaving edit mode does. */
+    @Test
+    fun `a package event in edit mode binds nothing`() = runTest(dispatcher) {
+        val only = gridItem("only", 2, 2, 2, 1, widget = "org.example.only/.Widget", position = 2)
+        val f = fixture(items = listOf(clock, note, dock, only))
+        assertTrue(f.vm.enterEdit())
+        val port = FlakyPort(broken = false)
+
+        f.vm.onPackageEvent(port, "org.example.only")
+
+        assertEquals(null, f.repository.observe(HomeGridLayouts.Phone).first().single { it.id == "only" }.appWidgetId)
+        assertEquals(1, f.vm.arrivals.value)
+    }
+
+    /**
+     * An arrival's bind pass can bind a widget while edit mode is open: the
+     * working copy was taken with no host id, and Done wrote it back over
+     * the binding (review on #213). Done keeps a host id the item gained
+     * meanwhile.
+     */
+    @Test
+    fun `Done keeps a host id bound while edit mode was open`() = runTest(dispatcher) {
+        val only = gridItem("only", 2, 2, 2, 1, widget = "org.example.only/.Widget", position = 2)
+        val f = fixture(items = listOf(clock, note, dock, only))
+        assertTrue(f.vm.enterEdit())
+
+        f.repository.setAppWidgetId(HomeGridLayouts.Phone, "only", 7)
+        f.vm.exitEdit()
+
+        val written = f.writeBack.writes.single().second
+        assertEquals(7, written.single { it.id == "only" }.appWidgetId)
+        assertEquals("the others as the working copy had them", null, written.single { it.id == "clock" }.appWidgetId)
+    }
 }

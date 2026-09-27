@@ -1,6 +1,7 @@
 package de.mm20.launcher2.config.service
 
 import android.content.Context
+import android.content.pm.ApplicationInfo
 import android.os.FileObserver
 import android.util.Log
 import de.mm20.launcher2.config.ReloadTrigger
@@ -14,7 +15,9 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.yield
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.IOException
@@ -48,12 +51,18 @@ class ConfigWatcher(
     private val measurements: Flow<Map<String, Int>>? = null,
     /** How the file wrote its apps (AppNaming); null when nothing records it. */
     private val appNaming: AppNaming? = null,
+    /**
+     * A signal per package that may have become available, by name
+     * (PackageArrivals); null when nothing watches them.
+     */
+    private val arrivals: Flow<String>? = null,
 ) {
     private val appContext = context.applicationContext
 
     private var observer: FileObserver? = null
     private var startJob: Job? = null
     private var measureJob: Job? = null
+    private var appsJob: Job? = null
     // Each new measurement is a generation; a fit clears only the one it read
     // before its reload, so a measurement arriving during a reload stays
     // pending (#178 review). Written by the collector, read under fitLock.
@@ -86,6 +95,7 @@ class ConfigWatcher(
             startupCheck()
         }
         if (measureJob?.isActive != true) measureJob = watchMeasurements()
+        if (appsJob?.isActive != true) appsJob = watchArrivals()
     }
 
     fun stop() {
@@ -93,6 +103,8 @@ class ConfigWatcher(
         startJob = null
         measureJob?.cancel()
         measureJob = null
+        appsJob?.cancel()
+        appsJob = null
         debounceJob?.cancel()
         debounceJob = null
         observer?.stopWatching()
@@ -199,6 +211,62 @@ class ConfigWatcher(
         if (report.success || GridSection in report.appliedMutations) fittedGeneration = generation
     }
 
+    /**
+     * Applies what the file names once it is installed (#207 review). A
+     * favorite, a widget provider, an app's label or visibility, or a profile's
+     * entry naming something absent is skipped and reported, and when it
+     * arrives nothing else reloads the file: the file did not change, so no
+     * watcher event, no startup drift.
+     *
+     * Observing the stores cannot carry this, however natural that looks. The
+     * app customizations' change stream describes the installed apps' state,
+     * and an arriving app with no customization yet describes as nothing, so
+     * `distinctUntilChanged()` lets nothing through; favorites and widgets
+     * have no such stream at all. Nor can the list of launcher apps: a package
+     * that brings only a widget adds no launcher entry (review on #213). The
+     * trigger is the package signal itself ([arrivals]).
+     *
+     * Once at start, then per signal: a reload while the last report waits on
+     * something absent ([WaitingCodes]), and nothing otherwise. The start
+     * covers an app that arrived while the launcher was not running, which no
+     * signal will report again (review on #213).
+     */
+    internal fun watchArrivals(): Job? {
+        val arrivals = arrivals ?: return null
+        return scope.launch {
+            // Listened to before the start is decided: the package callback
+            // registers when its flow is collected, and a package installed
+            // during the start reload would otherwise go unheard (review on
+            // #213). Signals queue meanwhile. The start's first read of the
+            // report suspends on IO before the reload reads the device, which
+            // lets the callback register first.
+            val queued = Channel<String>(Channel.UNLIMITED)
+            launch { arrivals.collect { queued.send(it) } }
+            yield()
+            onArrival(null)
+            for (signal in queued) onArrival(signal)
+        }
+    }
+
+    /**
+     * Reloads if the last report waits on something absent. The decision is
+     * made under the reload lock ([ConfigReloader.reloadIf]): a reload already
+     * running reports first, so an arrival cannot read the report from before
+     * it and skip (review on #213). [what] is the package, or null at start.
+     */
+    internal suspend fun onArrival(what: String?) {
+        val file = ConfigLocation.configFile(appContext) ?: return
+        if (!file.exists()) return
+        val report = reloader.reloadIf(file, ReloadTrigger.AppsChanged) {
+            reportStore.read()?.diagnostics.orEmpty().any { it.code in WaitingCodes }
+        }
+        // Which packages a person has is theirs: only a debuggable build names
+        // it, for the device tests that wait for the signal to arrive.
+        if (debuggable) Log.d(TAG, "arrival ${what ?: "(start)"}: ${if (report != null) "reloaded" else "nothing waits"}")
+    }
+
+    private val debuggable = appContext.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0
+
     internal fun startupCheck(): Job? {
         val file = ConfigLocation.configFile(appContext) ?: return null
         return scope.launch {
@@ -227,6 +295,20 @@ class ConfigWatcher(
 
     companion object {
         const val DefaultDebounceMs = 300L
+
+        /**
+         * The reports of something absent that an installed app can make
+         * present. Not the search actions' codes: those name a feature this
+         * device lacks, which no install brings.
+         */
+        val WaitingCodes: Set<String> = setOf(
+            "favorite-unavailable",
+            "unknown-widget-provider",
+            "app-unavailable",
+            "profile-unavailable",
+            // A gesture's app (#3 slice 2): the file keeps it for the day it is installed.
+            "gesture-app-unavailable",
+        )
         private const val GridSection = "home.grid"
         private const val StartupRetryCount = 40
         private const val StartupRetryDelayMs = 250L

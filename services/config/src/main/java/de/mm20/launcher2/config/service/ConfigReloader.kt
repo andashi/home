@@ -58,11 +58,28 @@ class ConfigReloader(
     suspend fun reload(
         file: File,
         trigger: ReloadTrigger? = null,
-    ): ReloadReport = lock.withLock {
+    ): ReloadReport = lock.withLock { reloadFileLocked(file, trigger) }
+
+    /**
+     * Reloads [file] if [condition] holds, deciding under the reload lock:
+     * a reload already running finishes, and reports, before [condition]
+     * reads anything. Decided outside the lock, an app arrival could read the
+     * report of before a running reload that is about to report the app
+     * missing, skip, and be spent (review on #213). Null when it did not reload.
+     */
+    suspend fun reloadIf(
+        file: File,
+        trigger: ReloadTrigger,
+        condition: suspend () -> Boolean,
+    ): ReloadReport? = lock.withLock {
+        if (condition()) reloadFileLocked(file, trigger) else null
+    }
+
+    private suspend fun reloadFileLocked(file: File, trigger: ReloadTrigger?): ReloadReport {
         val text = try {
             withContext(Dispatchers.IO) { file.readText() }
         } catch (e: IOException) {
-            return@withLock persist(
+            return persist(
                 ReloadReport(
                     success = false,
                     diagnostics = listOf(
@@ -79,7 +96,7 @@ class ConfigReloader(
                 )
             )
         } catch (e: SecurityException) {
-            return@withLock persist(
+            return persist(
                 ReloadReport(
                     success = false,
                     diagnostics = listOf(
@@ -96,7 +113,7 @@ class ConfigReloader(
                 )
             )
         }
-        reloadLocked(text, text.toByteArray(Charsets.UTF_8).sha256Hex(), trigger)
+        return reloadLocked(text, text.toByteArray(Charsets.UTF_8).sha256Hex(), trigger)
     }
 
     private suspend fun reloadLocked(
@@ -125,7 +142,12 @@ class ConfigReloader(
                 // A new measurement fits the layouts the file names even where
                 // the store agrees with the file: a layout kept as written
                 // before its rows were known is exactly that (GridRowsSource).
-                val compared = if (trigger == ReloadTrigger.GridMeasured) state.copy(gridInitialized = false) else state
+                // An app arrival too: a widget whose provider was missing is
+                // kept as written, so after its provider arrives the store
+                // agrees with the file and only a forced grid looks it up
+                // again (review on #213).
+                val forceGrid = trigger == ReloadTrigger.GridMeasured || trigger == ReloadTrigger.AppsChanged
+                val compared = if (forceGrid) state.copy(gridInitialized = false) else state
                 state to ConfigDiffer.diff(config, compared)
             }
         } catch (e: Exception) {

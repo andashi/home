@@ -51,6 +51,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import de.mm20.launcher2.applications.packageEvents
 import de.mm20.launcher2.grid.Span
 import de.mm20.launcher2.homegrid.HomeGridGeometry
 import de.mm20.launcher2.homegrid.AndroidGridItemLimits
@@ -179,6 +180,16 @@ fun HomeGrid(
                 profileManager.getProfile(type)?.userHandle
             }
             viewModel.reconcile(port)
+        }
+        // A widget whose provider was missing holds no host id, and its
+        // package arriving changes nothing the pass above is keyed on (review
+        // on #219). See HomeGridVM.onPackageEvent, which never throws out of
+        // this collection.
+        LaunchedEffect(host) {
+            val port = AndroidAppWidgetHostPort(context, host) { type ->
+                profileManager.getProfile(type)?.userHandle
+            }
+            packageEvents(context).collect { packageName -> viewModel.onPackageEvent(port, packageName) }
         }
 
         val cellsById = remember(uiState.cells) { uiState.cells.associateBy { it.item.id } }
