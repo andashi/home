@@ -31,6 +31,10 @@ work="$ADB_FAKE_WORK"
 case "$*" in
   *"dumpsys window windows"*)
     echo x >> "$work/reads"
+    if [ -e "$work/closeat" ] && [ "$(date +%s%N)" -ge "$(cut -d' ' -f1 "$work/closeat")" ]; then
+      grep -v "Application Not Responding: $(cut -d' ' -f2 "$work/closeat")}" "$work/windows" > "$work/w2" || true
+      mv "$work/w2" "$work/windows"; rm -f "$work/closeat"
+    fi
     if grep -q 'Application Not Responding' "$work/windows"; then
       # The test APK lands while the window list is being read: on the Nth
       # read that finds a dialog, N from $WORK/installonread.
@@ -68,6 +72,8 @@ case "$*" in
     fi
     [ -e "$work/sticky" ] || { grep -v "Application Not Responding: $pkg}" "$work/windows" > "$work/w2" || true; mv "$work/w2" "$work/windows"; } ;;
   *"uiautomator dump"*)
+    # A dump that takes a while, as on a loaded runner (about 8 s on main).
+    [ ! -e "$work/slowdump" ] || sleep "$(cat "$work/slowdump")"
     # The test APK lands while the (slow) dump runs.
     [ ! -e "$work/installondump" ] || echo new > "$work/installed"
     [ ! -e "$work/dumphangui" ] || sleep 60
@@ -82,6 +88,13 @@ case "$*" in
       echo '<hierarchy/>'
     fi ;;
   *"input tap "*) echo "$*" >> "$work/taps"
+    # The tapped dialog closes this many milliseconds after the tap.
+    if [ -e "$work/closedelayms" ]; then
+      top="$(grep 'Window #.*Application Not Responding: ' "$work/windows" | tail -1 |
+        sed -n 's/.*Application Not Responding: \([A-Za-z0-9_.]*\).*/\1/p')"
+      echo "$(( $(date +%s%N) + $(cat "$work/closedelayms") * 1000000 )) $top" > "$work/closeat"
+      exit 0
+    fi
     [ ! -e "$work/taphang" ] || sleep 5
     if [ ! -e "$work/waitsticky" ]; then
       # The topmost ANR window, not the focus line; it closes on a later read.
@@ -123,7 +136,7 @@ export PATH="$WORK/bin:$PATH"
 export ANR_RECHECK_SECONDS=3 ANR_RECHECK_SLEEP=0 ANR_WAIT_SECONDS=3 ANR_WATCH_SECONDS=30 ANR_WATCH_SLEEP=1
 
 windows() { # $@ = "Application Not Responding: <pkg>" entries, in z-order
-  : > "$WORK/windows"; rm -f "$WORK/stopped" "$WORK/sticky" "$WORK/dumphang" "$WORK/firstfail" "$WORK/taps" "$WORK/waitsticky" "$WORK/closing" "$WORK/closing.seen" "$WORK/oursondump" "$WORK/dumphangui" "$WORK/failaftertap" "$WORK/taphang" "$WORK/installed" "$WORK/installondump" "$WORK/pmfail" "$WORK/reads" "$WORK/slowread" "$WORK/installonread" "$WORK/slowaftertap" "$WORK/anrreads" "$WORK/reads.at2s" "$WORK/slowstamp" "$WORK/installonstop" "$WORK/reads.atstop"
+  : > "$WORK/windows"; rm -f "$WORK/stopped" "$WORK/sticky" "$WORK/dumphang" "$WORK/firstfail" "$WORK/taps" "$WORK/waitsticky" "$WORK/closing" "$WORK/closing.seen" "$WORK/oursondump" "$WORK/dumphangui" "$WORK/failaftertap" "$WORK/taphang" "$WORK/installed" "$WORK/installondump" "$WORK/pmfail" "$WORK/reads" "$WORK/slowread" "$WORK/installonread" "$WORK/slowaftertap" "$WORK/anrreads" "$WORK/reads.at2s" "$WORK/slowstamp" "$WORK/installonstop" "$WORK/reads.atstop" "$WORK/slowdump" "$WORK/closedelayms" "$WORK/closeat"
   WAIT_AMBIGUOUS=0
   printf '  Window #1 Window{1 u0 com.example/com.example.Main}:\n' >> "$WORK/windows"
   local i=2 w
@@ -293,6 +306,42 @@ a_clean_wait_flags_nothing() {
   [ "$WAIT_AMBIGUOUS" = 0 ] && ! grep -q '::error::' "$WORK/log"
 }
 check "a Wait that closed its dialog flags nothing" a_clean_wait_flags_nothing
+
+# The check after the tap has a bound of its own. On main (2026-09-27) the
+# dump took about 8 s of the Wait's 10, the dialog closed 1 s after the tap,
+# and the check had less than that left: a clean Wait was flagged. A slow dump
+# must not starve the check that follows the tap.
+a_slow_dump_leaves_the_check_its_time() {
+  windows "Application Not Responding: com.android.systemui"
+  : > "$WORK/sticky"
+  echo 2.5 > "$WORK/slowdump"; echo 1000 > "$WORK/closedelayms"
+  clear_foreign_anrs > "$WORK/log" 2>&1 || return 1
+  [ "$(taps)" -eq 1 ] && [ "$WAIT_AMBIGUOUS" = 0 ] && grep -q 'Gone after Wait' "$WORK/log"
+}
+check "a slow dump leaves the check after the tap its own time" a_slow_dump_leaves_the_check_its_time
+
+# The check's own bound is a bound: a dialog that never closes is flagged
+# within it, however long the dump took.
+the_check_after_the_tap_is_bounded() {
+  windows "Application Not Responding: com.android.systemui"
+  : > "$WORK/sticky"; : > "$WORK/waitsticky"
+  echo 2.5 > "$WORK/slowdump"
+  local start=$SECONDS
+  clear_foreign_anrs > "$WORK/log" 2>&1 || return 1
+  [ "$WAIT_AMBIGUOUS" = 1 ] &&
+    [ $((SECONDS - start)) -le $((ANR_RECHECK_SECONDS + ANR_WAIT_SECONDS + ANR_RECHECK_SECONDS + 2)) ]
+}
+check "the check after the tap is bounded by its own time" the_check_after_the_tap_is_bounded
+
+# A flag says what it means: the run cannot be vouched for, which is not a
+# failure of the launcher.
+a_flag_says_what_it_means() {
+  windows "Application Not Responding: com.android.systemui"
+  : > "$WORK/sticky"; : > "$WORK/waitsticky"
+  clear_foreign_anrs > "$WORK/log" 2>&1 || return 1
+  grep -q 'not a launcher failure' "$WORK/log"
+}
+check "a flag says the run is unverified, not that the launcher failed" a_flag_says_what_it_means
 
 # A read that fails after the tap cannot show the foreign dialog gone, so it
 # cannot rule out that the tap closed an ANR of ours: flagged like a dialog
