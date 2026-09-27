@@ -621,9 +621,23 @@ on_top() { # $1 = package
 retry_for 10 on_top "$PKG" || die "the launcher is not in front before the swipe"
 # A flick across most of the width: half of it in 200 ms stays under the
 # scaffold's threshold and does nothing (measured on this instance).
-adb -s "$SERIAL" shell input swipe $((width * 9 / 10)) $((height / 2)) $((width / 10)) $((height / 2)) 120
-retry_for 10 on_top com.android.settings || die "a swipe left did not open Settings, the app gestures.swipeLeft names"
-ok "gestures.swipeLeft opened Settings on the device"
+#
+# Two attempts, and the output always says which one worked. The scaffold
+# drops every other gesture - the first after boot, and the first after one
+# that launched an app - whatever the file says: upstream's gesture handling,
+# not the config, fixed on its own with a device test that requires the
+# first flick. This step proves the config's effect: a flick opens exactly
+# the app the file names. A count that climbs past two is a new failure.
+flick_left() {
+  adb -s "$SERIAL" shell input swipe $((width * 9 / 10)) $((height / 2)) $((width / 10)) $((height / 2)) 120
+}
+settings_attempt=""
+for attempt in 1 2; do
+  flick_left
+  if retry_for 5 on_top com.android.settings; then settings_attempt=$attempt; break; fi
+done
+[ -n "$settings_attempt" ] || die "two swipes left did not open Settings, the app gestures.swipeLeft names"
+ok "gestures.swipeLeft opened Settings on the device (flick $settings_attempt of 2)"
 adb -s "$SERIAL" shell input keyevent KEYCODE_HOME
 retry_for 10 on_top "$PKG" || die "Home did not bring the launcher back after the gesture"
 
