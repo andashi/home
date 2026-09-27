@@ -703,5 +703,67 @@ keeps_the_lock_when_the_stop_fails() {
   ! grep -q "release" "$CALLS" && grep -q "refusing to stop" "$WORK/stop.err" && grep -q "me@fake#1" "$WORK/stop.err"
 }
 check "stop_and_release keeps the lock and says why when the stop fails" keeps_the_lock_when_the_stop_fails
+# A push whose report says a key was ignored fails, unless the call declares
+# exactly that key: `--ignored "path ..."` is an assertion, not an opt-out.
+# The launcher reports inert-key and unknown-key only for keys in the pushed
+# file, so the reported set must equal the declared set, no more, no less.
+report_with() { # $@ = "code:path" diagnostics
+  local items="" d
+  for d in "$@"; do items="$items{\"code\":\"${d%%:*}\",\"path\":\"${d#*:}\",\"severity\":\"warning\"},"; done
+  printf '{"success":true,"diagnostics":[%s]}' "${items%,}"
+}
+ignored_keys_case() { # $1 = declared, $2... = diagnostics; succeeds when the check passes
+  ( check_ignored_keys "$(report_with "${@:2}")" "$1" "test" ) >/dev/null 2>&1
+}
+passes_a_clean_report() { ignored_keys_case "" "clamped:home.grid.layouts.phone.items[0]"; }
+check "check_ignored_keys passes a report with no ignored key" passes_a_clean_report
+fails_an_undeclared_ignored_key() { ! ignored_keys_case "" "unknown-key:home.dock"; }
+check "check_ignored_keys fails a key the launcher ignored and the call did not declare" fails_an_undeclared_ignored_key
+passes_exactly_the_declared() { ignored_keys_case "appearance.transparency" "inert-key:appearance.transparency"; }
+check "check_ignored_keys passes a declared ignored key" passes_exactly_the_declared
+fails_a_declared_key_that_applied() { ! ignored_keys_case "appearance.transparency home.dock" "inert-key:appearance.transparency"; }
+check "check_ignored_keys fails a declared key the launcher did not ignore" fails_a_declared_key_that_applied
+fails_one_more_than_declared() { ! ignored_keys_case "home.dock" "unknown-key:home.dock" "unknown-key:home.bogus"; }
+check "check_ignored_keys fails an ignored key beyond the declared ones" fails_one_more_than_declared
+names_the_key() {
+  local out; out="$( ( check_ignored_keys "$(report_with "unknown-key:home.dock")" "" "stage-x" ) 2>&1 )" && return 1
+  grep -q "home.dock" <<<"$out" && grep -q "stage-x" <<<"$out"
+}
+check "check_ignored_keys names the key and the stage" names_the_key
+
+# push_config runs that check on the report of its own push: a fake
+# provider that answers the pushed file's hash with an unknown-key.
+mkdir -p "$WORK/provider"
+cat > "$WORK/provider/adb" <<EOF
+#!/usr/bin/env bash
+state="$WORK/provider/state"
+case "\$*" in
+  *"content write"*) cat > /dev/null; echo written > "\$state" ;;
+  *"am broadcast"*) echo broadcast > "\$state"; echo "Broadcast completed: result=0" ;;
+  *"content query"*"/diagnostics"*)
+    case "\$(cat "\$state" 2>/dev/null)" in
+      written) echo "Row: 0 json={\"configSha256\":\"\$(cat "$WORK/provider/hash")\",\"trigger\":\"file-watcher\",\"success\":true,\"diagnostics\":[{\"code\":\"unknown-key\",\"path\":\"home.dock\",\"severity\":\"warning\"}]}" ;;
+      broadcast) echo "Row: 0 json={\"configSha256\":\"\$(cat "$WORK/provider/hash")\",\"trigger\":\"broadcast\",\"success\":true,\"diagnostics\":[{\"code\":\"unknown-key\",\"path\":\"home.dock\",\"severity\":\"warning\"}]}" ;;
+      *) echo 'Row: 0 json={"configSha256":"before","trigger":"none"}' ;;
+    esac ;;
+esac
+EOF
+chmod +x "$WORK/provider/adb"
+push_fails_on_an_undeclared_ignored_key() {
+  printf '{ "schemaVersion": 2, "home": { "dock": { "enabled": true } } }\n' > "$WORK/stale.json"
+  sha256sum "$WORK/stale.json" | cut -d' ' -f1 > "$WORK/provider/hash"
+  rm -f "$WORK/provider/state"
+  ( PATH="$WORK/provider:$PATH"; push_config "$WORK/stale.json" "stale" ) >/dev/null 2>&1 && return 1
+  rm -f "$WORK/provider/state"
+  ( PATH="$WORK/provider:$PATH"; push_config "$WORK/stale.json" "stale" --ignored "home.dock" ) >/dev/null 2>&1
+}
+check "push_config fails on an undeclared ignored key, and passes it declared" push_fails_on_an_undeclared_ignored_key
+# A flag where the paths belong is a mistake in the call, not a path.
+rejects_a_flag_as_the_value() {
+  local out
+  out="$( ( push_config "$WORK/stale.json" "stale" --ignored --ignored ) 2>&1 )" && return 1
+  grep -q "needs" <<<"$out"
+}
+check "push_config rejects --ignored followed by another option" rejects_a_flag_as_the_value
 
 exit "$failed"

@@ -193,18 +193,47 @@ reload_broadcast() {
   esac
 }
 
-# Push a file and wait until the launcher reports it applied (by hash).
-push_config() { # $1 = local file, $2 = stage name
-  local h before
-  h="$(sha256sum "$1" | cut -d' ' -f1)"
+# The launcher reports inert-key and unknown-key only for keys of the pushed
+# file, so a push that expects every key it writes to take effect asserts
+# that the report names none. A call that writes an ignored key on purpose
+# declares it, and the declaration is itself an assertion: the reported set
+# must equal the declared set, so a declared key that applied fails too.
+check_ignored_keys() { # $1 = report, $2 = declared paths (space-separated), $3 = stage name
+  local reported declared
+  reported="$(jq -r '.diagnostics[]? | select(.code == "inert-key" or .code == "unknown-key") | .path' <<<"$1" | sort -u)" \
+    || die "$3: could not read the diagnostics of the push's report"
+  declared="$(tr -s ' ' '\n' <<<"$2" | sed '/^$/d' | sort -u)"
+  [ "$reported" = "$declared" ] && return 0
+  local extra missing
+  extra="$(comm -23 <(printf '%s\n' "$reported" | sed '/^$/d') <(printf '%s\n' "$declared" | sed '/^$/d') | paste -sd' ')"
+  missing="$(comm -13 <(printf '%s\n' "$reported" | sed '/^$/d') <(printf '%s\n' "$declared" | sed '/^$/d') | paste -sd' ')"
+  jq -c '.diagnostics' <<<"$1" >&2
+  die "$3: ${extra:+ignored by the launcher, not declared: $extra}${extra:+${missing:+; }}${missing:+declared --ignored, but not reported: $missing}"
+}
+
+# Push a file and wait until the launcher reports it applied (by hash), with
+# no key ignored beyond the declared ones.
+push_config() { # $1 = local file, $2 = stage name, [--ignored "path ..."]...
+  local file=$1 stage=$2 ignored="" h before
+  shift 2
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --ignored)
+        [ $# -ge 2 ] && [[ "$2" != --* ]] || die "push_config: --ignored needs a value, got: ${2:-nothing}"
+        ignored="$ignored $2"; shift 2 ;;
+      *) die "push_config: unknown argument: $1" ;;
+    esac
+  done
+  h="$(sha256sum "$file" | cut -d' ' -f1)"
   before="$(report_now)" || exit 1
-  write_config "$1"
-  log "$2: waiting for the reload of the pushed file (hash ${h:0:12}...)"
-  wait_push_report "$before" "$h" 60 "$2: reload of the pushed file"
-  log "$2: broadcasting explicit reload"
+  write_config "$file"
+  log "$stage: waiting for the reload of the pushed file (hash ${h:0:12}...)"
+  wait_push_report "$before" "$h" 60 "$stage: reload of the pushed file"
+  log "$stage: broadcasting explicit reload"
   before="$(report_now)" || exit 1
   reload_broadcast
-  wait_push_report "$before" "$h" 30 "$2: broadcast report"
+  wait_push_report "$before" "$h" 30 "$stage: broadcast report"
+  check_ignored_keys "$LAST_REPORT" "$ignored" "$stage"
 }
 
 # Cleanup: stop the instance this run holds, then release its lock. run.sh
