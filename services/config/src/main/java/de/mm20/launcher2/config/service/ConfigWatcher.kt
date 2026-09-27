@@ -46,6 +46,8 @@ class ConfigWatcher(
     private val baselineStore: AppliedBaselineStore? = null,
     /** This device's measured grid rows (MeasuredGridRows); null when nothing measures. */
     private val measurements: Flow<Map<String, Int>>? = null,
+    /** How the file wrote its apps (AppNaming); null when nothing records it. */
+    private val appNaming: AppNaming? = null,
 ) {
     private val appContext = context.applicationContext
 
@@ -207,7 +209,16 @@ class ConfigWatcher(
             // after an update or with cleared data the report can have it while
             // the baseline does not, and one reload records it.
             val noBaseline = baselineStore != null && baselineStore.read()?.configSha256 != hash
-            if (report == null || report.configSha256 != hash || noBaseline) {
+            // After an update from a build without it, the record of how the
+            // file wrote its apps is missing while everything else matches:
+            // one reload makes it. A file that spells out a first activity
+            // then reads differently from the device, so the reload applies
+            // `apps` and records the form; one that does not needs no form,
+            // and an empty record says the reload has run (review on #207).
+            val noNaming = appNaming != null && !appNaming.recorded()
+            // The reload makes the record if it goes through (ConfigReloader);
+            // a failed one leaves none, and the next start tries again.
+            if (report == null || report.configSha256 != hash || noBaseline || noNaming) {
                 reloader.reload(file, ReloadTrigger.StartupCheck)
             }
             fitPendingMeasurement()

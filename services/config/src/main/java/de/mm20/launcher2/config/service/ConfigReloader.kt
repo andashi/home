@@ -1,5 +1,6 @@
 package de.mm20.launcher2.config.service
 
+import android.util.Log
 import de.mm20.launcher2.config.ConfigDiffer
 import de.mm20.launcher2.config.ConfigMutation
 import de.mm20.launcher2.config.ConfigParser
@@ -36,6 +37,8 @@ class ConfigReloader(
     private val lock: ConfigFileLock = ConfigFileLock(),
     private val baselineStore: AppliedBaselineStore? = null,
     private val capabilities: CapabilityDiagnostics = CapabilityDiagnostics.None,
+    /** How the file writes its apps (AppNaming); null when nothing records it. */
+    private val appNaming: AppNaming? = null,
 ) {
 
     /**
@@ -188,6 +191,7 @@ class ConfigReloader(
             configSha256 = configSha256,
             trigger = trigger,
         )
+        if (report.success) recordAppsForm()
         // A measurement reload that has nothing new to say leaves the last
         // report alone: that report is what a push is waited on by, and it
         // still describes the device. Nothing new means the last report is of
@@ -229,6 +233,25 @@ class ConfigReloader(
         }
     }
 
+    /**
+     * Write-back waits until the form the file writes its apps in is recorded
+     * (AppNaming). An apply of `apps` records it; a reload that went through
+     * without one left the device reading the file's apps the same in either
+     * form, so the empty record is true then. Made by every such reload, not
+     * only the startup one: a fresh install has no file at startup, and its
+     * first push may bring no apps to apply (review on #214). Under the lock,
+     * so a write-back waiting on it finds the record.
+     */
+    private suspend fun recordAppsForm() {
+        val naming = appNaming ?: return
+        try {
+            if (!naming.recorded()) naming.replace(emptyMap())
+        } catch (e: Exception) {
+            // Without the record a write-back skips and says so; the next reload tries again.
+            Log.w(TAG, "could not record the apps' form", e)
+        }
+    }
+
     private suspend fun lastReport(): ReloadReport? = try {
         reportStore.read()
     } catch (e: Exception) {
@@ -258,3 +281,5 @@ class ConfigReloader(
         return this == section || startsWith("$section.") || startsWith("$section[")
     }
 }
+
+private const val TAG = "ConfigReloader"

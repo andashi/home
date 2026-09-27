@@ -168,6 +168,100 @@ class ConfigWatcherTest {
         assertEquals(0, store.applyCount)
     }
 
+    /**
+     * A build that predates the record of how the file wrote its apps finds
+     * none after an update, with the file, the report and the baseline all
+     * unchanged: nothing would reload, and a rename on the phone before the
+     * next push would come back as a second entry (review on #207). So the
+     * startup check reloads once, and marks the record as made even where
+     * that reload had no apps to apply.
+     */
+    @Test
+    fun `startup check reloads once when no record of the apps' form exists`() = runTest {
+        val store = FakeConfigStore()
+        val reportStore = ReloadReportStore(context)
+        val baselines = AppliedBaselineStore(context)
+        val naming = FakeAppNaming(recorded = false)
+        val watcher = ConfigWatcher(
+            context, ConfigReloader(store, reportStore, appNaming = naming), reportStore, scope = this,
+            baselineStore = baselines, appNaming = naming,
+        )
+        writeConfig()
+        val hash = configFile().readBytes().sha256Hex()
+        reportStore.save(ReloadReport(success = true, configSha256 = hash))
+        baselines.save(AppliedBaseline(hash, JsonObject(emptyMap())))
+
+        watcher.startupCheck()!!.join()
+        assertEquals("the first start of this build reloads", 1, store.applyCount)
+        assertTrue("and the record exists afterwards", naming.recorded())
+
+        watcher.startupCheck()!!.join()
+        assertEquals("the next start does not", 1, store.applyCount)
+    }
+
+    /**
+     * A startup reload that failed made no record: the marker would say the
+     * form was recorded when it was not, and the next start would skip the
+     * reload for good (review on #214). It is retried at the next start.
+     */
+    @Test
+    fun `a failed startup reload leaves the record unmade, and the next start retries`() = runTest {
+        val store = FakeConfigStore(applyDiagnostics = listOf(Diagnostic(Severity.Error, "apply-failed", "", "datastore gone")))
+        val reportStore = ReloadReportStore(context)
+        val baselines = AppliedBaselineStore(context)
+        val naming = FakeAppNaming(recorded = false)
+        val watcher = ConfigWatcher(
+            context, ConfigReloader(store, reportStore, appNaming = naming), reportStore, scope = this,
+            baselineStore = baselines, appNaming = naming,
+        )
+        writeConfig()
+        val hash = configFile().readBytes().sha256Hex()
+        reportStore.save(ReloadReport(success = true, configSha256 = hash))
+        baselines.save(AppliedBaseline(hash, JsonObject(emptyMap())))
+
+        watcher.startupCheck()!!.join()
+        assertTrue("no marker after a failed reload", !naming.recorded())
+
+        store.applyDiagnostics = emptyList()
+        watcher.startupCheck()!!.join()
+        assertEquals("the next start tried again", 2, store.applyCount)
+        assertTrue(naming.recorded())
+    }
+
+    /** Control: a record that exists, with everything else known, reloads nothing. */
+    @Test
+    fun `startup check skips the reload when the apps' form is recorded`() = runTest {
+        val store = FakeConfigStore()
+        val reportStore = ReloadReportStore(context)
+        val baselines = AppliedBaselineStore(context)
+        val watcher = ConfigWatcher(
+            context, ConfigReloader(store, reportStore), reportStore, scope = this,
+            baselineStore = baselines, appNaming = FakeAppNaming(recorded = true),
+        )
+        writeConfig()
+        val hash = configFile().readBytes().sha256Hex()
+        reportStore.save(ReloadReport(success = true, configSha256 = hash))
+        baselines.save(AppliedBaseline(hash, JsonObject(emptyMap())))
+
+        watcher.startupCheck()!!.join()
+
+        assertEquals(0, store.applyCount)
+    }
+
+    private class FakeAppNaming(private var recorded: Boolean) : AppNaming {
+        private val written = kotlinx.coroutines.flow.MutableStateFlow<Map<String, String?>>(emptyMap())
+        override fun observe() = written
+        override suspend fun recorded() = recorded
+        override suspend fun replace(naming: Map<String, String?>) {
+            written.value = naming
+            recorded = true
+        }
+        override suspend fun awaitRecorded(): Unit = error("not used here")
+        override suspend fun forget() {
+            recorded = false
+        }
+    }
+
     @Test
     fun `startup check reloads when the file changed since the last report`() = runTest {
         val store = FakeConfigStore()

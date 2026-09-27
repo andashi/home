@@ -44,7 +44,9 @@ val configModule = module {
             apps = get(),
         )
     }
-    factory<AppCustomizationStore> { AndroidAppCustomizationStore(get(), get(), get(), get()) }
+    factory<AppCustomizationStore> { AndroidAppCustomizationStore(get(), get(), get(), get(), get()) }
+    // One instance: it holds the form every store reads apps back in (review on #207).
+    single<AppNaming> { FileAppNaming(androidContext()) }
     factory<SearchActionStore> { AndroidSearchActionStore(androidContext(), get()) }
     single { ReloadReportStore(androidContext()) }
     // One lock around launcher.json: reloads (watcher, receiver) and every
@@ -64,9 +66,11 @@ val configModule = module {
                 // What ScreenOffComponent and the others check before they act.
                 accessibilityOn = { permissions.checkPermissionOnce(PermissionGroup.Accessibility) },
             ),
+            // Every reload that goes through records the apps' form where none exists (review on #214).
+            appNaming = get(),
         )
     }
-    single { ConfigWriteBack(androidContext(), get(), get(), get(), get()) }
+    single { ConfigWriteBack(androidContext(), get(), get(), get(), get(), appNaming = get()) }
     single { GridWriteBack(androidContext(), get(), get(), get(), get(), engine = get()) }
     // What the grid's edit mode calls on Done (data/homegrid's interface).
     single<HomeGridWriteBack> { HomeGridWriteBackAdapter(get()) }
@@ -75,12 +79,14 @@ val configModule = module {
             androidContext(), get(), get(), baselineStore = get(),
             // A layout kept as written before its rows were measured is fitted once they are (#90).
             measurements = get<MeasuredGridRows>().measurements,
+            // A build updated from one without the record reloads once to make it (review on #207).
+            appNaming = get(),
         ).also { it.start() }
     }
     // Every change on the device goes back into the file (#3 slice 4).
     single(createdAtStart = true) {
         val writeBack = get<ConfigWriteBack>()
-        ConfigWriteBackTrigger(get(), { writeBack.write() }).also { it.start() }
+        ConfigWriteBackTrigger(get(), { writeBack.write() }, appNaming = get()).also { it.start() }
     }
     single(createdAtStart = true) { WallpaperForegroundFixer(androidContext(), get(), get()).also { it.start() } }
 }

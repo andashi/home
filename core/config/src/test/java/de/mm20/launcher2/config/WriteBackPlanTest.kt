@@ -249,6 +249,38 @@ class WriteBackPlanTest {
         )
     }
 
+    /**
+     * A package's first activity can be spelled out or left out, and the
+     * pairing here cannot tell them apart: which entry is first is device
+     * knowledge. So the store reads an app back the way the file wrote it
+     * (AppNaming), and these are the two forms that then reach the plan. Each
+     * keeps its form through a rename (review on #207). Read back in the other
+     * form, the spelled-out case came back as the stale entry plus a new one.
+     */
+    @Test
+    fun `an activity the file spelled out stays through a rename`() {
+        assertEquals(
+            ConfigParser.json.parseToJsonElement("""[{"packageName":"org.a","activity":"org.a.Main","label":"New"}]"""),
+            appsChange(
+                literal = """[{"packageName":"org.a","activity":"org.a.Main","label":"Old"}]""",
+                applied = """[{"packageName":"org.a","activity":"org.a.Main","label":"Old"}]""",
+                device = """[{"packageName":"org.a","activity":"org.a.Main","label":"New"}]""",
+            ),
+        )
+    }
+
+    @Test
+    fun `an activity the file left out stays out through a rename`() {
+        assertEquals(
+            ConfigParser.json.parseToJsonElement("""[{"packageName":"org.a","label":"New"}]"""),
+            appsChange(
+                literal = """[{"packageName":"org.a","label":"Old"}]""",
+                applied = """[{"packageName":"org.a","label":"Old"}]""",
+                device = """[{"packageName":"org.a","label":"New"}]""",
+            ),
+        )
+    }
+
     /** Control: another profile or another activity of the same package is another app. */
     @Test
     fun `the same package in another profile or activity is another entry`() {

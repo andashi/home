@@ -720,4 +720,67 @@ class ConfigReloaderTest {
         assertFalse(report.success)
         assertTrue(report.diagnostics.none { it.code == "permission-missing" })
     }
+
+    private class Naming(var record: Map<String, String?>?) : AppNaming {
+        var replaces = 0
+        override fun observe() = kotlinx.coroutines.flow.flowOf(record ?: emptyMap())
+        override suspend fun replace(naming: Map<String, String?>) { replaces++; record = naming }
+        override suspend fun recorded() = record != null
+        override suspend fun awaitRecorded(): Unit = error("not used here")
+        override suspend fun forget() { record = null }
+    }
+
+    /**
+     * Write-back waits for the record of how the file writes its apps, so
+     * every reload that went through makes one where none exists, not only
+     * the startup one: a fresh install has no file at startup, and its first
+     * push may carry no apps to apply (review on #214). A reload that went
+     * through without an apps mutation leaves the device reading the file's
+     * apps the same in both forms, so the empty record is the true one.
+     */
+    @Test
+    fun `any reload that went through records the apps' form where none exists`() = runTest {
+        val naming = Naming(record = null)
+        val reloader = ConfigReloader(FakeConfigStore(), ReloadReportStore(context), appNaming = naming)
+
+        val report = reloader.reload("""{"schemaVersion": 2, "icons": {"themed": false}}""")
+
+        assertTrue(report.success)
+        assertEquals(emptyMap<String, String?>(), naming.record)
+    }
+
+    /** Control: a failed apply leaves no record, so a later reload still makes one. */
+    @Test
+    fun `a failed reload records nothing`() = runTest {
+        val naming = Naming(record = null)
+        val store = FakeConfigStore(applyDiagnostics = listOf(Diagnostic(Severity.Error, "apply-failed", "", "datastore gone")))
+        val reloader = ConfigReloader(store, ReloadReportStore(context), appNaming = naming)
+
+        reloader.reload("""{"schemaVersion": 2, "icons": {"themed": false}}""")
+
+        assertEquals(null, naming.record)
+    }
+
+    /** Control: a file that does not parse was not applied, so it records nothing. */
+    @Test
+    fun `a file that does not parse records nothing`() = runTest {
+        val naming = Naming(record = null)
+        val reloader = ConfigReloader(FakeConfigStore(), ReloadReportStore(context), appNaming = naming)
+
+        reloader.reload("""{"schemaVersion": 2, "icons": """)
+
+        assertEquals(null, naming.record)
+    }
+
+    /** Control: the record the apply made, or an earlier one, is not overwritten with the empty one. */
+    @Test
+    fun `an existing record is left as it is`() = runTest {
+        val naming = Naming(record = mapOf("app://a:A" to "a.A"))
+        val reloader = ConfigReloader(FakeConfigStore(), ReloadReportStore(context), appNaming = naming)
+
+        reloader.reload("""{"schemaVersion": 2, "icons": {"themed": false}}""")
+
+        assertEquals(0, naming.replaces)
+        assertEquals(mapOf("app://a:A" to "a.A"), naming.record)
+    }
 }

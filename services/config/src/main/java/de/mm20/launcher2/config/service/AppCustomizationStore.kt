@@ -11,6 +11,8 @@ import de.mm20.launcher2.search.Application
 import de.mm20.launcher2.search.SavableSearchable
 import de.mm20.launcher2.searchable.SavableSearchableRepository
 import de.mm20.launcher2.searchable.VisibilityLevel
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -43,6 +45,8 @@ internal class AndroidAppCustomizationStore(
     private val profileResolver: ProfileResolver,
     private val customAttributes: CustomAttributesRepository,
     private val searchables: SavableSearchableRepository,
+    /** How the file wrote each app it customizes; see [AppNaming]. */
+    private val naming: AppNaming,
 ) : AppCustomizationStore {
 
     private fun keysAt(level: VisibilityLevel) = searchables.getKeys(
@@ -61,7 +65,8 @@ internal class AndroidAppCustomizationStore(
         customAttributes.getAppLabels(),
         keysAt(VisibilityLevel.SearchOnly),
         keysAt(VisibilityLevel.Hidden),
-    ) { apps, labels, searchOnly, hidden -> Snapshot(apps, labels, searchOnly.toSet(), hidden.toSet()) }
+        naming.observe(),
+    ) { apps, labels, searchOnly, hidden, written -> Snapshot(apps, labels, searchOnly.toSet(), hidden.toSet(), written) }
         .map { describe(it) }
         .distinctUntilChanged()
 
@@ -78,6 +83,8 @@ internal class AndroidAppCustomizationStore(
         // package's first launcher entry, so naming that activity too is the
         // same app twice, which the validator cannot see (review on #207).
         val claimedBy = mutableMapOf<String, Int>()
+        // How each claiming entry wrote its app, so it reads back that way.
+        val written = mutableMapOf<String, String?>()
 
         apps.forEachIndexed { index, entry ->
             val path = "apps[$index]"
@@ -112,10 +119,51 @@ internal class AndroidAppCustomizationStore(
                 return@forEachIndexed
             }
             claimedBy[app.key] = index
+            written[app.key] = entry.activity
             entry.label?.let { labels[app.key] = it }
             wanted[app.key] = entry.visibility.toLevel()
         }
 
+        // Before the labels: the change their write sets off must read the new
+        // form. If a device write fails, the apply is reported failed and the
+        // baseline stays as it was, so the record goes back too (review on #214).
+        val before = naming.observe().first()
+        // No record reads as empty; putting "empty" back would make one, and
+        // the next start would not try again (review on #214).
+        val hadRecord = naming.recorded()
+        try {
+            naming.replace(written)
+            writeDeviceState(installed, labels, wanted)
+        } catch (e: Throwable) {
+            // The restore can fail too, and then the record would claim a form
+            // the device is not in; no record is the honest state instead.
+            // Nothing is swallowed: the apply's failure propagates with the
+            // repair's attached (review on #214). A cancelled apply is a
+            // failure as well, and a cancelled coroutine cannot write, so the
+            // repair runs non-cancellable.
+            withContext(NonCancellable) {
+                try {
+                    if (hadRecord) naming.replace(before) else naming.forget()
+                } catch (restore: Throwable) {
+                    e.addSuppressed(restore)
+                    try {
+                        naming.forget()
+                    } catch (forget: Throwable) {
+                        e.addSuppressed(forget)
+                    }
+                }
+            }
+            throw e
+        }
+
+        return diagnostics to read()
+    }
+
+    private suspend fun writeDeviceState(
+        installed: List<Application>,
+        labels: Map<String, String>,
+        wanted: Map<String, VisibilityLevel>,
+    ) {
         customAttributes.replaceCustomLabelsAwaited(installed, labels)
 
         // Only what differs is written: an app shown normally that stays so
@@ -128,8 +176,6 @@ internal class AndroidAppCustomizationStore(
             if (want != have) (app as SavableSearchable) to want else null
         }.toMap()
         searchables.setVisibilitiesAwaited(changes)
-
-        return diagnostics to read()
     }
 
     private suspend fun describe(snapshot: Snapshot): List<AppConfig> = snapshot.apps.mapNotNull { app ->
@@ -144,7 +190,8 @@ internal class AndroidAppCustomizationStore(
         AppConfig(
             packageName = app.componentName.packageName,
             profile = profile,
-            activity = activityOf(app, snapshot.apps),
+            // As the file wrote it, where the file customizes this app; else by the rule.
+            activity = if (app.key in snapshot.written) snapshot.written[app.key] else activityOf(app, snapshot.apps),
             label = label,
             visibility = visibility,
         )
@@ -178,5 +225,6 @@ internal class AndroidAppCustomizationStore(
         val labels: Map<String, String>,
         val searchOnly: Set<String>,
         val hidden: Set<String>,
+        val written: Map<String, String?>,
     )
 }

@@ -25,6 +25,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -79,6 +80,9 @@ class AndroidAppCustomizationStoreTest {
     private val labels = MutableStateFlow<Map<String, String>>(emptyMap())
     private val levels = MutableStateFlow<Map<String, VisibilityLevel>>(emptyMap())
     private val visibilityWrites = mutableListOf<Map<String, VisibilityLevel>>()
+    private var labelWriteFailure: Exception? = null
+    /** Runs inside the label write: what a test does while it is under way. */
+    private var labelWrite: (() -> Unit)? = null
 
     private inline fun <reified T> stub(crossinline answer: (name: String, args: Array<out Any?>) -> Any?): T =
         Proxy.newProxyInstance(T::class.java.classLoader, arrayOf(T::class.java)) { proxy, method, args ->
@@ -102,6 +106,8 @@ class AndroidAppCustomizationStoreTest {
         when (name) {
             "getAppLabels" -> labels
             "replaceCustomLabelsAwaited" -> {
+                labelWriteFailure?.let { throw it }
+                labelWrite?.invoke()
                 val items = args[0] as List<SavableSearchable>
                 val wanted = args[1] as Map<String, String>
                 labels.value = labels.value.filterKeys { key -> items.none { it.key == key } } + wanted
@@ -135,7 +141,21 @@ class AndroidAppCustomizationStoreTest {
         work = Profile(Profile.Type.Work, work, 10),
     )
 
-    private val store = AndroidAppCustomizationStore(apps, profiles, attributes, searchables)
+    /** How the file wrote each app, as the real one keeps it: a map that outlives a store. */
+    private val naming = object : AppNaming {
+        val written = MutableStateFlow<Map<String, String?>>(emptyMap())
+        override fun observe(): Flow<Map<String, String?>> = written
+        override suspend fun replace(naming: Map<String, String?>) {
+            written.value = naming
+        }
+        override suspend fun recorded() = true
+        override suspend fun awaitRecorded(): Unit = error("not used here")
+        override suspend fun forget() {
+            written.value = emptyMap()
+        }
+    }
+
+    private val store = AndroidAppCustomizationStore(apps, profiles, attributes, searchables, naming)
 
     // ---- reading ----
 
@@ -308,6 +328,192 @@ class AndroidAppCustomizationStoreTest {
         assertEquals(emptyMap<String, String>(), labels.value)
         assertEquals(VisibilityLevel.Default, levels.value[stk.key])
         assertEquals(emptyList<AppConfig>(), written)
+    }
+
+    // ---- how the file wrote an app (review on #207, WriteBackPlan thread) ----
+
+    /**
+     * The file may spell out a package's first activity, which an entry could
+     * also leave out. The store reads the app back as the file wrote it, so
+     * the baseline, the device and the file all have one form and write-back
+     * pairs them: read in the other form, a rename on the device came back as
+     * a second entry next to the stale one.
+     */
+    @Test
+    fun `an entry that spells out the first activity reads back with it`() = runTest {
+        val (_, written) = store.replaceAndRead(
+            listOf(AppConfig("com.example.two", activity = "com.example.two.First", label = "One")),
+        )
+
+        assertEquals(listOf(AppConfig("com.example.two", activity = "com.example.two.First", label = "One")), written)
+    }
+
+    /** A rename made on the phone later keeps the form, which is what write-back pairs on. */
+    @Test
+    fun `a rename on the phone keeps the activity the file wrote`() = runTest {
+        store.replaceAndRead(listOf(AppConfig("com.example.two", activity = "com.example.two.First", label = "One")))
+
+        labels.value = mapOf(twoFirst.key to "Uno")
+
+        assertEquals(listOf(AppConfig("com.example.two", activity = "com.example.two.First", label = "Uno")), store.read())
+    }
+
+    /** Write-back can run after a restart: the form is kept, not held in memory. */
+    @Test
+    fun `the form survives a new store`() = runTest {
+        store.replaceAndRead(listOf(AppConfig("com.example.two", activity = "com.example.two.First", label = "One")))
+
+        val restarted = AndroidAppCustomizationStore(apps, profiles, attributes, searchables, naming)
+
+        assertEquals(listOf(AppConfig("com.example.two", activity = "com.example.two.First", label = "One")), restarted.read())
+    }
+
+    /** Controls: what the file left out stays out, and an app the file never named reads back by the rule. */
+    @Test
+    fun `an entry without the activity, and an app only the phone customized, read back without it`() = runTest {
+        store.replaceAndRead(listOf(AppConfig("com.example.two", label = "One")))
+        labels.value = labels.value + (signal.key to "Chat")
+
+        assertEquals(
+            listOf(
+                AppConfig("com.example.two", label = "One"),
+                AppConfig("org.thoughtcrime.securesms", label = "Chat"),
+            ),
+            store.read(),
+        )
+    }
+
+    /** `[]` names no app, so nothing is remembered from the list before. */
+    @Test
+    fun `an empty list forgets how the list before wrote its apps`() = runTest {
+        store.replaceAndRead(listOf(AppConfig("com.example.two", activity = "com.example.two.First", label = "One")))
+        store.replaceAndRead(emptyList())
+
+        labels.value = mapOf(twoFirst.key to "Uno")
+
+        assertEquals(listOf(AppConfig("com.example.two", label = "Uno")), store.read())
+    }
+
+    /**
+     * The form is recorded before the device writes, because the label write
+     * sets off a change that must read the new form. If a device write fails,
+     * the apply is reported failed and the baseline stays as it was, so the
+     * record goes back to what it was too (review on #214): a record of a form
+     * the apply never established would pair write-back wrongly.
+     */
+    @Test
+    fun `a failed device write puts the recorded form back`() = runTest {
+        store.replaceAndRead(listOf(AppConfig("com.example.two", activity = "com.example.two.First", label = "One")))
+        labelWriteFailure = IllegalStateException("database locked")
+
+        val failed = runCatching { store.replaceAndRead(listOf(AppConfig("com.example.two", label = "Two"))) }
+
+        assertTrue(failed.isFailure)
+        assertEquals(mapOf(twoFirst.key to "com.example.two.First"), naming.written.value)
+    }
+
+    /**
+     * The restore is a write too, and can fail. The record would then claim a
+     * form the device is not in - the state the restore exists to prevent,
+     * reached by the repair. So it is forgotten instead: no record is the
+     * honest state, which the next start regenerates and write-back waits for.
+     * Neither failure is swallowed; the apply's own propagates, with the
+     * restore's attached.
+     */
+    @Test
+    fun `a restore that fails leaves no record, and the failure is not swallowed`() = runTest {
+        var replaces = 0
+        var forgotten = false
+        val brittle = object : AppNaming {
+            override fun observe(): Flow<Map<String, String?>> = kotlinx.coroutines.flow.flowOf(emptyMap())
+            override suspend fun replace(naming: Map<String, String?>) {
+                replaces++
+                if (replaces == 2) throw java.io.IOException("disk full")
+            }
+            override suspend fun recorded() = !forgotten
+            override suspend fun awaitRecorded(): Unit = error("not used here")
+            override suspend fun forget() {
+                forgotten = true
+            }
+        }
+        labelWriteFailure = IllegalStateException("database locked")
+
+        val failed = runCatching {
+            AndroidAppCustomizationStore(apps, profiles, attributes, searchables, brittle)
+                .replaceAndRead(listOf(AppConfig("com.example.two", label = "Two")))
+        }
+
+        assertEquals("database locked", failed.exceptionOrNull()?.message)
+        assertEquals("disk full", failed.exceptionOrNull()?.suppressed?.singleOrNull()?.message)
+        assertTrue("the record is gone", forgotten)
+    }
+
+    /**
+     * An apply cancelled mid-way is a failure too, and a cancelled coroutine
+     * cannot suspend: a rollback that writes like the real record (on the IO
+     * dispatcher, which checks for cancellation) would be cancelled itself,
+     * and the new form would stay (review on #214). The rollback runs
+     * non-cancellable.
+     */
+    @Test
+    fun `a cancelled apply puts the recorded form back`() = runTest {
+        val record = object : AppNaming {
+            val written = MutableStateFlow<Map<String, String?>>(emptyMap())
+            override fun observe(): Flow<Map<String, String?>> = written
+            override suspend fun replace(naming: Map<String, String?>) {
+                kotlinx.coroutines.currentCoroutineContext().ensureActive()
+                written.value = naming
+            }
+            override suspend fun recorded() = true
+            override suspend fun awaitRecorded(): Unit = error("not used here")
+            override suspend fun forget() {
+                written.value = emptyMap()
+            }
+        }
+        val cancellable = AndroidAppCustomizationStore(apps, profiles, attributes, searchables, record)
+        cancellable.replaceAndRead(listOf(AppConfig("com.example.two", activity = "com.example.two.First", label = "One")))
+
+        var running: kotlinx.coroutines.Job? = null
+        labelWrite = { running!!.cancel(); throw kotlinx.coroutines.CancellationException("cancelled") }
+        running = launch { cancellable.replaceAndRead(listOf(AppConfig("com.example.two", label = "Two"))) }
+        running.join()
+
+        assertTrue(running.isCancelled)
+        assertEquals(mapOf(twoFirst.key to "com.example.two.First"), record.written.value)
+    }
+
+    /**
+     * Where there was no record before - the first reload after an update -
+     * the form reads as empty, and putting "empty" back would make a record:
+     * the next start would not try again, and write-back would stop waiting
+     * (review on #214). Absent goes back to absent.
+     */
+    @Test
+    fun `a failed apply where there was no record leaves none`() = runTest {
+        var present = false
+        val record = object : AppNaming {
+            val written = MutableStateFlow<Map<String, String?>>(emptyMap())
+            override fun observe(): Flow<Map<String, String?>> = written
+            override suspend fun replace(naming: Map<String, String?>) {
+                written.value = naming
+                present = true
+            }
+            override suspend fun recorded() = present
+            override suspend fun awaitRecorded(): Unit = error("not used here")
+            override suspend fun forget() {
+                written.value = emptyMap()
+                present = false
+            }
+        }
+        labelWriteFailure = IllegalStateException("database locked")
+
+        val failed = runCatching {
+            AndroidAppCustomizationStore(apps, profiles, attributes, searchables, record)
+                .replaceAndRead(listOf(AppConfig("com.example.two", activity = "com.example.two.First", label = "One")))
+        }
+
+        assertTrue(failed.isFailure)
+        assertEquals("no record, as before the apply", false, record.recorded())
     }
 
     // ---- changes ----

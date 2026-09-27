@@ -415,11 +415,14 @@ assert_jq "$(query_json config)" '.search.transliterator == "No-Such-Translitera
 ok "unavailable transliterator: reported, kept"
 
 # F. apps (#3 slice 4): a renamed app, a hidden app, and one that is not installed.
+# Clock's entry spells out its first (only) launcher activity, which an entry
+# could also leave out: the read-back must give it back as written, or a
+# write-back pairs nothing and lists the app twice (review on #207).
 log "slice 4: a renamed app, a hidden app, an app that is not installed"
 cat > "$WORK/apps.json" <<'EOF'
 { "schemaVersion": 2,
   "apps": [
-    { "packageName": "com.android.deskclock", "label": "Camera Clock" },
+    { "packageName": "com.android.deskclock", "activity": "com.android.deskclock.DeskClock", "label": "Camera Clock" },
     { "packageName": "app.grapheneos.camera", "visibility": "hidden" },
     { "packageName": "com.example.not.installed", "label": "Nowhere" }
   ] }
@@ -430,8 +433,31 @@ assert_jq "$(query_json diagnostics)" \
    and ([.diagnostics[]? | select(.severity == "error")] | length) == 0' \
   "the app that is not installed is reported, and the rest applies"
 assert_jq "$(query_json config)" \
-  '.apps == [{"packageName":"app.grapheneos.camera","visibility":"hidden"},{"packageName":"com.android.deskclock","label":"Camera Clock"}]' \
-  "the read-back serves the two installed apps, sorted, and not the missing one"
+  '.apps == [{"packageName":"app.grapheneos.camera","visibility":"hidden"},{"packageName":"com.android.deskclock","activity":"com.android.deskclock.DeskClock","label":"Camera Clock"}]' \
+  "the read-back serves the two installed apps, sorted, as the file wrote them, and not the missing one"
+# The form has to outlive the process: a write-back can run after a restart,
+# and a record kept only in memory would lose the spelled-out activity there
+# while passing every check above. A read-back after a restart cannot tell on
+# its own - the startup check re-records a missing record - so the record is
+# read where it is kept. Only a debuggable build lets run-as read it.
+case "$PKG" in
+  *.debug)
+    record="$(adb_out shell run-as "$PKG" cat files/config/app-naming.json 2>&1)" \
+      || die "could not read the app-form record: $record"
+    assert_jq "$record" \
+      '[to_entries[] | select(.key | startswith("app://com.android.deskclock:"))] == [{"key":"app://com.android.deskclock:com.android.deskclock.DeskClock","value":"com.android.deskclock.DeskClock"}]' \
+      "the record on disk has Clock's activity as the file wrote it"
+    ;;
+  *) log "release build: run-as cannot read the app-form record, so only the read-back after a restart is checked" ;;
+esac
+# The query below starts a new process.
+adb_t shell am force-stop "$PKG" >/dev/null 2>&1 || die "could not stop $PKG"
+assert_jq "$(query_json config)" \
+  '[.apps[] | select(.packageName == "com.android.deskclock")] == [{"packageName":"com.android.deskclock","activity":"com.android.deskclock.DeskClock","label":"Camera Clock"}]' \
+  "after a restart, Clock still reads back with the activity as the file wrote it"
+ok "the app's form survives a restart"
+# The query started the process without a window; search needs the launcher in front.
+show_home
 # A text in search, split by whether it is the query field: the field's text
 # is the query, so a result named like the query is only told apart from it
 # by the node's class. The fourth run of this step found "Camera" hidden and
