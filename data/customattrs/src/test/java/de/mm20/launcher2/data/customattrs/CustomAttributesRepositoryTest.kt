@@ -105,6 +105,72 @@ class CustomAttributesRepositoryTest {
         assertEquals(listOf("Chat"), labelRows().map { it.value })
     }
 
+    // ---- the config's icons (#3 slice 4, PR 2) ----
+
+    /**
+     * Awaited, as the labels are: a reload reads back right after. The whole
+     * state of the items named - one gets its icon, the other loses its own.
+     */
+    @Test
+    fun `replacing icons is the whole state of the items named, written when it returns`() = runBlocking {
+        val a = TestSearchable("app://a:A")
+        val b = TestSearchable("app://b:B")
+        database.customAttrsDao().setCustomAttribute(
+            de.mm20.launcher2.database.entities.CustomAttributeEntity(b.key, "icon", """{"type":"force_themed_icon"}"""),
+        )
+
+        repository.replaceCustomIconsAwaited(listOf(a, b), mapOf(a.key to UnmodifiedSystemDefaultIcon))
+
+        assertEquals(mapOf(a.key to UnmodifiedSystemDefaultIcon), repository.getAppIcons().first())
+    }
+
+    /** What the picker wrote reads back through the same decoder, every form of it. */
+    @Test
+    fun `the app icons read back every form the picker writes`() = runBlocking {
+        val icons = mapOf(
+            "app://a:A" to ForceThemedIcon,
+            "app://b:B" to UnmodifiedSystemDefaultIcon,
+            "app://c:C" to DefaultPlaceholderIcon,
+            "app://d:D" to AdaptifiedLegacyIcon(fgScale = 0.7f, bgColor = 1),
+            "app://e:E" to CustomIconPackIcon(iconPackPackage = "p.q", type = "app", drawable = "d", extras = null, allowThemed = true),
+        )
+        repository.replaceCustomIconsAwaited(icons.keys.map { TestSearchable(it) }, icons)
+
+        assertEquals(icons, repository.getAppIcons().first())
+    }
+
+    // ---- a stored custom_themed_icon row (#3 slice 4, PR 2) ----
+
+    /**
+     * `custom_themed_icon` was a row type nothing wrote any more and whose
+     * provider returned null, so a row of it - from an old install or a
+     * restored backup - drew the app's normal icon. The type is gone; such a
+     * row, stored and decoded the real way, reads as no custom icon, which is
+     * what it already drew. Nobody's screen changes.
+     */
+    @Test
+    fun `a stored custom_themed_icon row reads as no custom icon`() = runBlocking {
+        val app = TestSearchable("app://a:A")
+        database.customAttrsDao().setCustomAttribute(
+            de.mm20.launcher2.database.entities.CustomAttributeEntity(
+                app.key, "icon", """{"type":"custom_themed_icon","icon":"com.example.pack"}""",
+            ),
+        )
+
+        assertEquals(null, repository.getCustomIcon(app).first())
+    }
+
+    /** Control: the picker's force-themed, a live form, still reads back. */
+    @Test
+    fun `a stored force_themed_icon row reads as force-themed`() = runBlocking {
+        val app = TestSearchable("app://a:A")
+        database.customAttrsDao().setCustomAttribute(
+            de.mm20.launcher2.database.entities.CustomAttributeEntity(app.key, "icon", """{"type":"force_themed_icon"}"""),
+        )
+
+        assertEquals(ForceThemedIcon, repository.getCustomIcon(app).first())
+    }
+
     private class TestSearchable(override val key: String) : SavableSearchable {
         override val domain: String = "app"
         override val label: String = key

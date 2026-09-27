@@ -49,6 +49,7 @@ dependencies {
     implementation(project(":core:profiles"))
     implementation(project(":data:applications"))
     implementation(project(":data:customattrs"))
+    implementation(project(":data:database"))
     implementation(project(":data:searchable"))
     implementation(project(":data:homegrid"))
     implementation(project(":data:search-actions"))

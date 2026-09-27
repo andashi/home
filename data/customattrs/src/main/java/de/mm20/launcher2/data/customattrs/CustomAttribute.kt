@@ -103,11 +103,6 @@ sealed class CustomIcon : CustomAttribute {
                         allowThemed = payload.optBoolean("allow_themed", true),
                     )
                 }
-                "custom_themed_icon" -> {
-                    CustomThemedIcon(
-                        iconPackageName = payload.getString("icon"),
-                    )
-                }
                 "default_icon" -> {
                     UnmodifiedSystemDefaultIcon
                 }
@@ -125,6 +120,10 @@ sealed class CustomIcon : CustomAttribute {
                         color = payload.getInt("color")
                     )
                 }
+                // Includes "custom_themed_icon", a row type nothing wrote any
+                // more and whose provider drew nothing: such a row drew the
+                // app's normal icon, and now reads as no custom icon (#3
+                // slice 4). The picker's force-themed is "force_themed_icon".
                 else -> null
             }
         }
@@ -198,17 +197,6 @@ data class AdaptifiedLegacyIcon(
         const val ThemeColor = 0
     }
 
-}
-
-data class CustomThemedIcon(
-    val iconPackageName: String,
-) : CustomIcon() {
-    override fun toDatabaseValue(): String {
-        return jsonObjectOf(
-            "type" to "custom_themed_icon",
-            "icon" to iconPackageName,
-        ).toString()
-    }
 }
 
 data object ForceThemedIcon : CustomIcon() {

@@ -50,6 +50,9 @@ data class AppConfig(
      */
     @Serializable(with = AppVisibilitySerializer::class)
     val visibility: AppVisibility? = null,
+    /** The icon drawn instead of the one the icons section would give it. */
+    @Serializable(with = AppIconSerializer::class)
+    val icon: AppIcon? = null,
 )
 
 /** `apps[].visibility`: shown normally, in search only, or not at all. */
@@ -60,13 +63,160 @@ internal object AppVisibilitySerializer : FieldEnumSerializer<AppVisibility>(
 )
 
 /**
+ * `apps[].icon` (#3 slice 4): one app's icon, in every form the icon picker
+ * offers - `apps` is the whole state, so a form the file could not say would
+ * be reset by the next apply. None of them is an image: a pack icon names a
+ * drawable of an installed pack, the rest reshape the app's own icon.
+ */
+sealed interface AppIcon {
+    /** The app's own icon, without the pack, theming or fitting the icons section applies. */
+    data object System : AppIcon
+
+    /** The app's own icon as a monochrome silhouette, whatever the icons section says. */
+    data object Themed : AppIcon
+
+    /** The launcher's placeholder: the app's initial on a coloured ground. */
+    data object Placeholder : AppIcon
+
+    /**
+     * One drawable of an icon pack, by the pack's package name. A calendar
+     * icon's [drawable] is the pack's comma-separated list of its days, as
+     * the pack's index holds it.
+     */
+    data class Pack(val pack: String, val drawable: String) : AppIcon
+
+    /** A legacy icon fitted into the adaptive shape: its content at [scale], on [background]. */
+    data class Adaptive(val scale: Float, val background: IconBackground) : AppIcon
+}
+
+/** What an [AppIcon.Adaptive] icon is drawn on. */
+sealed interface IconBackground {
+    /** A colour taken from the icon. */
+    data object FromIcon : IconBackground
+
+    /** The theme's colour. */
+    data object Theme : IconBackground
+
+    /** A fixed colour, as ARGB. */
+    data class Color(val argb: Int) : IconBackground
+
+    companion object {
+        /**
+         * The device stores the two words as these two colour values, so a
+         * file writing either value means the word.
+         */
+        const val ThemeValue = 0
+        const val FromIconValue = 1
+    }
+}
+
+/** The words for the colour values that are words. */
+fun IconBackground.normalized(): IconBackground = when (this) {
+    is IconBackground.Color -> when (argb) {
+        IconBackground.ThemeValue -> IconBackground.Theme
+        IconBackground.FromIconValue -> IconBackground.FromIcon
+        else -> this
+    }
+    else -> this
+}
+
+/**
+ * A word, or an object that is either a pack icon (`pack` and `drawable`) or
+ * an adaptive one (`scale` and `background`). A background is `icon`, `theme`
+ * or `#RRGGBB` / `#AARRGGBB`. Anything else fails the parse and names the
+ * field, as an unknown enum value does; the limits on the values are
+ * ConfigValidator's, which reports them at their path.
+ */
+internal object AppIconSerializer : KSerializer<AppIcon> {
+    private const val Field = "apps[].icon"
+    private val words = mapOf("system" to AppIcon.System, "themed" to AppIcon.Themed, "placeholder" to AppIcon.Placeholder)
+    private val backgroundWords = mapOf("icon" to IconBackground.FromIcon, "theme" to IconBackground.Theme)
+    internal val Words: List<String> = words.keys.toList()
+    internal val BackgroundWords: List<String> = backgroundWords.keys.toList()
+    internal val colourRegex = Regex("^#([0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$")
+
+    @Serializable
+    @SerialName("AppIcon")
+    internal data class AppIconObject(
+        val pack: String? = null,
+        val drawable: String? = null,
+        val scale: Float? = null,
+        val background: String? = null,
+    )
+
+    private val objectSerializer = AppIconObject.serializer()
+
+    override val descriptor: SerialDescriptor = objectSerializer.descriptor
+
+    override fun serialize(encoder: Encoder, value: AppIcon) {
+        val word = words.entries.firstOrNull { it.value == value }?.key
+        if (word != null) {
+            encoder.encodeString(word)
+            return
+        }
+        val obj = when (value) {
+            is AppIcon.Pack -> AppIconObject(pack = value.pack, drawable = value.drawable)
+            is AppIcon.Adaptive -> AppIconObject(scale = value.scale, background = backgroundText(value.background))
+            else -> error("no object form for $value")
+        }
+        objectSerializer.serialize(encoder, obj)
+    }
+
+    override fun deserialize(decoder: Decoder): AppIcon {
+        val jsonDecoder = decoder as? JsonDecoder
+            ?: throw SerializationException("$Field can only be read from JSON")
+        return when (val element = jsonDecoder.decodeJsonElement()) {
+            is JsonPrimitive -> {
+                if (!element.isString) throw SerializationException("$Field must be one of ${words.keys} or an object")
+                words[element.content]
+                    ?: throw SerializationException("'${element.content}' is not a value of $Field: one of ${words.keys}, or an object")
+            }
+
+            else -> fromObject(jsonDecoder.json.decodeFromJsonElement(objectSerializer, element))
+        }
+    }
+
+    private fun fromObject(obj: AppIconObject): AppIcon {
+        val isPack = obj.pack != null || obj.drawable != null
+        val isAdaptive = obj.scale != null || obj.background != null
+        return when {
+            isPack && !isAdaptive && obj.pack != null && obj.drawable != null -> AppIcon.Pack(obj.pack, obj.drawable)
+            isAdaptive && !isPack && obj.scale != null && obj.background != null ->
+                AppIcon.Adaptive(obj.scale, parseBackground(obj.background))
+
+            else -> throw SerializationException(
+                "$Field is either a pack icon (pack and drawable) or an adaptive one (scale and background)",
+            )
+        }
+    }
+
+    private fun parseBackground(text: String): IconBackground = backgroundWords[text] ?: when {
+        colourRegex.matches(text) -> {
+            val hex = text.substring(1)
+            val argb = (if (hex.length == 6) "FF$hex" else hex).toLong(16).toInt()
+            IconBackground.Color(argb)
+        }
+
+        else -> throw SerializationException("'$text' is not a value of $Field.background: icon, theme, #RRGGBB or #AARRGGBB")
+    }
+
+    private fun backgroundText(background: IconBackground): String = when (val b = background.normalized()) {
+        is IconBackground.Color ->
+            if (b.argb ushr 24 == 0xFF) "#%06X".format(b.argb and 0xFFFFFF) else "#%08X".format(b.argb)
+
+        else -> backgroundWords.entries.first { it.value == b }.key
+    }
+}
+
+/**
  * The customizations an entry actually asks for, or null when it asks for
  * nothing but defaults - which is the same as not being listed.
  */
 fun AppConfig.normalized(): AppConfig? {
     val visibility = visibility.takeIf { it != AppVisibility.Default }
-    if (label == null && visibility == null) return null
-    return copy(visibility = visibility)
+    if (label == null && visibility == null && icon == null) return null
+    val icon = (icon as? AppIcon.Adaptive)?.let { it.copy(background = it.background.normalized()) } ?: icon
+    return copy(visibility = visibility, icon = icon)
 }
 
 /**

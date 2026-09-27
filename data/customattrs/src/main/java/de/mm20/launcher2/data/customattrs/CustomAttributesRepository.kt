@@ -36,6 +36,17 @@ interface CustomAttributesRepository {
     /** Fork addition (#3 slice 4): every app's label, by key. */
     fun getAppLabels(): Flow<Map<String, String>>
 
+    /**
+     * Fork addition (#3 slice 4): the icons of [items] become [icons] (by
+     * key) in one transaction, returning once committed. An item of [items]
+     * missing from [icons] loses its icon; items not in [items] are left
+     * alone. No item row is needed: the cleanup never removes an app's icon.
+     */
+    suspend fun replaceCustomIconsAwaited(items: List<SavableSearchable>, icons: Map<String, CustomIcon>)
+
+    /** Fork addition (#3 slice 4): every app's custom icon, by key, decoded as the picker's are. */
+    fun getAppIcons(): Flow<Map<String, CustomIcon>>
+
     fun setTags(searchable: SavableSearchable, tags: List<String>)
     fun getTags(searchable: SavableSearchable): Flow<List<String>>
 
@@ -122,6 +133,19 @@ internal class CustomAttributesRepositoryImpl(
 
     override fun getAppLabels(): Flow<Map<String, String>> =
         appDatabase.customAttrsDao().getAppLabels().map { rows -> rows.associate { it.key to it.value } }
+
+    override suspend fun replaceCustomIconsAwaited(items: List<SavableSearchable>, icons: Map<String, CustomIcon>) {
+        appDatabase.customAttrsDao().replaceAttributes(
+            CustomAttributeType.Icon.value,
+            keys = items.map { it.key },
+            entities = icons.map { (key, icon) -> icon.toDatabaseEntity(key) },
+        )
+    }
+
+    override fun getAppIcons(): Flow<Map<String, CustomIcon>> =
+        appDatabase.customAttrsDao().getAppAttributes(CustomAttributeType.Icon.value).map { rows ->
+            rows.mapNotNull { row -> (CustomAttribute.fromDatabaseEntity(row) as? CustomIcon)?.let { row.key to it } }.toMap()
+        }
 
     override fun clearCustomLabel(searchable: SavableSearchable) {
         val dao = appDatabase.customAttrsDao()

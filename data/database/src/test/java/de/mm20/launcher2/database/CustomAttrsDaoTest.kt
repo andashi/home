@@ -88,6 +88,40 @@ class CustomAttrsDaoTest {
         assertEquals(listOf("app://a:A" to "Chat"), labels)
     }
 
+    // ---- icons (#3 slice 4, PR 2): the same replace, another type ----
+
+    private fun icon(key: String, json: String) = CustomAttributeEntity(key, "icon", json)
+
+    @Test
+    fun `replacing icons sets the new ones and clears the others of those keys`() = runBlocking {
+        dao.insertCustomAttributes(listOf(icon("app://a:A", "old-a"), icon("app://b:B", "old-b")))
+
+        dao.replaceAttributes("icon", keys = listOf("app://a:A", "app://b:B"), entities = listOf(icon("app://a:A", "new-a")))
+
+        assertEquals(listOf(Triple("app://a:A", "icon", "new-a")), rows())
+    }
+
+    /** One type at a time: an app's icons replaced leave its label and its tags alone. */
+    @Test
+    fun `replacing icons leaves the other attributes of the same keys alone`() = runBlocking {
+        dao.insertCustomAttributes(
+            listOf(icon("app://a:A", "old"), label("app://a:A", "Chat"), CustomAttributeEntity("app://a:A", "tag", "Work")),
+        )
+
+        dao.replaceAttributes("icon", keys = listOf("app://a:A"), entities = emptyList())
+
+        assertEquals(listOf(Triple("app://a:A", "label", "Chat"), Triple("app://a:A", "tag", "Work")), rows())
+    }
+
+    @Test
+    fun `the app icons are the icons of app keys only`() = runBlocking {
+        dao.insertCustomAttributes(listOf(icon("app://a:A", "a"), icon("tag://Work", "t"), label("app://a:A", "Chat")))
+
+        val icons = dao.getAppAttributes("icon").first().map { it.key to it.value }
+
+        assertEquals(listOf("app://a:A" to "a"), icons)
+    }
+
     // ---- the cleanup ----
 
     private suspend fun searchable(key: String) = database.searchableDao().insert(

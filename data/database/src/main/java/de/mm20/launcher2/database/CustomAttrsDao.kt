@@ -68,23 +68,30 @@ interface CustomAttrsDao {
 
     // ---- Fork addition (#3 slice 4): labels as the config writes and reads them ----
 
-    @Query("DELETE FROM CustomAttributes WHERE type = 'label' AND `key` IN (:keys)")
-    suspend fun clearLabels(keys: List<String>)
+    @Query("DELETE FROM CustomAttributes WHERE type = :type AND `key` IN (:keys)")
+    suspend fun clearAttributes(type: String, keys: List<String>)
 
     /**
-     * The labels of [keys], replaced by [labels] in one transaction: every
-     * key named loses its label, and the ones in [labels] get theirs. Keys
-     * not named are left alone. Chunked, since SQLite takes at most 999
-     * parameters per statement.
+     * The attributes of [type] of [keys], replaced by [entities] in one
+     * transaction: every key named loses its attribute of that type, and the
+     * ones in [entities] get theirs. Keys not named, and other types, are left
+     * alone. Chunked, since SQLite takes at most 999 parameters per statement
+     * (32766 since 3.32).
      */
     @Transaction
-    suspend fun replaceLabels(keys: List<String>, labels: List<CustomAttributeEntity>) {
-        keys.chunked(900).forEach { clearLabels(it) }
-        insertCustomAttributes(labels)
+    suspend fun replaceAttributes(type: String, keys: List<String>, entities: List<CustomAttributeEntity>) {
+        keys.chunked(900).forEach { clearAttributes(type, it) }
+        insertCustomAttributes(entities)
     }
 
-    /** Every label of an app (`app://` keys): what the config's `apps` reads. */
-    @Query("SELECT * FROM CustomAttributes WHERE type = 'label' AND `key` LIKE 'app://%'")
-    fun getAppLabels(): Flow<List<CustomAttributeEntity>>
+    /** [replaceAttributes] for labels. */
+    suspend fun replaceLabels(keys: List<String>, labels: List<CustomAttributeEntity>) =
+        replaceAttributes("label", keys, labels)
+
+    /** Every attribute of [type] of an app (`app://` keys): what the config's `apps` reads. */
+    @Query("SELECT * FROM CustomAttributes WHERE type = :type AND `key` LIKE 'app://%'")
+    fun getAppAttributes(type: String): Flow<List<CustomAttributeEntity>>
+
+    fun getAppLabels(): Flow<List<CustomAttributeEntity>> = getAppAttributes("label")
 
 }

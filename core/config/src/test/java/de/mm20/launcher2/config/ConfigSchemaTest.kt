@@ -136,6 +136,18 @@ class ConfigSchemaTest {
             "an unknown barPosition" to """{"schemaVersion":2,"search":{"barPosition":"middle"}}""",
             "a grid item with x and no y" to """{"schemaVersion":2,"home":{"grid":{"layouts":{"phone":{"items":[{"id":"a","widget":"favorites","x":1}]}}}}}""",
             "a grid item with y and no x" to """{"schemaVersion":2,"home":{"grid":{"layouts":{"fold":{"items":[{"id":"a","widget":"favorites","y":1}]}}}}}""",
+            // #3 slice 4, PR 2: the icon's forms and the adaptive one's range, which the
+            // generated breaks cannot reach (they break the first icon object only).
+            "an unknown icon word" to """{"schemaVersion":2,"apps":[{"packageName":"a.b","icon":"monochrome"}]}""",
+            "an icon that is both a pack icon and an adaptive one" to
+                """{"schemaVersion":2,"apps":[{"packageName":"a.b","icon":{"pack":"c.d","drawable":"x","scale":1,"background":"theme"}}]}""",
+            "a pack icon without its drawable" to """{"schemaVersion":2,"apps":[{"packageName":"a.b","icon":{"pack":"c.d"}}]}""",
+            "an icon scale below its minimum" to
+                """{"schemaVersion":2,"apps":[{"packageName":"a.b","icon":{"scale":${ConfigValidator.MinIconScale - 0.01f},"background":"theme"}}]}""",
+            "an icon scale above its maximum" to
+                """{"schemaVersion":2,"apps":[{"packageName":"a.b","icon":{"scale":${ConfigValidator.MaxIconScale + 0.01f},"background":"theme"}}]}""",
+            "a background that is no colour" to
+                """{"schemaVersion":2,"apps":[{"packageName":"a.b","icon":{"scale":1,"background":"white"}}]}""",
         )
 
         val disagreements = broken.mapNotNull { (what, text) ->

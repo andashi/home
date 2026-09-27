@@ -47,6 +47,16 @@ object ConfigValidator {
      * there is no relative `.Main` form, which no launcher entry could match.
      */
     internal val activityNameRegex = Regex("^[A-Za-z_$][A-Za-z0-9_$]*(\\.[A-Za-z_$][A-Za-z0-9_$]*)*$")
+    /** A drawable's name in an icon pack: a resource name, the only thing Resources.getIdentifier gets from the file. */
+    const val MaxDrawableNameLength = 100
+    /** A calendar icon lists one drawable per day of the month. */
+    const val MaxCalendarDays = 31
+    private const val drawableName = "[A-Za-z_][A-Za-z0-9_]{0,${MaxDrawableNameLength - 1}}"
+    /** `apps[].icon.drawable`: one resource name, or a calendar's comma-separated days - no type, package or path. */
+    internal val drawableRegex = Regex("^$drawableName(,$drawableName){0,${MaxCalendarDays - 1}}$")
+    /** `apps[].icon.scale`: around the picker's presets (0.7 to 48/38), short of an icon lost or cropped away. */
+    const val MinIconScale = 0.5f
+    const val MaxIconScale = 1.5f
     const val MaxGridItems = 32
     const val MaxSearchActions = 32
     const val MinGridColumns = 2
@@ -224,6 +234,26 @@ object ConfigValidator {
                         "A label is 1 to $MaxLabelLength characters, not blank, without control characters or line breaks",
                     )
                 }
+            }
+            when (val icon = app.icon) {
+                is AppIcon.Pack -> {
+                    validatePackageName(icon.pack, "$path.icon.pack", out)
+                    if (!drawableRegex.matches(icon.drawable)) {
+                        out += Diagnostic(
+                            DiagnosticCode.InvalidApps, "$path.icon.drawable",
+                            "A drawable is a resource name, or up to $MaxCalendarDays of them separated by commas",
+                        )
+                    }
+                }
+
+                is AppIcon.Adaptive -> if (!(icon.scale >= MinIconScale && icon.scale <= MaxIconScale)) {
+                    out += Diagnostic(
+                        DiagnosticCode.InvalidApps, "$path.icon.scale",
+                        "An icon's scale is between $MinIconScale and $MaxIconScale",
+                    )
+                }
+
+                else -> Unit
             }
             if (!seen.add(Triple(app.packageName, app.profile, app.activity))) {
                 out += Diagnostic(

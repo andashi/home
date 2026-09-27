@@ -120,6 +120,7 @@ internal object ConfigSchema {
     private fun typeSchema(path: String, descriptor: SerialDescriptor): JsonObject {
         val name = descriptor.serialName.removeSuffix("?")
         fieldEnums[name]?.let { return enumOf(it.names) }
+        if (name == "AppIcon") return appIconSchema(path)
         // A package name for the personal profile, or the object form (FavoriteSerializer).
         if (name == "Favorite") return buildJsonObject {
             putJsonArray("oneOf") {
@@ -164,6 +165,43 @@ internal object ConfigSchema {
         }
     }
 
+    /**
+     * `apps[].icon` (AppIconSerializer): a word, a pack icon or an adaptive
+     * one. The object's keys come from the parser's key table and its
+     * leaves' limits from [constraints] and [replaced], as every other key's.
+     */
+    private fun appIconSchema(path: String): JsonObject {
+        val keys = ConfigParser.keyEffects[path] ?: error("no key table entry for '$path' (ConfigParser.keyEffects)")
+        val covered = mutableSetOf<String>()
+        fun variant(vararg fields: Pair<String, JsonObject>) = buildJsonObject {
+            require(fields.all { it.first in keys }) { "a key of $path is not in the parser's key table" }
+            fields.forEach { covered += it.first }
+            put("type", "object")
+            putJsonObject("properties") {
+                for ((field, schema) in fields) {
+                    val key = join(path, field)
+                    put(field, replaced[key] ?: JsonObject(schema + constraints[key].orEmpty()))
+                }
+            }
+            putJsonArray("required") { fields.forEach { add(JsonPrimitive(it.first)) } }
+            put("additionalProperties", false)
+        }
+        val variants = listOf(
+            variant("pack" to type("string"), "drawable" to type("string")),
+            variant(
+                "scale" to JsonObject(type("number") + range(ConfigValidator.MinIconScale, ConfigValidator.MaxIconScale)),
+                "background" to type("string"),
+            ),
+        )
+        require(covered == keys.keys) { "the icon's variants do not cover $path's keys exactly" }
+        return buildJsonObject {
+            putJsonArray("oneOf") {
+                add(enumOf(AppIconSerializer.Words))
+                variants.forEach { add(it) }
+            }
+        }
+    }
+
     /** The enums with a field-naming serializer, by the serial name of its descriptor; their values come from it. */
     private val fieldEnums: Map<String, FieldEnumSerializer<*>> =
         listOf(
@@ -205,6 +243,16 @@ internal object ConfigSchema {
         },
         "search.actions[].type" to enumOf((SearchActionTypes.Configurable + SearchActionTypes.Intent).sorted()),
         "search.actions[].encoding" to enumOf(SearchActionTypes.Encodings.sorted()),
+        "apps[].icon.background" to buildJsonObject {
+            putJsonArray("oneOf") {
+                add(enumOf(AppIconSerializer.BackgroundWords))
+                add(buildJsonObject {
+                    put("type", "string")
+                    put("pattern", AppIconSerializer.colourRegex.pattern)
+                    put("description", "A colour as #RRGGBB or #AARRGGBB.")
+                })
+            }
+        },
     )
 
     /** Limits added to a leaf's type; [ConfigSchemaTest] breaks each one and expects the parser to object. */
@@ -242,6 +290,9 @@ internal object ConfigSchema {
         ),
         // #3 slice 2.
         "gestures.*.packageName" to packageNameLimits(),
+        // #3 slice 4, PR 2. The drawable's pattern bounds its length too.
+        "apps[].icon.pack" to packageNameLimits(),
+        "apps[].icon.drawable" to pattern(ConfigValidator.drawableRegex),
     )
 
     // ---- helpers ----

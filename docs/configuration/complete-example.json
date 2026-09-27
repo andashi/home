@@ -143,13 +143,18 @@
   },
   "apps": [
     { "packageName": "com.android.stk", "visibility": "hidden" },
-    { "packageName": "org.thoughtcrime.securesms", "label": "Chat" },
+    {
+      "packageName": "org.thoughtcrime.securesms",
+      "label": "Chat",
+      "icon": { "pack": "app.lawnchair.lawnicons", "drawable": "signal" }
+    },
     {
       "packageName": "com.example.work.mail",
       "profile": "work",
       "activity": "com.example.work.mail.InboxActivity",
       "label": "Work mail",
-      "visibility": "search-only"
+      "visibility": "search-only",
+      "icon": { "scale": 0.7, "background": "#FFFFFF" }
     }
   ],
   "gestures": {
