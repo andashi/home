@@ -53,6 +53,11 @@ tasks.withType<Test>().configureEach {
     inputs.dir(rootProject.file("docs/configuration"))
         .withPropertyName("configurationDocs")
         .withPathSensitivity(PathSensitivity.RELATIVE)
+    // ReadmeSectionsTest checks the readme's "What is configurable today"
+    // table names every top-level section of the contract.
+    inputs.file(rootProject.file("readme.md"))
+        .withPropertyName("readme")
+        .withPathSensitivity(PathSensitivity.RELATIVE)
     systemProperty("repoRoot", rootProject.rootDir.absolutePath)
     // ConfigSchemaTest rewrites docs/configuration/launcher.schema.json with -PupdateSchema.
     systemProperty("updateSchema", providers.gradleProperty("updateSchema").isPresent.toString())
