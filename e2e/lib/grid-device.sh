@@ -350,9 +350,13 @@ wake_screen() {
   adb_t shell cmd statusbar collapse >/dev/null 2>&1 || true
 }
 
+# The HOME intent, restricted to the launcher, as the system starts it. By
+# component (am start -n) the launcher lands in a task of its own: the first
+# Home press then creates the home instance and finishes that one, and a
+# gesture made during the swap never reaches the launcher.
 show_home() {
   wake_screen
-  adb_t shell am start -n "$LAUNCHER_ACTIVITY" >/dev/null 2>&1 || true
+  adb_t shell am start -a android.intent.action.MAIN -c android.intent.category.HOME "$PKG" >/dev/null 2>&1 || true
 }
 
 # Prints "left top right bottom" of the first node matching the attribute.

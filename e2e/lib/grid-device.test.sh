@@ -952,4 +952,22 @@ says_aapt2_is_missing() {
 }
 check "require_apk_package says aapt2 is missing, under set -euo pipefail" says_aapt2_is_missing
 
+# show_home brings the launcher up the way the system does, with the HOME
+# intent. Started by component, it lands in a task of its own: the first
+# Home press then creates the real home instance and finishes this one, and
+# a gesture made during that swap never reaches the launcher (measured on
+# the emulator: a second onCreate with intent MAIN right after the first
+# Home press, the first instance destroyed with finishing=true).
+mkdir -p "$WORK/home"
+printf '#!/usr/bin/env bash\necho "$*" >> "%s/home/calls"\n' "$WORK" > "$WORK/home/adb"
+chmod +x "$WORK/home/adb"
+show_home_uses_the_home_intent() {
+  : > "$WORK/home/calls"
+  ( PATH="$WORK/home:$PATH"; show_home ) >/dev/null 2>&1
+  local start; start="$(grep " am start " "$WORK/home/calls")"
+  grep -q -- "-a android.intent.action.MAIN" <<<"$start" && grep -q -- "-c android.intent.category.HOME" <<<"$start" \
+    && grep -q -- " $PKG\$" <<<"$start" && ! grep -q -- " -n " <<<"$start"
+}
+check "show_home starts the launcher with the HOME intent, not by component" show_home_uses_the_home_intent
+
 exit "$failed"
