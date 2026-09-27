@@ -79,6 +79,19 @@ class ReleaseGateTest(unittest.TestCase):
         found = gate.violations(release_with(off))
         self.assertIn('jobs.release does not check the signer with check-release-signer.py "$RELEASE_CERT_SHA256"', found)
 
+    # A line that only names the checker runs nothing (#204 review).
+    def test_a_printed_signer_check_is_a_violation(self):
+        printed = lambda line: (
+            """          python3 -c 'print(\"\"\"check-release-signer.py CERTS.txt "$RELEASE_CERT_SHA256"\"\"\")'"""
+            if "check-release-signer.py" in line else line)
+        found = gate.violations(release_with(printed))
+        self.assertIn('jobs.release does not check the signer with check-release-signer.py "$RELEASE_CERT_SHA256"', found)
+
+    def test_an_echoed_signer_check_is_a_violation(self):
+        echoed = lambda line: line.replace("python3", "echo") if "check-release-signer.py" in line else line
+        found = gate.violations(release_with(echoed))
+        self.assertIn('jobs.release does not check the signer with check-release-signer.py "$RELEASE_CERT_SHA256"', found)
+
     # The digest counts only in the step that runs the check (#204 review).
     def test_a_digest_in_another_step_is_a_violation(self):
         workflow = release_with(lambda line: line)
