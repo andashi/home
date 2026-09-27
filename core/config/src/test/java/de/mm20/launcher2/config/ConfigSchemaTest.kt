@@ -134,6 +134,8 @@ class ConfigSchemaTest {
             "an app action with a whitespace label" to """{"schemaVersion":2,"search":{"actions":[{"type":"app","label":"  ","package":"org.example.app"}]}}""",
             "a grid widget whose package is too long" to """{"schemaVersion":2,"home":{"grid":{"layouts":{"phone":{"items":[{"id":"x","widget":"a.${"b".repeat(ConfigValidator.MaxPackageNameLength)}/.C"}]}}}}}""",
             "an unknown barPosition" to """{"schemaVersion":2,"search":{"barPosition":"middle"}}""",
+            "a grid item with x and no y" to """{"schemaVersion":2,"home":{"grid":{"layouts":{"phone":{"items":[{"id":"a","widget":"favorites","x":1}]}}}}}""",
+            "a grid item with y and no x" to """{"schemaVersion":2,"home":{"grid":{"layouts":{"fold":{"items":[{"id":"a","widget":"favorites","y":1}]}}}}}""",
         )
 
         val disagreements = broken.mapNotNull { (what, text) ->

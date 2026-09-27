@@ -88,7 +88,8 @@ placed at the first free cells with the widget's default size. The
 placement is the launcher's, not a change anyone made, so the file keeps the
 item without geometry; once someone moves it on the device, write-back puts
 its new geometry into the file. A position is `x` and `y` together; a lone
-coordinate is ignored with a `partial-grid-position` warning. The launcher
+coordinate is an error (`partial-grid-position`) and the file is not applied,
+since the item could only be put somewhere its author did not say. The launcher
 keeps a layout valid on the actual screen:
 - a size below the widget's minimum is enlarged (`widget-too-small`);
 - a size above the widget's maximum, or larger than the grid, is shrunk

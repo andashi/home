@@ -1,6 +1,7 @@
 package de.mm20.launcher2.config
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -118,19 +119,43 @@ class GridValidationTest {
         assertEquals("absent fields are fine", 0, geometry(null, null, 2, null).size)
     }
 
+    /**
+     * A lone coordinate cannot be honoured on any device, and placing the item
+     * at the first free cells discards the one thing the author wrote. So it
+     * is an error, like every other malformed grid geometry, and the file is
+     * not applied. It was a warning until the severity table made it
+     * readable next to invalid-grid-geometry; no zone file had one - the
+     * provisioning generator always writes x and y together.
+     */
     @Test
-    fun `a lone coordinate is reported as a warning, not an error`() {
-        val result = parse(
-            """{ "layouts": { "phone": { "items": [
-                 { "id": "clock", "widget": "com.android.deskclock/.DigitalAppWidgetProvider", "x": 2 }
-               ] } } }"""
-        )
+    fun `a lone coordinate is an error and the file does not apply`() {
+        for (lone in listOf(""""x": 2""", """"y": 3""")) {
+            val result = parse(
+                """{ "layouts": { "phone": { "items": [
+                     { "id": "clock", "widget": "com.android.deskclock/.DigitalAppWidgetProvider", $lone }
+                   ] } } }"""
+            )
 
-        val warning = result.diagnostics.single()
-        assertEquals(Severity.Warning, warning.severity)
-        assertEquals("partial-grid-position", warning.code)
-        assertEquals("home.grid.layouts.phone.items[0]", warning.path)
-        assertNotNull(result.config)
+            val error = result.diagnostics.single()
+            assertEquals(lone, Severity.Error, error.severity)
+            assertEquals(lone, "partial-grid-position", error.code)
+            assertEquals(lone, "home.grid.layouts.phone.items[0]", error.path)
+            assertFalse(lone, result.isSuccess)
+        }
+    }
+
+    /** Control: both coordinates, or neither, is a position or none. */
+    @Test
+    fun `x and y together, or neither, is no partial position`() {
+        for (position in listOf(""""x": 2, "y": 3""", """"w": 2""")) {
+            val result = parse(
+                """{ "layouts": { "phone": { "items": [
+                     { "id": "clock", "widget": "com.android.deskclock/.DigitalAppWidgetProvider", $position }
+                   ] } } }"""
+            )
+
+            assertTrue(position + " " + result.diagnostics, result.isSuccess)
+        }
     }
 
     @Test

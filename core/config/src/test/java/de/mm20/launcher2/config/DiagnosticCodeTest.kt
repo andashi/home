@@ -45,7 +45,7 @@ class DiagnosticCodeTest {
             "invalid-wallpaper-image" to Severity.Error,
             "malformed-json" to Severity.Error,
             "missing-schema-version" to Severity.Error,
-            "partial-grid-position" to Severity.Warning,
+            "partial-grid-position" to Severity.Error,
             "permission-missing" to Severity.Warning,
             "profile-unavailable" to Severity.Warning,
             "read-failed" to Severity.Error,

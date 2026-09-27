@@ -324,7 +324,15 @@
                                                     "id",
                                                     "widget"
                                                 ],
-                                                "additionalProperties": false
+                                                "additionalProperties": false,
+                                                "dependentRequired": {
+                                                    "x": [
+                                                        "y"
+                                                    ],
+                                                    "y": [
+                                                        "x"
+                                                    ]
+                                                }
                                             },
                                             "maxItems": 32
                                         }
@@ -400,7 +408,15 @@
                                                     "id",
                                                     "widget"
                                                 ],
-                                                "additionalProperties": false
+                                                "additionalProperties": false,
+                                                "dependentRequired": {
+                                                    "x": [
+                                                        "y"
+                                                    ],
+                                                    "y": [
+                                                        "x"
+                                                    ]
+                                                }
                                             },
                                             "maxItems": 32
                                         }

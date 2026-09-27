@@ -51,7 +51,7 @@ enum class DiagnosticCode(val code: String, val severity: Severity) {
     InvalidWallpaperImage("invalid-wallpaper-image", Severity.Error),
     MalformedJson("malformed-json", Severity.Error),
     MissingSchemaVersion("missing-schema-version", Severity.Error),
-    PartialGridPosition("partial-grid-position", Severity.Warning),
+    PartialGridPosition("partial-grid-position", Severity.Error),
     PermissionMissing("permission-missing", Severity.Warning),
     ProfileUnavailable("profile-unavailable", Severity.Warning),
     ReadFailed("read-failed", Severity.Error),

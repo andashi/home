@@ -353,8 +353,8 @@ object ConfigValidator {
                     out += Diagnostic(
                         DiagnosticCode.PartialGridPosition,
                         path,
-                        "a position is x and y together; the lone coordinate is ignored and " +
-                                "the item is placed at the first free cells",
+                        "a position is x and y together: give both, or neither to place the item " +
+                                "at the first free cells",
                     )
                 }
                 val badPosition = listOf(item.x, item.y).any { it != null && it !in MinGridPosition..MaxGridCoordinate }
