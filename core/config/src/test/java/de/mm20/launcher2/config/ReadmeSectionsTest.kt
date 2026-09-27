@@ -11,9 +11,10 @@ import java.io.File
  * every key by its full path; the readme is outside what it reads, and the
  * table drifted: `apps` and `gestures` were in the contract and missing here.
  *
- * Only sections are checked. The table describes keys in prose ("themed
- * icons, enforce themed, icon pack"), which cannot be held to paths; a
- * missing section is the failure that happened.
+ * Only the table's first column is checked, both ways: every section is
+ * named, and every name is in the contract. The second column describes keys
+ * in prose ("themed icons, enforce themed, icon pack"), which cannot be held
+ * to paths; a missing section is the failure that happened.
  *
  * readme.md is declared as an input of this test task in build.gradle.kts, or
  * a change to the readme alone would leave the task UP-TO-DATE and nothing
@@ -27,13 +28,13 @@ class ReadmeSectionsTest {
     /**
      * The top-level keys that are sections: those with a table of their own
      * in [ConfigParser.keyEffects] (`apps[]` for a list, `gestures` for an
-     * object). `schemaVersion` is a value, not a section, and falls out here
-     * rather than by name.
+     * object) and an effect the launcher applies. `schemaVersion` is a value,
+     * not a section, and falls out here rather than by name.
      */
     private val sections: List<String> =
-        ConfigParser.keyEffects.getValue("").keys.filter { key ->
-            key in ConfigParser.keyEffects || "$key[]" in ConfigParser.keyEffects
-        }.sorted()
+        ConfigParser.keyEffects.getValue("").filter { (key, effect) ->
+            effect == KeyEffect.Applied && (key in ConfigParser.keyEffects || "$key[]" in ConfigParser.keyEffects)
+        }.keys.sorted()
 
     /** The backticked names in the first column of the table under [heading]. */
     private fun sectionCells(heading: String): List<String> {
@@ -52,10 +53,41 @@ class ReadmeSectionsTest {
 
     @Test
     fun `the contract has the sections this test is about`() {
-        // A control: if keyEffects stopped listing sections at the top level,
-        // the test below would pass on an empty list.
-        assertTrue(sections.toString(), sections.containsAll(listOf("icons", "appearance", "home", "search")))
+        // A control on the derivation: without it, a section that stopped
+        // being derived would silently stop being checked. `apps` is the one
+        // section found through its list table (`apps[]`), `gestures` one
+        // found through its own; the rest are found both ways. A subset, so
+        // a new section does not break it.
+        assertTrue(
+            sections.toString(),
+            sections.containsAll(listOf("icons", "appearance", "home", "search", "apps", "gestures")),
+        )
         assertTrue("schemaVersion is a value, not a section: $sections", "schemaVersion" !in sections)
+    }
+
+    /**
+     * Whether [name] is a section or a key the launcher acts on: a table of
+     * its own (`home.grid`, `apps[]`), or an applied key of its parent's table
+     * (`home.lockRotation` in `home`). An inert key is accepted but does
+     * nothing - `appearance.transparency` since #73 - so a row for it is
+     * stale although the parser still knows the name.
+     */
+    private fun inContract(name: String): Boolean {
+        val tables = ConfigParser.keyEffects
+        if (name in tables || "$name[]" in tables) return true
+        val parent = name.substringBeforeLast('.', missingDelimiterValue = "")
+        val key = name.substringAfterLast('.')
+        return tables[parent]?.get(key) == KeyEffect.Applied
+    }
+
+    @Test
+    fun `every name in the readme's table is in the contract`() {
+        // The other direction: a row for a section or key the contract no
+        // longer has, say `appearance.transparency` after #73, would tell a
+        // reader about a key that does nothing.
+        val named = sectionCells("## What is configurable today")
+        val unknown = named.filterNot { inContract(it) }
+        assertEquals("names in the readme's table that are not in the contract", emptyList<String>(), unknown)
     }
 
     @Test
