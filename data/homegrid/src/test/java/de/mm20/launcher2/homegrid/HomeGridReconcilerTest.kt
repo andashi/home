@@ -148,6 +148,20 @@ class HomeGridReconcilerTest {
         assertEquals(100 + 2, grid.observe(HomeGridLayouts.Phone).first().single().appWidgetId)
     }
 
+    /** The defaults the grid runs with: a refused bind is retried after half a second. */
+    @Test
+    fun `an arrival with the defaults retries after half a second`() = runBlocking {
+        grid.replace(HomeGridLayouts.Phone, listOf(item("only", "org.example.only/.Widget")))
+        val port = LateProvider(FakeAppWidgetHostPort(bindable = setOf("org.example.only/.Widget")), "org.example.only/.Widget", readyAfter = 1)
+
+        val started = System.nanoTime()
+        val report = HomeGridReconciler(grid, port).reconcileArrival("org.example.only")
+        val elapsedMs = (System.nanoTime() - started) / 1_000_000
+
+        assertEquals(listOf("only"), report.bound)
+        assertTrue("waited ${elapsedMs} ms", elapsedMs >= 500)
+    }
+
     /**
      * The failure path: a provider that never becomes bindable is retried a
      * bounded number of times, then stays unbound and reported. No host id is
