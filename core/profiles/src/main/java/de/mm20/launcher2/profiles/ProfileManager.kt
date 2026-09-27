@@ -50,7 +50,7 @@ class ProfileManager(
     /**
      * Null until the first refresh: "no profiles read yet" is not "no
      * profiles". The flows below wait for it; the synchronous getters answer
-     * null until then, and [awaitProfile] waits.
+     * null until then, and [awaitRead] waits.
      */
     private val profileMap =
         MutableStateFlow<Map<Profile.Type, ProfileWithState>?>(null)
@@ -145,14 +145,6 @@ class ProfileManager(
      */
     fun getProfile(profileType: Profile.Type): Profile? {
         return profileMap.value?.get(profileType)?.profile
-    }
-
-    /**
-     * The profile of the given type once the profiles have been read, or null
-     * if the device has none of that type.
-     */
-    suspend fun awaitProfile(profileType: Profile.Type): Profile? {
-        return readProfiles.first()[profileType]?.profile
     }
 
     /** Returns once the profiles have been read; the synchronous getters answer from then on. */

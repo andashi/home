@@ -97,6 +97,9 @@ class DefaultConfigStore(
     ) { }
 
     override suspend fun readState(): ConfigState {
+        // Profiles first: before their first read every profile lookup is
+        // null, and a work favorite would read back as absent.
+        profileResolver.awaitRead()
         val settingsState = settings.readState()
         val favorites = favoriteApps().first().mapNotNull { it.toFavorite() }
         val wallpaper = wallpapers.current()
@@ -130,6 +133,11 @@ class DefaultConfigStore(
      * written with entries left out (an app not installed) is, as written.
      */
     override suspend fun applyAndCapture(mutations: List<ConfigMutation>): ConfigStore.Applied {
+        // The reload an ingest starts runs right after the process does:
+        // answered before the profiles are read, every favorite in a work
+        // profile was profile-unavailable. Once read, the synchronous lookups
+        // below (favorites, the grid's widget limits) answer for real.
+        profileResolver.awaitRead()
         val diagnostics = mutableListOf<Diagnostic>()
         val sections = mutableSetOf<String>()
 

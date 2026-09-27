@@ -66,14 +66,16 @@ class ProfileManagerTest {
     }
 
     @Test
-    fun `awaitProfile waits for the first read and then answers`() = runBlocking {
+    fun `awaitRead waits for the first read, and then the getters answer`() = runBlocking {
         val permissions = HeldPermissions()
         val manager = ProfileManager(context, permissions)
 
-        assertNull("awaitProfile answered before the first refresh", withTimeoutOrNull(500) { Result.success(manager.awaitProfile(Profile.Type.Work)) })
+        assertNull("awaitRead returned before the first refresh", withTimeoutOrNull(500) { manager.awaitRead() })
         permissions.manageProfiles.emit(false)
 
+        withTimeout(5_000) { manager.awaitRead() }
+        assertEquals(Profile.Type.Personal, manager.getProfile(Profile.Type.Personal)?.type)
         // The test device has no work profile: an answer, and it is null.
-        assertNull(withTimeout(5_000) { manager.awaitProfile(Profile.Type.Work) })
+        assertNull(manager.getProfile(Profile.Type.Work))
     }
 }
