@@ -909,4 +909,47 @@ stops_a_stray_out_loud() {
 }
 check "finish_instance stops a running instance nobody held, and says what would have kept it" stops_a_stray_out_loud
 
+# An APK that installs as another package fails before anything boots, and
+# says what it is: the debug build passed to a script that measures the
+# release package failed after a boot, with "see logcat" (glass, 2026-09-27).
+cat > "$WORK/aapt2" <<EOF
+#!/usr/bin/env bash
+[ "\$1 \$2" = "dump packagename" ] || exit 2
+case "\$3" in *debug*) echo org.andashi.home.debug ;; *broken*) exit 1 ;; *) echo org.andashi.home ;; esac
+EOF
+chmod +x "$WORK/aapt2"
+mkdir -p "$WORK/apks"
+: > "$WORK/apks/release.apk"; : > "$WORK/apks/app-debug.apk"; : > "$WORK/apks/broken.apk"
+package_case() { # $@ = apk names under $WORK/apks; prints stderr, returns require_apk_package's rc
+  local apks=() a
+  for a in "$@"; do apks+=("$WORK/apks/$a"); done
+  ( AAPT2="$WORK/aapt2"; require_apk_package org.andashi.home "${apks[@]}" ) 2>&1
+}
+accepts_the_expected_package() { package_case release.apk >/dev/null; }
+check "require_apk_package accepts an APK that installs as the expected package" accepts_the_expected_package
+names_a_wrong_package() {
+  local out; out="$(package_case release.apk app-debug.apk)" && return 1
+  grep -q "org.andashi.home.debug" <<<"$out" && grep -q "app-debug.apk" <<<"$out"
+}
+check "require_apk_package refuses another package among several and names it" names_a_wrong_package
+refuses_an_unreadable_apk() { ! package_case broken.apk >/dev/null; }
+check "require_apk_package refuses an APK whose package cannot be read" refuses_an_unreadable_apk
+refuses_a_missing_apk() {
+  local out; out="$(package_case gone.apk)" && return 1
+  grep -q "no such APK" <<<"$out"
+}
+check "require_apk_package refuses a missing file as missing" refuses_a_missing_apk
+# No aapt2 anywhere, under the callers' `set -euo pipefail`: the lookup must
+# reach its own message, not end the script silently in the assignment
+# (#201 review).
+mkdir -p "$WORK/noaapt"
+for t in ls sort tail; do ln -sf "$(command -v "$t")" "$WORK/noaapt/$t"; done
+says_aapt2_is_missing() {
+  local out
+  out="$( ( timeout 20 env -u AAPT2 PATH="$WORK/noaapt" ANDROID_HOME="$WORK/no-sdk" "$BASH" -c \
+    "set -euo pipefail; $(declare -f); require_apk_package org.andashi.home $WORK/apks/release.apk" ) 2>&1 )" && return 1
+  grep -q "aapt2 not found" <<<"$out"
+}
+check "require_apk_package says aapt2 is missing, under set -euo pipefail" says_aapt2_is_missing
+
 exit "$failed"
