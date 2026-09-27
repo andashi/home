@@ -1008,4 +1008,18 @@ check "touch_ready waits while the launcher is still drawing" not_ready_while_dr
 not_ready_without_a_frame_count() { touch_state "$focused" ""; touch "$WORK/touch/nogfx"; ! is_touch_ready; }
 check "touch_ready: no frame count is not frames at rest" not_ready_without_a_frame_count
 
+# Which condition held it back, for the failure message: on the device the
+# three are indistinguishable from outside (l4-config 6c, 2026-09-27).
+touch_ready_says_why() { # $1 = expected text in TOUCH_READY_WHY
+  local PATH="$WORK/touch:$PATH" TOUCH_READY_WHY=""
+  touch_ready >/dev/null 2>&1
+  grep -q -- "$1" <<<"$TOUCH_READY_WHY"
+}
+says_transition() { touch_state "$focused" "  reason=Transition flags=3 display=0"; touch_ready_says_why "transition"; }
+check "touch_ready says a transition held it back" says_transition
+says_focus() { touch_state "Window{2 u0 com.android.settings/.Settings}" ""; touch_ready_says_why "com.android.settings"; }
+check "touch_ready says which window had the focus" says_focus
+says_frames() { touch_state "$focused" ""; touch "$WORK/touch/moving"; touch_ready_says_why "frames 100->101"; }
+check "touch_ready says the frames moved, and by how much" says_frames
+
 exit "$failed"
