@@ -199,6 +199,35 @@ class ConfigWatcherTest {
         assertEquals("the next start does not", 1, store.applyCount)
     }
 
+    /**
+     * A startup reload that failed made no record: the marker would say the
+     * form was recorded when it was not, and the next start would skip the
+     * reload for good (review on #214). It is retried at the next start.
+     */
+    @Test
+    fun `a failed startup reload leaves the record unmade, and the next start retries`() = runTest {
+        val store = FakeConfigStore(applyDiagnostics = listOf(Diagnostic(Severity.Error, "apply-failed", "", "datastore gone")))
+        val reportStore = ReloadReportStore(context)
+        val baselines = AppliedBaselineStore(context)
+        val naming = FakeAppNaming(recorded = false)
+        val watcher = ConfigWatcher(
+            context, ConfigReloader(store, reportStore), reportStore, scope = this,
+            baselineStore = baselines, appNaming = naming,
+        )
+        writeConfig()
+        val hash = configFile().readBytes().sha256Hex()
+        reportStore.save(ReloadReport(success = true, configSha256 = hash))
+        baselines.save(AppliedBaseline(hash, JsonObject(emptyMap())))
+
+        watcher.startupCheck()!!.join()
+        assertTrue("no marker after a failed reload", !naming.recorded())
+
+        store.applyDiagnostics = emptyList()
+        watcher.startupCheck()!!.join()
+        assertEquals("the next start tried again", 2, store.applyCount)
+        assertTrue(naming.recorded())
+    }
+
     /** Control: a record that exists, with everything else known, reloads nothing. */
     @Test
     fun `startup check skips the reload when the apps' form is recorded`() = runTest {

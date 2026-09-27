@@ -274,6 +274,33 @@ class ConfigWriteBackTest {
         assertEquals(searchFile, file.readText())
     }
 
+    /**
+     * Until the first reload of this build has recorded how the file writes
+     * its apps, the apps read back in the other form, and write-back would pair
+     * them wrongly: an app renamed on the phone would come back as a second
+     * entry (review on #214). So it waits for the record, and says so.
+     */
+    @Test
+    fun `a write-back waits until the apps' form is recorded, and says so`() = runBlocking {
+        applied(searchFile)
+        onDevice("""{"schemaVersion":2,"search":{"layout":"list"}}""")
+        var recorded = false
+        val naming = object : AppNaming {
+            override fun observe() = kotlinx.coroutines.flow.flowOf(emptyMap<String, String?>())
+            override suspend fun replace(naming: Map<String, String?>) = Unit
+            override suspend fun recorded() = recorded
+        }
+        val waiting = ConfigWriteBack(context, real.store, reportStore, baselineStore, lock, appNaming = naming)
+
+        val result = waiting.write()
+        assertEquals("apps-form-unrecorded", (result as WriteBackResult.Skipped).code)
+        assertEquals(searchFile, file.readText())
+
+        // Control: once recorded, the same change is written.
+        recorded = true
+        assertTrue(waiting.write() is WriteBackResult.Written)
+    }
+
     @Test
     fun `a file changed since it was applied is not written`() = runBlocking {
         applied(searchFile)

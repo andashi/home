@@ -79,6 +79,7 @@ class AndroidAppCustomizationStoreTest {
     private val labels = MutableStateFlow<Map<String, String>>(emptyMap())
     private val levels = MutableStateFlow<Map<String, VisibilityLevel>>(emptyMap())
     private val visibilityWrites = mutableListOf<Map<String, VisibilityLevel>>()
+    private var labelWriteFailure: Exception? = null
 
     private inline fun <reified T> stub(crossinline answer: (name: String, args: Array<out Any?>) -> Any?): T =
         Proxy.newProxyInstance(T::class.java.classLoader, arrayOf(T::class.java)) { proxy, method, args ->
@@ -102,6 +103,7 @@ class AndroidAppCustomizationStoreTest {
         when (name) {
             "getAppLabels" -> labels
             "replaceCustomLabelsAwaited" -> {
+                labelWriteFailure?.let { throw it }
                 val items = args[0] as List<SavableSearchable>
                 val wanted = args[1] as Map<String, String>
                 labels.value = labels.value.filterKeys { key -> items.none { it.key == key } } + wanted
@@ -382,6 +384,24 @@ class AndroidAppCustomizationStoreTest {
         labels.value = mapOf(twoFirst.key to "Uno")
 
         assertEquals(listOf(AppConfig("com.example.two", label = "Uno")), store.read())
+    }
+
+    /**
+     * The form is recorded before the device writes, because the label write
+     * sets off a change that must read the new form. If a device write fails,
+     * the apply is reported failed and the baseline stays as it was, so the
+     * record goes back to what it was too (review on #214): a record of a form
+     * the apply never established would pair write-back wrongly.
+     */
+    @Test
+    fun `a failed device write puts the recorded form back`() = runTest {
+        store.replaceAndRead(listOf(AppConfig("com.example.two", activity = "com.example.two.First", label = "One")))
+        labelWriteFailure = IllegalStateException("database locked")
+
+        val failed = runCatching { store.replaceAndRead(listOf(AppConfig("com.example.two", label = "Two"))) }
+
+        assertTrue(failed.isFailure)
+        assertEquals(mapOf(twoFirst.key to "com.example.two.First"), naming.written.value)
     }
 
     // ---- changes ----

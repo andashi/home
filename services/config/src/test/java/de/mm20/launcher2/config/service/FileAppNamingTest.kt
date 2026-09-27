@@ -58,6 +58,27 @@ class FileAppNamingTest {
         assertEquals(mapOf("app://a:A" to null), FileAppNaming(context).observe().first())
     }
 
+    /**
+     * A record that does not decode reads as empty, so it is no record: the
+     * startup check must regenerate it, not skip because a file exists
+     * (review on #214).
+     */
+    @Test
+    fun `a corrupt record is not a record`() = runBlocking {
+        file.parentFile?.mkdirs()
+        file.writeText("{ not json")
+
+        assertEquals(false, FileAppNaming(context).recorded())
+    }
+
+    /** Control: a record that decodes, even an empty one, is a record. */
+    @Test
+    fun `an empty record that decodes is a record`() = runBlocking {
+        FileAppNaming(context).replace(emptyMap())
+
+        assertEquals(true, FileAppNaming(context).recorded())
+    }
+
     @Test
     fun `a replace is seen by an observer of the same instance`() = runBlocking {
         val naming = FileAppNaming(context)

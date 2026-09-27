@@ -122,8 +122,26 @@ internal class AndroidAppCustomizationStore(
             wanted[app.key] = entry.visibility.toLevel()
         }
 
-        // Before the labels: the change their write sets off must read the new form.
+        // Before the labels: the change their write sets off must read the new
+        // form. If a device write fails, the apply is reported failed and the
+        // baseline stays as it was, so the record goes back too (review on #214).
+        val before = naming.observe().first()
         naming.replace(written)
+        try {
+            writeDeviceState(installed, labels, wanted)
+        } catch (e: Throwable) {
+            naming.replace(before)
+            throw e
+        }
+
+        return diagnostics to read()
+    }
+
+    private suspend fun writeDeviceState(
+        installed: List<Application>,
+        labels: Map<String, String>,
+        wanted: Map<String, VisibilityLevel>,
+    ) {
         customAttributes.replaceCustomLabelsAwaited(installed, labels)
 
         // Only what differs is written: an app shown normally that stays so
@@ -136,8 +154,6 @@ internal class AndroidAppCustomizationStore(
             if (want != have) (app as SavableSearchable) to want else null
         }.toMap()
         searchables.setVisibilitiesAwaited(changes)
-
-        return diagnostics to read()
     }
 
     private suspend fun describe(snapshot: Snapshot): List<AppConfig> = snapshot.apps.mapNotNull { app ->

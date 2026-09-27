@@ -68,7 +68,7 @@ val configModule = module {
             ),
         )
     }
-    single { ConfigWriteBack(androidContext(), get(), get(), get(), get()) }
+    single { ConfigWriteBack(androidContext(), get(), get(), get(), get(), appNaming = get()) }
     single { GridWriteBack(androidContext(), get(), get(), get(), get(), engine = get()) }
     // What the grid's edit mode calls on Done (data/homegrid's interface).
     single<HomeGridWriteBack> { HomeGridWriteBackAdapter(get()) }

@@ -66,20 +66,22 @@ internal class FileAppNaming(context: Context) : AppNaming {
         state.value = naming
     }
 
-    override suspend fun recorded(): Boolean = withContext(Dispatchers.IO) { file.exists() }
+    /** A file that decodes: a corrupt one reads as empty, so it is no record (review on #214). */
+    override suspend fun recorded(): Boolean = withContext(Dispatchers.IO) { decode() != null }
 
     private suspend fun load() = lock.withLock {
         if (state.value != null) return@withLock
-        state.value = withContext(Dispatchers.IO) {
-            try {
-                if (file.exists()) ConfigParser.json.decodeFromString(serializer, file.readText()) else emptyMap()
-            } catch (e: SerializationException) {
-                emptyMap()
-            } catch (e: IllegalArgumentException) {
-                emptyMap()
-            } catch (e: IOException) {
-                emptyMap()
-            }
-        }
+        state.value = withContext(Dispatchers.IO) { decode() ?: emptyMap() }
+    }
+
+    /** The record, or null when there is none or it does not decode. */
+    private fun decode(): Map<String, String?>? = try {
+        if (file.exists()) ConfigParser.json.decodeFromString(serializer, file.readText()) else null
+    } catch (e: SerializationException) {
+        null
+    } catch (e: IllegalArgumentException) {
+        null
+    } catch (e: IOException) {
+        null
     }
 }
