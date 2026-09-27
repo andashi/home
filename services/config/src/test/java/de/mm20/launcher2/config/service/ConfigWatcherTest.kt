@@ -187,8 +187,8 @@ class ConfigWatcherTest {
         val baselines = AppliedBaselineStore(context)
         val naming = FakeAppNaming(recorded = false)
         val watcher = ConfigWatcher(
-            context, ConfigReloader(store, reportStore, appNaming = naming), reportStore, scope = this,
-            baselineStore = baselines, appNaming = naming,
+            context, ConfigReloader(store, reportStore, namings = listOf(naming)), reportStore, scope = this,
+            baselineStore = baselines, namings = listOf(naming),
         )
         writeConfig()
         val hash = configFile().readBytes().sha256Hex()
@@ -215,8 +215,8 @@ class ConfigWatcherTest {
         val baselines = AppliedBaselineStore(context)
         val naming = FakeAppNaming(recorded = false)
         val watcher = ConfigWatcher(
-            context, ConfigReloader(store, reportStore, appNaming = naming), reportStore, scope = this,
-            baselineStore = baselines, appNaming = naming,
+            context, ConfigReloader(store, reportStore, namings = listOf(naming)), reportStore, scope = this,
+            baselineStore = baselines, namings = listOf(naming),
         )
         writeConfig()
         val hash = configFile().readBytes().sha256Hex()
@@ -240,7 +240,7 @@ class ConfigWatcherTest {
         val baselines = AppliedBaselineStore(context)
         val watcher = ConfigWatcher(
             context, ConfigReloader(store, reportStore), reportStore, scope = this,
-            baselineStore = baselines, appNaming = FakeAppNaming(recorded = true),
+            baselineStore = baselines, namings = listOf(FakeAppNaming(recorded = true)),
         )
         writeConfig()
         val hash = configFile().readBytes().sha256Hex()
@@ -250,6 +250,30 @@ class ConfigWatcherTest {
         watcher.startupCheck()!!.join()
 
         assertEquals(0, store.applyCount)
+    }
+
+    /** The tags' record missing alone, the apps' made (review on #224): one reload at start makes it. */
+    @Test
+    fun `startup check reloads once when only the tags' record is missing`() = runTest {
+        val store = FakeConfigStore()
+        val reportStore = ReloadReportStore(context)
+        val baselines = AppliedBaselineStore(context)
+        val namings = listOf(FakeAppNaming(recorded = true), FakeAppNaming(recorded = false))
+        val watcher = ConfigWatcher(
+            context, ConfigReloader(store, reportStore, namings = namings), reportStore, scope = this,
+            baselineStore = baselines, namings = namings,
+        )
+        writeConfig()
+        val hash = configFile().readBytes().sha256Hex()
+        reportStore.save(ReloadReport(success = true, configSha256 = hash))
+        baselines.save(AppliedBaseline(hash, JsonObject(emptyMap())))
+
+        watcher.startupCheck()!!.join()
+        assertEquals(1, store.applyCount)
+        assertTrue(namings.all { it.recorded() })
+
+        watcher.startupCheck()!!.join()
+        assertEquals("the next start does not", 1, store.applyCount)
     }
 
     private class FakeAppNaming(private var recorded: Boolean) : AppNaming {

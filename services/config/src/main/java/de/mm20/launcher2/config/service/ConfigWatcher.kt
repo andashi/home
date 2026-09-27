@@ -49,8 +49,8 @@ class ConfigWatcher(
     private val baselineStore: AppliedBaselineStore? = null,
     /** This device's measured grid rows (MeasuredGridRows); null when nothing measures. */
     private val measurements: Flow<Map<String, Int>>? = null,
-    /** How the file wrote its apps (AppNaming); null when nothing records it. */
-    private val appNaming: AppNaming? = null,
+    /** How the file wrote the apps of each list that names them (AppNaming): `apps`, `tags`. */
+    private val namings: List<AppNaming> = emptyList(),
     /**
      * A signal per package that may have become available, by name
      * (PackageArrivals); null when nothing watches them.
@@ -283,7 +283,7 @@ class ConfigWatcher(
             // then reads differently from the device, so the reload applies
             // `apps` and records the form; one that does not needs no form,
             // and an empty record says the reload has run (review on #207).
-            val noNaming = appNaming != null && !appNaming.recorded()
+            val noNaming = namings.any { !it.recorded() }
             // The reload makes the record if it goes through (ConfigReloader);
             // a failed one leaves none, and the next start tries again.
             if (report == null || report.configSha256 != hash || noBaseline || noNaming) {

@@ -16,6 +16,9 @@ import org.koin.dsl.module
 /** The [AppNaming] that records how `tags` writes its apps. */
 private const val TagNaming = "tag-naming"
 
+/** Every record of how the file writes its apps: reloads make them, write-back waits for them. */
+private fun org.koin.core.scope.Scope.namings(): List<AppNaming> = listOf(get(), get(named(TagNaming)))
+
 /**
  * Fork addition (Phase 2, ADR 0003): config convergence services plus the
  * Android surface around them — [ReloadConfigReceiver] and
@@ -79,10 +82,10 @@ val configModule = module {
                 accessibilityOn = { permissions.checkPermissionOnce(PermissionGroup.Accessibility) },
             ),
             // Every reload that goes through records the apps' form where none exists (review on #214).
-            appNaming = get(),
+            namings = namings(),
         )
     }
-    single { ConfigWriteBack(androidContext(), get(), get(), get(), get(), appNaming = get()) }
+    single { ConfigWriteBack(androidContext(), get(), get(), get(), get(), namings = namings()) }
     single { GridWriteBack(androidContext(), get(), get(), get(), get(), engine = get()) }
     // What the grid's edit mode calls on Done (data/homegrid's interface).
     single<HomeGridWriteBack> { HomeGridWriteBackAdapter(get()) }
@@ -92,7 +95,7 @@ val configModule = module {
             // A layout kept as written before its rows were measured is fitted once they are (#90).
             measurements = get<MeasuredGridRows>().measurements,
             // A build updated from one without the record reloads once to make it (review on #207).
-            appNaming = get(),
+            namings = namings(),
             // What the file names and a device lacked is applied when it is installed (#207 review).
             arrivals = packageArrivals(packageEvents(androidContext()), get<AppRepository>(), get<IconPackIndex>()),
         ).also { it.start() }
@@ -100,7 +103,7 @@ val configModule = module {
     // Every change on the device goes back into the file (#3 slice 4).
     single(createdAtStart = true) {
         val writeBack = get<ConfigWriteBack>()
-        ConfigWriteBackTrigger(get(), { writeBack.write() }, appNaming = get()).also { it.start() }
+        ConfigWriteBackTrigger(get(), { writeBack.write() }, namings = namings()).also { it.start() }
     }
     single(createdAtStart = true) { WallpaperForegroundFixer(androidContext(), get(), get()).also { it.start() } }
 }

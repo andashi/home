@@ -84,12 +84,30 @@ class ConfigWriteBackTriggerTest {
         val store = Changes()
         val naming = Naming(recorded = false)
         var writes = 0
-        ConfigWriteBackTrigger(store, { writes++ }, backgroundScope, appNaming = naming).also { it.start(); runCurrent() }
+        ConfigWriteBackTrigger(store, { writes++ }, backgroundScope, namings = listOf(naming)).also { it.start(); runCurrent() }
         store.flow.emit(Unit)
         runCurrent()
         assertEquals("the held-back one", 1, writes)
 
         naming.replace(emptyMap())
+        runCurrent()
+
+        assertEquals(2, writes)
+    }
+
+    /** The tags' record, made after the apps' was already there, asks too (review on #224). */
+    @Test
+    fun `the tags' record asks for the write-back it held back`() = runTest(StandardTestDispatcher()) {
+        val store = Changes()
+        val tags = Naming(recorded = false)
+        var writes = 0
+        ConfigWriteBackTrigger(store, { writes++ }, backgroundScope, namings = listOf(Naming(recorded = true), tags))
+            .also { it.start(); runCurrent() }
+        store.flow.emit(Unit)
+        runCurrent()
+        assertEquals(1, writes)
+
+        tags.replace(emptyMap())
         runCurrent()
 
         assertEquals(2, writes)
@@ -101,7 +119,7 @@ class ConfigWriteBackTriggerTest {
         val store = Changes()
         val naming = Naming(recorded = true)
         var writes = 0
-        ConfigWriteBackTrigger(store, { writes++ }, backgroundScope, appNaming = naming).also { it.start(); runCurrent() }
+        ConfigWriteBackTrigger(store, { writes++ }, backgroundScope, namings = listOf(naming)).also { it.start(); runCurrent() }
 
         store.flow.emit(Unit)
         runCurrent()

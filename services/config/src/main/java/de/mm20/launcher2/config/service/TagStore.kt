@@ -49,8 +49,8 @@ internal class AndroidTagStore(
      * first launcher entry can be named with or without its activity, as in
      * `apps`, and per tag, since two tags can write it differently. A record
      * of its own, not `apps`' one: each list replaces its record whole.
-     * Tags are new, so no older build applied them without one; a missing
-     * record reads back by the device's rule, which is what nothing applied means.
+     * Reloads make it where it is missing and write-back waits for it, as
+     * for `apps` (review on #224).
      */
     private val naming: AppNaming,
     private val iconPacks: IconPackIndex,

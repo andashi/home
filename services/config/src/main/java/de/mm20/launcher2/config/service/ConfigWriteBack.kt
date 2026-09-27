@@ -72,8 +72,8 @@ class ConfigWriteBack(
     private val baselineStore: AppliedBaselineStore,
     private val lock: ConfigFileLock,
     private val fileProvider: () -> File? = { ConfigLocation.configFile(context.applicationContext) },
-    /** How the file writes its apps (AppNaming); write-back waits until it is recorded. */
-    private val appNaming: AppNaming? = null,
+    /** How the file writes the apps of each list that names them (AppNaming); write-back waits until each is recorded. */
+    private val namings: List<AppNaming> = emptyList(),
 ) {
     private val _lastResult = MutableStateFlow<WriteBackResult?>(null)
 
@@ -159,10 +159,11 @@ class ConfigWriteBack(
         if (baseline.configSha256 != sha) {
             return skipped("not-applied-yet", "${file.name} changed since it was last applied; it is reloaded first")
         }
-        // Until the first reload of this build records how the file writes its
-        // apps, they read back in the other form, and an app renamed on the
-        // phone would come back as a second entry (review on #214).
-        if (appNaming != null && !appNaming.recorded()) {
+        // Until a reload records how the file writes its apps - in `apps` and
+        // in `tags` - they read back in the other form, and an app renamed on
+        // the phone would come back as a second entry (review on #214), a
+        // tag's app in the other form (review on #224).
+        if (namings.any { !it.recorded() }) {
             return skipped(
                 "apps-form-unrecorded",
                 "how ${file.name} writes its apps is recorded by this build's first reload; changes are written back after it",

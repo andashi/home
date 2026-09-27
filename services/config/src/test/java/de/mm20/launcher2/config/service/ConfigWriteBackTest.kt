@@ -324,7 +324,7 @@ class ConfigWriteBackTest {
             override suspend fun awaitRecorded(): Unit = error("not used here")
             override suspend fun forget() = Unit
         }
-        val waiting = ConfigWriteBack(context, real.store, reportStore, baselineStore, lock, appNaming = naming)
+        val waiting = ConfigWriteBack(context, real.store, reportStore, baselineStore, lock, namings = listOf(naming))
 
         val result = waiting.write()
         assertEquals("apps-form-unrecorded", (result as WriteBackResult.Skipped).code)
@@ -332,6 +332,35 @@ class ConfigWriteBackTest {
 
         // Control: once recorded, the same change is written.
         recorded = true
+        assertTrue(waiting.write() is WriteBackResult.Written)
+    }
+
+    /**
+     * The tags' record is waited for as the apps' is (review on #224): with
+     * it missing, a tag's app spelled out as its first activity reads back
+     * without it, and write-back would rewrite the file into the other form.
+     */
+    @Test
+    fun `a write-back waits for the tags' record too, with the apps' made`() = runBlocking {
+        applied(searchFile)
+        onDevice("""{"schemaVersion":2,"search":{"layout":"list"}}""")
+        var tagsRecorded = false
+        fun naming(recorded: () -> Boolean) = object : AppNaming {
+            override fun observe() = kotlinx.coroutines.flow.flowOf(emptyMap<String, String?>())
+            override suspend fun replace(naming: Map<String, String?>) = Unit
+            override suspend fun recorded() = recorded()
+            override suspend fun awaitRecorded(): Unit = error("not used here")
+            override suspend fun forget() = Unit
+        }
+        val waiting = ConfigWriteBack(
+            context, real.store, reportStore, baselineStore, lock,
+            namings = listOf(naming { true }, naming { tagsRecorded }),
+        )
+
+        assertEquals("apps-form-unrecorded", (waiting.write() as WriteBackResult.Skipped).code)
+        assertEquals(searchFile, file.readText())
+
+        tagsRecorded = true
         assertTrue(waiting.write() is WriteBackResult.Written)
     }
 

@@ -34,7 +34,8 @@ class ConfigWriteBackTrigger(
     private val store: ConfigStore,
     private val write: suspend () -> Unit,
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO),
-    private val appNaming: AppNaming? = null,
+    /** The records write-back waits for (AppNaming); each one made asks for the pass it held back. */
+    private val namings: List<AppNaming> = emptyList(),
 ) {
     private var job: Job? = null
 
@@ -47,9 +48,9 @@ class ConfigWriteBackTrigger(
             // buffer, three writes for a drag instead of two.
             val asks = Channel<Unit>(Channel.CONFLATED)
             launch { store.changes().collect { asks.send(Unit) } }
-            if (appNaming != null) launch {
-                if (!appNaming.recorded()) {
-                    appNaming.awaitRecorded()
+            for (naming in namings) launch {
+                if (!naming.recorded()) {
+                    naming.awaitRecorded()
                     asks.send(Unit)
                 }
             }
