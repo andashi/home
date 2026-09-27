@@ -758,5 +758,12 @@ push_fails_on_an_undeclared_ignored_key() {
   ( PATH="$WORK/provider:$PATH"; push_config "$WORK/stale.json" "stale" --ignored "home.dock" ) >/dev/null 2>&1
 }
 check "push_config fails on an undeclared ignored key, and passes it declared" push_fails_on_an_undeclared_ignored_key
+# A flag where the paths belong is a mistake in the call, not a path.
+rejects_a_flag_as_the_value() {
+  local out
+  out="$( ( push_config "$WORK/stale.json" "stale" --ignored --ignored ) 2>&1 )" && return 1
+  grep -q "needs" <<<"$out"
+}
+check "push_config rejects --ignored followed by another option" rejects_a_flag_as_the_value
 
 exit "$failed"
