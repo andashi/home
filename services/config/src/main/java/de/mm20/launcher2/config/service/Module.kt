@@ -41,8 +41,10 @@ val configModule = module {
             profileResolver = get(),
             wallpapers = get(),
             searchActions = get(),
+            apps = get(),
         )
     }
+    factory<AppCustomizationStore> { AndroidAppCustomizationStore(get(), get(), get(), get()) }
     factory<SearchActionStore> { AndroidSearchActionStore(androidContext(), get()) }
     single { ReloadReportStore(androidContext()) }
     // One lock around launcher.json: reloads (watcher, receiver) and every

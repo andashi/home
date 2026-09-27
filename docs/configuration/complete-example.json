@@ -142,8 +142,8 @@
     ]
   },
   "apps": [
-    { "packageName": "org.thoughtcrime.securesms", "label": "Chat" },
     { "packageName": "com.android.stk", "visibility": "hidden" },
+    { "packageName": "org.thoughtcrime.securesms", "label": "Chat" },
     {
       "packageName": "com.example.work.mail",
       "profile": "work",

@@ -28,6 +28,9 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.async
 import kotlinx.coroutines.test.runCurrent
+import kotlinx.coroutines.flow.take
+import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -48,6 +51,7 @@ class DefaultConfigStoreTest {
     private val initLock = HomeGridInitLock()
     private lateinit var gridLimits: FakeGridLimitsSource
     private lateinit var searchActionStore: FakeSearchActionStore
+    private lateinit var customizations: FakeAppCustomizationStore
     private lateinit var gridRows: FakeGridRowsSource
     private lateinit var searchableRepository: FakeSavableSearchableRepository
     private lateinit var appRepository: FakeAppRepository
@@ -74,6 +78,7 @@ class DefaultConfigStoreTest {
         )
         wallpaperStore = FakeWallpaperStore()
         searchActionStore = FakeSearchActionStore()
+        customizations = FakeAppCustomizationStore()
         store = DefaultConfigStore(
             settings,
             homeGridRepository,
@@ -86,7 +91,36 @@ class DefaultConfigStoreTest {
             profileResolver,
             wallpaperStore,
             searchActionStore,
+            customizations,
         )
+    }
+
+    /** `apps` (#3 slice 4): applied through its store, captured as written, and read back. */
+    @Test
+    fun `SetApps applies through the apps store and is captured as the apps section`() = runTest {
+        val wanted = listOf(de.mm20.launcher2.config.AppConfig("org.thoughtcrime.securesms", label = "Chat"))
+
+        val applied = store.applyAndCapture(listOf(ConfigMutation.SetApps(wanted)))
+
+        assertEquals(listOf(wanted), customizations.replaced)
+        assertEquals(wanted, applied.written.apps)
+        assertTrue("apps" in applied.sections)
+        assertEquals(wanted, store.readState().apps)
+    }
+
+    /** A rename on the phone must reach write-back: the apps store is one of the sources [DefaultConfigStore.changes] combines. */
+    @Test
+    fun `a change of the apps is a change of the store`() = runTest {
+        val seen = mutableListOf<Unit>()
+        val collecting = launch { store.changes().take(2).toList(seen) }
+        testScheduler.advanceUntilIdle()
+        assertEquals("the current state on collection", 1, seen.size)
+
+        customizations.replaceAndRead(listOf(de.mm20.launcher2.config.AppConfig("org.thoughtcrime.securesms", label = "Chat")))
+        testScheduler.advanceUntilIdle()
+
+        assertEquals(2, seen.size)
+        collecting.cancel()
     }
 
     @Test

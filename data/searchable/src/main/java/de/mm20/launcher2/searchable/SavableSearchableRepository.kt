@@ -117,6 +117,14 @@ interface SavableSearchableRepository {
     suspend fun replaceManuallySortedAwaited(types: List<String>, items: List<SavableSearchable>)
 
     /**
+     * Fork addition (#3 slice 4): sets each item's visibility in one
+     * transaction and returns once it is committed, so a config reload can
+     * read back what it wrote. Only the visibility changes; an item without
+     * a row gets one, as [upsert] would give it.
+     */
+    suspend fun setVisibilitiesAwaited(visibilities: Map<SavableSearchable, VisibilityLevel>)
+
+    /**
      * Returns the given keys sorted by relevance.
      * The first item in the list is the most relevant.
      * Unknown keys will not be included in the result.
@@ -405,6 +413,29 @@ internal class SavableSearchableRepositoryImpl(
             }
         }
         done.await()
+    }
+
+    // Fork addition (#3 slice 4), see interface.
+    override suspend fun setVisibilitiesAwaited(visibilities: Map<SavableSearchable, VisibilityLevel>) {
+        if (visibilities.isEmpty()) return
+        val dao = database.searchableDao()
+        database.withTransaction {
+            for ((searchable, visibility) in visibilities) {
+                val serialized = searchable.serialize() ?: continue
+                val entity = dao.getByKey(searchable.key).firstOrNull()
+                dao.upsert(
+                    SavedSearchableEntity(
+                        key = searchable.key,
+                        type = searchable.domain,
+                        visibility = visibility.value,
+                        pinPosition = entity?.pinPosition ?: 0,
+                        launchCount = entity?.launchCount ?: 0,
+                        weight = entity?.weight ?: 0.0,
+                        serializedSearchable = serialized,
+                    )
+                )
+            }
+        }
     }
 
     /**

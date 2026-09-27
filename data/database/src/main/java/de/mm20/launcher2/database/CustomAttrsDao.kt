@@ -66,4 +66,25 @@ interface CustomAttrsDao {
     @Query("DELETE FROM CustomAttributes WHERE type = 'tag' AND value = :tag")
     suspend fun deleteTag(tag: String)
 
+    // ---- Fork addition (#3 slice 4): labels as the config writes and reads them ----
+
+    @Query("DELETE FROM CustomAttributes WHERE type = 'label' AND `key` IN (:keys)")
+    suspend fun clearLabels(keys: List<String>)
+
+    /**
+     * The labels of [keys], replaced by [labels] in one transaction: every
+     * key named loses its label, and the ones in [labels] get theirs. Keys
+     * not named are left alone. Chunked, since SQLite takes at most 999
+     * parameters per statement.
+     */
+    @Transaction
+    suspend fun replaceLabels(keys: List<String>, labels: List<CustomAttributeEntity>) {
+        keys.chunked(900).forEach { clearLabels(it) }
+        insertCustomAttributes(labels)
+    }
+
+    /** Every label of an app (`app://` keys): what the config's `apps` reads. */
+    @Query("SELECT * FROM CustomAttributes WHERE type = 'label' AND `key` LIKE 'app://%'")
+    fun getAppLabels(): Flow<List<CustomAttributeEntity>>
+
 }

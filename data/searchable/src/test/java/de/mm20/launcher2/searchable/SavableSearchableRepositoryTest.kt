@@ -210,6 +210,45 @@ class SavableSearchableRepositoryTest {
         assertEquals(listOf("tag://t"), pinnedKeys().first())
     }
 
+    // ----- setVisibilitiesAwaited (#3 slice 4) -----
+
+    /** Written when it returns: a reload reads back right after, and a fire-and-forget write races that read. */
+    @Test
+    fun setVisibilitiesAwaited_isWrittenWhenItReturns() = runBlocking {
+        repository.setVisibilitiesAwaited(
+            mapOf(TestSearchable("a") to VisibilityLevel.Hidden, TestSearchable("b") to VisibilityLevel.SearchOnly),
+        )
+
+        assertEquals(VisibilityLevel.Hidden.value, database.searchableDao().getByKey("a").first()!!.visibility)
+        assertEquals(VisibilityLevel.SearchOnly.value, database.searchableDao().getByKey("b").first()!!.visibility)
+    }
+
+    /** Only the visibility changes: an item's pin and launch count are its own. */
+    @Test
+    fun setVisibilitiesAwaited_keepsThePinAndTheLaunchCount() = runBlocking {
+        database.searchableDao().insert(
+            SavedSearchableEntity(key = "a", type = "test", serializedSearchable = "a", launchCount = 7, pinPosition = 3, visibility = 0, weight = 0.5),
+        )
+
+        repository.setVisibilitiesAwaited(mapOf(TestSearchable("a") to VisibilityLevel.Hidden))
+
+        val entity = database.searchableDao().getByKey("a").first()!!
+        assertEquals(VisibilityLevel.Hidden.value, entity.visibility)
+        assertEquals(7, entity.launchCount)
+        assertEquals(3, entity.pinPosition)
+        assertEquals(0.5, entity.weight, 0.0)
+    }
+
+    /** Back to default on an item that has a row. */
+    @Test
+    fun setVisibilitiesAwaited_resetsToDefault() = runBlocking {
+        repository.setVisibilitiesAwaited(mapOf(TestSearchable("a") to VisibilityLevel.Hidden))
+
+        repository.setVisibilitiesAwaited(mapOf(TestSearchable("a") to VisibilityLevel.Default))
+
+        assertEquals(VisibilityLevel.Default.value, database.searchableDao().getByKey("a").first()!!.visibility)
+    }
+
     private class TestSearchable(
         override val key: String,
         var serialized: String = key,
