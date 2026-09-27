@@ -173,8 +173,16 @@ A change stays on the device, and the report says why, when:
 And a change stays on the device while the file keeps its value, the report
 saying why, when the file cannot name what the device now has:
 - `colors-custom`: a colour scheme a person made ([Appearance](appearance.md));
+- `icons-default`: the launcher's default icons (Lawnicons where installed),
+  which `icons.pack` cannot name ([Icons](icons.md));
+- `wallpaper-unmanaged`: a wallpaper that is not the one the file set -
+  picked on the device, or not set yet - which has no upload name to write
+  ([Appearance](appearance.md));
 - `gesture-inexpressible`: a gesture that opens a shortcut
   ([Gestures](gestures.md)).
+
+A test holds this list to the codes write-back registers, so a new one fails
+the build until it is named here.
 
 What is never written back is listed with the other exceptions under
 [The file](#the-file).
