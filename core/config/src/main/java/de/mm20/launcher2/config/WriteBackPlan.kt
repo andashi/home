@@ -147,7 +147,13 @@ object WriteBackPlan {
                 JsonObject(
                     buildMap {
                         for ((key, value) in now) {
-                            val was = (effect as? JsonObject)?.get(key)
+                            // A key the baseline lacks - one an older build did
+                            // not know, such as an app's icon - was applied as the
+                            // file's own effect, as an entry the baseline lacks is
+                            // below. The device serving that is no change, and
+                            // the file's text stays; missing, the device's form
+                            // replaced it (review on the icons work).
+                            val was = (effect as? JsonObject)?.get(key) ?: (canon as? JsonObject)?.get(key)
                             val keyText = text?.get(key)
                             when {
                                 text != null && was != null && same(was, value) -> if (keyText != null) put(key, keyText)

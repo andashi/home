@@ -211,6 +211,10 @@ class WriteBackPlanTest {
         )
     }
 
+    /** The file's effective tree, as ConfigWriteBack derives it: parsed, then written by the model. */
+    private fun canonical(file: String): JsonObject =
+        ConfigParser.json.encodeToJsonElement(LauncherConfig.serializer(), ConfigParser.parse(file).config!!).jsonObject
+
     private fun apps(json: String) = """{"schemaVersion":2,"apps":$json}"""
 
     private fun appsChange(literal: String, applied: String, device: String) =
@@ -294,6 +298,57 @@ class WriteBackPlanTest {
                 applied = """[{"packageName":"org.a","label":"A"},{"packageName":"org.a","profile":"work","label":"W"}]""",
                 device = """[{"packageName":"org.a","label":"A"},{"packageName":"org.a","profile":"work","label":"Work"},""" +
                     """{"packageName":"org.a","activity":"org.a.Second","label":"Second"}]""",
+            ),
+        )
+    }
+
+    /** An icon picked on the phone is its entry, changed: written into it (#3 slice 4). */
+    @Test
+    fun `an icon picked on the device is written into its entry`() {
+        assertEquals(
+            ConfigParser.json.parseToJsonElement("""[{"packageName":"org.a","label":"Old","icon":"themed"}]"""),
+            appsChange(
+                literal = """[{"packageName":"org.a","label":"Old"}]""",
+                applied = """[{"packageName":"org.a","label":"Old"}]""",
+                device = """[{"packageName":"org.a","label":"Old","icon":"themed"}]""",
+            ),
+        )
+    }
+
+    /**
+     * A baseline from before icons existed has the entry without its icon,
+     * and a missing key there could read as "the device changed it" (review
+     * on the icons work). With the device serving the file's own icon, the
+     * file is left alone: no change at all, so every byte survives.
+     */
+    @Test
+    fun `a file's icon is not rewritten against a baseline from before icons`() {
+        val icon = """{"pack":"app.lawnchair.lawnicons","drawable":"signal"}"""
+        assertEquals(
+            emptyList<WriteBackPlan.Change>(),
+            WriteBackPlan.changes(
+                tree(apps("""[{"packageName":"org.a","label":"Chat","icon":$icon}]""")),
+                tree(apps("""[{"packageName":"org.a","label":"Chat"}]""")),
+                tree(apps("""[{"packageName":"org.a","label":"Chat","icon":$icon}]""")),
+                canonical(apps("""[{"packageName":"org.a","label":"Chat","icon":$icon}]""")),
+            ),
+        )
+    }
+
+    /**
+     * The same against an equivalent the device writes differently: a colour
+     * the file wrote in lower case reads back in upper case. The file's own
+     * text still wins, since nothing changed on the device.
+     */
+    @Test
+    fun `a file's icon written in another form is not rewritten against a baseline from before icons`() {
+        assertEquals(
+            emptyList<WriteBackPlan.Change>(),
+            WriteBackPlan.changes(
+                tree(apps("""[{"packageName":"org.a","label":"Chat","icon":{"scale":0.7,"background":"#ffffff"}}]""")),
+                tree(apps("""[{"packageName":"org.a","label":"Chat"}]""")),
+                tree(apps("""[{"packageName":"org.a","label":"Chat","icon":{"scale":0.7,"background":"#FFFFFF"}}]""")),
+                canonical(apps("""[{"packageName":"org.a","label":"Chat","icon":{"scale":0.7,"background":"#ffffff"}}]""")),
             ),
         )
     }
