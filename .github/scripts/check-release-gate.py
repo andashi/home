@@ -17,15 +17,14 @@
    zone's file against the version it deploys. The release job runs only on
    a tag, so without this check a lost upload would show only when someone
    looked for the asset.
-4. The APK is signed by exactly the pinned release key: the release job runs
-   check-release-signer.py against RELEASE_CERT_SHA256, a full SHA-256 in the
-   step's env. The check it replaced could never fail (#204), and a removed
+4. The APK is signed by exactly the pinned release key: the release job
+   prints the APK's certificates and runs check-release-signer.py on them
+   against RELEASE_CERT_SHA256, a full SHA-256 in the step's env. The check it replaced could never fail (#204), and a removed
    check would read the same as a passing one.
 
 Exits non-zero naming every violation.
 """
 import re
-import shlex
 import sys
 
 import yaml
@@ -101,26 +100,27 @@ def violations(workflow):
     return found
 
 
+# The two lines that make property 4, as release.yml writes them. Matched
+# verbatim rather than re-parsed: a shell-word parse forgets the quoting Bash
+# acts on and cannot tell a checker at another path, or a certificate list
+# that is not the APK's, from the real one (#204 review).
+PRINTS_CERTS = '"$bt/apksigner" verify --print-certs "$apk" | tee CERTS.txt'
+RUNS_CHECK = 'python3 "$GITHUB_WORKSPACE/.github/scripts/check-release-signer.py" CERTS.txt "$RELEASE_CERT_SHA256"'
+
+
 def checks_signer(step):
-    """Whether `step` runs the signer check so that its failure fails the step.
-    The line must be exactly `python3 <path>/check-release-signer.py CERTS.txt
-    "$RELEASE_CERT_SHA256"`, as shell words: a line that only names the checker
-    (echo, python3 -c printing it) runs nothing, and anything around the
-    command (`!`, `||`, `if`) can swallow its failure, the defect #204 fixed.
-    No `set +e` may come before it in the step."""
-    lines = executable_lines(step.get("run", ""))
-    for i, line in enumerate(lines):
-        try:
-            words = shlex.split(line)
-        except ValueError:
-            continue
-        runs_it = (len(words) == 4 and words[0] == "python3"
-                   and words[1].endswith("/check-release-signer.py")
-                   and words[2] == "CERTS.txt" and words[3] == "$RELEASE_CERT_SHA256")
-        errexit_off = any(re.search(r"\bset\s+\+e", earlier) for earlier in lines[:i])
-        if runs_it and not errexit_off:
-            return True
-    return False
+    """Whether `step` prints the APK's certificates and then runs the signer
+    check so that its failure fails the step: both lines exactly as written,
+    in that order, with nothing around the check (`!`, `||`, `if` can swallow
+    its failure, the defect #204 fixed), no `set +e` and no here-document
+    opened before it (its body is data, not commands)."""
+    lines = [line.strip() for line in executable_lines(step.get("run", ""))]
+    if RUNS_CHECK not in lines:
+        return False
+    before = lines[:lines.index(RUNS_CHECK)]
+    return (PRINTS_CERTS in before
+            and not any(re.search(r"\bset\s+\+e", line) for line in before)
+            and not any(re.search(r"(?<!<)<<(?!<)", line) for line in before))
 
 
 def main(path):
