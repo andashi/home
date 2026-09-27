@@ -24,6 +24,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.runningFold
 import kotlinx.coroutines.launch
@@ -42,7 +43,8 @@ interface AppRepository : SearchableRepository<Application> {
 
 internal class AppRepositoryImpl(
     private val context: Context,
-    private val profileManager: ProfileManager,
+    /** The unlocked profiles, [ProfileManager.unlockedProfiles]; the first value is the first real read. */
+    private val profiles: Flow<List<Profile>>,
     private val stringNormalizer: StringNormalizer,
 ) : AppRepository {
     private val scope = CoroutineScope(Dispatchers.Default + Job())
@@ -50,9 +52,14 @@ internal class AppRepositoryImpl(
     private val launcherApps =
         context.getSystemService(Context.LAUNCHER_APPS_SERVICE) as LauncherApps
 
-    private val installedApps = MutableStateFlow<List<LauncherApp>>(emptyList())
+    /**
+     * Null until the first profiles' apps are read: "no apps read yet" is not
+     * "not installed". Readers wait on [readApps]; a package event before the
+     * first read changes nothing that read will not see anyway.
+     */
+    private val installedApps = MutableStateFlow<List<LauncherApp>?>(null)
 
-    private val profiles = profileManager.unlockedProfiles
+    private val readApps: Flow<List<LauncherApp>> = installedApps.filterNotNull()
 
     private val mutex = Mutex()
 
@@ -65,7 +72,7 @@ internal class AppRepositoryImpl(
             ) {
                 scope.launch {
                     mutex.withLock {
-                        val apps = installedApps.value.toMutableList()
+                        val apps = installedApps.value?.toMutableList() ?: return@withLock
                         apps.removeAll { packageNames.contains(it.componentName.packageName) && it.user == user }
                         installedApps.value = apps
                     }
@@ -75,7 +82,7 @@ internal class AppRepositoryImpl(
             override fun onPackageChanged(packageName: String, user: UserHandle) {
                 scope.launch {
                     mutex.withLock {
-                        val apps = installedApps.value.toMutableList()
+                        val apps = installedApps.value?.toMutableList() ?: return@withLock
                         apps.removeAll { packageName == it.componentName.packageName && it.user == user }
                         apps.addAll(getApplications(packageName, user))
                         installedApps.value = apps
@@ -90,7 +97,7 @@ internal class AppRepositoryImpl(
             ) {
                 scope.launch {
                     mutex.withLock {
-                        val apps = installedApps.value.toMutableList()
+                        val apps = installedApps.value?.toMutableList() ?: return@withLock
                         for (packageName in packageNames) {
                             apps.addAll(getApplications(packageName, user))
                         }
@@ -102,7 +109,7 @@ internal class AppRepositoryImpl(
             override fun onPackageAdded(packageName: String, user: UserHandle) {
                 scope.launch {
                     mutex.withLock {
-                        val apps = installedApps.value.toMutableList()
+                        val apps = installedApps.value?.toMutableList() ?: return@withLock
                         apps.addAll(getApplications(packageName, user))
                         installedApps.value = apps
                     }
@@ -112,7 +119,7 @@ internal class AppRepositoryImpl(
             override fun onPackageRemoved(packageName: String, user: UserHandle) {
                 scope.launch {
                     mutex.withLock {
-                        val apps = installedApps.value.toMutableList()
+                        val apps = installedApps.value?.toMutableList() ?: return@withLock
                         apps.removeAll { packageName == it.componentName.packageName && it.user == user }
                         installedApps.value = apps
 
@@ -132,7 +139,7 @@ internal class AppRepositoryImpl(
                 packageNames ?: return
                 scope.launch {
                     mutex.withLock {
-                        val apps = installedApps.value.toMutableList()
+                        val apps = installedApps.value?.toMutableList() ?: return@withLock
                         apps.replaceAll {
                             if (packageNames.contains(it.componentName.packageName) && it.user == user) {
                                 it.copy(isSuspended = true)
@@ -152,7 +159,7 @@ internal class AppRepositoryImpl(
                 packageNames ?: return
                 scope.launch {
                     mutex.withLock {
-                        val apps = installedApps.value.toMutableList()
+                        val apps = installedApps.value?.toMutableList() ?: return@withLock
                         apps.replaceAll {
                             if (packageNames.contains(it.componentName.packageName) && it.user == user) {
                                 it.copy(isSuspended = false)
@@ -171,8 +178,16 @@ internal class AppRepositoryImpl(
                 acc.second to value
             }.collectLatest { (prev, curr) ->
                 if (curr == null) return@collectLatest
-                if (prev == null) {
-                    curr.forEach { addProfile(it) }
+                // Not read yet, not only the first list: a newer list can
+                // cancel the first read while it waits for the mutex, and the
+                // update path below adds nothing to a list that was never read
+                // (#206 review).
+                if (prev == null || installedApps.value == null) {
+                    // Every profile in one go: set per profile, the list would
+                    // read as complete while the work profile's apps are missing.
+                    mutex.withLock {
+                        installedApps.value = curr.flatMap { getApplications(null, it.userHandle) }
+                    }
                 } else {
                     val added = curr - prev
                     val removed = prev - curr
@@ -185,7 +200,7 @@ internal class AppRepositoryImpl(
 
     private suspend fun addProfile(profile: Profile) {
         mutex.withLock {
-            val apps = installedApps.value.toMutableList()
+            val apps = installedApps.value?.toMutableList() ?: return@withLock
             apps.addAll(getApplications(null, profile.userHandle))
             installedApps.value = apps
         }
@@ -194,7 +209,7 @@ internal class AppRepositoryImpl(
     private fun removeProfile(profile: Profile) {
         scope.launch {
             mutex.withLock {
-                val apps = installedApps.value.toMutableList()
+                val apps = installedApps.value?.toMutableList() ?: return@withLock
                 apps.removeAll { it.user == profile.userHandle }
                 installedApps.value = apps
             }
@@ -227,7 +242,7 @@ internal class AppRepositoryImpl(
         packageName: String,
         user: UserHandle,
     ): Flow<Application?> {
-        return installedApps.map {
+        return readApps.map {
             it.firstOrNull {
                 it.componentName.packageName == packageName && it.user == user
             }
@@ -235,13 +250,13 @@ internal class AppRepositoryImpl(
     }
 
     override fun findMany(): Flow<ImmutableList<Application>> {
-        return installedApps.map { it.toImmutableList() }
+        return readApps.map { it.toImmutableList() }
     }
 
     override fun search(query: String): Flow<ImmutableList<LauncherApp>> {
         val normalizedQuery = stringNormalizer.normalize(query)
 
-        return installedApps.map { apps ->
+        return readApps.map { apps ->
             withContext(Dispatchers.Default) {
                 val normalizerId = stringNormalizer.id
                 val appResults = mutableListOf<LauncherApp>()

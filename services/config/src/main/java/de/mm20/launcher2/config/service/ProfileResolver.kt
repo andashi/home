@@ -24,6 +24,13 @@ interface ProfileResolver {
      * Returns the profile owning [userHandle], or null if it is unknown.
      */
     suspend fun getProfile(userHandle: UserHandle): Profile?
+
+    /**
+     * Returns once the device's profiles have been read. Before that,
+     * [getProfile] answers null for every type: not "no such profile", but
+     * "not read yet".
+     */
+    suspend fun awaitRead()
 }
 
 class ProfileManagerProfileResolver(
@@ -36,4 +43,6 @@ class ProfileManagerProfileResolver(
     override suspend fun getProfile(userHandle: UserHandle): Profile? {
         return profileManager.getProfileByUserHandle(userHandle).first()
     }
+
+    override suspend fun awaitRead() = profileManager.awaitRead()
 }

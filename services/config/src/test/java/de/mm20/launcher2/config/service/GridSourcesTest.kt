@@ -43,6 +43,8 @@ class GridSourcesTest {
 
         override suspend fun getProfile(userHandle: UserHandle): Profile? =
             personal?.takeIf { it.userHandle == userHandle }
+
+        override suspend fun awaitRead() = Unit
     }
 
     @Before

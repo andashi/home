@@ -25,8 +25,12 @@ import de.mm20.launcher2.config.Severity
 import de.mm20.launcher2.profiles.Profile
 import de.mm20.launcher2.search.SavableSearchable
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.async
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -784,6 +788,42 @@ class DefaultConfigStoreTest {
         searchableRepository.manuallySorted = listOf(appA, FakeItem("tag://work", "tag"), FakeItem("contact://42", "contact"))
 
         assertEquals(listOf(Favorite("com.example.a", ConfigProfile.Personal)), store.readState().favorites)
+    }
+
+    /**
+     * The reload an ingest starts runs right after the process does, before
+     * the profiles are read; answered then, every favorite in a work profile
+     * was skipped as profile-unavailable. The store waits for the first read.
+     */
+    @Test
+    fun `SetFavorites waits until the device's profiles have been read`() = runTest {
+        val appB = app("com.example.b", workHandle)
+        appRepository.apps["com.example.b" to workHandle] = appB
+        val work = profileResolver.work
+        profileResolver.work = null
+        profileResolver.read = CompletableDeferred()
+
+        val applying = async { store.apply(listOf(ConfigMutation.SetFavorites(listOf(Favorite("com.example.b", ConfigProfile.Work))))) }
+        runCurrent()
+        assertFalse("applied before the profiles were read", applying.isCompleted)
+
+        profileResolver.work = work
+        profileResolver.read.complete(Unit)
+
+        assertEquals(emptyList<Diagnostic>(), applying.await())
+        assertEquals(listOf(appB), searchableRepository.manuallySorted)
+    }
+
+    @Test
+    fun `readState waits until the device's profiles have been read`() = runTest {
+        profileResolver.read = CompletableDeferred()
+
+        val reading = async { store.readState() }
+        runCurrent()
+        assertFalse("read before the profiles were read", reading.isCompleted)
+
+        profileResolver.read.complete(Unit)
+        reading.await()
     }
 
     @Test
