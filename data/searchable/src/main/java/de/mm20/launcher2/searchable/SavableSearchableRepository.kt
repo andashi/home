@@ -125,6 +125,14 @@ interface SavableSearchableRepository {
     suspend fun setVisibilitiesAwaited(visibilities: Map<SavableSearchable, VisibilityLevel>)
 
     /**
+     * Fork addition (#3 slice 4): a row for each of [searchables] that has
+     * none, written when this returns - [insert] is fire-and-forget. What a
+     * customization is anchored to before it is written: the cleanup removes
+     * a label whose item has no row. An existing row is left as it is.
+     */
+    suspend fun insertAwaited(searchables: Collection<SavableSearchable>)
+
+    /**
      * Returns the given keys sorted by relevance.
      * The first item in the list is the most relevant.
      * Unknown keys will not be included in the result.
@@ -432,6 +440,27 @@ internal class SavableSearchableRepositoryImpl(
                         launchCount = entity?.launchCount ?: 0,
                         weight = entity?.weight ?: 0.0,
                         serializedSearchable = serialized,
+                    )
+                )
+            }
+        }
+    }
+
+    // Fork addition (#3 slice 4), see interface.
+    override suspend fun insertAwaited(searchables: Collection<SavableSearchable>) {
+        if (searchables.isEmpty()) return
+        val dao = database.searchableDao()
+        database.withTransaction {
+            for (searchable in searchables) {
+                dao.insert(
+                    SavedSearchableEntity(
+                        key = searchable.key,
+                        type = searchable.domain,
+                        serializedSearchable = searchable.serialize() ?: continue,
+                        visibility = VisibilityLevel.Default.value,
+                        launchCount = 0,
+                        weight = 0.0,
+                        pinPosition = 0,
                     )
                 )
             }

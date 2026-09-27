@@ -27,7 +27,10 @@ ways: a rename made on the phone goes back into the file.
 | `apps[].visibility` | `default`: shown everywhere. `search-only`: found by searching, but not in the app list. `hidden`: not shown at all | enum, default `default` |
 
 An entry is always an object, never a bare package name. An app named twice
-(same package, profile and entry) is an error, `duplicate-app`. An app that is
+(same package, profile and entry) is an error, `duplicate-app`. Only the device
+knows which entry is a package's first, so an entry without `activity` and one
+naming that first activity are the same app there: the first of the two applies,
+and the second is reported as a `duplicate-app` warning. An app that is
 not installed is reported, and its entry stays in the file: when the app is
 installed again, the next reload gives it its name back.
 

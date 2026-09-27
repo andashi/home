@@ -72,6 +72,7 @@ jobs:
           :services:config:testDebugUnitTest
           :data:database:testDebugUnitTest
           :data:searchable:testDebugUnitTest
+          :data:customattrs:testDebugUnitTest
           :data:appshortcuts:testDebugUnitTest
           :data:homegrid:testDebugUnitTest
           :data:themes:testDebugUnitTest

@@ -179,14 +179,14 @@ object WriteBackPlan {
         val applied = effect.orEmpty()
         // Which file entry each applied entry came from.
         val takenFile = mutableSetOf<Int>()
-        val fileOf = applied.map { entry -> fileEntries.pair(entry, takenFile)?.also { takenFile += it } }
+        val fileOf = applied.map { entry -> fileEntries.pair(entry, takenFile, path)?.also { takenFile += it } }
         // Which applied entry each device entry is.
         val takenApplied = mutableSetOf<Int>()
         val out = now.map { entry ->
-            val j = applied.pair(entry, takenApplied)?.also { takenApplied += it }
+            val j = applied.pair(entry, takenApplied, path)?.also { takenApplied += it }
             // An entry the baseline lacks (its section's apply failed) but the
             // device has is still the file's own, never a second copy of it.
-            val i = j?.let { fileOf[it] } ?: fileEntries.pair(entry, takenFile)?.also { takenFile += it }
+            val i = j?.let { fileOf[it] } ?: fileEntries.pair(entry, takenFile, path)?.also { takenFile += it }
             val was = j?.let { applied[it] } ?: i?.let { fileEntries[it] }
             merged(i?.let { written?.getOrNull(it) }, i?.let { fileEntries[it] }, was, entry, path)
         }.toMutableList()
@@ -199,11 +199,34 @@ object WriteBackPlan {
         return JsonArray(out)
     }
 
-    /** The unpaired entry [entry] is: the one with its `id`, or, without one, the first equal one. */
-    private fun JsonArray.pair(entry: JsonElement, taken: Set<Int>): Int? {
+    /**
+     * The unpaired entry [entry] is: the one with the same identity where the
+     * list at [path] has one, else the one with its `id`, else the first equal one.
+     */
+    private fun JsonArray.pair(entry: JsonElement, taken: Set<Int>, path: List<String>): Int? {
+        identities[path]?.let { identity ->
+            val of = identity(entry)
+            return indices.firstOrNull { it !in taken && identity(this[it]) == of }
+        }
         val id = (entry as? JsonObject)?.get("id")
         return indices.firstOrNull { it !in taken && if (id != null) (this[it] as? JsonObject)?.get("id") == id else same(this[it], entry) }
     }
+
+    /**
+     * Lists whose entries are something with fields that change: an app is
+     * its package, profile and activity, whatever its label, visibility or
+     * icon (review on #207). A profile left out is the personal one.
+     */
+    private val identities: Map<List<String>, (JsonElement) -> List<String?>> = mapOf(
+        listOf("apps") to { entry ->
+            val obj = entry as? JsonObject
+            listOf(
+                (obj?.get("packageName") as? JsonPrimitive)?.content,
+                (obj?.get("profile") as? JsonPrimitive)?.content ?: "personal",
+                (obj?.get("activity") as? JsonPrimitive)?.content,
+            )
+        },
+    )
 
     private fun JsonArray?.orEmpty(): JsonArray = this ?: JsonArray(emptyList())
 

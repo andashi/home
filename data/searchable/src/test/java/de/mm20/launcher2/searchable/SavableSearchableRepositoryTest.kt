@@ -249,6 +249,39 @@ class SavableSearchableRepositoryTest {
         assertEquals(VisibilityLevel.Default.value, database.searchableDao().getByKey("a").first()!!.visibility)
     }
 
+    // ----- insertAwaited (#3 slice 4) -----
+
+    /**
+     * A row exists when it returns: a label written right after is anchored,
+     * and the cleanup, which removes labels without a row, cannot take it in
+     * between (review on #207).
+     */
+    @Test
+    fun insertAwaited_isWrittenWhenItReturns() = runBlocking {
+        // Many, so a fire-and-forget write cannot finish before the count:
+        // with two items it did, and this test stayed green without the await.
+        val keys = (1..2000).map { "k$it" }
+
+        repository.insertAwaited(keys.map { TestSearchable(it) })
+
+        assertEquals(keys.size, database.searchableDao().getByKeys(keys).first().size)
+    }
+
+    /** An existing row is the item's own: its pin, launch count and visibility stay. */
+    @Test
+    fun insertAwaited_keepsAnExistingRow() = runBlocking {
+        database.searchableDao().insert(
+            SavedSearchableEntity(key = "a", type = "test", serializedSearchable = "a", launchCount = 7, pinPosition = 3, visibility = 2, weight = 0.5),
+        )
+
+        repository.insertAwaited(listOf(TestSearchable("a")))
+
+        val entity = database.searchableDao().getByKey("a").first()!!
+        assertEquals(7, entity.launchCount)
+        assertEquals(3, entity.pinPosition)
+        assertEquals(2, entity.visibility)
+    }
+
     private class TestSearchable(
         override val key: String,
         var serialized: String = key,

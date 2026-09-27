@@ -74,6 +74,10 @@ internal class AndroidAppCustomizationStore(
         val diagnostics = mutableListOf<Diagnostic>()
         val labels = mutableMapOf<String, String>()
         val wanted = mutableMapOf<String, VisibilityLevel>()
+        // Which entry claimed each app: without an activity an entry means the
+        // package's first launcher entry, so naming that activity too is the
+        // same app twice, which the validator cannot see (review on #207).
+        val claimedBy = mutableMapOf<String, Int>()
 
         apps.forEachIndexed { index, entry ->
             val path = "apps[$index]"
@@ -99,6 +103,15 @@ internal class AndroidAppCustomizationStore(
                 )
                 return@forEachIndexed
             }
+            claimedBy[app.key]?.let { first ->
+                diagnostics += Diagnostic(
+                    Severity.Warning, "duplicate-app", path,
+                    "'${entry.packageName}'${entry.activity?.let { " ($it)" } ?: ""} is the same app on this device " +
+                        "as apps[$first]; that entry applies and this one does not",
+                )
+                return@forEachIndexed
+            }
+            claimedBy[app.key] = index
             entry.label?.let { labels[app.key] = it }
             wanted[app.key] = entry.visibility.toLevel()
         }

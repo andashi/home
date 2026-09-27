@@ -94,9 +94,14 @@ class CustomAttrsDaoTest {
         SavedSearchableEntity(key = key, type = "app", serializedSearchable = key, launchCount = 0, pinPosition = 0, visibility = 0, weight = 0.0),
     )
 
-    /** It removed orphaned labels and tags, and never an orphaned icon, so those piled up. */
+    /**
+     * Without a row, an item's label and tags go. Its icon stays: the icon
+     * picker writes an icon without giving the item a row (only labels and
+     * tags get one), so a missing row says nothing about an icon - it would
+     * delete one set on an app never launched or pinned (review on #207).
+     */
     @Test
-    fun `the cleanup removes orphaned icons as well as labels and tags`() = runBlocking {
+    fun `the cleanup removes an item's labels and tags without a row, never its icon`() = runBlocking {
         dao.insertCustomAttributes(
             listOf(
                 label("app://gone:A", "Gone"),
@@ -107,7 +112,18 @@ class CustomAttrsDaoTest {
 
         database.backupDao().cleanUp()
 
-        assertEquals(emptyList<Triple<String, String, String>>(), rows())
+        assertEquals(listOf(Triple("app://gone:A", "icon", "{\"type\":\"force_themed_icon\"}")), rows())
+    }
+
+    /** A pinned tag has a row of its own, so its icon stays while no item carries the tag. */
+    @Test
+    fun `the cleanup keeps the icon of a pinned tag nobody carries`() = runBlocking {
+        searchable("tag://Pinned")
+        dao.insertCustomAttributes(listOf(CustomAttributeEntity("tag://Pinned", "icon", "{\"type\":\"custom_text_icon\"}")))
+
+        database.backupDao().cleanUp()
+
+        assertEquals(1, rows().size)
     }
 
     /** Control: an item that still has its row keeps everything. */

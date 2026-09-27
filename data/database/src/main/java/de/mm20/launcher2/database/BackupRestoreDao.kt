@@ -39,16 +39,18 @@ interface BackupRestoreDao {
     suspend fun importCustomAttributes(items: List<CustomAttributeEntity>)
 
     /**
-     * Customizations of items that no longer have a row. Icons were left out,
-     * so orphaned icon rows piled up forever (#3 slice 4); they go too now,
-     * except a tag's icon, keyed `tag://<name>`, which stays as long as some
-     * item still carries the tag - a tag nobody pinned has no row of its own.
+     * Customizations of items that no longer have a row: labels and tags,
+     * which are written together with one. An icon is not (the icon picker
+     * writes it alone), so a missing row proves nothing about an item's icon,
+     * and an app's icon is never removed here (review on #207). A tag's icon
+     * is decidable: keyed `tag://<name>`, it is orphaned once no item carries
+     * the tag and the tag has no row of its own (#3 slice 4).
      */
     @Query(
-        "DELETE FROM CustomAttributes WHERE (type = 'tag' OR type = 'label' OR type = 'icon') " +
-            "AND NOT EXISTS(SELECT 1 FROM Searchable WHERE CustomAttributes.key = Searchable.key) " +
-            "AND NOT (type = 'icon' AND `key` LIKE 'tag://%' AND EXISTS(" +
-            "SELECT 1 FROM CustomAttributes AS t WHERE t.type = 'tag' AND 'tag://' || t.value = CustomAttributes.key))"
+        "DELETE FROM CustomAttributes " +
+            "WHERE NOT EXISTS(SELECT 1 FROM Searchable WHERE CustomAttributes.key = Searchable.key) " +
+            "AND (type = 'tag' OR type = 'label' OR (type = 'icon' AND `key` LIKE 'tag://%' AND NOT EXISTS(" +
+            "SELECT 1 FROM CustomAttributes AS t WHERE t.type = 'tag' AND 'tag://' || t.value = CustomAttributes.key)))"
     )
     suspend fun cleanUp(): Int
 }

@@ -453,7 +453,7 @@ that stdout is exactly the predicate's output.
   `tasks.withType<Test>` block when adding tests to another module). Modules
   with test wiring so far: `:core:base`, `:core:config`, `:core:preferences`,
   `:services:config`, `:data:database`, `:data:searchable`,
-  `:data:themes`, `:data:homegrid`, `:app:ui`.
+  `:data:themes`, `:data:homegrid`, `:data:customattrs`, `:app:ui`.
 - **L3 screenshot tests**: Roborazzi in `:app:ui`; goldens are committed under
   `app/ui/src/test/roborazzi/`.
   - record: `./gradlew :app:ui:recordRoborazziDebug`

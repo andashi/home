@@ -110,9 +110,10 @@ internal class CustomAttributesRepositoryImpl(
 
     override suspend fun replaceCustomLabelsAwaited(items: List<SavableSearchable>, labels: Map<String, String>) {
         // A labelled item keeps a row, as setCustomLabel gives it: the
-        // cleanup removes a label whose item has none.
+        // cleanup removes a label whose item has none. Awaited, so the row
+        // exists before the label does (review on #207).
         val byKey = items.associateBy { it.key }
-        labels.keys.mapNotNull(byKey::get).forEach { searchableRepository.insert(it) }
+        searchableRepository.insertAwaited(labels.keys.mapNotNull(byKey::get))
         appDatabase.customAttrsDao().replaceLabels(
             keys = items.map { it.key },
             labels = labels.map { (key, label) -> CustomLabel(key = key, label = label).toDatabaseEntity(key) },

@@ -7,6 +7,7 @@ import android.os.UserHandle
 import de.mm20.launcher2.applications.AppRepository
 import de.mm20.launcher2.config.AppConfig
 import de.mm20.launcher2.config.AppVisibility
+import de.mm20.launcher2.config.Diagnostic
 import de.mm20.launcher2.config.Severity
 import de.mm20.launcher2.data.customattrs.CustomAttributesRepository
 import de.mm20.launcher2.icons.StaticLauncherIcon
@@ -249,6 +250,42 @@ class AndroidAppCustomizationStoreTest {
         assertEquals(listOf("apps[0]", "apps[1]"), diagnostics.map { it.path })
         assertTrue(diagnostics.all { it.code == "app-unavailable" && it.severity == Severity.Warning })
         assertEquals(mapOf(signal.key to "Chat"), labels.value)
+    }
+
+    /**
+     * Without an activity an entry means the package's first launcher entry,
+     * so naming that activity as well is the same app twice - which only the
+     * device can tell. The first entry applies and the second is reported,
+     * never a silent last-one-wins (review on #207).
+     */
+    @Test
+    fun `two entries that are the same app here are reported and the first applies`() = runTest {
+        val (diagnostics, _) = store.replaceAndRead(
+            listOf(
+                AppConfig("com.example.two", label = "First"),
+                AppConfig("com.example.two", activity = "com.example.two.First", label = "Again", visibility = AppVisibility.Hidden),
+            )
+        )
+
+        assertEquals(listOf("apps[1]"), diagnostics.map { it.path })
+        assertTrue(diagnostics.all { it.code == "duplicate-app" && it.severity == Severity.Warning })
+        assertEquals(mapOf(twoFirst.key to "First"), labels.value)
+        // The second entry's hidden did not apply either.
+        assertEquals(emptyMap<String, VisibilityLevel>(), levels.value)
+    }
+
+    /** Control: the package's other activity is another app. */
+    @Test
+    fun `the package's other activity is not a duplicate`() = runTest {
+        val (diagnostics, _) = store.replaceAndRead(
+            listOf(
+                AppConfig("com.example.two", label = "First"),
+                AppConfig("com.example.two", activity = "com.example.two.Second", label = "Second"),
+            )
+        )
+
+        assertEquals(emptyList<Diagnostic>(), diagnostics)
+        assertEquals(mapOf(twoFirst.key to "First", twoSecond.key to "Second"), labels.value)
     }
 
     @Test

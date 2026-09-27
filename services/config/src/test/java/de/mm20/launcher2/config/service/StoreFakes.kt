@@ -202,6 +202,8 @@ internal class FakeSavableSearchableRepository : SavableSearchableRepository {
     override suspend fun setVisibilitiesAwaited(visibilities: Map<SavableSearchable, VisibilityLevel>) =
         throw NotImplementedError()
 
+    override suspend fun insertAwaited(searchables: Collection<SavableSearchable>) = throw NotImplementedError()
+
     override fun insert(searchable: SavableSearchable) = throw NotImplementedError()
     override fun upsert(
         searchable: SavableSearchable,
