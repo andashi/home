@@ -692,8 +692,8 @@ class ConfigWatcherTest {
 
     /**
      * The app list's growth is one of the signals: how a profile's apps
-     * appear when the profile becomes available. What was there at the first
-     * look is not an arrival, and a key leaving is none either.
+     * appear when the profile becomes available. The first look is a signal
+     * of its own (the watcher decides once more on it), a key leaving is none.
      */
     @Test
     fun `the app list's growth signals the new keys only`() = runTest {
@@ -704,6 +704,6 @@ class ConfigWatcherTest {
             setOf("app://b", "app://c", "app://d"),
         )
 
-        assertEquals(listOf("app://b", "app://c", "app://d"), appKeyGrowth(keys).toList())
+        assertEquals(listOf(FirstAppListRead, "app://b", "app://c", "app://d"), appKeyGrowth(keys).toList())
     }
 }

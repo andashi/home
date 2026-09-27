@@ -35,6 +35,7 @@ import kotlinx.coroutines.flow.SharedFlow
 import de.mm20.launcher2.homegrid.MeasuredGridRows
 import de.mm20.launcher2.homegrid.ReconcileReport
 import de.mm20.launcher2.preferences.ui.UiSettings
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -435,6 +436,31 @@ class HomeGridVM(
     /** A pass for [packageName] having arrived (see [HomeGridReconciler.reconcileArrival]). */
     suspend fun reconcileArrival(port: AppWidgetHostPort, packageName: String): ReconcileReport = reconcileLock.withLock {
         HomeGridReconciler(repository, port).reconcileArrival(packageName)
+    }
+
+    /**
+     * One package event for the grid: the cells look their providers up
+     * again, and outside edit mode a bind pass runs (leaving edit mode runs
+     * the grid's own). Throws nothing but cancellation: it runs inside the
+     * collection of every later event, which a failed pass would otherwise
+     * end for good (review on #213).
+     */
+    suspend fun onPackageEvent(port: AppWidgetHostPort, packageName: String) {
+        try {
+            onPackageArrived(packageName)
+            if (_editing.value) return
+            val report = reconcileArrival(port, packageName)
+            // Their cells show the banner; the config report cannot know,
+            // binding is this side's. A count only: which apps a person has
+            // is theirs.
+            if (report.failed.isNotEmpty()) {
+                Log.w(Tag, "${report.failed.size} widget(s) still unbound after a package arrived")
+            }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Log.w(Tag, "the bind pass after a package arrived failed", e)
+        }
     }
 
     fun remove(item: HomeGridItem) {

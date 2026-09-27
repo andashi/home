@@ -2,7 +2,6 @@ package de.mm20.launcher2.ui.launcher.grid
 
 import android.appwidget.AppWidgetManager
 import android.provider.Settings
-import android.util.Log
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
@@ -29,7 +28,6 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -185,24 +183,13 @@ fun HomeGrid(
         }
         // A widget whose provider was missing holds no host id, and its
         // package arriving changes nothing the pass above is keyed on (review
-        // on #219). Outside edit mode only; leaving edit mode runs the pass above.
-        val editingNow by rememberUpdatedState(editing)
+        // on #219). See HomeGridVM.onPackageEvent, which never throws out of
+        // this collection.
         LaunchedEffect(host) {
             val port = AndroidAppWidgetHostPort(context, host) { type ->
                 profileManager.getProfile(type)?.userHandle
             }
-            packageEvents(context).collect { packageName ->
-                // In edit mode too: a cell's Allow follows its provider.
-                viewModel.onPackageArrived(packageName)
-                if (editingNow) return@collect
-                val report = viewModel.reconcileArrival(port, packageName)
-                // Their cells show the banner; the config report cannot know,
-                // binding is this side's. A count only: which apps a person
-                // has is theirs.
-                if (report.failed.isNotEmpty()) {
-                    Log.w("HomeGrid", "${report.failed.size} widget(s) still unbound after a package arrived")
-                }
-            }
+            packageEvents(context).collect { packageName -> viewModel.onPackageEvent(port, packageName) }
         }
 
         val cellsById = remember(uiState.cells) { uiState.cells.associateBy { it.item.id } }

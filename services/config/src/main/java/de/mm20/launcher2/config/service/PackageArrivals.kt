@@ -28,14 +28,22 @@ internal fun packageArrivals(context: Context, apps: AppRepository): Flow<String
 )
 
 /**
- * The keys that appear in [keys] after its first value, each once: the first
- * value is what was there already, and a key leaving makes nothing applicable.
+ * [FirstAppListRead] for the first value of [keys], then each key that
+ * appears after it, once; a key leaving makes nothing applicable.
+ *
+ * The first value is a signal too, not only a baseline: a profile that
+ * became available after the watcher's start decision but before this read
+ * is already in it and grows nothing afterwards, so the watcher decides once
+ * more on it, under the reload lock like any arrival (review on #213).
  */
 internal fun appKeyGrowth(keys: Flow<Set<String>>): Flow<String> = flow {
     var known: Set<String>? = null
     keys.collect { now ->
         val before = known
         known = now
-        if (before != null) (now - before).forEach { emit(it) }
+        if (before == null) emit(FirstAppListRead) else (now - before).forEach { emit(it) }
     }
 }
+
+/** What [appKeyGrowth] signals for the app list's first read; never a package name. */
+internal const val FirstAppListRead = "(first app list)"
