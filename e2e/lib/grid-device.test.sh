@@ -877,4 +877,25 @@ fails_on_an_unread_list() {
 }
 check "delete_snapshots fails, naming every snapshot, when the list cannot be read" fails_on_an_unread_list
 
+# The end of a run: a running instance nobody holds is a stray, whoever
+# booted it, so it is stopped and released - unless the caller held the lock
+# before the run and so owns the instance's lifecycle. Stopping one the run
+# did not boot is said out loud, with what would have kept it.
+finish_case() { # $1 = HELD_BEFORE, $2 = BOOTED; prints the calls, stderr in $WORK/finish.err
+  export CALLS="$WORK/calls"; : > "$CALLS"
+  ( GOS_REPO="$WORK/gos" LOCK_OWNER="me@fake#1" FAKE_STOP_RC=0 HELD_BEFORE="$1" BOOTED="$2"
+    export LOCK_OWNER FAKE_STOP_RC; finish_instance ) 2>"$WORK/finish.err"
+}
+leaves_what_the_caller_holds() { finish_case 1 0 && [ ! -s "$CALLS" ]; }
+check "finish_instance leaves an instance whose lock the caller held before the run" leaves_what_the_caller_holds
+stops_what_it_booted_quietly() {
+  finish_case 0 1 && grep -q "^run.sh stop" "$CALLS" && grep -q "release" "$CALLS" && ! grep -q "hold its lock" "$WORK/finish.err"
+}
+check "finish_instance stops and releases what the run booted, without a warning" stops_what_it_booted_quietly
+stops_a_stray_out_loud() {
+  finish_case 0 0 && grep -q "^run.sh stop" "$CALLS" && grep -q "release" "$CALLS" \
+    && grep -q "nobody held its lock" "$WORK/finish.err" && grep -q "hold its lock" "$WORK/finish.err"
+}
+check "finish_instance stops a running instance nobody held, and says what would have kept it" stops_a_stray_out_loud
+
 exit "$failed"
