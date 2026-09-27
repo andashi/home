@@ -118,6 +118,8 @@ object ConfigParser {
         "appearance.theme" to mapOf(
             "mode" to KeyEffect.Applied,
             "colors" to KeyEffect.Applied,
+            "shapes" to KeyEffect.Applied,
+            "typography" to KeyEffect.Applied,
         ),
         "home" to mapOf(
             "searchBar" to KeyEffect.Applied,

@@ -12,8 +12,12 @@ import de.mm20.launcher2.config.InSearchBarPosition
 import de.mm20.launcher2.config.SearchBarPosition
 import de.mm20.launcher2.config.SearchDefaults
 import de.mm20.launcher2.config.ThemeColors
+import de.mm20.launcher2.config.ThemeShapes
+import de.mm20.launcher2.config.ThemeTypography
 import de.mm20.launcher2.config.ThemeMode
 import de.mm20.launcher2.preferences.BuiltInColorSchemes
+import de.mm20.launcher2.preferences.BuiltInShapes
+import de.mm20.launcher2.preferences.BuiltInTypography
 import de.mm20.launcher2.preferences.ColorScheme
 import de.mm20.launcher2.config.SystemBarIcons
 import de.mm20.launcher2.preferences.ScreenOrientation
@@ -105,6 +109,23 @@ private val BuiltInColorIds = mapOf(
     ThemeColors.HighContrast to BuiltInColorSchemes.HighContrast,
 )
 
+/** `appearance.theme.shapes` slug to the built-in set's id. */
+private val BuiltInShapeIds = mapOf(
+    ThemeShapes.Default to BuiltInShapes.Default,
+    ThemeShapes.Cut to BuiltInShapes.Cut,
+    ThemeShapes.ExtraRound to BuiltInShapes.ExtraRound,
+    ThemeShapes.Rect to BuiltInShapes.Rect,
+)
+
+/** `appearance.theme.typography` slug to the built-in typography's id. */
+private val BuiltInTypographyIds = mapOf(
+    ThemeTypography.GoogleSans to BuiltInTypography.GoogleSans,
+    ThemeTypography.GoogleSansRounded to BuiltInTypography.GoogleSansRounded,
+    ThemeTypography.System to BuiltInTypography.System,
+    ThemeTypography.Serif to BuiltInTypography.Serif,
+    ThemeTypography.Monospace to BuiltInTypography.Monospace,
+)
+
 internal class LauncherConfigSettingsImpl(
     private val dataStore: LauncherDataStore,
 ) : LauncherConfigSettings {
@@ -151,6 +172,8 @@ internal class LauncherConfigSettingsImpl(
             },
             // A scheme a person made has no slug: null, and the file keeps its own.
             themeColors = BuiltInColorIds.entries.firstOrNull { it.value == data.uiColorsId }?.key,
+            themeShapes = BuiltInShapeIds.entries.firstOrNull { it.value == data.uiShapesId }?.key,
+            themeTypography = BuiltInTypographyIds.entries.firstOrNull { it.value == data.uiTypographyId }?.key,
             // search (#91): upstream's own settings, which the search UI reads.
             search = SearchState(
                 favorites = data.favoritesEnabled,
@@ -276,6 +299,8 @@ internal class LauncherConfigSettingsImpl(
                     null -> uiColorScheme
                 },
                 uiColorsId = mutation.colors?.let(BuiltInColorIds::getValue) ?: uiColorsId,
+                uiShapesId = mutation.shapes?.let(BuiltInShapeIds::getValue) ?: uiShapesId,
+                uiTypographyId = mutation.typography?.let(BuiltInTypographyIds::getValue) ?: uiTypographyId,
             )
 
             is ConfigMutation.SetSearch -> with(mutation.search) {

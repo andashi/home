@@ -31,7 +31,9 @@
     },
     "theme": {
       "mode": "dark",
-      "colors": "high-contrast"
+      "colors": "high-contrast",
+      "shapes": "cut",
+      "typography": "google-sans-rounded"
     }
   },
   "home": {

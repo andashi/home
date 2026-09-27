@@ -130,6 +130,25 @@
                                 "black-and-white",
                                 "high-contrast"
                             ]
+                        },
+                        "shapes": {
+                            "type": "string",
+                            "enum": [
+                                "default",
+                                "cut",
+                                "extra-round",
+                                "rect"
+                            ]
+                        },
+                        "typography": {
+                            "type": "string",
+                            "enum": [
+                                "google-sans",
+                                "google-sans-rounded",
+                                "system",
+                                "serif",
+                                "monospace"
+                            ]
                         }
                     },
                     "additionalProperties": false

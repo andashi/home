@@ -100,6 +100,44 @@ class ConfigDifferTest {
         }
     }
 
+    @Test
+    fun `shapes and typography diff each on their own`() {
+        assertEquals(
+            listOf(ConfigMutation.SetTheme(shapes = ThemeShapes.Rect)),
+            ConfigDiffer.diff(LauncherConfig(2, appearance = AppearanceConfig(theme = ThemeConfig(shapes = ThemeShapes.Rect))), baseState),
+        )
+        assertEquals(
+            listOf(ConfigMutation.SetTheme(typography = ThemeTypography.Serif)),
+            ConfigDiffer.diff(LauncherConfig(2, appearance = AppearanceConfig(theme = ThemeConfig(typography = ThemeTypography.Serif))), baseState),
+        )
+        assertEquals(
+            "the defaults the state starts with are no change",
+            emptyList<ConfigMutation>(),
+            ConfigDiffer.diff(
+                LauncherConfig(2, appearance = AppearanceConfig(theme = ThemeConfig(shapes = ThemeShapes.Default, typography = ThemeTypography.GoogleSans))),
+                baseState,
+            ),
+        )
+    }
+
+    /** As with the colours: a set a person made differs from every slug the file names. */
+    @Test
+    fun `a person's own shape set or typography differs from every slug the file names`() {
+        val own = baseState.copy(themeShapes = null, themeTypography = null)
+        for (shapes in ThemeShapes.entries) {
+            assertEquals(
+                listOf(ConfigMutation.SetTheme(shapes = shapes)),
+                ConfigDiffer.diff(LauncherConfig(2, appearance = AppearanceConfig(theme = ThemeConfig(shapes = shapes))), own),
+            )
+        }
+        for (typography in ThemeTypography.entries) {
+            assertEquals(
+                listOf(ConfigMutation.SetTheme(typography = typography)),
+                ConfigDiffer.diff(LauncherConfig(2, appearance = AppearanceConfig(theme = ThemeConfig(typography = typography))), own),
+            )
+        }
+    }
+
     // ----- appearance.glass (#73) -----
 
     @Test

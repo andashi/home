@@ -391,6 +391,36 @@ class ConfigParserTest {
         assertEquals(ThemeMode.Light, theme(""""mode": "light"""").config?.appearance?.theme?.mode)
     }
 
+    /** #3: the built-in shape sets and typographies, by slug as the colours are. */
+    @Test
+    fun `the theme's shapes and typography parse by slug`() {
+        val shapes = mapOf("default" to ThemeShapes.Default, "cut" to ThemeShapes.Cut, "extra-round" to ThemeShapes.ExtraRound, "rect" to ThemeShapes.Rect)
+        for ((slug, value) in shapes) {
+            assertEquals(slug, value, theme(""""shapes": "$slug"""").config?.appearance?.theme?.shapes)
+        }
+        val typographies = mapOf(
+            "google-sans" to ThemeTypography.GoogleSans, "google-sans-rounded" to ThemeTypography.GoogleSansRounded,
+            "system" to ThemeTypography.System, "serif" to ThemeTypography.Serif, "monospace" to ThemeTypography.Monospace,
+        )
+        for ((slug, value) in typographies) {
+            assertEquals(slug, value, theme(""""typography": "$slug"""").config?.appearance?.theme?.typography)
+        }
+        assertEquals("every value has a slug", ThemeShapes.entries.toSet(), shapes.values.toSet())
+        assertEquals("every value has a slug", ThemeTypography.entries.toSet(), typographies.values.toSet())
+    }
+
+    @Test
+    fun `an unknown shape set or typography is rejected and the message names the field`() {
+        for ((body, path) in listOf(
+            """"shapes": "round"""" to "appearance.theme.shapes",
+            """"typography": "comic-sans"""" to "appearance.theme.typography",
+        )) {
+            val result = theme(body)
+            assertTrue(body, !result.isSuccess)
+            assertTrue(result.diagnostics.toString(), result.diagnostics.any { path in it.message })
+        }
+    }
+
     @Test
     fun `an unknown theme value is rejected and the message names the field`() {
         for ((body, path) in listOf(

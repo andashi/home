@@ -206,7 +206,7 @@ internal object ConfigSchema {
     private val fieldEnums: Map<String, FieldEnumSerializer<*>> =
         listOf(
             GlassContrastSerializer, SearchBarPositionInSearchSerializer, SearchResultLayoutSerializer,
-            ThemeModeSerializer, ThemeColorsSerializer,
+            ThemeModeSerializer, ThemeColorsSerializer, ThemeShapesSerializer, ThemeTypographySerializer,
             StatusBarIconsSerializer, NavigationBarIconsSerializer,
             AppVisibilitySerializer,
         )

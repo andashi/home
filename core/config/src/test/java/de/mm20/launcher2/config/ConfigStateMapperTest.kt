@@ -197,15 +197,35 @@ class ConfigStateMapperTest {
      */
     @Test
     fun `the theme reads back, a custom colour scheme without colors`() {
-        assertEquals(ThemeConfig(ThemeMode.System, ThemeColors.System), ConfigState().toLauncherConfig().appearance?.theme)
         assertEquals(
-            ThemeConfig(ThemeMode.Dark, ThemeColors.HighContrast),
+            ThemeConfig(ThemeMode.System, ThemeColors.System, ThemeShapes.Default, ThemeTypography.GoogleSans),
+            ConfigState().toLauncherConfig().appearance?.theme,
+        )
+        assertEquals(
+            ThemeConfig(ThemeMode.Dark, ThemeColors.HighContrast, ThemeShapes.Default, ThemeTypography.GoogleSans),
             ConfigState(themeMode = ThemeMode.Dark, themeColors = ThemeColors.HighContrast).toLauncherConfig().appearance?.theme,
         )
         val custom = ConfigState(themeColors = null).toLauncherConfig()
-        assertEquals(ThemeConfig(ThemeMode.System, null), custom.appearance?.theme)
+        assertEquals(ThemeConfig(ThemeMode.System, null, ThemeShapes.Default, ThemeTypography.GoogleSans), custom.appearance?.theme)
         val served = ConfigParser.json.encodeToString(LauncherConfig.serializer(), custom)
         assertTrue(served, !served.contains("\"colors\""))
+    }
+
+    /** Shapes and typography as the colours: the default set, and none for a person's own. */
+    @Test
+    fun `shapes and typography read back, a person's own set without the key`() {
+        val theme = ConfigState().toLauncherConfig().appearance?.theme
+        assertEquals(ThemeShapes.Default, theme?.shapes)
+        assertEquals(ThemeTypography.GoogleSans, theme?.typography)
+        assertEquals(
+            ThemeShapes.Cut to ThemeTypography.Monospace,
+            ConfigState(themeShapes = ThemeShapes.Cut, themeTypography = ThemeTypography.Monospace).toLauncherConfig()
+                .appearance?.theme?.let { it.shapes to it.typography },
+        )
+        val own = ConfigParser.json.encodeToString(
+            LauncherConfig.serializer(), ConfigState(themeShapes = null, themeTypography = null).toLauncherConfig(),
+        )
+        assertTrue(own, !own.contains("\"shapes\"") && !own.contains("\"typography\""))
     }
 
     /** The documented defaults (#73, #24) are what an empty state reads back as. */

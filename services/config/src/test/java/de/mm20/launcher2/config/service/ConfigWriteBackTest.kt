@@ -163,6 +163,35 @@ class ConfigWriteBackTest {
             it.code == ConfigWriteBack.SkipCodePrefix + "colors-custom" && it.message.contains("appearance.theme.colors")
         } == true
 
+    /**
+     * Shapes and typography as the colours: a set a person made has no slug,
+     * so the file keeps the key as written, and the report says why.
+     */
+    @Test
+    fun `a shape set or typography a person made leaves the key as written, and the report says why`() = runBlocking {
+        val file0 = """
+            {
+              "schemaVersion": 2,
+              "appearance": { "theme": { "shapes": "default", "typography": "google-sans" } }
+            }
+        """.trimIndent()
+        applied(file0)
+        val own = UUID.fromString("0d4f6f1a-2c3b-4a5d-8e7f-9a0b1c2d3e4f")
+        GlobalContext.get().get<UiSettings>().setShapesId(own)
+        GlobalContext.get().get<UiSettings>().setTypographyId(own)
+        withTimeout(10_000) {
+            while (real.store.readState().let { it.themeShapes != null || it.themeTypography != null }) delay(20)
+        }
+
+        val result = writeBack.write()
+
+        assertEquals(WriteBackResult.Unchanged, result)
+        assertEquals(file0, file.readText())
+        val codes = reportStore.read()?.diagnostics.orEmpty().map { it.code }
+        assertTrue(codes.toString(), ConfigWriteBack.SkipCodePrefix + "shapes-custom" in codes)
+        assertTrue(codes.toString(), ConfigWriteBack.SkipCodePrefix + "typography-custom" in codes)
+    }
+
     @Test
     fun `a theme mode changed on the device is written into the file`() = runBlocking {
         applied(themeFile)

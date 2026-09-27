@@ -26,6 +26,10 @@ data class ConfigState(
      * file's text.
      */
     val themeColors: ThemeColors? = ThemeColors.System,
+    /** `appearance.theme.shapes`: the built-in set in effect, or null for one a person made (as [themeColors]). */
+    val themeShapes: ThemeShapes? = ThemeShapes.Default,
+    /** `appearance.theme.typography`: the built-in typography in effect, or null for one a person made. */
+    val themeTypography: ThemeTypography? = ThemeTypography.GoogleSans,
     val searchBarPosition: SearchBarPosition = SearchBarPosition.Top,
     /** `home.searchBar.fixed` (#3 slice 1). */
     val searchBarFixed: Boolean = false,
@@ -143,6 +147,8 @@ sealed class ConfigMutation {
     data class SetTheme(
         val mode: ThemeMode? = null,
         val colors: ThemeColors? = null,
+        val shapes: ThemeShapes? = null,
+        val typography: ThemeTypography? = null,
     ) : ConfigMutation() {
         override val section = "appearance.theme"
     }
@@ -280,8 +286,11 @@ object ConfigDiffer {
             val mode = theme.mode?.takeIf { it != current.themeMode }
             // A custom scheme on the device (null) differs from every slug.
             val colors = theme.colors?.takeIf { it != current.themeColors }
-            if (mode != null || colors != null) {
-                mutations += ConfigMutation.SetTheme(mode = mode, colors = colors)
+            // As the colours: a set a person made (null) differs from every slug.
+            val shapes = theme.shapes?.takeIf { it != current.themeShapes }
+            val typography = theme.typography?.takeIf { it != current.themeTypography }
+            if (mode != null || colors != null || shapes != null || typography != null) {
+                mutations += ConfigMutation.SetTheme(mode = mode, colors = colors, shapes = shapes, typography = typography)
             }
         }
 

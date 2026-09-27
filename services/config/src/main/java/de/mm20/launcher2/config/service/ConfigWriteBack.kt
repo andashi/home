@@ -288,6 +288,20 @@ class ConfigWriteBack(
                 "the device uses a colour scheme a person made, which appearance.theme.colors cannot name; " +
                     "the file keeps its value",
             ),
+            listOf("appearance", "theme", "shapes") to Diagnostic(
+                DiagnosticCode.WriteBackSkipped,
+                "shapes-custom",
+                "appearance.theme.shapes",
+                "the device uses a shape set a person made, which appearance.theme.shapes cannot name; " +
+                    "the file keeps its value",
+            ),
+            listOf("appearance", "theme", "typography") to Diagnostic(
+                DiagnosticCode.WriteBackSkipped,
+                "typography-custom",
+                "appearance.theme.typography",
+                "the device uses a typography a person made, which appearance.theme.typography cannot name; " +
+                    "the file keeps its value",
+            ),
             // Found by the test that every keepable path has a reason (#3 slice 2).
             listOf("icons", "pack") to Diagnostic(
                 DiagnosticCode.WriteBackSkipped,

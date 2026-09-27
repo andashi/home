@@ -340,6 +340,8 @@ internal object NavigationBarIconsSerializer : FieldEnumSerializer<SystemBarIcon
 data class ThemeConfig(
     val mode: ThemeMode? = null,
     val colors: ThemeColors? = null,
+    val shapes: ThemeShapes? = null,
+    val typography: ThemeTypography? = null,
 )
 
 @Serializable(with = ThemeModeSerializer::class)
@@ -348,6 +350,18 @@ enum class ThemeMode { Light, Dark, System }
 /** The launcher's built-in colour schemes. [System] follows the system (Monet) palette. */
 @Serializable(with = ThemeColorsSerializer::class)
 enum class ThemeColors { System, BlackAndWhite, HighContrast }
+
+/** The launcher's built-in shape sets; [Default] is the one a fresh install has. */
+@Serializable(with = ThemeShapesSerializer::class)
+enum class ThemeShapes { Default, Cut, ExtraRound, Rect }
+
+/**
+ * The launcher's built-in typographies. [GoogleSans] is the default; [System]
+ * is the system's font, not "the default", which is why the default is named
+ * for what it is.
+ */
+@Serializable(with = ThemeTypographySerializer::class)
+enum class ThemeTypography { GoogleSans, GoogleSansRounded, System, Serif, Monospace }
 
 /**
  * The glass surfaces of the home screen (ADR 0004, #24): cards, dock and
@@ -434,6 +448,14 @@ internal object ThemeModeSerializer : FieldEnumSerializer<ThemeMode>(
 
 internal object ThemeColorsSerializer : FieldEnumSerializer<ThemeColors>(
     "de.mm20.launcher2.config.ThemeColors", "appearance.theme.colors", ThemeColors.entries,
+)
+
+internal object ThemeShapesSerializer : FieldEnumSerializer<ThemeShapes>(
+    "de.mm20.launcher2.config.ThemeShapes", "appearance.theme.shapes", ThemeShapes.entries,
+)
+
+internal object ThemeTypographySerializer : FieldEnumSerializer<ThemeTypography>(
+    "de.mm20.launcher2.config.ThemeTypography", "appearance.theme.typography", ThemeTypography.entries,
 )
 
 /** The one place the glass defaults live; state, settings and read-back use it. */

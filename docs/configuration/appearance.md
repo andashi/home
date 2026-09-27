@@ -145,13 +145,14 @@ they are.
 
 ## Theme
 
-`appearance.theme` picks light or dark and the colour scheme.
+`appearance.theme` picks light or dark, the colour scheme, the shapes and
+the typography.
 
 <!-- config -->
 ```json
 {
   "schemaVersion": 2,
-  "appearance": { "theme": { "mode": "system", "colors": "system" } }
+  "appearance": { "theme": { "mode": "system", "colors": "system", "shapes": "default", "typography": "google-sans" } }
 }
 ```
 
@@ -162,6 +163,8 @@ device has.
 |---|---|---|---|
 | `appearance.theme.mode` | `light`, `dark`, or `system` to follow the system's dark theme | enum | `system` |
 | `appearance.theme.colors` | The launcher's built-in colour scheme: `system` follows the system palette, `black-and-white` and `high-contrast` replace it | enum | `system` |
+| `appearance.theme.shapes` | The launcher's built-in shape set for cards, buttons and icons' surroundings: `default`, `cut`, `extra-round`, `rect` | enum | `default` |
+| `appearance.theme.typography` | The launcher's built-in typography: `google-sans`, `google-sans-rounded`, `system` (the system's font), `serif`, `monospace` | enum | `google-sans` |
 
 Each zone's palette comes from the system (its Monet seed). A file picks one
 of the built-in schemes; it cannot define a palette.
@@ -184,10 +187,11 @@ search open (emulator, the system itself in light mode):
 |---|---|
 | `"mode": "light"` | `"mode": "dark"` |
 
-On the device, a person can also pick a colour scheme they made themselves.
-The file cannot name one, so write-back leaves `colors` as the file wrote it,
-and the reload report carries a `write-back-skipped:colors-custom` warning
-saying so.
+On the device, a person can also pick a colour scheme, a shape set or a
+typography they made themselves. The file cannot name one, so write-back
+leaves the key as the file wrote it, and the reload report carries a
+`write-back-skipped:colors-custom`, `write-back-skipped:shapes-custom` or
+`write-back-skipped:typography-custom` warning saying so.
 
 ## System bars
 
