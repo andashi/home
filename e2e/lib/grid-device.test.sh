@@ -611,9 +611,14 @@ esac
 EOF
 chmod +x "$WORK/reports/adb"
 serve_report() { printf 'Row: 0 json=%s\n' "$1" > "$WORK/reports/now"; }
+# Which report is the push's is a question about the filter, not about time:
+# the cases run it on the report directly. Through wait_push_report they ran
+# under a one-second deadline around a fake adb and jq, and a busy host
+# spent that second on starting processes - the positive cases went red at
+# host load 18 and green at 2 to 4. The wait around the filter is covered
+# where it has room: push_config against the fake provider.
 push_report_found() { # $1 = report before the push, $2 = report now, $3 = hash pushed
-  serve_report "$2"
-  ( PATH="$WORK/reports:$PATH"; wait_push_report "$1" "$3" 1 test ) >/dev/null 2>&1
+  jq -e "$(push_report_filter "$1" "$3")" <<<"$2" >/dev/null 2>&1
 }
 takes_a_report_whatever_caused_it() {
   push_report_found '{"configSha256":"a","trigger":"broadcast"}' '{"configSha256":"a","trigger":"grid-measured"}' a
@@ -631,6 +636,28 @@ refuses_another_files_report() {
   ! push_report_found '{"configSha256":"a","trigger":"broadcast"}' '{"configSha256":"b","trigger":"file-watcher"}' a
 }
 check "wait_push_report does not take another file's report" refuses_another_files_report
+# And wait_push_report waits for exactly that filter. The fake has to be able
+# to give the answer the filter must refuse: its first query returns the
+# report from before the push - same hash - and only later ones the push's.
+# A wait on the hash alone takes the first and stops; the case checks which
+# report the wait kept (#211 review: a fake that always answered with the
+# new report passed a hash-only wait too). 1.5 s per query, inside a 10 s
+# wait: the old cases' one second would not have covered a single answer.
+mkdir -p "$WORK/slowreports"
+cat > "$WORK/slowreports/adb" <<EOF
+#!/usr/bin/env bash
+sleep 1.5
+if [ -e "$WORK/slowreports/asked" ]; then cat "$WORK/reports/now"; else : > "$WORK/slowreports/asked"; cat "$WORK/slowreports/before"; fi
+EOF
+chmod +x "$WORK/slowreports/adb"
+waits_for_the_push_filter() {
+  local before='{"configSha256":"a","trigger":"broadcast"}'
+  rm -f "$WORK/slowreports/asked"
+  printf 'Row: 0 json=%s\n' "$before" > "$WORK/slowreports/before"
+  serve_report '{"configSha256":"a","trigger":"grid-measured"}'
+  ( PATH="$WORK/slowreports:$PATH"; wait_push_report "$before" a 10 test >/dev/null 2>&1 && jq -e '.trigger == "grid-measured"' <<<"$LAST_REPORT" >/dev/null )
+}
+check "wait_push_report passes over the report from before the push, through a slow provider" waits_for_the_push_filter
 # The provider answers the JSON literal null before the first report
 # (ConfigStateProvider). A failed query is not that answer: taken for it, an
 # older report of the same hash would pass as the push's (#192 review).

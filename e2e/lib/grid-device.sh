@@ -212,8 +212,14 @@ report_now() { # the current report, or the provider's null before the first one
   retry_for "${REPORT_NOW_TIMEOUT:-10}" report_grab || die "could not read the report before a push"
   printf '%s' "$REPORT_NOW"
 }
+# The jq filter for the push's report: its hash, and not the report that was
+# there before the push. Its own function so the question of which report
+# counts is testable without a wait around it.
+push_report_filter() { # $1 = report_now before the push, $2 = sha256 pushed
+  printf '.configSha256 == "%s" and . != %s' "$2" "$1"
+}
 wait_push_report() { # $1 = report_now before the push, $2 = sha256 pushed, $3 = timeout (s), $4 = description
-  wait_report ".configSha256 == \"$2\" and . != $1" "$3" "$4"
+  wait_report "$(push_report_filter "$1" "$2")" "$3" "$4"
 }
 
 write_config() { # $1 = local file
