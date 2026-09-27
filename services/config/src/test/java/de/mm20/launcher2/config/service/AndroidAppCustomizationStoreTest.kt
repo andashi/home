@@ -479,6 +479,39 @@ class AndroidAppCustomizationStoreTest {
         assertEquals(mapOf(twoFirst.key to "com.example.two.First"), record.written.value)
     }
 
+    /**
+     * Where there was no record before - the first reload after an update -
+     * the form reads as empty, and putting "empty" back would make a record:
+     * the next start would not try again, and write-back would stop waiting
+     * (review on #214). Absent goes back to absent.
+     */
+    @Test
+    fun `a failed apply where there was no record leaves none`() = runTest {
+        var present = false
+        val record = object : AppNaming {
+            val written = MutableStateFlow<Map<String, String?>>(emptyMap())
+            override fun observe(): Flow<Map<String, String?>> = written
+            override suspend fun replace(naming: Map<String, String?>) {
+                written.value = naming
+                present = true
+            }
+            override suspend fun recorded() = present
+            override suspend fun forget() {
+                written.value = emptyMap()
+                present = false
+            }
+        }
+        labelWriteFailure = IllegalStateException("database locked")
+
+        val failed = runCatching {
+            AndroidAppCustomizationStore(apps, profiles, attributes, searchables, record)
+                .replaceAndRead(listOf(AppConfig("com.example.two", activity = "com.example.two.First", label = "One")))
+        }
+
+        assertTrue(failed.isFailure)
+        assertEquals("no record, as before the apply", false, record.recorded())
+    }
+
     // ---- changes ----
 
     /** It tells write-back when what the file would say changes, and not when an app without a name is installed. */

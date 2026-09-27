@@ -128,6 +128,9 @@ internal class AndroidAppCustomizationStore(
         // form. If a device write fails, the apply is reported failed and the
         // baseline stays as it was, so the record goes back too (review on #214).
         val before = naming.observe().first()
+        // No record reads as empty; putting "empty" back would make one, and
+        // the next start would not try again (review on #214).
+        val hadRecord = naming.recorded()
         try {
             naming.replace(written)
             writeDeviceState(installed, labels, wanted)
@@ -140,7 +143,7 @@ internal class AndroidAppCustomizationStore(
             // repair runs non-cancellable.
             withContext(NonCancellable) {
                 try {
-                    naming.replace(before)
+                    if (hadRecord) naming.replace(before) else naming.forget()
                 } catch (restore: Throwable) {
                     e.addSuppressed(restore)
                     try {
