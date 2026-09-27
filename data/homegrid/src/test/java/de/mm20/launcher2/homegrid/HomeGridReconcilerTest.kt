@@ -107,4 +107,79 @@ class HomeGridReconcilerTest {
 
         assertEquals(ReconcileReport(), reconciler(port).reconcile())
     }
+
+    /**
+     * The widget service learns of a new package on its own, and can do so
+     * after the launcher hears of it: a bind in between is refused although
+     * the provider is about to exist. [readyAfter] binds are refused first.
+     */
+    private class LateProvider(private val inner: FakeAppWidgetHostPort, private val widget: String, private var readyAfter: Int) :
+        AppWidgetHostPort by inner {
+        var attempts = 0
+        override fun bind(id: Int, widget: String, profile: String?): Boolean {
+            if (widget == this.widget) {
+                attempts++
+                if (attempts <= readyAfter) {
+                    inner.bindCalls += Triple(id, widget, profile)
+                    return false
+                }
+            }
+            return inner.bind(id, widget, profile)
+        }
+    }
+
+    /**
+     * A widget whose package arrives after the grid named it holds no host id
+     * (its bind was refused while the package was missing), and nothing about
+     * the item changes when it arrives - so the arrival itself has to bind it
+     * (review on #219).
+     */
+    @Test
+    fun `an arrival binds a widget whose provider the service learns of late`() = runBlocking {
+        grid.replace(HomeGridLayouts.Phone, listOf(item("only", "org.example.only/.Widget")))
+        val port = LateProvider(FakeAppWidgetHostPort(bindable = setOf("org.example.only/.Widget")), "org.example.only/.Widget", readyAfter = 2)
+        var pauses = 0
+
+        val report = HomeGridReconciler(grid, port).reconcileArrival("org.example.only", attempts = 5) { pauses++ }
+
+        assertEquals(listOf("only"), report.bound)
+        assertEquals(3, port.attempts)
+        assertEquals("a pause before each retry, none after the bind", 2, pauses)
+        assertEquals(100 + 2, grid.observe(HomeGridLayouts.Phone).first().single().appWidgetId)
+    }
+
+    /**
+     * The failure path: a provider that never becomes bindable is retried a
+     * bounded number of times, then stays unbound and reported. No host id is
+     * recorded for it, so the next pass - the next arrival, or the grid's own
+     * - tries again; nothing claims it bound.
+     */
+    @Test
+    fun `an arrival gives up after its attempts and leaves the item unbound and reported`() = runBlocking {
+        grid.replace(HomeGridLayouts.Phone, listOf(item("only", "org.example.only/.Widget")))
+        val port = LateProvider(FakeAppWidgetHostPort(bindable = setOf("org.example.only/.Widget")), "org.example.only/.Widget", readyAfter = 99)
+        var pauses = 0
+
+        val report = HomeGridReconciler(grid, port).reconcileArrival("org.example.only", attempts = 4) { pauses++ }
+
+        assertEquals(listOf("only"), report.failed)
+        assertEquals(4, port.attempts)
+        assertEquals(3, pauses)
+        assertNull(grid.observe(HomeGridLayouts.Phone).first().single().appWidgetId)
+        assertTrue("every refused id is released, none leaks", port.boundIds().isEmpty())
+    }
+
+    /** Control: a failure of another package's widget does not keep an arrival retrying. */
+    @Test
+    fun `an arrival retries only for its own package`() = runBlocking {
+        grid.replace(HomeGridLayouts.Phone, listOf(item("other", "org.example.other/.Widget")))
+        val port = FakeAppWidgetHostPort(bindable = emptySet())
+        var pauses = 0
+
+        val report = HomeGridReconciler(grid, port).reconcileArrival("org.example.only", attempts = 5) { pauses++ }
+
+        assertEquals(listOf("other"), report.failed)
+        assertEquals(1, port.bindCalls.size)
+        assertEquals(0, pauses)
+    }
 }

@@ -408,8 +408,17 @@ class HomeGridVM(
     }
 
     /** Binds what needs binding and releases what nothing references; see [HomeGridReconciler]. */
-    suspend fun reconcile(port: AppWidgetHostPort): ReconcileReport {
-        return HomeGridReconciler(repository, port).reconcile()
+    // One pass at a time: two passes over the same unbound item would each
+    // allocate and bind a host id for it.
+    private val reconcileLock = Mutex()
+
+    suspend fun reconcile(port: AppWidgetHostPort): ReconcileReport = reconcileLock.withLock {
+        HomeGridReconciler(repository, port).reconcile()
+    }
+
+    /** A pass for [packageName] having arrived (see [HomeGridReconciler.reconcileArrival]). */
+    suspend fun reconcileArrival(port: AppWidgetHostPort, packageName: String): ReconcileReport = reconcileLock.withLock {
+        HomeGridReconciler(repository, port).reconcileArrival(packageName)
     }
 
     fun remove(item: HomeGridItem) {

@@ -46,6 +46,10 @@
 #      widgets list) and asserts it still applies: the launcher migrates it and
 #      the read-back shows schemaVersion 2 with home.favorites; its leftover
 #      appearance.transparency gets one inert-key warning and no effect
+#  10c. names an app that is not there (Clock, disabled for user 0),
+#      then enables it: the arrival reloads the file (trigger "apps-changed")
+#      and the label and the favorite read back; then an app coming back while
+#      nothing waits must not reload
 #   9. restores the valid config with plain `adb push` (user 0 only): the
 #      interactive dotfile path, proving the file watcher reacts to a push
 #      exactly like to an ingest
@@ -722,15 +726,17 @@ ok "fold layout kept as written on a phone (#90)"
 # from e2e/fixtures/widget-only and never installed here. A layout refitted on
 # every reload must also not make a write-back on every reload: the passes are
 # counted (the write-back logs each, on every build) and none may write.
+# The item leaves out its size, so 10d can see the provider's own size arrive.
 FIXTURE_PKG=org.andashi.fixture.widgetonly
 FIXTURE_APK="$WORK/widget-only.apk"
-bash "$(dirname "$0")/fixtures/widget-only/build.sh" "$FIXTURE_APK" >/dev/null 2>&1 \
-  || die "could not build the widget-only fixture (e2e/fixtures/widget-only/build.sh): the SDK's aapt2, d8, javac or apksigner is missing"
+bash "$(dirname "$0")/fixtures/widget-only/build.sh" "$FIXTURE_APK" >/dev/null \
+  || die "could not build the widget-only fixture (e2e/fixtures/widget-only/build.sh); its message above names what is missing"
 WIDGET_CONFIG="$WORK/widget-only.json"
 cat > "$WIDGET_CONFIG" <<EOF
 { "schemaVersion": 2,
-  "home": { "grid": { "layouts": { "phone": { "items": [
-    { "id": "only", "widget": "$FIXTURE_PKG/.OnlyWidget", "x": 0, "y": 0, "w": 2, "h": 1 }
+  "home": { "widgets": { "enabled": true },
+    "grid": { "layouts": { "phone": { "items": [
+    { "id": "only", "widget": "$FIXTURE_PKG/.OnlyWidget", "x": 0, "y": 0 }
   ] } } } } }
 EOF
 write_back_passes() { # $1 = kind ("" for every pass)
@@ -750,7 +756,152 @@ H_WIDGET="$(sha256sum "$WIDGET_CONFIG" | cut -d' ' -f1)"
 on_device="$(adb_out shell sha256sum "$REMOTE_CONFIG" | cut -d' ' -f1)"
 [ "$on_device" = "$H_WIDGET" ] || die "the file on the device changed under two reloads"
 passes="$(( $(write_back_passes "") - passes_before ))"
+effective="$(query_json config)" || die "could not query /config"
+assert_jq "$effective" \
+  '[.home.grid.layouts.phone.items[] | select(.id == "only") | [.w, .h]] == [[1, 1]]' \
+  "without its provider the widget holds the one-cell fallback"
 ok "a missing widget is reported by the second reload too, and the refits write nothing back ($passes write-back passes over the two reloads, none wrote)"
+
+# The watcher logs each arrival it decided, on a debuggable build only (which
+# packages a person has is theirs). A step waits for that line: a silence is
+# only evidence once the signal has provably reached the decision - an arrival
+# that never arrived reloads nothing too (review on #213).
+arrivals_decided() { # $1 = package, $2 = decision ("reloaded" or "nothing waits")
+  adb_out shell logcat -d -s ConfigWatcher:D 2>/dev/null | grep -cF "arrival $1${2:+: $2}" || true
+}
+arrival_decided() { [ "$(arrivals_decided "$1" "$2")" -gt "$3" ]; }
+
+# --- 10d. the widget's package arrives (review on #213 and #219) -----------
+#
+# The file from 10c waits for its widget. The app list is launcher entries, so
+# a package with a widget and no launcher entry arrives unseen there; only the
+# package signal reports it. (No stock app is such a package, and the shell may
+# not disable one component of a system app - "Shell cannot change component
+# state" - hence the fixture.) The arrival must reload with the provider there,
+# fit the item to the provider's own size (the store already agreeing with the
+# file would otherwise never look again), and bind it: the grid binds only when
+# an item's id or host id changes, and an arrival changes neither (review on
+# #219). The app list must not have seen the package, or the package signal
+# was not what carried it.
+HOST_ID=44203 # the launcher's AppWidgetHost id
+fixture_bound() {
+  adb -s "$SERIAL" shell dumpsys appwidget 2>/dev/null | tr -d '\r' | sed -n '/^Widgets:/,/^Hosts:/p' \
+    | grep -F "hostId:$HOST_ID" -A3 | grep -qF "$FIXTURE_PKG/"
+}
+# Binding happens in the grid on screen, so the grid is shown before the
+# install: its own pass then fails for the missing provider, and only the
+# arrival can bind it. Shown after the install instead, the grid's first pass
+# would bind it with or without the arrival pass, and this step would pass
+# on a build that lacks it.
+# The steps before never needed the home role, and without it the Home key
+# goes to the system's launcher; with it, as on a real device, the Home key
+# returns this launcher to its grid from whatever was left open.
+grant_home_role
+# The HOME role does not carry the bind-widget grant (l4-grid measured it:
+# every bind refused). A user gives it once through the system's dialog; the
+# shell tool stands in for that tap.
+adb -s "$SERIAL" shell appwidget grantbind --package "$PKG" --user 0 >/dev/null 2>&1 \
+  || die "appwidget grantbind failed for $PKG"
+adb -s "$SERIAL" shell dumpsys appwidget 2>/dev/null | tr -d '\r' | sed -n '/^Grants:/,$p' | grep -q "package=$PKG" \
+  || die "$PKG has no bind-widget grant after grantbind"
+show_home
+adb_t shell input keyevent KEYCODE_HOME >/dev/null 2>&1 || true
+retry_for 30 shows id_bounds "grid-item:only" || {
+  adb -s "$SERIAL" shell dumpsys activity activities 2>/dev/null | tr -d '\r' | grep -m3 -E "mResumedActivity|topResumedActivity" >&2 || true
+  { wc -c < "$WORK/dump.xml"; grep -oE '(resource-id|text)="[^"]+"' "$WORK/dump.xml" | sort -u | head -40; } >&2 2>/dev/null || true
+  die "the waiting widget's cell 'grid-item:only' never showed on the home grid (what was on screen is above)"
+}
+fixture_bound && die "the fixture's widget is bound before its package is installed; the check is blind"
+seen="$(arrivals_decided "$FIXTURE_PKG" "reloaded")"
+install_out="$(adb -s "$SERIAL" install "$FIXTURE_APK" 2>&1)" \
+  || { printf '%s\n' "$install_out" >&2; die "could not install the widget-only fixture"; }
+case "$install_out" in *Success*) ;; *) printf '%s\n' "$install_out" >&2; die "could not install the widget-only fixture" ;; esac
+retry_for 30 arrival_decided "$FIXTURE_PKG" "reloaded" "$seen" \
+  || die "the widget-only package's arrival never reloaded the file"
+wait_report '.trigger == "apps-changed" and ([.diagnostics[]? | select(.code == "unknown-widget-provider")] | length == 0)' \
+  30 "the arrival reload found the provider"
+[ "$(arrivals_decided "app://$FIXTURE_PKG" "")" = 0 ] \
+  || die "the app list reported the widget-only package; the package signal was not what carried it"
+effective="$(query_json config)" || die "could not query /config"
+assert_jq "$effective" \
+  '[.home.grid.layouts.phone.items[] | select(.id == "only") | [.w, .h]] == [[2, 1]]' \
+  "with its provider there the widget takes the provider's own size (2x1)"
+retry_for 30 fixture_bound || {
+  adb -s "$SERIAL" shell dumpsys appwidget 2>/dev/null | tr -d '\r' | sed -n '/^Widgets:/,$p' >&2
+  die "the arrived widget was never bound to the launcher's host $HOST_ID (the widget service's list is above)"
+}
+ok "a package that brings only a widget is applied when it arrives: reloaded, sized 2x1 and bound, carried by the package signal alone"
+adb -s "$SERIAL" uninstall "$FIXTURE_PKG" >/dev/null 2>&1 || true
+
+# --- 10e. an app the file names is installed after the file (#207 review) ---
+#
+# A file naming an app this device lacks applies without it: the app's label
+# and its favorite are skipped and reported. When the app arrives the file has
+# not changed, so no watcher event and no startup drift would apply it; the
+# arrival itself reloads. Clock is disabled for this user and enabled again:
+# a disabled app is not in the launcher's list, and enabling it is an arrival
+# like an install, with no outside APK. (Uninstalling a system app for one
+# user needs root on GrapheneOS: "only root can delete system app for a
+# particular user".) The control enables an app while nothing waits: a trigger that
+# reloaded on every install would pass the first half and fail the second.
+
+LATE_APP=com.android.deskclock
+OTHER_APP=app.grapheneos.camera
+pm_for_user0() { # $1 = disable-user|enable, $2 = package
+  local out want
+  case "$1" in disable-user) want="new state: disabled-user" ;; enable) want="new state: enabled" ;; *) return 2 ;; esac
+  out="$(adb_t shell pm "$1" --user 0 "$2" 2>&1 | tr -d '\r')" || { printf '%s\n' "$out" >&2; return 1; }
+  case "$out" in
+    *"$want") return 0 ;;
+    *) printf 'pm %s %s: %s\n' "$1" "$2" "$out" >&2; return 1 ;;
+  esac
+}
+favorite_packages='[.home.favorites[]? | if type == "object" then .packageName else . end]'
+
+pm_for_user0 disable-user "$LATE_APP" || die "could not disable $LATE_APP for user 0"
+LATE_CONFIG="$WORK/late-app.json"
+cat > "$LATE_CONFIG" <<EOF
+{ "schemaVersion": 2,
+  "apps": [ { "packageName": "$LATE_APP", "label": "Later Clock" } ],
+  "home": { "favorites": ["com.android.settings", "$LATE_APP"] } }
+EOF
+push_config "$LATE_CONFIG" "late-app"
+# Not .success: a favorite for an absent app is an error (the report says
+# success false), where the app's label is a warning. That is how favorites
+# have reported since before this step, and not what it tests.
+assert_jq "$LAST_REPORT" \
+  '([.diagnostics[] | select(.code == "app-unavailable" and .path == "apps[0]")] | length == 1)
+   and ([.diagnostics[] | select(.code == "favorite-unavailable" and .path == "home.favorites[1]")] | length == 1)' \
+  "the absent app's label and favorite are reported, not applied"
+effective="$(query_json config)" || die "could not query /config"
+assert_jq "$effective" ".apps == [] and ($favorite_packages | index(\"$LATE_APP\") == null)" \
+  "neither the label nor the favorite reads back while the app is absent"
+
+t0=$SECONDS
+pm_for_user0 enable "$LATE_APP" || die "could not enable $LATE_APP for user 0"
+wait_report '.trigger == "apps-changed" and .success == true
+  and ([.diagnostics[]? | select(.code == "app-unavailable" or .code == "favorite-unavailable")] | length == 0)' \
+  30 "the arrival reloads the file, and nothing is absent any more"
+arrival=$((SECONDS - t0))
+effective="$(query_json config)" || die "could not query /config"
+assert_jq "$effective" \
+  ".apps == [{\"packageName\":\"$LATE_APP\",\"label\":\"Later Clock\"}] and ($favorite_packages | index(\"$LATE_APP\") != null)" \
+  "the label and the favorite read back once the app is there"
+ok "an app arriving after the file gets its label and its favorite (${arrival} s after it was enabled)"
+
+# Control: nothing waits now. Another app leaving and coming back must not
+# reload - and it must have been decided, not missed.
+before="$(report_now)"
+# The comparison must work before its silence means anything: a filter that
+# does not parse fails every time, and would read as "no reload".
+jq -e ". == $before" <<<"$before" >/dev/null || die "the control cannot compare reports: $before"
+seen="$(arrivals_decided "$OTHER_APP" "nothing waits")"
+pm_for_user0 disable-user "$OTHER_APP" || die "could not disable $OTHER_APP for user 0"
+pm_for_user0 enable "$OTHER_APP" || die "could not enable $OTHER_APP for user 0"
+retry_for 30 arrival_decided "$OTHER_APP" "nothing waits" "$seen" \
+  || die "the watcher never decided $OTHER_APP's arrival; the control would be blind"
+report_matches ". != $before" && die "an app arriving with nothing waiting reloaded the file: $(jq -c '{trigger, configSha256}' <<<"$LAST_SEEN_REPORT")"
+ok "an app arriving while nothing waits is decided and reloads nothing"
 
 # --- 9. restore a valid config via adb push (interactive dotfile path) ---
 

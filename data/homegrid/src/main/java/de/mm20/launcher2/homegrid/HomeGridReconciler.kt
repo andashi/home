@@ -1,5 +1,6 @@
 package de.mm20.launcher2.homegrid
 
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 
 /**
@@ -78,6 +79,38 @@ class HomeGridReconciler(
 
         return ReconcileReport(bound, failed, unavailable, released)
     }
+
+    /**
+     * A pass for [packageName] having arrived. An item naming it holds no
+     * host id - its bind was refused while the package was missing - and
+     * nothing about the item changes when the package comes, so the grid's
+     * own pass, which runs when an item or its host id changes, would not
+     * bind it (review on #219). The widget service learns of a package on
+     * its own and can do so after the launcher does, so a refused bind for
+     * this package is tried again, [attempts] passes in all with a [pause]
+     * before each retry. What still fails then stays unbound and reported:
+     * no host id is recorded, so the next pass tries again.
+     */
+    suspend fun reconcileArrival(
+        packageName: String,
+        attempts: Int = 5,
+        pause: suspend () -> Unit = { delay(500) },
+    ): ReconcileReport {
+        val prefix = "$packageName/"
+        var report = reconcile()
+        repeat(attempts - 1) {
+            val waiting = report.failed.any { id -> widgetOf(id)?.startsWith(prefix) == true }
+            if (!waiting) return report
+            pause()
+            report = reconcile()
+        }
+        return report
+    }
+
+    private suspend fun widgetOf(itemId: String): String? =
+        listOf(HomeGridLayouts.Phone, HomeGridLayouts.Fold).firstNotNullOfOrNull { layout ->
+            homeGridRepository.observe(layout).first().firstOrNull { it.id == itemId }?.widget
+        }
 
     companion object {
         /** The widget repository's page size (its `limit` default). */
