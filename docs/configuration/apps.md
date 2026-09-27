@@ -28,6 +28,7 @@ both ways: a rename or an icon picked on the phone goes back into the file.
 | `apps[].icon` | The icon drawn instead of the one [`icons`](icons.md) would give the app; see [Icons](#icons) | `system`, `themed`, `placeholder`, or an object below |
 | `apps[].icon.pack` | An icon pack's package | a package name |
 | `apps[].icon.drawable` | One of that pack's drawables, by name | a resource name, or up to 31 of them separated by commas |
+| `apps[].icon.themed` | `false` for the pack's unthemed variant of the drawable | boolean, default `true` |
 | `apps[].icon.scale` | How large a legacy icon's content is drawn in the adaptive shape | 0.5 to 1.5 |
 | `apps[].icon.background` | What that content is drawn on: `icon` (a colour from the icon), `theme`, or a colour | `icon`, `theme`, `#RRGGBB`, `#AARRGGBB` |
 
@@ -65,7 +66,10 @@ else. Every form is text: none of them is an image the file carries.
 - `{ "pack", "drawable" }`: one drawable of an icon pack. It does not have to
   be the drawable the pack maps to this app; any drawable of the pack can be
   picked. A calendar icon's `drawable` is the pack's comma-separated list of
-  its days, as a write-back gives it.
+  its days, as a write-back gives it. The picker offers a drawable themed
+  and unthemed; `"themed": false` is the unthemed one. Left out, the icon is
+  as the pack offers it. A drawable the pack cannot theme is drawn as it is
+  either way, and reads back without `themed`.
 - `{ "scale", "background" }`: a legacy icon fitted into the adaptive shape,
   its content drawn at `scale` on `background`. The picker offers this only
   for apps without an adaptive icon.

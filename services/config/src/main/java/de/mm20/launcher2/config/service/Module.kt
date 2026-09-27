@@ -46,7 +46,8 @@ val configModule = module {
             apps = get(),
         )
     }
-    factory<AppCustomizationStore> { AndroidAppCustomizationStore(get(), get(), get(), get(), get()) }
+    factory<IconPackIndex> { RoomIconPackIndex(get()) }
+    factory<AppCustomizationStore> { AndroidAppCustomizationStore(get(), get(), get(), get(), get(), iconPacks = get()) }
     // One instance: it holds the form every store reads apps back in (review on #207).
     single<AppNaming> { FileAppNaming(androidContext()) }
     factory<SearchActionStore> { AndroidSearchActionStore(androidContext(), get()) }

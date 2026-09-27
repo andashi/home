@@ -173,7 +173,7 @@ internal object ConfigSchema {
     private fun appIconSchema(path: String): JsonObject {
         val keys = ConfigParser.keyEffects[path] ?: error("no key table entry for '$path' (ConfigParser.keyEffects)")
         val covered = mutableSetOf<String>()
-        fun variant(vararg fields: Pair<String, JsonObject>) = buildJsonObject {
+        fun variant(vararg fields: Pair<String, JsonObject>, optional: Set<String> = emptySet()) = buildJsonObject {
             require(fields.all { it.first in keys }) { "a key of $path is not in the parser's key table" }
             fields.forEach { covered += it.first }
             put("type", "object")
@@ -183,11 +183,11 @@ internal object ConfigSchema {
                     put(field, replaced[key] ?: JsonObject(schema + constraints[key].orEmpty()))
                 }
             }
-            putJsonArray("required") { fields.forEach { add(JsonPrimitive(it.first)) } }
+            putJsonArray("required") { fields.filter { it.first !in optional }.forEach { add(JsonPrimitive(it.first)) } }
             put("additionalProperties", false)
         }
         val variants = listOf(
-            variant("pack" to type("string"), "drawable" to type("string")),
+            variant("pack" to type("string"), "drawable" to type("string"), "themed" to type("boolean"), optional = setOf("themed")),
             variant(
                 "scale" to JsonObject(type("number") + range(ConfigValidator.MinIconScale, ConfigValidator.MaxIconScale)),
                 "background" to type("string"),

@@ -83,7 +83,12 @@ sealed interface AppIcon {
      * icon's [drawable] is the pack's comma-separated list of its days, as
      * the pack's index holds it.
      */
-    data class Pack(val pack: String, val drawable: String) : AppIcon
+    /**
+     * [themed] false is the pack's unthemed variant, which the picker offers
+     * next to the themed one; true, the default, is the icon as the pack
+     * offers it.
+     */
+    data class Pack(val pack: String, val drawable: String, val themed: Boolean = true) : AppIcon
 
     /** A legacy icon fitted into the adaptive shape: its content at [scale], on [background]. */
     data class Adaptive(val scale: Float, val background: IconBackground) : AppIcon
@@ -142,6 +147,7 @@ internal object AppIconSerializer : KSerializer<AppIcon> {
         val drawable: String? = null,
         val scale: Float? = null,
         val background: String? = null,
+        val themed: Boolean? = null,
     )
 
     private val objectSerializer = AppIconObject.serializer()
@@ -155,7 +161,8 @@ internal object AppIconSerializer : KSerializer<AppIcon> {
             return
         }
         val obj = when (value) {
-            is AppIcon.Pack -> AppIconObject(pack = value.pack, drawable = value.drawable)
+            // Only the unthemed variant is written: themed is the default.
+            is AppIcon.Pack -> AppIconObject(pack = value.pack, drawable = value.drawable, themed = false.takeIf { !value.themed })
             is AppIcon.Adaptive -> AppIconObject(scale = value.scale, background = backgroundText(value.background))
             else -> error("no object form for $value")
         }
@@ -180,12 +187,13 @@ internal object AppIconSerializer : KSerializer<AppIcon> {
         val isPack = obj.pack != null || obj.drawable != null
         val isAdaptive = obj.scale != null || obj.background != null
         return when {
-            isPack && !isAdaptive && obj.pack != null && obj.drawable != null -> AppIcon.Pack(obj.pack, obj.drawable)
-            isAdaptive && !isPack && obj.scale != null && obj.background != null ->
+            isPack && !isAdaptive && obj.pack != null && obj.drawable != null ->
+                AppIcon.Pack(obj.pack, obj.drawable, themed = obj.themed ?: true)
+            isAdaptive && !isPack && obj.themed == null && obj.scale != null && obj.background != null ->
                 AppIcon.Adaptive(obj.scale, parseBackground(obj.background))
 
             else -> throw SerializationException(
-                "$Field is either a pack icon (pack and drawable) or an adaptive one (scale and background)",
+                "$Field is either a pack icon (pack and drawable, and themed) or an adaptive one (scale and background)",
             )
         }
     }

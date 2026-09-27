@@ -43,6 +43,30 @@ class AppIconConfigTest {
         )
     }
 
+    /**
+     * The picker offers a pack's drawable themed and unthemed. `themed: false`
+     * is the unthemed one; left out, the icon is as the pack offers it, which
+     * `themed: true` says too (review on the icons work: without the key, an
+     * unthemed pick came back themed on the next apply).
+     */
+    @Test
+    fun `a pack icon can be the unthemed one`() {
+        assertEquals(
+            AppIcon.Pack("app.lawnchair.lawnicons", "signal", themed = false),
+            iconOf("""{ "pack": "app.lawnchair.lawnicons", "drawable": "signal", "themed": false }"""),
+        )
+        assertEquals(
+            iconOf("""{ "pack": "app.lawnchair.lawnicons", "drawable": "signal" }"""),
+            iconOf("""{ "pack": "app.lawnchair.lawnicons", "drawable": "signal", "themed": true }"""),
+        )
+    }
+
+    /** `themed` belongs to a pack icon; on an adaptive one it is no icon at all. */
+    @Test
+    fun `themed on an adaptive icon fails`() {
+        assertTrue(parse("""{ "scale": 0.7, "background": "theme", "themed": false }""").diagnostics.isNotEmpty())
+    }
+
     /** A calendar icon is one drawable per day, as the pack's index stores it. */
     @Test
     fun `a calendar icon's drawable is the pack's list of days`() {
@@ -103,9 +127,9 @@ class AppIconConfigTest {
 
     @Test
     fun `a misspelled key inside an icon is reported at its path`() {
-        val result = parse("""{ "pack": "com.example.pack", "drawable": "signal", "themed": true }""")
+        val result = parse("""{ "pack": "com.example.pack", "drawable": "signal", "tinted": true }""")
 
-        assertEquals(listOf("apps[0].icon.themed"), result.diagnostics.filter { it.code == "unknown-key" }.map { it.path })
+        assertEquals(listOf("apps[0].icon.tinted"), result.diagnostics.filter { it.code == "unknown-key" }.map { it.path })
     }
 
     // ---- validation: untrusted input that reaches Resources.getIdentifier ----
@@ -191,6 +215,7 @@ class AppIconConfigTest {
             """"themed"""",
             """"placeholder"""",
             """{"pack":"app.lawnchair.lawnicons","drawable":"signal"}""",
+            """{"pack":"app.lawnchair.lawnicons","drawable":"signal","themed":false}""",
             """{"scale":0.7,"background":"theme"}""",
             """{"scale":1.2631578,"background":"icon"}""",
             """{"scale":0.7,"background":"#FFFFFF"}""",

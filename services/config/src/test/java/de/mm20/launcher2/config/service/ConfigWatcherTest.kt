@@ -606,7 +606,7 @@ class ConfigWatcherTest {
         }
 
         assertEquals(
-            listOf("app-unavailable", "favorite-unavailable", "gesture-app-unavailable", "profile-unavailable", "unknown-widget-provider"),
+            listOf("app-unavailable", "favorite-unavailable", "gesture-app-unavailable", "icon-pack-unavailable", "profile-unavailable", "unknown-widget-provider"),
             ConfigWatcher.WaitingCodes.sorted(),
         )
     }

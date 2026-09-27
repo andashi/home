@@ -146,7 +146,7 @@
     {
       "packageName": "org.thoughtcrime.securesms",
       "label": "Chat",
-      "icon": { "pack": "app.lawnchair.lawnicons", "drawable": "signal" }
+      "icon": { "pack": "app.lawnchair.lawnicons", "drawable": "signal", "themed": false }
     },
     {
       "packageName": "com.example.work.mail",

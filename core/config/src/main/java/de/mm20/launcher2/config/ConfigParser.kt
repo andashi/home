@@ -62,7 +62,7 @@ object ConfigParser {
         ),
         "gestures" to Gesture.entries.associate { it.key to KeyEffect.Applied },
         // The object forms: a pack icon, or an adaptive one (AppIconSerializer).
-        "apps[].icon" to listOf("pack", "drawable", "scale", "background").associateWith { KeyEffect.Applied },
+        "apps[].icon" to listOf("pack", "drawable", "themed", "scale", "background").associateWith { KeyEffect.Applied },
         // #91: search's behavior; its look is appearance.glass. #107: barPosition.
         "search" to listOf(
             "favorites", "allApps", "layout", "labels", "contacts", "shortcuts",

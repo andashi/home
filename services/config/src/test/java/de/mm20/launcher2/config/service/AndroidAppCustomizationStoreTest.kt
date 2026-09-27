@@ -6,10 +6,18 @@ import android.os.Bundle
 import android.os.UserHandle
 import de.mm20.launcher2.applications.AppRepository
 import de.mm20.launcher2.config.AppConfig
+import de.mm20.launcher2.config.AppIcon
+import de.mm20.launcher2.config.IconBackground
 import de.mm20.launcher2.config.AppVisibility
 import de.mm20.launcher2.config.Diagnostic
 import de.mm20.launcher2.config.Severity
+import de.mm20.launcher2.data.customattrs.AdaptifiedLegacyIcon
 import de.mm20.launcher2.data.customattrs.CustomAttributesRepository
+import de.mm20.launcher2.data.customattrs.CustomIcon
+import de.mm20.launcher2.data.customattrs.CustomIconPackIcon
+import de.mm20.launcher2.data.customattrs.DefaultPlaceholderIcon
+import de.mm20.launcher2.data.customattrs.ForceThemedIcon
+import de.mm20.launcher2.data.customattrs.UnmodifiedSystemDefaultIcon
 import de.mm20.launcher2.icons.StaticLauncherIcon
 import de.mm20.launcher2.profiles.Profile
 import de.mm20.launcher2.search.Application
@@ -78,6 +86,7 @@ class AndroidAppCustomizationStoreTest {
 
     private val installed = MutableStateFlow<List<Application>>(listOf(signal, stk, twoFirst, twoSecond, workMail))
     private val labels = MutableStateFlow<Map<String, String>>(emptyMap())
+    private val icons = MutableStateFlow<Map<String, CustomIcon>>(emptyMap())
     private val levels = MutableStateFlow<Map<String, VisibilityLevel>>(emptyMap())
     private val visibilityWrites = mutableListOf<Map<String, VisibilityLevel>>()
     private var labelWriteFailure: Exception? = null
@@ -105,6 +114,13 @@ class AndroidAppCustomizationStoreTest {
     private val attributes = stub<CustomAttributesRepository> { name, args ->
         when (name) {
             "getAppLabels" -> labels
+            "getAppIcons" -> icons
+            "replaceCustomIconsAwaited" -> {
+                val items = args[0] as List<SavableSearchable>
+                val wanted = args[1] as Map<String, CustomIcon>
+                icons.value = icons.value.filterKeys { key -> items.none { it.key == key } } + wanted
+                Unit
+            }
             "replaceCustomLabelsAwaited" -> {
                 labelWriteFailure?.let { throw it }
                 labelWrite?.invoke()
@@ -155,7 +171,18 @@ class AndroidAppCustomizationStoreTest {
         }
     }
 
-    private val store = AndroidAppCustomizationStore(apps, profiles, attributes, searchables, naming)
+    /** Lawnicons with three drawables, one of which it cannot theme; no other pack is installed. */
+    private val packs = mapOf(Lawnicons to setOf("signal", "calendar_1,calendar_2", "flat"))
+    private val index = object : IconPackIndex {
+        override suspend fun resolve(pack: String, drawable: String): IconPackIndex.Resolution {
+            val drawables = packs[pack] ?: return IconPackIndex.Resolution.PackMissing
+            if (drawable !in drawables) return IconPackIndex.Resolution.DrawableMissing
+            val type = if ("," in drawable) "calendar" else "app"
+            return IconPackIndex.Resolution.Found(type, drawable, extras = null, themed = drawable != "flat")
+        }
+    }
+
+    private val store = AndroidAppCustomizationStore(apps, profiles, attributes, searchables, naming, index)
 
     // ---- reading ----
 
@@ -363,7 +390,7 @@ class AndroidAppCustomizationStoreTest {
     fun `the form survives a new store`() = runTest {
         store.replaceAndRead(listOf(AppConfig("com.example.two", activity = "com.example.two.First", label = "One")))
 
-        val restarted = AndroidAppCustomizationStore(apps, profiles, attributes, searchables, naming)
+        val restarted = AndroidAppCustomizationStore(apps, profiles, attributes, searchables, naming, index)
 
         assertEquals(listOf(AppConfig("com.example.two", activity = "com.example.two.First", label = "One")), restarted.read())
     }
@@ -439,7 +466,7 @@ class AndroidAppCustomizationStoreTest {
         labelWriteFailure = IllegalStateException("database locked")
 
         val failed = runCatching {
-            AndroidAppCustomizationStore(apps, profiles, attributes, searchables, brittle)
+            AndroidAppCustomizationStore(apps, profiles, attributes, searchables, brittle, index)
                 .replaceAndRead(listOf(AppConfig("com.example.two", label = "Two")))
         }
 
@@ -470,7 +497,7 @@ class AndroidAppCustomizationStoreTest {
                 written.value = emptyMap()
             }
         }
-        val cancellable = AndroidAppCustomizationStore(apps, profiles, attributes, searchables, record)
+        val cancellable = AndroidAppCustomizationStore(apps, profiles, attributes, searchables, record, index)
         cancellable.replaceAndRead(listOf(AppConfig("com.example.two", activity = "com.example.two.First", label = "One")))
 
         var running: kotlinx.coroutines.Job? = null
@@ -508,7 +535,7 @@ class AndroidAppCustomizationStoreTest {
         labelWriteFailure = IllegalStateException("database locked")
 
         val failed = runCatching {
-            AndroidAppCustomizationStore(apps, profiles, attributes, searchables, record)
+            AndroidAppCustomizationStore(apps, profiles, attributes, searchables, record, index)
                 .replaceAndRead(listOf(AppConfig("com.example.two", activity = "com.example.two.First", label = "One")))
         }
 
@@ -535,4 +562,143 @@ class AndroidAppCustomizationStoreTest {
         assertEquals("a rename", 2, seen.size)
         collecting.cancel()
     }
+
+    // ---- icons (#3 slice 4) ----
+
+    /** Every form the picker stores reads back as the form the file writes. */
+    @Test
+    fun `icons read back in the file's forms`() = runTest {
+        icons.value = mapOf(
+            signal.key to CustomIconPackIcon(Lawnicons, "app", "signal", null, true),
+            stk.key to ForceThemedIcon,
+            twoFirst.key to DefaultPlaceholderIcon,
+            twoSecond.key to UnmodifiedSystemDefaultIcon,
+            workMail.key to AdaptifiedLegacyIcon(0.7f, AdaptifiedLegacyIcon.ThemeColor),
+        )
+
+        assertEquals(
+            listOf(
+                AppConfig("com.android.stk", icon = AppIcon.Themed),
+                AppConfig("com.example.two", icon = AppIcon.Placeholder),
+                AppConfig("com.example.two", activity = "com.example.two.Second", icon = AppIcon.System),
+                AppConfig("org.thoughtcrime.securesms", icon = AppIcon.Pack(Lawnicons, "signal")),
+                AppConfig("com.example.mail", profile = ConfigProfile.Work, icon = AppIcon.Adaptive(0.7f, IconBackground.Theme)),
+            ).sortedBy { it.packageName + it.profile + it.activity },
+            store.read().sortedBy { it.packageName + it.profile + it.activity },
+        )
+    }
+
+    /**
+     * A pack icon is written as the picker writes it, completed from the
+     * pack's index; an installed app the list does not name loses its icon.
+     */
+    @Test
+    fun `an entry's icon is written, a pack icon completed from the pack's index`() = runTest {
+        icons.value = mapOf(twoFirst.key to DefaultPlaceholderIcon)
+
+        val (diagnostics, written) = store.replaceAndRead(
+            listOf(
+                AppConfig("org.thoughtcrime.securesms", icon = AppIcon.Pack(Lawnicons, "signal")),
+                AppConfig("com.android.stk", icon = AppIcon.Themed),
+                AppConfig("com.example.mail", profile = ConfigProfile.Work, icon = AppIcon.Adaptive(0.8f, IconBackground.Color(0xFF123456.toInt()))),
+            ),
+        )
+
+        assertEquals(emptyList<Diagnostic>(), diagnostics)
+        assertEquals(
+            mapOf(
+                signal.key to CustomIconPackIcon(Lawnicons, "app", "signal", null, true),
+                stk.key to ForceThemedIcon,
+                workMail.key to AdaptifiedLegacyIcon(0.8f, 0xFF123456.toInt()),
+            ),
+            icons.value,
+        )
+        assertEquals(3, written.size)
+    }
+
+    /** A calendar icon's drawable is the pack's list of days, as a write-back gives it. */
+    @Test
+    fun `a calendar icon round-trips with its days`() = runTest {
+        store.replaceAndRead(listOf(AppConfig("org.thoughtcrime.securesms", icon = AppIcon.Pack(Lawnicons, "calendar_1,calendar_2"))))
+
+        assertEquals(CustomIconPackIcon(Lawnicons, "calendar", "calendar_1,calendar_2", null, true), icons.value[signal.key])
+        assertEquals(AppIcon.Pack(Lawnicons, "calendar_1,calendar_2"), store.read().single().icon)
+    }
+
+    /**
+     * A pack that is not installed is reported, and the app shows its normal
+     * icon until it is (apps.md); the rest of the entry applies.
+     */
+    @Test
+    fun `a pack that is not installed is reported, and the rest of the entry applies`() = runTest {
+        icons.value = mapOf(signal.key to ForceThemedIcon)
+
+        val (diagnostics, _) = store.replaceAndRead(
+            listOf(AppConfig("org.thoughtcrime.securesms", label = "Chat", icon = AppIcon.Pack("com.example.pack", "signal"))),
+        )
+
+        val diagnostic = diagnostics.single()
+        assertEquals("icon-pack-unavailable", diagnostic.code)
+        assertEquals(Severity.Warning, diagnostic.severity)
+        assertEquals("apps[0].icon", diagnostic.path)
+        assertTrue(diagnostic.message, "com.example.pack" in diagnostic.message)
+        assertEquals("the normal icon until the pack is there", null, icons.value[signal.key])
+        assertEquals("Chat", labels.value[signal.key])
+    }
+
+    /** An installed pack without the drawable is the same absence, named as such. */
+    @Test
+    fun `a drawable the pack does not have is reported`() = runTest {
+        val (diagnostics, _) = store.replaceAndRead(
+            listOf(AppConfig("org.thoughtcrime.securesms", icon = AppIcon.Pack(Lawnicons, "no_such_icon"))),
+        )
+
+        val diagnostic = diagnostics.single()
+        assertEquals("icon-pack-unavailable", diagnostic.code)
+        assertTrue(diagnostic.message, "no_such_icon" in diagnostic.message)
+        assertEquals(null, icons.value[signal.key])
+    }
+
+    /**
+     * The pack is a package, and the file keeps the icon for the day it is
+     * installed: the code the store reports has to be one the watcher reloads
+     * for. Read from what the store emits (the gestures lesson, #213).
+     */
+    @Test
+    fun `a missing pack is something an arrival reloads for`() = runTest {
+        val (diagnostics, _) = store.replaceAndRead(
+            listOf(AppConfig("org.thoughtcrime.securesms", icon = AppIcon.Pack("com.example.pack", "signal"))),
+        )
+
+        val code = diagnostics.single().code
+        assertTrue("$code is not in ${ConfigWatcher.WaitingCodes}", code in ConfigWatcher.WaitingCodes)
+    }
+
+    /**
+     * The picker offers a pack's drawable themed and unthemed; the unthemed
+     * pick reads back as `themed: false`, and applying that stores it
+     * unthemed. Without the key it came back themed on the next apply.
+     */
+    @Test
+    fun `an unthemed pack icon round-trips`() = runTest {
+        store.replaceAndRead(listOf(AppConfig("org.thoughtcrime.securesms", icon = AppIcon.Pack(Lawnicons, "signal", themed = false))))
+
+        assertEquals(CustomIconPackIcon(Lawnicons, "app", "signal", null, false), icons.value[signal.key])
+        assertEquals(AppIcon.Pack(Lawnicons, "signal", themed = false), store.read().single().icon)
+    }
+
+    /**
+     * A drawable the pack cannot theme is stored unthemed whatever the file
+     * says, and reads back as the pack offers it: reading it as `themed:
+     * false` would have a write-back put that into a file that never asked.
+     */
+    @Test
+    fun `a drawable the pack cannot theme reads back as the pack offers it`() = runTest {
+        store.replaceAndRead(listOf(AppConfig("org.thoughtcrime.securesms", icon = AppIcon.Pack(Lawnicons, "flat"))))
+
+        assertEquals(false, (icons.value[signal.key] as CustomIconPackIcon).allowThemed)
+        assertEquals(AppIcon.Pack(Lawnicons, "flat"), store.read().single().icon)
+    }
 }
+
+private const val Lawnicons = "app.lawnchair.lawnicons"

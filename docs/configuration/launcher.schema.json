@@ -676,6 +676,9 @@
                                     "drawable": {
                                         "type": "string",
                                         "pattern": "^[A-Za-z_][A-Za-z0-9_]{0,99}(,[A-Za-z_][A-Za-z0-9_]{0,99}){0,30}$"
+                                    },
+                                    "themed": {
+                                        "type": "boolean"
                                     }
                                 },
                                 "required": [

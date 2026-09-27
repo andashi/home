@@ -308,6 +308,8 @@ class ConfigWatcher(
             "profile-unavailable",
             // A gesture's app (#3 slice 2): the file keeps it for the day it is installed.
             "gesture-app-unavailable",
+            // An icon pack (#3 slice 4): the app shows its normal icon until the pack is installed.
+            "icon-pack-unavailable",
         )
         private const val GridSection = "home.grid"
         private const val StartupRetryCount = 40
