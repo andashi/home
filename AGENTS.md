@@ -639,14 +639,27 @@ name exist nowhere, so any stale call site goes red; a library test asserts
 **Three ways a checker's own plumbing lies.** All three were found in checkers
 rather than in product code, which is where they prefer to live.
 
-- **`grep` exiting 1 on no match kills a `set -e` script.** `x=$(cmd | grep -E pat
-  | head -5)` dies when nothing matches - silently, exit 1, no message - so the
-  branch that needed "no match" never runs. In the merge gate that was the
-  base-behind *allowance*, which had therefore never once executed, behind a
-  comment about being careful. Write `{ grep -E pat || [ $? -eq 1 ]; }` so status
-  1 is accepted and a real grep error still aborts.
-- **`$(...)` strips trailing newlines**, so a file read back through it never
-  hashes equal to the file on disk. Hash on the device, or do not round-trip.
+- **`grep` exiting 1 on no match kills a `set -euo pipefail` script**, and
+  `pipefail` is the load-bearing half: with `set -e` alone the pipeline reports
+  the status of its **last** command, so `x=$(cmd | grep -E pat | head -5)`
+  succeeds on no match and hides real `grep` errors too. With `pipefail` it dies
+  instead - silently, exit 1, no message - so the branch that needed "no match"
+  never runs. In the merge gate that was the base-behind *allowance*, which had
+  therefore never once executed, behind a comment about being careful. Write
+  `{ grep -E pat || [ $? -eq 1 ]; }` so status 1 is accepted and a real error
+  (status 2) still aborts.
+  - **And do not pipe it into `head`.** An early-closing reader kills its
+    producer with SIGPIPE once the producer's output exceeds a pipe buffer, and
+    141 is not 1, so the guard above rejects it and the script dies silently
+    again. Measured: 200k lines dies, 7 lines does not, and it dies whatever
+    feeds `head` - **the fault is the reader, not the producer**, which is why
+    the first attempt at this fix only moved it from `grep` to `printf`. Use a
+    reader that drains (`sed -n '1,5p'`), or capture first and truncate without a
+    pipe. Same trap as the `gfxinfo` fake in mechanism 8.
+- **`$(...)` strips trailing newlines**, so a file that ends in one does not
+  round-trip: read back and re-hashed, it never matches the file on disk. A file
+  with no terminal newline is unaffected, which is what makes this intermittent
+  and therefore worse. Hash on the device, or do not round-trip.
 - **`git reset --soft <new base>` then committing reverts files the new base
   changed.** The soft reset keeps the *branch's* tree and commits it against the
   new base, so every differing file joins the diff - including ones the branch
@@ -1002,9 +1015,9 @@ target `sdk_phone64_x86_64-cur-userdebug`, test-keys), operated via
 - **The shell cannot change a system app's component state** on this image
   (`pm disable`/`enable` refused in states 2 and 3). So a widget-only app arrival
   cannot be staged by disabling a system app's launcher activity; it needs a
-  fixture APK, built at test time from the SDK's `aapt2`/`javac`/`d8`/`apksigner`
-  with no Gradle module - and it must **fail loudly** when those tools are absent
-  rather than skip the step.
+  fixture APK, built at test time from the SDK's
+  `aapt2`/`javac`/`d8`/`zipalign`/`apksigner` with no Gradle module - and it must
+  **fail loudly** when those tools are absent rather than skip the step.
 - Known emulator limits: nothing Google-server-side can be validated there
   (sandboxed Play, Play Integrity, push); wallpapers apply only after reboot;
   test-keys mean results do not equal "tested on release GrapheneOS".
