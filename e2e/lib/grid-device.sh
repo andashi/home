@@ -136,10 +136,9 @@ unrooted_shell() { # [$1 = timeout (s), default 60]
 # and an exported LOCK_OWNER.
 BOOTED=0
 boot_instance() {
-  (cd "$GOS_REPO" && SERIAL="$SERIAL" emulator/run.sh running >/dev/null 2>&1) && return 0
+  gos_run running >/dev/null 2>&1 && return 0
   log "booting $SERIAL from ${SNAPSHOT:-clean}"
-  (cd "$GOS_REPO" && SERIAL="$SERIAL" SNAPSHOT="${SNAPSHOT:-clean}" emulator/run.sh start >/dev/null) \
-    || die "could not boot $SERIAL"
+  SNAPSHOT="${SNAPSHOT:-clean}" gos_run start >/dev/null || die "could not boot $SERIAL"
   BOOTED=1
 }
 
