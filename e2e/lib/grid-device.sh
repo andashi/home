@@ -236,7 +236,7 @@ push_config() { # $1 = local file, $2 = stage name, [--ignored "path ..."]...
   check_ignored_keys "$LAST_REPORT" "$ignored" "$stage"
 }
 
-# The one way to run.sh (provisioning's emulator/run.sh), for every verb.
+# The one way to run.sh (provisioning's emulator script), for every verb.
 # run.sh refuses a foreign owner itself (provisioning 08c2834); this checks,
 # at the moment of the call, that the run has an owner to give it: LOCK_OWNER
 # exported and non-empty. Asking the shell instead of reading the script
