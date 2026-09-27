@@ -81,6 +81,11 @@ internal object ConfigSchema {
             val required = names.filterIndexed { i, _ -> !descriptor.isElementOptional(i) }
             if (required.isNotEmpty()) putJsonArray("required") { required.forEach { add(JsonPrimitive(it)) } }
             put("additionalProperties", false)
+            // A position is x and y together (partial-grid-position).
+            if (section.startsWith("home.grid.layouts.") && section.endsWith(".items[]")) putJsonObject("dependentRequired") {
+                putJsonArray("x") { add(JsonPrimitive("y")) }
+                putJsonArray("y") { add(JsonPrimitive("x")) }
+            }
             // The fields one type of search action needs (ConfigValidator's action checks).
             if (section == "search.actions[]") putJsonArray("allOf") {
                 add(requiredWhenType(SearchActionTypes.Url, "label", "url"))
