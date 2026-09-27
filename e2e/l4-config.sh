@@ -711,6 +711,47 @@ assert_jq "$effective" \
   "the phone stores the fold layout as written: the dock stays in row 6"
 ok "fold layout kept as written on a phone (#90)"
 
+# --- 10c. a widget whose package is missing stays reported ----------------
+#
+# A grid widget whose provider this device lacks is kept as written and
+# reported. It was reported once: the next reload of the same file found the
+# stored layout matching the file, looked nothing up, and said nothing - the
+# report went silent while nothing had resolved. push_config reloads twice (the
+# watcher, then the broadcast); the broadcast's report is the second. (A third
+# would report the same bytes, and a report is found by being new.) The widget comes from a fixture built
+# from e2e/fixtures/widget-only and never installed here. A layout refitted on
+# every reload must also not make a write-back on every reload: the passes are
+# counted (the write-back logs each, on every build) and none may write.
+FIXTURE_PKG=org.andashi.fixture.widgetonly
+FIXTURE_APK="$WORK/widget-only.apk"
+bash "$(dirname "$0")/fixtures/widget-only/build.sh" "$FIXTURE_APK" >/dev/null 2>&1 \
+  || die "could not build the widget-only fixture (e2e/fixtures/widget-only/build.sh): the SDK's aapt2, d8, javac or apksigner is missing"
+WIDGET_CONFIG="$WORK/widget-only.json"
+cat > "$WIDGET_CONFIG" <<EOF
+{ "schemaVersion": 2,
+  "home": { "grid": { "layouts": { "phone": { "items": [
+    { "id": "only", "widget": "$FIXTURE_PKG/.OnlyWidget", "x": 0, "y": 0, "w": 2, "h": 1 }
+  ] } } } } }
+EOF
+write_back_passes() { # $1 = kind ("" for every pass)
+  adb_out shell logcat -d -s ConfigWriteBack:D 2>/dev/null | grep -cF "write-back pass: $1" || true
+}
+written_before="$(write_back_passes Written)"
+passes_before="$(write_back_passes "")"
+push_config "$WIDGET_CONFIG" "widget-missing"
+assert_jq "$LAST_REPORT" \
+  '[.diagnostics[] | select(.code == "unknown-widget-provider")] | length == 1' \
+  "the second reload of the file still reports the missing widget"
+H_WIDGET="$(sha256sum "$WIDGET_CONFIG" | cut -d' ' -f1)"
+[ "$(write_back_passes Written)" = "$written_before" ] \
+  || die "a reload of an unchanged file wrote the file back: $(write_back_passes Written) passes wrote, $written_before before"
+# Hashed on the device: output taken through $(...) loses its trailing newline,
+# so a copy read back never hashes like the file it came from.
+on_device="$(adb_out shell sha256sum "$REMOTE_CONFIG" | cut -d' ' -f1)"
+[ "$on_device" = "$H_WIDGET" ] || die "the file on the device changed under two reloads"
+passes="$(( $(write_back_passes "") - passes_before ))"
+ok "a missing widget is reported by the second reload too, and the refits write nothing back ($passes write-back passes over the two reloads, none wrote)"
+
 # --- 9. restore a valid config via adb push (interactive dotfile path) ---
 
 adb_push_config "$VALID_CONFIG"

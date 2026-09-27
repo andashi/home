@@ -122,10 +122,20 @@ class DefaultConfigStore(
             } to homeGridInitFlag.isInitialized()
         }
 
+        // A widget whose provider is missing here is kept as written; its
+        // layout is applied again on each reload, which looks the provider up
+        // and reports it, until it is there.
+        val unsettled = gridLayouts.filterValues { layout ->
+            layout.items.any { item ->
+                !item.isFavorites && gridLimits.lookup(item.widget, item.profile, settingsState.gridColumns) == null
+            }
+        }.keys
+
         return settingsState.copy(
             favorites = favorites,
             gridLayouts = gridLayouts,
             gridInitialized = gridInitialized,
+            unsettledGridLayouts = unsettled,
             searchActions = searchActions.read(),
             apps = apps.read(),
             wallpaperImage = wallpaper?.image,

@@ -90,6 +90,9 @@ class ConfigWriteBack(
      */
     internal suspend fun writeLocked(gridEdit: Boolean): WriteBackResult {
         val result = withContext(Dispatchers.IO) { writeFile(gridEdit) }
+        // Every pass, by its kind only: an Unchanged pass otherwise leaves no
+        // trace, and a device test counts passes (whether a reload sets them off).
+        Log.d(TAG, "write-back pass: ${result::class.simpleName}")
         if (result is WriteBackResult.Skipped) {
             Log.w(TAG, "launcher.json not written back (${result.code}): ${result.reason}")
             recordSkip(result)

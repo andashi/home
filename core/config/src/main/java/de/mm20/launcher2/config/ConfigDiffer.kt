@@ -62,6 +62,15 @@ data class ConfigState(
      */
     val gridInitialized: Boolean = true,
     /**
+     * Layouts not settled on this device: one of their widgets has no
+     * provider here, so the item is kept as written and reported. Each reload
+     * applies such a layout again, as it does one before the grid's first
+     * content, so every report says what is missing - not only the first,
+     * after which the stored layout matched the file and nothing looked
+     * again (found on the device for #213).
+     */
+    val unsettledGridLayouts: Set<String> = emptySet(),
+    /**
      * The wallpaper image (by upload name) and target currently in effect:
      * applied by a config reload, still the system's current wallpaper and
      * the file unchanged since. Null when no config-managed wallpaper is in
@@ -367,7 +376,8 @@ object ConfigDiffer {
             val locked = grid.locked?.takeIf { it != current.gridLocked }
             val labels = grid.labels?.takeIf { it != current.gridLabels }
             val layouts = grid.layouts?.filter { (key, layout) ->
-                !current.gridInitialized || !layout.matches(current.gridLayouts[key])
+                !current.gridInitialized || key in current.unsettledGridLayouts ||
+                    !layout.matches(current.gridLayouts[key])
             }?.takeIf { it.isNotEmpty() }
             if (columns != null || locked != null || layouts != null || labels != null) {
                 mutations += ConfigMutation.SetGrid(
