@@ -47,7 +47,7 @@ RUN_TOKEN="$(date +%s)-$RANDOM$RANDOM"
 # the instance booted and idle, recorded next to the ceiling.
 MAX_LOAD="${MAX_LOAD:-}"
 LOAD_FLOOR="${LOAD_FLOOR:-unmeasured}"
-LOCK_OWNER="${LOCK_OWNER:-measure-coldstart@$SERIAL#$$}"
+export LOCK_OWNER="${LOCK_OWNER:-measure-coldstart@$SERIAL#$$}"
 WORK="$(mktemp -d)"
 RUN="$GOS_REPO/emulator/run.sh"
 LOCK="$GOS_REPO/emulator/device-lock.sh"

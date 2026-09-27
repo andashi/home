@@ -207,6 +207,27 @@ push_config() { # $1 = local file, $2 = stage name
   wait_push_report "$before" "$h" 30 "$2: broadcast report"
 }
 
+# Cleanup: stop the instance this run holds, then release its lock. run.sh
+# refuses a stop for anyone but LOCK_OWNER (provisioning 08c2834), and a
+# refusal behind `|| true` left the instance running while the release
+# unlocked it. A failed stop is printed and keeps the lock, so the instance
+# stays visibly owned. Needs GOS_REPO, SERIAL and an exported LOCK_OWNER.
+stop_instance() {
+  local out
+  out="$(cd "$GOS_REPO" && SERIAL="$SERIAL" emulator/run.sh stop 2>&1)" && return 0
+  printf 'could not stop %s as %s:\n%s\n' "$SERIAL" "${LOCK_OWNER:-nobody}" "$out" >&2
+  return 1
+}
+stop_and_release() {
+  stop_instance || {
+    printf 'keeping the lock on %s (%s), so nobody walks into a running instance\n' "$SERIAL" "${LOCK_OWNER:-nobody}" >&2
+    return 1
+  }
+  local out
+  out="$(cd "$GOS_REPO" && emulator/device-lock.sh release "$LOCK_OWNER" "$SERIAL" 2>&1)" \
+    || { printf 'could not release the lock on %s (%s):\n%s\n' "$SERIAL" "$LOCK_OWNER" "$out" >&2; return 1; }
+}
+
 wake_screen() {
   adb_t shell svc power stayon true >/dev/null 2>&1 || true
   adb_t shell input keyevent KEYCODE_WAKEUP >/dev/null 2>&1 || true

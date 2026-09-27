@@ -671,4 +671,37 @@ reports_the_effective_bound() {
 }
 check "a nested retry_for reports the bound in force, not the one asked for" reports_the_effective_bound
 
+# The cleanup's stop and release. run.sh refuses a stop when the lock is held
+# by anyone but LOCK_OWNER (provisioning 08c2834); a refusal swallowed by
+# `|| true` left the instance running and the release then unlocked it. A
+# failed stop is said out loud and keeps the lock, so the instance stays
+# visibly owned instead of free for anyone to walk into.
+mkdir -p "$WORK/gos/emulator"
+cat > "$WORK/gos/emulator/run.sh" <<'EOF2'
+#!/usr/bin/env bash
+echo "run.sh $* owner=${LOCK_OWNER:-}" >> "$CALLS"
+[ "${FAKE_STOP_RC:-0}" = 0 ] || { echo " x held by someone, refusing to stop it"; exit 1; }
+EOF2
+cat > "$WORK/gos/emulator/device-lock.sh" <<'EOF2'
+#!/usr/bin/env bash
+echo "device-lock.sh $*" >> "$CALLS"
+EOF2
+chmod +x "$WORK/gos/emulator/run.sh" "$WORK/gos/emulator/device-lock.sh"
+stop_release_case() { # $1 = stop rc; prints the calls, returns stop_and_release's rc
+  local rc=0
+  export CALLS="$WORK/calls"; : > "$CALLS"
+  ( GOS_REPO="$WORK/gos" LOCK_OWNER="me@fake#1" FAKE_STOP_RC="$1"; export LOCK_OWNER FAKE_STOP_RC; stop_and_release ) 2>"$WORK/stop.err" || rc=$?
+  return "$rc"
+}
+releases_after_a_stop() {
+  stop_release_case 0 || return 1
+  grep -q "^run.sh stop owner=me@fake#1$" "$CALLS" && grep -q "^device-lock.sh release me@fake#1 fake$" "$CALLS"
+}
+check "stop_and_release stops as the owner and then releases" releases_after_a_stop
+keeps_the_lock_when_the_stop_fails() {
+  stop_release_case 1 && return 1
+  ! grep -q "release" "$CALLS" && grep -q "refusing to stop" "$WORK/stop.err" && grep -q "me@fake#1" "$WORK/stop.err"
+}
+check "stop_and_release keeps the lock and says why when the stop fails" keeps_the_lock_when_the_stop_fails
+
 exit "$failed"

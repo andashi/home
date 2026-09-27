@@ -41,7 +41,7 @@ else
   LAYOUT=phone; DOCK_W=4; OUT="$HERE/screenshots/phone"
 fi
 export SERIAL
-LOCK_OWNER="screenshots@$SERIAL#$$"
+export LOCK_OWNER="screenshots@$SERIAL#$$"
 SNAPSHOT="${SNAPSHOT:-clean}"
 APK="${1:-$HERE/../app/app/build/outputs/apk/default/debug/app-default-debug.apk}"
 PKG="${PKG:-org.andashi.home.debug}"
@@ -89,10 +89,10 @@ cleanup() {
       adb -s "$SERIAL" logcat -d -s HomeGridVM:* ConfigReloader:* AndroidRuntime:E 2>/dev/null \
         | tr -d '\r' | tail -n 60 >&2 || true
     fi
-    (cd "$GOS_REPO" && SERIAL="$SERIAL" emulator/run.sh stop) >/dev/null 2>&1 || true
-    (cd "$GOS_REPO" && emulator/device-lock.sh release "$LOCK_OWNER" "$SERIAL") >/dev/null 2>&1 || true
+    stop_and_release || STOP_FAILED=1  # prints why, and keeps the lock
   fi
   rm -rf "$WORK"
+  [ "${STOP_FAILED:-0}" = 0 ] || exit 1  # a run that leaves its instance up is not green
 }
 trap cleanup EXIT
 
