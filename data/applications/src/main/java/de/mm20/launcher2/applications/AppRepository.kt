@@ -178,7 +178,11 @@ internal class AppRepositoryImpl(
                 acc.second to value
             }.collectLatest { (prev, curr) ->
                 if (curr == null) return@collectLatest
-                if (prev == null) {
+                // Not read yet, not only the first list: a newer list can
+                // cancel the first read while it waits for the mutex, and the
+                // update path below adds nothing to a list that was never read
+                // (#206 review).
+                if (prev == null || installedApps.value == null) {
                     // Every profile in one go: set per profile, the list would
                     // read as complete while the work profile's apps are missing.
                     mutex.withLock {

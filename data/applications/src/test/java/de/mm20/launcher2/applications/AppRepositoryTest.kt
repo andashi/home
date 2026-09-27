@@ -50,6 +50,35 @@ class AppRepositoryTest {
         assertNull(withTimeoutOrNull(500) { repository.findMany().first() })
     }
 
+    /** Search reads the same list: an empty result before the read would look like "no match" (#206 review). */
+    @Test
+    fun `search does not answer before the apps have been read`() = runBlocking {
+        val profiles = MutableSharedFlow<List<Profile>>(replay = 1)
+        val repository = AppRepositoryImpl(context, profiles, Identity)
+
+        assertNull(withTimeoutOrNull(500) { repository.search("set").first() })
+
+        profiles.emit(listOf(personal))
+        assertEquals(emptyList<Any>(), withTimeout(5_000) { repository.search("set").first() })
+    }
+
+    /**
+     * A newer profile list can cancel the first read before it lands
+     * (collectLatest); the list must still be read, whichever update comes
+     * next (#206 review).
+     */
+    @Test
+    fun `the apps are read even when a newer profile list arrives before the first read lands`() = runBlocking {
+        val profiles = MutableSharedFlow<List<Profile>>(replay = 1)
+        val repository = AppRepositoryImpl(context, profiles, Identity)
+        val work = Profile(Profile.Type.Work, android.os.UserHandle.getUserHandleForUid(10 * 100_000), 10)
+
+        profiles.emit(listOf(personal))
+        profiles.emit(listOf(personal, work))
+
+        assertEquals(emptyList<Any>(), withTimeout(5_000) { repository.findMany().first() })
+    }
+
     /** Control: once the profiles' apps are read, an app that is not there is an answer. */
     @Test
     fun `findOne answers once the apps have been read`() = runBlocking {
