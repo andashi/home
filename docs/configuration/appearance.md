@@ -131,6 +131,18 @@ This managed wallpaper is also the only source of the glass backdrop. The
 launcher cannot read a wallpaper set elsewhere without permissions it does not
 ask for.
 
+### Dimming
+
+**Dim wallpaper** (Settings → Home screen) lays a 30 % black layer over the
+wallpaper. It is a setting on the device and has no key in the file. It acts
+only while the theme is dark: `appearance.theme.mode` is `dark`, or it is
+`system` and the system is in dark mode. With a light theme it does nothing.
+
+While it acts, the system bars show light icons and the text over the
+wallpaper is light, whatever `appearance.systemBars.*.icons` says and whatever
+the wallpaper's colours would suggest. Both are upstream behaviour, kept as
+they are.
+
 ## Theme
 
 `appearance.theme` picks light or dark and the colour scheme.
@@ -201,8 +213,7 @@ are objects of their own; a key left out of either stays as it is on the
 device, and the read-back always serves all four.
 
 While the wallpaper is dimmed, which happens only in the dark theme, both
-bars show light icons whatever `icons` says. That is the launcher's own
-behaviour, kept as it is.
+bars show light icons whatever `icons` says ([Dimming](#dimming)).
 
 ## Removed: transparency
 
