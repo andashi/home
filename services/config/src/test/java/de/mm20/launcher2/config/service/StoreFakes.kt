@@ -129,6 +129,25 @@ internal class FakeAppCustomizationStore(
     }
 }
 
+/** `tags` (#3 slice 4) as a list: what was replaced, and what reads back. */
+internal class FakeTagStore(
+    var tags: List<de.mm20.launcher2.config.TagConfig> = emptyList(),
+) : TagStore {
+    val replaced = mutableListOf<List<de.mm20.launcher2.config.TagConfig>>()
+    private val changed = kotlinx.coroutines.flow.MutableStateFlow(0)
+
+    override suspend fun read() = tags
+
+    override fun changes(): Flow<Unit> = changed.map { }
+
+    override suspend fun replaceAndRead(tags: List<de.mm20.launcher2.config.TagConfig>): Pair<List<Diagnostic>, List<de.mm20.launcher2.config.TagConfig>> {
+        replaced += tags
+        this.tags = tags
+        changed.value++
+        return emptyList<Diagnostic>() to tags
+    }
+}
+
 internal class FakeInitFlag : HomeGridInitFlag {
     var initialized = false
     /** Answers whether the init lock is held; each read of the flag records it. */

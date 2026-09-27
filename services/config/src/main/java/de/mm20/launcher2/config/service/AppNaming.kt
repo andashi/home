@@ -62,8 +62,8 @@ interface AppNaming {
  * device's rule, as before this existed. A missing one is also "no record
  * yet", which the startup check answers with one reload.
  */
-internal class FileAppNaming(context: Context) : AppNaming {
-    private val file = File(context.filesDir, "config/app-naming.json")
+internal class FileAppNaming(context: Context, name: String = "app-naming.json") : AppNaming {
+    private val file = File(context.filesDir, "config/$name")
     private val serializer = MapSerializer(String.serializer(), String.serializer().nullable)
     private val state = MutableStateFlow<Map<String, String?>?>(null)
     // Set by this instance's replace and forget; what a process found on

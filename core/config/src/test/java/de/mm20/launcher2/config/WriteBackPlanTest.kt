@@ -211,6 +211,10 @@ class WriteBackPlanTest {
         )
     }
 
+    /** The file's effective tree, as ConfigWriteBack derives it: parsed, then written by the model. */
+    private fun canonical(file: String): JsonObject =
+        ConfigParser.json.encodeToJsonElement(LauncherConfig.serializer(), ConfigParser.parse(file).config!!).jsonObject
+
     private fun apps(json: String) = """{"schemaVersion":2,"apps":$json}"""
 
     private fun appsChange(literal: String, applied: String, device: String) =
@@ -232,6 +236,84 @@ class WriteBackPlanTest {
                 literal = """[{"packageName":"org.a","label":"Old"},{"packageName":"org.b","visibility":"hidden"}]""",
                 applied = """[{"packageName":"org.a","label":"Old"},{"packageName":"org.b","visibility":"hidden"}]""",
                 device = """[{"packageName":"org.b","visibility":"hidden"},{"packageName":"org.a","label":"New"}]""",
+            ),
+        )
+    }
+
+    // ---- tags (#3 slice 4) ----
+
+    private fun tags(json: String) = """{"schemaVersion":2,"tags":$json}"""
+
+    /** As ConfigWriteBack runs it: the canonical tree is the file parsed and written by the model. */
+    private fun tagsChange(literal: String, applied: String, device: String) =
+        WriteBackPlan.changes(
+            literal = tree(tags(literal)),
+            fileEffective = tree(tags(applied)),
+            device = tree(tags(device)),
+            canonical = canonical(tags(literal)),
+        ).single().value
+
+    /**
+     * A tag is its name, as an app entry is its app: an app tagged on the
+     * phone is that tag's entry, changed - never a second entry of the same
+     * name next to the file's, which the validator then rejects as a duplicate.
+     */
+    @Test
+    fun `an app tagged on the device joins its tag's entry`() {
+        assertEquals(
+            ConfigParser.json.parseToJsonElement("""[{"name":"Music","icon":{"text":"M"},"apps":["org.a","org.b"]}]"""),
+            tagsChange(
+                literal = """[{"name":"Music","icon":{"text":"M"},"apps":["org.a"]}]""",
+                applied = """[{"name":"Music","icon":{"text":"M"},"apps":["org.a"]}]""",
+                device = """[{"name":"Music","icon":{"text":"M"},"apps":["org.a","org.b"]}]""",
+            ),
+        )
+    }
+
+    /** An icon picked on the phone is the tag's entry, changed; its apps keep their text. */
+    @Test
+    fun `a tag's icon picked on the device is written into its entry`() {
+        assertEquals(
+            ConfigParser.json.parseToJsonElement(
+                """[{"name":"Work","apps":[{"packageName":"org.a"}],"icon":{"pack":"p.q","drawable":"d"}}]"""
+            ),
+            tagsChange(
+                literal = """[{"name":"Work","apps":[{"packageName":"org.a"}]}]""",
+                applied = """[{"name":"Work","apps":["org.a"]}]""",
+                device = """[{"name":"Work","icon":{"pack":"p.q","drawable":"d"},"apps":["org.a"]}]""",
+            ),
+        )
+    }
+
+    /**
+     * A personal app written as an object is served as its package alone:
+     * the same app, so it keeps its form when the phone tags another one.
+     * And an app the device could not tag (not installed here) never reached
+     * it, so it stays in the entry, where it was.
+     */
+    @Test
+    fun `a tag's apps keep their written form, and one not installed here stays`() {
+        assertEquals(
+            ConfigParser.json.parseToJsonElement(
+                """[{"name":"T","apps":[{"packageName":"org.a"},"org.not.here","org.b"]}]"""
+            ),
+            tagsChange(
+                literal = """[{"name":"T","apps":[{"packageName":"org.a"},"org.not.here"]}]""",
+                applied = """[{"name":"T","apps":["org.a"]}]""",
+                device = """[{"name":"T","apps":["org.a","org.b"]}]""",
+            ),
+        )
+    }
+
+    /** Control: a tag the phone no longer has leaves the list; another tag is another entry. */
+    @Test
+    fun `a tag removed on the device leaves the list, a new one is added`() {
+        assertEquals(
+            ConfigParser.json.parseToJsonElement("""[{"name":"B","apps":["org.b"]}]"""),
+            tagsChange(
+                literal = """[{"name":"A","apps":["org.a"]}]""",
+                applied = """[{"name":"A","apps":["org.a"]}]""",
+                device = """[{"name":"B","apps":["org.b"]}]""",
             ),
         )
     }
@@ -294,6 +376,57 @@ class WriteBackPlanTest {
                 applied = """[{"packageName":"org.a","label":"A"},{"packageName":"org.a","profile":"work","label":"W"}]""",
                 device = """[{"packageName":"org.a","label":"A"},{"packageName":"org.a","profile":"work","label":"Work"},""" +
                     """{"packageName":"org.a","activity":"org.a.Second","label":"Second"}]""",
+            ),
+        )
+    }
+
+    /** An icon picked on the phone is its entry, changed: written into it (#3 slice 4). */
+    @Test
+    fun `an icon picked on the device is written into its entry`() {
+        assertEquals(
+            ConfigParser.json.parseToJsonElement("""[{"packageName":"org.a","label":"Old","icon":"themed"}]"""),
+            appsChange(
+                literal = """[{"packageName":"org.a","label":"Old"}]""",
+                applied = """[{"packageName":"org.a","label":"Old"}]""",
+                device = """[{"packageName":"org.a","label":"Old","icon":"themed"}]""",
+            ),
+        )
+    }
+
+    /**
+     * A baseline from before icons existed has the entry without its icon,
+     * and a missing key there could read as "the device changed it" (review
+     * on the icons work). With the device serving the file's own icon, the
+     * file is left alone: no change at all, so every byte survives.
+     */
+    @Test
+    fun `a file's icon is not rewritten against a baseline from before icons`() {
+        val icon = """{"pack":"app.lawnchair.lawnicons","drawable":"signal"}"""
+        assertEquals(
+            emptyList<WriteBackPlan.Change>(),
+            WriteBackPlan.changes(
+                tree(apps("""[{"packageName":"org.a","label":"Chat","icon":$icon}]""")),
+                tree(apps("""[{"packageName":"org.a","label":"Chat"}]""")),
+                tree(apps("""[{"packageName":"org.a","label":"Chat","icon":$icon}]""")),
+                canonical(apps("""[{"packageName":"org.a","label":"Chat","icon":$icon}]""")),
+            ),
+        )
+    }
+
+    /**
+     * The same against an equivalent the device writes differently: a colour
+     * the file wrote in lower case reads back in upper case. The file's own
+     * text still wins, since nothing changed on the device.
+     */
+    @Test
+    fun `a file's icon written in another form is not rewritten against a baseline from before icons`() {
+        assertEquals(
+            emptyList<WriteBackPlan.Change>(),
+            WriteBackPlan.changes(
+                tree(apps("""[{"packageName":"org.a","label":"Chat","icon":{"scale":0.7,"background":"#ffffff"}}]""")),
+                tree(apps("""[{"packageName":"org.a","label":"Chat"}]""")),
+                tree(apps("""[{"packageName":"org.a","label":"Chat","icon":{"scale":0.7,"background":"#FFFFFF"}}]""")),
+                canonical(apps("""[{"packageName":"org.a","label":"Chat","icon":{"scale":0.7,"background":"#ffffff"}}]""")),
             ),
         )
     }

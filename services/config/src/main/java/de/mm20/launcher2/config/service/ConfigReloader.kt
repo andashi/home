@@ -38,8 +38,8 @@ class ConfigReloader(
     private val lock: ConfigFileLock = ConfigFileLock(),
     private val baselineStore: AppliedBaselineStore? = null,
     private val capabilities: CapabilityDiagnostics = CapabilityDiagnostics.None,
-    /** How the file writes its apps (AppNaming); null when nothing records it. */
-    private val appNaming: AppNaming? = null,
+    /** How the file writes the apps of each list that names them (AppNaming): `apps`, `tags`. */
+    private val namings: List<AppNaming> = emptyList(),
 ) {
 
     /**
@@ -262,12 +262,13 @@ class ConfigReloader(
      * so a write-back waiting on it finds the record.
      */
     private suspend fun recordAppsForm() {
-        val naming = appNaming ?: return
-        try {
-            if (!naming.recorded()) naming.replace(emptyMap())
-        } catch (e: Exception) {
-            // Without the record a write-back skips and says so; the next reload tries again.
-            Log.w(TAG, "could not record the apps' form", e)
+        for (naming in namings) {
+            try {
+                if (!naming.recorded()) naming.replace(emptyMap())
+            } catch (e: Exception) {
+                // Without the record a write-back skips and says so; the next reload tries again.
+                Log.w(TAG, "could not record the apps' form", e)
+            }
         }
     }
 

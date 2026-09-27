@@ -105,6 +105,128 @@ class CustomAttributesRepositoryTest {
         assertEquals(listOf("Chat"), labelRows().map { it.value })
     }
 
+    // ---- the config's icons (#3 slice 4, PR 2) ----
+
+    /**
+     * Awaited, as the labels are: a reload reads back right after. The whole
+     * state of the items named - one gets its icon, the other loses its own.
+     */
+    @Test
+    fun `replacing icons is the whole state of the items named, written when it returns`() = runBlocking {
+        val a = TestSearchable("app://a:A")
+        val b = TestSearchable("app://b:B")
+        database.customAttrsDao().setCustomAttribute(
+            de.mm20.launcher2.database.entities.CustomAttributeEntity(b.key, "icon", """{"type":"force_themed_icon"}"""),
+        )
+
+        repository.replaceCustomIconsAwaited(listOf(a, b), mapOf(a.key to UnmodifiedSystemDefaultIcon))
+
+        assertEquals(mapOf(a.key to UnmodifiedSystemDefaultIcon), repository.getAppIcons().first())
+    }
+
+    /** What the picker wrote reads back through the same decoder, every form of it. */
+    @Test
+    fun `the app icons read back every form the picker writes`() = runBlocking {
+        val icons = mapOf(
+            "app://a:A" to ForceThemedIcon,
+            "app://b:B" to UnmodifiedSystemDefaultIcon,
+            "app://c:C" to DefaultPlaceholderIcon,
+            "app://d:D" to AdaptifiedLegacyIcon(fgScale = 0.7f, bgColor = 1),
+            "app://e:E" to CustomIconPackIcon(iconPackPackage = "p.q", type = "app", drawable = "d", extras = null, allowThemed = true),
+        )
+        repository.replaceCustomIconsAwaited(icons.keys.map { TestSearchable(it) }, icons)
+
+        assertEquals(icons, repository.getAppIcons().first())
+    }
+
+    // ---- the config's tags (#3 slice 4) ----
+
+    private suspend fun tagRows() = database.backupDao().exportCustomAttributes(1000, 0)
+        .filter { it.type == "tag" }.map { it.key to it.value }.sortedBy { "${it.first}|${it.second}" }
+
+    /**
+     * The whole state of the items named: one gets its tags, the other loses
+     * its own. A tag row goes with the cleanup when its item has no row, so
+     * a tagged item is anchored first, as a labelled one is.
+     */
+    @Test
+    fun `replacing tags is the whole state of the items named, anchored before it is written`() = runBlocking {
+        val a = TestSearchable("app://a:A")
+        val b = TestSearchable("app://b:B")
+        val other = "contact://1"
+        database.customAttrsDao().insertCustomAttributes(
+            listOf(
+                de.mm20.launcher2.database.entities.CustomAttributeEntity(b.key, "tag", "Old"),
+                de.mm20.launcher2.database.entities.CustomAttributeEntity(other, "tag", "Work"),
+            ),
+        )
+
+        repository.replaceAppTagsAwaited(listOf(a, b), mapOf(a.key to setOf("Work", "Music")))
+
+        assertEquals(listOf(a.key), anchored)
+        assertEquals(listOf(a.key to "Music", a.key to "Work", other to "Work"), tagRows())
+        assertEquals(mapOf(a.key to setOf("Music", "Work")), repository.getAppTags().first())
+    }
+
+    /** What the anchor is for: the cleanup right after keeps the tag. */
+    @Test
+    fun `a tag written by the config survives the cleanup`() = runBlocking {
+        val a = TestSearchable("app://a:A")
+
+        repository.replaceAppTagsAwaited(listOf(a), mapOf(a.key to setOf("Work")))
+        database.backupDao().cleanUp()
+
+        assertEquals(listOf(a.key to "Work"), tagRows())
+    }
+
+    /** A tag's icon, keyed by the tag: the tags named get theirs or lose it, the others keep theirs. */
+    @Test
+    fun `replacing tag icons is the whole state of the tags named`() = runBlocking {
+        database.customAttrsDao().insertCustomAttributes(
+            listOf(
+                CustomTextIcon("x").toDatabaseEntity("tag://Old"),
+                CustomTextIcon("y").toDatabaseEntity("tag://Kept"),
+            ),
+        )
+        val pack = CustomIconPackIcon(iconPackPackage = "p.q", type = "app", drawable = "d", extras = null, allowThemed = true)
+
+        repository.replaceTagIconsAwaited(listOf("Work", "Old"), mapOf("Work" to pack))
+
+        assertEquals(mapOf("Work" to pack, "Kept" to CustomTextIcon("y")), repository.getTagIcons().first())
+    }
+
+    // ---- a stored custom_themed_icon row (#3 slice 4, PR 2) ----
+
+    /**
+     * `custom_themed_icon` was a row type nothing wrote any more and whose
+     * provider returned null, so a row of it - from an old install or a
+     * restored backup - drew the app's normal icon. The type is gone; such a
+     * row, stored and decoded the real way, reads as no custom icon, which is
+     * what it already drew. Nobody's screen changes.
+     */
+    @Test
+    fun `a stored custom_themed_icon row reads as no custom icon`() = runBlocking {
+        val app = TestSearchable("app://a:A")
+        database.customAttrsDao().setCustomAttribute(
+            de.mm20.launcher2.database.entities.CustomAttributeEntity(
+                app.key, "icon", """{"type":"custom_themed_icon","icon":"com.example.pack"}""",
+            ),
+        )
+
+        assertEquals(null, repository.getCustomIcon(app).first())
+    }
+
+    /** Control: the picker's force-themed, a live form, still reads back. */
+    @Test
+    fun `a stored force_themed_icon row reads as force-themed`() = runBlocking {
+        val app = TestSearchable("app://a:A")
+        database.customAttrsDao().setCustomAttribute(
+            de.mm20.launcher2.database.entities.CustomAttributeEntity(app.key, "icon", """{"type":"force_themed_icon"}"""),
+        )
+
+        assertEquals(ForceThemedIcon, repository.getCustomIcon(app).first())
+    }
+
     private class TestSearchable(override val key: String) : SavableSearchable {
         override val domain: String = "app"
         override val label: String = key

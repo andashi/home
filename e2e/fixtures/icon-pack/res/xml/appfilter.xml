@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The pack's own match for Settings is fixture_gear; the step's file names
+     fixture_star for it, so the named drawable and the matched one differ. -->
+<resources>
+    <item component="ComponentInfo{com.android.settings/com.android.settings.Settings}" drawable="fixture_gear" />
+    <item component="ComponentInfo{com.android.deskclock/com.android.deskclock.DeskClock}" drawable="fixture_star" />
+</resources>

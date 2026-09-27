@@ -31,7 +31,9 @@
     },
     "theme": {
       "mode": "dark",
-      "colors": "high-contrast"
+      "colors": "high-contrast",
+      "shapes": "cut",
+      "typography": "google-sans-rounded"
     }
   },
   "home": {
@@ -143,13 +145,26 @@
   },
   "apps": [
     { "packageName": "com.android.stk", "visibility": "hidden" },
-    { "packageName": "org.thoughtcrime.securesms", "label": "Chat" },
+    {
+      "packageName": "org.thoughtcrime.securesms",
+      "label": "Chat",
+      "icon": { "pack": "app.lawnchair.lawnicons", "drawable": "signal", "themed": false }
+    },
     {
       "packageName": "com.example.work.mail",
       "profile": "work",
       "activity": "com.example.work.mail.InboxActivity",
       "label": "Work mail",
-      "visibility": "search-only"
+      "visibility": "search-only",
+      "icon": { "scale": 0.7, "background": "#FFFFFF" }
+    }
+  ],
+  "tags": [
+    { "name": "Music", "icon": { "text": "🎵" }, "apps": ["org.schabi.newpipe"] },
+    {
+      "name": "Work",
+      "icon": { "pack": "app.lawnchair.lawnicons", "drawable": "briefcase", "themed": false },
+      "apps": [{ "packageName": "com.example.work.mail", "profile": "work", "activity": "com.example.work.mail.InboxActivity" }]
     }
   ],
   "gestures": {

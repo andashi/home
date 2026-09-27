@@ -23,9 +23,13 @@ import de.mm20.launcher2.preferences.seedSettingsFile
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import de.mm20.launcher2.config.ThemeColors
+import de.mm20.launcher2.config.ThemeShapes
+import de.mm20.launcher2.config.ThemeTypography
 import de.mm20.launcher2.config.ThemeMode
 import de.mm20.launcher2.preferences.ColorScheme
 import de.mm20.launcher2.preferences.BuiltInColorSchemes
+import de.mm20.launcher2.preferences.BuiltInShapes
+import de.mm20.launcher2.preferences.BuiltInTypography
 import java.util.UUID
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
@@ -152,6 +156,43 @@ class LauncherConfigSettingsTest {
 
         assertNull(state.themeColors)
         assertEquals(ThemeMode.System, state.themeMode)
+    }
+
+    /** Shapes and typography as the colours: a slug is its built-in set's id, both ways. */
+    @Test
+    fun `apply SetTheme writes a built-in shape set and typography, and each reads back`() = runTest {
+        val gateway = createGateway()
+
+        val cut = gateway.applyAndReturn(listOf(ConfigMutation.SetTheme(shapes = ThemeShapes.Cut)))
+        assertEquals(BuiltInShapes.Cut, cut.uiShapesId)
+        val mono = gateway.applyAndReturn(listOf(ConfigMutation.SetTheme(typography = ThemeTypography.Monospace)))
+        assertEquals(BuiltInTypography.Monospace, mono.uiTypographyId)
+        assertEquals("one field does not reset the other", BuiltInShapes.Cut, mono.uiShapesId)
+
+        for (shapes in ThemeShapes.entries) {
+            assertEquals(shapes, gateway.applyAndRead(listOf(ConfigMutation.SetTheme(shapes = shapes))).themeShapes)
+        }
+        for (typography in ThemeTypography.entries) {
+            assertEquals(typography, gateway.applyAndRead(listOf(ConfigMutation.SetTheme(typography = typography))).themeTypography)
+        }
+    }
+
+    /** The defaults a fresh install has are the default set and Google Sans. */
+    @Test
+    fun `a fresh install reads back the default shapes and Google Sans`() = runTest {
+        val state = createGateway().readState()
+
+        assertEquals(ThemeShapes.Default, state.themeShapes)
+        assertEquals(ThemeTypography.GoogleSans, state.themeTypography)
+    }
+
+    @Test
+    fun `a shape set or typography a person made reads back as no slug`() = runTest {
+        val own = UUID.fromString("0d4f6f1a-2c3b-4a5d-8e7f-9a0b1c2d3e4f")
+        val state = createGateway(LauncherSettingsData(uiShapesId = own, uiTypographyId = own)).readState()
+
+        assertNull(state.themeShapes)
+        assertNull(state.themeTypography)
     }
 
     @Test

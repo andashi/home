@@ -813,7 +813,7 @@ class ConfigReloaderTest {
     @Test
     fun `any reload that went through records the apps' form where none exists`() = runTest {
         val naming = Naming(record = null)
-        val reloader = ConfigReloader(FakeConfigStore(), ReloadReportStore(context), appNaming = naming)
+        val reloader = ConfigReloader(FakeConfigStore(), ReloadReportStore(context), namings = listOf(naming))
 
         val report = reloader.reload("""{"schemaVersion": 2, "icons": {"themed": false}}""")
 
@@ -826,7 +826,7 @@ class ConfigReloaderTest {
     fun `a failed reload records nothing`() = runTest {
         val naming = Naming(record = null)
         val store = FakeConfigStore(applyDiagnostics = listOf(Diagnostic(DiagnosticCode.ApplyFailed, "", "datastore gone")))
-        val reloader = ConfigReloader(store, ReloadReportStore(context), appNaming = naming)
+        val reloader = ConfigReloader(store, ReloadReportStore(context), namings = listOf(naming))
 
         reloader.reload("""{"schemaVersion": 2, "icons": {"themed": false}}""")
 
@@ -837,18 +837,36 @@ class ConfigReloaderTest {
     @Test
     fun `a file that does not parse records nothing`() = runTest {
         val naming = Naming(record = null)
-        val reloader = ConfigReloader(FakeConfigStore(), ReloadReportStore(context), appNaming = naming)
+        val reloader = ConfigReloader(FakeConfigStore(), ReloadReportStore(context), namings = listOf(naming))
 
         reloader.reload("""{"schemaVersion": 2, "icons": """)
 
         assertEquals(null, naming.record)
     }
 
+    /**
+     * Two records, `apps`' and `tags`' (review on #224): each missing one is
+     * made, and one that exists is left as it is. With only the apps' record
+     * guarded, a missing tags record stayed missing, and a tag's app read back
+     * in the other form.
+     */
+    @Test
+    fun `each missing record is made, an existing one is left`() = runTest {
+        val apps = Naming(record = mapOf("app://a:A" to "a.A"))
+        val tags = Naming(record = null)
+        val reloader = ConfigReloader(FakeConfigStore(), ReloadReportStore(context), namings = listOf(apps, tags))
+
+        reloader.reload("""{"schemaVersion": 2, "icons": {"themed": false}}""")
+
+        assertEquals(0, apps.replaces)
+        assertEquals(emptyMap<String, String?>(), tags.record)
+    }
+
     /** Control: the record the apply made, or an earlier one, is not overwritten with the empty one. */
     @Test
     fun `an existing record is left as it is`() = runTest {
         val naming = Naming(record = mapOf("app://a:A" to "a.A"))
-        val reloader = ConfigReloader(FakeConfigStore(), ReloadReportStore(context), appNaming = naming)
+        val reloader = ConfigReloader(FakeConfigStore(), ReloadReportStore(context), namings = listOf(naming))
 
         reloader.reload("""{"schemaVersion": 2, "icons": {"themed": false}}""")
 

@@ -136,6 +136,18 @@ class ConfigSchemaTest {
             "an unknown barPosition" to """{"schemaVersion":2,"search":{"barPosition":"middle"}}""",
             "a grid item with x and no y" to """{"schemaVersion":2,"home":{"grid":{"layouts":{"phone":{"items":[{"id":"a","widget":"favorites","x":1}]}}}}}""",
             "a grid item with y and no x" to """{"schemaVersion":2,"home":{"grid":{"layouts":{"fold":{"items":[{"id":"a","widget":"favorites","y":1}]}}}}}""",
+            // #3 slice 4, PR 2: the icon's forms and the adaptive one's range, which the
+            // generated breaks cannot reach (they break the first icon object only).
+            "an unknown icon word" to """{"schemaVersion":2,"apps":[{"packageName":"a.b","icon":"monochrome"}]}""",
+            "an icon that is both a pack icon and an adaptive one" to
+                """{"schemaVersion":2,"apps":[{"packageName":"a.b","icon":{"pack":"c.d","drawable":"x","scale":1,"background":"theme"}}]}""",
+            "a pack icon without its drawable" to """{"schemaVersion":2,"apps":[{"packageName":"a.b","icon":{"pack":"c.d"}}]}""",
+            "an icon scale below its minimum" to
+                """{"schemaVersion":2,"apps":[{"packageName":"a.b","icon":{"scale":${ConfigValidator.MinIconScale - 0.01f},"background":"theme"}}]}""",
+            "an icon scale above its maximum" to
+                """{"schemaVersion":2,"apps":[{"packageName":"a.b","icon":{"scale":${ConfigValidator.MaxIconScale + 0.01f},"background":"theme"}}]}""",
+            "a background that is no colour" to
+                """{"schemaVersion":2,"apps":[{"packageName":"a.b","icon":{"scale":1,"background":"white"}}]}""",
         )
 
         val disagreements = broken.mapNotNull { (what, text) ->
@@ -249,6 +261,19 @@ class ConfigSchemaTest {
      * map (the first that has the rest: a gesture can be an action string),
      * `name[]` the first element of a list that has the rest.
      */
+    /** Whether this element has a value at [segments], in [changed]'s notation (`*` any key, `name[]` any element). */
+    private fun JsonElement.hasPath(segments: List<String>): Boolean {
+        if (segments.isEmpty()) return true
+        val obj = this as? JsonObject ?: return false
+        val head = segments.first()
+        val rest = segments.drop(1)
+        val name = head.removeSuffix("[]")
+        val children = if (name == "*") obj.values.toList() else listOfNotNull(obj[name])
+        return children.any { child ->
+            if (head.endsWith("[]")) (child as? JsonArray)?.any { it.hasPath(rest) } == true else child.hasPath(rest)
+        }
+    }
+
     private fun JsonElement.changed(segments: List<String>, change: (JsonElement) -> JsonElement): JsonElement {
         if (segments.isEmpty()) return change(this)
         val head = segments.first()
@@ -262,7 +287,10 @@ class ConfigSchemaTest {
         val child = obj[key] ?: throw AssertionError("the complete example has no '$key' for ${segments.joinToString(".")}")
         val newChild = if (!head.endsWith("[]")) child.changed(rest, change) else {
             val list = child.jsonArray
-            val at = list.indexOfFirst { rest.isEmpty() || (it is JsonObject && rest.first().removeSuffix("[]") in it) }
+            // The first element that has the whole rest of the path, not just its
+            // next key: the first tag with an icon can be a text one, and the
+            // walk for tags[].icon.pack needs the one with a pack (#3 slice 4).
+            val at = list.indexOfFirst { rest.isEmpty() || it.hasPath(rest) }
             if (at < 0) throw AssertionError("no element of '$key' has ${rest.first()}")
             JsonArray(list.toMutableList().also { it[at] = it[at].changed(rest, change) })
         }

@@ -4,6 +4,9 @@ import de.mm20.launcher2.config.ConfigDiffer
 import de.mm20.launcher2.preferences.config.LauncherConfigSettings
 import de.mm20.launcher2.config.ConfigMutation
 import de.mm20.launcher2.config.ConfigParser
+import de.mm20.launcher2.config.TagApp
+import de.mm20.launcher2.config.TagConfig
+import de.mm20.launcher2.config.TagIcon
 import de.mm20.launcher2.config.Diagnostic
 import de.mm20.launcher2.config.LauncherConfig
 import de.mm20.launcher2.config.ReloadTrigger
@@ -163,6 +166,35 @@ class ConfigWriteBackTest {
             it.code == ConfigWriteBack.SkipCodePrefix + "colors-custom" && it.message.contains("appearance.theme.colors")
         } == true
 
+    /**
+     * Shapes and typography as the colours: a set a person made has no slug,
+     * so the file keeps the key as written, and the report says why.
+     */
+    @Test
+    fun `a shape set or typography a person made leaves the key as written, and the report says why`() = runBlocking {
+        val file0 = """
+            {
+              "schemaVersion": 2,
+              "appearance": { "theme": { "shapes": "default", "typography": "google-sans" } }
+            }
+        """.trimIndent()
+        applied(file0)
+        val own = UUID.fromString("0d4f6f1a-2c3b-4a5d-8e7f-9a0b1c2d3e4f")
+        GlobalContext.get().get<UiSettings>().setShapesId(own)
+        GlobalContext.get().get<UiSettings>().setTypographyId(own)
+        withTimeout(10_000) {
+            while (real.store.readState().let { it.themeShapes != null || it.themeTypography != null }) delay(20)
+        }
+
+        val result = writeBack.write()
+
+        assertEquals(WriteBackResult.Unchanged, result)
+        assertEquals(file0, file.readText())
+        val codes = reportStore.read()?.diagnostics.orEmpty().map { it.code }
+        assertTrue(codes.toString(), ConfigWriteBack.SkipCodePrefix + "shapes-custom" in codes)
+        assertTrue(codes.toString(), ConfigWriteBack.SkipCodePrefix + "typography-custom" in codes)
+    }
+
     @Test
     fun `a theme mode changed on the device is written into the file`() = runBlocking {
         applied(themeFile)
@@ -292,7 +324,7 @@ class ConfigWriteBackTest {
             override suspend fun awaitRecorded(): Unit = error("not used here")
             override suspend fun forget() = Unit
         }
-        val waiting = ConfigWriteBack(context, real.store, reportStore, baselineStore, lock, appNaming = naming)
+        val waiting = ConfigWriteBack(context, real.store, reportStore, baselineStore, lock, namings = listOf(naming))
 
         val result = waiting.write()
         assertEquals("apps-form-unrecorded", (result as WriteBackResult.Skipped).code)
@@ -300,6 +332,35 @@ class ConfigWriteBackTest {
 
         // Control: once recorded, the same change is written.
         recorded = true
+        assertTrue(waiting.write() is WriteBackResult.Written)
+    }
+
+    /**
+     * The tags' record is waited for as the apps' is (review on #224): with
+     * it missing, a tag's app spelled out as its first activity reads back
+     * without it, and write-back would rewrite the file into the other form.
+     */
+    @Test
+    fun `a write-back waits for the tags' record too, with the apps' made`() = runBlocking {
+        applied(searchFile)
+        onDevice("""{"schemaVersion":2,"search":{"layout":"list"}}""")
+        var tagsRecorded = false
+        fun naming(recorded: () -> Boolean) = object : AppNaming {
+            override fun observe() = kotlinx.coroutines.flow.flowOf(emptyMap<String, String?>())
+            override suspend fun replace(naming: Map<String, String?>) = Unit
+            override suspend fun recorded() = recorded()
+            override suspend fun awaitRecorded(): Unit = error("not used here")
+            override suspend fun forget() = Unit
+        }
+        val waiting = ConfigWriteBack(
+            context, real.store, reportStore, baselineStore, lock,
+            namings = listOf(naming { true }, naming { tagsRecorded }),
+        )
+
+        assertEquals("apps-form-unrecorded", (waiting.write() as WriteBackResult.Skipped).code)
+        assertEquals(searchFile, file.readText())
+
+        tagsRecorded = true
         assertTrue(waiting.write() is WriteBackResult.Written)
     }
 
@@ -766,5 +827,36 @@ class ConfigWriteBackTest {
             emptyList<List<String>>(),
             kept.filter { it !in ConfigWriteBack.KeptReasons },
         )
+    }
+
+    private val tagsFile = """
+        {
+          "schemaVersion": 2,
+          // What plays music.
+          "tags": [{ "name": "Music", "icon": { "text": "M" }, "apps": [{ "packageName": "org.a" }] }]
+        }
+    """.trimIndent()
+
+    /**
+     * An app tagged on the phone joins its tag's entry in the file (#3 slice
+     * 4): one entry, the app written as an object kept, the comment beside
+     * the list kept (the list itself is rewritten whole, as every list). Red
+     * without the tag's identity in the plan: the file then lists "Music"
+     * twice, which the next reload rejects as a duplicate.
+     */
+    @Test
+    fun `an app tagged on the device joins its tag in the file`() = runBlocking {
+        applied(tagsFile)
+        real.tagStore.replaceAndRead(listOf(TagConfig("Music", TagIcon.Text("M"), listOf(TagApp("org.a"), TagApp("org.b")))))
+
+        val result = writeBack.write()
+
+        assertTrue(result.toString(), result is WriteBackResult.Written)
+        val text = file.readText()
+        assertEquals(
+            listOf(TagConfig("Music", TagIcon.Text("M"), listOf(TagApp("org.a"), TagApp("org.b")))),
+            ConfigParser.parse(text).config?.tags,
+        )
+        assertTrue(text, "// What plays music." in text && Regex(""""packageName":\s*"org.a"""").containsMatchIn(text))
     }
 }

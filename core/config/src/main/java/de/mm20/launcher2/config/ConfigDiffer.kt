@@ -26,6 +26,10 @@ data class ConfigState(
      * file's text.
      */
     val themeColors: ThemeColors? = ThemeColors.System,
+    /** `appearance.theme.shapes`: the built-in set in effect, or null for one a person made (as [themeColors]). */
+    val themeShapes: ThemeShapes? = ThemeShapes.Default,
+    /** `appearance.theme.typography`: the built-in typography in effect, or null for one a person made. */
+    val themeTypography: ThemeTypography? = ThemeTypography.GoogleSans,
     val searchBarPosition: SearchBarPosition = SearchBarPosition.Top,
     /** `home.searchBar.fixed` (#3 slice 1). */
     val searchBarFixed: Boolean = false,
@@ -42,6 +46,8 @@ data class ConfigState(
     val favorites: List<Favorite> = emptyList(),
     /** Apps with a name or a visibility of their own (#3 slice 4): `apps`. */
     val apps: List<AppConfig> = emptyList(),
+    /** The tags the apps carry, and their icons (#3 slice 4): `tags`. */
+    val tags: List<TagConfig> = emptyList(),
     /** The search actions in effect, in order: `search.actions` (#106); null when unknown. */
     val searchActions: List<SearchActionConfig>? = null,
     val widgetsEnabled: Boolean = false,
@@ -143,6 +149,8 @@ sealed class ConfigMutation {
     data class SetTheme(
         val mode: ThemeMode? = null,
         val colors: ThemeColors? = null,
+        val shapes: ThemeShapes? = null,
+        val typography: ThemeTypography? = null,
     ) : ConfigMutation() {
         override val section = "appearance.theme"
     }
@@ -171,11 +179,18 @@ sealed class ConfigMutation {
         override val section = "home.favorites"
     }
 
-    /** `apps` (#3 slice 4): the whole desired list, customizations only. */
+    /** `apps` (#3 slice 4): the whole desired list, as the file writes it: its order names its diagnostics. */
     data class SetApps(
         val apps: List<AppConfig>,
     ) : ConfigMutation() {
         override val section = "apps"
+    }
+
+    /** `tags` (#3 slice 4): the whole desired list, as the file writes it: its order names its diagnostics. */
+    data class SetTags(
+        val tags: List<TagConfig>,
+    ) : ConfigMutation() {
+        override val section = "tags"
     }
 
     data class SetSearchActions(
@@ -280,8 +295,11 @@ object ConfigDiffer {
             val mode = theme.mode?.takeIf { it != current.themeMode }
             // A custom scheme on the device (null) differs from every slug.
             val colors = theme.colors?.takeIf { it != current.themeColors }
-            if (mode != null || colors != null) {
-                mutations += ConfigMutation.SetTheme(mode = mode, colors = colors)
+            // As the colours: a set a person made (null) differs from every slug.
+            val shapes = theme.shapes?.takeIf { it != current.themeShapes }
+            val typography = theme.typography?.takeIf { it != current.themeTypography }
+            if (mode != null || colors != null || shapes != null || typography != null) {
+                mutations += ConfigMutation.SetTheme(mode = mode, colors = colors, shapes = shapes, typography = typography)
             }
         }
 
@@ -339,11 +357,21 @@ object ConfigDiffer {
         }
 
         // The whole list, compared as customizations: order, and entries that
-        // ask only for defaults, are no difference (#3 slice 4).
+        // ask only for defaults, are no difference (#3 slice 4). The mutation
+        // carries the file's list as written: the store names a diagnostic by
+        // the entry's index, and the first of two entries that are one app is
+        // the one that applies (review on #224).
         desired.apps?.let { apps ->
-            val wanted = apps.normalizedApps()
-            if (wanted != current.apps.normalizedApps()) {
-                mutations += ConfigMutation.SetApps(wanted)
+            if (apps.normalizedApps() != current.apps.normalizedApps()) {
+                mutations += ConfigMutation.SetApps(apps)
+            }
+        }
+
+        // As a set: the order of the tags and of a tag's apps is no difference.
+        // Carried as written, as the apps are.
+        desired.tags?.let { tags ->
+            if (tags.normalizedTags() != current.tags.normalizedTags()) {
+                mutations += ConfigMutation.SetTags(tags)
             }
         }
 

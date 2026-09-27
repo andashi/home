@@ -50,6 +50,10 @@
 #      then enables it: the arrival reloads the file (trigger "apps-changed")
 #      and the label and the favorite read back; then an app coming back while
 #      nothing waits must not reload
+#  10f. names an icon pack that is not there for an app's icon and a tag's,
+#      with two tags: the tags apply at once, the pack icons are reported;
+#      then installs a fixture pack and asserts each icon reads back as the
+#      drawable the file named (not the pack's own match)
 #   9. restores the valid config with plain `adb push` (user 0 only): the
 #      interactive dotfile path, proving the file watcher reacts to a push
 #      exactly like to an ingest
@@ -192,8 +196,8 @@ cat > "$VALID_CONFIG" <<'EOF'
   "appearance": {
     // Not the defaults, so applying it is a real change.
     "glass": { "blur": 16, "tint": 0.5, "radius": 20, "contrast": "high", "wallpaperBlur": false, "searchWallpaperBlur": false },
-    // Both away from the system default (#3 slice 3).
-    "theme": { "mode": "dark", "colors": "high-contrast" },
+    // All four away from their defaults (#3 slice 3, slice 4).
+    "theme": { "mode": "dark", "colors": "high-contrast", "shapes": "extra-round", "typography": "serif" },
     // #3 slice 1: both bars away from their defaults.
     "systemBars": {
       "statusBar": { "hidden": true, "icons": "dark" },
@@ -246,8 +250,8 @@ cat > "$UNKNOWN_KEYS_CONFIG" <<'EOF'
   "appearance": {
     // Not the defaults, so applying it is a real change.
     "glass": { "blur": 16, "tint": 0.5, "radius": 20, "contrast": "high", "wallpaperBlur": false, "searchWallpaperBlur": false },
-    // Both away from the system default (#3 slice 3).
-    "theme": { "mode": "dark", "colors": "high-contrast" },
+    // All four away from their defaults (#3 slice 3, slice 4).
+    "theme": { "mode": "dark", "colors": "high-contrast", "shapes": "extra-round", "typography": "serif" },
   },
   // Four keys away from their defaults (#91), so applying them is a change.
   "search": { "favorites": false, "layout": "list", "reversed": true, "contacts": false, "barPosition": "bottom" },
@@ -282,7 +286,7 @@ cat > "$CHANGED_CONFIG" <<'EOF'
   },
   "appearance": {
     "glass": { "blur": 32, "tint": 0.2, "radius": 12, "contrast": "low", "wallpaperBlur": true, "searchWallpaperBlur": true },
-    "theme": { "mode": "light", "colors": "black-and-white" },
+    "theme": { "mode": "light", "colors": "black-and-white", "shapes": "cut", "typography": "monospace" },
     "systemBars": {
       "statusBar": { "hidden": false, "icons": "light" },
       "navigationBar": { "hidden": true, "icons": "dark" },
@@ -418,7 +422,7 @@ EFFECTIVE_FILTER='
   and .icons.themed == true
   and .icons.enforceThemed == true
   and .appearance.glass == {"blur":16.0,"tint":0.5,"radius":20.0,"contrast":"high","wallpaperBlur":false,"searchWallpaperBlur":false}
-  and .appearance.theme == {"mode":"dark","colors":"high-contrast"}
+  and .appearance.theme == {"mode":"dark","colors":"high-contrast","shapes":"extra-round","typography":"serif"}
   and (.appearance | has("transparency") | not)
   and (.search | del(.actions)) == {"favorites":false,"allApps":true,"layout":"list","labels":true,"contacts":false,"shortcuts":true,"filterBar":true,"openKeyboard":true,"launchOnEnter":true,"reversed":true,"hiddenItemsButton":false,"barPosition":"bottom","listIcons":true,"appDetails":true,"contactsCallOnTap":false,"frequentlyUsed":true,"frequentlyUsedRows":1,"favoritesEditButton":true,"compactTags":false,"transliterator":"auto"}
   and .search.actions == [{"type":"call"},{"type":"message"},{"type":"email"},{"type":"contact"},{"type":"alarm"},{"type":"timer"},{"type":"calendar"},{"type":"website"},{"type":"websearch"}]
@@ -440,7 +444,7 @@ CHANGED_FILTER='
   and .icons.themed == false
   and .icons.enforceThemed == false
   and .appearance.glass == {"blur":32.0,"tint":0.2,"radius":12.0,"contrast":"low","wallpaperBlur":true,"searchWallpaperBlur":true}
-  and .appearance.theme == {"mode":"light","colors":"black-and-white"}
+  and .appearance.theme == {"mode":"light","colors":"black-and-white","shapes":"cut","typography":"monospace"}
   and (.search | del(.actions)) == {"favorites":true,"allApps":true,"layout":"grid","labels":true,"contacts":true,"shortcuts":true,"filterBar":true,"openKeyboard":true,"launchOnEnter":true,"reversed":false,"hiddenItemsButton":false,"barPosition":"top","listIcons":true,"appDetails":true,"contactsCallOnTap":false,"frequentlyUsed":true,"frequentlyUsedRows":1,"favoritesEditButton":true,"compactTags":false,"transliterator":"auto"}
   and .home.searchBar.position == "top"
   and .home.searchBar.fixed == false
@@ -903,6 +907,66 @@ retry_for 30 arrival_decided "$OTHER_APP" "nothing waits" "$seen" \
   || die "the watcher never decided $OTHER_APP's arrival; the control would be blind"
 report_matches ". != $before" && die "an app arriving with nothing waiting reloaded the file: $(jq -c '{trigger, configSha256}' <<<"$LAST_SEEN_REPORT")"
 ok "an app arriving while nothing waits is decided and reloads nothing"
+
+# --- 10f. icons and tags: the pack arrives after the file (#3 slice 4) ------
+#
+# An app's icon and a tag's icon from an icon pack this device lacks are
+# reported and wait; the tags themselves apply at once. The pack is a fixture
+# (e2e/fixtures/icon-pack), not Lawnicons, which no snapshot has. It maps
+# Settings to fixture_gear and the file names fixture_star for Settings, so
+# an icon that read back as fixture_star is the file's pick, not the pack's
+# own match. The pack's package event races the launcher indexing it; the
+# index's growth is a signal of its own, and the step logs which signal
+# reloaded - it may be either, and one of them must.
+PACK_PKG=org.andashi.fixture.iconpack
+PACK_APK="$WORK/icon-pack.apk"
+bash "$(dirname "$0")/fixtures/icon-pack/build.sh" "$PACK_APK" >/dev/null 2>&1 \
+  || die "could not build the icon-pack fixture (e2e/fixtures/icon-pack/build.sh); run it by hand to see what is missing"
+adb_out shell pm list packages "$PACK_PKG" | grep -qx "package:$PACK_PKG" \
+  && die "$PACK_PKG is already installed; the arrival below would prove nothing"
+TAGS_CONFIG="$WORK/icons-tags.json"
+cat > "$TAGS_CONFIG" <<EOF
+{ "schemaVersion": 2,
+  "apps": [ { "packageName": "com.android.settings", "icon": { "pack": "$PACK_PKG", "drawable": "fixture_star" } } ],
+  "tags": [
+    { "name": "Fixture", "icon": { "pack": "$PACK_PKG", "drawable": "fixture_gear" }, "apps": ["com.android.settings"] },
+    { "name": "Letters", "icon": { "text": "AB" }, "apps": ["com.android.settings", "$LATE_APP"] } ] }
+EOF
+push_config "$TAGS_CONFIG" "icons-tags"
+assert_jq "$LAST_REPORT" \
+  '.success == true
+   and ([.diagnostics[] | select(.code == "icon-pack-unavailable" and .severity == "warning") | .path] | sort == ["apps[0].icon", "tags[0].icon"])' \
+  "both pack icons are reported as warnings while the pack is absent, and the push succeeds"
+effective="$(query_json config)" || die "could not query /config"
+assert_jq "$effective" \
+  ".apps == []
+   and .tags == [ {\"name\":\"Fixture\",\"apps\":[\"com.android.settings\"]},
+                  {\"name\":\"Letters\",\"icon\":{\"text\":\"AB\"},\"apps\":[\"$LATE_APP\",\"com.android.settings\"]} ]" \
+  "the tags and the text icon apply at once; neither pack icon reads back while the pack is absent"
+ok "tags apply at once, and pack icons wait for their pack"
+
+event_seen="$(arrivals_decided "$PACK_PKG" "reloaded")"
+index_seen="$(arrivals_decided "$PACK_PKG:1 (1)" "reloaded")"
+t0=$SECONDS
+install_out="$(adb -s "$SERIAL" install "$PACK_APK" 2>&1)" \
+  || { printf '%s\n' "$install_out" >&2; die "could not install the icon-pack fixture"; }
+case "$install_out" in *Success*) ;; *) printf '%s\n' "$install_out" >&2; die "could not install the icon-pack fixture" ;; esac
+wait_report '.trigger == "apps-changed" and .success == true
+  and ([.diagnostics[]? | select(.code == "icon-pack-unavailable")] | length == 0)' \
+  30 "an arrival reload finds the pack's drawables"
+arrival=$((SECONDS - t0))
+effective="$(query_json config)" || die "could not query /config"
+assert_jq "$effective" \
+  ".apps == [{\"packageName\":\"com.android.settings\",\"icon\":{\"pack\":\"$PACK_PKG\",\"drawable\":\"fixture_star\"}}]
+   and ([.tags[] | select(.name == \"Fixture\") | .icon] == [{\"pack\":\"$PACK_PKG\",\"drawable\":\"fixture_gear\"}])" \
+  "each icon reads back as the drawable the file named, not the pack's own match"
+# Which signal carried it: counted, not required - they race by design.
+by_event=$(( $(arrivals_decided "$PACK_PKG" "reloaded") - event_seen ))
+by_index=$(( $(arrivals_decided "$PACK_PKG:1 (1)" "reloaded") - index_seen ))
+# The order they came in, for the record: which one looked first is the race.
+adb_out shell logcat -d -s ConfigWatcher:D 2>/dev/null | grep -F "arrival $PACK_PKG" | tr -d '\r' | sed 's/^/   /' || true
+ok "a pack arriving after the file gives the app and the tag the drawables it named (${arrival} s after the install; reloads by the package event ${by_event}, by the index ${by_index})"
+adb -s "$SERIAL" uninstall "$PACK_PKG" >/dev/null 2>&1 || true
 
 # --- 9. restore a valid config via adb push (interactive dotfile path) ---
 

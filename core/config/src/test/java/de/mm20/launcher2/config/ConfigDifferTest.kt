@@ -100,6 +100,44 @@ class ConfigDifferTest {
         }
     }
 
+    @Test
+    fun `shapes and typography diff each on their own`() {
+        assertEquals(
+            listOf(ConfigMutation.SetTheme(shapes = ThemeShapes.Rect)),
+            ConfigDiffer.diff(LauncherConfig(2, appearance = AppearanceConfig(theme = ThemeConfig(shapes = ThemeShapes.Rect))), baseState),
+        )
+        assertEquals(
+            listOf(ConfigMutation.SetTheme(typography = ThemeTypography.Serif)),
+            ConfigDiffer.diff(LauncherConfig(2, appearance = AppearanceConfig(theme = ThemeConfig(typography = ThemeTypography.Serif))), baseState),
+        )
+        assertEquals(
+            "the defaults the state starts with are no change",
+            emptyList<ConfigMutation>(),
+            ConfigDiffer.diff(
+                LauncherConfig(2, appearance = AppearanceConfig(theme = ThemeConfig(shapes = ThemeShapes.Default, typography = ThemeTypography.GoogleSans))),
+                baseState,
+            ),
+        )
+    }
+
+    /** As with the colours: a set a person made differs from every slug the file names. */
+    @Test
+    fun `a person's own shape set or typography differs from every slug the file names`() {
+        val own = baseState.copy(themeShapes = null, themeTypography = null)
+        for (shapes in ThemeShapes.entries) {
+            assertEquals(
+                listOf(ConfigMutation.SetTheme(shapes = shapes)),
+                ConfigDiffer.diff(LauncherConfig(2, appearance = AppearanceConfig(theme = ThemeConfig(shapes = shapes))), own),
+            )
+        }
+        for (typography in ThemeTypography.entries) {
+            assertEquals(
+                listOf(ConfigMutation.SetTheme(typography = typography)),
+                ConfigDiffer.diff(LauncherConfig(2, appearance = AppearanceConfig(theme = ThemeConfig(typography = typography))), own),
+            )
+        }
+    }
+
     // ----- appearance.glass (#73) -----
 
     @Test
@@ -611,6 +649,52 @@ class ConfigDifferTest {
             LauncherConfig(2, home = HomeConfig(grid = GridConfig(layouts = emptyLayouts))),
             baseState.copy(gridLayouts = emptyLayouts, gridInitialized = true),
         )
+
+        assertEquals(emptyList<ConfigMutation>(), mutations)
+    }
+
+    // ---- apps and tags carry the file's own order (review on #224) ----
+
+    /**
+     * The stores name a diagnostic by the entry's index in the list they are
+     * given (`apps[1].icon`, `tags[0].apps[2]`), and the first of two entries
+     * that are one app is the one that applies. So the mutation carries the
+     * file's list as written; the comparison alone is order-blind.
+     */
+    @Test
+    fun `SetApps carries the file's entries in the file's order`() {
+        val apps = listOf(
+            AppConfig("org.z", label = "Z"),
+            AppConfig("org.a"),
+            AppConfig("org.m", visibility = AppVisibility.Hidden),
+        )
+
+        val mutations = ConfigDiffer.diff(LauncherConfig(2, apps = apps), baseState)
+
+        assertEquals(listOf(ConfigMutation.SetApps(apps)), mutations)
+    }
+
+    @Test
+    fun `SetTags carries the file's tags and their apps in the file's order`() {
+        val tags = listOf(
+            TagConfig("Work", apps = listOf(TagApp("org.z"), TagApp("org.a"))),
+            TagConfig("Music", icon = TagIcon.Pack("missing.pack", "d"), apps = listOf(TagApp("org.b"))),
+        )
+
+        val mutations = ConfigDiffer.diff(LauncherConfig(2, tags = tags), baseState)
+
+        assertEquals(listOf(ConfigMutation.SetTags(tags)), mutations)
+    }
+
+    /** Control: the same tags in another order are no difference. */
+    @Test
+    fun `tags in another order are nothing to do`() {
+        val tags = listOf(
+            TagConfig("Work", apps = listOf(TagApp("org.z"), TagApp("org.a"))),
+            TagConfig("Music", apps = listOf(TagApp("org.b"))),
+        )
+
+        val mutations = ConfigDiffer.diff(LauncherConfig(2, tags = tags), baseState.copy(tags = tags.reversed().normalizedTags()))
 
         assertEquals(emptyList<ConfigMutation>(), mutations)
     }

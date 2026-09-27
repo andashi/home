@@ -1,6 +1,8 @@
 package de.mm20.launcher2.themes
 
 import de.mm20.launcher2.preferences.BuiltInColorSchemes
+import de.mm20.launcher2.preferences.BuiltInShapes
+import de.mm20.launcher2.preferences.BuiltInTypography
 import java.util.UUID
 
 
@@ -13,12 +15,14 @@ val DefaultThemeId: UUID = BuiltInColorSchemes.System
 val HighContrastThemeId: UUID = BuiltInColorSchemes.HighContrast
 val BlackAndWhiteThemeId: UUID = BuiltInColorSchemes.BlackAndWhite
 
-val ExtraRoundShapesId = UUID(0L, 1L)
-val CutShapesId = UUID(0L, 2L)
-val RectShapesId = UUID(0L, 3L)
+// The built-in shape sets and typographies too, where appearance.theme.shapes
+// and appearance.theme.typography map their slugs onto them.
+val ExtraRoundShapesId: UUID = BuiltInShapes.ExtraRound
+val CutShapesId: UUID = BuiltInShapes.Cut
+val RectShapesId: UUID = BuiltInShapes.Rect
 
 
-val SystemFontId = UUID(0L, 1L)
-val MonospaceId = UUID(0L, 2L)
-val SerifId = UUID(0L, 3L)
-val RoundedTypographyId = UUID(0L, 4L)
+val SystemFontId: UUID = BuiltInTypography.System
+val MonospaceId: UUID = BuiltInTypography.Monospace
+val SerifId: UUID = BuiltInTypography.Serif
+val RoundedTypographyId: UUID = BuiltInTypography.GoogleSansRounded

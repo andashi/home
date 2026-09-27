@@ -34,6 +34,10 @@ object ConfigValidator {
     /** `apps` (#3 slice 4): past any phone's app count, well short of a denial of service. */
     const val MaxApps = 512
     const val MaxLabelLength = 100
+    /** `tags` (#3 slice 4): far more tags than a phone has. */
+    const val MaxTags = 200
+    /** `tags[].icon.text`: an emoji, or a few letters; an emoji can be several code points. */
+    const val MaxTagTextLength = 16
     /**
      * What a label may contain, as the schema publishes it: something that
      * is not white space, and no control characters or line breaks. The
@@ -47,6 +51,16 @@ object ConfigValidator {
      * there is no relative `.Main` form, which no launcher entry could match.
      */
     internal val activityNameRegex = Regex("^[A-Za-z_$][A-Za-z0-9_$]*(\\.[A-Za-z_$][A-Za-z0-9_$]*)*$")
+    /** A drawable's name in an icon pack: a resource name, the only thing Resources.getIdentifier gets from the file. */
+    const val MaxDrawableNameLength = 100
+    /** A calendar icon lists one drawable per day of the month. */
+    const val MaxCalendarDays = 31
+    private const val drawableName = "[A-Za-z_][A-Za-z0-9_]{0,${MaxDrawableNameLength - 1}}"
+    /** `apps[].icon.drawable`: one resource name, or a calendar's comma-separated days - no type, package or path. */
+    internal val drawableRegex = Regex("^$drawableName(,$drawableName){0,${MaxCalendarDays - 1}}$")
+    /** `apps[].icon.scale`: around the picker's presets (0.7 to 48/38), short of an icon lost or cropped away. */
+    const val MinIconScale = 0.5f
+    const val MaxIconScale = 1.5f
     const val MaxGridItems = 32
     const val MaxSearchActions = 32
     const val MinGridColumns = 2
@@ -180,6 +194,8 @@ object ConfigValidator {
 
         config.apps?.let { apps -> validateApps(apps, diagnostics) }
 
+        config.tags?.let { tags -> validateTags(tags, diagnostics) }
+
         // #3 slice 2: an app a gesture launches is named like a favorite.
         config.gestures?.byGesture()?.forEach { (gesture, value) ->
             if (value is GestureConfig.App) {
@@ -224,6 +240,26 @@ object ConfigValidator {
                         "A label is 1 to $MaxLabelLength characters, not blank, without control characters or line breaks",
                     )
                 }
+            }
+            when (val icon = app.icon) {
+                is AppIcon.Pack -> {
+                    validatePackageName(icon.pack, "$path.icon.pack", out)
+                    if (!drawableRegex.matches(icon.drawable)) {
+                        out += Diagnostic(
+                            DiagnosticCode.InvalidApps, "$path.icon.drawable",
+                            "A drawable is a resource name, or up to $MaxCalendarDays of them separated by commas",
+                        )
+                    }
+                }
+
+                is AppIcon.Adaptive -> if (!(icon.scale >= MinIconScale && icon.scale <= MaxIconScale)) {
+                    out += Diagnostic(
+                        DiagnosticCode.InvalidApps, "$path.icon.scale",
+                        "An icon's scale is between $MinIconScale and $MaxIconScale",
+                    )
+                }
+
+                else -> Unit
             }
             if (!seen.add(Triple(app.packageName, app.profile, app.activity))) {
                 out += Diagnostic(
@@ -397,6 +433,76 @@ object ConfigValidator {
     }
 
     private fun Float.plain(): String = if (this % 1f == 0f) toInt().toString() else toString()
+
+    /**
+     * `tags` (#3 slice 4). A tag's name and a text icon end up on the screen,
+     * so each is a name as an app's label is; a pack icon is checked as an
+     * app's. The same name twice, or the same app twice in a tag, is an
+     * error: the file would say two things about one tag.
+     */
+    private fun validateTags(tags: List<TagConfig>, out: MutableList<Diagnostic>) {
+        if (tags.size > MaxTags) {
+            out += Diagnostic(DiagnosticCode.InvalidTags, "tags", "The tags list exceeds the maximum of $MaxTags entries")
+        }
+        val names = mutableSetOf<String>()
+        tags.forEachIndexed { index, tag ->
+            val path = "tags[$index]"
+            if (!isDisplayName(tag.name, MaxLabelLength)) {
+                out += Diagnostic(
+                    DiagnosticCode.InvalidTags, "$path.name",
+                    "A tag's name is 1 to $MaxLabelLength characters, not blank, without control characters or line breaks",
+                )
+            }
+            if (!names.add(tag.name)) {
+                out += Diagnostic(DiagnosticCode.DuplicateTag, path, "The tag '${tag.name}' is listed twice")
+            }
+            when (val icon = tag.icon) {
+                is TagIcon.Pack -> {
+                    validatePackageName(icon.pack, "$path.icon.pack", out)
+                    if (!drawableRegex.matches(icon.drawable)) {
+                        out += Diagnostic(
+                            DiagnosticCode.InvalidTags, "$path.icon.drawable",
+                            "A drawable is a resource name, or up to $MaxCalendarDays of them separated by commas",
+                        )
+                    }
+                }
+                is TagIcon.Text -> if (!isDisplayName(icon.text, MaxTagTextLength)) {
+                    out += Diagnostic(
+                        DiagnosticCode.InvalidTags, "$path.icon.text",
+                        "A tag's text icon is 1 to $MaxTagTextLength characters, without control characters or line breaks",
+                    )
+                }
+                null -> Unit
+            }
+            if (tag.apps.size > MaxApps) {
+                out += Diagnostic(DiagnosticCode.InvalidTags, "$path.apps", "A tag's apps exceed the maximum of $MaxApps entries")
+            }
+            val seen = mutableSetOf<TagApp>()
+            tag.apps.forEachIndexed { appIndex, app ->
+                val appPath = "$path.apps[$appIndex]"
+                validatePackageName(app.packageName, appPath, out)
+                app.activity?.let { activity ->
+                    if (activity.length > MaxPackageNameLength || !activityNameRegex.matches(activity)) {
+                        out += Diagnostic(DiagnosticCode.InvalidTags, "$appPath.activity", "'$activity' is not a valid activity class name")
+                    }
+                }
+                if (!seen.add(app)) {
+                    out += Diagnostic(DiagnosticCode.DuplicateApp, appPath, "'${app.packageName}' is listed twice in the tag '${tag.name}'")
+                }
+            }
+        }
+    }
+
+    /** A name that ends up on the screen: 1 to [max] characters, not blank, no control characters or line breaks. */
+    private fun isDisplayName(text: String, max: Int): Boolean {
+        val length = text.codePointCount(0, text.length)
+        val badChar = text.codePoints().anyMatch {
+            Character.isISOControl(it) ||
+                Character.getType(it) == Character.LINE_SEPARATOR.toInt() ||
+                Character.getType(it) == Character.PARAGRAPH_SEPARATOR.toInt()
+        }
+        return !text.isBlank() && length <= max && !badChar
+    }
 
     private fun validatePackageName(
         packageName: String,

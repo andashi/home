@@ -120,6 +120,15 @@ internal object ConfigSchema {
     private fun typeSchema(path: String, descriptor: SerialDescriptor): JsonObject {
         val name = descriptor.serialName.removeSuffix("?")
         fieldEnums[name]?.let { return enumOf(it.names) }
+        if (name == "AppIcon") return appIconSchema(path)
+        if (name == "TagIcon") return tagIconSchema(path)
+        // A package name for a personal app's first entry, or the object form (TagAppSerializer).
+        if (name == "TagApp") return buildJsonObject {
+            putJsonArray("oneOf") {
+                add(packageName())
+                add(objectSchema(descriptor, path))
+            }
+        }
         // A package name for the personal profile, or the object form (FavoriteSerializer).
         if (name == "Favorite") return buildJsonObject {
             putJsonArray("oneOf") {
@@ -164,11 +173,65 @@ internal object ConfigSchema {
         }
     }
 
+    /**
+     * An icon's object forms at [path], each a variant: the keys come from the
+     * parser's key table and their leaves' limits from [constraints] and
+     * [replaced], as every other key's, and the variants cover the table's
+     * keys exactly.
+     */
+    private class IconVariants(private val path: String) {
+        private val keys = ConfigParser.keyEffects[path] ?: error("no key table entry for '$path' (ConfigParser.keyEffects)")
+        private val covered = mutableSetOf<String>()
+
+        fun variant(vararg fields: Pair<String, JsonObject>, optional: Set<String> = emptySet()) = buildJsonObject {
+            require(fields.all { it.first in keys }) { "a key of $path is not in the parser's key table" }
+            fields.forEach { covered += it.first }
+            put("type", "object")
+            putJsonObject("properties") {
+                for ((field, schema) in fields) {
+                    val key = join(path, field)
+                    put(field, replaced[key] ?: JsonObject(schema + constraints[key].orEmpty()))
+                }
+            }
+            putJsonArray("required") { fields.filter { it.first !in optional }.forEach { add(JsonPrimitive(it.first)) } }
+            put("additionalProperties", false)
+        }
+
+        fun schema(words: List<String>, variants: List<JsonObject>): JsonObject {
+            require(covered == keys.keys) { "the icon's variants do not cover $path's keys exactly" }
+            return buildJsonObject {
+                putJsonArray("oneOf") {
+                    if (words.isNotEmpty()) add(enumOf(words))
+                    variants.forEach { add(it) }
+                }
+            }
+        }
+
+        fun pack() = variant("pack" to type("string"), "drawable" to type("string"), "themed" to type("boolean"), optional = setOf("themed"))
+    }
+
+    /** `apps[].icon` (AppIconSerializer): a word, a pack icon or an adaptive one. */
+    private fun appIconSchema(path: String): JsonObject = IconVariants(path).run {
+        val pack = pack()
+        val adaptive = variant(
+            "scale" to JsonObject(type("number") + range(ConfigValidator.MinIconScale, ConfigValidator.MaxIconScale)),
+            "background" to type("string"),
+        )
+        schema(AppIconSerializer.Words, listOf(pack, adaptive))
+    }
+
+    /** `tags[].icon` (TagIconSerializer): a pack icon or text, what the tag's picker offers. */
+    private fun tagIconSchema(path: String): JsonObject = IconVariants(path).run {
+        val pack = pack()
+        val text = variant("text" to type("string"))
+        schema(emptyList(), listOf(pack, text))
+    }
+
     /** The enums with a field-naming serializer, by the serial name of its descriptor; their values come from it. */
     private val fieldEnums: Map<String, FieldEnumSerializer<*>> =
         listOf(
             GlassContrastSerializer, SearchBarPositionInSearchSerializer, SearchResultLayoutSerializer,
-            ThemeModeSerializer, ThemeColorsSerializer,
+            ThemeModeSerializer, ThemeColorsSerializer, ThemeShapesSerializer, ThemeTypographySerializer,
             StatusBarIconsSerializer, NavigationBarIconsSerializer,
             AppVisibilitySerializer,
         )
@@ -205,6 +268,16 @@ internal object ConfigSchema {
         },
         "search.actions[].type" to enumOf((SearchActionTypes.Configurable + SearchActionTypes.Intent).sorted()),
         "search.actions[].encoding" to enumOf(SearchActionTypes.Encodings.sorted()),
+        "apps[].icon.background" to buildJsonObject {
+            putJsonArray("oneOf") {
+                add(enumOf(AppIconSerializer.BackgroundWords))
+                add(buildJsonObject {
+                    put("type", "string")
+                    put("pattern", AppIconSerializer.colourRegex.pattern)
+                    put("description", "A colour as #RRGGBB or #AARRGGBB.")
+                })
+            }
+        },
     )
 
     /** Limits added to a leaf's type; [ConfigSchemaTest] breaks each one and expects the parser to object. */
@@ -242,6 +315,25 @@ internal object ConfigSchema {
         ),
         // #3 slice 2.
         "gestures.*.packageName" to packageNameLimits(),
+        // #3 slice 4, PR 2. The drawable's pattern bounds its length too.
+        "apps[].icon.pack" to packageNameLimits(),
+        "apps[].icon.drawable" to pattern(ConfigValidator.drawableRegex),
+        // #3 slice 4: tags. A name and a text icon are names, as a label is.
+        "tags" to maxItems(ConfigValidator.MaxTags),
+        "tags[].name" to mapOf(
+            "maxLength" to JsonPrimitive(ConfigValidator.MaxLabelLength),
+            "pattern" to JsonPrimitive(ConfigValidator.labelCharsPattern),
+        ),
+        "tags[].icon.pack" to packageNameLimits(),
+        "tags[].icon.drawable" to pattern(ConfigValidator.drawableRegex),
+        "tags[].icon.text" to mapOf(
+            "maxLength" to JsonPrimitive(ConfigValidator.MaxTagTextLength),
+            "pattern" to JsonPrimitive(ConfigValidator.labelCharsPattern),
+        ),
+        "tags[].apps" to maxItems(ConfigValidator.MaxApps),
+        "tags[].apps[].packageName" to packageNameLimits(),
+        "tags[].apps[].activity" to pattern(ConfigValidator.activityNameRegex) +
+            mapOf("maxLength" to JsonPrimitive(ConfigValidator.MaxPackageNameLength)),
     )
 
     // ---- helpers ----

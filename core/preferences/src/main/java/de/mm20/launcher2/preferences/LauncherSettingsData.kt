@@ -165,6 +165,28 @@ object BuiltInColorSchemes {
     val HighContrast: UUID = UUID(0L, 2L)
 }
 
+/**
+ * The ids of the built-in shape sets, defined once as the colour schemes'
+ * are: data/themes names its sets by these, and `appearance.theme.shapes`
+ * maps its slugs onto them. Any other id is a set a person made.
+ */
+object BuiltInShapes {
+    val Default: UUID = BuiltInColorSchemes.System
+    val ExtraRound: UUID = UUID(0L, 1L)
+    val Cut: UUID = UUID(0L, 2L)
+    val Rect: UUID = UUID(0L, 3L)
+}
+
+/** The ids of the built-in typographies; `appearance.theme.typography` maps its slugs onto them. */
+object BuiltInTypography {
+    /** Google Sans, the default of a fresh install. */
+    val GoogleSans: UUID = BuiltInColorSchemes.System
+    val System: UUID = UUID(0L, 1L)
+    val Monospace: UUID = UUID(0L, 2L)
+    val Serif: UUID = UUID(0L, 3L)
+    val GoogleSansRounded: UUID = UUID(0L, 4L)
+}
+
 @Serializable
 enum class SearchBarStyle {
     Transparent,

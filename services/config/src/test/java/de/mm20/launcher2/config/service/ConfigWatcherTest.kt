@@ -187,8 +187,8 @@ class ConfigWatcherTest {
         val baselines = AppliedBaselineStore(context)
         val naming = FakeAppNaming(recorded = false)
         val watcher = ConfigWatcher(
-            context, ConfigReloader(store, reportStore, appNaming = naming), reportStore, scope = this,
-            baselineStore = baselines, appNaming = naming,
+            context, ConfigReloader(store, reportStore, namings = listOf(naming)), reportStore, scope = this,
+            baselineStore = baselines, namings = listOf(naming),
         )
         writeConfig()
         val hash = configFile().readBytes().sha256Hex()
@@ -215,8 +215,8 @@ class ConfigWatcherTest {
         val baselines = AppliedBaselineStore(context)
         val naming = FakeAppNaming(recorded = false)
         val watcher = ConfigWatcher(
-            context, ConfigReloader(store, reportStore, appNaming = naming), reportStore, scope = this,
-            baselineStore = baselines, appNaming = naming,
+            context, ConfigReloader(store, reportStore, namings = listOf(naming)), reportStore, scope = this,
+            baselineStore = baselines, namings = listOf(naming),
         )
         writeConfig()
         val hash = configFile().readBytes().sha256Hex()
@@ -240,7 +240,7 @@ class ConfigWatcherTest {
         val baselines = AppliedBaselineStore(context)
         val watcher = ConfigWatcher(
             context, ConfigReloader(store, reportStore), reportStore, scope = this,
-            baselineStore = baselines, appNaming = FakeAppNaming(recorded = true),
+            baselineStore = baselines, namings = listOf(FakeAppNaming(recorded = true)),
         )
         writeConfig()
         val hash = configFile().readBytes().sha256Hex()
@@ -250,6 +250,30 @@ class ConfigWatcherTest {
         watcher.startupCheck()!!.join()
 
         assertEquals(0, store.applyCount)
+    }
+
+    /** The tags' record missing alone, the apps' made (review on #224): one reload at start makes it. */
+    @Test
+    fun `startup check reloads once when only the tags' record is missing`() = runTest {
+        val store = FakeConfigStore()
+        val reportStore = ReloadReportStore(context)
+        val baselines = AppliedBaselineStore(context)
+        val namings = listOf(FakeAppNaming(recorded = true), FakeAppNaming(recorded = false))
+        val watcher = ConfigWatcher(
+            context, ConfigReloader(store, reportStore, namings = namings), reportStore, scope = this,
+            baselineStore = baselines, namings = namings,
+        )
+        writeConfig()
+        val hash = configFile().readBytes().sha256Hex()
+        reportStore.save(ReloadReport(success = true, configSha256 = hash))
+        baselines.save(AppliedBaseline(hash, JsonObject(emptyMap())))
+
+        watcher.startupCheck()!!.join()
+        assertEquals(1, store.applyCount)
+        assertTrue(namings.all { it.recorded() })
+
+        watcher.startupCheck()!!.join()
+        assertEquals("the next start does not", 1, store.applyCount)
     }
 
     private class FakeAppNaming(private var recorded: Boolean) : AppNaming {
@@ -606,7 +630,7 @@ class ConfigWatcherTest {
         }
 
         assertEquals(
-            listOf("app-unavailable", "favorite-unavailable", "gesture-app-unavailable", "profile-unavailable", "unknown-widget-provider"),
+            listOf("app-unavailable", "favorite-unavailable", "gesture-app-unavailable", "icon-pack-unavailable", "profile-unavailable", "unknown-widget-provider"),
             ConfigWatcher.WaitingCodes.sorted(),
         )
     }
@@ -735,5 +759,62 @@ class ConfigWatcherTest {
         )
 
         assertEquals(listOf(FirstAppListRead, "app://b", "app://c", "app://d"), appKeyGrowth(keys).toList())
+    }
+
+    /**
+     * The icon pack index's growth is a signal too (#3 slice 4): a pack's
+     * package event races its indexing, so a reload on the event alone can
+     * look before the pack is there and never look again. Its first read is
+     * a signal of its own - the index is built after the process starts, so
+     * the start check can look before it as well.
+     */
+    @Test
+    fun `the icon pack index's growth signals each pack as indexed`() = runTest {
+        val index = object : IconPackIndex {
+            override suspend fun resolve(pack: String, drawable: String) = error("not used here")
+            override fun indexed() = kotlinx.coroutines.flow.flowOf(
+                setOf("p.one:1"),
+                setOf("p.one:1", "p.two:1"),
+                setOf("p.one:2", "p.two:1"),
+            )
+        }
+
+        assertEquals(listOf(FirstIconPackListRead, "p.two:1", "p.one:2"), iconPackGrowth(index).toList())
+    }
+
+    /** An index that reads [reads] in turn: a pack's indexing, or its absence. */
+    private fun indexReading(vararg reads: Set<String>) = object : IconPackIndex {
+        override suspend fun resolve(pack: String, drawable: String) = error("not used here")
+        override fun indexed() = kotlinx.coroutines.flow.flowOf(*reads)
+    }
+
+    /**
+     * The two windows of a pack's arrival, each alone (#3 slice 4): the
+     * package event fires at the install, the index grows when the indexing
+     * is done, and either can come first on a given run. Here the event
+     * arrives and the index never grows - the event alone must reach the
+     * watcher. Beside the first reads, which every start signals.
+     */
+    @Test
+    fun `a pack's package event alone is an arrival`() = runTest {
+        val arrivals = packageArrivals(
+            events = kotlinx.coroutines.flow.flowOf("org.pack"),
+            apps = FakeAppRepository(),
+            iconPacks = indexReading(emptySet()),
+        )
+
+        assertEquals(setOf(FirstAppListRead, FirstIconPackListRead, "org.pack"), arrivals.toList().toSet())
+    }
+
+    /** The other window: the index grows and no package event comes - the index alone must reach the watcher. */
+    @Test
+    fun `a pack entering the index without a package event is an arrival`() = runTest {
+        val arrivals = packageArrivals(
+            events = kotlinx.coroutines.flow.emptyFlow(),
+            apps = FakeAppRepository(),
+            iconPacks = indexReading(emptySet(), setOf("org.pack:1")),
+        )
+
+        assertEquals(setOf(FirstAppListRead, FirstIconPackListRead, "org.pack:1"), arrivals.toList().toSet())
     }
 }
