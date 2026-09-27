@@ -97,7 +97,12 @@ class GesturesStoreTest {
         assertTrue(applied.sections.toString(), "gestures" in applied.sections)
     }
 
-    /** The favorites precedent: reported, the gesture keeps what it did, the rest applies. */
+    /**
+     * Reported, the gesture keeps what it did, the rest applies - and a
+     * warning: the file is fine, this device cannot honour it yet, and it
+     * heals itself when the app arrives (the arrival reload, #213). An error
+     * would call a correct file wrong (#215).
+     */
     @Test
     fun `an app that is not installed is reported and its gesture left alone`() = runTest {
         val applied = store.applyAndCapture(
@@ -113,7 +118,7 @@ class GesturesStoreTest {
 
         val diagnostic = applied.diagnostics.single()
         assertEquals("gesture-app-unavailable", diagnostic.code)
-        assertEquals(Severity.Error, diagnostic.severity)
+        assertEquals(Severity.Warning, diagnostic.severity)
         assertEquals("gestures.swipeLeft", diagnostic.path)
         assertEquals(
             "App 'com.example.missing' is not installed in the personal profile; gestures.swipeLeft keeps what it did",

@@ -169,8 +169,7 @@ object ConfigParser {
                 config = null,
                 diagnostics = listOf(
                     Diagnostic(
-                        Severity.Error,
-                        "input-too-large",
+                        DiagnosticCode.InputTooLarge,
                         "",
                         "Input exceeds the maximum size of $MaxInputBytes bytes",
                     )
@@ -185,8 +184,7 @@ object ConfigParser {
                 config = null,
                 diagnostics = listOf(
                     Diagnostic(
-                        Severity.Error,
-                        "malformed-json",
+                        DiagnosticCode.MalformedJson,
                         "",
                         "Malformed JSON: ${e.message ?: "parse error"}",
                     )
@@ -197,8 +195,7 @@ object ConfigParser {
                 config = null,
                 diagnostics = listOf(
                     Diagnostic(
-                        Severity.Error,
-                        "malformed-json",
+                        DiagnosticCode.MalformedJson,
                         "",
                         "Malformed JSON: ${e.message ?: "parse error"}",
                     )
@@ -211,8 +208,7 @@ object ConfigParser {
                 config = null,
                 diagnostics = listOf(
                     Diagnostic(
-                        Severity.Error,
-                        "malformed-json",
+                        DiagnosticCode.MalformedJson,
                         "",
                         "Config document must be a JSON object",
                     )
@@ -226,8 +222,7 @@ object ConfigParser {
         when {
             versionElement == null -> {
                 versionDiagnostics += Diagnostic(
-                    Severity.Error,
-                    "missing-schema-version",
+                    DiagnosticCode.MissingSchemaVersion,
                     "schemaVersion",
                     "Missing required key 'schemaVersion'",
                 )
@@ -235,8 +230,7 @@ object ConfigParser {
 
             version == null -> {
                 versionDiagnostics += Diagnostic(
-                    Severity.Error,
-                    "invalid-schema-version",
+                    DiagnosticCode.InvalidSchemaVersion,
                     "schemaVersion",
                     "'schemaVersion' must be an integer",
                 )
@@ -244,8 +238,7 @@ object ConfigParser {
 
             version > ConfigMigrations.currentSchemaVersion -> {
                 versionDiagnostics += Diagnostic(
-                    Severity.Error,
-                    "unsupported-schema-version",
+                    DiagnosticCode.UnsupportedSchemaVersion,
                     "schemaVersion",
                     "Schema version $version is newer than the supported version " +
                             "${ConfigMigrations.currentSchemaVersion}",
@@ -254,8 +247,7 @@ object ConfigParser {
 
             !ConfigMigrations.canMigrate(version) -> {
                 versionDiagnostics += Diagnostic(
-                    Severity.Error,
-                    "unsupported-schema-version",
+                    DiagnosticCode.UnsupportedSchemaVersion,
                     "schemaVersion",
                     "No migration path from schema version $version to " +
                             "${ConfigMigrations.currentSchemaVersion}",
@@ -278,8 +270,7 @@ object ConfigParser {
             return ConfigParseResult(
                 config = null,
                 diagnostics = unknownKeyDiagnostics + Diagnostic(
-                    Severity.Error,
-                    "decode-failed",
+                    DiagnosticCode.DecodeFailed,
                     "",
                     "Document does not match the schema: ${e.message ?: "decode error"}",
                 ),
@@ -288,8 +279,7 @@ object ConfigParser {
             return ConfigParseResult(
                 config = null,
                 diagnostics = unknownKeyDiagnostics + Diagnostic(
-                    Severity.Error,
-                    "decode-failed",
+                    DiagnosticCode.DecodeFailed,
                     "",
                     "Document does not match the schema: ${e.message ?: "decode error"}",
                 ),
@@ -324,8 +314,7 @@ object ConfigParser {
         if (unknown.isEmpty()) return document
         for (key in unknown) {
             out += Diagnostic(
-                Severity.Warning,
-                "unknown-layout",
+                DiagnosticCode.UnknownLayout,
                 "home.grid.layouts.$key",
                 "Unknown layout '$key' is ignored; this build renders ${GridLayouts.All.joinToString(" and ")}",
             )
@@ -374,8 +363,7 @@ object ConfigParser {
                         val path = if (reportPath.isEmpty()) key else "$reportPath.$key"
                         when (val effect = effects[key]) {
                             null -> out += Diagnostic(
-                                Severity.Warning,
-                                "unknown-key",
+                                DiagnosticCode.UnknownKey,
                                 path,
                                 "Unknown key '$path' is ignored",
                             )
@@ -385,8 +373,7 @@ object ConfigParser {
                             // second reload, when the differ produces no
                             // mutation for it and nothing else would speak up.
                             is KeyEffect.Inert -> out += Diagnostic(
-                                Severity.Warning,
-                                "inert-key",
+                                DiagnosticCode.InertKey,
                                 path,
                                 "'$path' is accepted but this build does not act on it as specified: ${effect.reason}",
                             )

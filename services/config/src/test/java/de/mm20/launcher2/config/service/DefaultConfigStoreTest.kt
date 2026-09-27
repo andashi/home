@@ -20,6 +20,7 @@ import de.mm20.launcher2.homegrid.HomeGridItemConfig
 import de.mm20.launcher2.homegrid.HomeGridInitLock
 import de.mm20.launcher2.config.ConfigState
 import de.mm20.launcher2.config.Diagnostic
+import de.mm20.launcher2.config.DiagnosticCode
 import de.mm20.launcher2.config.Favorite
 import de.mm20.launcher2.config.Severity
 import de.mm20.launcher2.profiles.Profile
@@ -860,8 +861,15 @@ class DefaultConfigStoreTest {
         reading.await()
     }
 
+    /**
+     * A favorite for an app that is not installed is skipped and kept for when
+     * it is (the watcher reloads on its arrival): a warning, like every other
+     * "absent now" code, not an error that fails the push. The message still
+     * names the package - the provisioning host prints every diagnostic, and
+     * the warning is what a person reads.
+     */
     @Test
-    fun `SetFavorites skips unavailable apps with error diagnostics`() = runTest {
+    fun `SetFavorites skips unavailable apps with a warning that names the package`() = runTest {
         val appA = app("com.example.a", personalHandle)
         appRepository.apps["com.example.a" to personalHandle] = appA
 
@@ -878,9 +886,10 @@ class DefaultConfigStoreTest {
 
         assertEquals(listOf(appA), searchableRepository.manuallySorted)
         assertEquals(1, diagnostics.size)
-        assertEquals(Severity.Error, diagnostics[0].severity)
+        assertEquals(Severity.Warning, diagnostics[0].severity)
         assertEquals("favorite-unavailable", diagnostics[0].code)
         assertEquals("home.favorites[1]", diagnostics[0].path)
+        assertTrue(diagnostics[0].message, "com.example.missing" in diagnostics[0].message)
     }
 
     @Test
@@ -898,7 +907,9 @@ class DefaultConfigStoreTest {
         assertEquals(emptyList<SavableSearchable>(), searchableRepository.manuallySorted)
         assertEquals(1, diagnostics.size)
         assertEquals("profile-unavailable", diagnostics[0].code)
-        assertEquals(Severity.Error, diagnostics[0].severity)
+        // One severity for the code, whichever section reports it: `apps` has always said warning.
+        assertEquals(Severity.Warning, diagnostics[0].severity)
+        assertTrue(diagnostics[0].message, "com.example.b" in diagnostics[0].message)
     }
 
     // ----- settings-backed mutations -----
@@ -952,7 +963,7 @@ class DefaultConfigStoreTest {
     @Test
     fun `SetSearchActions replaces the actions, outside the settings call, and passes its reports on`() = runTest {
         val actions = listOf(SearchActionConfig("url", label = "Docs", url = "https://example.org/?q=\${1}"))
-        val report = Diagnostic(Severity.Warning, "search-action-app-not-searchable", "search.actions[1]", "x")
+        val report = Diagnostic(DiagnosticCode.SearchActionAppNotSearchable, "search.actions[1]", "x")
         searchActionStore.reports = listOf(report)
 
         val diagnostics = store.apply(listOf(ConfigMutation.SetSearchActions(actions)))

@@ -89,8 +89,7 @@ object ConfigValidator {
         config.search?.frequentlyUsedRows?.let { rows ->
             if (rows !in SearchDefaults.MinFrequentlyUsedRows..SearchDefaults.MaxFrequentlyUsedRows) {
                 diagnostics += Diagnostic(
-                    Severity.Error,
-                    "invalid-search",
+                    DiagnosticCode.InvalidSearch,
                     "search.frequentlyUsedRows",
                     "Frequently used rows must be between ${SearchDefaults.MinFrequentlyUsedRows} and " +
                         "${SearchDefaults.MaxFrequentlyUsedRows}, got $rows",
@@ -103,8 +102,7 @@ object ConfigValidator {
         config.search?.transliterator?.let { id ->
             if (!transliteratorIdRegex.matches(id)) {
                 diagnostics += Diagnostic(
-                    Severity.Error,
-                    "invalid-search",
+                    DiagnosticCode.InvalidSearch,
                     "search.transliterator",
                     "Transliterator must be \"${SearchDefaults.TransliteratorAuto}\", " +
                         "\"${SearchDefaults.TransliteratorOff}\" or one ICU transliterator id " +
@@ -117,8 +115,7 @@ object ConfigValidator {
         config.icons?.size?.let { size ->
             if (size !in IconDefaults.Sizes) {
                 diagnostics += Diagnostic(
-                    Severity.Error,
-                    "invalid-icons",
+                    DiagnosticCode.InvalidIcons,
                     "icons.size",
                     "Icon size must be one of ${IconDefaults.Sizes.joinToString()} dp, got $size",
                 )
@@ -130,8 +127,7 @@ object ConfigValidator {
         config.search?.let { search ->
             if (search.barPosition == InSearchBarPosition.Top && search.reversed == true) {
                 diagnostics += Diagnostic(
-                    Severity.Warning,
-                    "search-reversed-with-top-bar",
+                    DiagnosticCode.SearchReversedWithTopBar,
                     "search.reversed",
                     "reversed results with search.barPosition top put the best match the farthest from the " +
                             "search bar; applied as written",
@@ -150,8 +146,7 @@ object ConfigValidator {
         config.appearance?.wallpaper?.image?.let { image ->
             if (!imageNameRegex.matches(image)) {
                 diagnostics += Diagnostic(
-                    Severity.Error,
-                    "invalid-wallpaper-image",
+                    DiagnosticCode.InvalidWallpaperImage,
                     "appearance.wallpaper.image",
                     "'$image' is not a valid upload name (letters, digits, '.', '_', '-'; no leading dot; max 64)",
                 )
@@ -161,8 +156,7 @@ object ConfigValidator {
         config.home?.favorites?.let { favorites ->
             if (favorites.size > MaxFavorites) {
                 diagnostics += Diagnostic(
-                    Severity.Error,
-                    "too-many-favorites",
+                    DiagnosticCode.TooManyFavorites,
                     "home.favorites",
                     "Favorites list exceeds the maximum of $MaxFavorites entries",
                 )
@@ -173,8 +167,7 @@ object ConfigValidator {
                 validatePackageName(favorite.packageName, "$path.packageName", diagnostics)
                 if (!seen.add(favorite)) {
                     diagnostics += Diagnostic(
-                        Severity.Error,
-                        "duplicate-favorite",
+                        DiagnosticCode.DuplicateFavorite,
                         path,
                         "Duplicate favorite '${favorite.packageName}' " +
                                 "(${favorite.profile.name.lowercase()})",
@@ -204,7 +197,7 @@ object ConfigValidator {
      */
     private fun validateApps(apps: List<AppConfig>, out: MutableList<Diagnostic>) {
         if (apps.size > MaxApps) {
-            out += Diagnostic(Severity.Error, "invalid-apps", "apps", "The apps list exceeds the maximum of $MaxApps entries")
+            out += Diagnostic(DiagnosticCode.InvalidApps, "apps", "The apps list exceeds the maximum of $MaxApps entries")
         }
         val seen = mutableSetOf<Triple<String, Profile, String?>>()
         apps.forEachIndexed { index, app ->
@@ -213,7 +206,7 @@ object ConfigValidator {
             app.activity?.let { activity ->
                 if (activity.length > MaxPackageNameLength || !activityNameRegex.matches(activity)) {
                     out += Diagnostic(
-                        Severity.Error, "invalid-apps", "$path.activity",
+                        DiagnosticCode.InvalidApps, "$path.activity",
                         "'$activity' is not a valid activity class name",
                     )
                 }
@@ -227,14 +220,14 @@ object ConfigValidator {
                 }
                 if (label.isBlank() || length > MaxLabelLength || badChar) {
                     out += Diagnostic(
-                        Severity.Error, "invalid-apps", "$path.label",
+                        DiagnosticCode.InvalidApps, "$path.label",
                         "A label is 1 to $MaxLabelLength characters, not blank, without control characters or line breaks",
                     )
                 }
             }
             if (!seen.add(Triple(app.packageName, app.profile, app.activity))) {
                 out += Diagnostic(
-                    Severity.Error, "duplicate-app", path,
+                    DiagnosticCode.DuplicateApp, path,
                     "'${app.packageName}' (${app.profile.name.lowercase()}) is listed twice",
                 )
             }
@@ -249,8 +242,7 @@ object ConfigValidator {
     private fun validateSearchActions(actions: List<SearchActionConfig>, out: MutableList<Diagnostic>) {
         if (actions.size > MaxSearchActions) {
             out += Diagnostic(
-                Severity.Error,
-                "too-many-search-actions",
+                DiagnosticCode.TooManySearchActions,
                 "search.actions",
                 "at most $MaxSearchActions search actions, got ${actions.size}",
             )
@@ -259,7 +251,7 @@ object ConfigValidator {
         actions.forEachIndexed { index, action ->
             val path = "search.actions[$index]"
             fun invalid(message: String) {
-                out += Diagnostic(Severity.Error, "invalid-search-action", path, message)
+                out += Diagnostic(DiagnosticCode.InvalidSearchAction, path, message)
             }
             action.packageName?.let { validatePackageName(it, "$path.package", out) }
             when (action.type) {
@@ -280,24 +272,21 @@ object ConfigValidator {
                     if (action.packageName.isNullOrBlank()) invalid("an app action needs the package to search in")
                     if (action.url != null || action.encoding != null) {
                         out += Diagnostic(
-                            Severity.Warning,
-                            "search-action-field-ignored",
+                            DiagnosticCode.SearchActionFieldIgnored,
                             path,
                             "an app action takes a label and a package; its url and encoding are ignored",
                         )
                     }
                 }
                 SearchActionTypes.Intent -> out += Diagnostic(
-                    Severity.Warning,
-                    "search-action-read-only",
+                    DiagnosticCode.SearchActionReadOnly,
                     path,
                     "an intent action is made on the device; the file keeps it where it is but cannot create or change it",
                 )
                 in SearchActionTypes.BuiltIn -> {
                     if (action.label != null || action.url != null || action.packageName != null || action.encoding != null) {
                         out += Diagnostic(
-                            Severity.Warning,
-                            "search-action-field-ignored",
+                            DiagnosticCode.SearchActionFieldIgnored,
                             path,
                             "'${action.type}' is a built-in action; its label, url, package and encoding are ignored",
                         )
@@ -311,7 +300,7 @@ object ConfigValidator {
             // possibly alike: never a duplicate (review on #116).
             val key = listOf(action.type, action.url.orEmpty(), action.packageName.orEmpty()).joinToString("|")
             if (action.type != SearchActionTypes.Intent && !seen.add(key)) {
-                out += Diagnostic(Severity.Error, "duplicate-search-action", path, "the same action is listed twice")
+                out += Diagnostic(DiagnosticCode.DuplicateSearchAction, path, "the same action is listed twice")
             }
         }
     }
@@ -320,8 +309,7 @@ object ConfigValidator {
         grid.columns?.let { columns ->
             if (columns !in MinGridColumns..MaxGridColumns) {
                 out += Diagnostic(
-                    Severity.Error,
-                    "invalid-grid-columns",
+                    DiagnosticCode.InvalidGridColumns,
                     "home.grid.columns",
                     "Grid columns must be between $MinGridColumns and $MaxGridColumns, got $columns",
                 )
@@ -331,8 +319,7 @@ object ConfigValidator {
             val basePath = "home.grid.layouts.$layoutKey.items"
             if (layout.items.size > MaxGridItems) {
                 out += Diagnostic(
-                    Severity.Error,
-                    "too-many-grid-items",
+                    DiagnosticCode.TooManyGridItems,
                     basePath,
                     "Layout '$layoutKey' exceeds the maximum of $MaxGridItems items",
                 )
@@ -342,24 +329,21 @@ object ConfigValidator {
                 val path = "$basePath[$index]"
                 if (!gridItemIdRegex.matches(item.id)) {
                     out += Diagnostic(
-                        Severity.Error,
-                        "invalid-grid-item-id",
+                        DiagnosticCode.InvalidGridItemId,
                         path,
                         "'${item.id}' is not a valid item id (lowercase letters, digits, '-'; " +
                                 "no leading '-'; max 32)",
                     )
                 } else if (!seenIds.add(item.id)) {
                     out += Diagnostic(
-                        Severity.Error,
-                        "duplicate-grid-item-id",
+                        DiagnosticCode.DuplicateGridItemId,
                         path,
                         "Duplicate item id '${item.id}' in layout '$layoutKey'",
                     )
                 }
                 if (!item.isFavorites && !isComponentName(item.widget)) {
                     out += Diagnostic(
-                        Severity.Error,
-                        "invalid-grid-widget",
+                        DiagnosticCode.InvalidGridWidget,
                         path,
                         "'${item.widget}' is neither '${GridItemConfig.Favorites}' nor a " +
                                 "provider component name (package/class)",
@@ -367,8 +351,7 @@ object ConfigValidator {
                 }
                 if ((item.x == null) != (item.y == null)) {
                     out += Diagnostic(
-                        Severity.Warning,
-                        "partial-grid-position",
+                        DiagnosticCode.PartialGridPosition,
                         path,
                         "a position is x and y together; the lone coordinate is ignored and " +
                                 "the item is placed at the first free cells",
@@ -378,8 +361,7 @@ object ConfigValidator {
                 val badSize = listOf(item.w, item.h).any { it != null && it !in MinGridSpan..MaxGridCoordinate }
                 if (badPosition || badSize) {
                     out += Diagnostic(
-                        Severity.Error,
-                        "invalid-grid-geometry",
+                        DiagnosticCode.InvalidGridGeometry,
                         path,
                         "x and y must be 0 to $MaxGridCoordinate, w and h 1 to $MaxGridCoordinate, got " +
                                 "x=${item.x} y=${item.y} w=${item.w} h=${item.h}",
@@ -407,8 +389,7 @@ object ConfigValidator {
         if (value.isNaN() || value < min || value > max) {
             val field = path.substringAfterLast('.')
             out += Diagnostic(
-                Severity.Error,
-                "invalid-glass",
+                DiagnosticCode.InvalidGlass,
                 path,
                 "Glass $field must be between ${min.plain()} and ${max.plain()}$unit, got $value",
             )
@@ -426,8 +407,7 @@ object ConfigValidator {
             !packageNameRegex.matches(packageName)
         ) {
             out += Diagnostic(
-                Severity.Error,
-                "invalid-package-name",
+                DiagnosticCode.InvalidPackageName,
                 path,
                 "'$packageName' is not a syntactically valid package name",
             )

@@ -2,6 +2,7 @@ package de.mm20.launcher2.config.service
 
 import de.mm20.launcher2.config.ConfigState
 import de.mm20.launcher2.config.Diagnostic
+import de.mm20.launcher2.config.DiagnosticCode
 import de.mm20.launcher2.config.GestureActionName
 import de.mm20.launcher2.config.GestureConfig
 import de.mm20.launcher2.config.fileName
@@ -41,8 +42,7 @@ class CapabilityDiagnostics(
         if (config.search?.contacts == true && contactsOn && !contactsGranted()) {
             add(
                 Diagnostic(
-                    Severity.Warning,
-                    "permission-missing",
+                    DiagnosticCode.PermissionMissing,
                     "search.contacts",
                     "search.contacts is true, but this profile does not hold READ_CONTACTS; " +
                         "contact search finds nothing until it is granted",
@@ -58,8 +58,7 @@ class CapabilityDiagnostics(
         if (config.search?.contactsCallOnTap == true && callOnTapOn && !callGranted()) {
             add(
                 Diagnostic(
-                    Severity.Warning,
-                    "permission-missing",
+                    DiagnosticCode.PermissionMissing,
                     "search.contactsCallOnTap",
                     "search.contactsCallOnTap is true, but this profile does not hold CALL_PHONE; " +
                         "a tap on a number opens the dialer instead of calling",
@@ -76,8 +75,7 @@ class CapabilityDiagnostics(
         ) {
             add(
                 Diagnostic(
-                    Severity.Warning,
-                    "transliterator-unavailable",
+                    DiagnosticCode.TransliteratorUnavailable,
                     "search.transliterator",
                     "search.transliterator is \"$transliterator\", which this device's ICU does not have; " +
                         "search matching falls back to stripping accents",
@@ -96,8 +94,7 @@ class CapabilityDiagnostics(
             for ((path, action) in needsService) {
                 add(
                     Diagnostic(
-                        Severity.Warning,
-                        "permission-missing",
+                        DiagnosticCode.PermissionMissing,
                         path,
                         "$path is ${action.fileName}, which needs the launcher's accessibility service; " +
                             "it is off, so the gesture asks for it when used",

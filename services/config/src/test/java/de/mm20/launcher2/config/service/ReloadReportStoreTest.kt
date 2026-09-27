@@ -3,6 +3,7 @@ package de.mm20.launcher2.config.service
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import de.mm20.launcher2.config.Diagnostic
+import de.mm20.launcher2.config.DiagnosticCode
 import de.mm20.launcher2.config.ReloadReport
 import de.mm20.launcher2.config.ReloadTrigger
 import de.mm20.launcher2.config.Severity
@@ -30,8 +31,8 @@ class ReloadReportStoreTest {
             success = false,
             schemaVersion = 1,
             diagnostics = listOf(
-                Diagnostic(Severity.Warning, "unknown-key", "foo", "Unknown key 'foo' is ignored"),
-                Diagnostic(Severity.Error, "favorite-unavailable", "home.dock.favorites[0]", "skipped"),
+                Diagnostic(DiagnosticCode.UnknownKey, "foo", "Unknown key 'foo' is ignored"),
+                Diagnostic(DiagnosticCode.ApplyFailed, "home.favorites", "datastore gone"),
             ),
             appliedMutations = listOf("icons", "home.clock"),
             errorMessage = null,
@@ -71,6 +72,31 @@ class ReloadReportStoreTest {
     fun `read returns null when no report exists`() = runTest {
         reportFile().delete()
         assertNull(ReloadReportStore(context).read())
+    }
+
+    /**
+     * A report survives an update, and the startup check keeps an unchanged
+     * file's report: an older build's report said favorite-unavailable was an
+     * error, and so did this build until the next push (review on #215). A
+     * report whose severities disagree with this build's table was written
+     * under an older contract and is no report of this build's - read as
+     * none, the startup check reloads once and writes one.
+     */
+    @Test
+    fun `a report written under an older severity table reads as none`() = runTest {
+        val file = reportFile()
+        file.parentFile?.mkdirs()
+        val diagnostic = """{"severity":"%s","code":"favorite-unavailable","path":"home.favorites[0]","message":"absent"}"""
+        try {
+            file.writeText("""{"success":false,"diagnostics":[${diagnostic.format("error")}],"configSha256":"abc"}""")
+            assertNull("an older table's report", ReloadReportStore(context).read())
+
+            // Control: the same report as this build writes it is read.
+            file.writeText("""{"success":true,"diagnostics":[${diagnostic.format("warning")}],"configSha256":"abc"}""")
+            assertEquals("abc", ReloadReportStore(context).read()?.configSha256)
+        } finally {
+            file.delete()
+        }
     }
 
     @Test

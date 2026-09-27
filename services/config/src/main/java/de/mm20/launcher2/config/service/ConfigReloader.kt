@@ -6,6 +6,7 @@ import de.mm20.launcher2.config.ConfigMutation
 import de.mm20.launcher2.config.ConfigParser
 import de.mm20.launcher2.config.ConfigState
 import de.mm20.launcher2.config.Diagnostic
+import de.mm20.launcher2.config.DiagnosticCode
 import de.mm20.launcher2.config.ReloadReport
 import de.mm20.launcher2.config.ReloadTrigger
 import de.mm20.launcher2.config.Severity
@@ -84,8 +85,7 @@ class ConfigReloader(
                     success = false,
                     diagnostics = listOf(
                         Diagnostic(
-                            Severity.Error,
-                            "read-failed",
+                            DiagnosticCode.ReadFailed,
                             "",
                             "Could not read config file ${file.name}: " +
                                     (e.message ?: e.javaClass.simpleName),
@@ -101,8 +101,7 @@ class ConfigReloader(
                     success = false,
                     diagnostics = listOf(
                         Diagnostic(
-                            Severity.Error,
-                            "read-failed",
+                            DiagnosticCode.ReadFailed,
                             "",
                             "Could not read config file ${file.name}: " +
                                     (e.message ?: e.javaClass.simpleName),
@@ -156,8 +155,7 @@ class ConfigReloader(
                     success = false,
                     schemaVersion = config.schemaVersion,
                     diagnostics = parseResult.diagnostics + Diagnostic(
-                        Severity.Error,
-                        "read-state-failed",
+                        DiagnosticCode.ReadStateFailed,
                         "",
                         "Could not read current launcher state: " +
                                 (e.message ?: e.javaClass.simpleName),
@@ -177,8 +175,7 @@ class ConfigReloader(
             ConfigStore.Applied(
                 diagnostics = listOf(
                     Diagnostic(
-                        Severity.Error,
-                        "apply-failed",
+                        DiagnosticCode.ApplyFailed,
                         "",
                         "Could not apply config mutations: " +
                                 (e.message ?: e.javaClass.simpleName),

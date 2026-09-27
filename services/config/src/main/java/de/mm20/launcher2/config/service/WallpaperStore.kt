@@ -5,6 +5,7 @@ import android.content.Context
 import android.os.SystemClock
 import de.mm20.launcher2.config.ConfigParser
 import de.mm20.launcher2.config.Diagnostic
+import de.mm20.launcher2.config.DiagnosticCode
 import de.mm20.launcher2.config.Severity
 import de.mm20.launcher2.config.WallpaperTarget
 import de.mm20.launcher2.glass.BackdropImage
@@ -236,8 +237,7 @@ class DefaultWallpaperStore(
             if (file == null || !file.isFile) {
                 return listOf(
                     Diagnostic(
-                        Severity.Error,
-                        "wallpaper-missing",
+                        DiagnosticCode.WallpaperMissing,
                         "appearance.wallpaper.image",
                         "No uploaded wallpaper named '$image'; upload it to " +
                                 "content://<applicationId>.config-ingest/wallpapers/$image first",
@@ -281,8 +281,7 @@ class DefaultWallpaperStore(
             if (before != after) {
                 return listOf(
                     Diagnostic(
-                        Severity.Error,
-                        "wallpaper-replaced-during-apply",
+                        DiagnosticCode.WallpaperReplacedDuringApply,
                         "appearance.wallpaper.image",
                         "'$image' was replaced while it was being applied; reload again",
                     )
@@ -302,8 +301,7 @@ class DefaultWallpaperStore(
             } else {
                 listOf(
                     Diagnostic(
-                        Severity.Warning,
-                        "wallpaper-pending-foreground",
+                        DiagnosticCode.WallpaperPendingForeground,
                         "appearance.wallpaper.image",
                         "'$image' is stored but not yet rendered: the system crops a static " +
                                 "wallpaper only for the current user. The launcher re-applies it " +

@@ -3,6 +3,7 @@ package de.mm20.launcher2.config.service
 import android.content.Context
 import de.mm20.launcher2.config.ConfigParser
 import de.mm20.launcher2.config.ReloadReport
+import de.mm20.launcher2.config.agreesWithTable
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.SerializationException
@@ -34,6 +35,10 @@ class ReloadReportStore(
         if (!file.exists()) return@withContext null
         try {
             ConfigParser.json.decodeFromString(ReloadReport.serializer(), file.readText())
+                // Written under an older severity table (a report survives an
+                // update): no report of this build's, so the startup check
+                // reloads once and writes one (review on #215).
+                .takeIf { report -> report.diagnostics.all { it.agreesWithTable } }
         } catch (e: SerializationException) {
             null
         } catch (e: IllegalArgumentException) {

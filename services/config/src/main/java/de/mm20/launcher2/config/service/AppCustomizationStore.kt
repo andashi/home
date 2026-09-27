@@ -4,6 +4,7 @@ import de.mm20.launcher2.applications.AppRepository
 import de.mm20.launcher2.config.AppConfig
 import de.mm20.launcher2.config.AppVisibility
 import de.mm20.launcher2.config.Diagnostic
+import de.mm20.launcher2.config.DiagnosticCode
 import de.mm20.launcher2.config.Severity
 import de.mm20.launcher2.config.normalizedApps
 import de.mm20.launcher2.data.customattrs.CustomAttributesRepository
@@ -91,7 +92,7 @@ internal class AndroidAppCustomizationStore(
             val profile = profileResolver.getProfile(entry.profile.toProfileType())
             if (profile == null) {
                 diagnostics += Diagnostic(
-                    Severity.Warning, "profile-unavailable", path,
+                    DiagnosticCode.ProfileUnavailable, path,
                     "The ${entry.profile.name.lowercase()} profile does not exist on this device; " +
                         "the entry for '${entry.packageName}' is kept and applies once it does",
                 )
@@ -104,7 +105,7 @@ internal class AndroidAppCustomizationStore(
                 ?: entries.firstOrNull().takeIf { entry.activity == null }
             if (app == null) {
                 diagnostics += Diagnostic(
-                    Severity.Warning, "app-unavailable", path,
+                    DiagnosticCode.AppUnavailable, path,
                     "'${entry.packageName}'${entry.activity?.let { " ($it)" } ?: ""} is not installed in the " +
                         "${entry.profile.name.lowercase()} profile; its entry is kept and applies once it is",
                 )
@@ -112,7 +113,7 @@ internal class AndroidAppCustomizationStore(
             }
             claimedBy[app.key]?.let { first ->
                 diagnostics += Diagnostic(
-                    Severity.Warning, "duplicate-app", path,
+                    DiagnosticCode.DuplicateAppOnDevice, path,
                     "'${entry.packageName}'${entry.activity?.let { " ($it)" } ?: ""} is the same app on this device " +
                         "as apps[$first]; that entry applies and this one does not",
                 )

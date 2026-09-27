@@ -6,6 +6,7 @@ import de.mm20.launcher2.config.ConfigMutation
 import de.mm20.launcher2.config.ConfigState
 import de.mm20.launcher2.config.SearchState
 import de.mm20.launcher2.config.Diagnostic
+import de.mm20.launcher2.config.DiagnosticCode
 import de.mm20.launcher2.config.ReloadTrigger
 import de.mm20.launcher2.config.Severity
 import kotlinx.coroutines.Dispatchers
@@ -167,7 +168,7 @@ class ConfigReloaderTest {
     fun `apply error diagnostics make the report unsuccessful and exclude the section`() = runTest {
         val store = FakeConfigStore(
             applyDiagnostics = listOf(
-                Diagnostic(Severity.Error, "favorite-unavailable", "home.favorites[0]", "not installed"),
+                Diagnostic(DiagnosticCode.ApplyFailed, "home.favorites", "datastore gone"),
             )
         )
         val (reloader, _) = newReloader(store)
@@ -178,14 +179,14 @@ class ConfigReloaderTest {
 
         assertFalse(report.success)
         assertEquals(listOf("icons"), report.appliedMutations)
-        assertTrue(report.diagnostics.any { it.code == "favorite-unavailable" })
+        assertTrue(report.diagnostics.any { it.code == "apply-failed" })
     }
 
     @Test
     fun `apply warning diagnostics keep the report successful`() = runTest {
         val store = FakeConfigStore(
             applyDiagnostics = listOf(
-                Diagnostic(Severity.Warning, "unknown-widget-provider", "home.grid.layouts.phone.items[0]", "kept"),
+                Diagnostic(DiagnosticCode.UnknownWidgetProvider, "home.grid.layouts.phone.items[0]", "kept"),
             )
         )
         val (reloader, _) = newReloader(store)
@@ -378,7 +379,7 @@ class ConfigReloaderTest {
         val store = FakeConfigStore(state = foldState(6))
         val (reloader, reportStore) = newReloader(store)
         reloader.reload(foldText, ReloadTrigger.Broadcast)
-        store.applyDiagnostics = listOf(Diagnostic(Severity.Warning, "grid-overflow", "home.grid.layouts.fold.items[0]", "dropped"))
+        store.applyDiagnostics = listOf(Diagnostic(DiagnosticCode.GridOverflow, "home.grid.layouts.fold.items[0]", "dropped"))
 
         reloader.reload(foldText, ReloadTrigger.GridMeasured)
 
@@ -421,7 +422,7 @@ class ConfigReloaderTest {
     fun `a conditional reload decides after a running reload has reported`() = runBlocking {
         val store = FakeConfigStore(
             applyDelayMs = 300,
-            applyDiagnostics = listOf(Diagnostic(Severity.Warning, "app-unavailable", "apps[0]", "not installed")),
+            applyDiagnostics = listOf(Diagnostic(DiagnosticCode.AppUnavailable, "apps[0]", "not installed")),
         )
         val (reloader, reportStore) = newReloader(store)
         val file = java.io.File(context.cacheDir, "conditional.json").apply {
@@ -543,7 +544,7 @@ class ConfigReloaderTest {
     @Test
     fun `a service gesture in a gestures section that failed to apply is not reported`() = runTest {
         val store = FakeConfigStore(
-            applyDiagnostics = listOf(Diagnostic(Severity.Error, "apply-failed", "gestures", "datastore gone")),
+            applyDiagnostics = listOf(Diagnostic(DiagnosticCode.ApplyFailed, "gestures", "datastore gone")),
         )
 
         val report = reloaderWith(store, accessibilityOn = false)
@@ -592,7 +593,7 @@ class ConfigReloaderTest {
     @Test
     fun `a transliterator in a search section that failed to apply is not reported`() = runTest {
         val store = FakeConfigStore(
-            applyDiagnostics = listOf(Diagnostic(Severity.Error, "apply-failed", "search", "datastore gone")),
+            applyDiagnostics = listOf(Diagnostic(DiagnosticCode.ApplyFailed, "search", "datastore gone")),
         )
 
         val report = reloaderWith(store, availableTransliterators = emptySet())
@@ -648,7 +649,7 @@ class ConfigReloaderTest {
     fun `call on tap in a search section that failed to apply is not reported as a permission problem`() = runTest {
         val store = FakeConfigStore(
             state = ConfigState(search = SearchState(contactsCallOnTap = false)),
-            applyDiagnostics = listOf(Diagnostic(Severity.Error, "apply-failed", "search", "datastore gone")),
+            applyDiagnostics = listOf(Diagnostic(DiagnosticCode.ApplyFailed, "search", "datastore gone")),
         )
 
         val report = reloaderWith(store, callGranted = false)
@@ -710,7 +711,7 @@ class ConfigReloaderTest {
     fun `contacts in a search section that failed to apply is not reported as a permission problem`() = runTest {
         val store = FakeConfigStore(
             state = ConfigState(search = SearchState(contacts = false)),
-            applyDiagnostics = listOf(Diagnostic(Severity.Error, "apply-failed", "search", "datastore gone")),
+            applyDiagnostics = listOf(Diagnostic(DiagnosticCode.ApplyFailed, "search", "datastore gone")),
         )
 
         val report = reloaderWith(store, contactsGranted = false)
@@ -728,7 +729,7 @@ class ConfigReloaderTest {
     fun `contacts already on stays reported when its search section fails for another key`() = runTest {
         val store = FakeConfigStore(
             state = ConfigState(search = SearchState(contacts = true)),
-            applyDiagnostics = listOf(Diagnostic(Severity.Error, "apply-failed", "search", "datastore gone")),
+            applyDiagnostics = listOf(Diagnostic(DiagnosticCode.ApplyFailed, "search", "datastore gone")),
         )
 
         val report = reloaderWith(store, contactsGranted = false)
@@ -746,7 +747,7 @@ class ConfigReloaderTest {
     fun `contacts is reported when only the search actions failed`() = runTest {
         val store = FakeConfigStore(
             state = ConfigState(search = SearchState(contacts = false)),
-            applyDiagnostics = listOf(Diagnostic(Severity.Error, "apply-failed", "search.actions", "database locked")),
+            applyDiagnostics = listOf(Diagnostic(DiagnosticCode.ApplyFailed, "search.actions", "database locked")),
         )
 
         val report = reloaderWith(store, contactsGranted = false)
@@ -824,7 +825,7 @@ class ConfigReloaderTest {
     @Test
     fun `a failed reload records nothing`() = runTest {
         val naming = Naming(record = null)
-        val store = FakeConfigStore(applyDiagnostics = listOf(Diagnostic(Severity.Error, "apply-failed", "", "datastore gone")))
+        val store = FakeConfigStore(applyDiagnostics = listOf(Diagnostic(DiagnosticCode.ApplyFailed, "", "datastore gone")))
         val reloader = ConfigReloader(store, ReloadReportStore(context), appNaming = naming)
 
         reloader.reload("""{"schemaVersion": 2, "icons": {"themed": false}}""")

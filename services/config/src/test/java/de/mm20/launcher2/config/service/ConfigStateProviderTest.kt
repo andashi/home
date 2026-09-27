@@ -9,6 +9,7 @@ import de.mm20.launcher2.config.GridLayoutConfig
 import de.mm20.launcher2.config.ConfigParser
 import de.mm20.launcher2.config.ConfigState
 import de.mm20.launcher2.config.Diagnostic
+import de.mm20.launcher2.config.DiagnosticCode
 import de.mm20.launcher2.config.LauncherConfig
 import de.mm20.launcher2.config.ReloadReport
 import de.mm20.launcher2.config.ReloadTrigger
@@ -106,7 +107,7 @@ class ConfigStateProviderTest {
         val report = ReloadReport(
             success = true,
             schemaVersion = 1,
-            diagnostics = listOf(Diagnostic(Severity.Warning, "unknown-key", "foo", "ignored")),
+            diagnostics = listOf(Diagnostic(DiagnosticCode.UnknownKey, "foo", "ignored")),
             appliedMutations = listOf("icons"),
             configSha256 = "deadbeef",
             trigger = ReloadTrigger.Broadcast,
