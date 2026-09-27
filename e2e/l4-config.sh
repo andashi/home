@@ -866,13 +866,14 @@ cat > "$LATE_CONFIG" <<EOF
   "home": { "favorites": ["com.android.settings", "$LATE_APP"] } }
 EOF
 push_config "$LATE_CONFIG" "late-app"
-# Not .success: a favorite for an absent app is an error (the report says
-# success false), where the app's label is a warning. That is how favorites
-# have reported since before this step, and not what it tests.
+# Both are warnings, and the push succeeds: the file is fine, this device
+# cannot honour it yet, and it heals when the app arrives (#215). A favorite
+# for an absent app was an error before, which failed every such push.
 assert_jq "$LAST_REPORT" \
-  '([.diagnostics[] | select(.code == "app-unavailable" and .path == "apps[0]")] | length == 1)
-   and ([.diagnostics[] | select(.code == "favorite-unavailable" and .path == "home.favorites[1]")] | length == 1)' \
-  "the absent app's label and favorite are reported, not applied"
+  '.success == true
+   and ([.diagnostics[] | select(.code == "app-unavailable" and .path == "apps[0]" and .severity == "warning")] | length == 1)
+   and ([.diagnostics[] | select(.code == "favorite-unavailable" and .path == "home.favorites[1]" and .severity == "warning")] | length == 1)' \
+  "the absent app's label and favorite are reported as warnings, not applied, and the push succeeds"
 effective="$(query_json config)" || die "could not query /config"
 assert_jq "$effective" ".apps == [] and ($favorite_packages | index(\"$LATE_APP\") == null)" \
   "neither the label nor the favorite reads back while the app is absent"
