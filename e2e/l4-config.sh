@@ -424,7 +424,7 @@ ALL_SECTIONS_FILTER='
 HAVE_LOCK=1
 
 log "booting $SERIAL from snapshot '$SNAPSHOT' (overlays: $OVERLAY_DIR)"
-(cd "$GOS_REPO" && SNAPSHOT="$SNAPSHOT" emulator/run.sh start)
+SNAPSHOT="$SNAPSHOT" gos_run start
 
 # Release GrapheneOS has no adb root; everything below must work as shell.
 unrooted_shell

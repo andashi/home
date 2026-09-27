@@ -151,7 +151,7 @@ EOF
 (cd "$GOS_REPO" && emulator/device-lock.sh acquire "$LOCK_OWNER" "$SERIAL")
 HAVE_LOCK=1
 log "booting $SERIAL from snapshot '$SNAPSHOT' (overlays: $OVERLAY_DIR)"
-(cd "$GOS_REPO" && SNAPSHOT="$SNAPSHOT" emulator/run.sh start)
+SNAPSHOT="$SNAPSHOT" gos_run start
 unrooted_shell
 adb -s "$SERIAL" install -r "$APK" 2>&1 | grep -q Success || die "adb install failed"
 grant_home_role

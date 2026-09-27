@@ -308,7 +308,7 @@ wait_diagnostics_sha() { # $1 = uid, $2 = sha256, $3 = timeout seconds
 HAVE_LOCK=1
 
 log "booting $SERIAL from snapshot '$SNAPSHOT' (overlays: $OVERLAY_DIR)"
-(cd "$GOS_REPO" && SNAPSHOT="$SNAPSHOT" emulator/run.sh start)
+SNAPSHOT="$SNAPSHOT" gos_run start
 
 # --- 2. create profiles via the real provisioning step -------------------
 

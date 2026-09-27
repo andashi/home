@@ -49,7 +49,6 @@ MAX_LOAD="${MAX_LOAD:-}"
 LOAD_FLOOR="${LOAD_FLOOR:-unmeasured}"
 export LOCK_OWNER="${LOCK_OWNER:-measure-coldstart@$SERIAL#$$}"
 WORK="$(mktemp -d)"
-RUN="$GOS_REPO/emulator/run.sh"
 LOCK="$GOS_REPO/emulator/device-lock.sh"
 HELD_BEFORE=0
 "$LOCK" status 2>/dev/null | grep -qF "device $SERIAL held by: $LOCK_OWNER " && HELD_BEFORE=1
@@ -71,7 +70,7 @@ cleanup() {
   # Any step below that fails leaves the instance other than it was found,
   # and then the run has not succeeded, whatever it measured.
   local keep_lock=0 unclean=0
-  if [ "${#names[@]}" -gt 0 ] && ! "$RUN" restore clean >/dev/null 2>&1; then
+  if [ "${#names[@]}" -gt 0 ] && ! gos_run restore clean >/dev/null 2>&1; then
     printf 'x could not restore clean on %s; keeping the lock (%s) so nobody inherits this run\n' \
       "$SERIAL" "$LOCK_OWNER" >&2
     keep_lock=1; unclean=1
@@ -116,7 +115,7 @@ read -r -a revs <<<"${REVS:-}"
 sh_() { adb_t shell "$@"; }
 rev() { printf '%s' "${revs[$1]:-unknown}"; }
 restore() {
-  "$RUN" restore "$1" >/dev/null
+  gos_run restore "$1" >/dev/null
   timeout 20 adb -s "$SERIAL" wait-for-device \
     || { timeout 10 adb -s "$SERIAL" reconnect >/dev/null 2>&1; timeout 30 adb -s "$SERIAL" wait-for-device; } \
     || die "$SERIAL stayed offline after loading $1"
@@ -200,7 +199,7 @@ for k in "${!apks[@]}"; do
     sleep 4
   done
   show_home; sleep 3
-  "$RUN" snapshot "$name" >/dev/null
+  gos_run snapshot "$name" >/dev/null
 done
 
 # --- interleaved cold starts ------------------------------------------------

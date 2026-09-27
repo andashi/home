@@ -766,4 +766,47 @@ rejects_a_flag_as_the_value() {
 }
 check "push_config rejects --ignored followed by another option" rejects_a_flag_as_the_value
 
+# gos_run is the one way to run.sh. It checks the owner at the moment of the
+# call, so no reading of the script's text can be fooled: exported and
+# non-empty, or it refuses before run.sh runs.
+gos_run_case() { # $1 = setup (shell code), succeeds when gos_run succeeded; calls in $CALLS
+  export CALLS="$WORK/calls"; : > "$CALLS"
+  ( GOS_REPO="$WORK/gos"; unset LOCK_OWNER; eval "$1"; SNAPSHOT=clean gos_run start ) 2>"$WORK/gosrun.err"
+}
+runs_with_an_exported_owner() {
+  gos_run_case 'export LOCK_OWNER="me@fake#1"' && grep -qx "run.sh start owner=me@fake#1" "$CALLS"
+}
+check "gos_run runs run.sh with an exported owner" runs_with_an_exported_owner
+refuses_without_an_owner() {
+  ! gos_run_case ':' && [ ! -s "$CALLS" ] && grep -q "LOCK_OWNER" "$WORK/gosrun.err"
+}
+check "gos_run refuses without an owner, before run.sh runs" refuses_without_an_owner
+refuses_an_unexported_owner() {
+  ! gos_run_case 'LOCK_OWNER="me@fake#1"' && [ ! -s "$CALLS" ]
+}
+check "gos_run refuses an owner that is set but not exported" refuses_an_unexported_owner
+refuses_an_empty_owner() {
+  ! gos_run_case 'export LOCK_OWNER=""' && [ ! -s "$CALLS" ]
+}
+check "gos_run refuses an exported but empty owner" refuses_an_empty_owner
+refuses_after_unset() {
+  ! gos_run_case 'export LOCK_OWNER="me@fake#1"; unset LOCK_OWNER' && [ ! -s "$CALLS" ]
+}
+check "gos_run refuses after the owner was unset" refuses_after_unset
+# Hole six of the text scanner (#194): an assignment prefixed to another
+# command gives that command the value and leaves the shell without one.
+refuses_after_a_prefixed_assignment() {
+  ! gos_run_case 'LOCK_OWNER="me@fake#1" true' && [ ! -s "$CALLS" ]
+}
+check "gos_run refuses after LOCK_OWNER=x was only a command's prefix" refuses_after_a_prefixed_assignment
+passes_the_env_prefix() {
+  cat > "$WORK/gos/emulator/run.sh" <<'EOF2'
+#!/usr/bin/env bash
+echo "run.sh $* owner=${LOCK_OWNER:-} snapshot=${SNAPSHOT:-} serial=${SERIAL:-}" >> "$CALLS"
+[ "${FAKE_STOP_RC:-0}" = 0 ] || { echo " x held by someone, refusing to stop it"; exit 1; }
+EOF2
+  gos_run_case 'export LOCK_OWNER="me@fake#1"' && grep -qx "run.sh start owner=me@fake#1 snapshot=clean serial=fake" "$CALLS"
+}
+check "gos_run passes SERIAL and an env prefix through to run.sh" passes_the_env_prefix
+
 exit "$failed"

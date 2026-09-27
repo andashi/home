@@ -79,7 +79,7 @@ trap cleanup EXIT
 HAVE_LOCK=1
 
 log "booting $SERIAL from snapshot '$SNAPSHOT' (overlays: $OVERLAY_DIR)"
-(cd "$GOS_REPO" && SNAPSHOT="$SNAPSHOT" emulator/run.sh start)
+SNAPSHOT="$SNAPSHOT" gos_run start
 
 log "installing $(basename "$APK")"
 install_out="$(adb -s "$SERIAL" install -r "$APK" 2>&1)" || { printf '%s\n' "$install_out" >&2; die "adb install failed"; }
