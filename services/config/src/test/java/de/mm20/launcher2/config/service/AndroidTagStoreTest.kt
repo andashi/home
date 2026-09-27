@@ -151,6 +151,7 @@ class AndroidTagStoreTest {
             if (drawable !in setOf("briefcase", "flat")) return IconPackIndex.Resolution.DrawableMissing
             return IconPackIndex.Resolution.Found("app", drawable, extras = null, themed = drawable != "flat")
         }
+        override fun indexed(): Flow<Set<String>> = error("not used here")
     }
 
     private fun store() = AndroidTagStore(apps, profiles, attributes, naming, index)

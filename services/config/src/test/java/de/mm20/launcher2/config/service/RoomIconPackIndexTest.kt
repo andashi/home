@@ -6,6 +6,7 @@ import androidx.test.core.app.ApplicationProvider
 import de.mm20.launcher2.database.AppDatabase
 import de.mm20.launcher2.database.entities.IconEntity
 import de.mm20.launcher2.database.entities.IconPackEntity
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -65,6 +66,20 @@ class RoomIconPackIndexTest {
     @Test
     fun `a pack that is not installed is reported as such`() = runBlocking {
         assertEquals(IconPackIndex.Resolution.PackMissing, index.resolve("not.installed", "signal"))
+    }
+
+    /**
+     * What a waiting `icon-pack-unavailable` reloads on: the index itself,
+     * since a pack's package event races its indexing. A pack updated in
+     * place is a new entry - the update can bring the drawable a file names.
+     */
+    @Test
+    fun `the indexed packs are each a package at its version, and an update is a new one`() = runBlocking {
+        assertEquals(setOf("p.q:1"), index.indexed().first())
+
+        database.iconDao().installIconPack(IconPackEntity(name = "Pack", packageName = "p.q", version = "2"))
+
+        assertEquals(setOf("p.q:2"), index.indexed().first())
     }
 
     @Test

@@ -1,6 +1,8 @@
 package de.mm20.launcher2.config.service
 
 import de.mm20.launcher2.database.AppDatabase
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 
 /**
  * What an icon pack's index knows about one of its drawables (#3 slice 4,
@@ -11,6 +13,13 @@ import de.mm20.launcher2.database.AppDatabase
  */
 interface IconPackIndex {
     suspend fun resolve(pack: String, drawable: String): Resolution
+
+    /**
+     * The packs in the index, each as `<package>:<version>`, on every change:
+     * a pack is there once its drawables are (one transaction), and an update
+     * is a new entry. What a waiting `icon-pack-unavailable` reloads on.
+     */
+    fun indexed(): Flow<Set<String>>
 
     sealed interface Resolution {
         /** As the picker would store it: [type] app, calendar or clock; [extras] a clock's layers. */
@@ -32,4 +41,7 @@ internal class RoomIconPackIndex(private val database: AppDatabase) : IconPackIn
         val icon = dao.getIcon(drawable, pack) ?: return IconPackIndex.Resolution.DrawableMissing
         return IconPackIndex.Resolution.Found(icon.type, icon.drawable ?: drawable, icon.extras, icon.themed)
     }
+
+    override fun indexed(): Flow<Set<String>> =
+        database.iconDao().getInstalledIconPacks().map { packs -> packs.mapTo(HashSet()) { "${it.packageName}:${it.version}" } }
 }

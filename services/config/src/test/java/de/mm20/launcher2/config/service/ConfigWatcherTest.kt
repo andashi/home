@@ -736,4 +736,25 @@ class ConfigWatcherTest {
 
         assertEquals(listOf(FirstAppListRead, "app://b", "app://c", "app://d"), appKeyGrowth(keys).toList())
     }
+
+    /**
+     * The icon pack index's growth is a signal too (#3 slice 4): a pack's
+     * package event races its indexing, so a reload on the event alone can
+     * look before the pack is there and never look again. Its first read is
+     * a signal of its own - the index is built after the process starts, so
+     * the start check can look before it as well.
+     */
+    @Test
+    fun `the icon pack index's growth signals each pack as indexed`() = runTest {
+        val index = object : IconPackIndex {
+            override suspend fun resolve(pack: String, drawable: String) = error("not used here")
+            override fun indexed() = kotlinx.coroutines.flow.flowOf(
+                setOf("p.one:1"),
+                setOf("p.one:1", "p.two:1"),
+                setOf("p.one:2", "p.two:1"),
+            )
+        }
+
+        assertEquals(listOf(FirstIconPackListRead, "p.two:1", "p.one:2"), iconPackGrowth(index).toList())
+    }
 }

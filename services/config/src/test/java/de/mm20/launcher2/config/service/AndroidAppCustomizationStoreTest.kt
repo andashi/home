@@ -180,6 +180,7 @@ class AndroidAppCustomizationStoreTest {
             val type = if ("," in drawable) "calendar" else "app"
             return IconPackIndex.Resolution.Found(type, drawable, extras = null, themed = drawable != "flat")
         }
+        override fun indexed(): Flow<Set<String>> = error("not used here")
     }
 
     private val store = AndroidAppCustomizationStore(apps, profiles, attributes, searchables, naming, index)
