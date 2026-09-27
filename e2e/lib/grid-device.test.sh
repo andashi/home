@@ -918,17 +918,26 @@ cat > "$WORK/aapt2" <<EOF
 case "\$3" in *debug*) echo org.andashi.home.debug ;; *broken*) exit 1 ;; *) echo org.andashi.home ;; esac
 EOF
 chmod +x "$WORK/aapt2"
-package_case() { # $1 = apk path; prints stderr, returns require_apk_package's rc
-  ( AAPT2="$WORK/aapt2"; require_apk_package "$1" org.andashi.home ) 2>&1
+mkdir -p "$WORK/apks"
+: > "$WORK/apks/release.apk"; : > "$WORK/apks/app-debug.apk"; : > "$WORK/apks/broken.apk"
+package_case() { # $@ = apk names under $WORK/apks; prints stderr, returns require_apk_package's rc
+  local apks=() a
+  for a in "$@"; do apks+=("$WORK/apks/$a"); done
+  ( AAPT2="$WORK/aapt2"; require_apk_package org.andashi.home "${apks[@]}" ) 2>&1
 }
-accepts_the_expected_package() { package_case /x/release.apk >/dev/null; }
+accepts_the_expected_package() { package_case release.apk >/dev/null; }
 check "require_apk_package accepts an APK that installs as the expected package" accepts_the_expected_package
 names_a_wrong_package() {
-  local out; out="$(package_case /x/app-debug.apk)" && return 1
+  local out; out="$(package_case release.apk app-debug.apk)" && return 1
   grep -q "org.andashi.home.debug" <<<"$out" && grep -q "app-debug.apk" <<<"$out"
 }
-check "require_apk_package refuses another package and names it" names_a_wrong_package
-refuses_an_unreadable_apk() { ! package_case /x/broken.apk >/dev/null; }
+check "require_apk_package refuses another package among several and names it" names_a_wrong_package
+refuses_an_unreadable_apk() { ! package_case broken.apk >/dev/null; }
 check "require_apk_package refuses an APK whose package cannot be read" refuses_an_unreadable_apk
+refuses_a_missing_apk() {
+  local out; out="$(package_case gone.apk)" && return 1
+  grep -q "no such APK" <<<"$out"
+}
+check "require_apk_package refuses a missing file as missing" refuses_a_missing_apk
 
 exit "$failed"

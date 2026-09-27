@@ -193,6 +193,9 @@ fi
 
 APK="${ARGS[0]:-$REPO/app/app/build/outputs/apk/default/debug/app-default-debug.apk}"
 [ -f "$APK" ] || die "APK not found: $APK (./gradlew :app:app:assembleDefaultDebug, or pass a path)"
+# The runtime half boots and measures PKG: an APK of another package fails
+# here, not after a boot. The static half reads only the file.
+[ "$STATIC_ONLY" = 1 ] || require_apk_package "$PKG" "$APK"
 [ -x "$APKANALYZER" ] || die "apkanalyzer not found at $APKANALYZER (set APKANALYZER or ANDROID_HOME)"
 command -v jq >/dev/null || die "jq not found"
 
