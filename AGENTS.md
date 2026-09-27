@@ -744,7 +744,45 @@ target `sdk_phone64_x86_64-cur-userdebug`, test-keys), operated via
   restore:
 
       adb -s <serial> shell am force-stop org.andashi.home
-      adb -s <serial> shell am start -n org.andashi.home/de.mm20.launcher2.ui.launcher.LauncherActivity
+      adb -s <serial> shell am start -a android.intent.action.MAIN -c android.intent.category.HOME org.andashi.home
+- **An injected gesture is not a finger, and "on top" is not "ready".** A
+  configured swipe that opened its app every other time on the emulator
+  looked like the scaffold dropping gestures. Instrumented from
+  `dispatchTouchEvent` through the scaffold to the launch, in twenty-one
+  runs on three instances, the scaffold never lost a flick that reached it. Every
+  failure had one of three causes outside the launcher:
+  - **Input during the app-to-home transition never reaches the launcher.**
+    A flick sent right after Home was lost 8 times in 8, 1 in 5 at 0.3 s
+    and none from 0.6 s, although the launcher was already the top activity
+    and, in `dumpsys window`, already focused. `mCurrentFocus` switches while
+    the transition still runs; `reason=Transition` in the same dump is still
+    there 0.15 s after Home and gone by 0.45 s.
+  - **`input swipe` waits for the app to finish each event, and runs in the
+    guest.** With the launcher's main thread busy (its first composition
+    after boot: 365 to 1155 ms before the down event was handled) the tool's
+    120 ms are spent on the down event and it sends the up without a move - a
+    tap. With the guest's CPU busy (5556 and 5560 draw glass and animations
+    without the host GPU) two to four samples arrive, the last one 90 to
+    500 ms before the up. Compose then computes a velocity of zero and the
+    drag ends at the last move, short of the threshold. With the host GPU
+    and an idle guest, 10 flicks of 120 ms in 10 opened, each sent a second
+    after Home.
+  - **The launcher started by component** (`am start -n`) lands in a task
+    of its own, and the first Home press replaces it with the home instance;
+    a gesture during that swap is lost. `show_home` starts it with the HOME
+    intent since the fix for this.
+
+  What a gesture step on the emulator waits for, then: the launcher focused
+  **and** no `reason=Transition` in `dumpsys window` **and** its frame
+  counter (`dumpsys gfxinfo <pkg>`, "Total frames rendered") still for
+  300 ms, and a swipe slow enough (300 ms) that the distance alone crosses
+  the threshold. That took 20 flicks from half failing to one in twenty; the
+  one left was the `input` tool starved under host load, which no condition
+  inside the guest can wait away. A step that allows a second attempt is
+  compensating for that documented limit, not hiding a defect - and it says
+  which attempt worked, so a count that climbs is visible. Whether a real
+  device loses a touch in the first half second after Home is a platform
+  question this could not answer: the launcher never sees that touch.
 - Known emulator limits: nothing Google-server-side can be validated there
   (sandboxed Play, Play Integrity, push); wallpapers apply only after reboot;
   test-keys mean results do not equal "tested on release GrapheneOS".
