@@ -103,10 +103,14 @@ the list everyone reads while it is still failing builds.
 
 ## Merging a pull request
 
-Three conditions, no exceptions and no judgement about how small the diff is:
-every check green, **zero** unresolved review threads, and CodeRabbit's review
-covering the **current head**. If the hourly quota is exhausted (10 included
-reviews per hour, rolling), wait for it. A pull request that waits an hour
+Every condition in this section holds before a merge, no exceptions and no
+judgement about how small the diff is. **The number is deliberately not given:**
+it was three when this was written and has grown with every hole somebody found,
+and a stale count in a rule is one people stop reading - the merge script said
+"all four conditions hold" while checking seven. The original three: every check
+green, **zero** unresolved review threads, and CodeRabbit's review covering the
+**current head**. If the hourly quota is exhausted (10 included reviews per
+hour, rolling), wait for it. A pull request that waits an hour
 costs an hour; one merged unreviewed costs whatever it broke.
 
 Recount immediately before merging rather than trusting a count from earlier in
@@ -119,6 +123,23 @@ merge ran anyway, because they were two statements rather than a condition.
 And a recount cannot see a *push* in the same gap - the verification would be of
 one head and the merge of another, with nothing to say so. `gh pr merge
 --match-head-commit <sha>` refuses when the head has moved.
+
+**`--delete-branch` makes `gh` check out `main` locally after the merge**, which
+fails whenever `main` is checked out in another worktree - and the command then
+exits non-zero for a merge that **has already succeeded**, leaving the branch
+behind. Found on #207. Merge without the flag, confirm `state == MERGED` through
+the API, then delete the ref through the API. Every other failure in this
+document points the other way, where a broken check answers permissively; this
+one is a correct action reporting failure, and it is no better: a caller either
+retries a merge that happened, or reports that it did not.
+
+**Check what the merge goes into, not only the pull request.** The CI section
+below says red on `main` is fixed before the next merge, and for a long time
+nothing enforced it - which is #132 exactly. A gate that reads only the pull
+request will merge onto a `main` whose own run is red, or has not finished.
+Refuse both, with **different** messages: an unfinished run means wait, a failed
+one means fix `main` first. One message for both is how the wrong action gets
+taken.
 
 **"Resolved" is not "fixed".** CodeRabbit resolves its own threads on a rebase,
 including ones whose fixes the rebase does not contain - so a count of zero can
@@ -388,7 +409,7 @@ the last step. After fixing something in a checker, break it again.
 
 ### Ways a test runs and tests nothing
 
-Seven distinct mechanisms, all met in this repository within one week. None is
+The mechanisms below were all met in this repository within one week. None is
 carelessness; every one of them looks correct while you are writing it. That is
 why a green run is not evidence and the deliberate break is, and it is why the
 test policy above asks for the break rather than the pass.
@@ -412,8 +433,21 @@ test policy above asks for the break rather than the pass.
    and the unfixed build passed (#187).
 7. **The assertion ran off the test thread.** A concurrent test asserting on a
    worker thread never sees the failure, so a wrong result stays green (#190).
+8. **The fake could not produce the answer the code must reject.** A fake that
+   only ever returns a right-shaped answer proves nothing about the rejection,
+   and it is always the convenient one to write. Three in one day, each found by
+   somebody other than its author: a fake that closed a tapped dialog faster
+   than a device does, so a break stayed green until the fake was made as slow
+   as the device; a one-line `dumpsys gfxinfo` fake that could not fill a pipe
+   buffer, which left `pipefail` plus an early-exiting reader unreachable in the
+   tests while it broke `frames_rendered` on the device (#210); and a fake
+   provider that always returned a report whose hash differed from the previous
+   one, so an implementation regressing to a hash-only predicate passed the new
+   wiring test (#211). **A fake must match reality in whatever dimension the
+   code is sensitive to** - speed, size, ordering - and must be able to lie in
+   the specific way the code exists to catch.
 
-The check that catches all seven is the same one: break what the test guards,
+The check that catches all of them is the same one: break what the test guards,
 and watch **that** test go red and the others stay green. It costs a minute.
 
 **A break that does not go red is a finding, not a result.** It means one of two
