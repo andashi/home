@@ -909,4 +909,26 @@ stops_a_stray_out_loud() {
 }
 check "finish_instance stops a running instance nobody held, and says what would have kept it" stops_a_stray_out_loud
 
+# An APK that installs as another package fails before anything boots, and
+# says what it is: the debug build passed to a script that measures the
+# release package failed after a boot, with "see logcat" (glass, 2026-09-27).
+cat > "$WORK/aapt2" <<EOF
+#!/usr/bin/env bash
+[ "\$1 \$2" = "dump packagename" ] || exit 2
+case "\$3" in *debug*) echo org.andashi.home.debug ;; *broken*) exit 1 ;; *) echo org.andashi.home ;; esac
+EOF
+chmod +x "$WORK/aapt2"
+package_case() { # $1 = apk path; prints stderr, returns require_apk_package's rc
+  ( AAPT2="$WORK/aapt2"; require_apk_package "$1" org.andashi.home ) 2>&1
+}
+accepts_the_expected_package() { package_case /x/release.apk >/dev/null; }
+check "require_apk_package accepts an APK that installs as the expected package" accepts_the_expected_package
+names_a_wrong_package() {
+  local out; out="$(package_case /x/app-debug.apk)" && return 1
+  grep -q "org.andashi.home.debug" <<<"$out" && grep -q "app-debug.apk" <<<"$out"
+}
+check "require_apk_package refuses another package and names it" names_a_wrong_package
+refuses_an_unreadable_apk() { ! package_case /x/broken.apk >/dev/null; }
+check "require_apk_package refuses an APK whose package cannot be read" refuses_an_unreadable_apk
+
 exit "$failed"
