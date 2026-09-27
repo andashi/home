@@ -1022,4 +1022,23 @@ check "touch_ready says which window had the focus" says_focus
 says_frames() { touch_state "$focused" ""; touch "$WORK/touch/moving"; touch_ready_says_why "frames 100->101"; }
 check "touch_ready says the frames moved, and by how much" says_frames
 
+# A real gfxinfo dump runs to thousands of lines after the count. An awk
+# that stops at the first match then leaves the producer writing into a
+# closed pipe, and under pipefail - which every L4 script sets - the whole
+# read fails: on the device touch_ready said "frames: no count" for a
+# launcher at rest (l4-config 6c, 2026-09-27).
+mkdir -p "$WORK/longgfx"
+cat > "$WORK/longgfx/adb" <<'EOF'
+#!/usr/bin/env bash
+case "$*" in
+  *"dumpsys gfxinfo"*) echo "Total frames rendered: 100"; yes "  a line of the rest of the dump" | head -n 200000 ;;
+esac
+EOF
+chmod +x "$WORK/longgfx/adb"
+frames_read_from_a_long_dump() {
+  local got
+  got="$( ( set -o pipefail; PATH="$WORK/longgfx:$PATH"; frames_rendered ) 2>/dev/null )" && [ "$got" = 100 ]
+}
+check "frames_rendered reads the count from a dump that goes on, under pipefail" frames_read_from_a_long_dump
+
 exit "$failed"
