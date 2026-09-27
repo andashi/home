@@ -531,6 +531,27 @@ on_top() { # $1 = package
   case "$(top_activity)" in "$1"/*) return 0 ;; *) return 1 ;; esac
 }
 
+# "Total frames rendered" of $PKG; empty when gfxinfo does not say.
+frames_rendered() {
+  adb_t shell dumpsys gfxinfo "$PKG" | tr -d '\r' | awk '/Total frames rendered/ { print $NF; exit }'
+}
+
+# Whether an injected touch would reach the launcher now: it has focus, no
+# window transition runs (focus switches while the app-to-home transition
+# still swallows input), and it has drawn no frame for 300 ms, so its main
+# thread is free to handle the events as `input` sends them. Measured on the
+# emulator: AGENTS.md, emulator section. For retry_for.
+touch_ready() {
+  local windows before after
+  windows="$(adb_t shell dumpsys window | tr -d '\r')" || return 1
+  grep -q "mCurrentFocus=.*$PKG/" <<<"$windows" || return 1
+  ! grep -q 'reason=Transition' <<<"$windows" || return 1
+  before="$(frames_rendered)" && [ -n "$before" ] || return 1
+  sleep 0.3
+  after="$(frames_rendered)" && [ -n "$after" ] || return 1
+  [ "$before" = "$after" ]
+}
+
 cell_center() { # $1 = id
   local line
   line="$(dump_cells | awk -v id="$1" '$1 == id')"
