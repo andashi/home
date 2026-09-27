@@ -70,9 +70,26 @@ file size differ, by the signing and alignment of the published file.
 `release-v0.9.0` against `release-6c84e2acf` is what landed after v0.9.0:
 gestures (#210), app names and visibility (#207), the startup-race fix (#206)
 and smaller changes. The APK grew by 64 KB (0.4%), almost all of it dex, with
-354 more method references; permissions stayed at 12 and none appeared or
-disappeared; modules stayed at 35. Runtime (cold start, memory, CPU) was not
-measured: the host ran at load 18 to 28 from other sessions' work throughout.
+354 more method references; modules stayed at 35. The permissions are the
+same twelve, named in `release-v0.9.0.permissions` and
+`release-6c84e2acf.permissions`, so a later release diffs against the list
+rather than against a count (a swap would keep the count):
+
+- `android.permission.ACCESS_HIDDEN_PROFILES`, `CALL_PHONE`, `EXPAND_STATUS_BAR`,
+  `INTERACT_ACROSS_PROFILES`, `QUERY_ALL_PACKAGES`, `READ_CONTACTS`,
+  `REQUEST_DELETE_PACKAGES`, `SET_ALARM`, `SET_WALLPAPER`, `VIBRATE`;
+- `com.android.alarm.permission.SET_ALARM`;
+- `org.andashi.home.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION`, which no source
+  manifest names: AndroidX core adds it in the manifest merge, a
+  signature-level permission the app declares and holds itself, to keep a
+  receiver it registers at runtime unreachable from other apps.
+
+The source manifests name the first eleven, so a grep of them finds one
+fewer than the APK declares, and ten if it looks at `android.permission.*`
+only. No `AndroidManifest.xml` changed between the two commits at all.
+
+Runtime (cold start, memory, CPU) was not measured: the host ran at load 18
+to 28 from other sessions' work throughout.
 
 ## What the metrics mean
 
