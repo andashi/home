@@ -30,8 +30,6 @@ class CheckReleaseSigner(unittest.TestCase):
         self.assertEqual(signer.problems(text, RELEASE), [])
 
     def test_an_empty_output_fails(self):
-        # The step's old check was "no debug key in it", which an empty
-        # CERTS.txt passes: nothing read is not the release key.
         self.assertNotEqual(signer.problems("", RELEASE), [])
 
     def test_another_key_fails(self):

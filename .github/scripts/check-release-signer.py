@@ -35,14 +35,17 @@ def problems(certs: str, expected: str) -> list:
 
 def main(argv: list) -> int:
     if len(argv) != 3:
-        print(__doc__.strip().splitlines()[2].strip(), file=sys.stderr)
+        print("usage: check-release-signer.py CERTS.txt <expected certificate SHA-256>", file=sys.stderr)
         return 2
     with open(argv[1]) as f:
         certs = f.read()
     found = problems(certs, argv[2])
     for p in found:
-        print(f"::error::{p}", file=sys.stderr)
-    return 1 if found else 0
+        print(f"::error file={argv[1]}::{p}", file=sys.stderr)
+    if found:
+        return 1
+    print(f"{argv[1]}: signed by the pinned release key")
+    return 0
 
 
 if __name__ == "__main__":

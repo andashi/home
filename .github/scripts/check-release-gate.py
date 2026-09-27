@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Asserts the three properties release.yml must keep (#132, #3).
+"""Asserts the four properties release.yml must keep (#132, #3, #204).
 
 1. Nothing builds before the full test suite is green: `tests` calls
    test.yml, and every other job needs it. Without that a tag ships commits
@@ -17,9 +17,14 @@
    zone's file against the version it deploys. The release job runs only on
    a tag, so without this check a lost upload would show only when someone
    looked for the asset.
+4. The APK is signed by exactly the pinned release key: the release job runs
+   check-release-signer.py against RELEASE_CERT_SHA256, a full SHA-256 in the
+   step's env. The check it replaced could never fail (#204), and a removed
+   check would read the same as a passing one.
 
 Exits non-zero naming every violation.
 """
+import re
 import sys
 
 import yaml
@@ -84,6 +89,14 @@ def violations(workflow):
     publish = [line for line in release_steps.splitlines() if '"$APK_PATH"' in line]
     if not any('"$SCHEMA_PATH"' in line for line in publish):
         found.append("jobs.release does not publish launcher.schema.json with the APK")
+
+    if not any("check-release-signer.py" in line and '"$RELEASE_CERT_SHA256"' in line
+               for line in release_steps.splitlines()):
+        found.append('jobs.release does not check the signer with check-release-signer.py "$RELEASE_CERT_SHA256"')
+    digests = [str((step.get("env") or {}).get("RELEASE_CERT_SHA256", ""))
+               for step in (jobs.get("release") or {}).get("steps") or []]
+    if not any(re.fullmatch(r"[0-9a-f]{64}", d) for d in digests):
+        found.append("jobs.release pins no release certificate SHA-256 (RELEASE_CERT_SHA256, 64 hex)")
     return found
 
 
@@ -95,7 +108,7 @@ def main(path):
         print(f"::error file={path}::{line}")
     if found:
         return 1
-    print(f"{path}: every job needs the full suite, only a tag push signs, and the schema ships")
+    print(f"{path}: every job needs the full suite, only a tag push signs, the schema ships, and the signer is pinned")
     return 0
 
 

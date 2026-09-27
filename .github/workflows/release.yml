@@ -179,10 +179,7 @@ jobs:
           badging="$("$bt/aapt2" dump badging "$apk")"
           grep -q "package: name='org.andashi.home'" <<<"$badging"
           "$bt/apksigner" verify --print-certs "$apk" | tee CERTS.txt
-          # Exactly the release key, pinned. The check this replaces was
-          # `! grep -qi <debug key> CERTS.txt`: set -e does not act on a
-          # command negated with `!`, so it could never fail the step, and an
-          # empty CERTS.txt, or any other key, would have passed it anyway.
+          # Exactly the pinned release key; why, in check-release-signer.py.
           python3 "$GITHUB_WORKSPACE/.github/scripts/check-release-signer.py" CERTS.txt "$RELEASE_CERT_SHA256"
           echo "APK_PATH=$out/$apk" >> "$GITHUB_ENV"
           echo "SUMS_PATH=$out/SHA256SUMS" >> "$GITHUB_ENV"
