@@ -511,8 +511,17 @@ test policy above asks for the break rather than the pass.
    fixture is reachable**, so derive the baseline from what the producing code
    emits, never from what makes the case read well.
 
-The check that catches all of them is the same one: break what the test guards,
-and watch **that** test go red and the others stay green. It costs a minute.
+One check catches 1 to 8: break what the test guards, and watch **that** test go
+red and the others stay green. It costs a minute.
+
+**It does not catch 9, and 9 is the case that looks most like a pass.** An
+unreachable fixture produces exactly that result - the case goes red, it is
+targeted, the others stay green - and proves the wrong thing. So the check has a
+second half that cannot be skipped for a new test: **ask whether the fixture is a
+state the system can actually be in**, and answer it from what the producing code
+emits rather than from the test reading well. Review caught this contradiction in
+the first draft of this very list, where the sentence above claimed to catch all
+of them while item 9 described its own result.
 
 **A break that does not go red is a finding, not a result.** It means one of two
 things - the test is decoration, or the break was incomplete - and they look
