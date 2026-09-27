@@ -41,8 +41,8 @@ set -uo pipefail
 # lands 45-55 s after boot, which is when this wrapper starts, and on #190 the
 # look ran 0.3 s before the dialog existed while the tests began 137 s later.
 # So the look is repeated in the background until the tests are about to
-# start - until the test APK is installed, which gradle does right before it
-# instruments - and then nothing is touched. Before that point no tap can
+# start - until gradle installs the test APK, which it does right before it
+# instruments (see tests_starting) - and then nothing is touched. Before that point no tap can
 # land on a test; after it, a tap could, so there is none. An ANR that fires
 # during the tests still lands on one, and the post-failure dump names it
 # there: this removes a known obstruction, it does not promise a clear
@@ -74,14 +74,26 @@ anr_packages() { # [$1 = seconds for the read, default 10] one package per ANR w
     sed -n 's/.*Application Not Responding: \([A-Za-z0-9_.]*\).*/\1/p' | sort -u
 }
 
-# Whether the tests are about to start: the test APK is installed. Only a
-# positive "not installed" keeps the watch going - an adb that fails or hangs
-# counts as started, because a watch that went on into the tests could tap
-# one.
-tests_starting() {
+# The test APK's lastUpdateTime, or nothing when it is not installed.
+apk_stamp() {
   local out
-  out="$(timeout 10 adb shell pm list packages "$INSTRUMENTATION_PACKAGE" 2>/dev/null)" || return 0
-  printf '%s\n' "$out" | tr -d '\r' | grep -qx "package:$INSTRUMENTATION_PACKAGE"
+  out="$(timeout 10 adb shell dumpsys package "$INSTRUMENTATION_PACKAGE" 2>/dev/null)" || return 1
+  printf '%s\n' "$out" | tr -d '\r' | sed -n 's/^ *lastUpdateTime=//p' | head -1
+}
+
+# Whether the tests are about to start: gradle has installed the test APK,
+# which it does right before it instruments. That is the APK's
+# lastUpdateTime changing from what it was when the wrapper started
+# (APK_STAMP_AT_START), not the APK being there: an earlier run can leave it
+# installed (#196 review). An adb that fails or hangs counts as started,
+# because a watch that went on into the tests could tap one. Outside the
+# watch - the first look, before gradle has run - nothing is starting.
+tests_starting() {
+  [ -n "${APK_STAMP_AT_START+set}" ] || return 1
+  [ "$APK_STAMP_AT_START" != "?" ] || return 0
+  local now
+  now="$(apk_stamp)" || return 0
+  [ -n "$now" ] && [ "$now" != "$APK_STAMP_AT_START" ]
 }
 
 is_ours() { # $1 = package; exact string equality, never a pattern
@@ -111,6 +123,12 @@ clear_foreign_anrs() {
     fi
   done <<<"$pkgs"
   [ "${#foreign[@]}" -gt 0 ] || return 0
+  # The list took a read to get: the tests may have begun meanwhile, and
+  # once they have, nothing is touched (#196 review).
+  if tests_starting; then
+    printf 'The tests are starting; leaving the ANR dialogs where they are.\n'
+    return 0
+  fi
   for pkg in "${foreign[@]}"; do
     printf 'Dismissing the ANR dialog of %s, which is not the app under test, so it cannot cover a test.\n' "$pkg"
     adb shell am force-stop "$pkg"
@@ -203,6 +221,10 @@ press_wait_on_foreign() { # $@ = the foreign packages
     fi
     printf 'Pressing Wait on the ANR dialog of %s, which survived force-stop.\n' "$only"
     left="$(wleft)"
+    # Marked before the tap and cleared only once a read shows the dialog
+    # gone: a watch killed in between must not pass for a clean Wait (#196
+    # review).
+    [ -z "${WAIT_INFLIGHT:-}" ] || echo "$only" > "$WAIT_INFLIGHT"
     timeout "$(( left > 0 ? left : 1 ))" adb shell input tap $(( ($1 + $3) / 2 )) $(( ($2 + $4) / 2 ))
     # The dialog closes a moment after the tap: the device's first look right
     # after it still found System UI's (#189). Wait for the list to change,
@@ -230,6 +252,7 @@ press_wait_on_foreign() { # $@ = the foreign packages
       printf '::error::Wait left the ANR dialog of %s up. A tap closes the topmost dialog, so an ANR of the app under test may have come up just before it and been closed instead; the run fails if its tests pass.\n' "$only"
       return 1
     fi
+    [ -z "${WAIT_INFLIGHT:-}" ] || rm -f "$WAIT_INFLIGHT"
   done
   left="$(wleft)"
   now="$(anr_packages "$(( left > 0 ? left : 1 ))")" || return 1
@@ -247,10 +270,21 @@ press_wait_on_foreign() { # $@ = the foreign packages
 # raises is handed back through $1.
 watch_until_tests_start() { # $1 = file that a flagged Wait marks
   local deadline=$((SECONDS + ANR_WATCH_SECONDS)) last="" now left
+  local WAIT_INFLIGHT="$1.inflight"
   while [ "$SECONDS" -lt "$deadline" ]; do
     tests_starting && return 0
-    if now="$(anr_packages 10)" && [ "$now" != "$last" ]; then
+    # Read after that check, which is an adb call of its own: read before
+    # it, the time left could be 0 by now, and timeout takes 0 as no limit.
+    left=$((deadline - SECONDS))
+    [ "$left" -gt 0 ] || break
+    if now="$(anr_packages "$left")" && [ "$now" != "$last" ]; then
       if [ -n "$now" ]; then
+        # The deadline decides when the watch may start something; the
+        # dismissal then has its own bounds (ANR_RECHECK_SECONDS,
+        # ANR_WAIT_SECONDS). A read that ran past it starts nothing (#196
+        # review). Whether the tests began during the read is the
+        # dismissal's own first question, after its own read.
+        [ "$SECONDS" -lt "$deadline" ] || break
         clear_foreign_anrs
         [ "$WAIT_AMBIGUOUS" = 0 ] || echo ambiguous > "$1"
         now="$(anr_packages 10)" || now="$last"
@@ -267,6 +301,7 @@ watch_until_tests_start() { # $1 = file that a flagged Wait marks
 
 clear_foreign_anrs
 
+APK_STAMP_AT_START="$(apk_stamp)" || APK_STAMP_AT_START="?"
 watch_flag="$(mktemp)"
 watch_until_tests_start "$watch_flag" &
 watcher=$!
@@ -275,7 +310,11 @@ status=$?
 kill "$watcher" 2>/dev/null
 wait "$watcher" 2>/dev/null
 [ ! -s "$watch_flag" ] || WAIT_AMBIGUOUS=1
-rm -f "$watch_flag"
+if [ -e "$watch_flag.inflight" ]; then
+  printf '::error::A Wait on the ANR dialog of %s was still being checked when the command ended, so it has not shown that it closed that dialog and not an ANR of the app under test.\n' "$(cat "$watch_flag.inflight")"
+  WAIT_AMBIGUOUS=1
+fi
+rm -f "$watch_flag" "$watch_flag.inflight"
 if [ "$status" -eq 0 ] && [ "$WAIT_AMBIGUOUS" = 1 ]; then
   printf '::error::The tests passed, but a Wait before them may have closed an ANR of the app under test (see above); failing the run so it is not taken for a pass.\n'
   status=1
