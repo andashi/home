@@ -218,7 +218,9 @@ push_config() { # $1 = local file, $2 = stage name, [--ignored "path ..."]...
   shift 2
   while [ $# -gt 0 ]; do
     case "$1" in
-      --ignored) [ $# -ge 2 ] || die "push_config: --ignored needs a value"; ignored="$ignored $2"; shift 2 ;;
+      --ignored)
+        [ $# -ge 2 ] && [[ "$2" != --* ]] || die "push_config: --ignored needs a value, got: ${2:-nothing}"
+        ignored="$ignored $2"; shift 2 ;;
       *) die "push_config: unknown argument: $1" ;;
     esac
   done
