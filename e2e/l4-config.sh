@@ -11,8 +11,10 @@
 #      under <gos-repo>/emulator/instances/test; SERIAL and OVERLAY_DIR pick
 #      another one) from the `clean` snapshot, installs the debug APK
 #   2. writes a known JSONC config (icons, glass, theme, search bar,
-#      favorites, widgets switch, grid; empty favorites so no
-#      installed-package assumptions)
+#      favorites, widgets switch, grid; one favorite, Settings, which every
+#      Android has) and asserts that the very first reload, right after the
+#      process starts, applies it (the startup race: nothing read yet read
+#      as "not installed")
 #      through the shell-gated ingest provider (`content write`), the
 #      provisioning transport (ADR 0003 §1a)
 #   3. proves the explicit, shell-gated ReloadConfigReceiver is reachable
@@ -197,8 +199,9 @@ cat > "$VALID_CONFIG" <<'EOF'
   "home": {
     "searchBar": { "position": "bottom", "fixed": true },
     "lockRotation": true,
-    // Empty on purpose: favorites reference installed packages.
-    "favorites": [],
+    // One app every Android has: the first reload after the process
+    // starts must find it installed.
+    "favorites": ["com.android.settings"],
     "widgets": { "enabled": true },
     "grid": {
       "columns": 4,
@@ -234,7 +237,7 @@ cat > "$UNKNOWN_KEYS_CONFIG" <<'EOF'
   "search": { "favorites": false, "layout": "list", "reversed": true, "contacts": false, "barPosition": "bottom" },
   "home": {
     "searchBar": { "position": "bottom" },
-    "favorites": [],
+    "favorites": ["com.android.settings"],
     "widgets": { "enabled": true },
     "grid": {
       "columns": 4,
@@ -305,7 +308,6 @@ cat > "$WALLPAPER_CONFIG" <<'EOF'
   },
   "home": {
     "searchBar": { "position": "bottom" },
-    "favorites": [],
     "widgets": { "enabled": true },
     "grid": {
       "columns": 4,
@@ -387,7 +389,7 @@ EFFECTIVE_FILTER='
   and .home.searchBar.fixed == true
   and .home.lockRotation == true
   and .appearance.systemBars == {"statusBar":{"hidden":true,"icons":"dark"},"navigationBar":{"hidden":false,"icons":"light"}}
-  and .home.favorites == []
+  and .home.favorites == [{"packageName":"com.android.settings"}]
   and .home.widgets.enabled == true
   and .home.grid.columns == 4
   and .home.grid.locked == false
@@ -417,7 +419,7 @@ CHANGED_FILTER='
 # The sections a full VALID <-> CHANGED convergence must report as applied.
 ALL_SECTIONS_FILTER='
   ((.appliedMutations // []) | sort) ==
-  ["appearance.glass", "appearance.systemBars", "appearance.theme", "home.grid",
+  ["appearance.glass", "appearance.systemBars", "appearance.theme", "home.favorites", "home.grid",
    "home.lockRotation", "home.searchBar", "home.widgets.enabled", "icons", "search"]
 '
 
@@ -456,7 +458,14 @@ write_config "$VALID_CONFIG"
 # Koin on the emulator.
 log "waiting for the first reload of the ingested config (starts the app process)"
 wait_push_report null "$H_VALID" 90 "first report of the ingested config"
+# The first reload runs right after the process starts. Before the startup
+# race was fixed it read "no apps read yet" as "not installed" and skipped
+# the favorite; a second reload applied it, which is what hid the defect.
+assert_jq "$LAST_REPORT" \
+  '[(.diagnostics // [])[] | select(.code == "favorite-unavailable" or .code == "profile-unavailable")] | length == 0' \
+  "the first reload after the process starts finds the favorite installed"
 assert_jq "$LAST_REPORT" '.success == true' "ingested config applied"
+ok "first reload applied the favorite (no favorite-unavailable)"
 ok "ingested config applied (trigger=$(jq -r .trigger <<<"$LAST_REPORT"))"
 
 log "broadcasting explicit reload to the shell-gated receiver"
