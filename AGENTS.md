@@ -113,6 +113,27 @@ Recount immediately before merging rather than trusting a count from earlier in
 the session: CodeRabbit posts after a push, so a thread can open between the
 check and the merge.
 
+**Make the check gate the merge, and pass `--match-head-commit`.** A recount
+printed beside a merge stops nothing: on #194 it reported `threads: 1` and the
+merge ran anyway, because they were two statements rather than a condition.
+And a recount cannot see a *push* in the same gap - the verification would be of
+one head and the merge of another, with nothing to say so. `gh pr merge
+--match-head-commit <sha>` refuses when the head has moved.
+
+**"Resolved" is not "fixed".** CodeRabbit resolves its own threads on a rebase,
+including ones whose fixes the rebase does not contain - so a count of zero can
+be a true answer about a false state. A thread the bot closed with no reply
+naming a fix commit has not been shown to be addressed; read it before it
+counts.
+
+**A base behind `main` is only a problem when it overlaps.** The rebase rule
+protects against a review of a tree whose *relevant* parts have moved, so the
+question is whether the commits between the base and `main` touch any file the
+pull request touches. Empty intersection, and the review still means what it
+said. Insisting the base equal `main` instead livelocks a pull request whenever
+a review takes as long as the gap between merges - and a condition that blocks
+for no reason is one somebody carves an exception into.
+
 **"Reviewed at the head" is not the same as "reviewed".** CodeRabbit reviews a
 push incrementally by default - it re-reads only the commits since its last
 run - and its verdict is the same green check either way. The range line in its
@@ -306,6 +327,56 @@ afterthought (see `docs/architecture/adr/0005-testing-strategy.md`):
     wrong reason, and red after it, which a count of the passes read as
     green.
 
+### Two shapes that produced fourteen defects in one night
+
+Almost everything found on the night of 2026-09-26 was one of two mistakes.
+Neither is carelessness: both read as tidiness while you write them, and both
+live by preference in the code that checks things, because **a checker's correct
+answer and its broken answer look identical from outside** - silence, a zero, an
+empty string - and the broken one is quieter. Nothing complains, so nobody
+re-reads it.
+
+**1. A step failed and the sequence carried on.** `acquire` to `/dev/null`, then
+the runner killed a locked instance. `run.sh stop … || true`, and an emulator
+was stranded. A documentation patch failing on a stale anchor while the commit
+went ahead. A body-replace assertion failing while the upload proceeded.
+
+The sharper form, which finds them: **a failure that becomes the most permissive
+answer.** Empty meaning universal. Empty meaning verified. A missing lock
+meaning free. An unreadable snapshot list meaning nothing to clean. In a release
+verification, a grep for a label the tool does not print read an empty digest -
+which reported "differs" against one string and *matched* the next, because an
+empty string matches anything.
+
+**2. A value was read before an action and used after it.** Two reads of a
+remaining deadline with a tick in between, handing `timeout` a zero, which it
+takes as *no limit*. A merge command whose recount printed `threads: 1` beside
+the merge it did not gate. A range check fetching base and head in separate
+calls from the review records. A window list read, then a tap.
+
+`--match-head-commit` exists because of this shape, and so does reading the base
+and head in the same call as the reviews.
+
+**Two consequences worth stating on their own:**
+
+- **One deadline over several steps is not the same as each step being
+  bounded.** A shared budget lets the slowest step consume the others', and what
+  gets starved is whatever runs last - usually the check. A consolidation that
+  reads as a simplification coupled a dump, a tap and the check after it; a slow
+  dump then starved the check, on exactly the slow boots the mechanism existed
+  for.
+- **Do not decide membership by matching text when the data is a list.** Five
+  boundary defects in two days: a pattern where a fixed string was meant,
+  `holders=$PKG` accepting `org.andashi.home.debug`, an unanchored `pgrep`
+  matching the shell that named it, `cold-1-m10` taken for `cold-1-m1`, and
+  `grep -w` defeated by a hyphen - the last one chosen *because* it reads as
+  careful. The worst of them decided a permission grant. Compare whole fields,
+  or use a tool that understands lists.
+
+**A fix can produce the next defect.** Two did that night: patching a guard's
+fourth hole opened its fifth, and consolidating four deadlines into one starved
+the last step. After fixing something in a checker, break it again.
+
 ### Ways a test runs and tests nothing
 
 Seven distinct mechanisms, all met in this repository within one week. None is
@@ -335,6 +406,13 @@ test policy above asks for the break rather than the pass.
 
 The check that catches all seven is the same one: break what the test guards,
 and watch **that** test go red and the others stay green. It costs a minute.
+
+**A break that does not go red is a finding, not a result.** It means one of two
+things - the test is decoration, or the break was incomplete - and they look
+identical. The comfortable reading is available in both directions, so say which
+it is before moving on. A deadline guarded in three places stayed green when one
+guard was removed; the test was sound and the break was partial, and that was
+only known because somebody asked which.
 Say in the pull request which tests fall over without the change and which are
 deliberate controls that pass in both states.
 
