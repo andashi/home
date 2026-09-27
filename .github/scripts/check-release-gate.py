@@ -90,14 +90,29 @@ def violations(workflow):
     if not any('"$SCHEMA_PATH"' in line for line in publish):
         found.append("jobs.release does not publish launcher.schema.json with the APK")
 
-    if not any("check-release-signer.py" in line and '"$RELEASE_CERT_SHA256"' in line
-               for line in release_steps.splitlines()):
+    signer_steps = [step for step in (jobs.get("release") or {}).get("steps") or [] if checks_signer(step)]
+    if not signer_steps:
         found.append('jobs.release does not check the signer with check-release-signer.py "$RELEASE_CERT_SHA256"')
-    digests = [str((step.get("env") or {}).get("RELEASE_CERT_SHA256", ""))
-               for step in (jobs.get("release") or {}).get("steps") or []]
+    # Only the signer step's own env reaches the check.
+    digests = [str((step.get("env") or {}).get("RELEASE_CERT_SHA256", "")) for step in signer_steps]
     if not any(re.fullmatch(r"[0-9a-f]{64}", d) for d in digests):
         found.append("jobs.release pins no release certificate SHA-256 (RELEASE_CERT_SHA256, 64 hex)")
     return found
+
+
+def checks_signer(step):
+    """Whether `step` runs the signer check so that its failure fails the step:
+    not negated, not behind `||`, not in an `if`, and not after `set +e`. A
+    swallowed failure is the defect #204 fixed (`! grep` under set -e)."""
+    lines = executable_lines(step.get("run", ""))
+    for i, line in enumerate(lines):
+        if "check-release-signer.py" not in line or '"$RELEASE_CERT_SHA256"' not in line:
+            continue
+        masked = "||" in line or re.match(r"\s*(!|if\b)", line)
+        errexit_off = any(re.search(r"\bset\s+\+e", earlier) for earlier in lines[:i])
+        if not masked and not errexit_off:
+            return True
+    return False
 
 
 def main(path):
