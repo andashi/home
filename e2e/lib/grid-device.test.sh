@@ -879,6 +879,10 @@ fails_on_an_unread_list() {
   grep -q "cold-1-m0" <<<"$out" && grep -q "cold-1-m1" <<<"$out"
 }
 check "delete_snapshots fails, naming every snapshot, when the list cannot be read" fails_on_an_unread_list
+# A name is matched whole: another run's cold-1-m10 is not this run's
+# cold-1-m1 left behind (#198 review).
+ignores_a_longer_name() { snapshots_after $'clean\ncold-1-m10' >/dev/null; }
+check "delete_snapshots does not take a longer name for one of its own" ignores_a_longer_name
 
 # The end of a run: a running instance nobody holds is a stray, whoever
 # booted it, so it is stopped and released - unless the caller held the lock
