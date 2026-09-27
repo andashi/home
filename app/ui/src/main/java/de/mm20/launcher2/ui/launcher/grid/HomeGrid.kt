@@ -192,6 +192,8 @@ fun HomeGrid(
                 profileManager.getProfile(type)?.userHandle
             }
             packageEvents(context).collect { packageName ->
+                // In edit mode too: a cell's Allow follows its provider.
+                viewModel.onPackageArrived(packageName)
                 if (editingNow) return@collect
                 val report = viewModel.reconcileArrival(port, packageName)
                 // Their cells show the banner; the config report cannot know,

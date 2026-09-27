@@ -416,4 +416,20 @@ class HomeGridEditVMTest {
         assertEquals(listOf(0, 2), f.vm.spanOf("note").let { listOf(it.x, it.y) })
         assertNull(f.vm.selectedId.value)
     }
+
+    /**
+     * A cell looks its provider up again when [HomeGridVM.arrivals] moves
+     * (review on #213). It moves for a package a grid item names, and for no
+     * other: most package events are updates of apps the grid never shows.
+     */
+    @Test
+    fun `arrivals move for a package a grid item names, and only for it`() = runTest(dispatcher) {
+        val only = gridItem("only", 2, 2, 2, 1, widget = "org.example.only/.Widget", position = 2)
+        val f = fixture(items = listOf(clock, note, dock, only))
+
+        f.vm.onPackageArrived("org.example.other")
+        assertEquals("another package", 0, f.vm.arrivals.value)
+        f.vm.onPackageArrived("org.example.only")
+        assertEquals(1, f.vm.arrivals.value)
+    }
 }

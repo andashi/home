@@ -23,6 +23,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -72,14 +73,17 @@ internal fun GridCell(
         // offers the system's dialog for its own provider, if it is installed.
         val context = LocalContext.current
         val profileManager: ProfileManager = koinInject()
-        val providerInfo = remember(item.widget, item.profile) {
+        val arrivals by viewModel.arrivals.collectAsStateWithLifecycle()
+        val providerInfo = rememberAcrossArrivals(item.widget to item.profile, arrivals) {
             installedProvider(context, profileManager, item.widget, item.profile)
         }
         val bindLauncher = rememberLauncherForActivityResult(BindProviderContract()) { appWidgetId ->
             if (appWidgetId != null) viewModel.bind(item, appWidgetId)
         }
         val label = if (showLabel) {
-            remember(item.widget, providerInfo) {
+            // Keyed on the arrival itself too: the app's name is read from the
+            // package, not only through providerInfo.
+            rememberAcrossArrivals(item.widget to providerInfo, arrivals) {
                 val pm = context.packageManager
                 gridItemLabel(
                     item,
@@ -97,6 +101,7 @@ internal fun GridCell(
                     onRemove = { viewModel.remove(item) },
                     onReplace = { widget, appWidgetId -> viewModel.replace(item, widget, appWidgetId) },
                     onAllow = providerInfo?.let { info -> { bindLauncher.launch(info) } },
+                    arrivals = arrivals,
                 )
             }
             if (label != null) GridLabel(item.id, label)
@@ -131,6 +136,22 @@ internal fun GridLabel(id: String, text: String) {
             ),
     )
 }
+
+/**
+ * A value that depends on whether a package is present, remembered per
+ * [identity] and looked up again whenever [arrivals] moves.
+ *
+ * Keyed on identity alone, a value looked up while the package was missing
+ * stayed missing after it arrived (review on #213):
+ * - the installed provider, so the banner of a widget whose bind the device
+ *   refused offered no Allow, and the label kept its fallback;
+ * - a bound widget's info, so a provider unavailable when the cell first
+ *   showed (an app mid-update) left "could not load" up for good, the host id
+ *   never changing.
+ */
+@Composable
+internal fun <T : Any> rememberAcrossArrivals(identity: Any?, arrivals: Int, lookup: () -> T?): T? =
+    remember(identity, arrivals) { lookup() }
 
 /** The name of the app a `pkg/cls` provider belongs to, or null. */
 private fun appLabel(pm: PackageManager, widget: String): CharSequence? {
@@ -190,10 +211,12 @@ internal fun AppWidgetCell(
     onRemove: () -> Unit,
     onReplace: (widget: String, appWidgetId: Int) -> Unit,
     onAllow: (() -> Unit)? = null,
+    /** [HomeGridVM.arrivals]: a provider missing at the first look is looked up again when its package arrives. */
+    arrivals: Int = 0,
 ) {
     val context = LocalContext.current
     val appWidgetId = item.appWidgetId
-    val widgetInfo = remember(appWidgetId) {
+    val widgetInfo = rememberAcrossArrivals(appWidgetId, arrivals) {
         appWidgetId?.let { AppWidgetManager.getInstance(context).getAppWidgetInfo(it) }
     }
 

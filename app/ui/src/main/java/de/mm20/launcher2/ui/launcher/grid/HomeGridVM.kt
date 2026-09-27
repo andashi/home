@@ -14,6 +14,7 @@ import de.mm20.launcher2.homegrid.HomeGridArrangement
 import de.mm20.launcher2.homegrid.HomeGridCell
 import de.mm20.launcher2.homegrid.HomeGridGeometry
 import de.mm20.launcher2.homegrid.HomeGridItem
+import de.mm20.launcher2.homegrid.HomeGridLayouts
 import de.mm20.launcher2.homegrid.HomeGridReconciler
 import de.mm20.launcher2.homegrid.HomeGridRepository
 import de.mm20.launcher2.homegrid.HomeGridDefaults
@@ -408,6 +409,21 @@ class HomeGridVM(
     }
 
     /** Binds what needs binding and releases what nothing references; see [HomeGridReconciler]. */
+    private val _arrivals = MutableStateFlow(0)
+
+    /**
+     * Moves each time a package arrives that a grid item names: a cell then
+     * looks its provider up again (review on #213).
+     */
+    val arrivals: StateFlow<Int> = _arrivals
+
+    suspend fun onPackageArrived(packageName: String) {
+        val named = listOf(HomeGridLayouts.Phone, HomeGridLayouts.Fold).any { layout ->
+            repository.observe(layout).first().any { !it.isFavorites && it.widget.startsWith("$packageName/") }
+        }
+        if (named) _arrivals.value++
+    }
+
     // One pass at a time: two passes over the same unbound item would each
     // allocate and bind a host id for it.
     private val reconcileLock = Mutex()

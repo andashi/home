@@ -114,6 +114,15 @@ shown as unavailable, and **every** reload reports it
 provider is there. Re-checking the layout on each reload writes nothing back
 to the file.
 
+When the provider's package is installed later, the file is applied again and
+the widget is bound on the home screen. Binding needs the bind-widget grant,
+which a provisioned device has (`appwidget_bind`); without it the cell offers
+**Allow**, which asks the user once. A report without
+`unknown-widget-provider` says the provider exists. It does **not** say the
+widget is bound: binding is the device's, not the configuration's, and a
+widget that could not be bound shows its banner on the device without
+appearing in the report.
+
 ## The dock
 
 The dock is not a special bar. It is **the favorites widget on the grid**: an
