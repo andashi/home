@@ -770,6 +770,12 @@ check "push_config rejects --ignored followed by another option" rejects_a_flag_
 # five hours after the check that needed it (2026-09-26).
 # The instance's state is $WORK/boot/state: down, up, or offline (running,
 # but adbd restarting, as right after `run.sh start` ends with `adb root`).
+# A run boots the instance it needs when it is down, as its lock owner, and
+# records that in BOOTED; finish_instance uses it only to decide whether to
+# warn. The instance's state is $WORK/boot/state: down, up, or offline
+# (running, but adbd restarting, as right after `run.sh start` ends with
+# `adb root`). The adb fake is what turns the offline case red if the check
+# ever goes back to asking adb. run.sh is the stop_and_release fake above.
 mkdir -p "$WORK/boot"
 cat > "$WORK/boot/adb" <<EOF
 #!/usr/bin/env bash
@@ -783,17 +789,14 @@ cat > "$WORK/boot/pgrep" <<EOF
 #!/usr/bin/env bash
 [ "\$(cat "$WORK/boot/state")" != down ] && echo 4242
 EOF
-mkdir -p "$WORK/boot/emulator"; cat > "$WORK/boot/emulator/run.sh" <<EOF
-#!/usr/bin/env bash
-echo "\$*" >> "$WORK/boot/calls"
-EOF
-chmod +x "$WORK/boot/adb" "$WORK/boot/pgrep" "$WORK/boot/emulator/run.sh"
+chmod +x "$WORK/boot/adb" "$WORK/boot/pgrep"
 booted_after() { # $1 = down|up|offline; prints BOOTED and the run.sh calls
-  rm -f "$WORK/boot/calls"
+  export CALLS="$WORK/calls"; : > "$CALLS"
   echo "$1" > "$WORK/boot/state"
-  ( PATH="$WORK/boot:$PATH"; SERIAL=emulator-5562; GOS_REPO="$WORK/boot"; boot_instance; printf '%s|%s' "$BOOTED" "$(cat "$WORK/boot/calls" 2>/dev/null)" )
+  ( PATH="$WORK/boot:$PATH" SERIAL=emulator-5562 GOS_REPO="$WORK/gos" LOCK_OWNER="me@fake#1"; export LOCK_OWNER
+    boot_instance; printf '%s|%s' "$BOOTED" "$(cat "$CALLS")" )
 }
-boots_a_down_instance() { [ "$(booted_after down)" = "1|start" ]; }
+boots_a_down_instance() { [ "$(booted_after down)" = "1|run.sh start owner=me@fake#1" ]; }
 check "boot_instance boots a down instance and says it did" boots_a_down_instance
 leaves_a_running_instance() { [ "$(booted_after up)" = "0|" ]; }
 check "boot_instance leaves a running instance alone and says it did not boot it" leaves_a_running_instance

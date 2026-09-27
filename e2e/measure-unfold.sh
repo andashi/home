@@ -46,11 +46,10 @@
 # a foldable that runs GPU=host since its first start), snapshot `clean`,
 # under the instance's device lock. Everything runs as the unrooted shell
 # (uid 2000, asserted; the script unroots after `run.sh start`'s `adb root`).
-# The run boots the instance when it is down and stops it at the end,
-# whoever booted it: an instance nobody holds is a stray. To keep one
-# running across a run, hold its lock before the run (device-lock.sh acquire
-# <owner> <serial>) and pass that owner as LOCK_OWNER; the run then leaves it
-# running and locked. Needs `trace_processor` (TRACE_PROCESSOR, else on PATH).
+# Lifecycle: boots the instance if it is down and stops it at the end unless
+# you held its lock before the run and pass that owner as LOCK_OWNER
+# (finish_instance; AGENTS.md, "Emulator"). Needs `trace_processor`
+# (TRACE_PROCESSOR, else on PATH).
 set -euo pipefail
 
 HERE="$(cd "$(dirname "$0")" && pwd)"
@@ -82,10 +81,7 @@ cleanup() {
   rm -rf "$WORK"
   # Its own snapshots, ~3.5 GB each; `clean` stays.
   delete_snapshots "${names[@]}" || unclean=1
-  # Stopped and released unless the caller held the lock before the run; a
-  # stop that fails keeps the lock (finish_instance, stop_and_release). Only
-  # for an instance this run locked: a run that died before its acquire
-  # leaves everything alone.
+  # finish_instance only for an instance this run locked.
   if [ "$HAVE_LOCK" = 1 ]; then
     finish_instance || unclean=1
   fi

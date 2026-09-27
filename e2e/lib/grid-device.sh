@@ -128,13 +128,11 @@ unrooted_shell() { # [$1 = timeout (s), default 60]
   log "adb as unrooted shell (uid 2000)"
 }
 
-# Boots SERIAL's instance when it is down, from SNAPSHOT (default clean), and
-# leaves BOOTED=1 when it did; finish_instance ends it. Call it with the
-# instance's lock held: a hand-booted emulator-5562 ran unlocked for five
-# hours after the check that needed it (2026-09-26). Running means the
-# emulator process on the port, as run.sh decides it, not adb's answer: adbd
-# is briefly offline after a boot and after `adb unroot`. Needs GOS_REPO,
-# SERIAL and an exported LOCK_OWNER.
+# Boots SERIAL's instance when it is down, from SNAPSHOT (default clean), with
+# the instance's lock held, and leaves BOOTED=1 when it did; finish_instance
+# ends it. Running means the emulator process on the port, as run.sh decides
+# it, not adb's answer: adbd is briefly offline after a boot and after
+# `adb unroot`. Needs GOS_REPO, SERIAL and an exported LOCK_OWNER.
 BOOTED=0
 boot_instance() {
   # Anchored to the program itself: a shell whose command line merely names
@@ -320,9 +318,8 @@ stop_and_release() {
 # out loud, with what would have kept it running.
 finish_instance() {
   [ "${HELD_BEFORE:-0}" = 1 ] && return 0
-  [ "${BOOTED:-0}" = 1 ] || printf '%s\n' \
-    ":: $SERIAL was already running when this run took it, and nobody held its lock: stopping it now." \
-    ":: To keep an instance running across a run, hold its lock before the run starts (device-lock.sh acquire <owner> $SERIAL) and pass that owner as LOCK_OWNER." >&2
+  [ "${BOOTED:-0}" = 1 ] || printf ':: stopping %s: it was running and nobody held its lock. To keep an instance across a run, hold its lock before the run (device-lock.sh acquire <owner> %s) and pass that owner as LOCK_OWNER.\n' \
+    "$SERIAL" "$SERIAL" >&2
   stop_and_release
 }
 

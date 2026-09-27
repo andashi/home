@@ -22,11 +22,9 @@
 # Instance: SERIAL + OVERLAY_DIR (default emulator-5562, instances/test-fold-gpu),
 # snapshot `clean`, under the instance's device lock, as the unrooted shell
 # (uid 2000; `run.sh start` ends with `adb root`, and the script unroots
-# through the library's unrooted_shell). The run boots the instance when it
-# is down and stops it at the end, whoever booted it: an instance nobody
-# holds is a stray. To keep one running across a run, hold its lock before
-# the run (device-lock.sh acquire <owner> <serial>) and pass that owner as
-# LOCK_OWNER; the run then leaves it running and locked. Robust by construction
+# through the library's unrooted_shell). Lifecycle: boots the instance if it
+# is down and stops it at the end unless you held its lock before the run
+# and pass that owner as LOCK_OWNER (finish_instance; AGENTS.md, "Emulator"). Robust by construction
 # to prior state (the snapshot) and to host load (the interleaving); not to a
 # concurrent workload on the same instance - pin ANDROID_SERIAL on every
 # Gradle device task elsewhere (AGENTS.md, "Emulator").
@@ -82,10 +80,7 @@ cleanup() {
   # Each run-specific snapshot is ~3.5 GB: a delete that fails silently
   # would let them pile up.
   delete_snapshots "${names[@]}" || unclean=1
-  # Stopped and released unless the caller held the lock before the run; a
-  # stop that fails keeps the lock (finish_instance, stop_and_release). Only
-  # for an instance this run locked: a run that died before its acquire
-  # leaves everything alone.
+  # finish_instance only for an instance this run locked.
   if [ "$HAVE_LOCK" = 1 ] && [ "$keep_lock" != 1 ]; then
     finish_instance || unclean=1
   fi
