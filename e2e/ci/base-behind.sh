@@ -2,8 +2,11 @@
 # base_behind_ok <files changed on main since the base> <files the PR changes>
 # (newline-separated). AGENTS.md "Merging a pull request": a base behind main
 # is fine when the commits in between touch nothing the PR touches and nothing
-# shared - e2e/lib/, core/, services/, data/, build files, the version
-# catalog; app/ is counted as shared too, to err toward rebasing. Prints why
+# shared - e2e/lib/, core/, services/, data/, libs/ (vendored modules),
+# build files, gradle.properties, the wrapper and the version catalog; app/
+# is counted as shared too, to err toward rebasing. .github/ is not: CI
+# changes alter which checks run, not what the code does, and a gate
+# requires the pull request's own checks green anyway. Prints why
 # and returns 1 when a rebase is needed; empty input on either side is not
 # "nothing to check" but refused, because an empty diff here means a lookup
 # failed.
@@ -23,7 +26,7 @@ base_behind_ok() {
   [ -n "$between" ] || { echo "no files between base and main: the diff failed"; return 1; }
   [ -n "$mine" ] || { echo "the pull request changes no files: the diff failed"; return 1; }
   local shared overlap
-  shared="$(grep -E '^(e2e/lib/|core/|services/|data/|app/|gradle/|build\.gradle\.kts$|settings\.gradle\.kts$|.*/build\.gradle\.kts$)' <<<"$between" || true)"
+  shared="$(grep -E '^(e2e/lib/|core/|services/|data/|app/|libs/|gradle/|gradle\.properties$|gradlew$|gradlew\.bat$|build\.gradle\.kts$|settings\.gradle\.kts$|.*/build\.gradle\.kts$)' <<<"$between" || true)"
   [ -z "$shared" ] || { echo "main changed shared paths since the base: $(tr '\n' ' ' <<<"$shared")"; return 1; }
   overlap="$(comm -12 <(sort -u <<<"$between") <(sort -u <<<"$mine"))"
   [ -z "$overlap" ] || { echo "main changed files the pull request changes: $(tr '\n' ' ' <<<"$overlap")"; return 1; }

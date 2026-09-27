@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Cases for e2e/ci/base-behind.sh, counted: exits non-zero unless every case
-# answered as expected AND exactly nine ran - a file that stops early (an exit
+# answered as expected AND exactly thirteen ran - a file that stops early (an exit
 # inherited from what it sources, a case deleted) must not read as green.
 # No `set -e`, for the reason the predicate's own header gives.
 #
@@ -20,8 +20,12 @@ t refused "services/config/src/main/B.kt" "$PR" "a shared module in between"
 t refused "e2e/lib/grid-device.sh" "$PR" "the shared shell library"
 t refused "gradle/libs.versions.toml" "$PR" "the version catalog"
 t refused "app/ui/build.gradle.kts" "$PR" "a build file"
+t refused "gradle.properties" "$PR" "the project-wide Gradle properties"
+t refused "gradlew" "$PR" "the wrapper script"
+t refused "gradlew.bat" "$PR" "the Windows wrapper script"
+t refused "libs/address-formatter/src/main/java/Formatter.kt" "$PR" "a vendored library module's source"
 t refused "e2e/l4-search.sh" "$PR" "a file the PR touches"
 t refused "" "$PR" "an empty diff between"
 t refused "AGENTS.md" "" "an empty PR diff"
 echo "$n cases, $bad wrong"
-[ "$bad" = 0 ] && [ "$n" = 9 ]
+[ "$bad" = 0 ] && [ "$n" = 13 ]
