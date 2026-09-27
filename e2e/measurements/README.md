@@ -57,6 +57,58 @@ disappeared. That permission list is the point as much as the byte counts:
 several security issues close in this series by a permission no longer being
 requested at all.
 
+## Release builds between releases
+
+The `release-*` files measure what ships: minified release builds
+(`assembleDefaultRelease`, unsigned without the keystore), each measured from
+its own checkout so `gradle.modules` is that commit's. `release-v0.9.0-published`
+is the APK attached to the v0.9.0 release, measured to check that a tag build
+is the shipped one. Against `release-v0.9.0` it has the same dex, resources,
+assets, method references, permissions and modules. Two kinds of difference
+remain:
+
+| Metric | published | tag build | kind |
+|---|---|---|---|
+| `apk.size.lib` | 64 552 | 73 584 | content |
+| `apk.size.file` | 16 951 596 | 16 937 300 | packaging |
+| `apk.size.download` | 8 213 591 | 8 202 181 | packaging |
+| `apk.size.other` | 197 731 | 197 661 | packaging |
+
+`apk.size.lib` counts uncompressed bytes, so its difference is in the native
+libraries themselves: `libdatastore_shared_counter.so` is larger in the tag
+build in all four ABIs (2 576, 2 516, 1 852 and 2 088 bytes, 9 032 in all),
+while `libandroidx.graphics.path.so` is identical. That fits symbol
+stripping, which the build does only where the NDK is installed, and CI's
+build machine has one where this one may not; it is not verified. The other
+three are packaging - the signature block, alignment and compression of the
+published file.
+
+`release-v0.9.0` against `release-6c84e2acf` is what landed after v0.9.0:
+gestures (#210), app names and visibility (#207), the startup-race fix (#206)
+and smaller changes. The APK grew by 64 KB (0.4%), almost all of it dex, with
+354 more method references; modules stayed at 35. The permissions are the
+same twelve, named in `release-v0.9.0.permissions` and
+`release-6c84e2acf.permissions`, so a later release diffs against the list
+rather than against a count (a swap would keep the count):
+
+- `android.permission.ACCESS_HIDDEN_PROFILES`, `CALL_PHONE`, `EXPAND_STATUS_BAR`,
+  `INTERACT_ACROSS_PROFILES`, `QUERY_ALL_PACKAGES`, `READ_CONTACTS`,
+  `REQUEST_DELETE_PACKAGES`, `SET_ALARM`, `SET_WALLPAPER`, `VIBRATE`;
+- `com.android.alarm.permission.SET_ALARM`;
+- `org.andashi.home.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION`, which no source
+  manifest names: AndroidX core adds it in the manifest merge, a
+  signature-level permission the app declares and holds itself, to keep a
+  receiver it registers at runtime unreachable from other apps.
+
+The source manifests name the first eleven as distinct names, in twelve
+declarations: `EXPAND_STATUS_BAR` is declared in both `app/app` and `app/ui`.
+So a plain grep of them finds twelve lines, eleven once deduplicated - one
+fewer than the APK declares - and ten counting `android.permission.*` only.
+No `AndroidManifest.xml` changed between the two commits at all.
+
+Runtime (cold start, memory, CPU) was not measured: the host ran at load 18
+to 28 from other sessions' work throughout.
+
 ## What the metrics mean
 
 | Metric | Meaning |
