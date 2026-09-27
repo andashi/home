@@ -19,7 +19,14 @@ case_() { # $1 = name, $2 = expect pass|fail, $3 = script body, [$4 = library bo
   fi
 }
 case_ through-gos-run pass 'SNAPSHOT="$SNAPSHOT" gos_run start'
-case_ comment-names-run-sh pass '# gos_run calls emulator/run.sh'
+case_ comment-names-run-sh pass '# gos_run calls run.sh'
+# No line is exempt as a comment: telling a comment from a line inside a
+# quoted string is reading bash again. The path is what executes run.sh, so
+# the path may appear nowhere but inside gos_run.
+case_ hash-line-inside-a-string fail 'x="
+# $(emulator/run.sh stop)
+"'
+case_ comment-with-the-path fail '# (cd "$GOS_REPO" && emulator/run.sh start)'
 case_ direct-call fail '(cd "$GOS_REPO" && emulator/run.sh start)'
 case_ path-in-a-variable fail 'RUN="$GOS_REPO/emulator/run.sh"'
 case_ substitution fail 'RUN="$(realpath emulator/run.sh)"'
