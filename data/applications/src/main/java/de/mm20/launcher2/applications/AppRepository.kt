@@ -42,7 +42,8 @@ interface AppRepository : SearchableRepository<Application> {
 
 internal class AppRepositoryImpl(
     private val context: Context,
-    private val profileManager: ProfileManager,
+    /** The unlocked profiles, [ProfileManager.unlockedProfiles]; the first value is the first real read. */
+    private val profiles: Flow<List<Profile>>,
     private val stringNormalizer: StringNormalizer,
 ) : AppRepository {
     private val scope = CoroutineScope(Dispatchers.Default + Job())
@@ -51,8 +52,6 @@ internal class AppRepositoryImpl(
         context.getSystemService(Context.LAUNCHER_APPS_SERVICE) as LauncherApps
 
     private val installedApps = MutableStateFlow<List<LauncherApp>>(emptyList())
-
-    private val profiles = profileManager.unlockedProfiles
 
     private val mutex = Mutex()
 
