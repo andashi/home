@@ -1,23 +1,33 @@
 #!/usr/bin/env bash
 # Builds the widget-only fixture APK with the SDK's own tools, no Gradle
 # module: a package with one AppWidgetProvider and no launcher entry, which
-# the launcher's app list never shows (l4-config step 10d).
+# the launcher's app list never shows (l4-config step 10c).
 #
 #   e2e/fixtures/widget-only/build.sh <out.apk>
 #
-# ANDROID_HOME (default /opt/android-sdk) supplies the newest build-tools and
-# platform; it is signed with the debug key. For the emulator only.
+# Two installations: ANDROID_HOME (default /opt/android-sdk) supplies the
+# newest build-tools (aapt2, d8, zipalign, apksigner) and platform
+# (android.jar); javac comes from PATH, a JDK. Signed with the debug key. For
+# the emulator only. Every tool is checked before anything runs, so a missing
+# one is named with the installation it belongs to.
 set -euo pipefail
 
 out="${1:?usage: build.sh <out.apk>}"
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 sdk="${ANDROID_HOME:-/opt/android-sdk}"
-bt="$(ls -d "$sdk"/build-tools/*/ 2>/dev/null | sort -V | tail -1)"
-platform="$(ls -d "$sdk"/platforms/*/ 2>/dev/null | sort -V | tail -1)"
-[ -n "$bt" ] && [ -x "$bt/aapt2" ] && [ -x "$bt/d8" ] || { echo "build-tools not found under $sdk" >&2; exit 1; }
+# `|| true`: under pipefail a failed ls would end the script here, silently,
+# before the checks below could say what is missing.
+bt="$(ls -d "$sdk"/build-tools/*/ 2>/dev/null | sort -V | tail -1 || true)"
+platform="$(ls -d "$sdk"/platforms/*/ 2>/dev/null | sort -V | tail -1 || true)"
+[ -n "$bt" ] || { echo "no build-tools under $sdk (ANDROID_HOME)" >&2; exit 1; }
+for tool in aapt2 d8 zipalign apksigner; do
+  [ -x "$bt/$tool" ] || { echo "$tool not found in $bt (ANDROID_HOME build-tools)" >&2; exit 1; }
+done
 jar="$platform/android.jar"
-[ -f "$jar" ] || { echo "android.jar not found under $sdk/platforms" >&2; exit 1; }
+[ -f "$jar" ] || { echo "android.jar not found under $sdk/platforms (ANDROID_HOME)" >&2; exit 1; }
+command -v javac >/dev/null || { echo "javac not found on PATH (a JDK, not the Android SDK)" >&2; exit 1; }
 keystore="${DEBUG_KEYSTORE:-$HOME/.android/debug.keystore}"
+[ -f "$keystore" ] || { echo "debug keystore not found at $keystore (DEBUG_KEYSTORE)" >&2; exit 1; }
 [ -f "$keystore" ] || { echo "debug keystore not found: $keystore" >&2; exit 1; }
 
 work="$(mktemp -d)"
