@@ -4,6 +4,10 @@ import de.mm20.launcher2.config.SearchState
 import de.mm20.launcher2.config.SearchResultLayout
 import de.mm20.launcher2.config.ConfigMutation
 import de.mm20.launcher2.config.ConfigState
+import de.mm20.launcher2.config.Gesture
+import de.mm20.launcher2.config.GestureActionName
+import de.mm20.launcher2.config.GestureConfig
+import de.mm20.launcher2.preferences.GestureAction
 import de.mm20.launcher2.config.InSearchBarPosition
 import de.mm20.launcher2.config.SearchBarPosition
 import de.mm20.launcher2.config.SearchDefaults
@@ -77,6 +81,21 @@ interface LauncherConfigSettings {
      * the store combines this into.
      */
     fun changes(): Flow<Unit> = flowOf(Unit)
+
+    /**
+     * The searchable key each gesture that opens something opens (#3 slice 2).
+     * [readState] has those gestures as null: only the store can tell an app
+     * the file can name from a shortcut.
+     */
+    suspend fun readGestureLaunchKeys(): Map<Gesture, String> = emptyMap()
+
+    /**
+     * Writes the gestures in one awaited update: [actions] by name, [launches]
+     * as the searchable key to open, which the store resolved from the
+     * file's apps. A gesture in neither is left alone. Returns the settings
+     * state as written, a launch as null the way [readState] has it.
+     */
+    suspend fun applyGestures(actions: Map<Gesture, GestureActionName>, launches: Map<Gesture, String>): ConfigState
 }
 
 /** `appearance.theme.colors` slug to the built-in scheme's id, one entry per slug. */
@@ -90,9 +109,24 @@ internal class LauncherConfigSettingsImpl(
     private val dataStore: LauncherDataStore,
 ) : LauncherConfigSettings {
 
-    override fun changes(): Flow<Unit> = dataStore.data.map { stateOf(it) }.distinctUntilChanged().map { }
+    // The launch keys too: two apps both read as null in the state (#3 slice 2).
+    override fun changes(): Flow<Unit> =
+        dataStore.data.map { stateOf(it) to it.gestureLaunchKeys() }.distinctUntilChanged().map { }
 
     override suspend fun readState(): ConfigState = stateOf(dataStore.data.first())
+
+    override suspend fun readGestureLaunchKeys(): Map<Gesture, String> = dataStore.data.first().gestureLaunchKeys()
+
+    override suspend fun applyGestures(
+        actions: Map<Gesture, GestureActionName>,
+        launches: Map<Gesture, String>,
+    ): ConfigState = stateOf(
+        dataStore.updateAndAwait { current ->
+            val written = actions.mapValues { (_, name) -> name.toGestureAction() } +
+                launches.mapValues { (_, key) -> GestureAction.Launch(key) }
+            written.entries.fold(current) { data, (gesture, action) -> data.withGesture(gesture, action) }
+        }
+    )
 
     private fun stateOf(data: LauncherSettingsData): ConfigState {
         return ConfigState(
@@ -166,6 +200,7 @@ internal class LauncherConfigSettingsImpl(
             gridColumns = data.homeGridColumns,
             gridLocked = data.homeGridLocked,
             gridLabels = data.homeGridLabels,
+            gestures = Gesture.entries.associateWith { data.gesture(it).toConfig() },
         )
     }
 
@@ -284,14 +319,61 @@ internal class LauncherConfigSettingsImpl(
                 )
             }
 
+            // Gestures need the store to resolve their apps: applyGestures.
             is ConfigMutation.SetFavorites,
             is ConfigMutation.SetSearchActions,
             is ConfigMutation.SetWallpaper,
+            is ConfigMutation.SetGestures,
             -> this
         }
     }
 
 }
+
+private fun LauncherSettingsData.gesture(gesture: Gesture): GestureAction = when (gesture) {
+    Gesture.SwipeDown -> gesturesSwipeDown
+    Gesture.SwipeUp -> gesturesSwipeUp
+    Gesture.SwipeLeft -> gesturesSwipeLeft
+    Gesture.SwipeRight -> gesturesSwipeRight
+    Gesture.DoubleTap -> gesturesDoubleTap
+    Gesture.LongPress -> gesturesLongPress
+    Gesture.HomeButton -> gesturesHomeButton
+}
+
+private fun LauncherSettingsData.withGesture(gesture: Gesture, action: GestureAction): LauncherSettingsData = when (gesture) {
+    Gesture.SwipeDown -> copy(gesturesSwipeDown = action)
+    Gesture.SwipeUp -> copy(gesturesSwipeUp = action)
+    Gesture.SwipeLeft -> copy(gesturesSwipeLeft = action)
+    Gesture.SwipeRight -> copy(gesturesSwipeRight = action)
+    Gesture.DoubleTap -> copy(gesturesDoubleTap = action)
+    Gesture.LongPress -> copy(gesturesLongPress = action)
+    Gesture.HomeButton -> copy(gesturesHomeButton = action)
+}
+
+private fun LauncherSettingsData.gestureLaunchKeys(): Map<Gesture, String> = buildMap {
+    for (gesture in Gesture.entries) (gesture(gesture) as? GestureAction.Launch)?.key?.let { put(gesture, it) }
+}
+
+/** The contract's action names; two types, since :core:config does not see :core:preferences. */
+private val GestureActions: Map<GestureActionName, GestureAction> = mapOf(
+    GestureActionName.None to GestureAction.NoAction,
+    GestureActionName.Search to GestureAction.Search,
+    GestureActionName.Notifications to GestureAction.Notifications,
+    GestureActionName.QuickSettings to GestureAction.QuickSettings,
+    GestureActionName.ScreenLock to GestureAction.ScreenLock,
+    GestureActionName.PowerMenu to GestureAction.PowerMenu,
+    GestureActionName.Recents to GestureAction.Recents,
+    GestureActionName.LauncherSettings to GestureAction.LauncherSettings,
+)
+
+private fun GestureActionName.toGestureAction(): GestureAction = GestureActions.getValue(this)
+
+/**
+ * A stored action as the file names it. Null for what the file cannot name:
+ * a launch (resolved by the store), the feed, the deprecated widget pages.
+ */
+private fun GestureAction.toConfig(): GestureConfig? =
+    GestureActions.entries.firstOrNull { it.value == this }?.let { GestureConfig.Action(it.key) }
 
 /** The contact search provider for the device's own contacts (upstream's `local`). */
 private const val ContactsProvider = "local"
