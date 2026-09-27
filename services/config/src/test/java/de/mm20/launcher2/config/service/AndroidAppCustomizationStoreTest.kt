@@ -25,6 +25,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -80,6 +81,8 @@ class AndroidAppCustomizationStoreTest {
     private val levels = MutableStateFlow<Map<String, VisibilityLevel>>(emptyMap())
     private val visibilityWrites = mutableListOf<Map<String, VisibilityLevel>>()
     private var labelWriteFailure: Exception? = null
+    /** Runs inside the label write: what a test does while it is under way. */
+    private var labelWrite: (() -> Unit)? = null
 
     private inline fun <reified T> stub(crossinline answer: (name: String, args: Array<out Any?>) -> Any?): T =
         Proxy.newProxyInstance(T::class.java.classLoader, arrayOf(T::class.java)) { proxy, method, args ->
@@ -104,6 +107,7 @@ class AndroidAppCustomizationStoreTest {
             "getAppLabels" -> labels
             "replaceCustomLabelsAwaited" -> {
                 labelWriteFailure?.let { throw it }
+                labelWrite?.invoke()
                 val items = args[0] as List<SavableSearchable>
                 val wanted = args[1] as Map<String, String>
                 labels.value = labels.value.filterKeys { key -> items.none { it.key == key } } + wanted
@@ -440,6 +444,39 @@ class AndroidAppCustomizationStoreTest {
         assertEquals("database locked", failed.exceptionOrNull()?.message)
         assertEquals("disk full", failed.exceptionOrNull()?.suppressed?.singleOrNull()?.message)
         assertTrue("the record is gone", forgotten)
+    }
+
+    /**
+     * An apply cancelled mid-way is a failure too, and a cancelled coroutine
+     * cannot suspend: a rollback that writes like the real record (on the IO
+     * dispatcher, which checks for cancellation) would be cancelled itself,
+     * and the new form would stay (review on #214). The rollback runs
+     * non-cancellable.
+     */
+    @Test
+    fun `a cancelled apply puts the recorded form back`() = runTest {
+        val record = object : AppNaming {
+            val written = MutableStateFlow<Map<String, String?>>(emptyMap())
+            override fun observe(): Flow<Map<String, String?>> = written
+            override suspend fun replace(naming: Map<String, String?>) {
+                kotlinx.coroutines.currentCoroutineContext().ensureActive()
+                written.value = naming
+            }
+            override suspend fun recorded() = true
+            override suspend fun forget() {
+                written.value = emptyMap()
+            }
+        }
+        val cancellable = AndroidAppCustomizationStore(apps, profiles, attributes, searchables, record)
+        cancellable.replaceAndRead(listOf(AppConfig("com.example.two", activity = "com.example.two.First", label = "One")))
+
+        var running: kotlinx.coroutines.Job? = null
+        labelWrite = { running!!.cancel(); throw kotlinx.coroutines.CancellationException("cancelled") }
+        running = launch { cancellable.replaceAndRead(listOf(AppConfig("com.example.two", label = "Two"))) }
+        running.join()
+
+        assertTrue(running.isCancelled)
+        assertEquals(mapOf(twoFirst.key to "com.example.two.First"), record.written.value)
     }
 
     // ---- changes ----

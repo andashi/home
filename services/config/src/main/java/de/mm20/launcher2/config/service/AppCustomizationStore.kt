@@ -11,6 +11,8 @@ import de.mm20.launcher2.search.Application
 import de.mm20.launcher2.search.SavableSearchable
 import de.mm20.launcher2.searchable.SavableSearchableRepository
 import de.mm20.launcher2.searchable.VisibilityLevel
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -126,22 +128,26 @@ internal class AndroidAppCustomizationStore(
         // form. If a device write fails, the apply is reported failed and the
         // baseline stays as it was, so the record goes back too (review on #214).
         val before = naming.observe().first()
-        naming.replace(written)
         try {
+            naming.replace(written)
             writeDeviceState(installed, labels, wanted)
         } catch (e: Throwable) {
             // The restore can fail too, and then the record would claim a form
             // the device is not in; no record is the honest state instead.
             // Nothing is swallowed: the apply's failure propagates with the
-            // repair's attached (review on #214).
-            try {
-                naming.replace(before)
-            } catch (restore: Throwable) {
-                e.addSuppressed(restore)
+            // repair's attached (review on #214). A cancelled apply is a
+            // failure as well, and a cancelled coroutine cannot write, so the
+            // repair runs non-cancellable.
+            withContext(NonCancellable) {
                 try {
-                    naming.forget()
-                } catch (forget: Throwable) {
-                    e.addSuppressed(forget)
+                    naming.replace(before)
+                } catch (restore: Throwable) {
+                    e.addSuppressed(restore)
+                    try {
+                        naming.forget()
+                    } catch (forget: Throwable) {
+                        e.addSuppressed(forget)
+                    }
                 }
             }
             throw e
