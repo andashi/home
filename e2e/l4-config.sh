@@ -619,7 +619,9 @@ on_top() { # $1 = package
   case "$top" in "$1"/*) return 0 ;; *) return 1 ;; esac
 }
 retry_for 10 on_top "$PKG" || die "the launcher is not in front before the swipe"
-adb -s "$SERIAL" shell input swipe $((width * 3 / 4)) $((height / 3)) $((width / 4)) $((height / 3)) 200
+# A flick across most of the width: half of it in 200 ms stays under the
+# scaffold's threshold and does nothing (measured on this instance).
+adb -s "$SERIAL" shell input swipe $((width * 9 / 10)) $((height / 2)) $((width / 10)) $((height / 2)) 120
 retry_for 10 on_top com.android.settings || die "a swipe left did not open Settings, the app gestures.swipeLeft names"
 ok "gestures.swipeLeft opened Settings on the device"
 adb -s "$SERIAL" shell input keyevent KEYCODE_HOME
