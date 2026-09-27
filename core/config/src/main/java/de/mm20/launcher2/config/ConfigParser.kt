@@ -48,6 +48,7 @@ object ConfigParser {
             "search" to KeyEffect.Applied,
             // #3 slice 4.
             "apps" to KeyEffect.Applied,
+            "tags" to KeyEffect.Applied,
             // #3 slice 2.
             "gestures" to KeyEffect.Applied,
         ),
@@ -63,6 +64,10 @@ object ConfigParser {
         "gestures" to Gesture.entries.associate { it.key to KeyEffect.Applied },
         // The object forms: a pack icon, or an adaptive one (AppIconSerializer).
         "apps[].icon" to listOf("pack", "drawable", "themed", "scale", "background").associateWith { KeyEffect.Applied },
+        // #3 slice 4: tags, their icon's forms (TagIconSerializer), an app in full.
+        "tags[]" to listOf("name", "icon", "apps").associateWith { KeyEffect.Applied },
+        "tags[].icon" to listOf("pack", "drawable", "themed", "text").associateWith { KeyEffect.Applied },
+        "tags[].apps[]" to listOf("packageName", "profile", "activity").associateWith { KeyEffect.Applied },
         // #91: search's behavior; its look is appearance.glass. #107: barPosition.
         "search" to listOf(
             "favorites", "allApps", "layout", "labels", "contacts", "shortcuts",

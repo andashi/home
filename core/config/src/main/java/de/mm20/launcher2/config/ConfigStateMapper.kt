@@ -94,6 +94,7 @@ fun ConfigState.toLauncherConfig(): LauncherConfig {
         // Always present, so the read-back is a document that can be pasted
         // as it is; an empty list is a device without customizations.
         apps = apps.normalizedApps(),
+        tags = tags.normalizedTags(),
         // Every gesture the file can name; one it cannot is left out (#3 slice 2).
         gestures = GesturesConfig.of(gestures),
     )

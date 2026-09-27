@@ -46,6 +46,8 @@ data class ConfigState(
     val favorites: List<Favorite> = emptyList(),
     /** Apps with a name or a visibility of their own (#3 slice 4): `apps`. */
     val apps: List<AppConfig> = emptyList(),
+    /** The tags the apps carry, and their icons (#3 slice 4): `tags`. */
+    val tags: List<TagConfig> = emptyList(),
     /** The search actions in effect, in order: `search.actions` (#106); null when unknown. */
     val searchActions: List<SearchActionConfig>? = null,
     val widgetsEnabled: Boolean = false,
@@ -182,6 +184,13 @@ sealed class ConfigMutation {
         val apps: List<AppConfig>,
     ) : ConfigMutation() {
         override val section = "apps"
+    }
+
+    /** `tags` (#3 slice 4): the whole desired list, the apps' part of each tag. */
+    data class SetTags(
+        val tags: List<TagConfig>,
+    ) : ConfigMutation() {
+        override val section = "tags"
     }
 
     data class SetSearchActions(
@@ -353,6 +362,14 @@ object ConfigDiffer {
             val wanted = apps.normalizedApps()
             if (wanted != current.apps.normalizedApps()) {
                 mutations += ConfigMutation.SetApps(wanted)
+            }
+        }
+
+        // As a set: the order of the tags and of a tag's apps is no difference.
+        desired.tags?.let { tags ->
+            val wanted = tags.normalizedTags()
+            if (wanted != current.tags.normalizedTags()) {
+                mutations += ConfigMutation.SetTags(wanted)
             }
         }
 

@@ -261,6 +261,19 @@ class ConfigSchemaTest {
      * map (the first that has the rest: a gesture can be an action string),
      * `name[]` the first element of a list that has the rest.
      */
+    /** Whether this element has a value at [segments], in [changed]'s notation (`*` any key, `name[]` any element). */
+    private fun JsonElement.hasPath(segments: List<String>): Boolean {
+        if (segments.isEmpty()) return true
+        val obj = this as? JsonObject ?: return false
+        val head = segments.first()
+        val rest = segments.drop(1)
+        val name = head.removeSuffix("[]")
+        val children = if (name == "*") obj.values.toList() else listOfNotNull(obj[name])
+        return children.any { child ->
+            if (head.endsWith("[]")) (child as? JsonArray)?.any { it.hasPath(rest) } == true else child.hasPath(rest)
+        }
+    }
+
     private fun JsonElement.changed(segments: List<String>, change: (JsonElement) -> JsonElement): JsonElement {
         if (segments.isEmpty()) return change(this)
         val head = segments.first()
@@ -274,7 +287,10 @@ class ConfigSchemaTest {
         val child = obj[key] ?: throw AssertionError("the complete example has no '$key' for ${segments.joinToString(".")}")
         val newChild = if (!head.endsWith("[]")) child.changed(rest, change) else {
             val list = child.jsonArray
-            val at = list.indexOfFirst { rest.isEmpty() || (it is JsonObject && rest.first().removeSuffix("[]") in it) }
+            // The first element that has the whole rest of the path, not just its
+            // next key: the first tag with an icon can be a text one, and the
+            // walk for tags[].icon.pack needs the one with a pack (#3 slice 4).
+            val at = list.indexOfFirst { rest.isEmpty() || it.hasPath(rest) }
             if (at < 0) throw AssertionError("no element of '$key' has ${rest.first()}")
             JsonArray(list.toMutableList().also { it[at] = it[at].changed(rest, change) })
         }

@@ -27,6 +27,13 @@ data class LauncherConfig(
      * list clears every customization. Absent, nothing is managed.
      */
     val apps: List<AppConfig>? = null,
+    /**
+     * Which apps carry which tags, and each tag's icon (#3 slice 4). The
+     * whole state of the apps' tags, as [apps] is of their names: a tag not
+     * listed tags no app, and an empty list untags every app. A tag's
+     * contacts and shortcuts are the phone's. Absent, nothing is managed.
+     */
+    val tags: List<TagConfig>? = null,
     /** What each home-screen gesture does (#3 slice 2). */
     val gestures: GesturesConfig? = null,
 )

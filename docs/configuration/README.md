@@ -20,6 +20,7 @@ Fold (cover and inner display).
 | [Home grid](home-grid.md) | `home.grid`: columns, lock, labels, the phone and fold layouts, every item field, **where the dock can sit**, screens full of widgets; `home.lockRotation` |
 | [Favorites](favorites.md) | `home.favorites`: the pinned apps the dock shows |
 | [Apps](apps.md) | `apps`: an app's own name, icon and visibility - renamed, re-iconed and hidden apps |
+| [Tags](tags.md) | `tags`: which apps carry which tags, and each tag's icon |
 | [Search bar](search-bar.md) | `home.searchBar.position`, `home.searchBar.fixed`, what search looks like |
 | [Search](search.md) | `search`: favorites row, frequently used apps, all apps, grid or list, list icons, labels, app details, contacts (call on tap), shortcuts, filter bar, compact tags, the transliterator, keyboard, Enter, order, hidden items |
 | [Gestures](gestures.md) | `gestures`: what the swipes, double tap, long press and home button do |

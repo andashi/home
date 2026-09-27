@@ -115,7 +115,8 @@ Built for GrapheneOS and held to its standards:
 | `home.widgets`, `home.grid`, `home.lockRotation` | the widget grid: columns, lock, labels, phone and fold layouts, the dock as a grid item; portrait lock |
 | `search` | favorites row, frequently used apps, all apps, grid or list, list icons, labels, app details, contacts (call on tap), shortcuts, filter bar, compact tags, the transliterator, keyboard, Enter, order, hidden items |
 | `gestures` | the four swipes, double tap, long press and the home button on the home screen: a built-in action or an app to open, per profile |
-| `apps` | an app's own name on this launcher, and whether it shows normally, in search only or not at all, per profile and entry |
+| `apps` | an app's own name and icon on this launcher, and whether it shows normally, in search only or not at all, per profile and entry |
+| `tags` | which apps carry which tags, and each tag's icon |
 
 Every key, with screenshots on a phone and a Pixel Fold, is in
 [docs/configuration](docs/configuration/README.md). Coverage of the remaining
