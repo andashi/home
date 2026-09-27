@@ -15,22 +15,22 @@ Fold (cover and inner display).
 
 | Page | What it covers |
 |---|---|
-| [Appearance](appearance.md) | `appearance.glass` (the liquid-glass look), `appearance.wallpaper` |
-| [Icons](icons.md) | `icons.themed`, `icons.enforceThemed`, `icons.pack`, the Clear look, Lawnicons |
-| [Home grid](home-grid.md) | `home.grid`: columns, lock, labels, the phone and fold layouts, every item field, **where the dock can sit**, screens full of widgets |
+| [Appearance](appearance.md) | `appearance.glass` (the liquid-glass look), `appearance.theme`, `appearance.systemBars`, `appearance.wallpaper` |
+| [Icons](icons.md) | `icons.themed`, `icons.enforceThemed`, `icons.pack`, `icons.size`, `icons.adaptify`, `icons.badges`, the Clear look, Lawnicons |
+| [Home grid](home-grid.md) | `home.grid`: columns, lock, labels, the phone and fold layouts, every item field, **where the dock can sit**, screens full of widgets; `home.lockRotation` |
 | [Favorites](favorites.md) | `home.favorites`: the pinned apps the dock shows |
 | [Apps](apps.md) | `apps`: an app's own name and visibility - renamed and hidden apps |
-| [Search bar](search-bar.md) | `home.searchBar.position`, what search looks like |
-| [Search](search.md) | `search`: favorites row, all apps, grid or list, labels, contacts, shortcuts, filter bar, keyboard, Enter, order, hidden items |
+| [Search bar](search-bar.md) | `home.searchBar.position`, `home.searchBar.fixed`, what search looks like |
+| [Search](search.md) | `search`: favorites row, frequently used apps, all apps, grid or list, list icons, labels, app details, contacts (call on tap), shortcuts, filter bar, compact tags, the transliterator, keyboard, Enter, order, hidden items |
 | [Screens](screens.md) | Every scene on the phone, the Fold's cover and its inner display |
 | [Complete example](complete-example.json) | Every key the launcher applies, each off its default, in the form the read-back writes. The round-trip test runs it through parse, apply and read-back (#3) |
 
 ## The file
 
-The top level has six keys: `schemaVersion` (required, currently `2`),
-`icons`, `appearance`, `home`, `search` and `apps`. Everything else is optional, and **an absent
-key means "unmanaged", not "off"**: the launcher leaves whatever is set on the
-device. Comments and trailing commas are allowed (JSONC).
+The top level is `schemaVersion` (required, currently `2`), `icons`,
+`appearance`, `home`, `search` and `apps`. Everything else is optional, and **an
+absent key means "unmanaged", not "off"**: the launcher leaves whatever is set on
+the device. Comments and trailing commas are allowed (JSONC).
 
 The exceptions, in one place:
 - a grid item's `borderless`, `background` and `themeColors` take their
