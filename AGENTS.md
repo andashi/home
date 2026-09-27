@@ -511,26 +511,42 @@ test policy above asks for the break rather than the pass.
    fixture is reachable**, so derive the baseline from what the producing code
    emits, never from what makes the case read well.
 
-The check is one minute of work and three questions, and the first alone does not
-finish it: **break what the test guards, and watch that test go red and the
-others stay green.**
+The check costs about a minute and is three questions. The first is the one
+everybody means by "break it", and on its own it settles nothing:
 
-**Break it in the input the guard is about.** For a test that reads a document
-outside its source set, change the **document**, not the code - a break in a
-declared input re-runs the task and tells you nothing about whether the
-undeclared one would. That is mechanism 1, and it is invisible to a code break by
-construction: `ConfigParserTest` was verified by breaking ADR 0002's example, and
-it passed because it had not run. Breaking the parser instead would have gone red
-and proved the wrong thing.
+**1. Does the break go red in the right place?** Break what the test guards, and
+watch **that** test go red and the others stay green.
 
-**And it does not catch 9 at all, which is the case that looks most like a pass.** An
-unreachable fixture produces exactly that result - the case goes red, it is
-targeted, the others stay green - and proves the wrong thing. So the check has a
-second half that cannot be skipped for a new test: **ask whether the fixture is a
-state the system can actually be in**, and answer it from what the producing code
-emits rather than from the test reading well. Review caught this contradiction in
-the first draft of this very list, where the sentence above claimed to catch all
-of them while item 9 described its own result.
+**2. Is the break in the input the guard is about?** For a test that reads a
+document outside its source set, change the **document**, not the code. A break
+in a declared input re-runs the task and says nothing about whether a change to
+the undeclared one would have run it, so mechanism 1 is invisible to a code break
+by construction. `ConfigParserTest` was verified by breaking ADR 0002's example
+and **passed, because it had not run**; breaking the parser instead would have
+gone red and proved the wrong thing. A green break and a red break, both
+misleading, from the same missing declaration.
+
+**3. Is the fixture a state the system can be in?** Mechanism 9 produces question
+1's passing result exactly - red, targeted, others green - while proving the wrong
+thing, so no amount of the first question reaches it. Answer this one from what
+the producing code emits, never from what makes the case read well.
+
+This list has now been wrong about itself twice, in both directions, and both
+times about the same sentence. It first claimed one break caught every mechanism
+on it; review pointed out that item 9 describes that break's own passing result,
+and then that mechanism 1 is unreachable by it. **A sentence that claims to cover
+a list makes a claim about every item on it**, so a list that grows underneath
+such a sentence invalidates it silently - the same failure as the counts removed
+elsewhere in this document, except that a stale count looks stale and a
+summarising claim looks careful.
+
+There is a third way it was wrong, and it is the one no reviewer caught: after
+those two corrections the passage announced three questions and then called the
+third a "second half", and closed by referring to a claim that had just been
+deleted. Each fix was checked against the finding it answered and **neither was
+checked against the passage**. That is the ordinary shape of documentation rot,
+and it is why this is written as a numbered list now: a claim about a set cannot
+drift out of step with the set if it is the set.
 
 **A break that does not go red is a finding, not a result.** It means one of two
 things - the test is decoration, or the break was incomplete - and they look
