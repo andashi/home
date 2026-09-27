@@ -105,6 +105,8 @@ die(){ c '1;31' " x $*" >&2; exit 1; }
 [ "$INSTANCE_OVERRIDE" = "" ] || [ "$INSTANCE_OVERRIDE" = "so" ] \
   || die "SERIAL and OVERLAY_DIR name ONE instance - set both or neither (provisioning README, \"Emulator instances\"). Overriding only one runs one instance's disk under another instance's lock, because the lock is keyed by serial"
 [ -d "$GOS_REPO/emulator" ] || die "provisioning repo not found at $GOS_REPO (set GOS_REPO)"
+[ -f "$GOS_REPO/lib/readback-compare.jq" ] \
+  || die "$GOS_REPO/lib/readback-compare.jq not found: the read-back comparison needs provisioning 9074b4b or later"
 [ -f "$APK" ] || die "APK not found: $APK (build it or pass a path)"
 [ -f "$PROFILES_JSON" ] || die "config/profiles.json missing in $GOS_REPO"
 [ -f "$GOS_REPO/config/features.json" ] || die "config/features.json missing in $GOS_REPO"
@@ -438,26 +440,14 @@ for key in "${PROFILE_KEYS[@]}"; do
     "profile '$key' (user $uid): diagnostics success + sha256 of config/launcher/$key.json"
 
   eff="$(query_json_as_user config "$uid")" || die "profile '$key' (user $uid): /config not served"
-  # /config serves the *effective* document, re-serialised from the decoded
-  # model. Two consequences for favorites: a bare package name comes back as an
-  # object, and `profile` is absent when it is the default, because the config
-  # Json does not set encodeDefaults. Both spellings mean the same favorite
-  # (#45), so canonicalise both sides instead of calling that a mismatch. The
-  # exact serialisation is L1's job; this level asks whether the favorite
-  # arrived at the right profile.
-  mism="$(jq -r -n --argjson eff "$eff" --slurpfile want "$cfgfile" '
-    def canon:
-      if ((.home.favorites // null) | type) == "array" then
-        .home.favorites |= map(
-          if type == "string" then { packageName: ., profile: "personal" }
-          else { packageName: .packageName, profile: (.profile // "personal") }
-          end)
-      else . end;
-    ($want[0] | canon) as $w
-    | ($eff | canon) as $e
-    | [ "schemaVersion", "icons", "appearance", "home" ]
-    | map(select($e[.] != $w[.]))
-    | join(", ")')"
+  # The provisioning host's own comparison, from its repo (lib/readback-compare.jq,
+  # with offline cases in lib/readback-compare.test.sh): only the keys the file
+  # writes, each down to its value, since /config also serves every key the
+  # file leaves out (#181), with favorites and grid geometry canonicalised. One
+  # definition for both repos: this scenario checks what the host checks.
+  # A jq that fails prints nothing, which must not read as "no mismatch".
+  mism="$(jq -r -n --argjson eff "$eff" --slurpfile want "$cfgfile" -f "$GOS_REPO/lib/readback-compare.jq")" \
+    || die "profile '$key' (user $uid): the read-back comparison itself failed"
   [ -z "$mism" ] || { printf 'effective config for user %s:\n%s\n' "$uid" "$eff" >&2; \
     die "profile '$key' (user $uid): /config differs from generated file in: $mism"; }
 
