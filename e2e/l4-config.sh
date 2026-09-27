@@ -632,8 +632,10 @@ for attempt in 1 2; do
 done
 [ -n "$settings_attempt" ] || die "two swipes left did not open Settings, the app gestures.swipeLeft names"
 ok "gestures.swipeLeft opened Settings on the device (flick $settings_attempt of 2)"
-adb -s "$SERIAL" shell input keyevent KEYCODE_HOME
-retry_for 10 on_top "$PKG" || die "Home did not bring the launcher back after the gesture"
+# Back by starting the launcher, as 6b does: this scenario never makes it the
+# home app, so the Home key would open whichever launcher holds the role.
+adb -s "$SERIAL" shell am start -W -n "$home_activity" >/dev/null || die "am start $home_activity failed"
+retry_for 10 on_top "$PKG" || die "the launcher did not come back after the gesture"
 
 # --- 7. malformed JSON: failed report, state intact --------------------
 
