@@ -137,7 +137,9 @@ unrooted_shell() { # [$1 = timeout (s), default 60]
 # SERIAL and an exported LOCK_OWNER.
 BOOTED=0
 boot_instance() {
-  pgrep -f "qemu-system.* -port ${SERIAL#emulator-}( |$)" >/dev/null 2>&1 && return 0
+  # Anchored to the program itself: a shell whose command line merely names
+  # the pattern would otherwise pass for a running emulator.
+  pgrep -f "^[^ ]*qemu-system[^ ]* .* -port ${SERIAL#emulator-}( |\$)" >/dev/null 2>&1 && return 0
   log "booting $SERIAL from ${SNAPSHOT:-clean}"
   (cd "$GOS_REPO" && SERIAL="$SERIAL" SNAPSHOT="${SNAPSHOT:-clean}" emulator/run.sh start >/dev/null) \
     || die "could not boot $SERIAL"
