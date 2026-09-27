@@ -30,6 +30,19 @@ cat > "$WORK/bin/adb" <<'EOF'
 work="$ADB_FAKE_WORK"
 case "$*" in
   *"dumpsys window windows"*)
+    echo x >> "$work/reads"
+    if grep -q 'Application Not Responding' "$work/windows"; then
+      # The test APK lands while the window list is being read: on the Nth
+      # read that finds a dialog, N from $WORK/installonread.
+      echo x >> "$work/anrreads"
+      if [ -e "$work/installonread" ] && [ "$(wc -l < "$work/anrreads")" -ge "$(cat "$work/installonread")" ]; then
+        echo new > "$work/installed"
+      fi
+      # A read that takes a while once there is a dialog to report.
+      [ ! -e "$work/slowread" ] || sleep 3
+      # Reads that take a while after a tap, while the Wait is verified.
+      [ ! -e "$work/slowaftertap" ] || [ ! -e "$work/taps" ] || sleep 2
+    fi
     # A tapped Wait closes its dialog only after two more reads have seen it,
     # as on the device, where the rule's first look right after the tap still
     # found System UI's (#189). Two, not one: the rule reads once more after
@@ -51,6 +64,8 @@ case "$*" in
   *"am force-stop "*) for a in "$@"; do pkg="$a"; done; echo "$pkg" >> "$work/stopped"
     [ -e "$work/sticky" ] || { grep -v "Application Not Responding: $pkg}" "$work/windows" > "$work/w2" || true; mv "$work/w2" "$work/windows"; } ;;
   *"uiautomator dump"*)
+    # The test APK lands while the (slow) dump runs.
+    [ ! -e "$work/installondump" ] || echo new > "$work/installed"
     [ ! -e "$work/dumphangui" ] || sleep 60
     # An ANR of ours that comes up while the (slow) dump runs.
     if [ -e "$work/oursondump" ]; then
@@ -71,18 +86,29 @@ case "$*" in
       [ -z "$top" ] || echo "$top" > "$work/closing"
     fi ;;
   *"cat /proc/uptime"*) echo "123.45 456.78" ;;
+  *"pm list packages "*)
+    # A device answers both; the wrapper asks one of them.
+    [ ! -e "$work/pmfail" ] || exit 1
+    [ ! -e "$work/installed" ] || echo "package:de.mm20.launcher2.ui.test" ;;
+  *"dumpsys package "*)
+    # A start-signal read that takes a while.
+    [ ! -e "$work/slowstamp" ] || sleep 3.5
+    # $WORK/installed holds the test APK's lastUpdateTime; absent, it is not installed.
+    [ ! -e "$work/pmfail" ] || exit 1
+    [ ! -e "$work/installed" ] || printf '    lastUpdateTime=%s\n' "$(cat "$work/installed")" ;;
   *) : ;;
 esac
 EOF
 chmod +x "$WORK/bin/adb"
 # GNU timeout reads a duration of 0 as no limit at all, so a call given 0
-# could hang forever: the fake records every such call, and the last check
-# requires none (#191 review). It stays out of the per-check reset, so it
+# could hang forever, and one given less than 0 is a time left that went
+# stale before it was used: the fake records every such call, and the last
+# check requires none (#191 and #196 reviews). It stays out of the per-check reset, so it
 # covers every scenario of the suite.
 REAL_TIMEOUT="$(command -v timeout)"
 cat > "$WORK/bin/timeout" <<EOF2
 #!/usr/bin/env bash
-case "\$1" in 0|0s|0.0) echo "\$*" >> "$WORK/timeout0" ;; esac
+case "\$1" in 0|0s|0.0|-*) echo "\$*" >> "$WORK/timeout0" ;; esac
 exec "$REAL_TIMEOUT" "\$@"
 EOF2
 chmod +x "$WORK/bin/timeout"
@@ -90,10 +116,10 @@ export ADB_FAKE_WORK="$WORK"
 export PATH="$WORK/bin:$PATH"
 # The re-check polls; the intervals are the script's own, shortened here so
 # the suite stays in seconds. The bound itself is what is under test.
-export ANR_RECHECK_SECONDS=3 ANR_RECHECK_SLEEP=0 ANR_WAIT_SECONDS=3
+export ANR_RECHECK_SECONDS=3 ANR_RECHECK_SLEEP=0 ANR_WAIT_SECONDS=3 ANR_WATCH_SECONDS=30 ANR_WATCH_SLEEP=1
 
 windows() { # $@ = "Application Not Responding: <pkg>" entries, in z-order
-  : > "$WORK/windows"; rm -f "$WORK/stopped" "$WORK/sticky" "$WORK/dumphang" "$WORK/firstfail" "$WORK/taps" "$WORK/waitsticky" "$WORK/closing" "$WORK/closing.seen" "$WORK/oursondump" "$WORK/dumphangui" "$WORK/failaftertap" "$WORK/taphang"
+  : > "$WORK/windows"; rm -f "$WORK/stopped" "$WORK/sticky" "$WORK/dumphang" "$WORK/firstfail" "$WORK/taps" "$WORK/waitsticky" "$WORK/closing" "$WORK/closing.seen" "$WORK/oursondump" "$WORK/dumphangui" "$WORK/failaftertap" "$WORK/taphang" "$WORK/installed" "$WORK/installondump" "$WORK/pmfail" "$WORK/reads" "$WORK/slowread" "$WORK/installonread" "$WORK/slowaftertap" "$WORK/anrreads" "$WORK/reads.at2s" "$WORK/slowstamp"
   WAIT_AMBIGUOUS=0
   printf '  Window #1 Window{1 u0 com.example/com.example.Main}:\n' >> "$WORK/windows"
   local i=2 w
@@ -297,6 +323,244 @@ a_flagged_wait_fails_a_passing_run() {
   [ "$rc" -ne 0 ] && grep -qi 'may have' "$WORK/run"
 }
 check "a flagged Wait fails a run whose tests pass" a_flagged_wait_fails_a_passing_run
+
+# --- the watch until the tests start (#190's l2 red) ----------------------
+# The stock launcher's ANR lands 45-55 s after boot, when the wrapper starts:
+# on #190 the first look ran 0.3 s before the dialog existed, and the tests
+# began 137 s later under it. The wrapper keeps looking until the test APK
+# is installed, which gradle does right before it instruments, and then
+# touches nothing. Each scenario runs the wrapper itself around a command
+# that stands in for gradle.
+run_wrapper() { # $1 = the command script's body; the wrapper's output goes to $WORK/run
+  printf '#!/usr/bin/env bash\nw="$ADB_FAKE_WORK"\n%s\n' "$1" > "$WORK/cmd"
+  chmod +x "$WORK/cmd"
+  WRAPPER_RC=0
+  bash ./l2-with-evidence.sh "$WORK/cmd" > "$WORK/run" 2>&1 || WRAPPER_RC=$?
+}
+ANR_LAUNCHER3='  Window #7 Window{7 u0 Application Not Responding: com.android.launcher3}:'
+
+# An ANR that comes up after the first look is dismissed before the tests.
+dismisses_an_anr_after_the_first_look() {
+  windows
+  run_wrapper "sleep 1
+printf '%s\n' '$ANR_LAUNCHER3' >> \"\$w/windows\"
+end=\$((SECONDS + 10))
+while [ \"\$SECONDS\" -lt \"\$end\" ]; do
+  grep -q launcher3 \"\$w/windows\" || { echo new > \"\$w/installed\"; exit 0; }
+  sleep 0.5
+done
+exit 3"
+  [ "$WRAPPER_RC" -eq 0 ] && grep -qx com.android.launcher3 "$WORK/stopped" 2>/dev/null
+}
+check "an ANR that comes up after the first look is dismissed before the tests" dismisses_an_anr_after_the_first_look
+
+# Once the test APK is installed nothing is touched: no force-stop, no tap,
+# and the watch ends - it stops reading, rather than reading on to its
+# deadline behind the other guards.
+touches_nothing_once_the_tests_start() {
+  windows
+  run_wrapper "echo new > \"\$w/installed\"
+sleep 2
+wc -l < \"\$w/reads\" > \"\$w/reads.at2s\"
+printf '%s\n' '$ANR_LAUNCHER3' >> \"\$w/windows\"
+sleep 3"
+  [ "$WRAPPER_RC" -eq 0 ] && [ -z "$(stopped)" ] && [ "$(taps)" -eq 0 ] &&
+    [ "$(wc -l < "$WORK/reads")" -le "$(cat "$WORK/reads.at2s")" ]
+}
+check "nothing is touched once the test APK is installed, and the watch ends" touches_nothing_once_the_tests_start
+
+# A device that cannot say whether the tests started is taken as started:
+# a watch that kept going into the tests could tap one.
+an_unreadable_device_ends_the_watch() {
+  windows
+  run_wrapper ": > \"\$w/pmfail\"
+sleep 2
+printf '%s\n' '$ANR_LAUNCHER3' >> \"\$w/windows\"
+sleep 3"
+  [ "$WRAPPER_RC" -eq 0 ] && [ -z "$(stopped)" ]
+}
+check "a device that cannot say whether the tests started ends the watch" an_unreadable_device_ends_the_watch
+
+# The watch ends with the command: the wrapper returns with it, not at the
+# watch's deadline, and nothing is read after it has returned.
+the_watch_ends_with_the_command() {
+  windows
+  local start=$SECONDS after
+  run_wrapper "sleep 2"
+  [ $((SECONDS - start)) -le 5 ] || return 1
+  after="$(wc -l < "$WORK/reads")"
+  sleep 3
+  [ "$WRAPPER_RC" -eq 0 ] && [ "$(wc -l < "$WORK/reads")" -eq "$after" ]
+}
+check "the watch ends when the command does, and reads nothing after" the_watch_ends_with_the_command
+
+# And it has a deadline of its own: past ANR_WATCH_SECONDS it touches nothing.
+the_watch_has_a_deadline() {
+  windows
+  ANR_WATCH_SECONDS=2 run_wrapper "sleep 4
+printf '%s\n' '$ANR_LAUNCHER3' >> \"\$w/windows\"
+sleep 3"
+  [ "$WRAPPER_RC" -eq 0 ] && [ -z "$(stopped)" ]
+}
+check "the watch touches nothing past its deadline" the_watch_has_a_deadline
+
+# A Wait in the watch that leaves its dialog up fails a passing run, as one
+# in the first look does: the flag crosses from the watch to the wrapper.
+# And a dialog that survives is reported once, not retried every round.
+run_a_flagged_wait_in_the_watch() {
+  windows
+  # Not a fixed delay (#196 review): the command waits for the tap it is
+  # there to see, then for the Wait's own budget, which bounds the check
+  # after the tap, then three rounds of the watch for the retry check below.
+  run_wrapper "sleep 1
+: > \"\$w/sticky\"; : > \"\$w/waitsticky\"
+printf '%s\n' '  Window #7 Window{7 u0 Application Not Responding: com.android.systemui}:' >> \"\$w/windows\"
+end=\$((SECONDS + 20))
+while [ ! -e \"\$w/taps\" ] && [ \"\$SECONDS\" -lt \"\$end\" ]; do sleep 0.2; done
+[ -e \"\$w/taps\" ] || exit 3
+sleep \$((ANR_WAIT_SECONDS + 1 + 3 * ANR_WATCH_SLEEP))"
+}
+a_flagged_wait_in_the_watch_fails_a_passing_run() {
+  run_a_flagged_wait_in_the_watch
+  [ "$WRAPPER_RC" -ne 0 ] && grep -qi 'may have' "$WORK/run"
+}
+check "a flagged Wait in the watch fails a run whose tests pass" a_flagged_wait_in_the_watch_fails_a_passing_run
+a_survivor_is_not_retried_every_round() {
+  # Reads the run above: it watched for about ten more seconds after the Wait.
+  [ "$(grep -cx com.android.systemui "$WORK/stopped")" -eq 1 ] && [ "$(taps)" -eq 1 ]
+}
+check "a dialog that survives the watch's dismissal is not retried every round" a_survivor_is_not_retried_every_round
+
+# The last look before a tap: if the test APK arrived during the dump, no tap.
+no_tap_once_the_tests_start_during_the_dump() {
+  # Inside the watch: the test APK was not installed when the wrapper started.
+  local APK_STAMP_AT_START=""
+  windows "Application Not Responding: com.android.systemui"
+  : > "$WORK/sticky"; : > "$WORK/installondump"
+  clear_foreign_anrs > "$WORK/log" 2>&1 || return 1
+  [ "$(taps)" -eq 0 ] && grep -qi 'test' "$WORK/log"
+}
+check "no Wait is pressed once the tests start during the dump" no_tap_once_the_tests_start_during_the_dump
+
+# A test APK already installed when the wrapper starts is not the start of
+# the tests: what counts is gradle installing it, which changes its
+# lastUpdateTime (#196 review).
+a_preinstalled_apk_does_not_end_the_watch() {
+  windows
+  echo old > "$WORK/installed"
+  run_wrapper "sleep 1
+printf '%s\n' '$ANR_LAUNCHER3' >> \"\$w/windows\"
+end=\$((SECONDS + 10))
+while [ \"\$SECONDS\" -lt \"\$end\" ]; do
+  grep -q launcher3 \"\$w/windows\" || { echo new > \"\$w/installed\"; exit 0; }
+  sleep 0.5
+done
+exit 3"
+  [ "$WRAPPER_RC" -eq 0 ] && grep -qx com.android.launcher3 "$WORK/stopped" 2>/dev/null
+}
+check "a test APK installed before the wrapper does not end the watch" a_preinstalled_apk_does_not_end_the_watch
+
+# A read that runs past the watch's deadline starts no dismissal: the read is
+# given only the time left, and the deadline is checked again before acting
+# (#196 review).
+a_read_past_the_deadline_starts_nothing() {
+  windows
+  ANR_WATCH_SECONDS=3 run_wrapper ": > \"\$w/slowread\"
+sleep 1.5
+printf '%s\n' '$ANR_LAUNCHER3' >> \"\$w/windows\"
+sleep 7"
+  [ "$WRAPPER_RC" -eq 0 ] && [ -z "$(stopped)" ]
+}
+check "a read that runs past the watch's deadline starts no dismissal" a_read_past_the_deadline_starts_nothing
+
+# The test APK can land while the window list is read: no force-stop then
+# either (#196 review).
+no_force_stop_once_the_tests_start_during_the_read() {
+  windows
+  run_wrapper "echo 1 > \"\$w/installonread\"
+sleep 1
+printf '%s\n' '$ANR_LAUNCHER3' >> \"\$w/windows\"
+sleep 5"
+  [ "$WRAPPER_RC" -eq 0 ] && [ -z "$(stopped)" ]
+}
+check "no force-stop once the tests start during the read" no_force_stop_once_the_tests_start_during_the_read
+
+# The same during the dismissal's own read, after the watch has looked: the
+# dismissal checks for itself before it force-stops anything.
+no_force_stop_once_the_tests_start_during_the_dismissals_read() {
+  windows
+  run_wrapper "echo 2 > \"\$w/installonread\"
+sleep 1
+printf '%s\n' '$ANR_LAUNCHER3' >> \"\$w/windows\"
+sleep 5"
+  [ "$WRAPPER_RC" -eq 0 ] && [ -z "$(stopped)" ] && grep -q 'tests are starting' "$WORK/run"
+}
+check "no force-stop once the tests start during the dismissal's own read" no_force_stop_once_the_tests_start_during_the_dismissals_read
+
+# Control: a Wait in the watch that closes its dialog leaves a passing run
+# passing - the in-flight mark is cleared once the dialog is seen gone.
+a_clean_wait_in_the_watch_passes() {
+  windows
+  run_wrapper "sleep 1
+: > \"\$w/sticky\"
+printf '%s\n' '  Window #7 Window{7 u0 Application Not Responding: com.android.systemui}:' >> \"\$w/windows\"
+end=\$((SECONDS + 20))
+while grep -q systemui \"\$w/windows\" && [ \"\$SECONDS\" -lt \"\$end\" ]; do sleep 0.2; done
+sleep \$((2 * ANR_WATCH_SLEEP))
+! grep -q systemui \"\$w/windows\""
+  [ "$WRAPPER_RC" -eq 0 ] && [ "$(taps)" -eq 1 ] && ! grep -q '::error::' "$WORK/run"
+}
+check "a Wait in the watch that closes its dialog leaves a passing run passing" a_clean_wait_in_the_watch_passes
+
+# A Wait still being checked when the command ends has not shown that its
+# tap closed the foreign dialog: killing the watch then must not read as a
+# clean Wait (#196 review).
+a_wait_cut_short_fails_a_passing_run() {
+  windows
+  run_wrapper "sleep 1
+: > \"\$w/sticky\"; : > \"\$w/slowaftertap\"
+printf '%s\n' '  Window #7 Window{7 u0 Application Not Responding: com.android.systemui}:' >> \"\$w/windows\"
+end=\$((SECONDS + 20))
+while [ ! -e \"\$w/taps\" ] && [ \"\$SECONDS\" -lt \"\$end\" ]; do sleep 0.2; done
+[ -e \"\$w/taps\" ] || exit 3"
+  [ "$WRAPPER_RC" -ne 0 ] && grep -q '::error::' "$WORK/run"
+}
+check "a Wait still being checked when the command ends fails a passing run" a_wait_cut_short_fails_a_passing_run
+
+# A flagged Wait stays flagged when a later round's Wait comes out clean:
+# the later one clears its own in-flight mark, not the earlier verdict.
+a_flag_survives_a_later_clean_wait() {
+  windows
+  run_wrapper "sleep 1
+: > \"\$w/sticky\"; : > \"\$w/waitsticky\"
+printf '%s\n' '  Window #7 Window{7 u0 Application Not Responding: com.android.systemui}:' >> \"\$w/windows\"
+end=\$((SECONDS + 20))
+while [ ! -e \"\$w/taps\" ] && [ \"\$SECONDS\" -lt \"\$end\" ]; do sleep 0.2; done
+[ -e \"\$w/taps\" ] || exit 3
+sleep \$((ANR_WAIT_SECONDS + 1))
+grep -v systemui \"\$w/windows\" > \"\$w/w3\" || true; mv \"\$w/w3\" \"\$w/windows\"; rm -f \"\$w/waitsticky\"
+printf '%s\n' '  Window #8 Window{8 u0 Application Not Responding: com.android.phone}:' >> \"\$w/windows\"
+end=\$((SECONDS + 20))
+while grep -q com.android.phone \"\$w/windows\" && [ \"\$SECONDS\" -lt \"\$end\" ]; do sleep 0.2; done
+! grep -q com.android.phone \"\$w/windows\" || exit 4
+sleep \$((2 * ANR_WATCH_SLEEP))"
+  [ "$WRAPPER_RC" -ne 0 ] && [ "$(taps)" -eq 2 ] && grep -qi 'may have' "$WORK/run"
+}
+check "a flagged Wait stays flagged after a later clean one" a_flag_survives_a_later_clean_wait
+
+# The start check is an adb call of its own. When it outlasts the watch's
+# deadline, the time left read after it is 0 or less, and a read handed that
+# would run unbounded (0) or not at all (below 0): the watch stops instead.
+a_slow_start_check_leaves_no_stale_time() {
+  windows
+  # Counted, not cleared: the suite-wide check at the end reads the same file.
+  local before; before="$(cat "$WORK/timeout0" 2>/dev/null | wc -l)"
+  : > "$WORK/slowstamp"
+  ANR_WATCH_SECONDS=3 run_wrapper "sleep 6"
+  rm -f "$WORK/slowstamp"
+  [ "$WRAPPER_RC" -eq 0 ] && [ "$(cat "$WORK/timeout0" 2>/dev/null | wc -l)" -eq "$before" ]
+}
+check "a start check that outlasts the deadline hands no read a stale time" a_slow_start_check_leaves_no_stale_time
 
 # The re-check is wall-clock time (#164). "5 tries, 1 s apart" read as five
 # seconds, but each try is a dumpsys over adb with no bound, so on a loaded
