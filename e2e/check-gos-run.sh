@@ -8,6 +8,12 @@
 # check is whether a script goes around them: only gos_run may name run.sh.
 # A mention anywhere else outside a comment fails - a call, a path in a
 # variable, a substitution - since each is a way to reach run.sh unchecked.
+# The boundary: the guard reads the literal name. A name put together at
+# runtime (run"."sh, a path assembled from variables) is beyond what reading
+# text can decide - deciding it is the game this guard exists to stop
+# playing. Such a call still meets run.sh's own refusal of a foreign owner;
+# it loses only gos_run's earlier, clearer refusal, and review is where it
+# gets caught. Stated so that nobody reads this guard's silence as more.
 # It replaces a line scanner that tried to decide by reading bash whether
 # run.sh would get an owner, and needed eight review rounds to stop saying
 # yes when the answer was no (#194).
