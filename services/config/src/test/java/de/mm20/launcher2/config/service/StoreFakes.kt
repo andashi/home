@@ -27,6 +27,7 @@ import de.mm20.launcher2.searchable.PinnedLevel
 import de.mm20.launcher2.searchable.SavableSearchableRepository
 import de.mm20.launcher2.searchable.VisibilityLevel
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
@@ -278,6 +279,11 @@ internal class FakeProfileResolver(
     override suspend fun getProfile(userHandle: UserHandle): Profile? {
         return listOfNotNull(personal, work).firstOrNull { it.userHandle == userHandle }
     }
+
+    /** Complete by default: a test that holds it back replaces it. */
+    var read: CompletableDeferred<Unit> = CompletableDeferred(Unit)
+
+    override suspend fun awaitRead() = read.await()
 }
 
 internal class FakeApplication(

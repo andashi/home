@@ -155,6 +155,11 @@ class ProfileManager(
         return readProfiles.first()[profileType]?.profile
     }
 
+    /** Returns once the profiles have been read; the synchronous getters answer from then on. */
+    suspend fun awaitRead() {
+        readProfiles.first()
+    }
+
     /**
      * Returns the state of the given profile, or null if it doesn't exist.
      */
