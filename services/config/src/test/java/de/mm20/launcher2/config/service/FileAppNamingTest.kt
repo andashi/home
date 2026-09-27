@@ -2,9 +2,14 @@ package de.mm20.launcher2.config.service
 
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -89,6 +94,47 @@ class FileAppNamingTest {
 
         assertEquals(false, FileAppNaming(context).recorded())
         assertEquals(emptyMap<String, String?>(), naming.observe().first())
+    }
+
+    /**
+     * Write-back waits for the record (review on #214). The startup check
+     * records an empty one for a file that customizes no apps, and an empty
+     * record changes nothing an observer of the naming could see - so the
+     * wait has to end on the record itself, not on a new value.
+     */
+    @Test
+    fun `waiting for a record ends when an empty one is made`() = runBlocking {
+        val naming = FileAppNaming(context)
+        naming.observe().first()
+        val waiting = async(Dispatchers.Default) { naming.awaitRecorded() }
+        delay(200)
+        assertFalse("no record yet, so the wait goes on", waiting.isCompleted)
+
+        naming.replace(emptyMap())
+
+        withTimeout(5_000) { waiting.await() }
+    }
+
+    /** Control: a record made by an earlier process is no wait at all. */
+    @Test
+    fun `a record that exists is no wait`() = runBlocking {
+        FileAppNaming(context).replace(emptyMap())
+
+        withTimeout(5_000) { FileAppNaming(context).awaitRecorded() }
+    }
+
+    @Test
+    fun `a corrupt record is waited on like a missing one`() = runBlocking {
+        file.parentFile?.mkdirs()
+        file.writeText("{ not json")
+        val naming = FileAppNaming(context)
+        val waiting = async(Dispatchers.Default) { naming.awaitRecorded() }
+        delay(200)
+        assertFalse(waiting.isCompleted)
+
+        naming.replace(mapOf("app://a:A" to null))
+
+        withTimeout(5_000) { waiting.await() }
     }
 
     @Test

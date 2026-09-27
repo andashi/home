@@ -289,6 +289,7 @@ class ConfigWriteBackTest {
             override fun observe() = kotlinx.coroutines.flow.flowOf(emptyMap<String, String?>())
             override suspend fun replace(naming: Map<String, String?>) = Unit
             override suspend fun recorded() = recorded
+            override suspend fun awaitRecorded(): Unit = error("not used here")
             override suspend fun forget() = Unit
         }
         val waiting = ConfigWriteBack(context, real.store, reportStore, baselineStore, lock, appNaming = naming)

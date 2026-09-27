@@ -5,6 +5,7 @@ import de.mm20.launcher2.config.ConfigParser
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -40,6 +41,13 @@ interface AppNaming {
     suspend fun recorded(): Boolean
 
     /**
+     * Returns once [recorded] is true. Write-back waits on this, not on
+     * [observe]: the record the startup check makes for a file without apps
+     * is empty, the same value an observer already had (review on #214).
+     */
+    suspend fun awaitRecorded()
+
+    /**
      * Removes the record: no record is the honest state when the one written
      * cannot be put right (a restore that failed). The next start reloads to
      * make it, and write-back waits until then.
@@ -58,6 +66,9 @@ internal class FileAppNaming(context: Context) : AppNaming {
     private val file = File(context.filesDir, "config/app-naming.json")
     private val serializer = MapSerializer(String.serializer(), String.serializer().nullable)
     private val state = MutableStateFlow<Map<String, String?>?>(null)
+    // Set by this instance's replace and forget; what a process found on
+    // disk at start is answered by recorded() itself.
+    private val madeHere = MutableStateFlow(false)
     private val lock = Mutex()
 
     override fun observe(): Flow<Map<String, String?>> = flow {
@@ -71,11 +82,19 @@ internal class FileAppNaming(context: Context) : AppNaming {
             file.replaceAtomically(ConfigParser.json.encodeToString(serializer, naming))
         }
         state.value = naming
+        madeHere.value = true
     }
 
     override suspend fun forget() = lock.withLock {
         withContext(Dispatchers.IO) { file.delete() }
         state.value = emptyMap()
+        madeHere.value = false
+    }
+
+    override suspend fun awaitRecorded() {
+        if (recorded()) return
+        // A replace between the check and this wait has already set the flag.
+        madeHere.first { it }
     }
 
     /** A file that decodes: a corrupt one reads as empty, so it is no record (review on #214). */

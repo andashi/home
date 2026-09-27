@@ -256,6 +256,7 @@ class ConfigWatcherTest {
             written.value = naming
             recorded = true
         }
+        override suspend fun awaitRecorded(): Unit = error("not used here")
         override suspend fun forget() {
             recorded = false
         }

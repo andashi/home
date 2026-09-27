@@ -149,6 +149,7 @@ class AndroidAppCustomizationStoreTest {
             written.value = naming
         }
         override suspend fun recorded() = true
+        override suspend fun awaitRecorded(): Unit = error("not used here")
         override suspend fun forget() {
             written.value = emptyMap()
         }
@@ -430,6 +431,7 @@ class AndroidAppCustomizationStoreTest {
                 if (replaces == 2) throw java.io.IOException("disk full")
             }
             override suspend fun recorded() = !forgotten
+            override suspend fun awaitRecorded(): Unit = error("not used here")
             override suspend fun forget() {
                 forgotten = true
             }
@@ -463,6 +465,7 @@ class AndroidAppCustomizationStoreTest {
                 written.value = naming
             }
             override suspend fun recorded() = true
+            override suspend fun awaitRecorded(): Unit = error("not used here")
             override suspend fun forget() {
                 written.value = emptyMap()
             }
@@ -496,6 +499,7 @@ class AndroidAppCustomizationStoreTest {
                 present = true
             }
             override suspend fun recorded() = present
+            override suspend fun awaitRecorded(): Unit = error("not used here")
             override suspend fun forget() {
                 written.value = emptyMap()
                 present = false

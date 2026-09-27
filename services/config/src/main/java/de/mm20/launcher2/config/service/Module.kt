@@ -84,7 +84,7 @@ val configModule = module {
     // Every change on the device goes back into the file (#3 slice 4).
     single(createdAtStart = true) {
         val writeBack = get<ConfigWriteBack>()
-        ConfigWriteBackTrigger(get(), { writeBack.write() }).also { it.start() }
+        ConfigWriteBackTrigger(get(), { writeBack.write() }, appNaming = get()).also { it.start() }
     }
     single(createdAtStart = true) { WallpaperForegroundFixer(androidContext(), get(), get()).also { it.start() } }
 }
