@@ -123,13 +123,15 @@ clear_foreign_anrs() {
     fi
   done <<<"$pkgs"
   [ "${#foreign[@]}" -gt 0 ] || return 0
-  # The list took a read to get: the tests may have begun meanwhile, and
-  # once they have, nothing is touched (#196 review).
-  if tests_starting; then
-    printf 'The tests are starting; leaving the ANR dialogs where they are.\n'
-    return 0
-  fi
+  # The list took a read to get, and each force-stop takes a moment: the
+  # tests may have begun meanwhile, and once they have, nothing is touched.
+  # So the question comes before every force-stop, not once before them all
+  # (#196 review).
   for pkg in "${foreign[@]}"; do
+    if tests_starting; then
+      printf 'The tests are starting; leaving the ANR dialogs where they are.\n'
+      return 0
+    fi
     printf 'Dismissing the ANR dialog of %s, which is not the app under test, so it cannot cover a test.\n' "$pkg"
     adb shell am force-stop "$pkg"
   done
@@ -287,7 +289,12 @@ watch_until_tests_start() { # $1 = file that a flagged Wait marks
         [ "$SECONDS" -lt "$deadline" ] || break
         clear_foreign_anrs
         [ "$WAIT_AMBIGUOUS" = 0 ] || echo ambiguous > "$1"
-        now="$(anr_packages 10)" || now="$last"
+        # A dismissal takes seconds: the tests may have begun and the
+        # deadline passed meanwhile, and then there is nothing left to read.
+        tests_starting && return 0
+        left=$((deadline - SECONDS))
+        [ "$left" -gt 0 ] || break
+        now="$(anr_packages "$left")" || now="$last"
       fi
       last="$now"
     fi

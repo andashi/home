@@ -62,6 +62,10 @@ case "$*" in
     if [ -e "$work/failaftertap" ] && [ -e "$work/taps" ]; then exit 1; fi
     cat "$work/windows" ;;
   *"am force-stop "*) for a in "$@"; do pkg="$a"; done; echo "$pkg" >> "$work/stopped"
+    # The test APK lands during a force-stop; the reads made by then are kept.
+    if [ -e "$work/installonstop" ]; then
+      echo new > "$work/installed"; wc -l < "$work/reads" > "$work/reads.atstop"
+    fi
     [ -e "$work/sticky" ] || { grep -v "Application Not Responding: $pkg}" "$work/windows" > "$work/w2" || true; mv "$work/w2" "$work/windows"; } ;;
   *"uiautomator dump"*)
     # The test APK lands while the (slow) dump runs.
@@ -119,7 +123,7 @@ export PATH="$WORK/bin:$PATH"
 export ANR_RECHECK_SECONDS=3 ANR_RECHECK_SLEEP=0 ANR_WAIT_SECONDS=3 ANR_WATCH_SECONDS=30 ANR_WATCH_SLEEP=1
 
 windows() { # $@ = "Application Not Responding: <pkg>" entries, in z-order
-  : > "$WORK/windows"; rm -f "$WORK/stopped" "$WORK/sticky" "$WORK/dumphang" "$WORK/firstfail" "$WORK/taps" "$WORK/waitsticky" "$WORK/closing" "$WORK/closing.seen" "$WORK/oursondump" "$WORK/dumphangui" "$WORK/failaftertap" "$WORK/taphang" "$WORK/installed" "$WORK/installondump" "$WORK/pmfail" "$WORK/reads" "$WORK/slowread" "$WORK/installonread" "$WORK/slowaftertap" "$WORK/anrreads" "$WORK/reads.at2s" "$WORK/slowstamp"
+  : > "$WORK/windows"; rm -f "$WORK/stopped" "$WORK/sticky" "$WORK/dumphang" "$WORK/firstfail" "$WORK/taps" "$WORK/waitsticky" "$WORK/closing" "$WORK/closing.seen" "$WORK/oursondump" "$WORK/dumphangui" "$WORK/failaftertap" "$WORK/taphang" "$WORK/installed" "$WORK/installondump" "$WORK/pmfail" "$WORK/reads" "$WORK/slowread" "$WORK/installonread" "$WORK/slowaftertap" "$WORK/anrreads" "$WORK/reads.at2s" "$WORK/slowstamp" "$WORK/installonstop" "$WORK/reads.atstop"
   WAIT_AMBIGUOUS=0
   printf '  Window #1 Window{1 u0 com.example/com.example.Main}:\n' >> "$WORK/windows"
   local i=2 w
@@ -561,6 +565,33 @@ a_slow_start_check_leaves_no_stale_time() {
   [ "$WRAPPER_RC" -eq 0 ] && [ "$(cat "$WORK/timeout0" 2>/dev/null | wc -l)" -eq "$before" ]
 }
 check "a start check that outlasts the deadline hands no read a stale time" a_slow_start_check_leaves_no_stale_time
+
+# With two foreign dialogs, the test APK can land during the first
+# force-stop: the second is not stopped then (#196 review).
+the_second_force_stop_waits_for_nothing() {
+  local APK_STAMP_AT_START=""
+  windows "Application Not Responding: com.android.launcher3" "Application Not Responding: com.android.phone"
+  : > "$WORK/installonstop"
+  clear_foreign_anrs > "$WORK/log" 2>&1 || return 1
+  [ "$(stopped)" = "com.android.launcher3" ] && grep -q 'tests are starting' "$WORK/log"
+}
+check "no second force-stop once the tests start during the first" the_second_force_stop_waits_for_nothing
+
+# After a dismissal the watch asks again whether the tests have started
+# before it reads the screen once more: a dismissal takes seconds, and a
+# watch past the start has nothing left to read (#196 review). The
+# dismissal's own re-check reads once after the force-stop; the watch adds
+# nothing.
+the_watch_reads_nothing_after_a_dismissal_the_tests_began_in() {
+  windows
+  run_wrapper "sleep 1
+: > \"\$w/installonstop\"
+printf '%s\n' '$ANR_LAUNCHER3' >> \"\$w/windows\"
+sleep 4"
+  [ "$WRAPPER_RC" -eq 0 ] && [ -e "$WORK/reads.atstop" ] &&
+    [ "$(wc -l < "$WORK/reads")" -eq $(( $(cat "$WORK/reads.atstop") + 1 )) ]
+}
+check "the watch reads nothing more after a dismissal the tests began in" the_watch_reads_nothing_after_a_dismissal_the_tests_began_in
 
 # The re-check is wall-clock time (#164). "5 tries, 1 s apart" read as five
 # seconds, but each try is a dumpsys over adb with no bound, so on a loaded
