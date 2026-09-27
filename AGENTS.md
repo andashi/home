@@ -167,6 +167,21 @@ resolved its own thread and the gate waved it through. Strip the `[bot]` suffix
 before comparing, on both sides, and prove it by resolving a thread as the bot
 and watching the gate refuse.
 
+**A finding, an "addressed" claim and a suggested fix deserve three different
+levels of trust.** CodeRabbit's findings have been real every time. Its
+`✅ Addressed in commit X` was wrong twice in one day - once naming the range that
+*introduced* the criticised text, once a commit that did not contain the fix - so
+it is not evidence, and only a human reply counts. And its suggested *remedy* can
+carry the same defect class as the finding: on #214 it proposed observing a
+`StateFlow` whose value for the main case is `emptyMap()`, which an observer
+already holds, so it would never emit. That was rejected and **the switch to it
+made a break check**, which is how to record refusing a remedy.
+
+**Deleting a merged branch closes any open pull request based on it, irreversibly**
+(#100 -> #101, and #215/#216). List the dependents before deleting and refuse
+while any exist - and **fail closed**, because "no dependents" and "could not ask"
+are the same empty result.
+
 **A base behind `main` is only a problem when it overlaps - with one caveat
 that review caught in this very section.** The rebase rule protects against a
 review of a tree whose *relevant* parts have moved, so the first question is
@@ -423,6 +438,31 @@ and head in the same call as the reviews.
   careful. The worst of them decided a permission grant. Compare whole fields,
   or use a tool that understands lists.
 
+**Durable state whose absence carries meaning is a permissive-default factory.**
+One new field - a record of how each app entry spelled its activity - produced
+**seven** defects in review, every one the same shape: the empty marker written
+after a *failed* reload (failure recorded as success); a **corrupt** file counted
+as a record (unreadable meaning present); the record written before the device
+writes and not restored (a write that did not happen recorded as done); write-back
+running before the migration (no record meaning any form will do); a rollback
+writing an empty map as the "before" state (**the repair manufacturing the
+permissive answer**); a cancelled apply skipping the rollback entirely; and
+write-back held back and never asked again. Every path that writes such a field
+and every path that reads it must decide what absence means **explicitly**. And
+**a rollback that can itself fail is another instance** - a compensating action
+must not swallow its own error, or it reaches the state it existed to prevent.
+
+**Do not fix a semantic trap with a rule; change the shape so the wrong use is
+impossible.** Both of us reach for the ordered-looking tool exactly when being
+careful: `grep -w` reads as "whole word" and is not, and a counter reads as
+ordered and is not across a store reset. Proposed for the reload report, a rule
+would have said "compare with `!=`, never `<`" - about a field whose whole shape
+invites the comparison it forbids. The provisioning session's answer was to emit a
+**store identity** beside the counter, changing on the event that zeroes it: within
+one identity `<` is sound, across two a consumer sees the identity change instead
+of reading 0 as "it went backwards". Two fields, and the rule becomes a check
+somebody can write a test for.
+
 **A fix can produce the next defect.** Two did that night: patching a guard's
 fourth hole opened its fifth, and consolidating four deadlines into one starved
 the last step. After fixing something in a checker, break it again.
@@ -511,6 +551,21 @@ test policy above asks for the break rather than the pass.
    fixture is reachable**, so derive the baseline from what the producing code
    emits, never from what makes the case read well.
 
+10. **The check repaired what it was about to observe.** To prove a record
+    survives a restart, the obvious test force-stops the app and reads it back -
+    and cannot work here, because the startup check **re-records a missing
+    record**. Read it where it is kept, before the restart, then restart. The
+    sibling of 9: there the fixture is a state the system cannot reach, here one
+    it leaves before you look (#214).
+11. **The break generator could not express the break.** A generator that mutates
+    values can never remove a key, so a schema rule about a key's *absence*
+    (`dependentRequired`) was unreachable by a fully green generic suite. Ask what
+    class of change your generator cannot make (#216).
+12. **The control asserted the opposite of the truth.** Not blind like 6 - it
+    could fail and did not, because it encoded a wrong belief and so **certified**
+    the defect. The next reader takes a green control as the question having been
+    asked. When a fix reverses a control, say so and name the assertion that
+    changed direction (#213).
 The check costs about a minute and is three questions. The first is the one
 everybody means by "break it", and on its own it settles nothing:
 
@@ -533,6 +588,12 @@ misleading, from the same missing declaration.
 question 1 completely and still proves the wrong thing, so no amount of the first
 question reaches it. Answer this one from what the producing code emits, never
 from what makes the case read well.
+
+Two on the list are outside all three, and knowing which is the point of saying
+so: **11**, because you cannot break what your generator cannot express, and
+**12**, because a control asserting the wrong thing passes in both states, which
+is what a declared control is supposed to do. Those two are caught by rereading
+what the test *claims*, not by breaking anything.
 
 This passage was wrong about itself repeatedly while being written, in every way
 it describes, and two rules came out of that rather than out of the code.
@@ -574,6 +635,25 @@ for a banner answering a query nobody had made. Git cannot see this: two valid
 files, one name, different meaning. Renaming to `open_search_field` made the old
 name exist nowhere, so any stale call site goes red; a library test asserts
 `! declare -F open_search`.
+
+**Three ways a checker's own plumbing lies.** All three were found in checkers
+rather than in product code, which is where they prefer to live.
+
+- **`grep` exiting 1 on no match kills a `set -e` script.** `x=$(cmd | grep -E pat
+  | head -5)` dies when nothing matches - silently, exit 1, no message - so the
+  branch that needed "no match" never runs. In the merge gate that was the
+  base-behind *allowance*, which had therefore never once executed, behind a
+  comment about being careful. Write `{ grep -E pat || [ $? -eq 1 ]; }` so status
+  1 is accepted and a real grep error still aborts.
+- **`$(...)` strips trailing newlines**, so a file read back through it never
+  hashes equal to the file on disk. Hash on the device, or do not round-trip.
+- **`git reset --soft <new base>` then committing reverts files the new base
+  changed.** The soft reset keeps the *branch's* tree and commits it against the
+  new base, so every differing file joins the diff - including ones the branch
+  never meant to touch, reverted to their state at the old base. No merge, so
+  **nothing conflicts and nothing goes red**; on #219 it reverted `AGENTS.md` and
+  undid two merged pull requests. After squashing onto a new base, diff the
+  **file list** against what the pull request is supposed to touch.
 
 **A helper's log goes to stderr when its callers might capture stdout.** Found
 twice within ten minutes: `grant_home_role` logging through `log` corrupted
@@ -919,6 +999,12 @@ target `sdk_phone64_x86_64-cur-userdebug`, test-keys), operated via
   which attempt worked, so a count that climbs is visible. Whether a real
   device loses a touch in the first half second after Home is a platform
   question this could not answer: the launcher never sees that touch.
+- **The shell cannot change a system app's component state** on this image
+  (`pm disable`/`enable` refused in states 2 and 3). So a widget-only app arrival
+  cannot be staged by disabling a system app's launcher activity; it needs a
+  fixture APK, built at test time from the SDK's `aapt2`/`javac`/`d8`/`apksigner`
+  with no Gradle module - and it must **fail loudly** when those tools are absent
+  rather than skip the step.
 - Known emulator limits: nothing Google-server-side can be validated there
   (sandboxed Play, Play Integrity, push); wallpapers apply only after reboot;
   test-keys mean results do not equal "tested on release GrapheneOS".
