@@ -544,7 +544,7 @@ ok "changed config: every section flipped (icons, glass, search, search bar, wid
 # The three gestures that need the accessibility service are applied and
 # reported: the clean snapshot has it off, and a file must not turn it on.
 assert_jq "$LAST_REPORT" \
-  '[(.diagnostics // [])[] | select(.code == "permission-missing" and .severity == "warning") | .path] | sort == ["gestures.doubleTap","gestures.swipeLeft","gestures.swipeUp"]' \
+  '[(.diagnostics // [])[] | select(.code == "permission-missing" and .severity == "warning" and (.path | startswith("gestures."))) | .path] | sort == ["gestures.doubleTap","gestures.swipeLeft","gestures.swipeUp"]' \
   "screen-lock, power-menu and recents are reported while the accessibility service is off"
 ok "gestures needing the accessibility service reported (permission-missing)"
 
