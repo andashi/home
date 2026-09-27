@@ -33,6 +33,9 @@ case_ library-without-gos-run fail 'gos_run stop' 'other() { (cd "$GOS_REPO" && 
 mkdir -p "$WORK/sub/lib" "$WORK/sub/ci"; printf '%s\n' "$LIB" > "$WORK/sub/lib/grid-device.sh"
 printf '%s\n' 'emulator/run.sh stop' > "$WORK/sub/ci/x.sh"
 if "$here/check-gos-run.sh" "$WORK/sub" >/dev/null 2>&1; then echo " x subdirectory-script (passed)"; failed=1; else echo " + subdirectory-script"; fi
+mkdir -p "$WORK/deep/lib" "$WORK/deep/ci/nested"; printf '%s\n' "$LIB" > "$WORK/deep/lib/grid-device.sh"
+printf '%s\n' 'emulator/run.sh stop' > "$WORK/deep/ci/nested/x.sh"
+if "$here/check-gos-run.sh" "$WORK/deep" >/dev/null 2>&1; then echo " x nested-script (passed)"; failed=1; else echo " + nested-script"; fi
 mkdir -p "$WORK/tst/lib"; printf '%s\n' "$LIB" > "$WORK/tst/lib/grid-device.sh"
 printf '%s\n' 'emulator/run.sh stop' > "$WORK/tst/x.test.sh"
 if "$here/check-gos-run.sh" "$WORK/tst" >/dev/null 2>&1; then echo " + test-files-skipped"; else echo " x test-files-skipped"; failed=1; fi
