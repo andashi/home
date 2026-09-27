@@ -15,7 +15,9 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.yield
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.IOException
@@ -232,8 +234,17 @@ class ConfigWatcher(
     internal fun watchArrivals(): Job? {
         val arrivals = arrivals ?: return null
         return scope.launch {
+            // Listened to before the start is decided: the package callback
+            // registers when its flow is collected, and a package installed
+            // during the start reload would otherwise go unheard (review on
+            // #213). Signals queue meanwhile. The start's first read of the
+            // report suspends on IO before the reload reads the device, which
+            // lets the callback register first.
+            val queued = Channel<String>(Channel.UNLIMITED)
+            launch { arrivals.collect { queued.send(it) } }
+            yield()
             onArrival(null)
-            arrivals.collect { onArrival(it) }
+            for (signal in queued) onArrival(signal)
         }
     }
 

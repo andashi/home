@@ -674,6 +674,30 @@ class ConfigWatcherTest {
     }
 
     /** The wiring: each signal the flow delivers is decided. */
+    /**
+     * The package callback registers when its flow is collected. Decided
+     * first, the start reload ran with nothing listening, and a package
+     * installed during it was missed for good (review on #213). So the
+     * signals are collected before the start is decided.
+     */
+    @Test
+    fun `the signals are listened to before the start is decided`() = runTest {
+        val store = FakeConfigStore()
+        writeConfig()
+        lastReportWaitsOn("app-unavailable")
+        val arrivals = kotlinx.coroutines.flow.flow<String> {
+            store.events += "subscribed"
+            kotlinx.coroutines.awaitCancellation()
+        }
+        val job = arrivalWatcher(store, arrivals).watchArrivals()!!
+
+        withContext(Dispatchers.Default) { withTimeout(10_000) { while (store.applyCount < 1) delay(10) } }
+        job.cancel()
+
+        val events = store.events.toList()
+        assertTrue("$events", events.indexOf("subscribed") in 0 until events.indexOfFirst { it.startsWith("apply") })
+    }
+
     @Test
     fun `a signal from the flow reloads while something waits`() = runTest {
         // Every reload reports the absence again, so something waits throughout.
@@ -683,11 +707,15 @@ class ConfigWatcherTest {
         val signals = kotlinx.coroutines.channels.Channel<String>()
         val job = arrivalWatcher(store, signals.consumeAsFlow()).watchArrivals()!!
 
-        signals.send("com.example.a") // taken once the start has been decided (a reload)
-        signals.send("com.example.b") // taken once "a" has been decided (a reload)
+        signals.send("com.example.a")
+        signals.send("com.example.b")
+        // Signals queue from the start (they are listened to before the start
+        // is decided), so the sends say nothing about the decisions: wait for
+        // the reloads themselves - the start's and one per signal.
+        withContext(Dispatchers.Default) { withTimeout(10_000) { while (store.applyCount < 3) delay(10) } }
         job.cancel()
 
-        assertTrue("the start and the signal each reloaded: ${store.applyCount}", store.applyCount >= 2)
+        assertEquals("the start and each signal reloaded", 3, store.applyCount)
     }
 
     /**

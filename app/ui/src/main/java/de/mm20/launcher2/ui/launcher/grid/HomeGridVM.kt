@@ -161,8 +161,17 @@ class HomeGridVM(
     suspend fun exitEdit() = exitMutex.withLock {
         // Re-checked under the lock: a second Done (or Done and Back) that
         // waited here finds the copy already written and does nothing.
-        val items = working.value ?: return@withLock
+        val edited = working.value ?: return@withLock
         val geometry = geometry.filterNotNull().first()
+        // A package's arrival can bind a widget while edit mode is open; the
+        // working copy was taken before, with no host id, and would write the
+        // binding away (review on #213). An item keeps a host id it gained
+        // meanwhile, for the same widget in the same profile.
+        val stored = repository.observe(geometry.layout).first().associateBy { it.id }
+        val items = edited.map { item ->
+            val gained = stored[item.id]?.takeIf { it.widget == item.widget && it.profile == item.profile }?.appWidgetId
+            if (item.appWidgetId == null && gained != null) item.copy(appWidgetId = gained) else item
+        }
         val result = try {
             writeBack.write(geometry.layout, items.mapIndexed { index, item -> item.copy(position = index) })
         } catch (e: Exception) {

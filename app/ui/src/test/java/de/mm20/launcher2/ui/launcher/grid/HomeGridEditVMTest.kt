@@ -479,4 +479,24 @@ class HomeGridEditVMTest {
         assertEquals(null, f.repository.observe(HomeGridLayouts.Phone).first().single { it.id == "only" }.appWidgetId)
         assertEquals(1, f.vm.arrivals.value)
     }
+
+    /**
+     * An arrival's bind pass can bind a widget while edit mode is open: the
+     * working copy was taken with no host id, and Done wrote it back over
+     * the binding (review on #213). Done keeps a host id the item gained
+     * meanwhile.
+     */
+    @Test
+    fun `Done keeps a host id bound while edit mode was open`() = runTest(dispatcher) {
+        val only = gridItem("only", 2, 2, 2, 1, widget = "org.example.only/.Widget", position = 2)
+        val f = fixture(items = listOf(clock, note, dock, only))
+        assertTrue(f.vm.enterEdit())
+
+        f.repository.setAppWidgetId(HomeGridLayouts.Phone, "only", 7)
+        f.vm.exitEdit()
+
+        val written = f.writeBack.writes.single().second
+        assertEquals(7, written.single { it.id == "only" }.appWidgetId)
+        assertEquals("the others as the working copy had them", null, written.single { it.id == "clock" }.appWidgetId)
+    }
 }
