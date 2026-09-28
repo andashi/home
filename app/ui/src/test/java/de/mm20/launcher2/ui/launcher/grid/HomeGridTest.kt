@@ -11,6 +11,7 @@ import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.unit.dp
 import androidx.test.core.app.ApplicationProvider
@@ -124,7 +125,10 @@ class HomeGridTest {
         composeRule.onNodeWithTag("grid-item:dock").assertIsDisplayed()
         composeRule.onNodeWithText("favorites 4x1").assertIsDisplayed()
         composeRule.onNodeWithTag("grid-item:clock").assertIsDisplayed()
-        composeRule.onNodeWithText(string(R.string.app_widget_loading_failed)).assertIsDisplayed()
+        // One row: the compact form, named by its description (#245). The
+        // banner's text used to pass here while cut off, which is what a
+        // partly visible node counts as.
+        composeRule.onNodeWithContentDescription(string(R.string.app_widget_loading_failed)).assertIsDisplayed()
     }
 
     @Test

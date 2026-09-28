@@ -9,8 +9,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -119,6 +121,74 @@ class GridCellTest {
         composeRule.onNodeWithText(string(R.string.widget_action_allow)).performClick()
 
         assertEquals(1, allowed)
+    }
+
+    /**
+     * A one-row cell has no room for the banner: on the device a 1x1 cell
+     * showed only the warning icon and a 3x1 cell cut-off text, and none of
+     * the actions were on screen or in the accessibility tree (#245). The
+     * cell's failure then has to fit one row and still reach every action.
+     * The sizes are the cells a 4-column phone grid gives, the card's inset
+     * taken off.
+     */
+    private fun compactCell(
+        width: Dp,
+        onAllow: (() -> Unit)?,
+        onRemove: () -> Unit = {},
+        height: Dp = 72.dp,
+    ) {
+        composeRule.setContent {
+            MaterialTheme {
+                Box(Modifier.size(width, height)) {
+                    AppWidgetCell(
+                        item = gridItem("clock", 0, 0, 1, 1),
+                        onRemove = onRemove,
+                        onReplace = { _, _ -> },
+                        onAllow = onAllow,
+                    )
+                }
+            }
+        }
+    }
+
+    /** The compact form is named by the failure message, and opens the actions. */
+    private fun openCompactMenu() {
+        composeRule.onNodeWithContentDescription(string(R.string.app_widget_loading_failed)).assertIsDisplayed().performClick()
+    }
+
+    @Test
+    fun `a 1x1 cell names its failure and reaches Allow`() {
+        var allowed = 0
+        compactCell(72.dp, onAllow = { allowed++ })
+
+        openCompactMenu()
+        composeRule.onNodeWithText(string(R.string.widget_action_allow)).assertIsDisplayed().performClick()
+
+        assertEquals(1, allowed)
+    }
+
+    @Test
+    fun `a 3x1 cell reaches Replace and Remove`() {
+        var removed = 0
+        compactCell(270.dp, onAllow = null, onRemove = { removed++ })
+
+        openCompactMenu()
+        composeRule.onNodeWithText(string(R.string.widget_action_replace)).assertIsDisplayed()
+        composeRule.onNodeWithText(string(R.string.widget_action_remove)).assertIsDisplayed().performClick()
+
+        assertEquals(1, removed)
+    }
+
+    /**
+     * Not only rows: in a one-column cell the banner's text and actions wrap
+     * past a two-row height, and the actions were off the card just the same.
+     */
+    @Test
+    fun `a 1x2 cell gets the compact form too`() {
+        compactCell(72.dp, onAllow = {}, height = 200.dp)
+
+        openCompactMenu()
+        composeRule.onNodeWithText(string(R.string.widget_action_allow)).assertIsDisplayed()
     }
 
     /**

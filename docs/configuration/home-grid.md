@@ -125,12 +125,13 @@ When the provider's package is installed later - or installed again after it
 was removed, which deletes the widget's binding - the file is applied again
 and the widget is bound on the home screen. Binding needs the bind-widget
 grant, which a provisioned device has (`appwidget_bind`). Without it the
-cell's failure banner offers **Allow**, which asks the user once, when the
-cell is tall enough to show it. A one-row cell, which is what most widgets
-are, is not: it shows a warning icon or cut-off text and none of the
-banner's actions (#245). There the way back is edit mode: select the cell
-and remove it, which also removes the item from `launcher.json` when the
-file has `home.grid.layouts`. A report without
+cell's failure banner offers **Allow**, which asks the user once. A cell too
+small for the whole banner shows a warning icon instead - usually a one-row
+cell, which is what most widgets are, or a narrow one; the cell's size
+decides, not its span. Tapping the icon opens the same actions: **Replace**
+and **Remove**, and **Allow** when the provider is installed (#245). Removing
+the cell there, or in edit mode, also removes the item from `launcher.json`
+when the file has `home.grid.layouts`. A report without
 `unknown-widget-provider` says the provider exists. It does **not** say the
 widget is bound: binding is the device's, not the configuration's, and a
 widget that could not be bound shows its banner on the device without
