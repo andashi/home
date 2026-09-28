@@ -302,3 +302,6 @@ opencode.json
 
 # Local Claude Code worktrees (machine-specific, never shared)
 .claude/worktrees/
+
+# Python bytecode from running .github/scripts locally
+__pycache__/
