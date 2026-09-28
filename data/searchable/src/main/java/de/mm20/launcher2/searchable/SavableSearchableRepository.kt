@@ -258,43 +258,44 @@ internal class SavableSearchableRepositoryImpl(
         limit: Int
     ): Flow<List<SavableSearchable>> {
         val dao = database.searchableDao()
-        val entities = when {
-            includeTypes == null && excludeTypes == null -> dao.get(
-                manuallySorted = PinnedLevel.ManuallySorted in minPinnedLevel..maxPinnedLevel,
-                automaticallySorted = PinnedLevel.AutomaticallySorted in minPinnedLevel..maxPinnedLevel,
-                frequentlyUsed = PinnedLevel.FrequentlyUsed in minPinnedLevel..maxPinnedLevel,
-                unused = PinnedLevel.NotPinned in minPinnedLevel..maxPinnedLevel,
-                minVisibility = minVisibility.value,
-                maxVisibility = maxVisibility.value,
-                limit = limit
-            )
+        val query = { fetch: Int ->
+            when {
+                includeTypes == null && excludeTypes == null -> dao.get(
+                    manuallySorted = PinnedLevel.ManuallySorted in minPinnedLevel..maxPinnedLevel,
+                    automaticallySorted = PinnedLevel.AutomaticallySorted in minPinnedLevel..maxPinnedLevel,
+                    frequentlyUsed = PinnedLevel.FrequentlyUsed in minPinnedLevel..maxPinnedLevel,
+                    unused = PinnedLevel.NotPinned in minPinnedLevel..maxPinnedLevel,
+                    minVisibility = minVisibility.value,
+                    maxVisibility = maxVisibility.value,
+                    limit = fetch
+                )
 
-            includeTypes == null -> dao.getExcludeTypes(
-                excludeTypes = excludeTypes,
-                manuallySorted = PinnedLevel.ManuallySorted in minPinnedLevel..maxPinnedLevel,
-                automaticallySorted = PinnedLevel.AutomaticallySorted in minPinnedLevel..maxPinnedLevel,
-                frequentlyUsed = PinnedLevel.FrequentlyUsed in minPinnedLevel..maxPinnedLevel,
-                unused = PinnedLevel.NotPinned in minPinnedLevel..maxPinnedLevel,
-                minVisibility = minVisibility.value,
-                maxVisibility = maxVisibility.value,
-                limit = limit
-            )
+                includeTypes == null -> dao.getExcludeTypes(
+                    excludeTypes = excludeTypes,
+                    manuallySorted = PinnedLevel.ManuallySorted in minPinnedLevel..maxPinnedLevel,
+                    automaticallySorted = PinnedLevel.AutomaticallySorted in minPinnedLevel..maxPinnedLevel,
+                    frequentlyUsed = PinnedLevel.FrequentlyUsed in minPinnedLevel..maxPinnedLevel,
+                    unused = PinnedLevel.NotPinned in minPinnedLevel..maxPinnedLevel,
+                    minVisibility = minVisibility.value,
+                    maxVisibility = maxVisibility.value,
+                    limit = fetch
+                )
 
-            excludeTypes == null -> dao.getIncludeTypes(
-                includeTypes = includeTypes,
-                manuallySorted = PinnedLevel.ManuallySorted in minPinnedLevel..maxPinnedLevel,
-                automaticallySorted = PinnedLevel.AutomaticallySorted in minPinnedLevel..maxPinnedLevel,
-                frequentlyUsed = PinnedLevel.FrequentlyUsed in minPinnedLevel..maxPinnedLevel,
-                unused = PinnedLevel.NotPinned in minPinnedLevel..maxPinnedLevel,
-                minVisibility = minVisibility.value,
-                maxVisibility = maxVisibility.value,
-                limit = limit
-            )
+                excludeTypes == null -> dao.getIncludeTypes(
+                    includeTypes = includeTypes,
+                    manuallySorted = PinnedLevel.ManuallySorted in minPinnedLevel..maxPinnedLevel,
+                    automaticallySorted = PinnedLevel.AutomaticallySorted in minPinnedLevel..maxPinnedLevel,
+                    frequentlyUsed = PinnedLevel.FrequentlyUsed in minPinnedLevel..maxPinnedLevel,
+                    unused = PinnedLevel.NotPinned in minPinnedLevel..maxPinnedLevel,
+                    minVisibility = minVisibility.value,
+                    maxVisibility = maxVisibility.value,
+                    limit = fetch
+                )
 
-            else -> throw IllegalArgumentException("Cannot specify both includeTypes and excludeTypes")
+                else -> throw IllegalArgumentException("Cannot specify both includeTypes and excludeTypes")
+            }
         }
-
-        return entities.resolved()
+        return resolvedUpTo(limit, query)
     }
 
     override fun getKeys(
@@ -524,23 +525,44 @@ internal class SavableSearchableRepositoryImpl(
     }
 
     /**
-     * Resolves [this] rows, and resolves them again whenever the deserializer
+     * Resolves [entities], and resolves them again whenever the deserializer
      * of one of their types says its answer may have changed: a contact
      * that was Unknown without its permission appears once it is granted,
      * without waiting for the database to change (#237).
      */
+    private fun resolving(entities: List<SavedSearchableEntity>): Flow<List<SavableSearchable>> {
+        val again = entities.map { it.type }.distinct().mapNotNull { type ->
+            // Logged by resolve() when it fails; a missing trigger only
+            // means that type is not resolved again.
+            runCatching { get<SearchableDeserializer>(named(type)).resolveAgain }.getOrNull()
+        }
+        return merge(flowOf(Unit), *again.toTypedArray()).map {
+            entities.mapNotNull { fromDatabaseEntity(it).searchable }
+        }
+    }
+
     @OptIn(ExperimentalCoroutinesApi::class)
     private fun Flow<List<SavedSearchableEntity>>.resolved(): Flow<List<SavableSearchable>> =
-        flatMapLatest { entities ->
-            val again = entities.map { it.type }.distinct().mapNotNull { type ->
-                // Logged by resolve() when it fails; a missing trigger only
-                // means that type is not resolved again.
-                runCatching { get<SearchableDeserializer>(named(type)).resolveAgain }.getOrNull()
-            }
-            merge(flowOf(Unit), *again.toTypedArray()).map {
-                entities.mapNotNull { fromDatabaseEntity(it).searchable }
-            }
+        flatMapLatest { resolving(it) }
+
+    /**
+     * Up to [limit] resolved items. The limit is applied in SQL, before rows
+     * that do not resolve are dropped, and such rows are kept (#237): a read
+     * whose rows fall short while the query returned all it was asked for
+     * asks again for twice as many, until the limit is filled or the rows run
+     * out. With every row resolving it costs nothing extra.
+     */
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private fun resolvedUpTo(
+        limit: Int,
+        query: (Int) -> Flow<List<SavedSearchableEntity>>,
+        fetch: Int = limit,
+    ): Flow<List<SavableSearchable>> = query(fetch).flatMapLatest { entities ->
+        resolving(entities).flatMapLatest { found ->
+            if (found.size >= limit || entities.size < fetch) flowOf(found.take(limit))
+            else resolvedUpTo(limit, query, (fetch.toLong() * 2).coerceAtMost(Int.MAX_VALUE.toLong()).toInt())
         }
+    }
 
     private suspend fun fromDatabaseEntity(entity: SavedSearchableEntity): SavedSearchable {
         val resolved = resolve(entity)
