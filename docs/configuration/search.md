@@ -42,7 +42,7 @@
 | `search.layout` | App results as icons in the home grid's columns, or as a list | `grid`, `list` | `grid` |
 | `search.labels` | Labels under app icons in search (the dock never has labels) | boolean | `true` |
 | `search.contacts` | Contacts in the results. It grants no permission: in a profile without `READ_CONTACTS` the key stays `true` and reads back `true`, the reload report carries a `permission-missing` warning (it reflects the permission when the file was reloaded), and search shows a banner with Grant and Turn off (Turn off writes `false` into the file) | boolean | `true` |
-| `search.shortcuts` | App shortcuts in the results | boolean | `true` |
+| `search.shortcuts` | App shortcuts in the results. Only the home app can read app shortcuts: while the launcher is not this profile's home app the key stays `true`, search finds no shortcuts and shows a banner asking for the role, and the reload report carries a `permission-missing` warning | boolean | `true` |
 | `search.filterBar` | The filter bar above the keyboard (apps, shortcuts, contacts) | boolean | `true` |
 | `search.openKeyboard` | The keyboard opens when search opens | boolean | `true` |
 | `search.launchOnEnter` | Enter on the keyboard launches the best match | boolean | `true` |

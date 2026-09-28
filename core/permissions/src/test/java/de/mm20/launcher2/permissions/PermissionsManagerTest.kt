@@ -127,4 +127,63 @@ class PermissionsManagerTest {
         assertEquals(false, manager.state(PermissionGroup.AppShortcuts))
         assertEquals(false, manager.state(PermissionGroup.ManageProfiles))
     }
+
+    // ---- enabled in the system, whether or not the service has connected (#140) ----
+
+    private fun setSecure(key: String, value: String?) {
+        android.provider.Settings.Secure.putString(context.contentResolver, key, value)
+    }
+
+    private val listeners = "enabled_notification_listeners"
+    private val services = android.provider.Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
+
+    /**
+     * The trap: the notification listener's and the accessibility service's
+     * states start false and flip only when the service connects. A reload
+     * right after the process starts would read "not yet known" as "absent"
+     * and report a permission the person has granted.
+     */
+    @Test
+    fun `a listener enabled in Settings is enabled before it has connected`() {
+        setSecure(listeners, "${context.packageName}/de.mm20.launcher2.notifications.NotificationService")
+        val manager = PermissionsManagerImpl(context)
+
+        assertEquals("the connection state, which is the trap", false, manager.checkPermissionOnce(PermissionGroup.Notifications))
+        assertEquals(true, manager.checkEnabledInSystem(PermissionGroup.Notifications))
+    }
+
+    @Test
+    fun `an accessibility service enabled in Settings is enabled before it has connected`() {
+        setSecure(services, "com.example.other/.Service:${context.packageName}/de.mm20.launcher2.globalactions.LauncherAccessibilityService")
+        val manager = PermissionsManagerImpl(context)
+
+        assertEquals("the connection state, which is the trap", false, manager.checkPermissionOnce(PermissionGroup.Accessibility))
+        assertEquals(true, manager.checkEnabledInSystem(PermissionGroup.Accessibility))
+    }
+
+    /** Controls: nothing enabled, and another package whose name only starts with ours. */
+    @Test
+    fun `a listener or service of another package is not ours`() {
+        val manager = PermissionsManagerImpl(context)
+        setSecure(listeners, null)
+        setSecure(services, null)
+        assertEquals(false, manager.checkEnabledInSystem(PermissionGroup.Notifications))
+        assertEquals(false, manager.checkEnabledInSystem(PermissionGroup.Accessibility))
+
+        setSecure(listeners, "${context.packageName}.debug/.Listener:com.example.other/.Listener")
+        setSecure(services, "${context.packageName}.debug/.Service")
+        assertEquals(false, manager.checkEnabledInSystem(PermissionGroup.Notifications))
+        assertEquals(false, manager.checkEnabledInSystem(PermissionGroup.Accessibility))
+    }
+
+    /** The groups the system answers directly need nothing else. */
+    @Test
+    fun `other groups answer as checkPermissionOnce does`() {
+        setShortcutHost(false)
+        val manager = PermissionsManagerImpl(context)
+        assertEquals(false, manager.checkEnabledInSystem(PermissionGroup.AppShortcuts))
+
+        setShortcutHost(true)
+        assertEquals(true, manager.checkEnabledInSystem(PermissionGroup.AppShortcuts))
+    }
 }

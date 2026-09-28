@@ -131,7 +131,12 @@ The report lists `appliedMutations` (the sections that changed) and
   - `unknown-key`: a misspelled or unknown key, which is ignored.
   - `inert-key`: a key this build accepts but does not act on, with the reason.
   - `permission-missing`: the file asks for something this profile does not
-    hold the permission for (`search.contacts` without `READ_CONTACTS`). The
+    hold the permission for: `search.contacts` without `READ_CONTACTS`,
+    `search.contactsCallOnTap` without `CALL_PHONE`, `search.shortcuts` while
+    the launcher is not the profile's home app, `icons.badges.notifications`
+    without the notification listener, and a gesture that needs the
+    accessibility service while it is off. A listener or service counts as
+    on once the person has enabled it, whether or not it has started yet. The
     key is kept and reads back as written, because the permission can be
     granted at any time; the warning says why it has no effect yet. It
     reflects the permission at the reload, so after a grant the next reload

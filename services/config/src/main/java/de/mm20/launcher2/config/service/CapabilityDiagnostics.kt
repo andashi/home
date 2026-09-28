@@ -26,6 +26,10 @@ class CapabilityDiagnostics(
     private val transliteratorAvailable: (id: String) -> Boolean,
     /** Whether the launcher's accessibility service is on; only the person can turn it on. */
     private val accessibilityOn: () -> Boolean,
+    /** Whether this profile's launcher may read app shortcuts: only the home app may (#140). */
+    private val shortcutHostGranted: () -> Boolean,
+    /** Whether the launcher's notification listener is enabled, as the system lists it (#140). */
+    private val notificationListenerOn: () -> Boolean,
 ) {
 
     /**
@@ -82,6 +86,32 @@ class CapabilityDiagnostics(
                 )
             )
         }
+        // #140: app shortcuts come only to the home app; without the role the
+        // search finds none and shows a banner asking for it.
+        val shortcutsOn = if (failedAt("search.shortcuts")) before.search.shortcuts else config.search?.shortcuts == true
+        if (config.search?.shortcuts == true && shortcutsOn && !shortcutHostGranted()) {
+            add(
+                Diagnostic(
+                    DiagnosticCode.PermissionMissing,
+                    "search.shortcuts",
+                    "search.shortcuts is true, but the launcher is not this profile's home app; " +
+                        "only the home app can read app shortcuts, so search finds none until the launcher is made the home app",
+                )
+            )
+        }
+        // #140: a badge counts the notifications the launcher's listener sees,
+        // and only the person can enable the listener.
+        val badgesOn = if (failedAt("icons.badges.notifications")) before.badgeNotifications else config.icons?.badges?.notifications == true
+        if (config.icons?.badges?.notifications == true && badgesOn && !notificationListenerOn()) {
+            add(
+                Diagnostic(
+                    DiagnosticCode.PermissionMissing,
+                    "icons.badges.notifications",
+                    "icons.badges.notifications is true, but the launcher's notification listener is not enabled " +
+                        "in this profile; icons show no notification badges until it is enabled in the system's notification access settings",
+                )
+            )
+        }
         // #3 slice 2: these three go through the accessibility service, which a
         // file must not turn on; the gesture asks for it when used.
         val needsService = config.gestures?.byGesture().orEmpty().mapNotNull { (gesture, asked) ->
@@ -108,6 +138,7 @@ class CapabilityDiagnostics(
         /** No checks: for a reloader that is not the device's own. */
         val None = CapabilityDiagnostics(
             contactsGranted = { true }, callGranted = { true }, transliteratorAvailable = { true }, accessibilityOn = { true },
+            shortcutHostGranted = { true }, notificationListenerOn = { true },
         )
 
         /** What the launcher does through its accessibility service (ScreenOff-, PowerMenu-, RecentsComponent). */
