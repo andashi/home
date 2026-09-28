@@ -62,7 +62,9 @@ data class ReloadReport(
     val trigger: ReloadTrigger? = null,
     /**
      * This report's number, one up from the last one the store saved: a
-     * reload that changed nothing still moves it, where [configSha256] stays.
+     * reload that changed nothing still moves it, where [configSha256] stays,
+     * and so does a write-back editing the last report's diagnostics - a
+     * change made on the device and kept out of the file.
      * Ordered only within one [storeId]. Set by the store when it saves; null
      * in a report an older build wrote - unknown, not zero.
      */

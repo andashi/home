@@ -121,10 +121,12 @@ adb shell content query --uri content://<pkg>.state/config        # the effectiv
 adb shell content query --uri content://<pkg>.state/diagnostics   # the last reload report
 ```
 
-Every report carries `sequence`, one up from the report before it, and
+Every report carries `sequence`, one up from the report saved before it, and
 `storeId`, the store that numbered it. A reload that changed nothing still
-moves `sequence` while `configSha256` stays, so "the device reloaded between
-two reads" is visible where the hash cannot show it. The count starts again
+moves `sequence` while `configSha256` stays, and so does a change made on the
+device that was kept out of the file (a `write-back-skipped:` warning added to
+the last report). So "the report changed between two reads" is visible where
+the hash cannot show it. The count starts again
 when the app's files are wiped - `pm clear`, a reinstall, a debug build
 installed over a release one - and `storeId` changes with it: compare two
 sequences only under the same `storeId`, and read a different `storeId` as a

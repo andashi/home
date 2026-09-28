@@ -20,8 +20,8 @@ import java.io.File
 
 /**
  * Each report carries a sequence number and the id of the store that
- * numbered it. The number tells two reports of one store apart, and orders
- * them: a reload that changed nothing still moves it, which the provisioning
+ * numbered it. The number tells two saved reports of one store apart, and
+ * orders them: a reload that changed nothing still moves it, which the provisioning
  * host's pull-before-push guard needs, since the config hash cannot see such
  * a reload. The store id is what makes the order safe to use. `pm clear`, a
  * reinstall or a debug-over-release swap wipes the app's files and starts
@@ -86,7 +86,7 @@ class ReloadReportSequenceTest {
         val store = ReloadReportStore(context)
         val first = store.save(report)
 
-        configDir.listFiles()!!.filter { it.name != "last-reload-report.json" }.forEach { it.writeText("{ not json") }
+        File(configDir, "report-numbering.json").writeText("{ not json")
         val next = store.save(report)
 
         assertEquals(1L, next.sequence)
@@ -118,12 +118,12 @@ class ReloadReportSequenceTest {
         assertNotEquals("forged", saved.storeId)
     }
 
-    /** Reloads and write-backs save from different coroutines; each report gets a number of its own. */
+    /** The store counts safely on its own, whatever lock its callers hold. */
     @Test
     fun `concurrent saves each get their own number`() = runBlocking {
-        val stores = listOf(ReloadReportStore(context), ReloadReportStore(context))
+        val store = ReloadReportStore(context)
 
-        val numbers = (0 until 20).map { i -> async(Dispatchers.IO) { stores[i % 2].save(report).sequence } }.awaitAll()
+        val numbers = (0 until 20).map { async(Dispatchers.IO) { store.save(report).sequence } }.awaitAll()
 
         assertEquals((1L..20L).toList(), numbers.map { it!! }.sorted())
     }

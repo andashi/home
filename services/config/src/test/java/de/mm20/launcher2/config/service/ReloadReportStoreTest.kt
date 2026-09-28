@@ -20,6 +20,12 @@ class ReloadReportStoreTest {
 
     private val context: Context = ApplicationProvider.getApplicationContext()
 
+    /** As the store saved it: numbered, and otherwise the report as given. */
+    private suspend fun assertSavedAsGiven(given: ReloadReport, saved: ReloadReport, store: ReloadReportStore) {
+        assertEquals(given, saved.copy(sequence = null, storeId = null))
+        assertEquals(saved, store.read())
+    }
+
     private fun reportFile(): File {
         return File(context.filesDir, "config/last-reload-report.json")
     }
@@ -40,9 +46,7 @@ class ReloadReportStoreTest {
 
         val saved = store.save(report)
 
-        // As the store saved it: numbered, and otherwise the report as given.
-        assertEquals(report, saved.copy(sequence = null, storeId = null))
-        assertEquals(saved, store.read())
+        assertSavedAsGiven(report, saved, store)
     }
 
     @Test
@@ -52,8 +56,7 @@ class ReloadReportStoreTest {
         val second = ReloadReport(success = false, errorMessage = "boom")
         val saved = store.save(second)
 
-        assertEquals(second, saved.copy(sequence = null, storeId = null))
-        assertEquals(saved, store.read())
+        assertSavedAsGiven(second, saved, store)
     }
 
     @Test
@@ -68,9 +71,7 @@ class ReloadReportStoreTest {
 
         val saved = store.save(report)
 
-        // As the store saved it: numbered, and otherwise the report as given.
-        assertEquals(report, saved.copy(sequence = null, storeId = null))
-        assertEquals(saved, store.read())
+        assertSavedAsGiven(report, saved, store)
     }
 
     @Test

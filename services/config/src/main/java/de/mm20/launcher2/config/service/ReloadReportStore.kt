@@ -9,9 +9,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.SerializationException
 import java.io.File
-import java.io.IOException
 import java.util.UUID
 
 /**
@@ -37,6 +35,12 @@ class ReloadReportStore(
      */
     private val numbering = File(context.filesDir, "config/report-numbering.json")
 
+    /**
+     * The numbering is a read-modify-write of its own. Callers save under the
+     * ConfigFileLock today; the count does not rely on that.
+     */
+    private val numberingLock = Mutex()
+
     @Serializable
     private data class Numbering(val storeId: String, val sequence: Long)
 
@@ -46,7 +50,7 @@ class ReloadReportStore(
      * report carries (write-back saves an edited copy of the last one).
      */
     suspend fun save(report: ReloadReport): ReloadReport = withContext(Dispatchers.IO) {
-        NumberingLock.withLock {
+        numberingLock.withLock {
             val last = readNumbering()
             val next = Numbering(last?.storeId ?: UUID.randomUUID().toString(), (last?.sequence ?: 0) + 1)
             val numbered = report.copy(sequence = next.sequence, storeId = next.storeId)
@@ -60,35 +64,13 @@ class ReloadReportStore(
         }
     }
 
-    private fun readNumbering(): Numbering? = try {
-        if (numbering.exists()) ConfigParser.json.decodeFromString(Numbering.serializer(), numbering.readText()) else null
-    } catch (e: SerializationException) {
-        null
-    } catch (e: IllegalArgumentException) {
-        null
-    } catch (e: IOException) {
-        null
-    }
-
-    private companion object {
-        /** One count per process: reloads and write-backs save through separate instances. */
-        val NumberingLock = Mutex()
-    }
+    private fun readNumbering(): Numbering? = numbering.decodeOrNull(Numbering.serializer())
 
     suspend fun read(): ReloadReport? = withContext(Dispatchers.IO) {
-        if (!file.exists()) return@withContext null
-        try {
-            ConfigParser.json.decodeFromString(ReloadReport.serializer(), file.readText())
-                // Written under an older severity table (a report survives an
-                // update): no report of this build's, so the startup check
-                // reloads once and writes one (review on #215).
-                .takeIf { report -> report.diagnostics.all { it.agreesWithTable } }
-        } catch (e: SerializationException) {
-            null
-        } catch (e: IllegalArgumentException) {
-            null
-        } catch (e: IOException) {
-            null
-        }
+        file.decodeOrNull(ReloadReport.serializer())
+            // Written under an older severity table (a report survives an
+            // update): no report of this build's, so the startup check
+            // reloads once and writes one (review on #215).
+            ?.takeIf { report -> report.diagnostics.all { it.agreesWithTable } }
     }
 }

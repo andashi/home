@@ -2,6 +2,7 @@ package de.mm20.launcher2.config.service
 
 import de.mm20.launcher2.config.ConfigParser
 import de.mm20.launcher2.config.LauncherConfig
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonObject
@@ -22,6 +23,16 @@ internal fun JsonObject.with(path: List<String>, value: JsonElement?): JsonObjec
     if (path.size == 1) return JsonObject(if (value == null) this - key else this + (key to value))
     val child = this[key] as? JsonObject ?: if (value == null) return this else JsonObject(emptyMap())
     return JsonObject(this + (key to child.with(path.drop(1), value)))
+}
+
+/** Decodes this file with [serializer]; null when it is missing, unreadable or corrupt. */
+internal fun <T> File.decodeOrNull(serializer: KSerializer<T>): T? = try {
+    if (exists()) ConfigParser.json.decodeFromString(serializer, readText()) else null
+} catch (e: IllegalArgumentException) {
+    // SerializationException is one.
+    null
+} catch (e: IOException) {
+    null
 }
 
 /**
