@@ -35,7 +35,8 @@ data class ReconcileReport(
 
 /**
  * Keeps the AppWidget host and the grid table in step (plan, section C):
- * items that name a provider but hold no host id get one bound (the HOME
+ * items that name a provider but hold no host id - or an id the widget
+ * service deleted when the provider was uninstalled - get one bound (the HOME
  * role holder may bind without a dialog), items whose provider is gone are
  * reported so the cell shows the existing "replace or remove" banner, and
  * host ids nothing references any more are released so they do not leak.
@@ -52,11 +53,15 @@ class HomeGridReconciler(
         val failed = mutableListOf<String>()
         val unavailable = mutableListOf<String>()
         val referenced = mutableSetOf<Int>()
+        val held = port.boundIds().toSet()
 
         for (layout in layouts) {
             for (item in homeGridRepository.observe(layout).first()) {
                 if (item.isFavorites) continue
-                val id = item.appWidgetId
+                // An id the service deleted is no id: bound anew below, or
+                // cleared when the bind fails, so the item waits for its
+                // package like any declared widget whose provider is missing.
+                val id = item.appWidgetId?.takeUnless { deleted(it, held) }
                 if (id == null) {
                     val allocated = port.allocate()
                     if (port.bind(allocated, item.widget, item.profile)) {
@@ -65,6 +70,7 @@ class HomeGridReconciler(
                         bound += item.id
                     } else {
                         port.release(allocated)
+                        if (item.appWidgetId != null) homeGridRepository.setAppWidgetId(layout, item.id, null)
                         failed += item.id
                     }
                 } else {
@@ -112,12 +118,25 @@ class HomeGridReconciler(
         return report
     }
 
-    private suspend fun waitsFor(packageName: String): Boolean =
-        listOf(HomeGridLayouts.Phone, HomeGridLayouts.Fold).any { layout ->
+    private suspend fun waitsFor(packageName: String): Boolean {
+        val held = port.boundIds().toSet()
+        return listOf(HomeGridLayouts.Phone, HomeGridLayouts.Fold).any { layout ->
             homeGridRepository.observe(layout).first().any {
-                !it.isFavorites && it.appWidgetId == null && it.widget.startsWith("$packageName/")
+                !it.isFavorites && it.widget.startsWith("$packageName/") &&
+                    (it.appWidgetId == null || deleted(it.appWidgetId, held))
             }
         }
+    }
+
+    /**
+     * Whether the widget service deleted [id] - as it does with every widget
+     * of a provider whose package is uninstalled (#245): the host no longer
+     * holds it, and there is no provider info for it. Both, not either: a
+     * slow or updating provider keeps its record, and a host list that came
+     * back short says nothing on its own - rebinding then would lose a
+     * configured widget's setup.
+     */
+    private fun deleted(id: Int, held: Set<Int>): Boolean = id !in held && !port.isProviderAvailable(id)
 
     companion object {
         /** The widget repository's page size (its `limit` default). */
