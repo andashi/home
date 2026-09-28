@@ -151,11 +151,17 @@ object ThemeFile {
         return if (filled > max) null else buffer.copyOf(filled)
     }
 
-    /** The caller's half of the handshake in [readBytes]: flag first, close second. */
+    /**
+     * The caller's half of the handshake in [readBytes]: flag first, close
+     * second. The close runs on a thread of its own: close() has no promise
+     * to return promptly, and the caller answers on time whatever it does
+     * (#234 review).
+     */
     private fun giveUp(task: FutureTask<*>, opened: AtomicReference<InputStream?>, gaveUp: AtomicBoolean) {
         gaveUp.set(true)
         task.cancel(true)
-        closeQuietly(opened.get())
+        val stream = opened.get() ?: return
+        Thread({ closeQuietly(stream) }, "theme-file-close").apply { isDaemon = true }.start()
     }
 
     private fun closeQuietly(stream: InputStream?) {

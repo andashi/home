@@ -146,8 +146,9 @@ class ThemeFileTest {
         val result = ThemeFile.read("content", open = { stalled }, maxBytes = ThemeFile.MAX_BYTES, timeoutMillis = 300)
         val tookMs = (System.nanoTime() - started) / 1_000_000
         assertEquals(rejected(ThemeFileRejection.TooSlow), result)
-        assertEquals("the stalled stream was not closed", 0L, closed.count)
         assertTrue("took $tookMs ms for a 300 ms bound", tookMs < 5_000)
+        // Closed off the caller's thread (a close may block), so awaited.
+        assertTrue("the stalled stream was not closed", closed.await(5, java.util.concurrent.TimeUnit.SECONDS))
     }
 
     @Test(timeout = 20_000)
