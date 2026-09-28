@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Opaque and saturated on purpose (#78): l4-config's mute step compares a
+     muted copy with an unmuted one, and a transparent widget would show the
+     glass behind it, which mute does not touch. -->
 <TextView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#FFE53935"
     android:gravity="center"
-    android:text="widget only" />
+    android:text="widget only"
+    android:textColor="#FF1E88E5"
+    android:textSize="18sp" />

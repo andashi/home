@@ -281,6 +281,7 @@ internal fun AppWidgetCell(
                 modifier = Modifier.fillMaxSize(),
                 borderless = item.config.borderless,
                 useThemeColors = item.config.themeColors,
+                mute = item.config.mute,
                 onLightBackground = lightBackground,
             )
         }
