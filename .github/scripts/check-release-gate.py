@@ -114,13 +114,13 @@ def violations(workflow):
         found.append("jobs.release pins no release certificate SHA-256 (RELEASE_CERT_SHA256, 64 hex)")
     for name, job in jobs.items():
         steps = job.get("steps") or []
-        builds = [i for i, step in enumerate(steps)
-                  if any("assembleDefaultRelease" in line for line in executable_lines(step.get("run", "")))]
-        if not builds:
+        build = next((i for i, step in enumerate(steps)
+                      if any("assembleDefaultRelease" in line for line in executable_lines(step.get("run", "")))), None)
+        if build is None:
             continue
-        after = steps[builds[0] + 1:]
+        after = steps[build + 1:]
         for script, line in APK_CHECKS.items():
-            if not any(runs_unmasked(step, line) for step in after):
+            if not any(lines_before(step, line) is not None for step in after):
                 found.append(f"jobs.{name} builds the release APK without running {script} on it")
     return found
 
@@ -134,14 +134,19 @@ APK_CHECKS = {
 }
 
 
-def runs_unmasked(step, command):
-    """Whether `step` runs `command` so that its failure fails the step: the
-    line exactly as written, with no `set +e` before it."""
+def lines_before(step, command):
+    """The executable lines of `step` before `command`, when it runs so that
+    its failure fails the step - the line exactly as written, so nothing
+    around it (`!`, `||`, `if`) can swallow its failure (#204), with no
+    `set +e` and no here-document opened before it (its body is data, not
+    commands) - and None when it does not."""
     lines = [line.strip() for line in executable_lines(step.get("run", ""))]
     if command not in lines:
-        return False
+        return None
     before = lines[:lines.index(command)]
-    return not any(re.search(r"\bset\s+\+e", line) for line in before)
+    if any(re.search(r"\bset\s+\+e", line) or re.search(r"(?<!<)<<(?!<)", line) for line in before):
+        return None
+    return before
 
 
 # The two lines that make property 4, as release.yml writes them. Matched
@@ -154,17 +159,9 @@ RUNS_CHECK = 'python3 "$GITHUB_WORKSPACE/.github/scripts/check-release-signer.py
 
 def checks_signer(step):
     """Whether `step` prints the APK's certificates and then runs the signer
-    check so that its failure fails the step: both lines exactly as written,
-    in that order, with nothing around the check (`!`, `||`, `if` can swallow
-    its failure, the defect #204 fixed), no `set +e` and no here-document
-    opened before it (its body is data, not commands)."""
-    lines = [line.strip() for line in executable_lines(step.get("run", ""))]
-    if RUNS_CHECK not in lines:
-        return False
-    before = lines[:lines.index(RUNS_CHECK)]
-    return (PRINTS_CERTS in before
-            and not any(re.search(r"\bset\s+\+e", line) for line in before)
-            and not any(re.search(r"(?<!<)<<(?!<)", line) for line in before))
+    check so that its failure fails the step (see lines_before)."""
+    before = lines_before(step, RUNS_CHECK)
+    return before is not None and PRINTS_CERTS in before
 
 
 def main(path):

@@ -33,13 +33,18 @@ IDENTITY = {
     "activityname", "descriptor", "interfacedescriptor", "diagnostics",
     "it", "this",
 }
+# libs/nextcloud is in the tree but built by nothing: absent from
+# settings.gradle.kts and referenced by no module, so it cannot ship.
 SKIP = ("/test/", "/androidTest/", "/build/", "libs/nextcloud")
 CALL = re.compile(r"\bLog\.(i|w|e|wtf)\(")
 
 
-def _call(src, start):
-    """The text of the call starting at `start`, to its closing parenthesis."""
-    depth, i, quote = 0, start, None
+def _tokens(src, start=0):
+    """Kotlin source from `start` as (kind, text, end): "code" for one
+    character outside strings, "tmpl" for a `${...}` expression inside one,
+    "ident" for a `$name` inside one, and "quote" where a string closes. The
+    one place string and template syntax is understood."""
+    i, quote = start, None
     while i < len(src):
         if quote:
             if src[i] == "\\":
@@ -48,11 +53,17 @@ def _call(src, start):
             if src.startswith(quote, i):
                 i += len(quote)
                 quote = None
+                yield "quote", "", i
                 continue
             if src.startswith("${", i):
-                # A template expression: skip it whole, strings inside included.
                 end = _brace_end(src, i + 1)
+                yield "tmpl", src[i + 2:end], end + 1
                 i = end + 1
+                continue
+            m = _NAME.match(src, i)
+            if m:
+                yield "ident", m.group(1), m.end()
+                i = m.end()
                 continue
             i += 1
             continue
@@ -62,13 +73,27 @@ def _call(src, start):
             continue
         if src[i] == '"':
             quote = '"'
-        elif src[i] == "(":
+            i += 1
+            continue
+        yield "code", src[i], i + 1
+        i += 1
+
+
+_NAME = re.compile(r"\$([A-Za-z_]\w*)")
+
+
+def _call(src, start):
+    """The text of the call starting at `start`, to its closing parenthesis."""
+    depth = 0
+    for kind, text, end in _tokens(src, start):
+        if kind != "code":
+            continue
+        if text == "(":
             depth += 1
-        elif src[i] == ")":
+        elif text == ")":
             depth -= 1
             if depth == 0:
-                return src[start:i + 1]
-        i += 1
+                return src[start:end]
     return src[start:]
 
 
@@ -87,42 +112,18 @@ def _brace_end(src, open_index):
 
 def _printed(call):
     """Each value the call's message prints, as its source text."""
-    values, rest, i, quote = [], [], 0, None
-    while i < len(call):
-        if quote:
-            if call[i] == "\\":
-                i += 2
-                continue
-            if call.startswith(quote, i):
-                i += len(quote)
-                quote = None
-                rest.append('""')
-                continue
-            if call.startswith("${", i):
-                end = _brace_end(call, i + 1)
-                inner = call[i + 2:end]
-                values.append(inner)
-                # Strings inside the expression print too.
-                values.extend(_printed("(" + inner + ")"))
-                i = end + 1
-                continue
-            m = re.match(r"\$([A-Za-z_]\w*)", call[i:])
-            if m:
-                values.append(m.group(1))
-                i += len(m.group(0))
-                continue
-            i += 1
-            continue
-        if call.startswith('"""', i):
-            quote = '"""'
-            i += 3
-            continue
-        if call[i] == '"':
-            quote = '"'
-            i += 1
-            continue
-        rest.append(call[i])
-        i += 1
+    values, rest = [], []
+    for kind, text, _ in _tokens(call):
+        if kind == "code":
+            rest.append(text)
+        elif kind == "quote":
+            rest.append('""')
+        elif kind == "ident":
+            values.append(text)
+        else:
+            values.append(text)
+            # Strings inside the expression print too.
+            values.extend(_printed("(" + text + ")"))
     code = "".join(rest)
     # Operands concatenated to the message: `"..." + intent`.
     # A chain is taken whole or not at all: backtracking into
@@ -134,13 +135,11 @@ def _printed(call):
 
 def _names_an_app(value):
     value = value.strip()
-    chain =re.match(r"^([A-Za-z_][\w]*(?:\s*\??\.\s*[A-Za-z_]\w*)*)\s*$", value)
-    if not chain:
+    if not re.fullmatch(r"[A-Za-z_]\w*(?:\s*\??\.\s*[A-Za-z_]\w*)*", value):
         # A call or an operation - `widgetId == null` prints a boolean - is
         # judged by the strings inside it, not as a value.
         return False
-    last = re.split(r"\s*\??\.\s*", chain.group(1))[-1]
-    return last.lower() in IDENTITY
+    return re.search(r"\w+$", value).group(0).lower() in IDENTITY
 
 
 def findings(path, src):

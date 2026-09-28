@@ -23,14 +23,22 @@ import zipfile
 INVOKE = re.compile(r"invoke-static.*Landroid/util/Log;\.(\w+):")
 
 
-def problems(dump):
+def counts(dump):
+    """(all Log calls, Log.d and Log.v calls) in one dex dump."""
     calls = [m.group(1) for m in INVOKE.finditer(dump)]
+    return len(calls), sum(1 for c in calls if c in ("d", "v"))
+
+
+def judge(calls, kept):
     if not calls:
         return ["the dex dump holds no android.util.Log call at all; its code was not read"]
-    kept = [c for c in calls if c in ("d", "v")]
     if kept:
-        return [f"{len(kept)} Log.d/Log.v call(s) left in the dex; release builds log no debug or verbose lines"]
+        return [f"{kept} Log.d/Log.v call(s) left in the dex; release builds log no debug or verbose lines"]
     return []
+
+
+def problems(dump):
+    return judge(*counts(dump))
 
 
 def main(argv):
@@ -38,7 +46,9 @@ def main(argv):
         print(__doc__.splitlines()[2], file=sys.stderr)
         return 2
     dexdump, apk = argv[1], argv[2]
-    dump = []
+    # Each dump is counted as it arrives: joined, the two dumps of a 17 MB
+    # APK held about 240 MB of text at once.
+    calls = kept = 0
     with tempfile.TemporaryDirectory() as work, zipfile.ZipFile(apk) as z:
         for name in sorted(n for n in z.namelist() if re.fullmatch(r"classes\d*\.dex", n)):
             path = pathlib.Path(work, name)
@@ -51,8 +61,9 @@ def main(argv):
             if run.returncode != 0:
                 print(f"::error::release logs: dexdump failed on {name}", file=sys.stderr)
                 return 1
-            dump.append(run.stdout)
-    found = problems("".join(dump))
+            c, k = counts(run.stdout)
+            calls, kept = calls + c, kept + k
+    found = judge(calls, kept)
     for p in found:
         print(f"::error::release logs: {p}", file=sys.stderr)
     if not found:
