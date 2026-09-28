@@ -99,6 +99,12 @@ def problems(manifest, resources, read_file):
     if attrs.get("allowBackup") != "false":
         found.append(f"allowBackup is {attrs.get('allowBackup', 'absent (defaults to true)')}, must be false")
 
+    # The rules govern the files Auto Backup takes; a custom agent sends
+    # whatever it likes, and a library could merge one in without a conflict.
+    for agent in ("backupAgent", "fullBackupOnly"):
+        if agent in attrs:
+            found.append(f"{agent} is set ({attrs[agent]}); no backup agent may ship")
+
     ref = attrs.get("dataExtractionRules")
     if ref is None:
         return found + ["dataExtractionRules is absent: nothing stops a device-to-device transfer"]

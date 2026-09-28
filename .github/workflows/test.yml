@@ -79,6 +79,17 @@ jobs:
           :data:homegrid:testDebugUnitTest
           :data:themes:testDebugUnitTest
           :core:base:testDebugUnitTest
+      # Nothing of the launcher leaves the device (#15), checked on every pull
+      # request rather than first at a tag. The linked resources carry the
+      # merged manifest and the resource table without a dex build; a path
+      # AGP moves makes aapt2 read nothing, which the check refuses.
+      - name: Backup stays off in the merged manifest
+        run: |
+          set -euo pipefail
+          ./gradlew :app:app:processDefaultDebugResources
+          bt="$ANDROID_HOME/build-tools/$(ls "$ANDROID_HOME/build-tools" | sort -V | tail -1)"
+          python3 .github/scripts/check-backup-off.py "$bt/aapt2" \
+            app/app/build/intermediates/linked_resources_binary_format/defaultDebug/processDefaultDebugResources/linked-resources-binary-format-defaultDebug.ap_
       # The coverage gate: every module the fork owns carries a line-coverage
       # bound in its build file, and this step fails the PR below it.
       - name: Coverage gate

@@ -90,7 +90,7 @@ jobs:
           badging="$("$bt/aapt2" dump badging "$apk")"
           grep -q "package: name='org.andashi.home'" <<<"$badging"
           # Nothing of the launcher leaves the device; why, in check-backup-off.py.
-          python3 .github/scripts/check-backup-off.py "$bt/aapt2" "$apk"
+          python3 "$GITHUB_WORKSPACE/.github/scripts/check-backup-off.py" "$bt/aapt2" "$apk"
           # Any signature fails the run: with no key in reach, a signed APK
           # means the build fell back to one - the debug key, as it did
           # before #137 - and a debug-signed APK with the release id is what
