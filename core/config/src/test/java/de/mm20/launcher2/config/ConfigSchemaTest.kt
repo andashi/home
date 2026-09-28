@@ -17,6 +17,7 @@ import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.long
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
+import org.junit.Assert.fail
 import org.junit.Test
 
 /**
@@ -35,19 +36,23 @@ class ConfigSchemaTest {
     /**
      * Fresh: regenerated in memory, it must equal the checked-in file byte for
      * byte. `-PupdateSchema` rewrites the file instead, for the one commit
-     * that changes the contract.
+     * that changes the contract - but never over a removed key path the
+     * command line does not name in `-PremoveSchemaKeys` (ConfigSchema.refusal).
      */
     @Test
     fun `the checked-in schema is the generated one`() {
         val generated = ConfigSchema.text()
-        if (System.getProperty("updateSchema") == "true") schemaFile.writeText(generated)
+        if (System.getProperty("updateSchema") == "true") {
+            val acknowledged = System.getProperty("removeSchemaKeys").orEmpty()
+                .split(',').map { it.trim() }.filter { it.isNotEmpty() }.toSet()
+            ConfigSchema.refusal(generated, schemaFile.takeIf { it.exists() }?.readText(), acknowledged)
+                ?.let { fail(it) }
+            schemaFile.writeText(generated)
+        }
 
-        assertEquals(
-            "docs/configuration/launcher.schema.json is stale; regenerate it with " +
-                "./gradlew :core:config:testDebugUnitTest --tests '*ConfigSchemaTest*' -PupdateSchema",
-            generated,
-            schemaFile.takeIf { it.exists() }?.readText(),
-        )
+        val committed = schemaFile.takeIf { it.exists() }?.readText()
+        // What changed leads the message; see ConfigSchema.staleness.
+        if (generated != committed) assertEquals(ConfigSchema.staleness(generated, committed), generated, committed)
     }
 
     /**
