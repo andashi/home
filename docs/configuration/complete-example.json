@@ -33,7 +33,8 @@
       "mode": "dark",
       "colors": "high-contrast",
       "shapes": "cut",
-      "typography": "google-sans-rounded"
+      "typography": "google-sans-rounded",
+      "colorSource": "wallpaper"
     }
   },
   "home": {

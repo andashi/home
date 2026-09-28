@@ -196,8 +196,8 @@ cat > "$VALID_CONFIG" <<'EOF'
   "appearance": {
     // Not the defaults, so applying it is a real change.
     "glass": { "blur": 16, "tint": 0.5, "radius": 20, "contrast": "high", "wallpaperBlur": false, "searchWallpaperBlur": false },
-    // All four away from their defaults (#3 slice 3, slice 4).
-    "theme": { "mode": "dark", "colors": "high-contrast", "shapes": "extra-round", "typography": "serif" },
+    // All five away from their defaults (#3 slice 3, slice 4, #229).
+    "theme": { "mode": "dark", "colors": "high-contrast", "shapes": "extra-round", "typography": "serif", "colorSource": "wallpaper" },
     // #3 slice 1: both bars away from their defaults.
     "systemBars": {
       "statusBar": { "hidden": true, "icons": "dark" },
@@ -250,8 +250,8 @@ cat > "$UNKNOWN_KEYS_CONFIG" <<'EOF'
   "appearance": {
     // Not the defaults, so applying it is a real change.
     "glass": { "blur": 16, "tint": 0.5, "radius": 20, "contrast": "high", "wallpaperBlur": false, "searchWallpaperBlur": false },
-    // All four away from their defaults (#3 slice 3, slice 4).
-    "theme": { "mode": "dark", "colors": "high-contrast", "shapes": "extra-round", "typography": "serif" },
+    // All five away from their defaults (#3 slice 3, slice 4, #229).
+    "theme": { "mode": "dark", "colors": "high-contrast", "shapes": "extra-round", "typography": "serif", "colorSource": "wallpaper" },
   },
   // Four keys away from their defaults (#91), so applying them is a change.
   "search": { "favorites": false, "layout": "list", "reversed": true, "contacts": false, "barPosition": "bottom" },
@@ -286,7 +286,7 @@ cat > "$CHANGED_CONFIG" <<'EOF'
   },
   "appearance": {
     "glass": { "blur": 32, "tint": 0.2, "radius": 12, "contrast": "low", "wallpaperBlur": true, "searchWallpaperBlur": true },
-    "theme": { "mode": "light", "colors": "black-and-white", "shapes": "cut", "typography": "monospace" },
+    "theme": { "mode": "light", "colors": "black-and-white", "shapes": "cut", "typography": "monospace", "colorSource": "system" },
     "systemBars": {
       "statusBar": { "hidden": false, "icons": "light" },
       "navigationBar": { "hidden": true, "icons": "dark" },
@@ -422,7 +422,7 @@ EFFECTIVE_FILTER='
   and .icons.themed == true
   and .icons.enforceThemed == true
   and .appearance.glass == {"blur":16.0,"tint":0.5,"radius":20.0,"contrast":"high","wallpaperBlur":false,"searchWallpaperBlur":false}
-  and .appearance.theme == {"mode":"dark","colors":"high-contrast","shapes":"extra-round","typography":"serif"}
+  and .appearance.theme == {"mode":"dark","colors":"high-contrast","shapes":"extra-round","typography":"serif","colorSource":"wallpaper"}
   and (.appearance | has("transparency") | not)
   and (.search | del(.actions)) == {"favorites":false,"allApps":true,"layout":"list","labels":true,"contacts":false,"shortcuts":true,"filterBar":true,"openKeyboard":true,"launchOnEnter":true,"reversed":true,"hiddenItemsButton":false,"barPosition":"bottom","listIcons":true,"appDetails":true,"contactsCallOnTap":false,"frequentlyUsed":true,"frequentlyUsedRows":1,"favoritesEditButton":true,"compactTags":false,"transliterator":"auto"}
   and .search.actions == [{"type":"call"},{"type":"message"},{"type":"email"},{"type":"contact"},{"type":"alarm"},{"type":"timer"},{"type":"calendar"},{"type":"website"},{"type":"websearch"}]
@@ -444,7 +444,7 @@ CHANGED_FILTER='
   and .icons.themed == false
   and .icons.enforceThemed == false
   and .appearance.glass == {"blur":32.0,"tint":0.2,"radius":12.0,"contrast":"low","wallpaperBlur":true,"searchWallpaperBlur":true}
-  and .appearance.theme == {"mode":"light","colors":"black-and-white","shapes":"cut","typography":"monospace"}
+  and .appearance.theme == {"mode":"light","colors":"black-and-white","shapes":"cut","typography":"monospace","colorSource":"system"}
   and (.search | del(.actions)) == {"favorites":true,"allApps":true,"layout":"grid","labels":true,"contacts":true,"shortcuts":true,"filterBar":true,"openKeyboard":true,"launchOnEnter":true,"reversed":false,"hiddenItemsButton":false,"barPosition":"top","listIcons":true,"appDetails":true,"contactsCallOnTap":false,"frequentlyUsed":true,"frequentlyUsedRows":1,"favoritesEditButton":true,"compactTags":false,"transliterator":"auto"}
   and .home.searchBar.position == "top"
   and .home.searchBar.fixed == false

@@ -198,15 +198,15 @@ class ConfigStateMapperTest {
     @Test
     fun `the theme reads back, a custom colour scheme without colors`() {
         assertEquals(
-            ThemeConfig(ThemeMode.System, ThemeColors.System, ThemeShapes.Default, ThemeTypography.GoogleSans),
+            ThemeConfig(ThemeMode.System, ThemeColors.System, ThemeShapes.Default, ThemeTypography.GoogleSans, ThemeColorSource.System),
             ConfigState().toLauncherConfig().appearance?.theme,
         )
         assertEquals(
-            ThemeConfig(ThemeMode.Dark, ThemeColors.HighContrast, ThemeShapes.Default, ThemeTypography.GoogleSans),
+            ThemeConfig(ThemeMode.Dark, ThemeColors.HighContrast, ThemeShapes.Default, ThemeTypography.GoogleSans, ThemeColorSource.System),
             ConfigState(themeMode = ThemeMode.Dark, themeColors = ThemeColors.HighContrast).toLauncherConfig().appearance?.theme,
         )
         val custom = ConfigState(themeColors = null).toLauncherConfig()
-        assertEquals(ThemeConfig(ThemeMode.System, null, ThemeShapes.Default, ThemeTypography.GoogleSans), custom.appearance?.theme)
+        assertEquals(ThemeConfig(ThemeMode.System, null, ThemeShapes.Default, ThemeTypography.GoogleSans, ThemeColorSource.System), custom.appearance?.theme)
         val served = ConfigParser.json.encodeToString(LauncherConfig.serializer(), custom)
         assertTrue(served, !served.contains("\"colors\""))
     }

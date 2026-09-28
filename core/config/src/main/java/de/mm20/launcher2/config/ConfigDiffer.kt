@@ -30,6 +30,8 @@ data class ConfigState(
     val themeShapes: ThemeShapes? = ThemeShapes.Default,
     /** `appearance.theme.typography`: the built-in typography in effect, or null for one a person made. */
     val themeTypography: ThemeTypography? = ThemeTypography.GoogleSans,
+    /** `appearance.theme.colorSource` (#229): the system palette by default. */
+    val themeColorSource: ThemeColorSource = ThemeColorSource.System,
     val searchBarPosition: SearchBarPosition = SearchBarPosition.Top,
     /** `home.searchBar.fixed` (#3 slice 1). */
     val searchBarFixed: Boolean = false,
@@ -151,6 +153,7 @@ sealed class ConfigMutation {
         val colors: ThemeColors? = null,
         val shapes: ThemeShapes? = null,
         val typography: ThemeTypography? = null,
+        val colorSource: ThemeColorSource? = null,
     ) : ConfigMutation() {
         override val section = "appearance.theme"
     }
@@ -298,8 +301,11 @@ object ConfigDiffer {
             // As the colours: a set a person made (null) differs from every slug.
             val shapes = theme.shapes?.takeIf { it != current.themeShapes }
             val typography = theme.typography?.takeIf { it != current.themeTypography }
-            if (mode != null || colors != null || shapes != null || typography != null) {
-                mutations += ConfigMutation.SetTheme(mode = mode, colors = colors, shapes = shapes, typography = typography)
+            val colorSource = theme.colorSource?.takeIf { it != current.themeColorSource }
+            if (mode != null || colors != null || shapes != null || typography != null || colorSource != null) {
+                mutations += ConfigMutation.SetTheme(
+                    mode = mode, colors = colors, shapes = shapes, typography = typography, colorSource = colorSource,
+                )
             }
         }
 

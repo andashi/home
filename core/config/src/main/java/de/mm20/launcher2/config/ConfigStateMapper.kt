@@ -72,7 +72,10 @@ fun ConfigState.toLauncherConfig(): LauncherConfig {
             // without the key must compare equal to the read-back.
             wallpaper = wallpaperImage?.let { WallpaperConfig(image = it, target = wallpaperTarget) },
             // Complete, except a colour scheme a person made, which has no slug.
-            theme = ThemeConfig(mode = themeMode, colors = themeColors, shapes = themeShapes, typography = themeTypography),
+            theme = ThemeConfig(
+                mode = themeMode, colors = themeColors, shapes = themeShapes, typography = themeTypography,
+                colorSource = themeColorSource,
+            ),
             // Complete, like glass (#3 slice 1).
             systemBars = SystemBarsConfig(
                 statusBar = StatusBarConfig(hidden = statusBarHidden, icons = statusBarIcons),

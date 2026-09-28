@@ -125,6 +125,8 @@ object ConfigParser {
             "colors" to KeyEffect.Applied,
             "shapes" to KeyEffect.Applied,
             "typography" to KeyEffect.Applied,
+            // #229.
+            "colorSource" to KeyEffect.Applied,
         ),
         "home" to mapOf(
             "searchBar" to KeyEffect.Applied,

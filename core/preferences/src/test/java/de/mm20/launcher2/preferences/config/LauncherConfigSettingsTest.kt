@@ -25,6 +25,7 @@ import kotlinx.coroutines.test.runTest
 import de.mm20.launcher2.config.ThemeColors
 import de.mm20.launcher2.config.ThemeShapes
 import de.mm20.launcher2.config.ThemeTypography
+import de.mm20.launcher2.config.ThemeColorSource
 import de.mm20.launcher2.config.ThemeMode
 import de.mm20.launcher2.preferences.ColorScheme
 import de.mm20.launcher2.preferences.BuiltInColorSchemes
@@ -66,6 +67,33 @@ class LauncherConfigSettingsTest {
     fun `changes emits on collection`() = runBlocking {
         val settings = createGateway()
         withTimeout(10_000) { settings.changes().first() }
+    }
+
+    /**
+     * `appearance.theme.colorSource` (#229) against the stored boolean, in
+     * the direction the launcher renders it: `uiCompatModeColors = false` is
+     * the system palette (ColorScheme.kt, `systemCorePalette`: `!compatModeColors`
+     * reads `system_accent1_500` and its siblings), `true` the wallpaper's
+     * colours. Pinned here because the rest of the chain is consistent under
+     * inversion - differ, apply and read-back agree with each other either
+     * way, and only this test knows which way is true.
+     */
+    @Test
+    fun `the colour source is the stored flag in the direction the launcher renders it`() = runTest {
+        assertEquals(ThemeColorSource.System, createGateway(LauncherSettingsData(uiCompatModeColors = false)).readState().themeColorSource)
+    }
+
+    @Test
+    fun `a stored true is the wallpaper's colours`() = runTest {
+        assertEquals(ThemeColorSource.Wallpaper, createGateway(LauncherSettingsData(uiCompatModeColors = true)).readState().themeColorSource)
+    }
+
+    @Test
+    fun `applying a colour source stores the flag the renderer reads`() = runTest {
+        val gateway = createGateway(LauncherSettingsData(uiCompatModeColors = false))
+
+        assertEquals(true, gateway.applyAndReturn(listOf(ConfigMutation.SetTheme(colorSource = ThemeColorSource.Wallpaper))).uiCompatModeColors)
+        assertEquals(false, gateway.applyAndReturn(listOf(ConfigMutation.SetTheme(colorSource = ThemeColorSource.System))).uiCompatModeColors)
     }
 
     @Test

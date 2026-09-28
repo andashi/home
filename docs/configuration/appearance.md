@@ -162,12 +162,17 @@ device has.
 | Key | What it does | Accepted | Default |
 |---|---|---|---|
 | `appearance.theme.mode` | `light`, `dark`, or `system` to follow the system's dark theme | enum | `system` |
-| `appearance.theme.colors` | The launcher's built-in colour scheme: `system` follows the system palette, `black-and-white` and `high-contrast` replace it | enum | `system` |
+| `appearance.theme.colors` | The launcher's built-in colour scheme: `system` is the Material You palette from `colorSource` (the system's by default), `black-and-white` and `high-contrast` replace it | enum | `system` |
 | `appearance.theme.shapes` | The launcher's built-in shape set for cards, buttons and icons' surroundings: `default`, `cut`, `extra-round`, `rect` | enum | `default` |
 | `appearance.theme.typography` | The launcher's built-in typography: `google-sans`, `google-sans-rounded`, `system` (the system's font), `serif`, `monospace` | enum | `google-sans` |
+| `appearance.theme.colorSource` | Where the launcher's Material You colours come from: `system` (the system palette - a zone's colour) or `wallpaper` (colours extracted from the wallpaper). The settings screen calls it "Material You colour source" | enum | `system` |
 
-Each zone's palette comes from the system (its Monet seed). A file picks one
-of the built-in schemes; it cannot define a palette.
+Each zone's palette comes from the system (its Monet seed), and the launcher
+carries it while `colorSource` is `system`, the default. With `wallpaper` the
+launcher extracts its own palette from the wallpaper and no longer follows the
+zone's colour, so leave `colorSource` out, or set it to `system`, where the
+zone's colour should hold. A file picks one of the built-in schemes and the
+source of the palette; it cannot define a palette.
 
 On the home screen the glass is the dominant visual element by design
 ([ADR 0004](../architecture/adr/0004-liquid-glass-design.md)): a surface is

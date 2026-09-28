@@ -14,6 +14,7 @@ import de.mm20.launcher2.config.SearchDefaults
 import de.mm20.launcher2.config.ThemeColors
 import de.mm20.launcher2.config.ThemeShapes
 import de.mm20.launcher2.config.ThemeTypography
+import de.mm20.launcher2.config.ThemeColorSource
 import de.mm20.launcher2.config.ThemeMode
 import de.mm20.launcher2.preferences.BuiltInColorSchemes
 import de.mm20.launcher2.preferences.BuiltInShapes
@@ -174,6 +175,8 @@ internal class LauncherConfigSettingsImpl(
             themeColors = BuiltInColorIds.entries.firstOrNull { it.value == data.uiColorsId }?.key,
             themeShapes = BuiltInShapeIds.entries.firstOrNull { it.value == data.uiShapesId }?.key,
             themeTypography = BuiltInTypographyIds.entries.firstOrNull { it.value == data.uiTypographyId }?.key,
+            // The stored name says compat; what it does is pick the colour source (ColorScheme.kt).
+            themeColorSource = if (data.uiCompatModeColors) ThemeColorSource.Wallpaper else ThemeColorSource.System,
             // search (#91): upstream's own settings, which the search UI reads.
             search = SearchState(
                 favorites = data.favoritesEnabled,
@@ -301,6 +304,7 @@ internal class LauncherConfigSettingsImpl(
                 uiColorsId = mutation.colors?.let(BuiltInColorIds::getValue) ?: uiColorsId,
                 uiShapesId = mutation.shapes?.let(BuiltInShapeIds::getValue) ?: uiShapesId,
                 uiTypographyId = mutation.typography?.let(BuiltInTypographyIds::getValue) ?: uiTypographyId,
+                uiCompatModeColors = mutation.colorSource?.let { it == ThemeColorSource.Wallpaper } ?: uiCompatModeColors,
             )
 
             is ConfigMutation.SetSearch -> with(mutation.search) {

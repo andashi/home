@@ -349,6 +349,12 @@ data class ThemeConfig(
     val colors: ThemeColors? = null,
     val shapes: ThemeShapes? = null,
     val typography: ThemeTypography? = null,
+    /**
+     * Where the Material You colours come from (#229): the system palette -
+     * a zone's colour - or colours extracted from the wallpaper. Stored as
+     * the boolean `uiCompatModeColors`, a name for something it does not do.
+     */
+    val colorSource: ThemeColorSource? = null,
 )
 
 @Serializable(with = ThemeModeSerializer::class)
@@ -369,6 +375,10 @@ enum class ThemeShapes { Default, Cut, ExtraRound, Rect }
  */
 @Serializable(with = ThemeTypographySerializer::class)
 enum class ThemeTypography { GoogleSans, GoogleSansRounded, System, Serif, Monospace }
+
+/** Where the Material You colours come from; [System] is the system palette and the default. */
+@Serializable(with = ThemeColorSourceSerializer::class)
+enum class ThemeColorSource { System, Wallpaper }
 
 /**
  * The glass surfaces of the home screen (ADR 0004, #24): cards, dock and
@@ -463,6 +473,10 @@ internal object ThemeShapesSerializer : FieldEnumSerializer<ThemeShapes>(
 
 internal object ThemeTypographySerializer : FieldEnumSerializer<ThemeTypography>(
     "de.mm20.launcher2.config.ThemeTypography", "appearance.theme.typography", ThemeTypography.entries,
+)
+
+internal object ThemeColorSourceSerializer : FieldEnumSerializer<ThemeColorSource>(
+    "de.mm20.launcher2.config.ThemeColorSource", "appearance.theme.colorSource", ThemeColorSource.entries,
 )
 
 /** The one place the glass defaults live; state, settings and read-back use it. */
