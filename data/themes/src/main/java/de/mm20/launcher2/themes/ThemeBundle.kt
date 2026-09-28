@@ -49,7 +49,12 @@ data class ThemeBundle(
                 }
 
                 return ThemeJson.decodeFromJsonElement<ThemeBundle>(jsonElement).also {
-                    Log.d("MM20", "$it")
+                    // An imported file is untrusted: its shape, never its content (#15).
+                    Log.d(
+                        "MM20",
+                        "Theme bundle read: colors=${it.colors != null}, " +
+                            "typography=${it.typography != null}, shapes=${it.shapes != null}",
+                    )
                 }
 
             } catch (e: SerializationException) {

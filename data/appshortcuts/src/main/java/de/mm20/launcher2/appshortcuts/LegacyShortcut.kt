@@ -172,7 +172,13 @@ internal data class LegacyShortcut(
                 data.extras?.getParcelable(Intent.EXTRA_SHORTCUT_ICON_RESOURCE)
 
             if (intent == null || name == null) {
-                Log.w("MM20", "Shortcut result is missing required extras: intent=$intent, name=$name")
+                // Which extra, never what the other app sent: no intent, no
+                // package, no name - logcat is no place for an app inventory (#15).
+                val missing = listOfNotNull(
+                    Intent.EXTRA_SHORTCUT_INTENT.takeIf { intent == null },
+                    Intent.EXTRA_SHORTCUT_NAME.takeIf { name == null },
+                )
+                Log.w("MM20", "Shortcut result is missing required extras: ${missing.joinToString()}")
                 return null
             }
 
