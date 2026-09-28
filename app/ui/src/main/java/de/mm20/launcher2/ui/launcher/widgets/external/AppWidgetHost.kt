@@ -176,6 +176,6 @@ private fun getColorMapping(colorScheme: ColorScheme): SparseIntArray {
 }
 
 /** One effect for every muted widget: it holds no per-view state. */
-private val muteEffect: RenderEffect by lazy {
+internal val muteEffect: RenderEffect by lazy {
     RenderEffect.createRuntimeShaderEffect(RuntimeShader(WidgetMute.Shader), "content")
 }
