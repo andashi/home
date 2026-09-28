@@ -133,10 +133,24 @@ ask for.
 
 ### Dimming
 
-**Dim wallpaper** (Settings → Home screen) lays a 30 % black layer over the
-wallpaper. It is a setting on the device and has no key in the file. It acts
-only while the theme is dark: `appearance.theme.mode` is `dark`, or it is
-`system` and the system is in dark mode. With a light theme it does nothing.
+`appearance.dimWallpaper` (**Dim wallpaper** in Settings → Home screen) lays
+a 30 % black layer over the wallpaper. It acts only while the theme is dark:
+`appearance.theme.mode` is `dark`, or it is `system` and the system is in
+dark mode. With a light theme the key is kept, read back as written, and
+does nothing.
+
+<!-- config -->
+```json
+{ "schemaVersion": 2, "appearance": { "dimWallpaper": true, "theme": { "mode": "dark" } } }
+```
+
+| Key | What it does | Accepted | Default |
+|---|---|---|---|
+| `appearance.dimWallpaper` | A 30 % black layer over the wallpaper while the theme is dark. It also changes the system bars and the text over the wallpaper, below | boolean | `false` |
+
+It sits beside `glass` and `theme` rather than under `appearance.wallpaper`,
+which declares an image to install; the dim applies to whatever wallpaper
+the device has.
 
 While it acts, the system bars show light icons and the text over the
 wallpaper is light, whatever `appearance.systemBars.*.icons` says and whatever

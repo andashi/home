@@ -85,6 +85,7 @@ fun ConfigState.toLauncherConfig(): LauncherConfig {
                 statusBar = StatusBarConfig(hidden = statusBarHidden, icons = statusBarIcons),
                 navigationBar = NavigationBarConfig(hidden = navigationBarHidden, icons = navigationBarIcons),
             ),
+            dimWallpaper = wallpaperDimmed,
         ),
         home = HomeConfig(
             searchBar = SearchBarConfig(position = searchBarPosition, fixed = searchBarFixed),

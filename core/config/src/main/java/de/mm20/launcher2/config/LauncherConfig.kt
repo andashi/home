@@ -293,6 +293,12 @@ data class AppearanceConfig(
     val theme: ThemeConfig? = null,
     /** The status and navigation bars over the launcher (#3 slice 1). */
     val systemBars: SystemBarsConfig? = null,
+    /**
+     * A dark scrim over the wallpaper (#229), drawn only while the launcher
+     * is dark itself; in a light theme the key is kept and does nothing.
+     * Not under [wallpaper], which declares an image to install.
+     */
+    val dimWallpaper: Boolean? = null,
 )
 
 /** `appearance.systemBars`: each bar hidden or shown, and the colour of its icons. */

@@ -106,6 +106,8 @@ object ConfigParser {
             "theme" to KeyEffect.Applied,
             // #3 slice 1.
             "systemBars" to KeyEffect.Applied,
+            // #229.
+            "dimWallpaper" to KeyEffect.Applied,
         ),
         "appearance.systemBars" to listOf("statusBar", "navigationBar").associateWith { KeyEffect.Applied },
         "appearance.systemBars.statusBar" to listOf("hidden", "icons").associateWith { KeyEffect.Applied },

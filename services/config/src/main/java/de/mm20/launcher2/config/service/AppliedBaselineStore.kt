@@ -65,6 +65,7 @@ internal val ConfigSections = listOf(
     "appearance.wallpaper",
     "appearance.theme",
     "appearance.systemBars",
+    "appearance.dimWallpaper",
     "search",
     "search.actions",
     "search.shortcutsExcluded",
