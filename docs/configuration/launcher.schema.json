@@ -225,6 +225,17 @@
                         },
                         "fixed": {
                             "type": "boolean"
+                        },
+                        "hidden": {
+                            "type": "boolean"
+                        },
+                        "colors": {
+                            "type": "string",
+                            "enum": [
+                                "auto",
+                                "light",
+                                "dark"
+                            ]
                         }
                     },
                     "additionalProperties": false

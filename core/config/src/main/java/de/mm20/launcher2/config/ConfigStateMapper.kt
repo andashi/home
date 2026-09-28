@@ -88,7 +88,9 @@ fun ConfigState.toLauncherConfig(): LauncherConfig {
             dimWallpaper = wallpaperDimmed,
         ),
         home = HomeConfig(
-            searchBar = SearchBarConfig(position = searchBarPosition, fixed = searchBarFixed),
+            searchBar = SearchBarConfig(
+                position = searchBarPosition, fixed = searchBarFixed, hidden = searchBarHidden, colors = searchBarColors,
+            ),
             favorites = favorites,
             widgets = WidgetsConfig(enabled = widgetsEnabled),
             grid = GridConfig(

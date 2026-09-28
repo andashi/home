@@ -328,7 +328,7 @@ internal object ConfigSchema {
             GlassContrastSerializer, SearchBarPositionInSearchSerializer, SearchResultLayoutSerializer,
             DefaultFilterItemSerializer, FilterBarItemSerializer,
             ThemeModeSerializer, ThemeColorsSerializer, ThemeShapesSerializer, ThemeTypographySerializer, ThemeColorSourceSerializer,
-            StatusBarIconsSerializer, NavigationBarIconsSerializer,
+            StatusBarIconsSerializer, NavigationBarIconsSerializer, SearchBarColorsSerializer,
             AppVisibilitySerializer,
         )
             .associateBy { it.descriptor.serialName }

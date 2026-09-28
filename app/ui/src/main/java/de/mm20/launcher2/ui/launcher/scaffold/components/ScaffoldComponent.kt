@@ -25,6 +25,12 @@ internal abstract class ScaffoldComponent {
     open val showSearchBar: Boolean = true
 
     /**
+     * Whether this component is a way into the launcher's own settings: with
+     * the search bar hidden, a gesture to it keeps the launcher usable (#229).
+     */
+    open val reachesSettings: Boolean = false
+
+    /**
      * Whether haptic feedback should be used when the component is activated / dismissed.
      */
     open val hapticFeedback: Boolean = true

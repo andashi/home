@@ -334,6 +334,10 @@ data class NavigationBarConfig(
  */
 enum class SystemBarIcons { Auto, Light, Dark }
 
+internal object SearchBarColorsSerializer : FieldEnumSerializer<SystemBarIcons>(
+    "de.mm20.launcher2.config.SearchBarColors", "home.searchBar.colors", SystemBarIcons.entries,
+)
+
 internal object StatusBarIconsSerializer : FieldEnumSerializer<SystemBarIcons>(
     "de.mm20.launcher2.config.StatusBarIcons", "appearance.systemBars.statusBar.icons", SystemBarIcons.entries,
 )
@@ -551,6 +555,17 @@ data class SearchBarConfig(
     val position: SearchBarPosition? = null,
     /** The bar stays in place instead of scrolling away with the home screen (#3 slice 1). */
     val fixed: Boolean? = null,
+    /**
+     * The bar is not drawn on the home screen at rest (#229). Unlike a hidden
+     * system bar it reserves no space and slides in when search opens.
+     */
+    val hidden: Boolean? = null,
+    /**
+     * The resting bar's text and icon colour (#229), in the system bars'
+     * words: `dark` is dark content. `auto` follows the wallpaper.
+     */
+    @Serializable(with = SearchBarColorsSerializer::class)
+    val colors: SystemBarIcons? = null,
 )
 
 @Serializable

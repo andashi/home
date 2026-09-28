@@ -6,6 +6,7 @@ import de.mm20.launcher2.config.ConfigState
 import de.mm20.launcher2.config.Diagnostic
 import de.mm20.launcher2.config.DiagnosticCode
 import de.mm20.launcher2.config.Favorite
+import de.mm20.launcher2.config.isLockedOut
 import de.mm20.launcher2.config.Gesture
 import de.mm20.launcher2.config.GestureActionName
 import de.mm20.launcher2.config.GestureConfig
@@ -278,6 +279,18 @@ class DefaultConfigStore(
                         "wallpaper only for the current user, so applying it now would cost " +
                         "a crop pass for a result nobody sees. The launcher sets it the next " +
                         "time this profile is in the foreground.",
+            )
+        }
+
+        // Judged on the settings as this apply left them, file or device:
+        // the launcher would show its lockout page instead of home (#229).
+        if (settings.readState().isLockedOut) {
+            diagnostics += Diagnostic(
+                DiagnosticCode.SearchUnreachable,
+                "home.searchBar.hidden",
+                "The search bar is hidden and no gesture opens search or the launcher's settings, so the " +
+                    "launcher shows a fallback page instead of the home screen. Set a gesture to \"search\" " +
+                    "or \"launcher-settings\", or show the bar.",
             )
         }
 
@@ -749,6 +762,8 @@ private val ConfigMutation.isSettingsBacked: Boolean
         is ConfigMutation.SetIcons,
         is ConfigMutation.SetSearchBarPosition,
         is ConfigMutation.SetSearchBarFixed,
+        is ConfigMutation.SetSearchBarHidden,
+        is ConfigMutation.SetSearchBarColors,
         is ConfigMutation.SetSystemBars,
         is ConfigMutation.SetRotationLock,
         is ConfigMutation.SetWidgetsEnabled,

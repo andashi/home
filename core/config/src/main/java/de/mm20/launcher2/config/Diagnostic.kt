@@ -76,6 +76,8 @@ enum class DiagnosticCode(val code: String, val severity: Severity) {
     UnsupportedSchemaVersion("unsupported-schema-version", Severity.Error),
     WallpaperMissing("wallpaper-missing", Severity.Error),
     WallpaperPendingForeground("wallpaper-pending-foreground", Severity.Warning),
+    /** The search bar is hidden and nothing reaches search or settings (#229). */
+    SearchUnreachable("search-unreachable", Severity.Warning),
     WallpaperReplacedDuringApply("wallpaper-replaced-during-apply", Severity.Error),
     WidgetTooLarge("widget-too-large", Severity.Warning),
     WidgetTooSmall("widget-too-small", Severity.Warning),

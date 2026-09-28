@@ -1,5 +1,6 @@
 package de.mm20.launcher2.config
 
+import kotlinx.serialization.json.jsonObject
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
@@ -207,8 +208,10 @@ class ConfigStateMapperTest {
         )
         val custom = ConfigState(themeColors = null).toLauncherConfig()
         assertEquals(ThemeConfig(ThemeMode.System, null, ThemeShapes.Default, ThemeTypography.GoogleSans, ThemeColorSource.System), custom.appearance?.theme)
-        val served = ConfigParser.json.encodeToString(LauncherConfig.serializer(), custom)
-        assertTrue(served, !served.contains("\"colors\""))
+        // The theme's key only: home.searchBar.colors is another key of that name (#229).
+        val served = ConfigParser.json.encodeToJsonElement(LauncherConfig.serializer(), custom)
+            .jsonObject.getValue("appearance").jsonObject.getValue("theme").jsonObject
+        assertTrue(served.toString(), "colors" !in served)
     }
 
     /** Shapes and typography as the colours: the default set, and none for a person's own. */

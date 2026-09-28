@@ -84,9 +84,9 @@ class SettingsContractTest {
          * points to. It may only lose members; a closed gap is removed here, and
          * the issue is updated to match.
          */
-        val GapsAt229 = setOf(
-            "searchBarStyle", "searchBarColors",
-        )
+        // Empty since the last two became keys: every setting is a key, a
+        // reasoned exclusion, or gone. A new gap cannot appear (#229).
+        val GapsAt229 = emptySet<String>()
 
         val Contract: Map<String, State> = mapOf(
             "schemaVersion" to State.Excluded("the settings store's own format version; the file carries its own schemaVersion"),
@@ -128,8 +128,8 @@ class SettingsContractTest {
             "gridLabels" to State.Key("search.labels"),
             "gridList" to State.Key("search.layout"),
             "gridListIcons" to State.Key("search.listIcons"),
-            "searchBarStyle" to State.Gap(GapsIssue),
-            "searchBarColors" to State.Gap(GapsIssue),
+            "searchBarStyle" to State.Key("home.searchBar.hidden"),
+            "searchBarColors" to State.Key("home.searchBar.colors"),
             "searchBarKeyboard" to State.Key("search.openKeyboard"),
             "searchLaunchOnEnter" to State.Key("search.launchOnEnter"),
             "searchBarBottom" to State.Key("home.searchBar.position"),

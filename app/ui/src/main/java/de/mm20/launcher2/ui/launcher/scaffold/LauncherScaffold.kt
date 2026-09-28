@@ -245,7 +245,7 @@ internal data class ScaffoldConfiguration(
                     doubleTap,
                     longPress,
                     homeButton,
-                ).none { it.component.showSearchBar }
+                ).none { it.component.showSearchBar || it.component.reachesSettings }
     }
 }
 

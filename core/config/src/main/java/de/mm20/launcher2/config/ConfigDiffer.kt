@@ -35,6 +35,9 @@ data class ConfigState(
     val searchBarPosition: SearchBarPosition = SearchBarPosition.Top,
     /** `home.searchBar.fixed` (#3 slice 1). */
     val searchBarFixed: Boolean = false,
+    /** `home.searchBar.hidden` and `.colors` (#229). */
+    val searchBarHidden: Boolean = false,
+    val searchBarColors: SystemBarIcons = SystemBarIcons.Auto,
     /** `appearance.systemBars` (#3 slice 1). */
     val statusBarHidden: Boolean = false,
     val statusBarIcons: SystemBarIcons = SystemBarIcons.Auto,
@@ -215,6 +218,20 @@ sealed class ConfigMutation {
         val actions: List<SearchActionConfig>,
     ) : ConfigMutation() {
         override val section = "search.actions"
+    }
+
+    /** `home.searchBar.hidden` (#229); the search bar's section, a mutation of its own. */
+    data class SetSearchBarHidden(
+        val hidden: Boolean,
+    ) : ConfigMutation() {
+        override val section = "home.searchBar"
+    }
+
+    /** `home.searchBar.colors` (#229). */
+    data class SetSearchBarColors(
+        val colors: SystemBarIcons,
+    ) : ConfigMutation() {
+        override val section = "home.searchBar"
     }
 
     /** `home.searchBar.fixed`; the same section as the position, a mutation of its own. */
@@ -417,6 +434,14 @@ object ConfigDiffer {
             if (fixed != current.searchBarFixed) mutations += ConfigMutation.SetSearchBarFixed(fixed)
         }
 
+        desired.home?.searchBar?.hidden?.let { hidden ->
+            if (hidden != current.searchBarHidden) mutations += ConfigMutation.SetSearchBarHidden(hidden)
+        }
+
+        desired.home?.searchBar?.colors?.let { colors ->
+            if (colors != current.searchBarColors) mutations += ConfigMutation.SetSearchBarColors(colors)
+        }
+
         desired.appearance?.systemBars?.let { bars ->
             val changed = ConfigMutation.SetSystemBars(
                 statusHidden = bars.statusBar?.hidden?.takeIf { it != current.statusBarHidden },
@@ -527,3 +552,16 @@ private fun List<SearchActionConfig>.normalized(): List<SearchActionConfig> = ma
         else -> SearchActionConfig(it.type)
     }
 }
+
+/**
+ * Whether the launcher, in this state, shows its lockout fallback instead of
+ * its home screen (#229): the search bar hidden, and no gesture opening
+ * search or the launcher's settings. The launcher decides this in
+ * ScaffoldConfiguration.isUseless; this is the same rule in the file's words,
+ * and LockedOutTest and LockoutTest pin both on the same cases. An app a
+ * gesture opens is no way back into the launcher.
+ */
+val ConfigState.isLockedOut: Boolean
+    get() = searchBarHidden && gestures.values.none { it is GestureConfig.Action && it.action in WaysOut }
+
+private val WaysOut = setOf(GestureActionName.Search, GestureActionName.LauncherSettings)

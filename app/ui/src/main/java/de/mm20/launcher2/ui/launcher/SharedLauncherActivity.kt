@@ -46,6 +46,7 @@ import de.mm20.launcher2.ui.base.BaseActivity
 import de.mm20.launcher2.ui.base.ProvideCompositionLocals
 import de.mm20.launcher2.ui.ktx.animateTo
 import de.mm20.launcher2.ui.launcher.scaffold.Gesture
+import de.mm20.launcher2.ui.launcher.scaffold.scaffoldGesture
 import de.mm20.launcher2.ui.launcher.scaffold.LauncherScaffold
 import de.mm20.launcher2.ui.launcher.scaffold.ScaffoldAnimation
 import de.mm20.launcher2.ui.launcher.scaffold.ScaffoldConfiguration
@@ -274,108 +275,59 @@ abstract class SharedLauncherActivity(
                                         openKeyboard = searchBarAutofocus,
                                     )
 
-                                    fun getScaffoldGesture(
-                                        action: GestureAction?,
-                                        searchable: SavableSearchable?,
-                                        gesture: Gesture
-                                    ): ScaffoldGesture? {
-                                        return when (action) {
-                                            is GestureAction.Search -> ScaffoldGesture(
-                                                component = searchComponent,
-                                                animation = when (gesture) {
-                                                    Gesture.SwipeDown -> ScaffoldAnimation.Rubberband
-                                                    Gesture.LongPress -> ScaffoldAnimation.ZoomIn
-                                                    Gesture.DoubleTap -> ScaffoldAnimation.ZoomIn
-                                                    else -> ScaffoldAnimation.Push
-                                                },
-                                            )
-
-                                            is GestureAction.Notifications -> ScaffoldGesture(
-                                                component = NotificationsComponent,
-                                                animation = if (gesture.orientation == null) ScaffoldAnimation.ZoomIn else ScaffoldAnimation.Push,
-                                            )
-
-                                            is GestureAction.QuickSettings -> ScaffoldGesture(
-                                                component = QuickSettingsComponent,
-                                                animation = if (gesture.orientation == null) ScaffoldAnimation.ZoomIn else ScaffoldAnimation.Push,
-                                            )
-
-                                            is GestureAction.Recents -> ScaffoldGesture(
-                                                component = RecentsComponent,
-                                                animation = if (gesture.orientation == null) ScaffoldAnimation.ZoomIn else ScaffoldAnimation.Push,
-                                            )
-
-                                            is GestureAction.PowerMenu -> ScaffoldGesture(
-                                                component = PowerMenuComponent,
-                                                animation = if (gesture.orientation == null) ScaffoldAnimation.ZoomIn else ScaffoldAnimation.Push,
-                                            )
-
-                                            is GestureAction.ScreenLock -> ScaffoldGesture(
-                                                component = ScreenOffComponent,
-                                                animation = if (gesture.orientation == null) ScaffoldAnimation.ZoomIn else ScaffoldAnimation.Push,
-                                            )
-
-                                            is GestureAction.Feed -> ScaffoldGesture(
-                                                component = FeedComponent,
-                                                animation = if (gesture.orientation == null) ScaffoldAnimation.ZoomIn else ScaffoldAnimation.Push,
-                                            )
-
-                                            is GestureAction.Launch if (searchable != null) -> ScaffoldGesture(
-                                                component = LaunchComponent(
-                                                    this@SharedLauncherActivity,
-                                                    searchable
-                                                ),
-                                                animation = if (gesture.orientation == null) ScaffoldAnimation.ZoomIn else ScaffoldAnimation.Push,
-                                            )
-
-                                            is GestureAction.LauncherSettings -> ScaffoldGesture(
-                                                component = LauncherSettingsComponent(this@SharedLauncherActivity),
-                                                animation = if (gesture.orientation == null) ScaffoldAnimation.ZoomIn else ScaffoldAnimation.Push,
-                                            )
-
-                                            else -> null
-                                        }
-                                    }
-
                                     val gestures = gestures!!
 
                                     val config = ScaffoldConfiguration(
                                         homeComponent = HomeGridComponent,
                                         searchComponent = searchComponent,
-                                        swipeUp = getScaffoldGesture(
+                                        swipeUp = scaffoldGesture(
                                             gestures.swipeUpAction,
                                             gestures.swipeUpApp,
                                             Gesture.SwipeUp,
+                                            searchComponent,
+                                            this@SharedLauncherActivity,
                                         ),
-                                        swipeDown = getScaffoldGesture(
+                                        swipeDown = scaffoldGesture(
                                             gestures.swipeDownAction,
                                             gestures.swipeDownApp,
                                             Gesture.SwipeDown,
+                                            searchComponent,
+                                            this@SharedLauncherActivity,
                                         ),
-                                        swipeLeft = getScaffoldGesture(
+                                        swipeLeft = scaffoldGesture(
                                             gestures.swipeLeftAction,
                                             gestures.swipeLeftApp,
                                             Gesture.SwipeLeft,
+                                            searchComponent,
+                                            this@SharedLauncherActivity,
                                         ),
-                                        swipeRight = getScaffoldGesture(
+                                        swipeRight = scaffoldGesture(
                                             gestures.swipeRightAction,
                                             gestures.swipeRightApp,
                                             Gesture.SwipeRight,
+                                            searchComponent,
+                                            this@SharedLauncherActivity,
                                         ),
-                                        doubleTap = getScaffoldGesture(
+                                        doubleTap = scaffoldGesture(
                                             gestures.doubleTapAction,
                                             gestures.doubleTapApp,
                                             Gesture.DoubleTap,
+                                            searchComponent,
+                                            this@SharedLauncherActivity,
                                         ),
-                                        longPress = getScaffoldGesture(
+                                        longPress = scaffoldGesture(
                                             gestures.longPressAction,
                                             gestures.longPressApp,
                                             Gesture.LongPress,
+                                            searchComponent,
+                                            this@SharedLauncherActivity,
                                         ),
-                                        homeButton = getScaffoldGesture(
+                                        homeButton = scaffoldGesture(
                                             gestures.homeButtonAction,
                                             gestures.homeButtonApp,
                                             Gesture.HomeButton,
+                                            searchComponent,
+                                            this@SharedLauncherActivity,
                                         ),
                                         fixedSearchBar = fixedSearchBar,
                                         searchBarStyle = searchBarStyle,
