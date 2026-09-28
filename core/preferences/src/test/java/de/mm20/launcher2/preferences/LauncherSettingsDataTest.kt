@@ -60,7 +60,7 @@ class LauncherSettingsDataTest {
             gridIconSize = 42,
             gesturesSwipeDown = GestureAction.QuickSettings,
             gesturesLongPress = GestureAction.Launch("app://de.mm20.launcher2"),
-            searchBarStyle = SearchBarStyle.Solid,
+            searchBarStyle = SearchBarStyle.Hidden,
             iconsPack = "com.example.iconpack",
         )
         val out = ByteArrayOutputStream()

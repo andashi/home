@@ -257,7 +257,7 @@ abstract class SharedLauncherActivity(
                                             animation = ScaffoldAnimation.Push
                                         ),
                                         fixedSearchBar = fixedSearchBar,
-                                        searchBarStyle = SearchBarStyle.Solid,
+                                        searchBarStyle = SearchBarStyle.Transparent,
                                         searchBarPosition = if (bottomSearchBar) SearchBarPosition.Bottom else SearchBarPosition.Top,
                                         searchPageSearchBarPosition = when (bottomSearchBarInSearch ?: bottomSearchBar) {
                                             true -> SearchBarPosition.Bottom

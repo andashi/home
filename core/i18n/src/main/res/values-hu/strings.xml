@@ -360,7 +360,6 @@
     <string name="font_category_generic">Általános</string>
     <string name="preference_search_bar_style_transparent">Átlátszó</string>
     <string name="preference_search_bar_style_hidden">Rejtett</string>
-    <string name="preference_search_bar_style_solid">Homogén</string>
     <string name="preference_clockwidget_dock_rows">Dokksorok</string>
     <string name="preference_search_apps">Alkalmazások</string>
     <string name="preference_search_apps_summary">Összes alkalmazás megjelenítése, ha a keresőmező üres</string>

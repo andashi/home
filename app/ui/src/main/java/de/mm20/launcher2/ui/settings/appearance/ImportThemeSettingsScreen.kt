@@ -245,7 +245,7 @@ private fun ThemePreview(
             }
     ) {
         SearchBar(
-            style = SearchBarStyle.Solid,
+            style = SearchBarStyle.Transparent,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 12.dp, start = 12.dp, end = 12.dp),

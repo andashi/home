@@ -352,7 +352,6 @@
     <string name="preference_widgets_on_home_screen_summary">直接於主畫面顯示小工具而不放置於另一個頁面</string>
     <string name="preference_gesture_swipe_up">向上滑動</string>
     <string name="gesture_action_widgets">小工具</string>
-    <string name="preference_search_bar_style_solid">不透明</string>
     <string name="preference_search_bar_style_hidden">隱藏</string>
     <string name="preference_search_bar_style_transparent">透明</string>
     <string name="preference_clockwidget_dock_rows">Dock 欄位數</string>

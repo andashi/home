@@ -185,7 +185,6 @@
     <string name="preference_enforce_icon_shape">Formă forțată</string>
     <string name="preference_search_bar_style_hidden">Ascuns</string>
     <string name="preference_search_bar_style_transparent">Transparent</string>
-    <string name="preference_search_bar_style_solid">Solid</string>
     <string name="favorites">Favorite</string>
     <string name="widget_config_appwidget_borderless">Fără margini</string>
     <string name="preference_search_result_ordering_weight_factor_low">Stabil</string>

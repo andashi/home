@@ -368,7 +368,6 @@
     <string name="preference_widgets_on_home_screen_summary">Паказваць віджэты на галоўным экране, а не на дадатковай старонцы</string>
     <string name="bad_configuration_summary">Вы знайшлі канфігурацыю, пры якой нельга адкрыць ні пошук, ні налады, тым самым зрабіўшы праграму непрыгоднай для выкарыстання</string>
     <string name="preference_search_bar_style_transparent">Празрысты</string>
-    <string name="preference_search_bar_style_solid">Суцэльны</string>
     <string name="preference_search_bar_style_hidden">Схаваны</string>
     <string name="preference_gesture_swipe_up">Чырканне ўверх</string>
     <string name="gesture_action_widgets">Віджэты</string>

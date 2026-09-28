@@ -311,7 +311,6 @@
     <string name="preference_search_apps">Aplikazioak</string>
     <string name="preference_search_apps_summary">Aplikazio guztiak erakutsi bilaketa-eremua hutsik dagoenean</string>
     <string name="preference_search_bar_style_transparent">Gardena</string>
-    <string name="preference_search_bar_style_solid">Solidoa</string>
     <string name="preference_search_bar_style_hidden">Ezkutua</string>
     <string name="preference_widgets_on_home_screen">Trepetak hasierako pantailan</string>
     <string name="preference_widgets_on_home_screen_summary">Erakutsi trepetak hasierako pantailan, orrialde bereizi batean ordez</string>

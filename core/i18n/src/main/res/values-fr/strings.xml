@@ -392,7 +392,6 @@
     <string name="preference_search_apps">Applications</string>
     <string name="preference_search_apps_summary">Afficher toutes les applications lorsque le champs est vide</string>
     <string name="preference_search_bar_style_transparent">Transparent</string>
-    <string name="preference_search_bar_style_solid">Opaque</string>
     <string name="preference_search_bar_style_hidden">Masqué</string>
     <string name="preference_feed_integration">Fils</string>
     <string name="create_search_action_title">Nouvelle action rapide</string>

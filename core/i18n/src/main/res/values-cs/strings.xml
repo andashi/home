@@ -365,7 +365,6 @@
     <string name="font_name_device_body">Písmo textu zařízení</string>
     <string name="font_category_generic">Obecné</string>
     <string name="preference_search_bar_style_transparent">Průhledná</string>
-    <string name="preference_search_bar_style_solid">Plná</string>
     <string name="preference_search_bar_style_hidden">Skrytá</string>
     <string name="preference_clockwidget_dock_rows">Řádky doku</string>
     <string name="preference_search_apps">Aplikace</string>
