@@ -256,8 +256,18 @@ class SettingsContractTest {
         val copy = LauncherSettingsData::class.java.declaredMethods.single {
             (it.name == "copy" || it.name.startsWith("copy$")) && !Modifier.isStatic(it.modifiers) && it.parameterCount == fields.size
         }.apply { isAccessible = true }
-        // Declaration order is the constructor's; the types must line up, or the copy below sets the wrong field.
-        assertEquals(fields.map { it.type }, copy.parameterTypes.toList())
+        // A mutated instance without assuming any order (review on #230):
+        // declaredFields has no ordering contract, so it is never used as the
+        // copy's argument order. componentK is the K-th constructor property,
+        // which is copy's K-th parameter - Kotlin guarantees that - so this
+        // clones the base, and the one field is then set on the clone by name.
+        val components = (1..fields.size).map { LauncherSettingsData::class.java.getMethod("component$it") }
+        fun mutated(field: Field, value: Any?): LauncherSettingsData {
+            val clone = copy.invoke(base, *components.map { it.invoke(base) }.toTypedArray()) as LauncherSettingsData
+            field.set(clone, value)
+            check(field.get(clone) == value) { "${field.name} was not set on the clone" }
+            return clone
+        }
 
         suspend fun readBack(data: LauncherSettingsData): Map<String, JsonElement> {
             store.updateAndAwait { data }
@@ -268,7 +278,7 @@ class SettingsContractTest {
 
         val problems = mutableListOf<String>()
         val unmutated = mutableListOf<String>()
-        for ((index, field) in fields.withIndex()) {
+        for (field in fields) {
             val state = Contract.getValue(field.name)
             val current = field.get(base)
             val others = alternatives(field, current, current)
@@ -278,8 +288,7 @@ class SettingsContractTest {
             }
             var movedOwn = false
             for (other in others) {
-                val args = fields.map { it.get(base) }.toMutableList().also { it[index] = other }
-                val after = readBack(copy.invoke(base, *args.toTypedArray()) as LauncherSettingsData)
+                val after = readBack(mutated(field, other))
                 val changed = (before.keys + after.keys).filter { before[it] != after[it] }
                 if (changed.isEmpty()) continue
                 when (state) {
