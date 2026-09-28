@@ -222,6 +222,10 @@ internal class PermissionsManagerImpl(
     override fun onResume() {
         appShortcutsPermissionState.value = checkPermissionOnce(PermissionGroup.AppShortcuts)
         manageProfilesPermissionState.value = checkPermissionOnce(PermissionGroup.ManageProfiles)
+        // Runtime permissions granted in Settings while the launcher ran: a
+        // stored contact waits on this to resolve again (#237).
+        contactsPermissionState.value = checkPermissionOnce(PermissionGroup.Contacts)
+        callPermissionState.value = checkPermissionOnce(PermissionGroup.Call)
     }
 
     override fun recheckPermission(permissionGroup: PermissionGroup) {
