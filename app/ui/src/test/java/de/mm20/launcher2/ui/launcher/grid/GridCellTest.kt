@@ -130,10 +130,15 @@ class GridCellTest {
      * The sizes are the cells a 4-column phone grid gives, the card's inset
      * taken off.
      */
-    private fun compactCell(width: androidx.compose.ui.unit.Dp, onAllow: (() -> Unit)?, onRemove: () -> Unit = {}) {
+    private fun compactCell(
+        width: androidx.compose.ui.unit.Dp,
+        onAllow: (() -> Unit)?,
+        onRemove: () -> Unit = {},
+        height: androidx.compose.ui.unit.Dp = 72.dp,
+    ) {
         composeRule.setContent {
             MaterialTheme {
-                Box(Modifier.size(width, 72.dp)) {
+                Box(Modifier.size(width, height)) {
                     AppWidgetCell(
                         item = gridItem("clock", 0, 0, 1, 1),
                         onRemove = onRemove,
@@ -166,6 +171,18 @@ class GridCellTest {
         composeRule.onNodeWithText(string(R.string.widget_action_remove)).assertIsDisplayed().performClick()
 
         assertEquals(1, removed)
+    }
+
+    /**
+     * Not only rows: in a one-column cell the banner's text and actions wrap
+     * past a two-row height, and the actions were off the card just the same.
+     */
+    @Test
+    fun `a 1x2 cell gets the compact form too`() {
+        compactCell(72.dp, onAllow = {}, height = 200.dp)
+
+        composeRule.onNodeWithContentDescription(string(R.string.app_widget_loading_failed)).assertIsDisplayed().performClick()
+        composeRule.onNodeWithText(string(R.string.widget_action_allow)).assertIsDisplayed()
     }
 
     /**

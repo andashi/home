@@ -18,6 +18,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -33,10 +37,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.layout.SubcomposeLayout
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import de.mm20.launcher2.homegrid.HomeGridCell
 import de.mm20.launcher2.homegrid.HomeGridItem
@@ -204,6 +212,66 @@ internal fun GridCard(
  * its provider is gone. The host view is keyed by (item, host id) so it
  * survives every recomposition that does not change the binding.
  */
+/**
+ * The failure banner where the cell is large enough for all of it, and
+ * [compact] where it is not. Decided by measuring the banner at the cell's
+ * width rather than by a size threshold: its text wraps and its actions flow
+ * into more rows as the cell narrows, so a one-row cell and a one-column cell
+ * both lose the actions, at heights no single threshold separates (#245).
+ *
+ * The measured copy carries no semantics: left unplaced it would still list
+ * its actions to accessibility beside the compact form's.
+ */
+@Composable
+private fun FailureIfItFits(banner: @Composable () -> Unit, compact: @Composable () -> Unit) {
+    SubcomposeLayout(Modifier.fillMaxSize()) { constraints ->
+        val loose = constraints.copy(minWidth = 0, minHeight = 0)
+        val probe = subcompose("probe") { Box(Modifier.clearAndSetSemantics {}) { banner() } }
+            .map { it.measure(loose.copy(maxHeight = Constraints.Infinity)) }
+        val fits = probe.all { it.height <= constraints.maxHeight }
+        val shown = subcompose(fits, if (fits) banner else compact).map { it.measure(loose) }
+        layout(constraints.maxWidth, constraints.maxHeight) {
+            shown.forEach { it.place((constraints.maxWidth - it.width) / 2, (constraints.maxHeight - it.height) / 2) }
+        }
+    }
+}
+
+/**
+ * The failure in one icon: named by its content description, with the
+ * banner's message and actions in the menu it opens.
+ */
+@Composable
+private fun CompactFailure(onAllow: (() -> Unit)?, onReplace: () -> Unit, onRemove: () -> Unit) {
+    var open by remember { mutableStateOf(false) }
+    val message = stringResource(R.string.app_widget_loading_failed)
+    Box {
+        IconButton(onClick = { open = true }) {
+            Icon(painterResource(R.drawable.warning_24px), contentDescription = message)
+        }
+        DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
+            Text(
+                message,
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+            )
+            if (onAllow != null) {
+                DropdownMenuItem(
+                    text = { Text(stringResource(R.string.widget_action_allow)) },
+                    onClick = { open = false; onAllow() },
+                )
+            }
+            DropdownMenuItem(
+                text = { Text(stringResource(R.string.widget_action_replace)) },
+                onClick = { open = false; onReplace() },
+            )
+            DropdownMenuItem(
+                text = { Text(stringResource(R.string.widget_action_remove)) },
+                onClick = { open = false; onRemove() },
+            )
+        }
+    }
+}
+
 @Composable
 internal fun AppWidgetCell(
     item: HomeGridItem,
@@ -222,34 +290,43 @@ internal fun AppWidgetCell(
     if (appWidgetId == null || widgetInfo == null) {
         var replaceWidget by rememberSaveable { mutableStateOf(false) }
         GridCard {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Banner(
-                    modifier = Modifier.padding(8.dp),
-                    text = stringResource(R.string.app_widget_loading_failed),
-                    icon = R.drawable.warning_24px,
-                    secondaryAction = {
-                        OutlinedButton(onClick = onRemove) {
-                            Text(stringResource(R.string.widget_action_remove))
-                        }
-                        if (onAllow != null) {
-                            OutlinedButton(onClick = { replaceWidget = true }) {
-                                Text(stringResource(R.string.widget_action_replace))
+            FailureIfItFits(
+                banner = {
+                    Banner(
+                        modifier = Modifier.padding(8.dp),
+                        text = stringResource(R.string.app_widget_loading_failed),
+                        icon = R.drawable.warning_24px,
+                        secondaryAction = {
+                            OutlinedButton(onClick = onRemove) {
+                                Text(stringResource(R.string.widget_action_remove))
                             }
-                        }
-                    },
-                    primaryAction = {
-                        if (onAllow != null) {
-                            Button(onClick = onAllow) {
-                                Text(stringResource(R.string.widget_action_allow))
+                            if (onAllow != null) {
+                                OutlinedButton(onClick = { replaceWidget = true }) {
+                                    Text(stringResource(R.string.widget_action_replace))
+                                }
                             }
-                        } else {
-                            Button(onClick = { replaceWidget = true }) {
-                                Text(stringResource(R.string.widget_action_replace))
+                        },
+                        primaryAction = {
+                            if (onAllow != null) {
+                                Button(onClick = onAllow) {
+                                    Text(stringResource(R.string.widget_action_allow))
+                                }
+                            } else {
+                                Button(onClick = { replaceWidget = true }) {
+                                    Text(stringResource(R.string.widget_action_replace))
+                                }
                             }
-                        }
-                    },
-                )
-            }
+                        },
+                    )
+                },
+                compact = {
+                    CompactFailure(
+                        onAllow = onAllow,
+                        onReplace = { replaceWidget = true },
+                        onRemove = onRemove,
+                    )
+                },
+            )
         }
         // Composed only while open: the sheet carries its own view model.
         if (replaceWidget) {
