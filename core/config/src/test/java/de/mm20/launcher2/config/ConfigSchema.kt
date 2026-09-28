@@ -75,8 +75,12 @@ internal object ConfigSchema {
     fun staleness(generated: String, committed: String?): String {
         val regenerate = "regenerate it with $RegenerateCommand"
         if (committed == null) return "docs/configuration/launcher.schema.json does not exist; $regenerate"
-        val removed = removedKeyPaths(generated, committed).sorted()
-        val added = (pathsOf(generated) - pathsOf(committed)).sorted()
+        val was = pathsOf(committed)
+            ?: return "docs/configuration/launcher.schema.json is not a JSON object (a merge conflict or a hand edit?), " +
+                "so which key paths it held cannot be read; restore it with git checkout, then $regenerate"
+        val now = checkNotNull(pathsOf(generated)) { "the generated schema is not a JSON object" }
+        val removed = (was - now).sorted()
+        val added = (now - was).sorted()
         val addedLine = added.takeIf { it.isNotEmpty() }?.let { "key paths added: ${it.joinToString()}" }
         return when {
             removed.isNotEmpty() ->
@@ -98,16 +102,22 @@ internal object ConfigSchema {
      */
     fun refusal(generated: String, committed: String?, acknowledged: Set<String>): String? {
         if (committed == null) return null
-        val removed = removedKeyPaths(generated, committed)
+        // Unreadable: a removal cannot be ruled out, so nothing is written.
+        val was = pathsOf(committed) ?: return "not written: ${staleness(generated, committed)}"
+        val removed = was - checkNotNull(pathsOf(generated))
         if (removed.isEmpty() || removed == acknowledged) return null
         return "not written: ${staleness(generated, committed)} If the removal is deliberate, pass " +
             "-PremoveSchemaKeys=<comma-separated paths> naming exactly the removed ones " +
             "(named now: ${acknowledged.sorted().joinToString().ifEmpty { "none" }})."
     }
 
-    private fun pathsOf(schema: String): Set<String> = keyPaths(Json.parseToJsonElement(schema) as JsonObject)
-
-    private fun removedKeyPaths(generated: String, committed: String): Set<String> = pathsOf(committed) - pathsOf(generated)
+    /** The key paths of [schema], or null when it is not a JSON object. */
+    private fun pathsOf(schema: String): Set<String>? = try {
+        (Json.parseToJsonElement(schema) as? JsonObject)?.let { keyPaths(it) }
+    } catch (e: IllegalArgumentException) {
+        // SerializationException is one.
+        null
+    }
 
     fun document(): JsonObject = JsonObject(
         mapOf(
