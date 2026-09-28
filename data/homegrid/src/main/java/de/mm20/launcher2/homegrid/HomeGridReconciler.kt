@@ -58,10 +58,7 @@ class HomeGridReconciler(
         for (layout in layouts) {
             for (item in homeGridRepository.observe(layout).first()) {
                 if (item.isFavorites) continue
-                // An id the service deleted is no id: bound anew below, or
-                // cleared when the bind fails, so the item waits for its
-                // package like any declared widget whose provider is missing.
-                val id = item.appWidgetId?.takeUnless { deleted(it, held) }
+                val id = liveId(item, held)
                 if (id == null) {
                     val allocated = port.allocate()
                     if (port.bind(allocated, item.widget, item.profile)) {
@@ -88,7 +85,8 @@ class HomeGridReconciler(
 
     /**
      * A pass for [packageName] having arrived. An item naming it holds no
-     * host id - its bind was refused while the package was missing - and
+     * host id - its bind was refused while the package was missing - or one
+     * the widget service deleted when the package was removed (#245), and
      * nothing about the item changes when the package comes, so the grid's
      * own pass, which runs when an item or its host id changes, would not
      * bind it (review on #219). The widget service learns of a package on
@@ -98,7 +96,7 @@ class HomeGridReconciler(
      * no host id is recorded, so the next pass tries again.
      *
      * Whether anything waits is read from the items themselves - one naming
-     * the package with no host id, in either layout - before every pass, the
+     * the package with no live host id ([liveId]), in either layout - before every pass, the
      * first included: an id can stand for different widgets on the phone and
      * the fold, and most package events concern nothing the grid names, so
      * they run no pass at all (review on #213).
@@ -119,14 +117,25 @@ class HomeGridReconciler(
     }
 
     private suspend fun waitsFor(packageName: String): Boolean {
-        val held = port.boundIds().toSet()
+        // Read only once an item names the package: most package events
+        // concern nothing on the grid and cost no call to the widget service.
+        val held by lazy { port.boundIds().toSet() }
         return listOf(HomeGridLayouts.Phone, HomeGridLayouts.Fold).any { layout ->
             homeGridRepository.observe(layout).first().any {
-                !it.isFavorites && it.widget.startsWith("$packageName/") &&
-                    (it.appWidgetId == null || deleted(it.appWidgetId, held))
+                !it.isFavorites && it.widget.startsWith("$packageName/") && liveId(it, held) == null
             }
         }
     }
+
+    /**
+     * The item's host id, or null when it has none or the widget service
+     * deleted it. One rule for both the pass, which binds what this returns
+     * null for, and the arrival, which waits for exactly those items. A
+     * deleted id is no id: bound anew, or cleared when the bind fails, so the
+     * item waits for its package like any widget whose provider is missing.
+     */
+    private fun liveId(item: HomeGridItem, held: Set<Int>): Int? =
+        item.appWidgetId?.takeUnless { deleted(it, held) }
 
     /**
      * Whether the widget service deleted [id] - as it does with every widget
