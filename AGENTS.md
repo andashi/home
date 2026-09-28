@@ -171,7 +171,20 @@ and watching the gate refuse.
 levels of trust.** CodeRabbit's findings have been real every time. Its
 `✅ Addressed in commit X` was wrong twice in one day - once naming the range that
 *introduced* the criticised text, once a commit that did not contain the fix - so
-it is not evidence, and only a human reply counts. And its suggested *remedy* can
+it is not evidence, and only a human reply counts.
+
+**A human reply is a weaker guarantee than it looks, and it is worth knowing why
+rather than trusting it.** It is also a claim: that the named commit contains the
+fix, and that the commit is still in the head. The second half is checkable and
+**refuses benign cases so often that checking it is worse than not** - measured on
+this very entry's pull request, where the two commits cited in its own resolution
+were absent from the head after a rebase that had preserved every line of the fix.
+After a rebase a cited hash is not even a locator. The first half - that the commit
+contains the fix - is not mechanisable at all.
+
+So the gate asks for a human reply naming a commit because **that puts a person
+between a resolved thread and a merge**, not because the hash proves anything.
+Whoever writes the reply is the verification; if they did not look, nothing did. And its suggested *remedy* can
 carry the same defect class as the finding: on #214 it proposed observing a
 `StateFlow` whose value for the main case is `emptyMap()`, which an observer
 already holds, so it would never emit. That was rejected and **the switch to it
