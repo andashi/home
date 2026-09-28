@@ -34,6 +34,11 @@ LEAKING = [
     # alone would not see.
     'Log.e("FeedConnection", "Unknown service descriptor for intent " + serviceIntent)',
     'Log.w("MM20", widgetProviderInfo.provider.packageName + " failed to bind")',
+    # Review on #239: an identity inside a larger expression prints too.
+    'Log.e("MM20", "intent=${intent ?: \\"none\\"}")',
+    'Log.e("MM20", "target ${intent.toUri(0)}")',
+    'Log.w("MM20", "missing ${app.packageName ?: "unknown"}")',
+    'Log.w("MM20", "whole ${it}")',
 ]
 
 CLEAN = [
@@ -47,6 +52,8 @@ CLEAN = [
     'Log.w("GlassBackdrop", "refresh failed: ${e.javaClass.simpleName}")',
     'Log.w(TAG, "Unable to unlock profile ${profile.serial}", e)',
     'Log.w(TAG, "Upload of ${tmp.length()} bytes exceeds the limit of $maxBytes, discarded")',
+    'Log.e(TAG, "not written: " + check.diagnostics.joinToString { it.code })',
+    'Log.w(TAG, "codes ${items.map { it.code }}")',
     # Debug and verbose calls are not this check's: R8 strips them, and
     # check-release-logs.py proves it on the APK.
     'Log.d("MM20", "Icon pack ${pack.packageName} is up to date")',
@@ -73,6 +80,19 @@ class CheckLogIdentityTest(unittest.TestCase):
         self.assertEqual(1, len(found))
         self.assertIn("a/B.kt:4", found[0])
         self.assertIn("iconPack", found[0])
+
+    # Review on #239: a commented-out call is no call - neither a finding nor
+    # evidence that the scan read something.
+    def test_a_commented_out_call_is_not_a_finding(self):
+        src = source('// Log.e(TAG, "bad $packageName")\n    /* Log.w(TAG, "$intent") */\n    Log.w(TAG, "fine")')
+        self.assertEqual([], findings("X.kt", src))
+
+    def test_a_tree_whose_only_calls_are_comments_read_nothing(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as d:
+            pathlib.Path(d, "A.kt").write_text(source('// Log.e(TAG, "gone")'))
+            with self.assertRaises(SystemExit):
+                check_log_identity.scan(pathlib.Path(d))
 
     def test_the_tree_it_is_run_on_must_have_log_calls(self):
         # A scan that reads nothing must not report that nothing leaks.
