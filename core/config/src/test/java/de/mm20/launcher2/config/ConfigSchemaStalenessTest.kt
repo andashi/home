@@ -4,6 +4,8 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonObject
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -13,7 +15,8 @@ import org.junit.Test
  * - "regenerate it" - was the one instruction that erases that evidence: the
  * file is rewritten to match the loss and the test goes green. So the message
  * leads with the key paths that changed, and says nothing about regenerating
- * when one was removed.
+ * when one was removed - and regenerating itself refuses to write a removal
+ * the command line did not name.
  */
 class ConfigSchemaStalenessTest {
 
@@ -28,6 +31,9 @@ class ConfigSchemaStalenessTest {
         }}
     """.trimIndent()
 
+    /** [before] with `apps[].visibility` lost. */
+    private val lost = before.replace(""", "visibility": {"enum": ["hidden"]}""", "")
+
     @Test
     fun `keyPaths names every property, inside lists and alternatives`() {
         assertEquals(
@@ -38,8 +44,6 @@ class ConfigSchemaStalenessTest {
 
     @Test
     fun `a removed key path leads the message, and nothing says regenerate`() {
-        val lost = before.replace(""", "visibility": {"enum": ["hidden"]}""", "")
-
         val message = ConfigSchema.staleness(generated = lost, committed = before)
 
         assertTrue(message, message.startsWith("key paths removed"))
@@ -74,5 +78,40 @@ class ConfigSchemaStalenessTest {
         val message = ConfigSchema.staleness(generated = before, committed = null)
 
         assertTrue(message, "does not exist" in message)
+    }
+
+    /** The remedy must not be able to erase the evidence: -PupdateSchema alone never writes a removal. */
+    @Test
+    fun `regenerating refuses to write a removed key path nobody named`() {
+        val refusal = ConfigSchema.refusal(generated = lost, committed = before, acknowledged = emptySet())
+
+        assertNotNull(refusal)
+        assertTrue(refusal!!, "apps[].visibility" in refusal)
+        assertTrue(refusal, "removeSchemaKeys" in refusal)
+    }
+
+    @Test
+    fun `a removal named exactly is written`() {
+        assertNull(ConfigSchema.refusal(generated = lost, committed = before, acknowledged = setOf("apps[].visibility")))
+    }
+
+    /** A name that was not removed is refused too: an acknowledgement is of this removal, not a standing permission. */
+    @Test
+    fun `a removal named differently is refused`() {
+        val refusal = ConfigSchema.refusal(generated = lost, committed = before, acknowledged = setOf("apps[].label"))
+
+        assertNotNull(refusal)
+        assertTrue(refusal!!, "apps[].visibility" in refusal)
+    }
+
+    /** Controls: nothing removed, nothing to acknowledge. */
+    @Test
+    fun `an addition, a new limit or a first file is written without naming anything`() {
+        val grown = before.replace(""""label": {"type": "string"}""", """"label": {"type": "string"}, "activity": {"type": "string"}""")
+        val relimited = before.replace(""""label": {"type": "string"}""", """"label": {"type": "string", "maxLength": 8}""")
+
+        assertNull(ConfigSchema.refusal(generated = grown, committed = before, acknowledged = emptySet()))
+        assertNull(ConfigSchema.refusal(generated = relimited, committed = before, acknowledged = emptySet()))
+        assertNull(ConfigSchema.refusal(generated = before, committed = null, acknowledged = emptySet()))
     }
 }
