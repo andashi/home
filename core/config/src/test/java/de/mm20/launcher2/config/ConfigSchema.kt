@@ -52,14 +52,24 @@ internal object ConfigSchema {
      * (`oneOf`, `anyOf`, `allOf`) included.
      */
     fun keyPaths(schema: JsonObject, at: String = ""): Set<String> = buildSet {
-        (schema["properties"] as? JsonObject)?.forEach { (key, value) ->
-            val path = if (at.isEmpty()) key else "$at.$key"
-            add(path)
-            (value as? JsonObject)?.let { addAll(keyPaths(it, path)) }
+        // A container of the wrong shape would list no paths where it has
+        // some, and a removal would read as none: it throws instead.
+        fun malformed(what: String): Nothing = throw IllegalArgumentException("$what at '${at.ifEmpty { "(root)" }}'")
+        schema["properties"]?.let { properties ->
+            (properties as? JsonObject ?: malformed("properties is not an object")).forEach { (key, value) ->
+                val path = if (at.isEmpty()) key else "$at.$key"
+                add(path)
+                (value as? JsonObject)?.let { addAll(keyPaths(it, path)) }
+            }
         }
-        (schema["items"] as? JsonObject)?.let { addAll(keyPaths(it, "$at[]")) }
+        when (val items = schema["items"]) {
+            null, is JsonPrimitive -> {} // absent, or a boolean schema
+            is JsonObject -> addAll(keyPaths(items, "$at[]"))
+            else -> malformed("items is not a schema")
+        }
         for (combinator in listOf("oneOf", "anyOf", "allOf")) {
-            (schema[combinator] as? JsonArray)?.forEach { alternative ->
+            val alternatives = schema[combinator] ?: continue
+            (alternatives as? JsonArray ?: malformed("$combinator is not a list")).forEach { alternative ->
                 (alternative as? JsonObject)?.let { addAll(keyPaths(it, at)) }
             }
         }
@@ -76,7 +86,8 @@ internal object ConfigSchema {
         val regenerate = "regenerate it with $RegenerateCommand"
         if (committed == null) return "docs/configuration/launcher.schema.json does not exist; $regenerate"
         val was = pathsOf(committed)
-            ?: return "docs/configuration/launcher.schema.json is not a JSON object (a merge conflict or a hand edit?), " +
+            ?: return "docs/configuration/launcher.schema.json cannot be read as a schema - not a JSON object, or a " +
+                "property tree of the wrong shape (a merge conflict or a hand edit?) - " +
                 "so which key paths it held cannot be read; restore it with git checkout, then $regenerate"
         val now = checkNotNull(pathsOf(generated)) { "the generated schema is not a JSON object" }
         val removed = (was - now).sorted()
@@ -101,17 +112,24 @@ internal object ConfigSchema {
      * remedy for a stale file must not be able to write a lost key into it.
      */
     fun refusal(generated: String, committed: String?, acknowledged: Set<String>): String? {
-        if (committed == null) return null
-        // Unreadable: a removal cannot be ruled out, so nothing is written.
-        val was = pathsOf(committed) ?: return "not written: ${staleness(generated, committed)}"
-        val removed = was - checkNotNull(pathsOf(generated))
-        if (removed.isEmpty() || removed == acknowledged) return null
+        val removed = if (committed == null) {
+            emptySet() // no file held no paths
+        } else {
+            // Unreadable: a removal cannot be ruled out, so nothing is written.
+            val was = pathsOf(committed) ?: return "not written: ${staleness(generated, committed)}"
+            was - checkNotNull(pathsOf(generated))
+        }
+        // Exactly the removed paths, none when none were removed.
+        if (removed == acknowledged) return null
+        if (removed.isEmpty()) {
+            return "not written: no key path was removed, yet -PremoveSchemaKeys names ${acknowledged.sorted().joinToString()}."
+        }
         return "not written: ${staleness(generated, committed)} If the removal is deliberate, pass " +
             "-PremoveSchemaKeys=<comma-separated paths> naming exactly the removed ones " +
             "(named now: ${acknowledged.sorted().joinToString().ifEmpty { "none" }})."
     }
 
-    /** The key paths of [schema], or null when it is not a JSON object. */
+    /** The key paths of [schema], or null when it is not a JSON object or its property tree is malformed. */
     private fun pathsOf(schema: String): Set<String>? = try {
         (Json.parseToJsonElement(schema) as? JsonObject)?.let { keyPaths(it) }
     } catch (e: IllegalArgumentException) {
