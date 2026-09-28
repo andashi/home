@@ -715,9 +715,20 @@ mid-message when no APK was present. **The check against invisible states was
 exiting invisibly**, on the same night, in the thing written to catch it.
 
 **When a script exits non-zero and silent, look at its assignments first**; and in
-a checker, guard the lookups so the failure gets to speak. `|| true` with the
-emptiness checked on the next line is the honest use of that idiom; `|| true` alone
-is the shrug.
+a checker, guard the lookups so the failure gets to speak. **`|| true` is not that
+guard, and checking the result for emptiness afterwards does not make it one**: a
+lookup that failed and a lookup that found nothing both produce an empty string, so
+the check cannot tell them apart and reads the failure as a confident "not found" -
+empty meaning verified, the shape named above. Accept the one status that means
+absence and let every other one abort, the way the next entry and the release
+command both do.
+
+The first draft of that sentence called `|| true` with an emptiness check "the
+honest use of that idiom", **nine lines above the entry that gives the correct
+one**. Review caught it. The contradiction was a screen apart rather than a file
+apart - close enough to read in one sitting, and still written and re-read several
+times without anybody noticing, because the permissive version is the one that
+sounds careful.
 
 - **`grep` exiting 1 on no match kills a `set -euo pipefail` script**, and
   `pipefail` is the load-bearing half: with `set -e` alone the pipeline reports
