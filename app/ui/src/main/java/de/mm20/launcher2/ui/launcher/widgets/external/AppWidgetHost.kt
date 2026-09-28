@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import de.mm20.launcher2.ui.theme.LocalLauncherColorSchemes
 import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -43,7 +44,7 @@ fun AppWidgetHost(
 ) {
     val padding = if (borderless) 0 else 8.dp.toPixels().roundToInt()
 
-    val colorScheme = MaterialTheme.colorScheme
+    val colorScheme = widgetColorSource()
     val appWidgetHost = LocalAppWidgetHost.current
 
     BoxWithConstraints(
@@ -179,3 +180,13 @@ private fun getColorMapping(colorScheme: ColorScheme): SparseIntArray {
 internal val muteEffect: RenderEffect by lazy {
     RenderEffect.createRuntimeShaderEffect(RuntimeShader(WidgetMute.Shader), "content")
 }
+
+/**
+ * The scheme a widget's colour resources are built from: the theme's, also on
+ * glass, where the ambient scheme is the wallpaper's (#242). `themeColors`
+ * hands the widget the zone's Material You colours; whether it draws their
+ * light or dark variant it decides from onLightBackground.
+ */
+@Composable
+internal fun widgetColorSource(): ColorScheme =
+    LocalLauncherColorSchemes.current?.theme ?: MaterialTheme.colorScheme

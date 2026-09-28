@@ -1,12 +1,15 @@
 package de.mm20.launcher2.ui.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialExpressiveTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.staticCompositionLocalOf
 import de.mm20.launcher2.preferences.ui.UiSettings
 import de.mm20.launcher2.themes.ThemeRepository
 import de.mm20.launcher2.ui.locals.LocalDarkTheme
@@ -54,17 +57,19 @@ fun LauncherTheme(
         return
     }
 
-    val colorScheme = if (darkTheme) {
-        darkColorSchemeOf(themeColors!!)
-    } else {
-        lightColorSchemeOf(themeColors!!)
-    }
+    val schemes = LauncherColorSchemes(
+        light = lightColorSchemeOf(themeColors!!),
+        dark = darkColorSchemeOf(themeColors!!),
+        darkTheme = darkTheme,
+    )
+    val colorScheme = schemes.theme
 
     val shapes = shapesOf(themeShapes!!)
     val typography = typographyOf(themeTypography!!)
 
     CompositionLocalProvider(
         LocalDarkTheme provides darkTheme,
+        LocalLauncherColorSchemes provides schemes,
     ) {
         MaterialExpressiveTheme(
             colorScheme = colorScheme,
@@ -75,3 +80,22 @@ fun LauncherTheme(
     }
 }
 
+
+/**
+ * Both schemes of the zone's colours, not only the one the theme picked: glass
+ * shows the wallpaper through it, so text on glass needs the scheme that
+ * matches the wallpaper, which is the other one whenever theme and wallpaper
+ * disagree in brightness (#242).
+ */
+@Immutable
+data class LauncherColorSchemes(
+    val light: ColorScheme,
+    val dark: ColorScheme,
+    val darkTheme: Boolean,
+) {
+    /** The scheme the theme picked. */
+    val theme: ColorScheme get() = if (darkTheme) dark else light
+}
+
+/** Null outside [LauncherTheme] (previews, tests): glass then keeps the ambient scheme. */
+val LocalLauncherColorSchemes = staticCompositionLocalOf<LauncherColorSchemes?> { null }
