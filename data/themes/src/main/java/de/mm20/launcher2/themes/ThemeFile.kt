@@ -5,7 +5,7 @@ import java.io.IOException
 import java.io.InputStream
 
 /** Why a theme file handed to the launcher was not read. */
-enum class ThemeFileRejection { NotContent, Unreadable, TooLarge, NotATheme }
+enum class ThemeFileRejection { NotContent, Unreadable, TooLarge, NotATheme, TooSlow }
 
 sealed interface ThemeFileResult {
     data class Read(val bundle: ThemeBundle) : ThemeFileResult
@@ -41,7 +41,9 @@ object ThemeFile {
      *   but an explicit intent to an exported activity bypasses its filters.
      * @param open opens the stream, typically `contentResolver.openInputStream`.
      */
-    fun read(scheme: String?, maxBytes: Int = MAX_BYTES, open: () -> InputStream?): ThemeFileResult {
+    fun read(scheme: String?, open: () -> InputStream?): ThemeFileResult = read(scheme, open, MAX_BYTES, 30_000)
+
+    internal fun read(scheme: String?, open: () -> InputStream?, maxBytes: Int, timeoutMillis: Long): ThemeFileResult {
         if (scheme != "content") return rejected(ThemeFileRejection.NotContent, null)
         val bytes = try {
             val stream = open() ?: return rejected(ThemeFileRejection.Unreadable, null)

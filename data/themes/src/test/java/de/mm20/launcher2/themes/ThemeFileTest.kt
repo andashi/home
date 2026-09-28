@@ -43,7 +43,7 @@ class ThemeFileTest {
     )
     private val exported: ByteArray = bundle.toJson().toByteArray()
 
-    private fun read(scheme: String? = "content", open: () -> InputStream?) = ThemeFile.read(scheme, open = open)
+    private fun read(scheme: String? = "content", open: () -> InputStream?) = ThemeFile.read(scheme, open)
 
     private fun rejected(reason: ThemeFileRejection) = ThemeFileResult.Rejected(reason)
 
@@ -116,6 +116,36 @@ class ThemeFileTest {
     @Test
     fun `a URI the launcher may not open is refused`() {
         assertEquals(rejected(ThemeFileRejection.Unreadable), read { throw SecurityException("no grant") })
+    }
+
+    @Test
+    fun `a provider that throws on open is refused`() {
+        // #234 review: a provider can answer openInputStream with a runtime
+        // exception, not only with the IO and security ones.
+        assertEquals(rejected(ThemeFileRejection.Unreadable), read { throw IllegalArgumentException("Unknown URI") })
+        assertEquals(rejected(ThemeFileRejection.Unreadable), read { throw IllegalStateException("provider died") })
+    }
+
+    @Test(timeout = 20_000)
+    fun `a stream that stalls is refused within the time bound, and closed`() {
+        // A pipe that never delivers data or its end: the byte cap does not
+        // bound the time (#234 review). The fake blocks until it is closed,
+        // then fails the read, as a descriptor closed under a blocked read
+        // does on Android.
+        val closed = java.util.concurrent.CountDownLatch(1)
+        val stalled = object : InputStream() {
+            override fun read(): Int {
+                closed.await()
+                throw IOException("closed")
+            }
+            override fun close() = closed.countDown()
+        }
+        val started = System.nanoTime()
+        val result = ThemeFile.read("content", open = { stalled }, maxBytes = ThemeFile.MAX_BYTES, timeoutMillis = 300)
+        val tookMs = (System.nanoTime() - started) / 1_000_000
+        assertEquals(rejected(ThemeFileRejection.TooSlow), result)
+        assertEquals("the stalled stream was not closed", 0L, closed.count)
+        assertTrue("took $tookMs ms for a 300 ms bound", tookMs < 5_000)
     }
 
     @Test
