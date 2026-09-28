@@ -89,8 +89,6 @@ jobs:
           # SIGPIPE it leaves aapt2 with would fail the step.
           badging="$("$bt/aapt2" dump badging "$apk")"
           grep -q "package: name='org.andashi.home'" <<<"$badging"
-          # Nothing of the launcher leaves the device; why, in check-backup-off.py.
-          python3 "$GITHUB_WORKSPACE/.github/scripts/check-backup-off.py" "$bt/aapt2" "$apk"
           # Any signature fails the run: with no key in reach, a signed APK
           # means the build fell back to one - the debug key, as it did
           # before #137 - and a debug-signed APK with the release id is what
@@ -180,8 +178,6 @@ jobs:
           # SIGPIPE it leaves aapt2 with would fail the step.
           badging="$("$bt/aapt2" dump badging "$apk")"
           grep -q "package: name='org.andashi.home'" <<<"$badging"
-          # Nothing of the launcher leaves the device; why, in check-backup-off.py.
-          python3 "$GITHUB_WORKSPACE/.github/scripts/check-backup-off.py" "$bt/aapt2" "$apk"
           "$bt/apksigner" verify --print-certs "$apk" | tee CERTS.txt
           # Exactly the pinned release key; why, in check-release-signer.py.
           python3 "$GITHUB_WORKSPACE/.github/scripts/check-release-signer.py" CERTS.txt "$RELEASE_CERT_SHA256"

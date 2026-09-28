@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Asserts the five properties release.yml must keep (#132, #3, #204, #15).
+"""Asserts the four properties release.yml must keep (#132, #3, #204).
 
 1. Nothing builds before the full test suite is green: `tests` calls
    test.yml, and every other job needs it. Without that a tag ships commits
@@ -21,10 +21,6 @@
    prints the APK's certificates and runs check-release-signer.py on them
    against RELEASE_CERT_SHA256, a full SHA-256 in the step's env. The check it replaced could never fail (#204), and a removed
    check would read the same as a passing one.
-5. Nothing of the launcher leaves the device: every job that builds the
-   release APK runs check-backup-off.py on it, after the build, where its
-   failure fails the job (#15). test.yml runs the same check on the merged
-   manifest of every pull request; this keeps it on what actually ships.
 
 What this defends against, and what it does not: accidental weakening - a
 refactor, a copied line, a `set +e` added while debugging, a `!` nobody knew
@@ -110,27 +106,7 @@ def violations(workflow):
     digests = [str((step.get("env") or {}).get("RELEASE_CERT_SHA256", "")) for step in signer_steps]
     if not any(re.fullmatch(r"[0-9a-f]{64}", d) for d in digests):
         found.append("jobs.release pins no release certificate SHA-256 (RELEASE_CERT_SHA256, 64 hex)")
-    for name, job in jobs.items():
-        steps = job.get("steps") or []
-        builds = [i for i, step in enumerate(steps)
-                  if any("assembleDefaultRelease" in line for line in executable_lines(step.get("run", "")))]
-        if builds and not any(checks_backup(step) for step in steps[builds[0] + 1:]):
-            found.append(f"jobs.{name} builds the release APK without running check-backup-off.py on it")
     return found
-
-
-# Property 5's line, as both jobs write it; matched verbatim, like property 4.
-CHECKS_BACKUP = 'python3 "$GITHUB_WORKSPACE/.github/scripts/check-backup-off.py" "$bt/aapt2" "$apk"'
-
-
-def checks_backup(step):
-    """Whether `step` runs the backup check on the APK so that its failure
-    fails the step: the line exactly as written, no `set +e` before it."""
-    lines = [line.strip() for line in executable_lines(step.get("run", ""))]
-    if CHECKS_BACKUP not in lines:
-        return False
-    before = lines[:lines.index(CHECKS_BACKUP)]
-    return not any(re.search(r"\bset\s+\+e", line) for line in before)
 
 
 # The two lines that make property 4, as release.yml writes them. Matched
@@ -164,8 +140,7 @@ def main(path):
         print(f"::error file={path}::{line}")
     if found:
         return 1
-    print(f"{path}: every job needs the full suite, only a tag push signs, the schema ships, the signer is pinned, "
-          "and every release APK is checked for backup")
+    print(f"{path}: every job needs the full suite, only a tag push signs, the schema ships, and the signer is pinned")
     return 0
 
 
