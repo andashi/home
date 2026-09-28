@@ -7,6 +7,7 @@ import java.util.concurrent.ExecutionException
 import java.util.concurrent.FutureTask
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 
 /** Why a theme file handed to the launcher was not read. */
@@ -73,22 +74,21 @@ object ThemeFile {
     ): ThemeFileResult {
         if (scheme != "content") return rejected(ThemeFileRejection.NotContent, null)
         val opened = AtomicReference<InputStream?>(null)
-        val task = FutureTask { readBytes(open, maxBytes, opened) }
+        val gaveUp = AtomicBoolean(false)
+        val task = FutureTask { readBytes(open, maxBytes, opened, gaveUp) }
         Thread(task, "theme-file-read").apply { isDaemon = true }.start()
         val bytes = try {
             task.get(timeoutMillis, TimeUnit.MILLISECONDS)
         } catch (e: TimeoutException) {
             // Closing the stream fails a read blocked on it, which frees the
             // worker. A provider still inside openFile has handed over no
-            // stream yet; the worker then ends when the provider answers,
-            // and the caller does not wait for it.
-            task.cancel(true)
-            closeQuietly(opened.get())
+            // stream yet: the worker closes that one itself once it arrives
+            // (see readBytes), and the caller does not wait for it.
+            giveUp(task, opened, gaveUp)
             return rejected(ThemeFileRejection.TooSlow, null)
         } catch (e: InterruptedException) {
             Thread.currentThread().interrupt()
-            task.cancel(true)
-            closeQuietly(opened.get())
+            giveUp(task, opened, gaveUp)
             return rejected(ThemeFileRejection.Unreadable, e)
         } catch (e: ExecutionException) {
             // The worker's exception: the stream could not be opened or read.
@@ -119,9 +119,21 @@ object ThemeFile {
      * provider answers openInputStream with - reaches [read] as an
      * ExecutionException, the one place that turns it into a rejection.
      */
-    private fun readBytes(open: () -> InputStream?, max: Int, opened: AtomicReference<InputStream?>): Bytes {
+    private fun readBytes(
+        open: () -> InputStream?,
+        max: Int,
+        opened: AtomicReference<InputStream?>,
+        gaveUp: AtomicBoolean,
+    ): Bytes {
         val stream = open() ?: return Bytes.Rejected(ThemeFileRejection.Unreadable, null)
+        // Published first, checked second; giveUp does the reverse. Whichever
+        // runs last sees the other, so a stream that opens after the caller
+        // gave up is closed here and never read (#234 review).
         opened.set(stream)
+        if (gaveUp.get()) {
+            closeQuietly(stream)
+            return Bytes.Rejected(ThemeFileRejection.TooSlow, null)
+        }
         return stream.use { readAtMost(it, max) }
             ?.let { Bytes.Read(it) }
             ?: Bytes.Rejected(ThemeFileRejection.TooLarge, null)
@@ -137,6 +149,13 @@ object ThemeFile {
             filled += n
         }
         return if (filled > max) null else buffer.copyOf(filled)
+    }
+
+    /** The caller's half of the handshake in [readBytes]: flag first, close second. */
+    private fun giveUp(task: FutureTask<*>, opened: AtomicReference<InputStream?>, gaveUp: AtomicBoolean) {
+        gaveUp.set(true)
+        task.cancel(true)
+        closeQuietly(opened.get())
     }
 
     private fun closeQuietly(stream: InputStream?) {
