@@ -73,6 +73,11 @@ def files(rules_text=RULES, path="res/4j.xml"):
 
 
 class CheckBackupOffTest(unittest.TestCase):
+    def test_the_check_requires_every_domain_the_platform_has(self):
+        # Written out here, not taken from the script: a domain dropped from
+        # the script's list would stop being required, and nothing else sees it.
+        self.assertEqual(sorted(DOMAINS), sorted(check_backup_off.DOMAINS))
+
     def test_the_release_apk_as_built_passes(self):
         self.assertEqual([], problems(MANIFEST, RESOURCES, files().get))
 

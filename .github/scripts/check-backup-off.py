@@ -72,15 +72,14 @@ def _attributes(depth, inner):
 def _resource_path(resources, ref):
     """The file a resource id such as @0x7f140002 resolves to, or None."""
     rid = ref.lstrip("@")
-    lines = resources.splitlines()
-    for i, line in enumerate(lines):
-        if re.match(rf"^\s*resource {re.escape(rid)} ", line):
-            for follow in lines[i + 1:]:
-                if re.match(r"^\s*resource ", follow):
-                    break
-                m = re.search(r"\(file\) (\S+)", follow)
-                if m:
-                    return m.group(1)
+    in_target = False
+    for line in resources.splitlines():
+        if re.match(r"^\s*resource ", line):
+            in_target = bool(re.match(rf"^\s*resource {re.escape(rid)} ", line))
+        elif in_target:
+            m = re.search(r"\(file\) (\S+)", line)
+            if m:
+                return m.group(1)
     return None
 
 
@@ -118,13 +117,9 @@ def problems(manifest, resources, read_file):
         if len(sections) != 1:
             found.append(f"<{name}>: expected one section, found {len(sections)}")
             continue
-        depth, inner = sections[0]
-        excluded = set()
-        for i, (d, k, b) in enumerate(inner):
-            if k == "E" and b.split(" ")[0] == "exclude":
-                own = _attributes(d, inner[i + 1:])
-                if own.get("path") == ".":
-                    excluded.add(own.get("domain"))
+        _, inner = sections[0]
+        excludes = [_attributes(*e) for e in _elements(inner, "exclude")]
+        excluded = {a.get("domain") for a in excludes if a.get("path") == "."}
         missing = [d for d in DOMAINS if d not in excluded]
         if missing:
             found.append(f"<{name}> does not exclude the whole of: {', '.join(missing)}")
