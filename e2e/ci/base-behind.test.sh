@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Cases for e2e/ci/base-behind.sh, counted: exits non-zero unless every case
-# answered as expected AND exactly fourteen ran - a file that stops early (an exit
+# answered as expected AND exactly fifteen ran - a file that stops early (an exit
 # inherited from what it sources, a case deleted) must not read as green.
 # No `set -e`, for the reason the predicate's own header gives.
 #
@@ -30,5 +30,17 @@ t refused "libs/address-formatter/src/main/java/Formatter.kt" "$PR" "a vendored 
 t refused "e2e/l4-search.sh" "$PR" "a file the PR touches"
 t refused "" "$PR" "an empty diff between"
 t refused "AGENTS.md" "" "an empty PR diff"
+# A lookup that failed is not an absence. grep exits 1 on no match and 2 on a
+# real error, and reading the second as "no shared paths" is the permissive
+# answer - the allowance applies and a base behind main on a shared module
+# merges. A here-string cannot make grep exit 2, so the case stubs grep; the
+# stub lives in a subshell so the cases above keep the real one. Without the
+# status check this case answers `ok`, which is the whole point of it.
+n=$((n + 1))
+if ( grep() { return 2; }; base_behind_ok "AGENTS.md" "$PR" >/dev/null ); then
+  echo " x a failing shared-path lookup: got ok want refused"; bad=$((bad + 1))
+else
+  echo " + a failing shared-path lookup: refused"
+fi
 echo "$n cases, $bad wrong"
-[ "$bad" = 0 ] && [ "$n" = 14 ]
+[ "$bad" = 0 ] && [ "$n" = 15 ]
