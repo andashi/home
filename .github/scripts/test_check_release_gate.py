@@ -33,6 +33,24 @@ def comment_out(needle):
     return edit
 
 
+def every_job_with(edit):
+    """release.yml with `edit` applied to each line of every step's run, in every job."""
+    with open(RELEASE) as f:
+        workflow = yaml.safe_load(f)
+    for job in workflow["jobs"].values():
+        for step in job.get("steps") or []:
+            if "run" in step:
+                step["run"] = "\n".join(edit(line) for line in step["run"].splitlines())
+    return workflow
+
+
+APK_CHECKS = ["check-backup-off.py", "check-release-logs.py"]
+
+
+def unchecked(job, script):
+    return f"jobs.{job} builds the release APK without running {script} on it"
+
+
 class ReleaseGateTest(unittest.TestCase):
     def test_the_release_workflow_passes(self):
         self.assertEqual(gate.violations(release_with(lambda line: line)), [])
@@ -140,6 +158,46 @@ class ReleaseGateTest(unittest.TestCase):
                 env["RELEASE_CERT_SHA256"] = env["RELEASE_CERT_SHA256"][:40]
         found = gate.violations(workflow)
         self.assertIn("jobs.release pins no release certificate SHA-256 (RELEASE_CERT_SHA256, 64 hex)", found)
+
+
+class ApkChecksGateTest(unittest.TestCase):
+    """Property 5 (#15): every job that builds the release APK runs each APK
+    check on it, after the build, where its failure fails the job."""
+
+    def test_both_jobs_that_build_the_apk_run_both_checks(self):
+        found = gate.violations(every_job_with(lambda line: line))
+        for script in APK_CHECKS:
+            self.assertNotIn(unchecked("dry-run", script), found)
+            self.assertNotIn(unchecked("release", script), found)
+
+    def test_a_commented_out_check_is_a_violation_in_each_job(self):
+        for script in APK_CHECKS:
+            with self.subTest(script=script):
+                found = gate.violations(every_job_with(comment_out(script)))
+                self.assertIn(unchecked("dry-run", script), found)
+                self.assertIn(unchecked("release", script), found)
+
+    def test_a_masked_check_is_a_violation(self):
+        for script in APK_CHECKS:
+            with self.subTest(script=script):
+                mask = lambda line, s=script: line + " || true" if s in line else line
+                self.assertIn(unchecked("release", script), gate.violations(every_job_with(mask)))
+
+    def test_errexit_turned_off_before_the_checks_is_a_violation(self):
+        off = lambda line: line.replace("set -euo pipefail", "set +e") if "set -euo pipefail" in line else line
+        found = gate.violations(every_job_with(off))
+        for script in APK_CHECKS:
+            self.assertIn(unchecked("dry-run", script), found)
+
+    def test_a_check_before_the_build_is_a_violation(self):
+        with open(RELEASE) as f:
+            workflow = yaml.safe_load(f)
+        steps = workflow["jobs"]["dry-run"]["steps"]
+        check = next(s for s in steps if "check-backup-off.py" in s.get("run", ""))
+        steps.remove(check)
+        build = next(i for i, s in enumerate(steps) if "assembleDefaultRelease" in s.get("run", ""))
+        steps.insert(build, check)
+        self.assertIn(unchecked("dry-run", "check-backup-off.py"), gate.violations(workflow))
 
 
 if __name__ == "__main__":
