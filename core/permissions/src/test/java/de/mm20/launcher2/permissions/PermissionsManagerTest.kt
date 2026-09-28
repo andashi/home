@@ -150,6 +150,19 @@ class PermissionsManagerTest {
         assertEquals(true, manager.state(PermissionGroup.Call))
     }
 
+    /** onResume goes through recheckPermission, so the service-reported groups stay as their services said. */
+    @Test
+    fun `onResume leaves service-reported states alone`() = runTest {
+        val manager = PermissionsManagerImpl(context)
+        manager.reportNotificationListenerState(true)
+        manager.reportAccessibilityServiceState(true)
+
+        manager.onResume()
+
+        assertEquals(true, manager.state(PermissionGroup.Notifications))
+        assertEquals(true, manager.state(PermissionGroup.Accessibility))
+    }
+
     // ---- enabled in the system, whether or not the service has connected (#140) ----
 
     private fun setSecure(key: String, value: String?) {

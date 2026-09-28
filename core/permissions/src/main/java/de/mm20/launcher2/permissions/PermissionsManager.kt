@@ -219,13 +219,12 @@ internal class PermissionsManagerImpl(
         }
     }
 
+    // Every group, through recheckPermission: which groups the system can be
+    // asked about is decided once, in its exhaustive when. A hand-written list
+    // here missed Contacts and Call, so a grant made in Settings never reached
+    // a stored contact (#237); a new group cannot be missed that way.
     override fun onResume() {
-        appShortcutsPermissionState.value = checkPermissionOnce(PermissionGroup.AppShortcuts)
-        manageProfilesPermissionState.value = checkPermissionOnce(PermissionGroup.ManageProfiles)
-        // Runtime permissions granted in Settings while the launcher ran: a
-        // stored contact waits on this to resolve again (#237).
-        contactsPermissionState.value = checkPermissionOnce(PermissionGroup.Contacts)
-        callPermissionState.value = checkPermissionOnce(PermissionGroup.Call)
+        PermissionGroup.entries.forEach { recheckPermission(it) }
     }
 
     override fun recheckPermission(permissionGroup: PermissionGroup) {
