@@ -114,8 +114,10 @@ def violations(workflow):
         found.append("jobs.release pins no release certificate SHA-256 (RELEASE_CERT_SHA256, 64 hex)")
     for name, job in jobs.items():
         steps = job.get("steps") or []
-        build = next((i for i, step in enumerate(steps)
-                      if any("assembleDefaultRelease" in line for line in executable_lines(step.get("run", "")))), None)
+        # The APK that ships is the one built last.
+        builds = [i for i, step in enumerate(steps)
+                  if any("assembleDefaultRelease" in line for line in executable_lines(step.get("run", "")))]
+        build = builds[-1] if builds else None
         if build is None:
             continue
         after = steps[build + 1:]
@@ -139,7 +141,11 @@ def lines_before(step, command):
     its failure fails the step - the line exactly as written, so nothing
     around it (`!`, `||`, `if`) can swallow its failure (#204), with no
     `set +e` and no here-document opened before it (its body is data, not
-    commands) - and None when it does not."""
+    commands) - and None when it does not. A step with an `if:` may be
+    skipped, and one with `continue-on-error` fails without failing the job:
+    neither counts."""
+    if step.get("if") is not None or step.get("continue-on-error"):
+        return None
     lines = [line.strip() for line in executable_lines(step.get("run", ""))]
     if command not in lines:
         return None

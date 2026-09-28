@@ -33,12 +33,14 @@ IDENTITY = {
     "serviceintent", "serialized", "key", "label", "provider", "providerinfo",
     "widgetproviderinfo", "iconpack", "widget", "uri", "url", "activity",
     "activityname", "descriptor", "interfacedescriptor", "diagnostics",
+    # A config diagnostic's path can be one of the file's own keys.
+    "path",
     "it", "this",
 }
 # libs/nextcloud is in the tree but built by nothing: absent from
 # settings.gradle.kts and referenced by no module, so it cannot ship.
 SKIP = ("/test/", "/androidTest/", "/build/", "libs/nextcloud")
-CALL = re.compile(r"\bLog\.(i|w|e|wtf)\(")
+CALL = re.compile(r"\bLog\.(i|w|e|wtf)\s*\(")
 
 
 def _tokens(src, start=0):
@@ -50,7 +52,7 @@ def _tokens(src, start=0):
     i, quote = start, None
     while i < len(src):
         if quote:
-            if src[i] == "\\":
+            if quote == '"' and src[i] == "\\":  # a raw string has no escapes
                 i += 2
                 continue
             if src.startswith(quote, i):
@@ -93,8 +95,38 @@ def _tokens(src, start=0):
             quote = '"'
             i += 1
             continue
+        if src[i] == "'":
+            i = _char_end(src, i)
+            continue
         yield "code", src[i], i + 1
         i += 1
+
+
+def _char_end(src, i):
+    """The index after the character literal opening at `i`: `'"'` is no
+    string, and `'\\''` no end of one."""
+    j = i + 1
+    j += 2 if src.startswith("\\", j) else 1
+    while j < len(src) and src[j] != "'":  # '\\u0041'
+        j += 1
+    return j + 1
+
+
+def _string_end(src, i, quote):
+    """The index after the string opening at `i` with `quote`, templates and
+    their own strings included."""
+    i += len(quote)
+    while i < len(src):
+        if quote == '"' and src[i] == "\\":
+            i += 2
+            continue
+        if src.startswith(quote, i):
+            return i + len(quote)
+        if src.startswith("${", i):
+            i = _brace_end(src, i + 1) + 1
+            continue
+        i += 1
+    return len(src)
 
 
 def _code_only(src):
@@ -131,8 +163,19 @@ def _call(src, start):
 
 
 def _brace_end(src, open_index):
+    """The index of the brace closing the one at `open_index`; a brace inside
+    a string or a character literal there does not count."""
     depth, i = 0, open_index
     while i < len(src):
+        if src.startswith('"""', i):
+            i = _string_end(src, i, '"""')
+            continue
+        if src[i] == '"':
+            i = _string_end(src, i, '"')
+            continue
+        if src[i] == "'":
+            i = _char_end(src, i)
+            continue
         if src[i] == "{":
             depth += 1
         elif src[i] == "}":
@@ -173,8 +216,6 @@ _WHOLE = {"it", "this"}
 def _names_an_app(value):
     # Strings inside the expression are judged on their own (_printed).
     code = "".join(text for kind, text, _ in _tokens(value) if kind == "code").strip()
-    if code in _WHOLE:
-        return True
     # A chain compared with null prints a boolean, not the chain.
     code = re.sub(rf"{_CHAIN}\s*[!=]=\s*null\b|\bnull\s*[!=]=\s*{_CHAIN}", " ", code)
     for m in re.finditer(_CHAIN, code):
@@ -183,6 +224,11 @@ def _names_an_app(value):
         # when the chain is a call, something derived from its receiver:
         # `intent.toUri(0)`. A property of another object, `key.blurPx`, is not.
         called = code[m.end():].lstrip().startswith("(")
+        if called and segments[-1] == "tostring":
+            # `this.toString()` prints its receiver.
+            called, segments = False, segments[:-1]
+        if not called and len(segments) == 1 and segments[0] in _WHOLE:
+            return True  # `it` or `this` whole, `${it ?: "unknown"}` included
         judged = segments if called else segments[-1:]
         if any(s in IDENTITY - _WHOLE for s in judged):
             return True
