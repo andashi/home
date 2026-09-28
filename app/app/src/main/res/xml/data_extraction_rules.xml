@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Nothing of the launcher leaves the device, neither to a cloud backup nor in a
+  device-to-device transfer (#15). allowBackup="false" alone does not stop the
+  transfer on Android 12 and later; these rules do.
+
+  What a restore would bring back is wrong on another device, not merely lost:
+  app widget ids are host-local and are never re-bound, work and private
+  profile serials differ, and a pinned or tagged contact is keyed by a local
+  contacts-provider id. What is worth keeping travels by other means: the
+  managed part of the state in launcher.json, custom themes through theme
+  export.
+
+  Every domain is excluded by name, the device-protected ones included, so a
+  domain added to the defaults is not silently carried.
+-->
+<data-extraction-rules>
+    <cloud-backup>
+        <exclude domain="root" path="." />
+        <exclude domain="file" path="." />
+        <exclude domain="database" path="." />
+        <exclude domain="sharedpref" path="." />
+        <exclude domain="external" path="." />
+        <exclude domain="device_root" path="." />
+        <exclude domain="device_file" path="." />
+        <exclude domain="device_database" path="." />
+        <exclude domain="device_sharedpref" path="." />
+    </cloud-backup>
+    <device-transfer>
+        <exclude domain="root" path="." />
+        <exclude domain="file" path="." />
+        <exclude domain="database" path="." />
+        <exclude domain="sharedpref" path="." />
+        <exclude domain="external" path="." />
+        <exclude domain="device_root" path="." />
+        <exclude domain="device_file" path="." />
+        <exclude domain="device_database" path="." />
+        <exclude domain="device_sharedpref" path="." />
+    </device-transfer>
+</data-extraction-rules>
