@@ -54,6 +54,9 @@ CLEAN = [
     'Log.w(TAG, "Upload of ${tmp.length()} bytes exceeds the limit of $maxBytes, discarded")',
     'Log.e(TAG, "not written: " + check.diagnostics.joinToString { it.code })',
     'Log.w(TAG, "codes ${items.map { it.code }}")',
+    # A property of an object that merely has an identity-sounding name: the
+    # glass renderer's cache key, whose sizes print.
+    'Log.i(Tag, "blur ${key.blurPx}px for ${key.windowWidthPx}x${key.windowHeightPx}")',
     # Debug and verbose calls are not this check's: R8 strips them, and
     # check-release-logs.py proves it on the APK.
     'Log.d("MM20", "Icon pack ${pack.packageName} is up to date")',

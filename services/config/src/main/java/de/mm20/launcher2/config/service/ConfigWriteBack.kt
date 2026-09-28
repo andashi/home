@@ -192,12 +192,12 @@ class ConfigWriteBack(
         if (check.config == null || !check.isSuccess) {
             // Must never happen: each splice replaces one value in a document
             // that parsed a moment ago. This is the net.
-            // The codes and paths, not the messages: a message can quote a
-            // value from the file, a package name among them (#15).
+            // The codes only: a message can quote a value from the file, and
+            // a path a key from it, a package name among them (#15).
             Log.e(
                 TAG,
                 "write-back produced a document that does not parse; not written: " +
-                    check.diagnostics.joinToString { "${it.code}@${it.path}" },
+                    check.diagnostics.joinToString { it.code },
             )
             return skipped("write-back-produced-invalid-json", "internal error, nothing was written")
         }

@@ -9,12 +9,14 @@ What those lines may say: what failed, and what kind of thing it was. What
 they may not say: which app. An app inventory assembled from logcat is what a
 launcher on GrapheneOS must not emit.
 
-Every Log.i/w/e/wtf call is read whole, across lines. Each value its message
-prints - an interpolated expression, or an operand concatenated with `+` -
-is judged by its last identifier: `${iconPack.packageName}` by
-`packageName`. A name from IDENTITY is a finding, and so is printing `it` or
-`this` whole, whose string could carry anything. A null comparison prints a
-boolean and passes.
+Every Log.i/w/e/wtf call in code - not in a comment or a string - is read
+whole, across lines. In each value its message prints - an interpolated
+expression, or an operand concatenated with `+` - every name chain is judged
+by what it prints: its last segment, or, when it is a call, anything its
+receiver chain names. So `${iconPack.packageName}`, `${intent ?: "none"}`
+and `${intent.toUri(0)}` are findings, and `${key.blurPx}` is not. Printing `it` or
+`this` whole is a finding too, whose string could carry anything; `it.code`
+is not. A chain compared with null prints a boolean and passes.
 
 This is a tripwire for the forms that leaked, not a proof: a value reached
 through an innocent name passes it. Exceptions attached to a call are not
@@ -42,8 +44,9 @@ CALL = re.compile(r"\bLog\.(i|w|e|wtf)\(")
 def _tokens(src, start=0):
     """Kotlin source from `start` as (kind, text, end): "code" for one
     character outside strings, "tmpl" for a `${...}` expression inside one,
-    "ident" for a `$name` inside one, and "quote" where a string closes. The
-    one place string and template syntax is understood."""
+    "ident" for a `$name` inside one, and "quote" where a string closes.
+    Comments yield nothing. The one place string, template and comment
+    syntax is understood."""
     i, quote = start, None
     while i < len(src):
         if quote:
@@ -67,6 +70,21 @@ def _tokens(src, start=0):
                 continue
             i += 1
             continue
+        if src.startswith("//", i):
+            end = src.find("\n", i)
+            i = len(src) if end < 0 else end
+            continue
+        if src.startswith("/*", i):
+            # Kotlin block comments nest.
+            depth, i = 1, i + 2
+            while i < len(src) and depth:
+                if src.startswith("/*", i):
+                    depth, i = depth + 1, i + 2
+                elif src.startswith("*/", i):
+                    depth, i = depth - 1, i + 2
+                else:
+                    i += 1
+            continue
         if src.startswith('"""', i):
             quote = '"""'
             i += 3
@@ -77,6 +95,21 @@ def _tokens(src, start=0):
             continue
         yield "code", src[i], i + 1
         i += 1
+
+
+def _code_only(src):
+    """`src` with every comment and string blanked, lengths and line breaks
+    kept: a call is looked for in code, never in a comment or a string."""
+    out, pos = [], 0
+    for kind, text, end in _tokens(src):
+        if kind != "code":
+            continue
+        start = end - 1
+        out.append("".join("\n" if c == "\n" else " " for c in src[pos:start]))
+        out.append(text)
+        pos = end
+    out.append("".join("\n" if c == "\n" else " " for c in src[pos:]))
+    return "".join(out)
 
 
 _NAME = re.compile(r"\$([A-Za-z_]\w*)")
@@ -133,18 +166,32 @@ def _printed(call):
     return values
 
 
+_CHAIN = r"[A-Za-z_]\w*(?:\s*\??\.\s*[A-Za-z_]\w*)*"
+_WHOLE = {"it", "this"}
+
+
 def _names_an_app(value):
-    value = value.strip()
-    if not re.fullmatch(r"[A-Za-z_]\w*(?:\s*\??\.\s*[A-Za-z_]\w*)*", value):
-        # A call or an operation - `widgetId == null` prints a boolean - is
-        # judged by the strings inside it, not as a value.
-        return False
-    return re.search(r"\w+$", value).group(0).lower() in IDENTITY
+    # Strings inside the expression are judged on their own (_printed).
+    code = "".join(text for kind, text, _ in _tokens(value) if kind == "code").strip()
+    if code in _WHOLE:
+        return True
+    # A chain compared with null prints a boolean, not the chain.
+    code = re.sub(rf"{_CHAIN}\s*[!=]=\s*null\b|\bnull\s*[!=]=\s*{_CHAIN}", " ", code)
+    for m in re.finditer(_CHAIN, code):
+        segments = [s.lower() for s in re.split(r"\s*\??\.\s*", m.group(0))]
+        # What prints is the last segment - `app.packageName`, `intent` - or,
+        # when the chain is a call, something derived from its receiver:
+        # `intent.toUri(0)`. A property of another object, `key.blurPx`, is not.
+        called = code[m.end():].lstrip().startswith("(")
+        judged = segments if called else segments[-1:]
+        if any(s in IDENTITY - _WHOLE for s in judged):
+            return True
+    return False
 
 
 def findings(path, src):
     found = []
-    for m in CALL.finditer(src):
+    for m in CALL.finditer(_code_only(src)):
         call = _call(src, m.start())
         for value in _printed(call):
             if _names_an_app(value):
@@ -160,7 +207,7 @@ def scan(root):
         if any(s in "/" + rel for s in SKIP):
             continue
         src = f.read_text()
-        calls += len(CALL.findall(src))
+        calls += len(CALL.findall(_code_only(src)))
         found += findings(rel, src)
     if calls == 0:
         sys.exit(f"::error::no Log.i/w/e call found under {root}: the scan read nothing")
