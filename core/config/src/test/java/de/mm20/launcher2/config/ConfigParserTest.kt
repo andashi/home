@@ -537,6 +537,21 @@ class ConfigParserTest {
         assertEquals("home.favorites[2]", duplicates.single().path)
     }
 
+    /**
+     * Review on #235: the JSON Schema cannot see one app in two spellings,
+     * the validator does - it compares the parsed favorites, and both forms
+     * decode to the personal app. Identical spellings would pass whether or
+     * not that normalisation happens; only mixed ones prove it.
+     */
+    @Test
+    fun `a favorite written once as a name and once as an object is a duplicate`() {
+        val result = ConfigParser.parse(
+            """{ "schemaVersion": 2, "home": { "favorites": ["com.example.a", { "packageName": "com.example.a" }] } }"""
+        )
+
+        assertEquals(listOf("home.favorites[1]"), result.diagnostics.filter { it.code == "duplicate-favorite" }.map { it.path })
+    }
+
     @Test
     fun `enum serial names are stable and lowercase`() {
         val input = """

@@ -31,6 +31,11 @@ class ShortcutsExcludedTest {
             listOf("invalid-search" to "search.shortcutsExcluded[1]"),
             errors("""["org.a", { "packageName": "org.a", "profile": "personal" }]"""),
         )
+        assertEquals(
+            "a name and an object without a profile are one app (review on #235)",
+            listOf("invalid-search" to "search.shortcutsExcluded[1]"),
+            errors("""["org.a", { "packageName": "org.a" }]"""),
+        )
         assertEquals("another profile is another app", emptyList<Pair<String, String>>(), errors("""["org.a", { "packageName": "org.a", "profile": "work" }]"""))
     }
 
