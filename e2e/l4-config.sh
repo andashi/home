@@ -435,7 +435,7 @@ EFFECTIVE_FILTER='
   and .home.grid.columns == 4
   and .home.grid.locked == false
   and .home.grid.labels == false
-  and .home.grid.layouts.phone.items == [{"id":"dock","widget":"favorites","x":0,"y":5,"w":4,"h":1,"borderless":false,"background":true,"themeColors":true}]
+  and .home.grid.layouts.phone.items == [{"id":"dock","widget":"favorites","x":0,"y":5,"w":4,"h":1,"borderless":false,"background":true,"themeColors":true,"mute":false}]
   and .gestures == {"swipeDown":"notifications","swipeUp":"quick-settings","swipeLeft":{"packageName":"com.android.settings"},"swipeRight":"none","doubleTap":"none","longPress":"launcher-settings","homeButton":"search"}
 '
 
@@ -455,7 +455,7 @@ CHANGED_FILTER='
   and .home.grid.columns == 5
   and .home.grid.locked == true
   and .home.grid.labels == true
-  and .home.grid.layouts.phone.items == [{"id":"dock","widget":"favorites","x":0,"y":0,"w":5,"h":2,"borderless":false,"background":true,"themeColors":true}]
+  and .home.grid.layouts.phone.items == [{"id":"dock","widget":"favorites","x":0,"y":0,"w":5,"h":2,"borderless":false,"background":true,"themeColors":true,"mute":false}]
   and .gestures == {"swipeDown":"search","swipeUp":"recents","swipeLeft":"power-menu","swipeRight":"none","doubleTap":"screen-lock","longPress":"none","homeButton":"none"}
 '
 
@@ -839,7 +839,7 @@ ok "a package that brings only a widget is applied when it arrives: reloaded, si
 # --- 10d2. mute: the fixture's widget grey, next to itself in colour (#78) --
 #
 # Two copies of the fixture's widget, one muted. Its layout is opaque and
-# saturated (red ground, blue text), so the hosted view covers its cell and no
+# saturated (red ground, white text), so the hosted view covers its cell and no
 # glass shows through - mute does not touch the glass. The prediction, written
 # before the first run: the unmuted copy is mostly strongly coloured, the muted
 # one is not, and the muted copy's dominant grey is the grey of the unmuted
