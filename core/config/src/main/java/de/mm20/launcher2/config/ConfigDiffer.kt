@@ -93,6 +93,8 @@ data class ConfigState(
      * the read-back leaves it out, and write-back keeps the file's value.
      */
     val gestures: Map<Gesture, GestureConfig?> = GestureDefaults.All,
+    /** `search.shortcutsExcluded` (#229): read by the store, which knows the profiles' serials. */
+    val shortcutsExcluded: List<Favorite> = emptyList(),
 )
 
 /** What `search` reads back as: every key, at its default until a config sets it (#91). */
@@ -118,6 +120,10 @@ data class SearchState(
     val favoritesEditButton: Boolean = SearchDefaults.FavoritesEditButton,
     val compactTags: Boolean = SearchDefaults.CompactTags,
     val transliterator: String = SearchDefaults.Transliterator,
+    /** `search.defaultFilter` (#229): the launcher's own default, every category and no hidden items. */
+    val defaultFilter: List<SearchFilterItem> = SearchFilterItem.entries.filter { it.isCategory },
+    /** `search.filterBarItems` (#229): the launcher's own bar, all four in this order. */
+    val filterBarItems: List<SearchFilterItem> = SearchFilterItem.entries,
 )
 
 sealed class ConfigMutation {
@@ -174,6 +180,13 @@ sealed class ConfigMutation {
         val position: SearchBarPosition,
     ) : ConfigMutation() {
         override val section = "home.searchBar"
+    }
+
+    /** `search.shortcutsExcluded` (#229): the whole list; the store applies it. */
+    data class SetShortcutsExcluded(
+        val shortcutsExcluded: List<Favorite>,
+    ) : ConfigMutation() {
+        override val section = "search.shortcutsExcluded"
     }
 
     data class SetFavorites(
@@ -332,8 +345,18 @@ object ConfigDiffer {
                 favoritesEditButton = search.favoritesEditButton?.takeIf { it != current.favoritesEditButton },
                 compactTags = search.compactTags?.takeIf { it != current.compactTags },
                 transliterator = search.transliterator?.takeIf { it != current.transliterator },
+                // A set: order is no difference. The bar is a list: order is.
+                defaultFilter = search.defaultFilter?.takeIf { it.toSet() != current.defaultFilter.toSet() },
+                filterBarItems = search.filterBarItems?.takeIf { it != current.filterBarItems },
             )
             if (changed != SearchConfig()) mutations += ConfigMutation.SetSearch(changed)
+        }
+
+        // As a set: order is no difference.
+        desired.search?.shortcutsExcluded?.let { excluded ->
+            if (excluded.toSet() != current.shortcutsExcluded.toSet()) {
+                mutations += ConfigMutation.SetShortcutsExcluded(excluded)
+            }
         }
 
         desired.appearance?.wallpaper?.image?.let { image ->

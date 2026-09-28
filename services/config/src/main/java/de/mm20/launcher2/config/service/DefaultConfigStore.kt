@@ -146,6 +146,7 @@ class DefaultConfigStore(
             wallpaperImage = wallpaper?.image,
             wallpaperTarget = wallpaper?.target,
             gestures = gesturesOf(settingsState.gestures),
+            shortcutsExcluded = shortcutsExcludedOf(settings.readShortcutBlocklist()),
         )
     }
 
@@ -237,6 +238,15 @@ class DefaultConfigStore(
                     val (replaced, carried) = tags.replaceAndRead(mutation.tags)
                     diagnostics += replaced
                     written = written.copy(tags = carried)
+                    sections += mutation.section
+                } catch (e: Exception) {
+                    diagnostics += mutation.applyFailed(e)
+                }
+
+                is ConfigMutation.SetShortcutsExcluded -> try {
+                    val (applied, excluded) = applyShortcutsExcluded(mutation)
+                    diagnostics += applied
+                    written = written.copy(shortcutsExcluded = excluded)
                     sections += mutation.section
                 } catch (e: Exception) {
                     diagnostics += mutation.applyFailed(e)
@@ -664,6 +674,50 @@ class DefaultConfigStore(
         return settingsGestures + keys.mapValues { (_, key) -> items[key]?.toFavorite()?.let { GestureConfig.App(it) } }
     }
 
+    /**
+     * Writes `search.shortcutsExcluded` (#229) as the launcher stores it,
+     * `packageName:userSerial`. An app needs no install: the list says whose
+     * shortcuts to leave out, whenever they appear. A stored entry whose
+     * serial is no profile here - a removed profile, whose serial is never
+     * reused - is one the file cannot name, and it is kept rather than
+     * deleted for being unnamed. Returns the diagnostics and the list as written.
+     */
+    private suspend fun applyShortcutsExcluded(
+        mutation: ConfigMutation.SetShortcutsExcluded,
+    ): Pair<List<Diagnostic>, List<Favorite>> {
+        val diagnostics = mutableListOf<Diagnostic>()
+        val written = mutableListOf<Favorite>()
+        val keys = mutableSetOf<String>()
+        mutation.shortcutsExcluded.forEachIndexed { index, app ->
+            val profile = profileResolver.getProfile(app.profile.toProfileType())
+            if (profile == null) {
+                diagnostics += Diagnostic(
+                    DiagnosticCode.ProfileUnavailable,
+                    "search.shortcutsExcluded[$index]",
+                    "The ${app.profile.name.lowercase()} profile does not exist on this device; " +
+                        "'${app.packageName}' was not excluded",
+                )
+            } else {
+                keys += "${app.packageName}:${profile.serial}"
+                written += app
+            }
+        }
+        // One update: the entries kept are the ones stored as it commits.
+        settings.updateShortcutBlocklist { current -> current.filterTo(mutableSetOf()) { blockedApp(it) == null } + keys }
+        return diagnostics to written
+    }
+
+    /** The stored blocklist as the file names it: by profile, the unnamed left out. */
+    private fun shortcutsExcludedOf(blocklist: Set<String>): List<Favorite> =
+        blocklist.mapNotNull { key -> blockedApp(key) }
+
+    private fun blockedApp(key: String): Favorite? {
+        val serial = key.substringAfterLast(':', "").toLongOrNull() ?: return null
+        val profile = ConfigProfile.entries.firstOrNull { profileResolver.getProfile(it.toProfileType())?.serial == serial }
+            ?: return null
+        return Favorite(key.substringBeforeLast(':'), profile)
+    }
+
     private suspend fun SavableSearchable.toFavorite(): Favorite? {
         val app = this as? Application ?: return null
         val profile = profileResolver.getProfile(app.user)?.type ?: return null
@@ -712,5 +766,7 @@ private val ConfigMutation.isSettingsBacked: Boolean
         is ConfigMutation.SetSearchActions,
         is ConfigMutation.SetWallpaper,
         is ConfigMutation.SetGestures,
+        // Stored by user serial, which only this store can map.
+        is ConfigMutation.SetShortcutsExcluded,
         -> false
     }

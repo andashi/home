@@ -45,6 +45,10 @@ fun ConfigState.toLauncherConfig(): LauncherConfig {
             favoritesEditButton = search.favoritesEditButton,
             compactTags = search.compactTags,
             transliterator = search.transliterator,
+            // In the canonical order: it is a set, and the file reads the same either way.
+            defaultFilter = SearchFilterItem.entries.filter { it in search.defaultFilter },
+            filterBarItems = search.filterBarItems,
+            shortcutsExcluded = shortcutsExcluded.sortedWith(compareBy<Favorite>({ it.profile }, { it.packageName })),
         ),
         icons = IconsConfig(
             themed = themedIcons,

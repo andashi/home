@@ -26,6 +26,9 @@ import de.mm20.launcher2.config.ThemeColors
 import de.mm20.launcher2.config.ThemeShapes
 import de.mm20.launcher2.config.ThemeTypography
 import de.mm20.launcher2.config.ThemeColorSource
+import de.mm20.launcher2.config.SearchFilterItem
+import de.mm20.launcher2.preferences.KeyboardFilterBarItem
+import de.mm20.launcher2.search.SearchFilters
 import de.mm20.launcher2.config.ThemeMode
 import de.mm20.launcher2.preferences.ColorScheme
 import de.mm20.launcher2.preferences.BuiltInColorSchemes
@@ -94,6 +97,49 @@ class LauncherConfigSettingsTest {
 
         assertEquals(true, gateway.applyAndReturn(listOf(ConfigMutation.SetTheme(colorSource = ThemeColorSource.Wallpaper))).uiCompatModeColors)
         assertEquals(false, gateway.applyAndReturn(listOf(ConfigMutation.SetTheme(colorSource = ThemeColorSource.System))).uiCompatModeColors)
+    }
+
+    /**
+     * `search.defaultFilter` and `search.filterBarItems` (#229), word by word:
+     * the round trip in SettingsContractTest proves each field moves its key,
+     * not that `hidden` is hidden items rather than contacts. Distinct values
+     * per word, so a swap between any two shows.
+     */
+    @Test
+    fun `the default filter reads each switch as its own word`() = runTest {
+        val state = createGateway(
+            LauncherSettingsData(searchFilter = SearchFilters(apps = false, shortcuts = true, contacts = false, hiddenItems = true)),
+        ).readState()
+
+        assertEquals(listOf(SearchFilterItem.Shortcuts, SearchFilterItem.Hidden), state.search.defaultFilter)
+    }
+
+    @Test
+    fun `applying a default filter sets exactly the switches it names`() = runTest {
+        val data = createGateway().applyAndReturn(
+            listOf(ConfigMutation.SetSearch(SearchConfig(defaultFilter = listOf(SearchFilterItem.Contacts, SearchFilterItem.Hidden)))),
+        )
+
+        assertEquals(SearchFilters(apps = false, shortcuts = false, contacts = true, hiddenItems = true), data.searchFilter)
+    }
+
+    @Test
+    fun `the filter bar reads in order, hidden as the hidden-items entry`() = runTest {
+        val read = createGateway(
+            LauncherSettingsData(searchFilterBarItems = listOf(KeyboardFilterBarItem.HiddenResults, KeyboardFilterBarItem.Contacts)),
+        ).readState()
+        assertEquals(listOf(SearchFilterItem.Hidden, SearchFilterItem.Contacts), read.search.filterBarItems)
+    }
+
+    @Test
+    fun `the filter bar applies in order, hidden as the hidden-items entry`() = runTest {
+        val data = createGateway().applyAndReturn(
+            listOf(ConfigMutation.SetSearch(SearchConfig(filterBarItems = listOf(SearchFilterItem.Shortcuts, SearchFilterItem.Hidden, SearchFilterItem.Apps)))),
+        )
+        assertEquals(
+            listOf(KeyboardFilterBarItem.Shortcuts, KeyboardFilterBarItem.HiddenResults, KeyboardFilterBarItem.Apps),
+            data.searchFilterBarItems,
+        )
     }
 
     @Test

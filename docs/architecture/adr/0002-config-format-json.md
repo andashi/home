@@ -72,6 +72,14 @@ Additional rules:
     code, not data, so they cannot be listed mechanically; those cases live
     in the hand-written list of documents the parser rejects, and a new one
     has to be added there by whoever adds such a check.
+  - One rejection the schema cannot express at all, so a schema-valid file
+    can still fail: **the same app twice in two spellings**. A list of apps
+    (`home.favorites`, `search.shortcutsExcluded`) accepts a bare package
+    name for the personal profile and an object otherwise, so `"a.b"` and
+    `{ "packageName": "a.b" }` name one app. `uniqueItems` compares JSON
+    values, not what they mean, and lets the pair through; the parser
+    rejects it. Validating with the schema is necessary, not sufficient:
+    the reload report is the verdict (review on #235).
 - The config is a *desired state* document, not a backup archive. It does not adopt
   Kvaesitso's version-pinned backup format — that was the trap identified in the
   exported-surface analysis ("fragile UI automation traded for fragile format

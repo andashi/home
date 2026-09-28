@@ -113,6 +113,34 @@ object ConfigValidator {
         // One ICU id: the launcher appends its own base transliterator, so a
         // compound id (with ';') is refused. Whether this device's ICU has it
         // is reported by the device, not decided here (#3 slice 1).
+        config.search?.defaultFilter?.let { filter ->
+            if (filter.size != filter.toSet().size) {
+                diagnostics += Diagnostic(DiagnosticCode.InvalidSearch, "search.defaultFilter", "defaultFilter names a filter twice")
+            } else if (filter.none { it.isCategory }) {
+                diagnostics += Diagnostic(
+                    DiagnosticCode.InvalidSearch, "search.defaultFilter",
+                    "defaultFilter needs at least one of apps, shortcuts and contacts: the launcher never switches the last category off",
+                )
+            }
+        }
+        config.search?.filterBarItems?.let { items ->
+            if (items.size != items.toSet().size) {
+                diagnostics += Diagnostic(DiagnosticCode.InvalidSearch, "search.filterBarItems", "filterBarItems names a filter twice")
+            }
+        }
+        config.search?.shortcutsExcluded?.let { excluded ->
+            if (excluded.size > MaxApps) {
+                diagnostics += Diagnostic(DiagnosticCode.InvalidSearch, "search.shortcutsExcluded", "shortcutsExcluded exceeds the maximum of $MaxApps entries")
+            }
+            val seen = mutableSetOf<Favorite>()
+            excluded.forEachIndexed { index, app ->
+                val path = "search.shortcutsExcluded[$index]"
+                validatePackageName(app.packageName, path, diagnostics)
+                if (!seen.add(app)) {
+                    diagnostics += Diagnostic(DiagnosticCode.InvalidSearch, path, "'${app.packageName}' is listed twice for the ${app.profile.name.lowercase()} profile")
+                }
+            }
+        }
         config.search?.transliterator?.let { id ->
             if (!transliteratorIdRegex.matches(id)) {
                 diagnostics += Diagnostic(

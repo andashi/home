@@ -25,7 +25,7 @@ Fold (cover and inner display).
 | [Search](search.md) | `search`: favorites row, frequently used apps, all apps, grid or list, list icons, labels, app details, contacts (call on tap), shortcuts, filter bar, compact tags, the transliterator, keyboard, Enter, order, hidden items |
 | [Gestures](gestures.md) | `gestures`: what the swipes, double tap, long press and home button do |
 | [Screens](screens.md) | Every scene on the phone, the Fold's cover and its inner display |
-| [Complete example](complete-example.json) | Every key the launcher applies, each off its default, in the form the read-back writes. The round-trip test runs it through parse, apply and read-back (#3) |
+| [Complete example](complete-example.json) | Every key the launcher applies, each off its default, in the form the read-back writes. The round-trip test runs it through parse, apply and read-back (#3). A test fixture, not a setup to copy: with every value off its default it switches most of search off |
 
 ## The file
 

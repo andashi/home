@@ -255,6 +255,9 @@ class ConfigStateMapperTest {
                 contactsCallOnTap = false,
                 frequentlyUsed = true, frequentlyUsedRows = 1, favoritesEditButton = true,
                 compactTags = false, transliterator = "auto",
+                defaultFilter = listOf(SearchFilterItem.Apps, SearchFilterItem.Shortcuts, SearchFilterItem.Contacts),
+                filterBarItems = SearchFilterItem.entries,
+                shortcutsExcluded = emptyList(),
             ),
             defaults,
         )
