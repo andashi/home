@@ -6,9 +6,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.CompositionLocalProvider
+import android.os.UserHandle
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import de.mm20.launcher2.profiles.Profile
+import de.mm20.launcher2.ui.launcher.search.apps.ProfileTabRow
 import de.mm20.launcher2.ui.locals.LocalPreferDarkContentOverWallpaper
 import de.mm20.launcher2.ui.theme.LauncherColorSchemes
 import de.mm20.launcher2.ui.theme.LocalLauncherColorSchemes
@@ -78,5 +81,50 @@ class GlassContentColorTest {
             got != Seen(want.onSurface, want.onBackground, want.onSurface, want.onSurfaceVariant)
         }.map { (case, got) -> "$case: $got" }
         assertEquals("text colours on glass that do not follow the wallpaper", emptyList<String>(), wrong)
+    }
+
+    /**
+     * The profile tabs above the app grid take onSurface in the glass's scheme
+     * for their labels, selected or not; the indicator keeps primary (#242).
+     * The accent on the label measured 4.19:1 on the greyer glass of a dark
+     * theme over a light wallpaper. Read through the tab's text slot, which
+     * receives the colour the tab itself hands its text.
+     */
+    @Test
+    fun `profile tab labels take the glass scheme's onSurface`() {
+        val personal = Profile(Profile.Type.Personal, UserHandle.getUserHandleForUid(0), 0)
+        val work = Profile(Profile.Type.Work, UserHandle.getUserHandleForUid(1_000_000), 10)
+        val cases = listOf(false, true).flatMap { theme -> listOf(false, true).map { Case(theme, it) } }
+        val seen = mutableMapOf<Pair<Case, Profile.Type>, Color>()
+        composeRule.setContent {
+            Column {
+                for (case in cases) {
+                    val schemes = LauncherColorSchemes(light = light, dark = dark, darkTheme = case.darkTheme)
+                    CompositionLocalProvider(
+                        LocalLauncherColorSchemes provides schemes,
+                        LocalPreferDarkContentOverWallpaper provides case.darkContentOverWallpaper,
+                    ) {
+                        MaterialTheme(colorScheme = schemes.theme) {
+                            GlassSurface {
+                                ProfileTabRow(
+                                    profiles = listOf(personal, work),
+                                    selectedIndex = 0,
+                                    selectedProfileType = Profile.Type.Personal,
+                                    onProfileSelected = {},
+                                    label = { seen[case to it.type] = LocalContentColor.current },
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        composeRule.waitForIdle()
+        assertEquals("tabs composed", cases.size * 2, seen.size)
+
+        val wrong = seen.filter { (key, got) ->
+            got != (if (key.first.darkContentOverWallpaper) light else dark).onSurface
+        }.map { (key, got) -> "${key.first}, ${key.second} tab: $got" }
+        assertEquals("tab label colours that are not the glass scheme's onSurface", emptyList<String>(), wrong)
     }
 }

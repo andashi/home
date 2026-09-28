@@ -68,54 +68,7 @@ fun LazyListScope.AppResults(
             Column(
                 verticalArrangement = if (reverse) Arrangement.BottomReversed else Arrangement.Top,
             ) {
-                PrimaryScrollableTabRow(
-                    selectedTabIndex = profileIndex,
-                    containerColor = Color.Transparent,
-                    edgePadding = 16.dp,
-                    divider = {}
-                ) {
-                    for (profile in profiles) {
-                        val selected = profile.type == selectedProfileType
-                        // Labels and icons in onSurface, the indicator keeps
-                        // primary: the accent measured 4.19:1 on the greyer
-                        // glass a dark theme leaves over a light wallpaper (#242).
-                        LeadingIconTab(
-                            selected = selected,
-                            selectedContentColor = MaterialTheme.colorScheme.onSurface,
-                            unselectedContentColor = MaterialTheme.colorScheme.onSurface,
-                            text = {
-                                Text(
-                                    when (profile.type) {
-                                        Profile.Type.Personal -> stringResource(R.string.apps_profile_main)
-                                        Profile.Type.Work -> stringResource(R.string.apps_profile_work)
-                                        Profile.Type.Private -> stringResource(R.string.apps_profile_private)
-                                    }
-                                )
-                            },
-                            icon = {
-                                when (profile.type) {
-                                    Profile.Type.Personal -> Icon(
-                                        painterResource(if (selected) R.drawable.person_24px_filled else R.drawable.person_24px),
-                                        contentDescription = null
-                                    )
-
-                                    Profile.Type.Work -> Icon(
-                                        painterResource(if (selected) R.drawable.enterprise_24px_filled else R.drawable.enterprise_24px),
-                                        contentDescription = null
-                                    )
-
-                                    Profile.Type.Private -> Icon(
-                                        painterResource(if (selected) R.drawable.encrypted_24px_filled else R.drawable.encrypted_24px),
-                                        contentDescription = null
-                                    )
-                                }
-                            },
-                            onClick = {
-                                onProfileSelected(profile)
-                            }
-                        )
-                    }
-                }
+                ProfileTabRow(profiles, profileIndex, selectedProfileType, onProfileSelected)
 
                 if (!showList || isProfileLocked) {
                     HorizontalDivider()
@@ -253,3 +206,68 @@ fun LazyListScope.AppResults(
 }
 /** An inner area of a glass card: the card's own tint, once more. */
 private const val InnerLayerAlpha = 0.12f
+
+/**
+ * The profile tabs above the app grid. [label] is the tab's text slot, which
+ * receives the colour the tab hands its text; a test hooks it there.
+ */
+@Composable
+internal fun ProfileTabRow(
+    profiles: List<Profile>,
+    selectedIndex: Int,
+    selectedProfileType: Profile.Type,
+    onProfileSelected: (Profile) -> Unit,
+    label: @Composable (Profile) -> Unit = { ProfileTabLabel(it) },
+) {
+    PrimaryScrollableTabRow(
+        selectedTabIndex = selectedIndex,
+        containerColor = Color.Transparent,
+        edgePadding = 16.dp,
+        divider = {}
+    ) {
+        for (profile in profiles) {
+            val selected = profile.type == selectedProfileType
+            // Labels and icons in onSurface, the indicator keeps
+            // primary: the accent measured 4.19:1 on the greyer
+            // glass a dark theme leaves over a light wallpaper (#242).
+            LeadingIconTab(
+                selected = selected,
+                selectedContentColor = MaterialTheme.colorScheme.onSurface,
+                unselectedContentColor = MaterialTheme.colorScheme.onSurface,
+                text = { label(profile) },
+                icon = {
+                    when (profile.type) {
+                        Profile.Type.Personal -> Icon(
+                            painterResource(if (selected) R.drawable.person_24px_filled else R.drawable.person_24px),
+                            contentDescription = null
+                        )
+
+                        Profile.Type.Work -> Icon(
+                            painterResource(if (selected) R.drawable.enterprise_24px_filled else R.drawable.enterprise_24px),
+                            contentDescription = null
+                        )
+
+                        Profile.Type.Private -> Icon(
+                            painterResource(if (selected) R.drawable.encrypted_24px_filled else R.drawable.encrypted_24px),
+                            contentDescription = null
+                        )
+                    }
+                },
+                onClick = {
+                    onProfileSelected(profile)
+                }
+            )
+        }
+    }
+}
+
+@Composable
+private fun ProfileTabLabel(profile: Profile) {
+    Text(
+        when (profile.type) {
+            Profile.Type.Personal -> stringResource(R.string.apps_profile_main)
+            Profile.Type.Work -> stringResource(R.string.apps_profile_work)
+            Profile.Type.Private -> stringResource(R.string.apps_profile_private)
+        }
+    )
+}
