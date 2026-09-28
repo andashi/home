@@ -387,6 +387,39 @@ class SavableSearchableRepositoryTest {
         assertEquals(1, read.size)
     }
 
+    /**
+     * The worst case of filling a limit: nearly every row stays Unknown (a
+     * device with most pinned contacts hidden by Contact Scopes). The read
+     * doubles its fetch until the rows run out, so it resolves fewer than
+     * three times the rows - the doubled fetches sum to under twice the table,
+     * the last one reads it whole - in about log2(rows / limit) + 2 queries.
+     */
+    @Test
+    fun fillingALimitPastManyUnknownRowsIsBounded() = runBlocking {
+        val resolves = java.util.concurrent.atomic.AtomicInteger()
+        val counting = object : SearchableDeserializer {
+            override suspend fun resolve(serialized: String): Resolved {
+                resolves.incrementAndGet()
+                return resolvingDeserializer.resolve(serialized)
+            }
+            override suspend fun deserialize(serialized: String): SavableSearchable? =
+                (resolve(serialized) as? Resolved.Found)?.searchable
+        }
+        stopKoin()
+        startKoin { modules(module { factory<SearchableDeserializer>(named("resolving")) { counting } }) }
+        val rows = 1000
+        for (i in 1..rows) pinned("resolving://unknown$i", "resolving", rows + 10 - i, serialized = "unknown")
+        pinned("resolving://found", "resolving", 1, serialized = "found")
+
+        val started = System.nanoTime()
+        val read = repository.get(limit = 5).first()
+        val millis = (System.nanoTime() - started) / 1_000_000
+
+        assertEquals(listOf("resolving://found"), read.map { it.key })
+        println("filling limit 5 past $rows unknown rows: ${resolves.get()} resolves, $millis ms")
+        assertTrue("resolves ${resolves.get()} exceed three times the ${rows + 1} rows", resolves.get() < 3 * (rows + 1))
+    }
+
     /** The debug screen's cleanup took the same path. */
     @Test
     fun cleanupKeepsARowWhoseItemIsUnknown() = runBlocking {
