@@ -43,7 +43,7 @@ fun AppWidgetHost(
 ) {
     val padding = if (borderless) 0 else 8.dp.toPixels().roundToInt()
 
-    val colorScheme = MaterialTheme.colorScheme
+    val colorScheme = widgetColorSource()
     val appWidgetHost = LocalAppWidgetHost.current
 
     BoxWithConstraints(
@@ -179,3 +179,10 @@ private fun getColorMapping(colorScheme: ColorScheme): SparseIntArray {
 internal val muteEffect: RenderEffect by lazy {
     RenderEffect.createRuntimeShaderEffect(RuntimeShader(WidgetMute.Shader), "content")
 }
+
+/**
+ * The scheme a widget's colour resources are built from. Today the ambient
+ * one; see the test for why it must be the theme's.
+ */
+@Composable
+internal fun widgetColorSource(): ColorScheme = MaterialTheme.colorScheme

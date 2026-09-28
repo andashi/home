@@ -12,6 +12,7 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import de.mm20.launcher2.profiles.Profile
 import de.mm20.launcher2.ui.launcher.search.apps.ProfileTabRow
+import de.mm20.launcher2.ui.launcher.widgets.external.widgetColorSource
 import de.mm20.launcher2.ui.locals.LocalPreferDarkContentOverWallpaper
 import de.mm20.launcher2.ui.theme.LauncherColorSchemes
 import de.mm20.launcher2.ui.theme.LocalLauncherColorSchemes
@@ -126,5 +127,37 @@ class GlassContentColorTest {
             got != (if (key.first.darkContentOverWallpaper) light else dark).onSurface
         }.map { (key, got) -> "${key.first}, ${key.second} tab: $got" }
         assertEquals("tab label colours that are not the glass scheme's onSurface", emptyList<String>(), wrong)
+    }
+
+    /**
+     * A hosted widget's colour resources keep coming from the theme's scheme,
+     * glass or not: `themeColors` hands the widget the zone's Material You
+     * colours, and the widget picks its light or dark variant itself from
+     * onLightBackground (review on #244). A control for the matched
+     * combinations, where both schemes are the same.
+     */
+    @Test
+    fun `a widget on glass is handed the theme's scheme`() {
+        val cases = listOf(false, true).flatMap { theme -> listOf(false, true).map { Case(theme, it) } }
+        val seen = mutableMapOf<Case, androidx.compose.material3.ColorScheme>()
+        composeRule.setContent {
+            Column {
+                for (case in cases) {
+                    val schemes = LauncherColorSchemes(light = light, dark = dark, darkTheme = case.darkTheme)
+                    CompositionLocalProvider(
+                        LocalLauncherColorSchemes provides schemes,
+                        LocalPreferDarkContentOverWallpaper provides case.darkContentOverWallpaper,
+                    ) {
+                        MaterialTheme(colorScheme = schemes.theme) {
+                            GlassSurface { seen[case] = widgetColorSource() }
+                        }
+                    }
+                }
+            }
+        }
+        composeRule.waitForIdle()
+        assertEquals("cases composed", cases.toSet(), seen.keys)
+        val wrong = seen.filter { (case, got) -> got != (if (case.darkTheme) dark else light) }.map { it.key.toString() }
+        assertEquals("widgets handed a scheme other than the theme's", emptyList<String>(), wrong)
     }
 }
