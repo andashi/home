@@ -239,6 +239,11 @@ private fun FailureIfItFits(banner: @Composable () -> Unit, compact: @Composable
 /**
  * The failure in one icon: named by its content description, with the
  * banner's message and actions in the menu it opens.
+ *
+ * White like the [GridLabel] under it. The glass card hands its content the
+ * theme's onSurface, which in a light theme is dark on a card the wallpaper
+ * makes dark - measured on the device, the icon was barely there. The banner
+ * never met this: it brings its own card.
  */
 @Composable
 private fun CompactFailure(onAllow: (() -> Unit)?, onReplace: () -> Unit, onRemove: () -> Unit) {
@@ -246,7 +251,7 @@ private fun CompactFailure(onAllow: (() -> Unit)?, onReplace: () -> Unit, onRemo
     val message = stringResource(R.string.app_widget_loading_failed)
     Box {
         IconButton(onClick = { open = true }) {
-            Icon(painterResource(R.drawable.warning_24px), contentDescription = message)
+            Icon(painterResource(R.drawable.warning_24px), contentDescription = message, tint = Color.White)
         }
         DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
             Text(
