@@ -135,7 +135,9 @@ class ThemeFileTest {
         val closed = java.util.concurrent.CountDownLatch(1)
         val stalled = object : InputStream() {
             override fun read(): Int {
-                closed.await()
+                // A read on a pipe ignores interrupts; only closing the
+                // descriptor ends it.
+                awaitUninterruptibly(closed)
                 throw IOException("closed")
             }
             override fun close() = closed.countDown()
@@ -146,6 +148,52 @@ class ThemeFileTest {
         assertEquals(rejected(ThemeFileRejection.TooSlow), result)
         assertEquals("the stalled stream was not closed", 0L, closed.count)
         assertTrue("took $tookMs ms for a 300 ms bound", tookMs < 5_000)
+    }
+
+    @Test(timeout = 20_000)
+    fun `a stream that opens only after the time bound is closed as well`() {
+        // #234 review: the provider answers openInputStream after the caller
+        // has given up, so there was no stream to close at the timeout. The
+        // late stream stalls as the one above does; it must still be closed,
+        // or its descriptor and the worker stay alive.
+        val callerGaveUp = java.util.concurrent.CountDownLatch(1)
+        val closed = java.util.concurrent.CountDownLatch(1)
+        val stalled = object : InputStream() {
+            override fun read(): Int {
+                // A read on a pipe ignores interrupts; only closing the
+                // descriptor ends it.
+                awaitUninterruptibly(closed)
+                throw IOException("closed")
+            }
+            override fun close() = closed.countDown()
+        }
+        val result = ThemeFile.read(
+            "content",
+            // A binder call into the provider's openFile is not interrupted
+            // by the caller giving up; it returns when the provider answers.
+            open = { awaitUninterruptibly(callerGaveUp); stalled },
+            maxBytes = ThemeFile.MAX_BYTES,
+            timeoutMillis = 300,
+        )
+        assertEquals(rejected(ThemeFileRejection.TooSlow), result)
+        callerGaveUp.countDown()
+        assertTrue(
+            "a stream opened after the time bound was never closed",
+            closed.await(5, java.util.concurrent.TimeUnit.SECONDS),
+        )
+    }
+
+    private fun awaitUninterruptibly(latch: java.util.concurrent.CountDownLatch) {
+        var interrupted = false
+        while (true) {
+            try {
+                latch.await()
+                break
+            } catch (_: InterruptedException) {
+                interrupted = true
+            }
+        }
+        if (interrupted) Thread.currentThread().interrupt()
     }
 
     @Test
