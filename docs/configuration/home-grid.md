@@ -74,11 +74,17 @@ Each layout is `home.grid.layouts.<layout>.items`, a list of up to 32 items:
 | `home.grid.layouts.<layout>.items[].borderless` | Draw the widget without the card's padding | boolean, default `false` (see below) |
 | `home.grid.layouts.<layout>.items[].background` | `false`: no glass surface behind the widget at all | boolean, default `true` (see below) |
 | `home.grid.layouts.<layout>.items[].themeColors` | Hand the widget the zone's Material You colors | boolean, default `true` (see below) |
+| `home.grid.layouts.<layout>.items[].mute` | Turn a widget from another app grey: its own colours become the grey of their own luminance, so text stays as legible as its luminance made it. For widgets that ignore the zone's colours; leave it off where the colour is the content (a map, a photo), and where text differs from its background by colour alone (blue on red of about the same luminance turns grey on grey). Ignored on `favorites` (see below) | boolean, default `false` (see below) |
+
+**The options on `favorites`.** The dock is a glass card the launcher draws
+itself, and it reads none of `borderless`, `background`, `themeColors` and
+`mute`. One set there away from its default is reported, as a warning
+(`grid-option-ignored`), and changes nothing; at its default it says nothing.
 
 **An exception to "absent means unmanaged".** For `borderless`,
-`background` and `themeColors`, and for these three keys only, an absent key
-does not leave the device's value alone. It sets the default (`false`,
-`true`, `true`) and keeps it, and the read-back serves the value either way.
+`background`, `themeColors` and `mute`, and for these four keys only, an absent
+key does not leave the device's value alone. It sets the default (`false`,
+`true`, `true`, `false`) and keeps it, and the read-back serves the value either way.
 So an item written without them and pushed again resets any change made to
 them on the device. The item is stored whole; there is no "unset" for its
 options. Measured by the round-trip test (#3, `ConfigRoundTripTest`).

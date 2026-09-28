@@ -51,7 +51,7 @@ class HomeGridRepositoryTest {
         profile = "personal",
         x = 0, y = 2, w = 4, h = 2,
         appWidgetId = 12,
-        config = HomeGridItemConfig(borderless = true, background = false, themeColors = false),
+        config = HomeGridItemConfig(borderless = true, background = false, themeColors = false, mute = true),
         position = 1,
     )
 

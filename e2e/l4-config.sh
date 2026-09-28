@@ -435,7 +435,7 @@ EFFECTIVE_FILTER='
   and .home.grid.columns == 4
   and .home.grid.locked == false
   and .home.grid.labels == false
-  and .home.grid.layouts.phone.items == [{"id":"dock","widget":"favorites","x":0,"y":5,"w":4,"h":1,"borderless":false,"background":true,"themeColors":true}]
+  and .home.grid.layouts.phone.items == [{"id":"dock","widget":"favorites","x":0,"y":5,"w":4,"h":1,"borderless":false,"background":true,"themeColors":true,"mute":false}]
   and .gestures == {"swipeDown":"notifications","swipeUp":"quick-settings","swipeLeft":{"packageName":"com.android.settings"},"swipeRight":"none","doubleTap":"none","longPress":"launcher-settings","homeButton":"search"}
 '
 
@@ -455,7 +455,7 @@ CHANGED_FILTER='
   and .home.grid.columns == 5
   and .home.grid.locked == true
   and .home.grid.labels == true
-  and .home.grid.layouts.phone.items == [{"id":"dock","widget":"favorites","x":0,"y":0,"w":5,"h":2,"borderless":false,"background":true,"themeColors":true}]
+  and .home.grid.layouts.phone.items == [{"id":"dock","widget":"favorites","x":0,"y":0,"w":5,"h":2,"borderless":false,"background":true,"themeColors":true,"mute":false}]
   and .gestures == {"swipeDown":"search","swipeUp":"recents","swipeLeft":"power-menu","swipeRight":"none","doubleTap":"screen-lock","longPress":"none","homeButton":"none"}
 '
 
@@ -835,6 +835,80 @@ retry_for 30 fixture_bound || {
   die "the arrived widget was never bound to the launcher's host $HOST_ID (the widget service's list is above)"
 }
 ok "a package that brings only a widget is applied when it arrives: reloaded, sized 2x1 and bound, carried by the package signal alone"
+
+# --- 10d2. mute: the fixture's widget grey, next to itself in colour (#78) --
+#
+# Two copies of the fixture's widget, one muted. Its layout is opaque and
+# saturated (red ground, white text), so the hosted view covers its cell and no
+# glass shows through - mute does not touch the glass. The prediction, written
+# before the first run: the unmuted copy is mostly strongly coloured, the muted
+# one is not, and the muted copy's dominant grey is the grey of the unmuted
+# copy's dominant colour's own luminance (WidgetMute.grey: #E53935 -> 123),
+# within a few levels. A matrix in gamma space would give 93 instead, so the
+# luminance check tells the shader from the obvious wrong implementation.
+MUTE_CONFIG="$WORK/mute.json"
+cat > "$MUTE_CONFIG" <<EOF
+{ "schemaVersion": 2,
+  "home": { "widgets": { "enabled": true },
+    "grid": { "layouts": { "phone": { "items": [
+    { "id": "only", "widget": "$FIXTURE_PKG/.OnlyWidget", "x": 0, "y": 0, "w": 2, "h": 1 },
+    { "id": "muted", "widget": "$FIXTURE_PKG/.OnlyWidget", "x": 2, "y": 0, "w": 2, "h": 1, "mute": true }
+  ] } } } } }
+EOF
+push_config "$MUTE_CONFIG" "mute"
+effective="$(query_json config)" || die "could not query /config"
+assert_jq "$effective" \
+  '[.home.grid.layouts.phone.items[] | {id, mute}] == [{"id":"only","mute":false},{"id":"muted","mute":true}]' \
+  "mute reads back as written, and false where it is left out"
+fixture_widgets_bound() {
+  # Deadline-aware (adb_out): it runs inside retry_for, whose budget a hung
+  # dumpsys must not overrun (review on #231).
+  adb_out shell dumpsys appwidget 2>/dev/null | sed -n '/^Widgets:/,/^Hosts:/p' \
+    | grep -F "hostId:$HOST_ID" -A3 | grep -cF "$FIXTURE_PKG/" || true
+}
+show_home
+adb_t shell input keyevent KEYCODE_HOME >/dev/null 2>&1 || true
+retry_for 30 shows id_bounds "grid-item:muted" || die "the muted copy's cell never showed on the home grid"
+retry_for 30 eval '[ "$(fixture_widgets_bound)" -ge 2 ]' || die "both copies of the fixture's widget were never bound"
+mute_measure() { # prints: sat_only sat_muted grey_muted predicted
+  local only muted
+  only="$(id_bounds "grid-item:only")" && muted="$(id_bounds "grid-item:muted")" || return 1
+  screenshot "$WORK/mute.png"
+  python3 - "$WORK/mute.png" $only $muted <<'PY'
+import sys
+from collections import Counter
+from PIL import Image
+img = Image.open(sys.argv[1]).convert("RGB")
+def inner(x1, y1, x2, y2):
+    # The middle half of the cell: clear of the card's padding and corners.
+    w, h = x2 - x1, y2 - y1
+    return img.crop((x1 + w // 4, y1 + h // 4, x2 - w // 4, y2 - h // 4)).getdata()
+def saturated(px): return sum(1 for r, g, b in px if max(r, g, b) - min(r, g, b) > 24) / len(px)
+def lin(c):
+    c /= 255
+    return c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4
+def grey(rgb):
+    # WCAG relative luminance, re-encoded: the reference WidgetMute.grey implements.
+    y = 0.2126 * lin(rgb[0]) + 0.7152 * lin(rgb[1]) + 0.0722 * lin(rgb[2])
+    c = y * 12.92 if y <= 0.0031308 else 1.055 * y ** (1 / 2.4) - 0.055
+    return round(c * 255)
+b = [int(v) for v in sys.argv[2:]]
+only, muted = list(inner(*b[:4])), list(inner(*b[4:]))
+dominant_only = Counter(only).most_common(1)[0][0]
+dominant_muted = Counter(muted).most_common(1)[0][0]
+print(f"{saturated(only):.3f} {saturated(muted):.3f} {dominant_muted[0]} {grey(dominant_only)} {dominant_only} {dominant_muted}")
+PY
+}
+mute_ok() {
+  local line
+  line="$(mute_measure)" || return 1
+  MUTE_LINE="$line"
+  read -r sat_only sat_muted grey_muted predicted _ <<<"$line"
+  python3 -c "import sys; sys.exit(0 if $sat_only > 0.5 and $sat_muted < 0.02 and abs($grey_muted - $predicted) <= 4 else 1)"
+}
+retry_for 20 mute_ok || die "mute did not turn the widget into the grey of its own luminance (saturated only/muted, grey muted, predicted, colours): ${MUTE_LINE:-no measurement}"
+cp "$WORK/mute.png" "$(dirname "$0")/screenshots/mute-side-by-side.png" 2>/dev/null || true
+ok "mute: the muted copy is grey, and its grey is its colour's own luminance (saturated only/muted, grey, predicted, colours: $MUTE_LINE)"
 adb -s "$SERIAL" uninstall "$FIXTURE_PKG" >/dev/null 2>&1 || true
 
 # --- 10e. an app the file names is installed after the file (#207 review) ---

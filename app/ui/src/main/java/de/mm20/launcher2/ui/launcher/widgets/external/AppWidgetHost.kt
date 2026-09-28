@@ -1,6 +1,8 @@
 package de.mm20.launcher2.ui.launcher.widgets.external
 
 import android.appwidget.AppWidgetProviderInfo
+import android.graphics.RenderEffect
+import android.graphics.RuntimeShader
 import android.os.Build
 import android.os.Bundle
 import android.util.SizeF
@@ -22,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.view.iterator
 import androidx.core.view.setPadding
+import de.mm20.launcher2.glass.WidgetMute
 import de.mm20.launcher2.ui.base.LocalAppWidgetHost
 import de.mm20.launcher2.ui.ktx.toPixels
 import palettes.TonalPalette
@@ -35,6 +38,8 @@ fun AppWidgetHost(
     borderless: Boolean = false,
     useThemeColors: Boolean = false,
     onLightBackground: Boolean = false,
+    /** The widget's own colours turned grey, each pixel its own luminance (#78, [WidgetMute]). */
+    mute: Boolean = false,
 ) {
     val padding = if (borderless) 0 else 8.dp.toPixels().roundToInt()
 
@@ -76,6 +81,8 @@ fun AppWidgetHost(
                         it.updateAppWidgetSize(Bundle(), arrayListOf(size))
                     }
                     it.setPadding(padding)
+                    // On the hosted view alone: the glass card under it is drawn by the grid.
+                    it.setRenderEffect(if (mute) muteEffect else null)
                 }
             )
         }
@@ -166,4 +173,9 @@ private fun getColorMapping(colorScheme: ColorScheme): SparseIntArray {
     colorResources.append(android.R.color.system_neutral2_1000, nv.tone(0))
 
     return colorResources
+}
+
+/** One effect for every muted widget: it holds no per-view state. */
+internal val muteEffect: RenderEffect by lazy {
+    RenderEffect.createRuntimeShaderEffect(RuntimeShader(WidgetMute.Shader), "content")
 }

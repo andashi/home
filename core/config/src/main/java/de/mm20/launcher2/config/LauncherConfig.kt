@@ -664,6 +664,12 @@ data class GridItemConfig(
     val borderless: Boolean? = null,
     val background: Boolean? = null,
     val themeColors: Boolean? = null,
+    /**
+     * An external widget's own colours turned grey (#78): each pixel becomes
+     * the grey of its own luminance, so its contrast is kept. The favorites
+     * dock is glass-native and ignores it (the validator says so).
+     */
+    val mute: Boolean? = null,
 ) {
     val isFavorites: Boolean get() = widget == Favorites
     val hasGeometry: Boolean get() = x != null && y != null && w != null && h != null
@@ -674,6 +680,14 @@ data class GridItemConfig(
      * a position (the validator warns, the differ ignores it).
      */
     val hasPosition: Boolean get() = x != null && y != null
+
+    /** The options by key, as [OptionDefaults] names them; null where the file leaves one out. */
+    val options: Map<String, Boolean?> get() = mapOf(
+        "borderless" to borderless,
+        "background" to background,
+        "themeColors" to themeColors,
+        "mute" to mute,
+    )
 
     companion object {
         const val Favorites = "favorites"
@@ -687,6 +701,7 @@ data class GridItemConfig(
             "borderless" to false,
             "background" to true,
             "themeColors" to true,
+            "mute" to false,
         )
     }
 }

@@ -194,7 +194,7 @@ class DefaultConfigStoreTest {
             HomeGridItem(
                 layout = "phone", id = "clock", widget = "com.android.deskclock/.DigitalAppWidgetProvider",
                 profile = "work", x = 0, y = 0, w = 4, h = 2, appWidgetId = 42,
-                config = HomeGridItemConfig(borderless = true, background = false, themeColors = true),
+                config = HomeGridItemConfig(borderless = true, background = false, themeColors = true, mute = true),
                 position = 1,
             ),
         )
@@ -228,17 +228,32 @@ class DefaultConfigStoreTest {
             listOf(
                 GridItemConfig(
                     id = "dock", widget = "favorites", x = 0, y = 5, w = 4, h = 1,
-                    borderless = false, background = true, themeColors = true,
+                    borderless = false, background = true, themeColors = true, mute = false,
                 ),
                 GridItemConfig(
                     id = "clock", widget = "com.android.deskclock/.DigitalAppWidgetProvider",
                     x = 0, y = 0, w = 4, h = 2, profile = ConfigProfile.Work,
-                    borderless = true, background = false, themeColors = true,
+                    borderless = true, background = false, themeColors = true, mute = true,
                 ),
             ),
             state.gridLayouts["phone"]?.items,
         )
         assertEquals(emptyList<GridItemConfig>(), state.gridLayouts["fold"]?.items)
+    }
+
+    /** #78: the file's mute reaches the stored item, and an absent one stores its default. */
+    @Test
+    fun `SetGrid stores mute as the file asks, and false where it is left out`() = runTest {
+        gridLimits.limits["com.android.deskclock/.DigitalAppWidgetProvider"] = ProviderLimits(default = CellSize(2, 2), limits = SizeLimits(1, 1, 4, 4))
+        val muted = GridItemConfig("clock", "com.android.deskclock/.DigitalAppWidgetProvider", 0, 0, 2, 2, mute = true)
+        val plain = GridItemConfig("clock2", "com.android.deskclock/.DigitalAppWidgetProvider", 2, 0, 2, 2)
+
+        store.apply(listOf(ConfigMutation.SetGrid(layouts = mapOf("phone" to GridLayoutConfig(listOf(muted, plain))))))
+
+        assertEquals(
+            listOf("clock" to true, "clock2" to false),
+            homeGridRepository.layouts.getValue("phone").map { it.id to it.config.mute },
+        )
     }
 
     @Test

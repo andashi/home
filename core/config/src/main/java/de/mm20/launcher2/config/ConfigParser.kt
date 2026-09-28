@@ -36,7 +36,7 @@ object ConfigParser {
      * drift away from this table unnoticed.
      */
     private val GridItemKeys: Map<String, KeyEffect> = listOf(
-        "id", "widget", "x", "y", "w", "h", "profile", "borderless", "background", "themeColors",
+        "id", "widget", "x", "y", "w", "h", "profile", "borderless", "background", "themeColors", "mute",
     ).associateWith { KeyEffect.Applied }
 
     internal val keyEffects: Map<String, Map<String, KeyEffect>> = mapOf(

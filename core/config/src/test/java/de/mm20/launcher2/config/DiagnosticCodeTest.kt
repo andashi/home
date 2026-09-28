@@ -29,6 +29,7 @@ class DiagnosticCodeTest {
             "grid-crosses-fold" to Severity.Warning,
             "grid-item-moved" to Severity.Warning,
             "grid-out-of-bounds" to Severity.Warning,
+            "grid-option-ignored" to Severity.Warning,
             "grid-overflow" to Severity.Warning,
             "icon-pack-unavailable" to Severity.Warning,
             "inert-key" to Severity.Warning,
