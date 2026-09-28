@@ -338,7 +338,6 @@
     <string name="theme_import_title">Importar tema</string>
     <string name="import_theme_exists">O tema já existe e será atualizado</string>
     <string name="preference_search_bar_style_transparent">Transparente</string>
-    <string name="preference_search_bar_style_solid">Sólida</string>
     <string name="preference_search_bar_style_hidden">Oculta</string>
     <string name="import_theme_contents">Conteúdo</string>
     <string name="theme_export_title">Exportar tema</string>

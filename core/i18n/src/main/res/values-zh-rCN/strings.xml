@@ -327,7 +327,6 @@
     <string name="import_theme_exists">已有的样式将会被覆盖</string>
     <string name="preference_search_bar_style_transparent">透明</string>
     <string name="preference_search_bar_style_hidden">隐藏</string>
-    <string name="preference_search_bar_style_solid">填充</string>
     <string name="import_theme_contents">文件包含</string>
     <string name="font_name_device_headline">标题字体</string>
     <string name="theme_import_title">导入样式</string>

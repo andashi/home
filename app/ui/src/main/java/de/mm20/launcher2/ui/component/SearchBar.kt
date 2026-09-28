@@ -84,11 +84,7 @@ fun SearchBar(
             }
         }
     ) {
-        when {
-            it == SearchBarLevel.Resting && style != SearchBarStyle.Solid -> 0.dp
-            it == SearchBarLevel.Raised -> 8.dp
-            else -> 0.dp
-        }
+        if (it == SearchBarLevel.Raised) 8.dp else 0.dp
     }
 
     val backgroundOpacity by transition.animateFloat(label = "backgroundOpacity",
@@ -124,9 +120,11 @@ fun SearchBar(
                 else -> tween(durationMillis = 500)
             }
         }) {
-        when {
-            style != SearchBarStyle.Transparent -> MaterialTheme.colorScheme.onSurface
-            it == SearchBarLevel.Resting -> if (darkColors) Color(0, 0, 0, 180) else Color.White
+        // At rest the text sits on the wallpaper, or on glass that follows
+        // the wallpaper rather than the theme (#229), so its colour comes
+        // from the wallpaper in every style.
+        when (it) {
+            SearchBarLevel.Resting -> if (darkColors) Color(0, 0, 0, 180) else Color.White
             else -> MaterialTheme.colorScheme.onSurface
         }
     }

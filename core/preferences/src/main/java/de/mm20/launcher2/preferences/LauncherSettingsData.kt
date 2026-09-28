@@ -187,10 +187,15 @@ object BuiltInTypography {
     val GoogleSansRounded: UUID = UUID(0L, 4L)
 }
 
+/**
+ * Whether the home screen's search bar shows at rest. Solid went (#229): under
+ * glass it drew the same pill as Transparent, in a theme text colour the
+ * wallpaper-coloured glass made illegible. A stored `Solid` reads as the
+ * default through `coerceInputValues` (RemovedSearchBarStyleTest).
+ */
 @Serializable
 enum class SearchBarStyle {
     Transparent,
-    Solid,
     Hidden,
 }
 

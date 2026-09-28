@@ -353,7 +353,6 @@
     <string name="font_name_device_headline">ฟอนต์เริ่มต้นสำหรับหัวเรื่อง</string>
     <string name="font_category_generic">ทั่วไป</string>
     <string name="preference_search_bar_style_transparent">โปร่งใส</string>
-    <string name="preference_search_bar_style_solid">สีทึบ</string>
     <string name="preference_search_bar_style_hidden">ซ่อน</string>
     <string name="preference_clockwidget_dock_rows">แถวในด็อค</string>
     <string name="action_quit">ออก</string>

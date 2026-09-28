@@ -373,7 +373,6 @@
     <string name="preference_search_apps_show_details">Показывать информацию о приложении</string>
     <string name="preference_search_apps_show_details_summary">Отображать версию и имя пакета в контекстном меню приложения</string>
     <string name="preference_search_bar_style_transparent">Прозрачная</string>
-    <string name="preference_search_bar_style_solid">Непрозрачная</string>
     <string name="preference_widgets_on_home_screen_summary">Показывать виджеты на главном экране вместо отдельной страницы</string>
     <string name="preference_category_feed_provider">Поставщик новостей</string>
     <string name="preference_feed_enable_summary">Смахните вправо на главном экране, чтобы открыть ленту новостей</string>

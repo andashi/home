@@ -252,7 +252,6 @@ fun SearchBarStylePreference(
                                 text = stringResource(
                                     when (style) {
                                         SearchBarStyle.Transparent -> R.string.preference_search_bar_style_transparent
-                                        SearchBarStyle.Solid -> R.string.preference_search_bar_style_solid
                                         SearchBarStyle.Hidden -> R.string.preference_search_bar_style_hidden
                                     }
                                 ),

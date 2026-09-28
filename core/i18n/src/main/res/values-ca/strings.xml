@@ -365,7 +365,6 @@
     <string name="bad_configuration_title">Felicitats, t\'has tancat fora!</string>
     <string name="bad_configuration_summary">Has descobert una combinació de configuracions que fa que tant la cerca com la configuració siguin inaccessibles, cosa que et bloqueja l\'accés al llançador</string>
     <string name="preference_search_bar_style_transparent">Transparent</string>
-    <string name="preference_search_bar_style_solid">Sòlid</string>
     <string name="preference_search_bar_style_hidden">Ocult</string>
     <string name="widget_action_allow">Permet</string>
     <string name="grid_edit_title">Edita la pantalla d\'inici</string>

@@ -344,7 +344,6 @@
     <string name="preference_search_bar_style">Style</string>
     <string name="preference_search_bar_style_summary">Customize search bar appearance</string>
     <string name="preference_search_bar_style_transparent">Transparent</string>
-    <string name="preference_search_bar_style_solid">Solid</string>
     <string name="preference_search_bar_style_hidden">Hidden</string>
     <string name="preference_search_bar_auto_focus">Open keyboard</string>
     <string name="preference_search_bar_auto_focus_summary">Automatically show the keyboard when opening the app drawer</string>

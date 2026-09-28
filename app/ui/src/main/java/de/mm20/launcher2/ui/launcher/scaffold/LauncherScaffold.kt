@@ -217,7 +217,14 @@ internal data class ScaffoldConfiguration(
      * Used for assistant mode.
      */
     val finishOnBack: Boolean = false,
-    val darkSearchBar: Boolean = false,
+    /**
+     * Whether the resting search bar's text is dark, from the wallpaper.
+     * No default: a missing value draws a bar that looks right and is
+     * unreadable on a light wallpaper, which no build and no glance would
+     * catch - the assistant's scaffold shipped that way (#238 review). Every
+     * construction site has to say it.
+     */
+    val darkSearchBar: Boolean,
 ) {
     val searchBarTap = ScaffoldGesture(
         component = searchComponent,

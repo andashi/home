@@ -399,7 +399,6 @@
     <string name="preference_search_apps">تطبيقات</string>
     <string name="preference_search_apps_summary">عرض التطبيقات عند فتح البحث</string>
     <string name="preference_search_bar_style_hidden">مختفي</string>
-    <string name="preference_search_bar_style_solid">معتم</string>
     <string name="preference_search_bar_style_transparent">شفاف</string>
     <string name="preference_transliteration">طريقة كتابة الأحرف</string>
     <string name="preference_transliteration_auto">تلقائي</string>

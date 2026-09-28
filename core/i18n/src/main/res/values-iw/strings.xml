@@ -364,7 +364,6 @@
     <string name="preference_filter_bar_summary">הצגת סינונים מהירים מעל המקלדת</string>
     <string name="preference_customize_filter_bar">התאמת סרגל המסננים</string>
     <string name="preference_customize_filter_bar_summary">התאמה הפריטים שנכללים בסרגל המסננים</string>
-    <string name="preference_search_bar_style_solid">מוצק</string>
     <string name="preference_search_bar_style_hidden">מוסתר</string>
     <string name="preference_search_bar_style_transparent">שקוף</string>
     <string name="preference_clockwidget_dock_rows">שורות בעגינה</string>

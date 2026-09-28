@@ -257,7 +257,9 @@ abstract class SharedLauncherActivity(
                                             animation = ScaffoldAnimation.Push
                                         ),
                                         fixedSearchBar = fixedSearchBar,
-                                        searchBarStyle = SearchBarStyle.Solid,
+                                        searchBarStyle = SearchBarStyle.Transparent,
+                                        // At rest its text follows the wallpaper like home's (#229, #238 review).
+                                        darkSearchBar = darkSearchBar,
                                         searchBarPosition = if (bottomSearchBar) SearchBarPosition.Bottom else SearchBarPosition.Top,
                                         searchPageSearchBarPosition = when (bottomSearchBarInSearch ?: bottomSearchBar) {
                                             true -> SearchBarPosition.Bottom

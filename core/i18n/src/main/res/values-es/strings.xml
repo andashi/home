@@ -346,7 +346,6 @@
     <string name="save_as_file">Guardar como archivo</string>
     <string name="preference_shapes_rect">Rectangular</string>
     <string name="preference_search_bar_style_transparent">Transparente</string>
-    <string name="preference_search_bar_style_solid">Sólido</string>
     <string name="preference_search_bar_style_hidden">Escondida</string>
     <string name="import_theme_contents">Contenido</string>
     <string name="preference_shapes_extra_round">Muy redondo</string>
