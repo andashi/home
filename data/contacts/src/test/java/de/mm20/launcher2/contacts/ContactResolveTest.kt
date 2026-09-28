@@ -7,9 +7,13 @@ import de.mm20.launcher2.contacts.providers.AndroidContact
 import de.mm20.launcher2.permissions.PermissionGroup
 import de.mm20.launcher2.permissions.PermissionsManager
 import de.mm20.launcher2.search.Resolved
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
+import kotlinx.coroutines.yield
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -38,7 +42,7 @@ class ContactResolveTest {
     )
 
     private fun deserializer(granted: Boolean) =
-        AndroidContactDeserializer(context, FakePermissionsManager(granted))
+        AndroidContactDeserializer(context, FakePermissionsManager(MutableStateFlow(granted)))
 
     @Test
     fun withoutThePermissionAStoredContactIsUnknown() = runBlocking {
@@ -51,12 +55,29 @@ class ContactResolveTest {
         assertEquals(Resolved.Unknown, deserializer(granted = true).resolve(stored))
     }
 
-    private class FakePermissionsManager(private val granted: Boolean) : PermissionsManager {
+    /**
+     * Granting the permission is announced, so the repository resolves stored
+     * contacts again instead of keeping them hidden until the database
+     * changes (review on #241).
+     */
+    @Test
+    fun grantingThePermissionAsksForAnotherResolve() = runBlocking {
+        val granted = MutableStateFlow(false)
+        val deserializer = AndroidContactDeserializer(context, FakePermissionsManager(granted))
+
+        val announced = async { withTimeout(5000) { deserializer.resolveAgain.first() } }
+        yield()
+        granted.value = true
+
+        assertEquals(Unit, announced.await())
+    }
+
+    private class FakePermissionsManager(private val granted: MutableStateFlow<Boolean>) : PermissionsManager {
         override fun requestPermission(context: AppCompatActivity, permissionGroup: PermissionGroup) {}
-        override fun checkPermissionOnce(permissionGroup: PermissionGroup): Boolean = granted
-        override fun checkEnabledInSystem(permissionGroup: PermissionGroup): Boolean = granted
+        override fun checkPermissionOnce(permissionGroup: PermissionGroup): Boolean = granted.value
+        override fun checkEnabledInSystem(permissionGroup: PermissionGroup): Boolean = granted.value
         override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {}
-        override fun hasPermission(permissionGroup: PermissionGroup): Flow<Boolean> = flowOf(granted)
+        override fun hasPermission(permissionGroup: PermissionGroup): Flow<Boolean> = granted
         override fun reportNotificationListenerState(running: Boolean) {}
         override fun reportAccessibilityServiceState(running: Boolean) {}
     }
