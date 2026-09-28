@@ -234,12 +234,21 @@ locked, like `home.grid.locked`.
   write-back writes is authored on the device: a search action's `label` and
   `url` as someone typed them (a URL can carry a private endpoint), and the
   favorites, which name the apps a person uses. The same values already
-  left the device before write-back:
-  - by the read-back provider (section 4, shell and system only), which is what
-    provisioning's `--pull` copies into a catalog in git;
-  - by platform backup when the owner enables device backup, through the
-    settings and databases they live in. The app permits this with
-    `android:allowBackup="true"` and `android:fullBackupContent="true"`.
+  leave the device by the read-back provider (section 4, shell and system
+  only), which is what provisioning's `--pull` copies into a catalog in git.
+
+  **Platform backup is not a path, since #15.** It used to be one:
+  `android:allowBackup="true"` and `android:fullBackupContent="true"` let any
+  backup transport take the settings and databases these values live in. Now
+  nothing of the launcher leaves the device by backup or by device-to-device
+  transfer: `allowBackup="false"`, and `dataExtractionRules` excluding every
+  domain from both, which `allowBackup` alone no longer closes on Android 12
+  and later. A restore brought back state that is wrong on another device -
+  widget ids never re-bound, profile serials that differ, contact ids that
+  can name a different person - so the file is the one portable form of the
+  managed state, and the owner's explicit `--pull` the one way it leaves.
+  `.github/scripts/check-backup-off.py` holds every release APK, and every
+  pull request's merged manifest, to it.
 
   Write-back adds a copy inside `launcher.json`, so "the file carries only
   what the host put there" stops being true. A key added to write-back is

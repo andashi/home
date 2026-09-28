@@ -116,6 +116,11 @@ def problems(manifest, resources, read_file):
         return found + [f"dataExtractionRules file {path} is missing or empty"]
 
     tree = _tree(text)
+    # Android reads only a <data-extraction-rules> document: the same sections
+    # under another root are ignored, and transfer stays on (review on #236).
+    root = next((b.split(" ")[0] for _, k, b in tree if k == "E"), None)
+    if root != "data-extraction-rules":
+        return found + [f"dataExtractionRules file {path} has root <{root}>, not <data-extraction-rules>"]
     if _elements(tree, "include"):
         found.append("the extraction rules include something; nothing may be included")
     for name in SECTIONS:
