@@ -119,6 +119,17 @@ class CheckBackupOffTest(unittest.TestCase):
         found = problems(MANIFEST, RESOURCES, files(included).get)
         self.assertTrue(any("include" in p for p in found), found)
 
+    def test_a_backup_agent_is_refused(self):
+        # The extraction rules govern the files Auto Backup takes, not what a
+        # custom agent sends; a library could merge one in without a conflict.
+        manifest = MANIFEST.replace(
+            "        A: {0}:supportsRtl".format(ANDROID),
+            '        A: {0}:backupAgent(0x0101027f)="com.example.Agent" (Raw: "com.example.Agent")\n'
+            "        A: {0}:supportsRtl".format(ANDROID),
+        )
+        found = problems(manifest, RESOURCES, files().get)
+        self.assertTrue(any("backupAgent" in p for p in found), found)
+
     def test_empty_input_is_refused_not_passed(self):
         # A failed aapt2 run yields empty text; that must not read as a clean APK.
         self.assertTrue(problems("", "", {}.get))

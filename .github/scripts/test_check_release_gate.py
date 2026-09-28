@@ -33,6 +33,21 @@ def comment_out(needle):
     return edit
 
 
+def every_job_with(edit):
+    """release.yml with `edit` applied to each line of every step's run, in every job."""
+    with open(RELEASE) as f:
+        workflow = yaml.safe_load(f)
+    for job in workflow["jobs"].values():
+        for step in job.get("steps") or []:
+            if "run" in step:
+                step["run"] = "\n".join(edit(line) for line in step["run"].splitlines())
+    return workflow
+
+
+def no_backup_check(job):
+    return f"jobs.{job} builds the release APK without running check-backup-off.py on it"
+
+
 class ReleaseGateTest(unittest.TestCase):
     def test_the_release_workflow_passes(self):
         self.assertEqual(gate.violations(release_with(lambda line: line)), [])
@@ -140,6 +155,39 @@ class ReleaseGateTest(unittest.TestCase):
                 env["RELEASE_CERT_SHA256"] = env["RELEASE_CERT_SHA256"][:40]
         found = gate.violations(workflow)
         self.assertIn("jobs.release pins no release certificate SHA-256 (RELEASE_CERT_SHA256, 64 hex)", found)
+
+
+class BackupCheckGateTest(unittest.TestCase):
+    """Property 5 (#15): every job that builds the release APK runs the backup
+    check on it, after the build, where its failure fails the job."""
+
+    def test_both_jobs_that_build_the_apk_run_the_check(self):
+        found = gate.violations(every_job_with(lambda line: line))
+        self.assertNotIn(no_backup_check("dry-run"), found)
+        self.assertNotIn(no_backup_check("release"), found)
+
+    def test_a_commented_out_backup_check_is_a_violation_in_each_job(self):
+        found = gate.violations(every_job_with(comment_out("check-backup-off.py")))
+        self.assertIn(no_backup_check("dry-run"), found)
+        self.assertIn(no_backup_check("release"), found)
+
+    def test_a_masked_backup_check_is_a_violation(self):
+        mask = lambda line: line + " || true" if "check-backup-off.py" in line else line
+        self.assertIn(no_backup_check("release"), gate.violations(every_job_with(mask)))
+
+    def test_errexit_turned_off_before_the_backup_check_is_a_violation(self):
+        off = lambda line: line.replace("set -euo pipefail", "set +e") if "set -euo pipefail" in line else line
+        self.assertIn(no_backup_check("dry-run"), gate.violations(every_job_with(off)))
+
+    def test_a_backup_check_before_the_build_is_a_violation(self):
+        with open(RELEASE) as f:
+            workflow = yaml.safe_load(f)
+        steps = workflow["jobs"]["dry-run"]["steps"]
+        check = next(s for s in steps if "check-backup-off.py" in s.get("run", ""))
+        steps.remove(check)
+        build = next(i for i, s in enumerate(steps) if "assembleDefaultRelease" in s.get("run", ""))
+        steps.insert(build, check)
+        self.assertIn(no_backup_check("dry-run"), gate.violations(workflow))
 
 
 if __name__ == "__main__":
