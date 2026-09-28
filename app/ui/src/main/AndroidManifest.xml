@@ -88,9 +88,14 @@
             android:excludeFromRecents="true"
             android:exported="true"
             android:theme="@style/DialogTheme">
+            <!-- Content URIs only (#15): a MIME type without a scheme also
+                 matches file:, and every theme file the launcher exports or
+                 receives is a content URI. An explicit intent bypasses this
+                 filter, so ThemeFile refuses other schemes in code too. -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
+                <data android:scheme="content" />
                 <data android:mimeType="application/vnd.de.mm20.launcher2.theme" />
             </intent-filter>
         </activity>
