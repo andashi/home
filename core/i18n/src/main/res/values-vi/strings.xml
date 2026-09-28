@@ -112,15 +112,6 @@
     <string name="preference_category_icons">Biểu tượng</string>
     <string name="preference_cards_shape_rounded">Bo tròn</string>
     <string name="preference_cards_shape_cut">Cắt</string>
-    <string name="preference_icon_shape">Hình dạng</string>
-    <string name="preference_icon_shape_square">Hình vuông</string>
-    <string name="preference_icon_shape_rounded_square">Hình vuông tròn</string>
-    <string name="preference_icon_shape_squircle">Hình tròn</string>
-    <string name="preference_icon_shape_triangle">Tam giác Reuleaux</string>
-    <string name="preference_icon_shape_circle">Vòng tròn</string>
-    <string name="preference_icon_shape_teardrop">Giọt nước mắt</string>
-    <string name="preference_icon_shape_pebble">Sỏi</string>
-    <string name="preference_icon_shape_hexagon">Hình lục giác</string>
     <string name="preference_category_searchbar">Thanh tìm kiếm</string>
     <string name="preference_theme_system">Theo dõi hệ thống</string>
     <string name="preference_themed_icons">Biểu tượng theo chủ đề</string>
@@ -137,7 +128,6 @@
     <string name="preference_system_bar_icons_dark">Tối</string>
     <string name="preference_hide_status_bar">Ẩn thanh trạng thái</string>
     <string name="preference_hide_nav_bar">Ẩn thanh điều hướng</string>
-    <string name="preference_icon_shape_pentagon">Ngũ giác</string>
     <string name="preference_category_wallpaper">Hình nền</string>
     <string name="preference_dim_wallpaper">Hình nền mờ</string>
     <string name="preference_dim_wallpaper_summary">Trong chủ đề tối, hình nền tối hơn</string>
@@ -162,7 +152,6 @@
     <string name="preference_about_license_summary">Được cấp phép theo Giấy phép Công cộng GNU 3.0</string>
     <string name="preference_category_grid">Lưới</string>
     <string name="preference_grid_icon_size">Kích thước biểu tượng</string>
-    <string name="preference_grid_column_count">Số cột</string>
     <string name="preference_grid_labels">Hiển thị nhãn</string>
     <string name="preference_grid_labels_summary">Hiển thị tên ứng dụng bên dưới biểu tượng</string>
     <string name="preference_screen_debug">Gỡ lỗi</string>

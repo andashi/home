@@ -20,7 +20,6 @@ import de.mm20.launcher2.ui.component.preferences.PreferenceCategory
 import de.mm20.launcher2.ui.component.preferences.PreferenceScreen
 import de.mm20.launcher2.ui.locals.LocalBackStack
 import de.mm20.launcher2.ui.settings.buildinfo.BuildInfoSettingsRoute
-import de.mm20.launcher2.ui.settings.easteregg.EasterEggSettingsRoute
 import de.mm20.launcher2.ui.settings.license.LicenseRoute
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -46,17 +45,9 @@ fun AboutSettingsScreen() {
                         ).versionName
                     }
                 }
-                var easterEggCounter by remember { mutableStateOf(0) }
                 Preference(
                     title = stringResource(R.string.preference_version),
                     summary = appVersion,
-                    onClick = {
-                        easterEggCounter++
-                        if (easterEggCounter >= 9) {
-                            backStack.add(EasterEggSettingsRoute)
-                            easterEggCounter = 0
-                        }
-                    }
                 )
                 Preference(
                     title = stringResource(R.string.preference_screen_buildinfo),

@@ -5,11 +5,9 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import de.mm20.launcher2.preferences.IconShape
 import de.mm20.launcher2.preferences.ui.GridSettings
 import de.mm20.launcher2.preferences.ui.SearchUiSettings
 import de.mm20.launcher2.preferences.ui.UiSettings
-import de.mm20.launcher2.ui.component.ProvideIconShape
 import de.mm20.launcher2.ui.locals.LocalShowAppDetails
 import de.mm20.launcher2.ui.locals.LocalGridSettings
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -21,10 +19,6 @@ fun ProvideSettings(
 ) {
     val settings: UiSettings = koinInject()
     val searchUiSettings: SearchUiSettings = koinInject()
-
-    val iconShape by remember {
-        settings.iconShape.distinctUntilChanged()
-    }.collectAsState(IconShape.Circle)
 
     val gridSettings by remember {
         settings.gridSettings.distinctUntilChanged()
@@ -43,9 +37,7 @@ fun ProvideSettings(
         LocalShowAppDetails provides showAppDetails,
         LocalGridSettings provides grid,
     ) {
-        ProvideIconShape(iconShape) {
-            content()
-        }
+        content()
     }
 
 }

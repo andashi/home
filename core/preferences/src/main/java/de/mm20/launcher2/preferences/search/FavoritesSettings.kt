@@ -15,7 +15,7 @@ class FavoritesSettings internal constructor(
     private val dataStore: LauncherDataStore,
 ) : Flow<FavoritesSettingsData> by (dataStore.data.map {
     FavoritesSettingsData(
-        columns = it.gridColumnCount,
+        columns = it.homeGridColumns,
         frequentlyUsed = it.favoritesFrequentlyUsed,
         frequentlyUsedRows = it.favoritesFrequentlyUsedRows,
     )

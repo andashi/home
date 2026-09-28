@@ -97,17 +97,9 @@
     <string name="missing_permission_appshortcuts_search_settings">يجب تعيين %1$s كتطبيق رئيسي افتراضي للبحث في اختصارات التطبيقات</string>
     <string name="preference_debug_reinstall_iconpacks_summary">مسح وإعادة بناء ذاكرة التخزين المؤقت لحزمة الأيقونات</string>
     <string name="preference_category_icons">أيقونات</string>
-    <string name="preference_icon_shape_circle">حلقة</string>
-    <string name="preference_icon_shape_square">مربع</string>
-    <string name="preference_icon_shape_rounded_square">مربع مدور</string>
-    <string name="preference_icon_shape_squircle">مربع دائري</string>
     <string name="customize_item_label">التسمية</string>
     <string name="preference_cards_shape_rounded">مستدير</string>
     <string name="preference_cards_shape_cut">مقصوص</string>
-    <string name="preference_icon_shape">الشكل</string>
-    <string name="preference_icon_shape_teardrop">دمعة</string>
-    <string name="preference_icon_shape_pebble">حصاة</string>
-    <string name="preference_icon_shape_hexagon">مسدس</string>
     <string name="preference_theme_system">اتباع النظام</string>
     <string name="preference_force_themed_icons_summary">تطبيق نظام ألوان التطبيق على جميع الرموز، بما في ذلك الرموز غير المدعومة (غير مستحسن)</string>
     <string name="preference_icon_pack">حزمة الرموز</string>
@@ -118,7 +110,6 @@
     <string name="preference_system_bar_icons_auto">تلقائي</string>
     <string name="preference_system_bar_icons_light">فاتح</string>
     <string name="preference_system_bar_icons_dark">داكن</string>
-    <string name="preference_icon_shape_pentagon">خماسي</string>
     <string name="preference_category_wallpaper">خلفية الشاشة</string>
     <string name="preference_dim_wallpaper">تعتيم خلفية الشاشة</string>
     <string name="preference_blur_wallpaper_summary">استخدم تأثير تشويش على خلفية الشاشة</string>
@@ -154,7 +145,6 @@
     <string name="search_bar_position_top">أعلى</string>
     <string name="shortcut_label_unavailable">غير متاح</string>
     <string name="preference_screen_search">البحث</string>
-    <string name="preference_icon_shape_triangle">مثلث رولو</string>
     <string name="preference_category_searchbar">شريط البحث</string>
     <string name="preference_themed_icons">رموز ذات سمات</string>
     <string name="preference_themed_icons_summary">تلوين الرموز باستخدام نظام ألوان التطبيق</string>
@@ -326,7 +316,6 @@
     <string name="preference_category_badges">الشارات</string>
     <string name="search_filter_apps">التطبيقات</string>
     <string name="preference_default_filter">المرشح الافتراضي</string>
-    <string name="preference_grid_column_count">عدد الأعمدة</string>
     <string name="profile_work_profile_state_locked">تطبيقات العمل متوقفة مؤقتًا</string>
     <string name="profile_work_profile_action_unlock">إلغاء الإيقاف المؤقت</string>
     <string name="gesture_action_power_menu">قائمة الطاقة</string>

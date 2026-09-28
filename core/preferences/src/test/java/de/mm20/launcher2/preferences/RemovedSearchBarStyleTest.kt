@@ -1,6 +1,5 @@
 package de.mm20.launcher2.preferences
 
-import androidx.test.core.app.ApplicationProvider
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
@@ -27,7 +26,7 @@ import java.io.ByteArrayOutputStream
 @RunWith(RobolectricTestRunner::class)
 class RemovedSearchBarStyleTest {
 
-    private val serializer = LauncherSettingsDataSerializer(ApplicationProvider.getApplicationContext())
+    private val serializer = LauncherSettingsDataSerializer()
 
     /** A settings file as a device writes it today, its search bar style `Solid`. */
     private val stored: JsonObject = Json.parseToJsonElement(

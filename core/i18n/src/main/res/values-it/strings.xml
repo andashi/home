@@ -56,21 +56,13 @@
     <string name="preference_screen_about_summary">Informazioni app e licenza</string>
     <string name="preference_screen_appearance_summary">Personalizza l\'aspetto</string>
     <string name="preference_category_icons">Icone</string>
-    <string name="preference_icon_shape">Forma</string>
-    <string name="preference_icon_shape_square">Quadrato</string>
-    <string name="preference_icon_shape_rounded_square">Quadrato smussato</string>
-    <string name="preference_icon_shape_squircle">Scoiattolo</string>
-    <string name="preference_icon_shape_circle">Cerchio</string>
-    <string name="preference_icon_shape_hexagon">Esagono</string>
     <string name="preference_category_searchbar">Barra di ricerca</string>
     <string name="preference_theme_system">Segui sistema</string>
     <string name="preference_themed_icons">Icone a tema</string>
     <string name="preference_icon_pack_summary_empty">Non ci sono pacchetti icone installati</string>
     <string name="preference_icon_pack">Pacchetto icone</string>
     <string name="preference_category_system_bars">Barre di sistema</string>
-    <string name="preference_icon_shape_triangle">Triangolo di Reuleaux</string>
     <string name="preference_hide_nav_bar">Nascondi barra di navigazione</string>
-    <string name="preference_icon_shape_pentagon">Pentagono</string>
     <string name="preference_category_wallpaper">Sfondo</string>
     <string name="preference_dim_wallpaper">Scurisci sfondo</string>
     <string name="preference_dim_wallpaper_summary">Scurisci lo sfondo nei temi scuri</string>
@@ -84,7 +76,6 @@
     <string name="preference_about_fdroid">Repository F-Droid</string>
     <string name="preference_category_license">Licenza</string>
     <string name="preference_category_grid">Griglia</string>
-    <string name="preference_grid_column_count">Numero colonne</string>
     <string name="preference_screen_debug">Debug</string>
     <string name="preference_screen_debug_summary">Strumenti di risoluzione dei problemi</string>
     <string name="preference_category_widgets">Widget</string>
@@ -126,7 +117,6 @@
     <string name="alert_delete_shortcut">La scorciatoia %1$s verrà rimossa in modo permanente. Procedere\?</string>
     <string name="preference_grid_labels">Mostra etichette</string>
     <string name="preference_grid_labels_summary">Mostra il nome dell\'app sotto l\'icona</string>
-    <string name="preference_icon_shape_teardrop">Lacrima</string>
     <string name="apps_profile_main">Personale</string>
     <string name="apps_profile_work">Lavoro</string>
     <string name="menu_remove">Rimuovi</string>
@@ -159,7 +149,6 @@
     <string name="preference_edit_button">Pulsante modifica</string>
     <string name="preference_favorites_edit_button_summary">Mostra un pulsante per riordinare i preferiti</string>
     <string name="preference_widgets_edit_button_summary">Mostra un pulsante per aggiungere, rimuovere e riorganizzare i widget</string>
-    <string name="preference_icon_shape_pebble">Ciottolo</string>
     <string name="preference_status_bar_icons">Icone barra di stato</string>
     <string name="preference_nav_bar_icons">Icone barra di navigazione</string>
     <string name="preference_system_bar_icons_auto">Auto</string>

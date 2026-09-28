@@ -25,9 +25,10 @@ icons.
 `icons.badges` is an object of its own, and a key left out of it stays as it
 is on the device. The read-back always serves all three.
 
-There is no `icons.shape` key. Home, the dock and search always draw the
-squircle (ADR 0004), so a shape key would change nothing there. The shape in
-the settings only reaches the settings screens and some sheets.
+There is no `icons.shape` key, and no shape setting either. Every icon the
+launcher draws is the squircle (ADR 0004): the settings once offered other
+shapes, but under the Clear look they reached only the settings screens and a
+few sheets, never home, the dock or search, so the setting was removed (#229).
 
 ## Lawnicons
 

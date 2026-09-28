@@ -50,12 +50,6 @@
     <string name="preference_screen_appearance_summary">Modifier l\'apparence</string>
     <!-- Wikipedia url prefix -->
     <string name="preference_category_icons">Icônes</string>
-    <string name="preference_icon_shape">Forme</string>
-    <string name="preference_icon_shape_square">Carré</string>
-    <string name="preference_icon_shape_rounded_square">Carré arrondi</string>
-    <string name="preference_icon_shape_squircle">Squircle</string>
-    <string name="preference_icon_shape_triangle">Triangle arrondi</string>
-    <string name="preference_icon_shape_circle">Cercle</string>
     <string name="preference_category_searchbar">Barre de recherche</string>
     <string name="preference_theme_system">Suivre le système</string>
     <string name="websearch_dialog_url_error">Le terme \'${1}\' est manquant dans cette URL</string>
@@ -74,13 +68,11 @@
     <string name="menu_back">Retour</string>
     <string name="menu_app_info">Infos sur l\'appli</string>
     <string name="menu_delete">Supprimer</string>
-    <string name="preference_icon_shape_hexagon">Hexagone</string>
     <string name="shortcut_summary">Par %1$s</string>
     <string name="missing_permission_contact_search">La permission d\'accès aux contacts est nécessaire pour rechercher dans les contacts.</string>
     <string name="close">Fermer</string>
     <string name="websearch_dialog_custom_icon">Icône personnalisée</string>
     <string name="widget_action_remove">Retirer</string>
-    <string name="preference_icon_shape_pentagon">Pentagone</string>
     <string name="preference_category_wallpaper">Fond d\'écran</string>
     <string name="preference_dim_wallpaper">Assombrir le fond d\'écran</string>
     <string name="preference_dim_wallpaper_summary">Assombrir le fond d\'écran en thème sombre</string>
@@ -104,7 +96,6 @@
     <string name="preference_about_license">Le code source de cette application est libre.</string>
     <string name="preference_about_license_summary">Sous la licence GNU General Public License 3.0</string>
     <string name="preference_category_grid">Grille</string>
-    <string name="preference_grid_column_count">Nombre de colonnes</string>
     <string name="grant_permission">Accorder</string>
     <string name="missing_permission_contact_search_settings">La permission d\'accès aux contacts est nécessaire pour rechercher des contacts</string>
     <string name="missing_permission_notification_badges">La permission d\'accès aux notifications est nécessaire pour afficher les badges de notification</string>
@@ -181,7 +172,6 @@
     <string name="edit_favorites_dialog_tag_section_empty">Les étiquettes épinglées apparaîtront ici</string>
     <string name="edit_favorites_dialog_tags">Étiquettes</string>
     <string name="edit_favorites_dialog_empty_section">Faites glisser les éléments ici</string>
-    <string name="preference_icon_shape_teardrop">Goutte d\'eau</string>
     <string name="edit_favorites_dialog_new_tag">Créer une étiquette</string>
     <string name="websearch_dialog_advanced">Avancé</string>
     <string name="preference_category_debug_tools">Outils</string>
@@ -192,7 +182,6 @@
     <string name="preference_system_bar_icons_auto">Automatique</string>
     <string name="preference_system_bar_icons_light">Clair</string>
     <string name="preference_system_bar_icons_dark">Sombre</string>
-    <string name="preference_icon_shape_pebble">Galet</string>
     <string name="help">Aide</string>
     <string name="preference_screen_search_actions">Actions rapides</string>
     <string name="search_action_message">Message</string>

@@ -34,14 +34,9 @@
     <string name="preference_category_links">Linki</string>
     <string name="preference_screen_about_summary">Informacje o aplikacji i licencji</string>
     <string name="preference_category_icons">Ikonki</string>
-    <string name="preference_icon_shape">Kształt</string>
-    <string name="preference_icon_shape_square">Kwadrat</string>
-    <string name="preference_icon_shape_rounded_square">Zaokrąglony kwadrat</string>
-    <string name="preference_icon_shape_hexagon">Heksagon</string>
     <string name="preference_icon_pack">Paczka ikon</string>
     <string name="preference_icon_pack_summary_empty">Brak zainstalowanych paczek ikon</string>
     <string name="preference_category_system_bars">Paski systemowe</string>
-    <string name="preference_icon_shape_pentagon">Pięciokąt</string>
     <string name="preference_category_wallpaper">Tapeta</string>
     <string name="preference_dim_wallpaper">Przyciemniona tapeta</string>
     <string name="preference_dim_wallpaper_summary">W ciemnych motywach, przyciemnij tapetę</string>
@@ -51,7 +46,6 @@
     <string name="preference_about_license">Ta aplikacja jest wolnym oprogramowaniem.</string>
     <string name="preference_category_grid">Siatka</string>
     <string name="preference_grid_icon_size">Rozmiar ikon</string>
-    <string name="preference_grid_column_count">Liczba kolumn</string>
     <string name="preference_screen_debug">Debug</string>
     <string name="preference_screen_debug_summary">Narzędzia do rozwiązywania problemów</string>
     <string name="preference_category_widgets">Widżety</string>
@@ -78,7 +72,6 @@
     <string name="grant_permission">Przyznaj</string>
     <string name="preference_category_licenses">Licencje otwarto źródłowe</string>
     <string name="open_webpage">Otwórz stronę internetową</string>
-    <string name="preference_icon_shape_circle">Okrąg</string>
     <string name="preference_category_searchbar">Pasek wyszukiwania</string>
     <string name="preference_search_bar_auto_focus_summary">Automatyczne wyświetlanie klawiatury po otwarciu szuflady aplikacji</string>
     <string name="preference_search_bar_style_summary">Dostosuj wygląd paska wyszukiwania</string>
@@ -101,7 +94,6 @@
     <string name="preference_enforce_icon_shape_summary">Zastosuj kształt do wszystkich ikon, również do tych, które normalnie by go nie obsługiwały</string>
     <string name="preference_grid_labels">Pokaż etykiety</string>
     <string name="duplicate">Duplikuj</string>
-    <string name="preference_icon_shape_triangle">Trójkąt Reuleaux</string>
     <string name="preference_shortcut_badges_summary">Pokaż plakietkę, która wskazuje do jakiej aplikacji należy dany skrót</string>
     <string name="preference_grid_labels_summary">Pokaż nazwę aplikacji pod ikoną</string>
     <string name="create_search_action_type_intent">Niestandardowy intent</string>
@@ -150,11 +142,9 @@
         <item quantity="many">%1$d wpisów usunięto.</item>
         <item quantity="other">%1$d wpisów usunięto.</item>
     </plurals>
-    <string name="preference_icon_shape_pebble">Kamyk</string>
     <string name="preference_blur_wallpaper_summary">Użyj efektu rozmycia na tapecie</string>
     <string name="preference_blur_wallpaper_unsupported">Nieobsługiwane na tym urządzeniu</string>
     <string name="icon_picker_search_icon">Wyszukiwanie w pakietach ikon</string>
-    <string name="preference_icon_shape_teardrop">Łza</string>
     <string name="edit_favorites_dialog_tags">Tagi</string>
     <string name="edit_favorites_dialog_tag_section_empty">Przypięte tagi pojawią się tutaj</string>
     <string name="preference_screen_tags">Tagi</string>
@@ -169,7 +159,6 @@
     <string name="preference_debug_cleanup_database_summary">Usuń uszkodzone i nieużywane wpisy z bazy danych launchera</string>
     <string name="preference_cards_shape_rounded">Zaokrąglone</string>
     <string name="preference_cards_shape_cut">Przycięte</string>
-    <string name="preference_icon_shape_squircle">Squircle</string>
     <string name="preference_hide_status_bar">Ukryj pasek stanu</string>
     <string name="preference_hide_nav_bar">Ukryj pasek nawigacji</string>
     <string name="preference_suspended_badges_summary">Pokaż plakietkę dla zawieszonych aplikacji</string>

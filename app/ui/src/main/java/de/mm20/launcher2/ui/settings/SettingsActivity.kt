@@ -63,8 +63,6 @@ import de.mm20.launcher2.ui.settings.debug.DebugSettingsRoute
 import de.mm20.launcher2.ui.settings.debug.DebugSettingsScreen
 import de.mm20.launcher2.ui.settings.debug.StringNormalizerTestRoute
 import de.mm20.launcher2.ui.settings.debug.StringNormalizerTestScreen
-import de.mm20.launcher2.ui.settings.easteregg.EasterEggSettingsRoute
-import de.mm20.launcher2.ui.settings.easteregg.EasterEggSettingsScreen
 import de.mm20.launcher2.ui.settings.favorites.FavoritesSettingsRoute
 import de.mm20.launcher2.ui.settings.favorites.FavoritesSettingsScreen
 import de.mm20.launcher2.ui.settings.feed.FeedIntegrationSettingsRoute
@@ -183,9 +181,6 @@ class SettingsActivity : BaseActivity() {
             }
             entry<BuildInfoSettingsRoute> {
                 BuildInfoSettingsScreen()
-            }
-            entry<EasterEggSettingsRoute> {
-                EasterEggSettingsScreen()
             }
             entry<DebugSettingsRoute> {
                 DebugSettingsScreen()

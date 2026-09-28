@@ -40,12 +40,6 @@
     <string name="preference_category_licenses">Лицензии открытого ПО</string>
     <string name="preference_screen_about_summary">Информация о лицензии и приложении</string>
     <string name="preference_screen_appearance_summary">Настройте внешний вид</string>
-    <string name="preference_icon_shape">Форма</string>
-    <string name="preference_icon_shape_rounded_square">Закруглённый квадрат</string>
-    <string name="preference_icon_shape_squircle">Сквиркл</string>
-    <string name="preference_icon_shape_triangle">Треугольник Рело</string>
-    <string name="preference_icon_shape_circle">Круг</string>
-    <string name="preference_icon_shape_hexagon">Шестиугольник</string>
     <string name="preference_theme_system">Следовать системе</string>
     <string name="menu_share_store_link">%1$s – ссылка</string>
     <string name="menu_app_info">Информация о приложении</string>
@@ -56,7 +50,6 @@
     <string name="preference_colors_bw">Чёрно-белая</string>
     <string name="open_webpage">Открыть веб-сайт</string>
     <string name="preference_category_icons">Иконки</string>
-    <string name="preference_icon_shape_square">Квадрат</string>
     <string name="preference_category_searchbar">Строка поиска</string>
     <string name="preference_themed_icons">Тематические значки</string>
     <string name="preference_themed_icons_summary">Раскрасьте иконки в соответствии с цветовой схемой приложения</string>
@@ -78,7 +71,6 @@
     <string name="preference_about_fdroid">Репозиторий F-Droid</string>
     <string name="preference_category_license">Лицензия</string>
     <string name="preference_category_grid">Сетка</string>
-    <string name="preference_grid_column_count">Количество столбцов</string>
     <string name="preference_screen_debug">Отладка</string>
     <string name="preference_category_widgets">Виджеты</string>
     <string name="save">Сохранить</string>
@@ -117,12 +109,9 @@
     <string name="preference_blur_wallpaper_unsupported">Не поддерживается на данном устройстве</string>
     <string name="preference_category_badges">Значки</string>
     <string name="edit_favorites_dialog_new_tag">Создать тег</string>
-    <string name="preference_icon_shape_teardrop">Слезинка</string>
     <string name="preference_status_bar_icons">Цвет значков строки состояния</string>
     <string name="preference_system_bar_icons_dark">Тёмный</string>
     <string name="preference_system_bar_icons_light">Светлый</string>
-    <string name="preference_icon_shape_pentagon">Пятиугольник</string>
-    <string name="preference_icon_shape_pebble">Булыжник</string>
     <string name="search_action_contact">Добавить в контакты</string>
     <string name="search_action_websearch_url">Образец URL</string>
     <string name="more_information">Подробнее</string>

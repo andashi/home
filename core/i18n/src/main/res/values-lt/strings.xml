@@ -57,12 +57,6 @@
     <string name="preference_category_icons">Ikonos</string>
     <string name="preference_cards_shape_rounded">Apvalinta</string>
     <string name="preference_cards_shape_cut">Kirpti</string>
-    <string name="preference_icon_shape">Forma</string>
-    <string name="preference_icon_shape_rounded_square">Apvalintas kvadratas</string>
-    <string name="preference_icon_shape_squircle">Apvalintas kvadratas</string>
-    <string name="preference_icon_shape_circle">Skritulys</string>
-    <string name="preference_icon_shape_teardrop">Ąšara</string>
-    <string name="preference_icon_shape_hexagon">Šešiakampis</string>
     <string name="preference_category_searchbar">Paieškos laukas</string>
     <string name="preference_force_themed_icons_summary">Nustatyti programos spalvų schema visom ikonom ,įskaičiuojant nepalaikomas (ne rekomenduotina)</string>
     <string name="preference_icon_pack_summary_empty">Nėra ikonų paketų</string>
@@ -74,7 +68,6 @@
     <string name="preference_status_bar_icons">Pranešimų juostos ikonos</string>
     <string name="preference_nav_bar_icons">Navigacinio lauko ikonos</string>
     <string name="preference_hide_nav_bar">Slėpti navigacinę juosta</string>
-    <string name="preference_icon_shape_pentagon">Penkiakampis</string>
     <string name="preference_category_wallpaper">Fonas</string>
     <string name="preference_dim_wallpaper_summary">Tamsiuose temose ,patamsinti foną</string>
     <string name="preference_blur_wallpaper">Sulieti foną</string>
@@ -94,7 +87,6 @@
     <string name="preference_about_license_summary">Licensuota pagal GNU General Public License 3.0</string>
     <string name="preference_category_grid">Išdėstymas</string>
     <string name="preference_grid_icon_size">Ikonų dydis</string>
-    <string name="preference_grid_column_count">Stulpelių skaičius</string>
     <string name="preference_grid_labels">Rodyti ūžrašus</string>
     <string name="preference_grid_labels_summary">Rodyti programos pavadinimą žemiau ikonos</string>
     <string name="preference_category_widgets">Valdikliai</string>
@@ -122,8 +114,6 @@
     <string name="preference_colors_default">Numatyta</string>
     <string name="preference_colors_bw">Juoda balta</string>
     <string name="preference_screen_about">Apie</string>
-    <string name="preference_icon_shape_triangle">Reuleaux trikampis</string>
-    <string name="preference_icon_shape_pebble">Akmenėlis</string>
     <string name="preference_screen_appearance_summary">Tinkinti išvaizda ir jausma</string>
     <string name="preference_theme_system">Sekti sistemą</string>
     <string name="preference_themed_icons">Temuotos ikonos</string>
@@ -140,7 +130,6 @@
     </plurals>
     <string name="preference_dim_wallpaper">Patamsinti foną</string>
     <string name="preference_blur_wallpaper_unsupported">Nepalaikoma ant šiuo prietaiso</string>
-    <string name="preference_icon_shape_square">Kvadratas</string>
     <string name="preference_blur_wallpaper_radius">Suliejimo spindulys</string>
     <string name="preference_enforce_icon_shape">Priversti formą</string>
     <string name="preference_enforce_icon_shape_summary">Nustatyti formą visom ikonom įskaitant tas kurios įprastai nepalaikytų</string>

@@ -39,6 +39,30 @@ class UiSettingsHomeGridTest {
         assertEquals(false, settings.homeGridLocked.first())
     }
 
+    /**
+     * #229: the pickers and editor sheets had a column count of their own,
+     * labelled "grid columns" and touching no grid. They follow the home grid
+     * now, and so does the favorites row's column source.
+     */
+    @Test
+    fun `the pickers and the favorites row follow the home grid's columns`() = runTest {
+        seedSettingsFile(context, LauncherSettingsData(homeGridColumns = 6))
+        val store = LauncherDataStore(context)
+
+        assertEquals(6, UiSettings(store).gridSettings.first().columnCount)
+        assertEquals(6, de.mm20.launcher2.preferences.search.FavoritesSettings(store).first().columns)
+    }
+
+    /**
+     * Review on #243: the fallback a screen draws with before the store emits
+     * is the home grid's own default, or a picker opens one column too wide
+     * for a frame on a default device.
+     */
+    @Test
+    fun `the grid settings' fallback column count is the home grid's default`() {
+        assertEquals(LauncherSettingsData().homeGridColumns, de.mm20.launcher2.preferences.ui.GridSettings().columnCount)
+    }
+
     @Test
     fun `glass values are exposed with the defaults on fresh settings`() = runTest {
         assertEquals(

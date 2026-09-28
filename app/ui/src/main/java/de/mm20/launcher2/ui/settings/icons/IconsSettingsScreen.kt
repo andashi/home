@@ -17,12 +17,8 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -37,20 +33,16 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.NavKey
 import de.mm20.launcher2.icons.IconPack
 import de.mm20.launcher2.icons.LauncherIcon
-import de.mm20.launcher2.preferences.IconShape
 import de.mm20.launcher2.preferences.ui.GridSettings
 import de.mm20.launcher2.ui.R
 import de.mm20.launcher2.ui.component.DismissableBottomSheet
 import de.mm20.launcher2.ui.component.ShapedLauncherIcon
-import de.mm20.launcher2.ui.component.getShape
 import de.mm20.launcher2.ui.component.preferences.GuardedPreference
 import de.mm20.launcher2.ui.component.preferences.Preference
 import de.mm20.launcher2.ui.component.preferences.PreferenceCategory
@@ -71,7 +63,6 @@ fun IconsSettingsScreen() {
     val grid by viewModel.grid.collectAsStateWithLifecycle(GridSettings())
     val icons by viewModel.icons.collectAsStateWithLifecycle(null)
     val density = LocalDensity.current
-    val iconShape by viewModel.iconShape.collectAsStateWithLifecycle(IconShape.PlatformDefault)
 
     val installedIconPacks by viewModel.installedIconPacks.collectAsState(emptyList())
 
@@ -134,15 +125,6 @@ fun IconsSettingsScreen() {
                         }
                     )
                 }
-                SliderPreference(
-                    title = stringResource(R.string.preference_grid_column_count),
-                    value = grid.columnCount,
-                    min = 3,
-                    max = 12,
-                    onValueChanged = {
-                        viewModel.setColumnCount(it)
-                    }
-                )
             }
         }
         item {
@@ -166,14 +148,6 @@ fun IconsSettingsScreen() {
                         }
                     }
                 }
-                IconShapePreference(
-                    title = stringResource(R.string.preference_icon_shape),
-                    summary = getShapeName(iconShape),
-                    value = iconShape,
-                    onValueChanged = {
-                        viewModel.setIconShape(it)
-                    }
-                )
                 SwitchPreference(
                     title = stringResource(R.string.preference_enforce_icon_shape),
                     summary = stringResource(R.string.preference_enforce_icon_shape_summary),
@@ -391,96 +365,4 @@ private fun IconPackSelectorSheet(
             }
         }
     }
-}
-
-
-@Composable
-fun IconShapePreference(
-    title: String,
-    summary: String? = null,
-    value: IconShape?,
-    onValueChanged: (IconShape) -> Unit
-) {
-    var showDialog by remember { mutableStateOf(false) }
-    Preference(title = title, summary = summary, onClick = { showDialog = true })
-
-    if (showDialog && value != null) {
-        val shapes = remember {
-            IconShape.entries
-                .filter { it != IconShape.EasterEgg }
-        }
-        Dialog(onDismissRequest = { showDialog = false }) {
-            Surface(
-                tonalElevation = 16.dp,
-                shadowElevation = 16.dp,
-                shape = MaterialTheme.shapes.extraLarge,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 16.dp),
-            ) {
-                Column(
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(
-                        text = title,
-                        style = MaterialTheme.typography.titleLarge,
-                        modifier = Modifier.padding(
-                            start = 24.dp, end = 24.dp, top = 16.dp, bottom = 8.dp
-                        )
-                    )
-                    LazyVerticalGrid(
-                        columns = GridCells.Adaptive(96.dp),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 16.dp, start = 16.dp, end = 16.dp)
-                    ) {
-                        items(shapes) {
-                            Column(
-                                modifier = Modifier
-                                    .padding(8.dp),
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                Box(
-                                    modifier = Modifier
-                                        .clip(getShape(it))
-                                        .size(48.dp)
-                                        .background(MaterialTheme.colorScheme.primary)
-                                        .clickable {
-                                            onValueChanged(it)
-                                            showDialog = false
-                                        }
-                                )
-                                Text(
-                                    getShapeName(it) ?: "",
-                                    textAlign = TextAlign.Center,
-                                    style = MaterialTheme.typography.labelMedium,
-                                    modifier = Modifier.padding(top = 4.dp)
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-
-@Composable
-private fun getShapeName(shape: IconShape?): String? {
-    return stringResource(
-        when (shape) {
-            IconShape.Triangle -> R.string.preference_icon_shape_triangle
-            IconShape.Hexagon -> R.string.preference_icon_shape_hexagon
-            IconShape.RoundedSquare -> R.string.preference_icon_shape_rounded_square
-            IconShape.Squircle -> R.string.preference_icon_shape_squircle
-            IconShape.Square -> R.string.preference_icon_shape_square
-            IconShape.Pentagon -> R.string.preference_icon_shape_pentagon
-            IconShape.PlatformDefault -> R.string.preference_value_system_default
-            IconShape.Circle -> R.string.preference_icon_shape_circle
-            IconShape.Teardrop -> R.string.preference_icon_shape_teardrop
-            IconShape.Pebble -> R.string.preference_icon_shape_pebble
-            else -> return null
-        }
-    )
 }

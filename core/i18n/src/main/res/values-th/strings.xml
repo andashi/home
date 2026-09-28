@@ -53,21 +53,14 @@
     <plurals name="debug_cleanup_database_result">
         <item quantity="other">%1$d รายการถูกลบแล้ว</item>
     </plurals>
-    <string name="preference_icon_shape_square">สี่เหลี่ยม</string>
     <string name="preference_cards_shape_rounded">มุมมน</string>
     <string name="preference_cards_shape_cut">มุมตัด</string>
-    <string name="preference_icon_shape_squircle">สี่เหลี่ยมบวม</string>
-    <string name="preference_icon_shape_triangle">สามเหลี่ยมบวม</string>
-    <string name="preference_icon_shape_circle">วงกลม</string>
-    <string name="preference_icon_shape_teardrop">หยดน้ำ</string>
-    <string name="preference_icon_shape_hexagon">หกเหลี่ยม</string>
     <string name="preference_theme_system">ทำตามระบบ</string>
     <string name="preference_icon_pack_summary_empty">ไม่ได้ติดตั้งชุดไอคอนใด</string>
     <string name="preference_status_bar_icons">ไอคอนบนแถบสถานะ</string>
     <string name="preference_category_system_bars">แถบระบบ</string>
     <string name="preference_system_bar_icons_light">สว่าง</string>
     <string name="preference_system_bar_icons_dark">มืด</string>
-    <string name="preference_icon_shape_pentagon">ห้าเหลี่ยม</string>
     <string name="preference_hide_status_bar">ซ่อนแถบสถานะ</string>
     <string name="preference_hide_nav_bar">ซ่อนแถบนำทาง</string>
     <string name="preference_category_wallpaper">ภาพพื้นหลัง</string>
@@ -84,7 +77,6 @@
     <string name="preference_about_license">แอปนี้เป็นซอฟต์แวร์เสรี</string>
     <string name="preference_about_license_summary">ได้รับการอนุญาตให้ใช้ภายใต้สัญญาอนุญาตสาธารณะทั่วไปของกนู 3.0</string>
     <string name="preference_category_grid">ลิ้นชักแอป</string>
-    <string name="preference_grid_column_count">จำนวนคอลัมน์</string>
     <string name="preference_grid_labels">แสดงป้ายชื่อ</string>
     <string name="preference_screen_debug">แก้ไขข้อผิดพลาด</string>
     <string name="preference_screen_debug_summary">เครื่องมือแก้ไขปัญหา</string>
@@ -165,9 +157,6 @@
     <string name="websearch_dialog_replace_icon">แทนที่ไอคอน</string>
     <string name="websearch_dialog_delete_icon">ลบไอคอน</string>
     <string name="preference_category_icons">ไอคอน</string>
-    <string name="preference_icon_shape">รูปร่าง</string>
-    <string name="preference_icon_shape_rounded_square">สีเหลี่ยมมุมมน</string>
-    <string name="preference_icon_shape_pebble">ก้อนหิน</string>
     <string name="preference_themed_icons">ปรับสีไอคอน</string>
     <string name="preference_themed_icons_summary">ปรับสีไอคอนให้เข้ากับโทนสีของแอป</string>
     <string name="preference_force_themed_icons">บังคับการปรับสีไอคอน</string>

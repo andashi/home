@@ -64,12 +64,6 @@
     <string name="preference_category_icons">Ikoonid</string>
     <string name="preference_cards_shape_rounded">Ümardatud</string>
     <string name="preference_cards_shape_cut">Lõika</string>
-    <string name="preference_icon_shape_square">Ruut</string>
-    <string name="preference_icon_shape_rounded_square">Ümarate nurkadega ruut</string>
-    <string name="preference_icon_shape_circle">Ring</string>
-    <string name="preference_icon_shape_teardrop">Pisar</string>
-    <string name="preference_icon_shape_pebble">Kivike</string>
-    <string name="preference_icon_shape_hexagon">Kuusnurk</string>
     <string name="preference_category_searchbar">Otsinguriba</string>
     <string name="preference_theme_system">Jälgi süsteemi</string>
     <string name="preference_icon_pack">Ikoonipakk</string>
@@ -80,14 +74,12 @@
     <string name="preference_status_bar_icons">Olekuriba ikoonid</string>
     <string name="preference_nav_bar_icons">Navigeerimisriba ikoonid</string>
     <string name="preference_hide_nav_bar">Peida navigeerimisriba</string>
-    <string name="preference_icon_shape_pentagon">Viisnurk</string>
     <string name="preference_category_wallpaper">Taustapilt</string>
     <string name="preference_wallpaper_summary">Vali taustapilt</string>
     <string name="preference_category_license">Litsents</string>
     <string name="preference_about_license">See rakendus on vaba tarkvara.</string>
     <string name="preference_category_grid">Võrgustik</string>
     <string name="preference_grid_icon_size">Ikooni suurus</string>
-    <string name="preference_grid_column_count">Veergude arv</string>
     <string name="preference_grid_list_icons">Näita rakenduste ikoone nimekirjana</string>
     <string name="preference_grid_labels">Näita silte</string>
     <string name="preference_grid_labels_summary">Näita ikooni all rakenduse nime</string>
@@ -224,7 +216,6 @@
     <string name="preference_system_bar_icons_auto">Automaatne</string>
     <string name="preference_about_telegram">Telegrammi grupp</string>
     <string name="preference_debug_reinstall_iconpacks">Paigalda ikoonipaketid uuesti</string>
-    <string name="preference_icon_shape">Kujund</string>
     <string name="preference_hide_status_bar">Peida staatuseriba</string>
     <string name="preference_layout_fixed_search_bar">Fikseeritud otsinguriba</string>
     <string name="preference_search_result_ordering_weight_factor_default">Tasakaalus</string>

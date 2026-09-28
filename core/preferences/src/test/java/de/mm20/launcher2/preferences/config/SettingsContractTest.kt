@@ -85,7 +85,7 @@ class SettingsContractTest {
          * the issue is updated to match.
          */
         val GapsAt229 = setOf(
-            "gridColumnCount", "searchBarStyle", "searchBarColors", "iconsShape",
+            "searchBarStyle", "searchBarColors",
         )
 
         val Contract: Map<String, State> = mapOf(
@@ -124,7 +124,6 @@ class SettingsContractTest {
             "badgesNotifications" to State.Key("icons.badges.notifications"),
             "badgesSuspendedApps" to State.Key("icons.badges.suspendedApps"),
             "badgesShortcuts" to State.Key("icons.badges.shortcuts"),
-            "gridColumnCount" to State.Gap(GapsIssue),
             "gridIconSize" to State.Key("icons.size"),
             "gridLabels" to State.Key("search.labels"),
             "gridList" to State.Key("search.layout"),
@@ -142,7 +141,6 @@ class SettingsContractTest {
                     "device-local and stay out of the contract for privacy (#229)",
             ),
             "hiddenItemsShowButton" to State.Key("search.hiddenItemsButton"),
-            "iconsShape" to State.Gap(GapsIssue),
             "iconsAdaptify" to State.Key("icons.adaptify"),
             "iconsThemed" to State.Key("icons.themed"),
             "iconsForceThemed" to State.Key("icons.enforceThemed"),

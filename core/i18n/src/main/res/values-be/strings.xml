@@ -95,15 +95,6 @@
     <string name="preference_debug_reinstall_iconpacks_summary">Ачысціць і стварыць нанава кэш пакетаў значкоў</string>
     <string name="preference_category_icons">Значкі</string>
     <string name="preference_cards_shape_rounded">Акруглая</string>
-    <string name="preference_icon_shape">Фігура</string>
-    <string name="preference_icon_shape_square">Квадрат</string>
-    <string name="preference_icon_shape_rounded_square">Скруглены квадрат</string>
-    <string name="preference_icon_shape_squircle">Круграт</string>
-    <string name="preference_icon_shape_teardrop">Капля</string>
-    <string name="preference_icon_shape_triangle">Трохвугольнік Рело</string>
-    <string name="preference_icon_shape_circle">Круг</string>
-    <string name="preference_icon_shape_pebble">Камень</string>
-    <string name="preference_icon_shape_hexagon">Шасцівугольнік</string>
     <string name="preference_cards_shape_cut">Абрэзаная</string>
     <string name="preference_category_searchbar">Поле пошуку</string>
     <string name="preference_theme_system">Як у сістэме</string>
@@ -121,7 +112,6 @@
     <string name="preference_status_bar_icons">Значкі сістэмнай панэлі</string>
     <string name="preference_nav_bar_icons">Значкі панэлі навігацыі</string>
     <string name="preference_hide_nav_bar">Схаваць панэль навігацыі</string>
-    <string name="preference_icon_shape_pentagon">Пяцівугольнік</string>
     <string name="preference_category_wallpaper">Шпалеры</string>
     <string name="preference_dim_wallpaper">Зацямніць шпалеры</string>
     <string name="preference_dim_wallpaper_summary">Забіць шпалеры больш цёмнымі ў больш цёмных тэмах</string>
@@ -143,7 +133,6 @@
     <string name="preference_shortcut_badges">Адзнакі ярлыкоў</string>
     <string name="preference_enforce_icon_shape_summary">Прымяніць формы да ўсіх значкоў, нават тых, якія гэта не падтрымліваюць</string>
     <string name="preference_about_license">Гэта праграма — вольнае праграмнае забеспячэнне.</string>
-    <string name="preference_grid_column_count">Колькасць слупкоў</string>
     <string name="preference_grid_labels">Паказваць подпісы</string>
     <string name="preference_about_license_summary">Пад ліцэнзіяй GNU General Public License 3.0</string>
     <string name="preference_grid_labels_summary">Паказваць назву праграмы пад значком</string>

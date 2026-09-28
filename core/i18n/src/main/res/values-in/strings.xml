@@ -66,14 +66,7 @@
     <string name="preference_debug_reinstall_iconpacks">Pasang ulang paket ikon</string>
     <string name="preference_category_icons">Ikon</string>
     <string name="preference_debug_reinstall_iconpacks_summary">Bersihkan dan bangun ulang cache paket ikon</string>
-    <string name="preference_icon_shape">Bentuk</string>
     <string name="preference_cards_shape_cut">Potongan</string>
-    <string name="preference_icon_shape_square">Kotak</string>
-    <string name="preference_icon_shape_rounded_square">Kotak melingkar</string>
-    <string name="preference_icon_shape_circle">Lingkaran</string>
-    <string name="preference_icon_shape_teardrop">Tetes air</string>
-    <string name="preference_icon_shape_hexagon">Segi enam</string>
-    <string name="preference_icon_shape_pebble">Kerikil</string>
     <string name="preference_category_searchbar">Bar pencarian</string>
     <string name="preference_theme_system">Ikuti sistem</string>
     <string name="preference_themed_icons">Ikon bertema</string>
@@ -88,7 +81,6 @@
     <string name="preference_system_bar_icons_light">Cerah</string>
     <string name="preference_system_bar_icons_dark">Gelap</string>
     <string name="preference_hide_status_bar">Sembunyikan status bar</string>
-    <string name="preference_icon_shape_pentagon">Segi lima</string>
     <string name="preference_blur_wallpaper">Buramkan wallpaper</string>
     <string name="preference_category_wallpaper">Wallpaper</string>
     <string name="preference_dim_wallpaper">Redupkan wallpaper</string>
@@ -105,7 +97,6 @@
     <string name="preference_category_license">Lisensi</string>
     <string name="preference_about_license">Aplikasi ini adalah perangkat lunak bebas.</string>
     <string name="preference_grid_icon_size">Ukuran ikon</string>
-    <string name="preference_grid_column_count">Jumlah kolom</string>
     <string name="preference_category_grid">Kisi</string>
     <string name="preference_category_widgets">Widget</string>
     <string name="preference_grid_labels">Tampilkan label</string>
@@ -160,7 +151,6 @@
     <string name="preference_debug_dump_heap_summary">Ambil snapshot untuk menganalisis penggunaan memori. Aplikasi akan berhenti bekerja hingga proses ini selesai.</string>
     <string name="preference_debug_dump_heap">Cuplikan memori</string>
     <string name="preference_debug_dump_heap_in_progress">Mengambil snapshot…</string>
-    <string name="preference_icon_shape_triangle">Segitiga Reuleaux</string>
     <string name="edit">Sunting</string>
     <string name="preference_blur_wallpaper_radius">Radius kabur</string>
     <string name="preference_category_advanced">Lebih lanjut</string>
@@ -174,7 +164,6 @@
     <string name="action_done">Selesai</string>
     <string name="action_more_actions">Lebih banyak tindakan</string>
     <string name="action_clear">Bersihkan</string>
-    <string name="preference_icon_shape_squircle">Tupai</string>
     <string name="widget_action_allow">Izinkan</string>
     <string name="grid_edit_title">Edit layar utama</string>
     <string name="grid_write_back_skipped">Tata letak disimpan di perangkat, tetapi tidak ke launcher.json: %1$s</string>

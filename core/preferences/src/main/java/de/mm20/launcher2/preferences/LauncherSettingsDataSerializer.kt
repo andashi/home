@@ -1,6 +1,5 @@
 package de.mm20.launcher2.preferences
 
-import android.content.Context
 import androidx.datastore.core.CorruptionException
 import androidx.datastore.core.Serializer
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -12,7 +11,7 @@ import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
 
-internal class LauncherSettingsDataSerializer(private val context: Context) : Serializer<LauncherSettingsData> {
+internal class LauncherSettingsDataSerializer : Serializer<LauncherSettingsData> {
 
     internal val json = Json {
         // Load-bearing: it is what makes deleting a field safe. A file written
@@ -25,7 +24,7 @@ internal class LauncherSettingsDataSerializer(private val context: Context) : Se
     }
 
     override val defaultValue: LauncherSettingsData
-        get() = LauncherSettingsData(context)
+        get() = LauncherSettingsData()
 
     @OptIn(ExperimentalSerializationApi::class)
     override suspend fun readFrom(input: InputStream): LauncherSettingsData {

@@ -248,15 +248,6 @@
     <string name="preference_category_icons">Simgeler</string>
     <string name="preference_cards_shape_rounded">Yuvarlak</string>
     <string name="preference_cards_shape_cut">Kesik</string>
-    <string name="preference_icon_shape">Şekil</string>
-    <string name="preference_icon_shape_square">Kare</string>
-    <string name="preference_icon_shape_rounded_square">Yuvarlak kare</string>
-    <string name="preference_icon_shape_squircle">Yuvarlak köşe</string>
-    <string name="preference_icon_shape_triangle">Reuleaux üçgeni</string>
-    <string name="preference_icon_shape_circle">Daire</string>
-    <string name="preference_icon_shape_teardrop">Gözyaşı</string>
-    <string name="preference_icon_shape_pebble">Çakıl taşı</string>
-    <string name="preference_icon_shape_hexagon">Altıgen</string>
     <string name="preference_category_searchbar">Arama çubuğu</string>
     <string name="preference_theme_system">Sistemi takip et</string>
     <string name="preference_themed_icons">Temalı simgeler</string>
@@ -274,7 +265,6 @@
     <string name="preference_system_bar_icons_dark">Koyu</string>
     <string name="preference_hide_status_bar">Durum çubuğunu gizle</string>
     <string name="preference_hide_nav_bar">Gezinme çubuğunu gizle</string>
-    <string name="preference_icon_shape_pentagon">Beşgen</string>
     <string name="preference_category_wallpaper">Duvar Kağıdı</string>
     <string name="preference_dim_wallpaper">Duvar kağıdını karart</string>
     <string name="preference_dim_wallpaper_summary">Koyu temalarda, duvar kağıdını karart</string>
@@ -299,7 +289,6 @@
     <string name="preference_about_license_summary">GNU Genel Kamu Lisansı 3.0 altında lisanslanmıştır</string>
     <string name="preference_category_grid">Izgara</string>
     <string name="preference_grid_icon_size">Simge boyutu</string>
-    <string name="preference_grid_column_count">Sütun sayısı</string>
     <string name="preference_grid_list_style">Uygulamaları liste halinde göster</string>
     <string name="preference_grid_list_icons">Listede uygulama simgelerini göster</string>
     <string name="preference_grid_labels">Etiketleri göster</string>

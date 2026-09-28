@@ -49,11 +49,6 @@
     <string name="preference_screen_about_summary">Informații despre aplicație și licențe</string>
     <string name="preference_screen_appearance_summary">Personalizați aspectul</string>
     <string name="preference_category_icons">Pictograme</string>
-    <string name="preference_icon_shape">Formă</string>
-    <string name="preference_icon_shape_square">Pătrat</string>
-    <string name="preference_icon_shape_rounded_square">Pătrat rotunjit</string>
-    <string name="preference_icon_shape_circle">Cerc</string>
-    <string name="preference_icon_shape_hexagon">Hexagon</string>
     <string name="preference_category_searchbar">Bară de căutare</string>
     <string name="preference_theme_system">Urmează sistemul</string>
     <string name="preference_themed_icons">Pictograme tematice</string>
@@ -62,7 +57,6 @@
     <string name="preference_category_system_bars">Bare de sistem</string>
     <string name="preference_hide_status_bar">Ascunde bara de stare</string>
     <string name="preference_hide_nav_bar">Ascunde bara de navigare</string>
-    <string name="preference_icon_shape_pentagon">Pentagon</string>
     <string name="preference_category_wallpaper">Fundal</string>
     <string name="preference_dim_wallpaper_summary">La teme întunecate, fundal întunecat</string>
     <string name="preference_wallpaper_summary">Alege un fundal</string>
@@ -79,7 +73,6 @@
     <string name="preference_about_license">Această aplicație este un software gratuit.</string>
     <string name="preference_category_grid">Grilă</string>
     <string name="preference_grid_icon_size">Dimensiune pictogramă</string>
-    <string name="preference_grid_column_count">Numărul de coloane</string>
     <string name="preference_screen_debug">Depanare</string>
     <string name="preference_screen_debug_summary">Instrumente de depanare</string>
     <string name="preference_category_widgets">Widget-uri</string>
@@ -100,8 +93,6 @@
     <string name="preference_hidden_items">Rezultate de căutare ascunse</string>
     <string name="preference_hidden_items_summary">Gestionarea aplicațiilor ascunse și a rezultatelor căutării</string>
     <string name="websearch_dialog_url_error">Substituentul \'${1}\' lipsește din această adresă URL</string>
-    <string name="preference_icon_shape_squircle">Pătrat rotunjit</string>
-    <string name="preference_icon_shape_triangle">Triunghi Reuleaux</string>
     <string name="preference_category_licenses">Licențe open source</string>
     <string name="preference_themed_icons_summary">Colorați pictogramele cu schema de culori a aplicației</string>
     <string name="missing_permission_appshortcuts_search">Seteaza %1$s ca aplicație de pornire implicită pentru a căuta comenzi rapide pentru aplicații.</string>
@@ -140,7 +131,6 @@
     <string name="preference_system_bar_icons_dark">Întunecate</string>
     <string name="alert_delete_shortcut">Scurtătura %1$s va fi eliminată definitiv. Continuați?</string>
     <string name="websearch_dialog_advanced">Avansat</string>
-    <string name="preference_icon_shape_pebble">Piatră</string>
     <string name="action_next">Următorul</string>
     <string name="preference_system_bar_icons_auto">Automat</string>
     <plurals name="debug_cleanup_database_result">
@@ -148,7 +138,6 @@
         <item quantity="few">Au fost eliminate %1$d intrări.</item>
         <item quantity="other">Au fost eliminate %1$d de intrări.</item>
     </plurals>
-    <string name="preference_icon_shape_teardrop">Lacrimă</string>
     <string name="preference_status_bar_icons">Pictograme din bara de stare</string>
     <string name="preference_debug_dump_heap">Snapshot de memorie</string>
     <string name="edit">Editați</string>

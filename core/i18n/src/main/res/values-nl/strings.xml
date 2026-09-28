@@ -50,14 +50,9 @@
     <string name="missing_permission_appshortcuts_search_settings">%1$s moet ingesteld worden als de standaard startscherm-app om applicatiesnelkoppelingen te zoeken</string>
     <string name="missing_permission_contact_search">Geef toegang tot contacten om contactpersonen te zoeken</string>
     <string name="preference_category_icons">Pictogrammen</string>
-    <string name="preference_icon_shape_square">Vierkant</string>
-    <string name="preference_icon_shape_triangle">Reuleauxdriehoek</string>
-    <string name="preference_icon_shape_circle">Cirkel</string>
-    <string name="preference_icon_shape_teardrop">Traan</string>
     <string name="preference_theme_system">Systeem volgen</string>
     <string name="missing_permission_notification_badges">Toegang tot meldingen is nodig om meldingsstipjes te tonen</string>
     <string name="grant_permission">Geef toegang</string>
-    <string name="preference_icon_shape_hexagon">Zeshoek</string>
     <string name="menu_remove">Verwijderen</string>
     <string name="missing_permission_appshortcuts_search">Stel %1$s in als standaard startschermapplicatie om applicatiesnelkoppelingen te doorzoeken.</string>
     <string name="missing_permission_appshortcuts_create">Stel %1$s in als standaard startschermapplicatie om applicatiesnelkoppelingen te maken.</string>
@@ -72,9 +67,6 @@
     </plurals>
     <string name="preference_cards_shape_rounded">Afgerond</string>
     <string name="preference_cards_shape_cut">Afgetopt</string>
-    <string name="preference_icon_shape">Vorm</string>
-    <string name="preference_icon_shape_rounded_square">Afgerond vierkant</string>
-    <string name="preference_icon_shape_squircle">Squircle</string>
     <string name="preference_category_searchbar">Zoekbalk</string>
     <string name="edit_favorites_dialog_empty_section">Sleep items naar hier</string>
     <string name="preference_themed_icons">Iconen met thema</string>
@@ -83,7 +75,6 @@
     <string name="preference_icon_pack">Pictogrammenpakket</string>
     <string name="preference_category_system_bars">Systeembalken</string>
     <string name="preference_hide_status_bar">Statusbalk verbergen</string>
-    <string name="preference_icon_shape_pentagon">Vijfhoek</string>
     <string name="preference_category_wallpaper">Achtergrond</string>
     <string name="preference_about_license">Deze applicatie is vrije software.</string>
     <string name="preference_category_license">Licentie</string>
@@ -110,7 +101,6 @@
     <string name="preference_enforce_icon_shape_summary">Pas de vorm toe op alle pictogrammen, ook deze die het normaal niet ondersteunen</string>
     <string name="preference_about_license_summary">Deze software valt onder de GNU General Public License 3.0</string>
     <string name="preference_grid_icon_size">Pictogramgrootte</string>
-    <string name="preference_grid_column_count">Aantal kolommen</string>
     <string name="preference_grid_labels">Labels tonen</string>
     <string name="websearch_dialog_query_encoding">Encodering zoektermen</string>
     <string name="websearch_dialog_query_encoding_none">Geen</string>
@@ -158,7 +148,6 @@
     <string name="favorites_empty">Vastgezette en vaak gebruikte items zullen hier verschijnen</string>
     <string name="favorites_empty_tag">Er zijn geen items met dit label</string>
     <string name="preference_search_appshortcuts_summary">Applicatiesnelkoppelingen doorzoeken</string>
-    <string name="preference_icon_shape_pebble">Kiezelsteen</string>
     <string name="preference_status_bar_icons">Statusbalkpictogrammen</string>
     <string name="preference_nav_bar_icons">Navigatiebalkpictogrammen</string>
     <string name="preference_system_bar_icons_auto">Automatisch</string>

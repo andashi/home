@@ -1,6 +1,5 @@
 package de.mm20.launcher2.preferences
 
-import androidx.test.core.app.ApplicationProvider
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
@@ -9,40 +8,13 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
-import org.robolectric.annotation.Config
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 
 @RunWith(RobolectricTestRunner::class)
 class LauncherSettingsDataTest {
 
-    private val serializer = LauncherSettingsDataSerializer(
-        ApplicationProvider.getApplicationContext()
-    )
-
-    /**
-     * #144: the Context default resolves at every width, the narrowest
-     * included, so a test that builds a real LauncherDataStore needs no
-     * hand-written settings file. The unqualified value lived in :app:app,
-     * which no library module and none of their tests can see.
-     */
-    @Test
-    @Config(qualifiers = "w320dp")
-    fun `the default column count on a narrow screen is 4`() {
-        assertEquals(4, serializer.defaultValue.gridColumnCount)
-    }
-
-    @Test
-    @Config(qualifiers = "w400dp")
-    fun `the default column count from 400dp is 5`() {
-        assertEquals(5, serializer.defaultValue.gridColumnCount)
-    }
-
-    @Test
-    @Config(qualifiers = "w480dp")
-    fun `the default column count from 480dp is 6`() {
-        assertEquals(6, serializer.defaultValue.gridColumnCount)
-    }
+    private val serializer = LauncherSettingsDataSerializer()
 
     @Test
     fun `default value survives a write-read round trip`() = runTest {
@@ -56,7 +28,7 @@ class LauncherSettingsDataTest {
     @Test
     fun `populated instance survives a write-read round trip`() = runTest {
         val data = LauncherSettingsData(
-            gridColumnCount = 7,
+            homeGridColumns = 7,
             gridIconSize = 42,
             gesturesSwipeDown = GestureAction.QuickSettings,
             gesturesLongPress = GestureAction.Launch("app://de.mm20.launcher2"),
@@ -77,7 +49,7 @@ class LauncherSettingsDataTest {
     @Test
     fun `a file with the old categories list still reads and follows the booleans`() = runTest {
         val out = ByteArrayOutputStream()
-        serializer.writeTo(LauncherSettingsData(gridColumnCount = 7), out)
+        serializer.writeTo(LauncherSettingsData(homeGridColumns = 7), out)
         val old = out.toString(Charsets.UTF_8).replace(
             Regex(""""searchFilter":\{[^}]*\}"""),
             """"searchFilter":{"hiddenItems":false,"apps":true,"shortcuts":false,"contacts":true,""" +
@@ -87,7 +59,7 @@ class LauncherSettingsDataTest {
 
         val decoded = serializer.readFrom(ByteArrayInputStream(old.toByteArray()))
 
-        assertEquals(7, decoded.gridColumnCount)
+        assertEquals(7, decoded.homeGridColumns)
         assertEquals(2, decoded.searchFilter.enabledCategories)
     }
 
@@ -104,12 +76,12 @@ class LauncherSettingsDataTest {
         val json = """
             {
                 "schemaVersion": 6,
-                "gridColumnCount": 9,
+                "homeGridColumns": 9,
                 "someFutureForkKey": {"enabled": true}
             }
         """.trimIndent()
         val decoded = serializer.readFrom(ByteArrayInputStream(json.toByteArray()))
-        assertEquals(9, decoded.gridColumnCount)
+        assertEquals(9, decoded.homeGridColumns)
     }
 
     @Test
@@ -120,7 +92,7 @@ class LauncherSettingsDataTest {
         // the tolerant list serializer this throws and the corruption handler
         // replaces every setting the user has.
         val json = """
-            {"schemaVersion":6,"searchFilterBarItems":["apps","weather","contacts"],"gridColumnCount":7}
+            {"schemaVersion":6,"searchFilterBarItems":["apps","weather","contacts"],"homeGridColumns":7}
         """.trimIndent()
 
         val decoded = serializer.readFrom(ByteArrayInputStream(json.toByteArray()))
@@ -130,6 +102,6 @@ class LauncherSettingsDataTest {
             decoded.searchFilterBarItems,
         )
         // the rest of the document survives
-        assertEquals(7, decoded.gridColumnCount)
+        assertEquals(7, decoded.homeGridColumns)
     }
 }

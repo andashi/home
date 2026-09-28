@@ -62,7 +62,6 @@ import de.mm20.launcher2.search.SavableSearchable
 import de.mm20.launcher2.search.Searchable
 import de.mm20.launcher2.ui.launcher.glass.GlassSurface
 import de.mm20.launcher2.ui.launcher.glass.LocalOnGlass
-import de.mm20.launcher2.ui.component.LocalIconShape
 import de.mm20.launcher2.ui.component.ShapedLauncherIcon
 import de.mm20.launcher2.ui.ktx.toPixels
 import de.mm20.launcher2.ui.launcher.search.apps.AppItemGridPopup
@@ -149,10 +148,11 @@ fun GridItem(
             }
         }
 
-        // A Clear icon is a glass chip (#76); its highlight is a lighter
-        // layer in the chip's own shape, not an opaque disc (#91).
+        // Every icon is the squircle (#229). A Clear one is a glass chip
+        // (#76); its highlight is a lighter layer in the chip's own shape,
+        // not an opaque disc (#91).
         val clear = LocalClearIcons.current
-        val iconShape = if (clear) SquircleShape else LocalIconShape.current
+        val iconShape = SquircleShape
 
         Box(
             modifier = if (highlight) {

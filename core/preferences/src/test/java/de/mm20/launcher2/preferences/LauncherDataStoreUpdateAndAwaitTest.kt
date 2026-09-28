@@ -16,12 +16,12 @@ class LauncherDataStoreUpdateAndAwaitTest {
 
     @Test
     fun `updateAndAwait write is immediately visible via data first after return`() = runTest {
-        seedSettingsFile(context, LauncherSettingsData(gridColumnCount = 5))
+        seedSettingsFile(context, LauncherSettingsData(homeGridColumns = 5))
         val store = LauncherDataStore(context)
 
-        val updated = store.updateAndAwait { it.copy(gridColumnCount = 7) }
+        val updated = store.updateAndAwait { it.copy(homeGridColumns = 7) }
 
-        assertEquals(7, updated.gridColumnCount)
-        assertEquals(7, store.data.first().gridColumnCount)
+        assertEquals(7, updated.homeGridColumns)
+        assertEquals(7, store.data.first().homeGridColumns)
     }
 }

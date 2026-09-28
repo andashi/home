@@ -4,7 +4,6 @@ import de.mm20.launcher2.config.GlassContrast
 
 import de.mm20.launcher2.preferences.ColorScheme
 import de.mm20.launcher2.preferences.GestureAction
-import de.mm20.launcher2.preferences.IconShape
 import de.mm20.launcher2.preferences.LauncherDataStore
 import de.mm20.launcher2.preferences.ScreenOrientation
 import de.mm20.launcher2.preferences.SearchBarColors
@@ -21,7 +20,8 @@ data class CardStyle(
 )
 
 data class GridSettings(
-    val columnCount: Int = 5,
+    /** The home grid's columns (#229); the fallback is its default, [LauncherSettingsData.homeGridColumns]. */
+    val columnCount: Int = 4,
     val iconSize: Int = 48,
     val showLabels: Boolean = true,
     val showList: Boolean = false,
@@ -31,17 +31,6 @@ data class GridSettings(
 class UiSettings internal constructor(
     private val launcherDataStore: LauncherDataStore,
 ) {
-    val iconShape
-        get() = launcherDataStore.data.map {
-            it.iconsShape
-        }
-
-    fun setIconShape(iconShape: IconShape) {
-        launcherDataStore.update {
-            it.copy(iconsShape = iconShape)
-        }
-    }
-
     val gridSettings
         get() = launcherDataStore.data.map {
             GridSettings(
@@ -49,15 +38,10 @@ class UiSettings internal constructor(
                 showList = it.gridList,
                 showListIcons = it.gridListIcons,
                 iconSize = it.gridIconSize,
-                columnCount = it.gridColumnCount,
+                // The pickers and editor sheets follow the home grid (#229).
+                columnCount = it.homeGridColumns,
             )
         }
-
-    fun setGridColumnCount(columnCount: Int) {
-        launcherDataStore.update {
-            it.copy(gridColumnCount = columnCount)
-        }
-    }
 
     fun setGridIconSize(iconSize: Int) {
         launcherDataStore.update {
