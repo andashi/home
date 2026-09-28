@@ -647,6 +647,30 @@
                 "transliterator": {
                     "type": "string",
                     "pattern": "^(?=.{1,64}$)[A-Za-z0-9_]+(?:-[A-Za-z0-9_]+)*(?:/[A-Za-z0-9_]+)?$"
+                },
+                "defaultFilter": {
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "enum": [
+                            "apps",
+                            "shortcuts",
+                            "contacts",
+                            "hidden"
+                        ]
+                    }
+                },
+                "filterBarItems": {
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "enum": [
+                            "apps",
+                            "shortcuts",
+                            "contacts",
+                            "hidden"
+                        ]
+                    }
                 }
             },
             "additionalProperties": false

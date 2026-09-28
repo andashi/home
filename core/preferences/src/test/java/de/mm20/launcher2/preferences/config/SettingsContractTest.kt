@@ -76,7 +76,7 @@ class SettingsContractTest {
          */
         val GapsAt229 = setOf(
             "wallpaperDim", "shortcutSearchBlocklist", "gridColumnCount", "searchBarStyle",
-            "searchBarColors", "rankingWeightFactor", "iconsShape", "searchFilter", "searchFilterBarItems",
+            "searchBarColors", "rankingWeightFactor", "iconsShape",
         )
 
         val Contract: Map<String, State> = mapOf(
@@ -149,9 +149,9 @@ class SettingsContractTest {
             "stateTagsMultiline" to State.Excluded(
                 "whether the favorites' tag row is expanded: the last state of a toggle, which the person flips while using it",
             ),
-            "searchFilter" to State.Gap(GapsIssue),
+            "searchFilter" to State.Key("search.defaultFilter"),
             "searchFilterBar" to State.Key("search.filterBar"),
-            "searchFilterBarItems" to State.Gap(GapsIssue),
+            "searchFilterBarItems" to State.Key("search.filterBarItems"),
             "localeTransliterator" to State.Key("search.transliterator"),
             "feedProviderPackage" to State.Excluded(
                 "the feed sits behind FeatureFlags.feed, and a configuration file must never be a route around a feature flag (#3)",
@@ -240,6 +240,18 @@ class SettingsContractTest {
                 // Its objects are nested in it; permittedSubclasses is not emitted for this target.
                 type.declaredClasses.filter { type.isAssignableFrom(it) }
                     .mapNotNull { sub -> runCatching { sub.getField("INSTANCE").get(null) }.getOrNull() }
+            // A data class of switches (SearchFilters): each switch flipped on a clone, by name.
+            type.declaredFields.filter { !Modifier.isStatic(it.modifiers) }.let { switches ->
+                switches.isNotEmpty() && switches.all { it.type == java.lang.Boolean.TYPE }
+            } -> {
+                val copy = type.declaredMethods.single { it.name == "copy" && it.parameterCount == type.declaredFields.count { f -> !Modifier.isStatic(f.modifiers) } }
+                val components = (1..copy.parameterCount).map { type.getMethod("component$it") }
+                type.declaredFields.filter { !Modifier.isStatic(it.modifiers) }.onEach { it.isAccessible = true }.map { switch ->
+                    val clone = copy.invoke(current, *components.map { it.invoke(current) }.toTypedArray())
+                    switch.set(clone, !(switch.get(clone) as Boolean))
+                    clone
+                }
+            }
             else -> return null
         }
         return candidates.filter { it != current }.distinct()
@@ -309,6 +321,6 @@ class SettingsContractTest {
         assertEquals(emptyList<String>(), problems)
         // A field with no generic mutation is not checked by the pairing test:
         // named here, so a new one is noticed rather than skipped in silence.
-        assertEquals(listOf("searchFilter"), unmutated)
+        assertEquals(emptyList<String>(), unmutated)
     }
 }

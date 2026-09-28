@@ -15,6 +15,9 @@ import de.mm20.launcher2.config.ThemeColors
 import de.mm20.launcher2.config.ThemeShapes
 import de.mm20.launcher2.config.ThemeTypography
 import de.mm20.launcher2.config.ThemeColorSource
+import de.mm20.launcher2.config.SearchFilterItem
+import de.mm20.launcher2.preferences.KeyboardFilterBarItem
+import de.mm20.launcher2.search.SearchFilters
 import de.mm20.launcher2.config.ThemeMode
 import de.mm20.launcher2.preferences.BuiltInColorSchemes
 import de.mm20.launcher2.preferences.BuiltInShapes
@@ -207,6 +210,9 @@ internal class LauncherConfigSettingsImpl(
                     "" -> SearchDefaults.TransliteratorAuto
                     else -> id
                 },
+                // #229: the default filter, the four switches of SearchFilters.
+                defaultFilter = data.searchFilter.toFilterItems(),
+                filterBarItems = data.searchFilterBarItems.distinct().map { it.toFilterItem() },
             ),
             searchBarPosition = if (data.searchBarBottom) {
                 SearchBarPosition.Bottom
@@ -345,6 +351,9 @@ internal class LauncherConfigSettingsImpl(
                         SearchDefaults.TransliteratorAuto -> ""
                         else -> id
                     },
+                    // #229: the whole value each, as the file states it.
+                    searchFilter = defaultFilter?.toSearchFilters() ?: searchFilter,
+                    searchFilterBarItems = filterBarItems?.map { it.toBarItem() } ?: searchFilterBarItems,
                 )
             }
 
@@ -421,4 +430,36 @@ private fun SystemBarIcons.toColors(): SystemBarColors = when (this) {
     SystemBarIcons.Auto -> SystemBarColors.Auto
     SystemBarIcons.Light -> SystemBarColors.Light
     SystemBarIcons.Dark -> SystemBarColors.Dark
+}
+
+// #229: the file's filter words and the settings' own types. The default filter
+// is SearchFilters' four switches; the bar is KeyboardFilterBarItem, whose
+// hidden-items entry the file calls `hidden`.
+
+private fun SearchFilters.toFilterItems(): List<SearchFilterItem> = buildList {
+    if (apps) add(SearchFilterItem.Apps)
+    if (shortcuts) add(SearchFilterItem.Shortcuts)
+    if (contacts) add(SearchFilterItem.Contacts)
+    if (hiddenItems) add(SearchFilterItem.Hidden)
+}
+
+private fun List<SearchFilterItem>.toSearchFilters() = SearchFilters(
+    apps = SearchFilterItem.Apps in this,
+    shortcuts = SearchFilterItem.Shortcuts in this,
+    contacts = SearchFilterItem.Contacts in this,
+    hiddenItems = SearchFilterItem.Hidden in this,
+)
+
+private fun KeyboardFilterBarItem.toFilterItem() = when (this) {
+    KeyboardFilterBarItem.Apps -> SearchFilterItem.Apps
+    KeyboardFilterBarItem.Shortcuts -> SearchFilterItem.Shortcuts
+    KeyboardFilterBarItem.Contacts -> SearchFilterItem.Contacts
+    KeyboardFilterBarItem.HiddenResults -> SearchFilterItem.Hidden
+}
+
+private fun SearchFilterItem.toBarItem() = when (this) {
+    SearchFilterItem.Apps -> KeyboardFilterBarItem.Apps
+    SearchFilterItem.Shortcuts -> KeyboardFilterBarItem.Shortcuts
+    SearchFilterItem.Contacts -> KeyboardFilterBarItem.Contacts
+    SearchFilterItem.Hidden -> KeyboardFilterBarItem.HiddenResults
 }

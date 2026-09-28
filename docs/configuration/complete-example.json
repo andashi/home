@@ -129,6 +129,8 @@
     "favoritesEditButton": false,
     "compactTags": true,
     "transliterator": "Any-Latin",
+    "defaultFilter": ["contacts", "hidden"],
+    "filterBarItems": ["contacts", "apps"],
     "barPosition": "bottom",
     "actions": [
       {

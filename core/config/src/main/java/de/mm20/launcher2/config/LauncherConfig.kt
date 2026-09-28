@@ -788,6 +788,32 @@ data class SearchConfig(
      * the device's question, reported, not the parser's.
      */
     val transliterator: String? = null,
+    /**
+     * The filters a query starts with (#229), as a set: the categories among
+     * `apps`, `shortcuts`, `contacts`, and `hidden` for hidden items. At
+     * least one category - the launcher never lets the last one go.
+     */
+    val defaultFilter: List<@Serializable(with = DefaultFilterItemSerializer::class) SearchFilterItem>? = null,
+    /** Which filters the bar above the keyboard shows, in order (#229); `search.filterBar` switches the bar. */
+    val filterBarItems: List<@Serializable(with = FilterBarItemSerializer::class) SearchFilterItem>? = null,
+)
+
+/**
+ * One search filter (#229): the three categories and hidden items. The words
+ * of `search.defaultFilter` and `search.filterBarItems`.
+ */
+enum class SearchFilterItem {
+    Apps, Shortcuts, Contacts, Hidden;
+
+    val isCategory: Boolean get() = this != Hidden
+}
+
+internal object DefaultFilterItemSerializer : FieldEnumSerializer<SearchFilterItem>(
+    "de.mm20.launcher2.config.SearchDefaultFilterItem", "search.defaultFilter", SearchFilterItem.entries,
+)
+
+internal object FilterBarItemSerializer : FieldEnumSerializer<SearchFilterItem>(
+    "de.mm20.launcher2.config.SearchFilterBarItem", "search.filterBarItems", SearchFilterItem.entries,
 )
 
 /**

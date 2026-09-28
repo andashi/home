@@ -118,6 +118,10 @@ data class SearchState(
     val favoritesEditButton: Boolean = SearchDefaults.FavoritesEditButton,
     val compactTags: Boolean = SearchDefaults.CompactTags,
     val transliterator: String = SearchDefaults.Transliterator,
+    /** `search.defaultFilter` (#229): the launcher's own default, every category and no hidden items. */
+    val defaultFilter: List<SearchFilterItem> = SearchFilterItem.entries.filter { it.isCategory },
+    /** `search.filterBarItems` (#229): the launcher's own bar, all four in this order. */
+    val filterBarItems: List<SearchFilterItem> = SearchFilterItem.entries,
 )
 
 sealed class ConfigMutation {
@@ -332,6 +336,9 @@ object ConfigDiffer {
                 favoritesEditButton = search.favoritesEditButton?.takeIf { it != current.favoritesEditButton },
                 compactTags = search.compactTags?.takeIf { it != current.compactTags },
                 transliterator = search.transliterator?.takeIf { it != current.transliterator },
+                // A set: order is no difference. The bar is a list: order is.
+                defaultFilter = search.defaultFilter?.takeIf { it.toSet() != current.defaultFilter.toSet() },
+                filterBarItems = search.filterBarItems?.takeIf { it != current.filterBarItems },
             )
             if (changed != SearchConfig()) mutations += ConfigMutation.SetSearch(changed)
         }
