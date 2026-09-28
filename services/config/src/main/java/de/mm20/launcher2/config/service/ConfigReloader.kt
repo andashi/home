@@ -288,13 +288,14 @@ class ConfigReloader(
         true
     }
 
+    /** The report as saved - numbered by the store - or as built when saving failed. */
     private suspend fun persist(report: ReloadReport): ReloadReport {
-        try {
+        return try {
             reportStore.save(report)
         } catch (_: Exception) {
             // Report persistence must not fail the reload itself.
+            report
         }
-        return report
     }
 
     private fun String.isInSection(section: String): Boolean {

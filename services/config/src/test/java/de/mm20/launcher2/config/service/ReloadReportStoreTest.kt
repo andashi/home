@@ -38,9 +38,11 @@ class ReloadReportStoreTest {
             errorMessage = null,
         )
 
-        store.save(report)
+        val saved = store.save(report)
 
-        assertEquals(report, store.read())
+        // As the store saved it: numbered, and otherwise the report as given.
+        assertEquals(report, saved.copy(sequence = null, storeId = null))
+        assertEquals(saved, store.read())
     }
 
     @Test
@@ -48,9 +50,10 @@ class ReloadReportStoreTest {
         val store = ReloadReportStore(context)
         store.save(ReloadReport(success = true, schemaVersion = 1))
         val second = ReloadReport(success = false, errorMessage = "boom")
-        store.save(second)
+        val saved = store.save(second)
 
-        assertEquals(second, store.read())
+        assertEquals(second, saved.copy(sequence = null, storeId = null))
+        assertEquals(saved, store.read())
     }
 
     @Test
@@ -63,9 +66,11 @@ class ReloadReportStoreTest {
             trigger = ReloadTrigger.FileWatcher,
         )
 
-        store.save(report)
+        val saved = store.save(report)
 
-        assertEquals(report, store.read())
+        // As the store saved it: numbered, and otherwise the report as given.
+        assertEquals(report, saved.copy(sequence = null, storeId = null))
+        assertEquals(saved, store.read())
     }
 
     @Test
