@@ -207,12 +207,6 @@ internal fun GridCard(
 }
 
 /**
- * A hosted AppWidget, or the "loading failed" banner with Replace and Remove
- * when the item has no host id yet (binding refused, see the reconciler) or
- * its provider is gone. The host view is keyed by (item, host id) so it
- * survives every recomposition that does not change the binding.
- */
-/**
  * The failure banner where the cell is large enough for all of it, and
  * [compact] where it is not. Decided by measuring the banner at the cell's
  * width rather than by a size threshold: its text wraps and its actions flow
@@ -224,9 +218,12 @@ internal fun GridCard(
  */
 @Composable
 private fun FailureIfItFits(banner: @Composable () -> Unit, compact: @Composable () -> Unit) {
+    // Built here, not in the measure block: a new lambda there recomposes the
+    // probe on every measure pass.
+    val probeContent = remember(banner) { @Composable { Box(Modifier.clearAndSetSemantics {}) { banner() } } }
     SubcomposeLayout(Modifier.fillMaxSize()) { constraints ->
         val loose = constraints.copy(minWidth = 0, minHeight = 0)
-        val probe = subcompose("probe") { Box(Modifier.clearAndSetSemantics {}) { banner() } }
+        val probe = subcompose("probe", probeContent)
             .map { it.measure(loose.copy(maxHeight = Constraints.Infinity)) }
         val fits = probe.all { it.height <= constraints.maxHeight }
         val shown = subcompose(fits, if (fits) banner else compact).map { it.measure(loose) }
@@ -240,10 +237,12 @@ private fun FailureIfItFits(banner: @Composable () -> Unit, compact: @Composable
  * The failure in one icon: named by its content description, with the
  * banner's message and actions in the menu it opens.
  *
- * White like the [GridLabel] under it. The glass card hands its content the
- * theme's onSurface, which in a light theme is dark on a card the wallpaper
- * makes dark - measured on the device, the icon was barely there. The banner
- * never met this: it brings its own card.
+ * Coloured for the wallpaper, not the theme. The glass card is mostly the
+ * wallpaper showing through, yet it hands its content the theme's onSurface:
+ * dark in a light theme over a dark wallpaper, where on the device the icon
+ * was barely there. The banner never met this, it brings its own card. The
+ * same holds for every glass surface; this is the local answer, not the
+ * general one.
  */
 @Composable
 private fun CompactFailure(onAllow: (() -> Unit)?, onReplace: () -> Unit, onRemove: () -> Unit) {
@@ -251,7 +250,7 @@ private fun CompactFailure(onAllow: (() -> Unit)?, onReplace: () -> Unit, onRemo
     val message = stringResource(R.string.app_widget_loading_failed)
     Box {
         IconButton(onClick = { open = true }) {
-            Icon(painterResource(R.drawable.warning_24px), contentDescription = message, tint = Color.White)
+            Icon(painterResource(R.drawable.warning_24px), contentDescription = message, tint = if (LocalPreferDarkContentOverWallpaper.current) Color.Black else Color.White)
         }
         DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
             Text(
@@ -277,6 +276,13 @@ private fun CompactFailure(onAllow: (() -> Unit)?, onReplace: () -> Unit, onRemo
     }
 }
 
+/**
+ * A hosted AppWidget, or the "loading failed" banner with Replace and Remove
+ * - in a cell too small for it, the compact form - when the item has no host
+ * id yet (binding refused, see the reconciler) or its provider is gone. The
+ * host view is keyed by (item, host id) so it survives every recomposition
+ * that does not change the binding.
+ */
 @Composable
 internal fun AppWidgetCell(
     item: HomeGridItem,

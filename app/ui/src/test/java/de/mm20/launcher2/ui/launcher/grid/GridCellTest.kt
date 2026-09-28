@@ -12,6 +12,7 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -131,10 +132,10 @@ class GridCellTest {
      * taken off.
      */
     private fun compactCell(
-        width: androidx.compose.ui.unit.Dp,
+        width: Dp,
         onAllow: (() -> Unit)?,
         onRemove: () -> Unit = {},
-        height: androidx.compose.ui.unit.Dp = 72.dp,
+        height: Dp = 72.dp,
     ) {
         composeRule.setContent {
             MaterialTheme {
@@ -150,12 +151,17 @@ class GridCellTest {
         }
     }
 
+    /** The compact form is named by the failure message, and opens the actions. */
+    private fun openCompactMenu() {
+        composeRule.onNodeWithContentDescription(string(R.string.app_widget_loading_failed)).assertIsDisplayed().performClick()
+    }
+
     @Test
     fun `a 1x1 cell names its failure and reaches Allow`() {
         var allowed = 0
         compactCell(72.dp, onAllow = { allowed++ })
 
-        composeRule.onNodeWithContentDescription(string(R.string.app_widget_loading_failed)).assertIsDisplayed().performClick()
+        openCompactMenu()
         composeRule.onNodeWithText(string(R.string.widget_action_allow)).assertIsDisplayed().performClick()
 
         assertEquals(1, allowed)
@@ -166,7 +172,7 @@ class GridCellTest {
         var removed = 0
         compactCell(270.dp, onAllow = null, onRemove = { removed++ })
 
-        composeRule.onNodeWithContentDescription(string(R.string.app_widget_loading_failed)).assertIsDisplayed().performClick()
+        openCompactMenu()
         composeRule.onNodeWithText(string(R.string.widget_action_replace)).assertIsDisplayed()
         composeRule.onNodeWithText(string(R.string.widget_action_remove)).assertIsDisplayed().performClick()
 
@@ -181,7 +187,7 @@ class GridCellTest {
     fun `a 1x2 cell gets the compact form too`() {
         compactCell(72.dp, onAllow = {}, height = 200.dp)
 
-        composeRule.onNodeWithContentDescription(string(R.string.app_widget_loading_failed)).assertIsDisplayed().performClick()
+        openCompactMenu()
         composeRule.onNodeWithText(string(R.string.widget_action_allow)).assertIsDisplayed()
     }
 
