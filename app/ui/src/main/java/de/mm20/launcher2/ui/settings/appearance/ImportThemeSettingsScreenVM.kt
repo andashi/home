@@ -7,9 +7,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import de.mm20.launcher2.crashreporter.CrashReporter
 import de.mm20.launcher2.preferences.ui.UiSettings
 import de.mm20.launcher2.themes.ThemeBundle
+import de.mm20.launcher2.themes.ThemeFile
+import de.mm20.launcher2.themes.ThemeFileResult
 import de.mm20.launcher2.themes.ThemeRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -49,31 +50,28 @@ class ImportThemeSettingsScreenVM : ViewModel(), KoinComponent {
         applyTheme = true
         loading = true
         viewModelScope.launch(Dispatchers.IO) {
-            try {
-                context.contentResolver.openInputStream(fromUri)?.reader()?.use {
-                    val text = it.readText()
-                    val theme = ThemeBundle.fromJson(text)
-                    if (theme != null) {
-                        val colors =
-                            theme.colors?.id?.let { themeRepository.colors.get(it) }?.first()
-                        val typography =
-                            theme.typography?.id?.let { themeRepository.typographies.get(it) }?.first()
-                        val shapes =
-                            theme.shapes?.id?.let { themeRepository.shapes.get(it) }?.first()
-
-                        colorsExists = colors != null
-                        typographyExists = typography != null
-                        shapesExists = shapes != null
-                        themeBundle = theme
-                        loading = false
-                    } else {
-                        error = true
-                    }
-                }
-            } catch (e: SecurityException) {
-                CrashReporter.logException(e)
+            // ThemeFile refuses anything but a content URI, caps the read and
+            // turns every failure into a rejection (#15): the URI can come from
+            // any app through the exported ImportThemeActivity.
+            val result = ThemeFile.read(fromUri.scheme) { context.contentResolver.openInputStream(fromUri) }
+            if (result !is ThemeFileResult.Read) {
                 error = true
+                loading = false
+                return@launch
             }
+            val theme = result.bundle
+            val colors =
+                theme.colors?.id?.let { themeRepository.colors.get(it) }?.first()
+            val typography =
+                theme.typography?.id?.let { themeRepository.typographies.get(it) }?.first()
+            val shapes =
+                theme.shapes?.id?.let { themeRepository.shapes.get(it) }?.first()
+
+            colorsExists = colors != null
+            typographyExists = typography != null
+            shapesExists = shapes != null
+            themeBundle = theme
+            loading = false
         }
     }
 

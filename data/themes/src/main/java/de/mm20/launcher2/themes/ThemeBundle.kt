@@ -1,7 +1,6 @@
 package de.mm20.launcher2.themes
 
 import android.util.Log
-import de.mm20.launcher2.crashreporter.CrashReporter
 import de.mm20.launcher2.themes.colors.Color
 import de.mm20.launcher2.themes.colors.ColorScheme
 import de.mm20.launcher2.themes.colors.Colors
@@ -58,10 +57,12 @@ data class ThemeBundle(
                 }
 
             } catch (e: SerializationException) {
-                CrashReporter.logException(e)
+                // Not the exception itself: its message quotes the input, and
+                // this parses files other apps hand the launcher (#15).
+                Log.w("MM20", "not a theme file: ${e.javaClass.simpleName}")
                 return null
             } catch (e: IllegalArgumentException) {
-                CrashReporter.logException(e)
+                Log.w("MM20", "not a theme file: ${e.javaClass.simpleName}")
                 return null
             }
         }
@@ -94,7 +95,7 @@ data class ThemeBundle(
                     version = 2,
                 )
             } catch (e: SerializationException) {
-                CrashReporter.logException(e)
+                Log.w("MM20", "not a legacy theme file: ${e.javaClass.simpleName}")
                 return null
             }
 
