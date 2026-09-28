@@ -11,6 +11,7 @@ import de.mm20.launcher2.ktx.jsonObjectOf
 import de.mm20.launcher2.preferences.WeightFactor
 import de.mm20.launcher2.preferences.search.RankingSettings
 import de.mm20.launcher2.search.SavableSearchable
+import de.mm20.launcher2.search.Resolved
 import de.mm20.launcher2.search.SearchableDeserializer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CompletableDeferred
@@ -507,21 +508,28 @@ internal class SavableSearchableRepositoryImpl(
         return database.searchableDao().getWeights(keys)
     }
 
-    private suspend fun fromDatabaseEntity(entity: SavedSearchableEntity): SavedSearchable {
-        val deserializer: SearchableDeserializer? = try {
+    private suspend fun resolve(entity: SavedSearchableEntity): Resolved {
+        val deserializer: SearchableDeserializer = try {
             get(named(entity.type))
         } catch (e: NoDefinitionFoundException) {
             CrashReporter.logException(e)
-            null
+            return Resolved.Gone
         } catch (e: InstanceCreationException) {
             CrashReporter.logException(e)
-            null
+            return Resolved.Gone
         }
-        val searchable = deserializer?.deserialize(entity.serializedSearchable)
-        if (searchable == null) removeInvalidItem(entity.key)
+        return deserializer.resolve(entity.serializedSearchable)
+    }
+
+    private suspend fun fromDatabaseEntity(entity: SavedSearchableEntity): SavedSearchable {
+        val resolved = resolve(entity)
+        // Only Gone deletes. An app that is not installed is knowably gone; a
+        // contact never is (permission, Contact Scopes), so it answers Unknown
+        // and keeps its pin, tags and label. Do not re-unify the two (#237).
+        if (resolved == Resolved.Gone) removeInvalidItem(entity.key)
         return SavedSearchable(
             key = entity.key,
-            searchable = searchable,
+            searchable = (resolved as? Resolved.Found)?.searchable,
             launchCount = entity.launchCount,
             pinPosition = entity.pinPosition,
             visibility = VisibilityLevel.fromInt(entity.visibility),
@@ -559,9 +567,9 @@ internal class SavableSearchableRepositoryImpl(
             do {
                 val favorites = dao.exportFavorites(limit = 100, offset = page * 100)
                 for (fav in favorites) {
-                    val item = fromDatabaseEntity(fav)
-                    if (item.searchable == null || item.searchable.key != item.key) {
-                        removeInvalidItem(item.key)
+                    val resolved = resolve(fav)
+                    if (resolved == Resolved.Gone || (resolved is Resolved.Found && resolved.searchable.key != fav.key)) {
+                        removeInvalidItem(fav.key)
                         removed++
                         // The kind of item, never its key: a key names the
                         // app or the contact (#15).
