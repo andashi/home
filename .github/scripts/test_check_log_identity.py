@@ -45,6 +45,9 @@ LEAKING = [
     'Log.w(TAG, "not written: " + check.diagnostics.joinToString { "${it.code}@${it.path}" })',
     'Log.e (TAG, "app=$packageName")',
     'Log.w(TAG, "app=${foo("}")} $packageName")',
+    # Review round 3: a + operand is judged like a template expression.
+    'Log.w(TAG, "target " + intent.toUri(0))',
+    'Log.w(TAG, "app " + (app?.packageName ?: "none"))',
 ]
 
 CLEAN = [

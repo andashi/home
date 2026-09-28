@@ -216,6 +216,21 @@ class ApkChecksGateTest(unittest.TestCase):
                 step.update(flag)
                 self.assertIn(unchecked("release", "check-backup-off.py"), gate.violations(workflow))
 
+    # Review round 3 on #239: a step that exits before its checks, or turns
+    # errexit off in its long form, runs checks whose failure fails nothing.
+    def test_an_exit_before_the_checks_is_a_violation(self):
+        def exit_first(line):
+            if "check-backup-off.py" in line:
+                return "          exit 0\n" + line
+            return line
+        self.assertIn(unchecked("release", "check-backup-off.py"), gate.violations(every_job_with(exit_first)))
+
+    def test_errexit_turned_off_by_name_before_the_checks_is_a_violation(self):
+        off = lambda line: line.replace("set -euo pipefail", "set +o errexit") if "set -euo pipefail" in line else line
+        found = gate.violations(every_job_with(off))
+        for script in APK_CHECKS:
+            self.assertIn(unchecked("dry-run", script), found)
+
     def test_a_check_before_the_build_is_a_violation(self):
         with open(RELEASE) as f:
             workflow = yaml.safe_load(f)
