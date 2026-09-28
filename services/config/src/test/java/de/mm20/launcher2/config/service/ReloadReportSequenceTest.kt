@@ -12,6 +12,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -93,6 +94,29 @@ class ReloadReportSequenceTest {
         assertNotEquals(first.storeId, next.storeId)
     }
 
+    /**
+     * A save whose report cannot be written still spends its number: the next
+     * report skips it rather than reusing it. Reused, one number would name
+     * two different reports; skipped, the order stays true (review on #226).
+     */
+    @Test
+    fun `a failed save leaves a gap, never a reused number`() = runTest {
+        val store = ReloadReportStore(context)
+        val first = store.save(report)
+        // A non-empty directory where the report goes: its rename fails.
+        val reportPath = File(configDir, "last-reload-report.json")
+        reportPath.delete()
+        File(reportPath, "blocker").apply { parentFile!!.mkdirs(); writeText("x") }
+
+        val failed = runCatching { store.save(report) }
+        reportPath.deleteRecursively()
+        val next = store.save(report)
+
+        assertTrue("the blocked save threw", failed.isFailure)
+        assertEquals(first.storeId, next.storeId)
+        assertEquals(3L, next.sequence)
+    }
+
     /** An older build's report is still on the device after the update: unknown, not zero. */
     @Test
     fun `a report an older build wrote has no sequence and no store id`() = runTest {
@@ -118,12 +142,16 @@ class ReloadReportSequenceTest {
         assertNotEquals("forged", saved.storeId)
     }
 
-    /** The store counts safely on its own, whatever lock its callers hold. */
+    /**
+     * Two stores share one numbering file, so they share one count, whatever
+     * lock their callers hold. Production has one store (a Koin single); the
+     * count must not depend on that (review on #226).
+     */
     @Test
-    fun `concurrent saves each get their own number`() = runBlocking {
-        val store = ReloadReportStore(context)
+    fun `concurrent saves each get their own number, across store instances`() = runBlocking {
+        val stores = listOf(ReloadReportStore(context), ReloadReportStore(context))
 
-        val numbers = (0 until 20).map { async(Dispatchers.IO) { store.save(report).sequence } }.awaitAll()
+        val numbers = (0 until 20).map { i -> async(Dispatchers.IO) { stores[i % 2].save(report).sequence } }.awaitAll()
 
         assertEquals((1L..20L).toList(), numbers.map { it!! }.sorted())
     }
