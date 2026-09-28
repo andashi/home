@@ -284,7 +284,9 @@ class SettingsContractTest {
                 if (changed.isEmpty()) continue
                 when (state) {
                     is State.Key -> {
-                        val foreign = changed.filterNot { it == state.path || it.startsWith(state.path + ".") }
+                        // Exactly the declared key: every declared key is a leaf, and the
+                        // mutations make no gesture an object, so no descendant is its own.
+                        val foreign = changed.filterNot { it == state.path }
                         if (foreign.isNotEmpty()) problems += "${field.name} = $other also changed $foreign"
                         else movedOwn = true
                     }
