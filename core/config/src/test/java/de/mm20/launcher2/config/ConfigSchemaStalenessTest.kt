@@ -102,6 +102,31 @@ class ConfigSchemaStalenessTest {
         assertTrue(refusal!!, "apps[].visibility" in refusal)
     }
 
+    /**
+     * A merge conflict or a hand edit can leave the committed file unreadable.
+     * The freshness failure must still say what is wrong rather than throw
+     * from the diagnosis (review on #227).
+     */
+    @Test
+    fun `a committed file that is not a JSON object is named, not thrown on`() {
+        val conflicted = "<<<<<<< HEAD\n$before\n=======\n$lost\n>>>>>>> other"
+
+        for (committed in listOf(conflicted, "[]")) {
+            val message = ConfigSchema.staleness(generated = before, committed = committed)
+
+            assertTrue(message, message.startsWith("docs/configuration/launcher.schema.json is not a JSON object"))
+        }
+    }
+
+    /** Which key paths it held cannot be read, so a removal cannot be ruled out: not written. */
+    @Test
+    fun `regenerating refuses to write over a committed file it cannot read`() {
+        val refusal = ConfigSchema.refusal(generated = before, committed = "[]", acknowledged = emptySet())
+
+        assertNotNull(refusal)
+        assertTrue(refusal!!, "git checkout" in refusal)
+    }
+
     /** Controls: nothing removed, nothing to acknowledge. */
     @Test
     fun `an addition, a new limit or a first file is written without naming anything`() {
