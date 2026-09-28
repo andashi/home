@@ -51,6 +51,12 @@ internal class AndroidContactDeserializer(
 
         val androidContactProvider = AndroidContactProvider(context)
 
-        return androidContactProvider.get(id)?.let { Resolved.Found(it) } ?: Resolved.Unknown
+        val contact = try {
+            androidContactProvider.get(id)
+        } catch (e: SecurityException) {
+            // The permission went between the check and the query.
+            return Resolved.Unknown
+        }
+        return contact?.let { Resolved.Found(it) } ?: Resolved.Unknown
     }
 }
