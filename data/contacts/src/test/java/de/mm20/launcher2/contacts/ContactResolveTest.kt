@@ -1,6 +1,11 @@
 package de.mm20.launcher2.contacts
 
+import android.content.ContentProvider
+import android.content.ContentValues
 import android.content.Context
+import android.database.Cursor
+import android.net.Uri
+import android.provider.ContactsContract
 import androidx.appcompat.app.AppCompatActivity
 import androidx.test.core.app.ApplicationProvider
 import de.mm20.launcher2.contacts.providers.AndroidContact
@@ -17,6 +22,7 @@ import kotlinx.coroutines.yield
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
 
 /**
@@ -53,6 +59,28 @@ class ContactResolveTest {
     @Test
     fun aContactTheProviderDoesNotReturnIsUnknown() = runBlocking {
         assertEquals(Resolved.Unknown, deserializer(granted = true).resolve(stored))
+    }
+
+    /**
+     * The permission can go between the check and the query - the check and
+     * ContentResolver.query are not atomic - and the provider then throws.
+     * That is no evidence the contact is gone either (review on #241).
+     */
+    @Test
+    fun aPermissionLostDuringTheQueryIsUnknown() = runBlocking {
+        Robolectric.setupContentProvider(RevokedContactsProvider::class.java, ContactsContract.AUTHORITY)
+
+        assertEquals(Resolved.Unknown, deserializer(granted = true).resolve(stored))
+    }
+
+    class RevokedContactsProvider : ContentProvider() {
+        override fun onCreate() = true
+        override fun query(uri: Uri, projection: Array<out String>?, selection: String?, selectionArgs: Array<out String>?, sortOrder: String?): Cursor =
+            throw SecurityException("Permission Denial: reading com.android.providers.contacts.ContactsProvider2")
+        override fun getType(uri: Uri): String? = null
+        override fun insert(uri: Uri, values: ContentValues?): Uri? = null
+        override fun delete(uri: Uri, selection: String?, selectionArgs: Array<out String>?) = 0
+        override fun update(uri: Uri, values: ContentValues?, selection: String?, selectionArgs: Array<out String>?) = 0
     }
 
     /**
