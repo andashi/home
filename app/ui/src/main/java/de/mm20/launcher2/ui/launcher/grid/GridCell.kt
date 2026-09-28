@@ -237,20 +237,24 @@ private fun FailureIfItFits(banner: @Composable () -> Unit, compact: @Composable
  * The failure in one icon: named by its content description, with the
  * banner's message and actions in the menu it opens.
  *
- * Coloured for the wallpaper, not the theme. The glass card is mostly the
- * wallpaper showing through, yet it hands its content the theme's onSurface:
- * dark in a light theme over a dark wallpaper, where on the device the icon
- * was barely there. The banner never met this, it brings its own card. The
- * same holds for every glass surface; this is the local answer, not the
- * general one.
+ * Both take the glass card's colours, which follow the wallpaper (#242);
+ * before that fix the icon was barely visible on the device, dark on a card
+ * the wallpaper made dark. The menu is opaque on purpose: a glass menu
+ * (GlassMenuGroup) shows the grid through it, and on the device the label of
+ * the cell under it ran through the failure message.
  */
 @Composable
 private fun CompactFailure(onAllow: (() -> Unit)?, onReplace: () -> Unit, onRemove: () -> Unit) {
     var open by remember { mutableStateOf(false) }
     val message = stringResource(R.string.app_widget_loading_failed)
+    val actions = listOfNotNull(
+        onAllow?.let { R.string.widget_action_allow to it },
+        R.string.widget_action_replace to onReplace,
+        R.string.widget_action_remove to onRemove,
+    )
     Box {
         IconButton(onClick = { open = true }) {
-            Icon(painterResource(R.drawable.warning_24px), contentDescription = message, tint = if (LocalPreferDarkContentOverWallpaper.current) Color.Black else Color.White)
+            Icon(painterResource(R.drawable.warning_24px), contentDescription = message)
         }
         DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
             Text(
@@ -258,20 +262,12 @@ private fun CompactFailure(onAllow: (() -> Unit)?, onReplace: () -> Unit, onRemo
                 style = MaterialTheme.typography.bodySmall,
                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
             )
-            if (onAllow != null) {
+            actions.forEach { (label, action) ->
                 DropdownMenuItem(
-                    text = { Text(stringResource(R.string.widget_action_allow)) },
-                    onClick = { open = false; onAllow() },
+                    text = { Text(stringResource(label)) },
+                    onClick = { open = false; action() },
                 )
             }
-            DropdownMenuItem(
-                text = { Text(stringResource(R.string.widget_action_replace)) },
-                onClick = { open = false; onReplace() },
-            )
-            DropdownMenuItem(
-                text = { Text(stringResource(R.string.widget_action_remove)) },
-                onClick = { open = false; onRemove() },
-            )
         }
     }
 }
