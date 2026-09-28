@@ -96,23 +96,38 @@ class HomeGridReconcilerTest {
 
     /**
      * The package is installed but no longer declares the widget (an update
-     * dropped it): the bind fails once, the dead id is cleared, and the item is
-     * then exactly a declared widget whose provider is missing - retried when
-     * its package arrives, not on every pass (review of #245).
+     * dropped it): the bind fails, the dead id is cleared, and the item is then
+     * exactly a declared widget whose provider is missing - retried when its
+     * package arrives, not on every pass (review of #245).
+     *
+     * Passes are driven the way HomeGrid drives them: its LaunchedEffect is
+     * keyed on every item's (id, host id), so clearing the id is itself a
+     * change and runs one more pass (review on #246). That pass fails too and
+     * changes nothing, the key stays the same, and the passes stop: two bind
+     * attempts in all, then none.
      */
     @Test
-    fun `a deleted id whose provider is no longer declared is cleared and tried once`() = runBlocking {
+    fun `a deleted id whose provider is no longer declared is cleared and passes stop`() = runBlocking {
         grid.replace(HomeGridLayouts.Phone, listOf(item("camera", "org.example.cam/.Widget", appWidgetId = 7)))
         val port = FakeAppWidgetHostPort(bound = emptyList(), gone = setOf(7), bindable = emptySet())
+        suspend fun bindingKey() = grid.observe(HomeGridLayouts.Phone).first().map { it.id to it.appWidgetId }
 
-        val report = reconciler(port).reconcile()
+        var key = bindingKey()
+        var passes = 0
+        do {
+            val report = reconciler(port).reconcile()
+            assertEquals(listOf("camera"), report.failed)
+            passes++
+            val before = key
+            key = bindingKey()
+        } while (key != before && passes < 10)
 
-        assertEquals(listOf("camera"), report.failed)
+        assertEquals("passes until nothing changes", 2, passes)
+        assertEquals(2, port.bindCalls.size)
         assertNull(grid.observe(HomeGridLayouts.Phone).first().single().appWidgetId)
-        assertEquals(1, port.bindCalls.size)
         // An unrelated package event runs no pass for it.
         assertEquals(ReconcileReport(), reconciler(port).reconcileArrival("org.other", attempts = 1) {})
-        assertEquals(1, port.bindCalls.size)
+        assertEquals(2, port.bindCalls.size)
     }
 
     /** Case C itself: the package arrives again, and its arrival binds the item. */
