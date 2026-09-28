@@ -41,7 +41,8 @@ internal class AndroidAppWidgetHostPort(
         } catch (e: RuntimeException) {
             // A bad id or a provider that vanished between lookup and bind;
             // the cell shows the banner either way.
-            Log.w(Tag, "binding $widget failed", e)
+            // The kind of widget, never its provider: no app names in release logs (#15).
+            Log.w(Tag, "binding a widget failed", e)
             false
         }
     }

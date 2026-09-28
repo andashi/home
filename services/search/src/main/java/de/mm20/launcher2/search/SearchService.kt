@@ -164,7 +164,8 @@ internal class SearchServiceImpl(
                             else -> {
                                 Log.w(
                                     "MM20",
-                                    "App ${app.label} does not belong to any known profile. Ignoring."
+                                    // What happened, never which app (#15).
+                                    "An app does not belong to any known profile. Ignoring."
                                 )
                             }
                         }

@@ -75,7 +75,8 @@ class LauncherAppDeserializer(val context: Context) : SearchableDeserializer {
             val launcherActivityInfo = launcherApps.resolveActivity(intent, user) ?: return null
             return LauncherApp(context, launcherActivityInfo)
         } catch (e: SecurityException) {
-            Log.e("MM20", "Failed to deserialize app: $serialized", e)
+            // What failed, never which app: no app names in release logs (#15).
+            Log.e("MM20", "Failed to deserialize an app", e)
             return null
         }
     }

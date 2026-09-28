@@ -563,9 +563,11 @@ internal class SavableSearchableRepositoryImpl(
                     if (item.searchable == null || item.searchable.key != item.key) {
                         removeInvalidItem(item.key)
                         removed++
+                        // The kind of item, never its key: a key names the
+                        // app or the contact (#15).
                         Log.i(
                             "MM20",
-                            "SearchableDatabase cleanup: removed invalid item ${item.key}"
+                            "SearchableDatabase cleanup: removed an invalid ${fav.type} item"
                         )
                     }
                 }

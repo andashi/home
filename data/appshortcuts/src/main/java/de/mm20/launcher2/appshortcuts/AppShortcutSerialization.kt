@@ -93,7 +93,8 @@ class LauncherShortcutDeserializer(
                 }
             }
         } catch (e: SecurityException) {
-            Log.e("MM20", "Failed to deserialize shortcut: $serialized", e)
+            // What failed, never which app: no app names in release logs (#15).
+            Log.e("MM20", "Failed to deserialize a shortcut", e)
             return null
         }
     }

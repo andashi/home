@@ -194,7 +194,8 @@ internal data class LauncherShortcut(
         }
 
         if (allPinned == null) {
-            Log.e("MM20", "Could not remove shortcut ${key}: shortcut query returned null")
+            // What failed, never which app: the key names the package (#15).
+            Log.e("MM20", "Could not remove a shortcut: shortcut query returned null")
             return
         }
 

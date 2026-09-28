@@ -33,7 +33,7 @@ class GrayscaleMapIconPackInstaller(
                 val resources = context.packageManager.getResourcesForApplication(packageName)
                 val resId = resources.getIdentifier("grayscale_icon_map", "xml", packageName)
                 if (resId == 0) {
-                    Log.d("MM20", "Could not find grayscale_icon_map.xml in $packageName")
+                    Log.d("MM20", "Could not find grayscale_icon_map.xml in an icon pack")
                     return@withContext
                 }
                 val parser = resources.getXml(resId)

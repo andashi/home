@@ -65,8 +65,6 @@ class IconPackManager(
                 if (forceReinstall || !installer.isInstalledAndUpToDate(pack)) {
                     installer.install(pack)
                     iconsHaveBeenUpdated = true
-                } else {
-                    Log.d("MM20", "Icon pack ${pack.packageName} is up to date")
                 }
             }
             installedPacks.addAll(iconPacks)
@@ -93,7 +91,8 @@ class IconPackManager(
         val res = try {
             context.packageManager.getResourcesForApplication(iconPack)
         } catch (e: PackageManager.NameNotFoundException) {
-            Log.e("MM20", "Icon pack package $iconPack not found!")
+            // What failed, never which app: no app names in release logs (#15).
+            Log.e("MM20", "Icon pack package not found")
             return@withContext null
         }
         val activity = activityName?.let { ComponentName(packageName, it) }?.shortClassName
@@ -119,7 +118,7 @@ class IconPackManager(
         val res = try {
             context.packageManager.getResourcesForApplication(iconPack)
         } catch (e: PackageManager.NameNotFoundException) {
-            Log.e("MM20", "Icon pack package $iconPack not found!")
+            Log.e("MM20", "Icon pack package not found")
             return@withContext null
         }
         if (icon is CalendarIcon) {
