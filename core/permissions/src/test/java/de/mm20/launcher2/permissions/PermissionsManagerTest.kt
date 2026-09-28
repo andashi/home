@@ -1,5 +1,7 @@
 package de.mm20.launcher2.permissions
 
+import android.Manifest
+import android.app.Application
 import android.app.role.RoleManager
 import android.content.Context
 import android.content.pm.LauncherApps
@@ -126,6 +128,39 @@ class PermissionsManagerTest {
 
         assertEquals(false, manager.state(PermissionGroup.AppShortcuts))
         assertEquals(false, manager.state(PermissionGroup.ManageProfiles))
+    }
+
+    /**
+     * A runtime permission granted in Settings while the launcher runs reaches
+     * the published state when it comes back, not only one granted through its
+     * own dialog: a contact favorite that was Unknown resolves again on that
+     * change (review on andashi/home#241). Revoking kills the process, so the
+     * grant is the case that matters.
+     */
+    @Test
+    fun `onResume re-reads the runtime permissions granted in Settings`() = runTest {
+        val manager = PermissionsManagerImpl(context)
+        assertEquals(false, manager.state(PermissionGroup.Contacts))
+        assertEquals(false, manager.state(PermissionGroup.Call))
+
+        shadowOf(context as Application).grantPermissions(Manifest.permission.READ_CONTACTS, Manifest.permission.CALL_PHONE)
+        manager.onResume()
+
+        assertEquals(true, manager.state(PermissionGroup.Contacts))
+        assertEquals(true, manager.state(PermissionGroup.Call))
+    }
+
+    /** onResume goes through recheckPermission, so the service-reported groups stay as their services said. */
+    @Test
+    fun `onResume leaves service-reported states alone`() = runTest {
+        val manager = PermissionsManagerImpl(context)
+        manager.reportNotificationListenerState(true)
+        manager.reportAccessibilityServiceState(true)
+
+        manager.onResume()
+
+        assertEquals(true, manager.state(PermissionGroup.Notifications))
+        assertEquals(true, manager.state(PermissionGroup.Accessibility))
     }
 
     // ---- enabled in the system, whether or not the service has connected (#140) ----

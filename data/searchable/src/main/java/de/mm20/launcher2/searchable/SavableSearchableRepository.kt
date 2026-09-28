@@ -11,17 +11,21 @@ import de.mm20.launcher2.ktx.jsonObjectOf
 import de.mm20.launcher2.preferences.WeightFactor
 import de.mm20.launcher2.preferences.search.RankingSettings
 import de.mm20.launcher2.search.SavableSearchable
+import de.mm20.launcher2.search.Resolved
 import de.mm20.launcher2.search.SearchableDeserializer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.koin.core.component.KoinComponent
@@ -254,45 +258,44 @@ internal class SavableSearchableRepositoryImpl(
         limit: Int
     ): Flow<List<SavableSearchable>> {
         val dao = database.searchableDao()
-        val entities = when {
-            includeTypes == null && excludeTypes == null -> dao.get(
-                manuallySorted = PinnedLevel.ManuallySorted in minPinnedLevel..maxPinnedLevel,
-                automaticallySorted = PinnedLevel.AutomaticallySorted in minPinnedLevel..maxPinnedLevel,
-                frequentlyUsed = PinnedLevel.FrequentlyUsed in minPinnedLevel..maxPinnedLevel,
-                unused = PinnedLevel.NotPinned in minPinnedLevel..maxPinnedLevel,
-                minVisibility = minVisibility.value,
-                maxVisibility = maxVisibility.value,
-                limit = limit
-            )
+        val query = { fetch: Int ->
+            when {
+                includeTypes == null && excludeTypes == null -> dao.get(
+                    manuallySorted = PinnedLevel.ManuallySorted in minPinnedLevel..maxPinnedLevel,
+                    automaticallySorted = PinnedLevel.AutomaticallySorted in minPinnedLevel..maxPinnedLevel,
+                    frequentlyUsed = PinnedLevel.FrequentlyUsed in minPinnedLevel..maxPinnedLevel,
+                    unused = PinnedLevel.NotPinned in minPinnedLevel..maxPinnedLevel,
+                    minVisibility = minVisibility.value,
+                    maxVisibility = maxVisibility.value,
+                    limit = fetch
+                )
 
-            includeTypes == null -> dao.getExcludeTypes(
-                excludeTypes = excludeTypes,
-                manuallySorted = PinnedLevel.ManuallySorted in minPinnedLevel..maxPinnedLevel,
-                automaticallySorted = PinnedLevel.AutomaticallySorted in minPinnedLevel..maxPinnedLevel,
-                frequentlyUsed = PinnedLevel.FrequentlyUsed in minPinnedLevel..maxPinnedLevel,
-                unused = PinnedLevel.NotPinned in minPinnedLevel..maxPinnedLevel,
-                minVisibility = minVisibility.value,
-                maxVisibility = maxVisibility.value,
-                limit = limit
-            )
+                includeTypes == null -> dao.getExcludeTypes(
+                    excludeTypes = excludeTypes,
+                    manuallySorted = PinnedLevel.ManuallySorted in minPinnedLevel..maxPinnedLevel,
+                    automaticallySorted = PinnedLevel.AutomaticallySorted in minPinnedLevel..maxPinnedLevel,
+                    frequentlyUsed = PinnedLevel.FrequentlyUsed in minPinnedLevel..maxPinnedLevel,
+                    unused = PinnedLevel.NotPinned in minPinnedLevel..maxPinnedLevel,
+                    minVisibility = minVisibility.value,
+                    maxVisibility = maxVisibility.value,
+                    limit = fetch
+                )
 
-            excludeTypes == null -> dao.getIncludeTypes(
-                includeTypes = includeTypes,
-                manuallySorted = PinnedLevel.ManuallySorted in minPinnedLevel..maxPinnedLevel,
-                automaticallySorted = PinnedLevel.AutomaticallySorted in minPinnedLevel..maxPinnedLevel,
-                frequentlyUsed = PinnedLevel.FrequentlyUsed in minPinnedLevel..maxPinnedLevel,
-                unused = PinnedLevel.NotPinned in minPinnedLevel..maxPinnedLevel,
-                minVisibility = minVisibility.value,
-                maxVisibility = maxVisibility.value,
-                limit = limit
-            )
+                excludeTypes == null -> dao.getIncludeTypes(
+                    includeTypes = includeTypes,
+                    manuallySorted = PinnedLevel.ManuallySorted in minPinnedLevel..maxPinnedLevel,
+                    automaticallySorted = PinnedLevel.AutomaticallySorted in minPinnedLevel..maxPinnedLevel,
+                    frequentlyUsed = PinnedLevel.FrequentlyUsed in minPinnedLevel..maxPinnedLevel,
+                    unused = PinnedLevel.NotPinned in minPinnedLevel..maxPinnedLevel,
+                    minVisibility = minVisibility.value,
+                    maxVisibility = maxVisibility.value,
+                    limit = fetch
+                )
 
-            else -> throw IllegalArgumentException("Cannot specify both includeTypes and excludeTypes")
+                else -> throw IllegalArgumentException("Cannot specify both includeTypes and excludeTypes")
+            }
         }
-
-        return entities.map {
-            it.mapNotNull { fromDatabaseEntity(it).searchable }
-        }
+        return resolvedUpTo(limit, query)
     }
 
     override fun getKeys(
@@ -507,21 +510,69 @@ internal class SavableSearchableRepositoryImpl(
         return database.searchableDao().getWeights(keys)
     }
 
-    private suspend fun fromDatabaseEntity(entity: SavedSearchableEntity): SavedSearchable {
-        val deserializer: SearchableDeserializer? = try {
+    private suspend fun resolve(entity: SavedSearchableEntity): Resolved {
+        val deserializer: SearchableDeserializer = try {
             get(named(entity.type))
         } catch (e: NoDefinitionFoundException) {
             CrashReporter.logException(e)
-            null
+            return Resolved.Gone
         } catch (e: InstanceCreationException) {
+            // A deserializer that could not be created says nothing about the item.
             CrashReporter.logException(e)
-            null
+            return Resolved.Unknown
         }
-        val searchable = deserializer?.deserialize(entity.serializedSearchable)
-        if (searchable == null) removeInvalidItem(entity.key)
+        return deserializer.resolve(entity.serializedSearchable)
+    }
+
+    /**
+     * Resolves [entities], and resolves them again whenever the deserializer
+     * of one of their types says its answer may have changed: a contact
+     * that was Unknown without its permission appears once it is granted,
+     * without waiting for the database to change (#237).
+     */
+    private fun resolving(entities: List<SavedSearchableEntity>): Flow<List<SavableSearchable>> {
+        val again = entities.map { it.type }.distinct().mapNotNull { type ->
+            // Logged by resolve() when it fails; a missing trigger only
+            // means that type is not resolved again.
+            runCatching { get<SearchableDeserializer>(named(type)).resolveAgain }.getOrNull()
+        }
+        return merge(flowOf(Unit), *again.toTypedArray()).map {
+            entities.mapNotNull { fromDatabaseEntity(it).searchable }
+        }
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private fun Flow<List<SavedSearchableEntity>>.resolved(): Flow<List<SavableSearchable>> =
+        flatMapLatest { resolving(it) }
+
+    /**
+     * Up to [limit] resolved items. The limit is applied in SQL, before rows
+     * that do not resolve are dropped, and such rows are kept (#237): a read
+     * whose rows fall short while the query returned all it was asked for
+     * asks again for twice as many, until the limit is filled or the rows run
+     * out. With every row resolving it costs nothing extra.
+     */
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private fun resolvedUpTo(
+        limit: Int,
+        query: (Int) -> Flow<List<SavedSearchableEntity>>,
+        fetch: Int = limit,
+    ): Flow<List<SavableSearchable>> = query(fetch).flatMapLatest { entities ->
+        resolving(entities).flatMapLatest { found ->
+            if (found.size >= limit || entities.size < fetch) flowOf(found.take(limit))
+            else resolvedUpTo(limit, query, (fetch.toLong() * 2).coerceAtMost(Int.MAX_VALUE.toLong()).toInt())
+        }
+    }
+
+    private suspend fun fromDatabaseEntity(entity: SavedSearchableEntity): SavedSearchable {
+        val resolved = resolve(entity)
+        // Only Gone deletes. An app that is not installed is knowably gone; a
+        // contact never is (permission, Contact Scopes), so it answers Unknown
+        // and keeps its pin, tags and label. Do not re-unify the two (#237).
+        if (resolved == Resolved.Gone) removeInvalidItem(entity.key)
         return SavedSearchable(
             key = entity.key,
-            searchable = searchable,
+            searchable = (resolved as? Resolved.Found)?.searchable,
             launchCount = entity.launchCount,
             pinPosition = entity.pinPosition,
             visibility = VisibilityLevel.fromInt(entity.visibility),
@@ -539,16 +590,12 @@ internal class SavableSearchableRepositoryImpl(
         val dao = database.searchableDao()
         if (keys.size > 999) {
             return combine(keys.chunked(999).map {
-                dao.getByKeys(it)
-                    .map {
-                        it.mapNotNull { fromDatabaseEntity(it).searchable }
-                    }
+                dao.getByKeys(it).resolved()
             }) { results ->
                 results.flatMap { it }
             }
         }
-        return dao.getByKeys(keys)
-            .map { it.mapNotNull { fromDatabaseEntity(it).searchable } }
+        return dao.getByKeys(keys).resolved()
     }
 
     override suspend fun cleanupDatabase(): Int {
@@ -559,9 +606,9 @@ internal class SavableSearchableRepositoryImpl(
             do {
                 val favorites = dao.exportFavorites(limit = 100, offset = page * 100)
                 for (fav in favorites) {
-                    val item = fromDatabaseEntity(fav)
-                    if (item.searchable == null || item.searchable.key != item.key) {
-                        removeInvalidItem(item.key)
+                    val resolved = resolve(fav)
+                    if (resolved == Resolved.Gone || (resolved is Resolved.Found && resolved.searchable.key != fav.key)) {
+                        removeInvalidItem(fav.key)
                         removed++
                         // The kind of item, never its key: a key names the
                         // app or the contact (#15).

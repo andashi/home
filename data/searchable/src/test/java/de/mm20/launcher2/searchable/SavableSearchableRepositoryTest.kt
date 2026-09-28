@@ -7,19 +7,33 @@ import androidx.test.core.app.ApplicationProvider
 import de.mm20.launcher2.database.AppDatabase
 import de.mm20.launcher2.database.entities.SavedSearchableEntity
 import de.mm20.launcher2.icons.StaticLauncherIcon
+import de.mm20.launcher2.search.Resolved
 import de.mm20.launcher2.search.SavableSearchable
+import de.mm20.launcher2.search.SearchableDeserializer
 import de.mm20.launcher2.search.SearchableSerializer
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.koin.core.context.startKoin
+import org.koin.core.context.stopKoin
+import org.koin.core.qualifier.named
+import org.koin.dsl.module
 import org.robolectric.RobolectricTestRunner
 
 /**
@@ -45,6 +59,7 @@ class SavableSearchableRepositoryTest {
 
     @After
     fun tearDown() {
+        stopKoin()
         database.close()
     }
 
@@ -280,6 +295,207 @@ class SavableSearchableRepositoryTest {
         assertEquals(7, entity.launchCount)
         assertEquals(3, entity.pinPosition)
         assertEquals(2, entity.visibility)
+    }
+
+    // ----- a row is deleted only when its item is known to be gone (#237) -----
+
+    /**
+     * Resolves by the serialized form: `found`, `gone` or `unknown`. Its
+     * [deserialize] keeps the old contract, null for anything not found, which
+     * is what the contacts deserializer answered without its permission - so
+     * a repository still reading [deserialize] cannot tell the two apart.
+     */
+    private val resolvingDeserializer = object : SearchableDeserializer {
+        override suspend fun resolve(serialized: String): Resolved = when (serialized) {
+            "found" -> Resolved.Found(TestSearchable("resolving://found", domain = "resolving"))
+            "gone" -> Resolved.Gone
+            "unknown" -> Resolved.Unknown
+            else -> throw IllegalArgumentException(serialized)
+        }
+
+        override suspend fun deserialize(serialized: String): SavableSearchable? =
+            (resolve(serialized) as? Resolved.Found)?.searchable
+    }
+
+    private suspend fun resolvingRows() {
+        stopKoin()
+        startKoin { modules(module { factory<SearchableDeserializer>(named("resolving")) { resolvingDeserializer } }) }
+        pinned("resolving://found", "resolving", 3, serialized = "found")
+        pinned("resolving://unknown", "resolving", 2, serialized = "unknown")
+        pinned("resolving://gone", "resolving", 1, serialized = "gone")
+    }
+
+    private suspend fun row(key: String) = database.searchableDao().getByKey(key).first()
+
+    /**
+     * Revoking the contacts permission deleted every contact pin on the next
+     * favorites load, and left its tags and labels to the orphan cleanup.
+     */
+    @Test
+    fun readingKeepsARowWhoseItemIsUnknown() = runBlocking {
+        resolvingRows()
+
+        val read = repository.getByKeys(listOf("resolving://found", "resolving://unknown", "resolving://gone")).first()
+
+        assertEquals(listOf("resolving://found"), read.map { it.key })
+        // The deletes are fire-and-forget: the gone row's is the barrier.
+        awaitValue { if (row("resolving://gone") == null) true else null }
+        delay(500)
+        assertNotNull("an item that could not be resolved lost its row", row("resolving://unknown"))
+    }
+
+    /** Control, green in both states: a row whose item is gone is still deleted, as for an uninstalled app. */
+    @Test
+    fun readingDeletesARowWhoseItemIsGone() = runBlocking {
+        resolvingRows()
+
+        repository.getByKeys(listOf("resolving://gone")).first()
+
+        awaitValue { if (row("resolving://gone") == null) true else null }
+        assertNotNull(row("resolving://found"))
+    }
+
+    /**
+     * A kept row that does not resolve must not take a slot of a limited read:
+     * the limit is applied in SQL, before unresolved rows are dropped, so one
+     * Unknown contact ahead of an app left the favorites one short - or empty
+     * with a limit of one (review on #241). On main such a row was deleted,
+     * so keeping it is what made this reachable.
+     */
+    @Test
+    fun aRowThatDoesNotResolveDoesNotTakeASlotOfALimitedRead() = runBlocking {
+        stopKoin()
+        startKoin { modules(module { factory<SearchableDeserializer>(named("resolving")) { resolvingDeserializer } }) }
+        pinned("resolving://unknown", "resolving", 3, serialized = "unknown")
+        pinned("resolving://found", "resolving", 2, serialized = "found")
+
+        val read = repository.get(limit = 1).first()
+
+        assertEquals(listOf("resolving://found"), read.map { it.key })
+    }
+
+    /** Control, green in both states: with every row resolving, the limit cuts as before. */
+    @Test
+    fun aLimitedReadStillStopsAtItsLimit() = runBlocking {
+        stopKoin()
+        startKoin { modules(module { factory<SearchableDeserializer>(named("resolving")) { resolvingDeserializer } }) }
+        pinned("resolving://found", "resolving", 3, serialized = "found")
+        pinned("resolving://found2", "resolving", 2, serialized = "found")
+
+        val read = repository.get(limit = 1).first()
+
+        assertEquals(1, read.size)
+    }
+
+    /**
+     * The worst case of filling a limit: nearly every row stays Unknown (a
+     * device with most pinned contacts hidden by Contact Scopes). The read
+     * doubles its fetch until the rows run out, so it resolves fewer than
+     * three times the rows - the doubled fetches sum to under twice the table,
+     * the last one reads it whole - in about log2(rows / limit) + 2 queries.
+     */
+    @Test
+    fun fillingALimitPastManyUnknownRowsIsBounded() = runBlocking {
+        val resolves = java.util.concurrent.atomic.AtomicInteger()
+        val counting = object : SearchableDeserializer {
+            override suspend fun resolve(serialized: String): Resolved {
+                resolves.incrementAndGet()
+                return resolvingDeserializer.resolve(serialized)
+            }
+            override suspend fun deserialize(serialized: String): SavableSearchable? =
+                (resolve(serialized) as? Resolved.Found)?.searchable
+        }
+        stopKoin()
+        startKoin { modules(module { factory<SearchableDeserializer>(named("resolving")) { counting } }) }
+        val rows = 1000
+        for (i in 1..rows) pinned("resolving://unknown$i", "resolving", rows + 10 - i, serialized = "unknown")
+        pinned("resolving://found", "resolving", 1, serialized = "found")
+
+        val started = System.nanoTime()
+        val read = repository.get(limit = 5).first()
+        val millis = (System.nanoTime() - started) / 1_000_000
+
+        assertEquals(listOf("resolving://found"), read.map { it.key })
+        println("filling limit 5 past $rows unknown rows: ${resolves.get()} resolves, $millis ms")
+        assertTrue("resolves ${resolves.get()} exceed three times the ${rows + 1} rows", resolves.get() < 3 * (rows + 1))
+    }
+
+    /** The debug screen's cleanup took the same path. */
+    @Test
+    fun cleanupKeepsARowWhoseItemIsUnknown() = runBlocking {
+        resolvingRows()
+
+        val removed = repository.cleanupDatabase()
+
+        assertEquals("only the gone row counts as removed", 1, removed)
+        awaitValue { if (row("resolving://gone") == null) true else null }
+        delay(500)
+        assertNotNull("an item that could not be resolved lost its row", row("resolving://unknown"))
+        assertNotNull(row("resolving://found"))
+    }
+
+    /**
+     * A source whose answer changes: Unknown until [visible] turns true, as a
+     * contact is without its permission. It announces the change through
+     * [SearchableDeserializer.resolveAgain].
+     */
+    private inner class TogglingDeserializer : SearchableDeserializer {
+        val visible = MutableStateFlow(false)
+        override suspend fun resolve(serialized: String): Resolved =
+            if (visible.value) Resolved.Found(TestSearchable("toggling://a", domain = "toggling")) else Resolved.Unknown
+
+        override suspend fun deserialize(serialized: String): SavableSearchable? =
+            (resolve(serialized) as? Resolved.Found)?.searchable
+
+        override val resolveAgain: Flow<Unit> get() = visible.drop(1).map { }
+    }
+
+    /**
+     * Granting the permission did not bring a contact favorite back: the flow
+     * kept its first answer until the database happened to change (review on
+     * #241).
+     */
+    @Test
+    fun anItemThatResolvesLaterAppearsWithoutADatabaseChange() = runBlocking {
+        val toggling = TogglingDeserializer()
+        stopKoin()
+        startKoin { modules(module { factory<SearchableDeserializer>(named("toggling")) { toggling } }) }
+        pinned("toggling://a", "toggling", 1, serialized = "a")
+
+        val seen = Channel<List<String>>(Channel.UNLIMITED)
+        val job = launch { repository.getByKeys(listOf("toggling://a")).collect { seen.send(it.map { s -> s.key }) } }
+        try {
+            assertEquals(emptyList<String>(), withTimeout(5000) { seen.receive() })
+            toggling.visible.value = true
+            val next = withTimeout(5000) {
+                var got = seen.receive()
+                while (got.isEmpty()) got = seen.receive()
+                got
+            }
+            assertEquals(listOf("toggling://a"), next)
+            assertNotNull("the row is still there", row("toggling://a"))
+        } finally {
+            job.cancel()
+        }
+    }
+
+    /**
+     * A deserializer Koin fails to create says nothing about the item: the
+     * row stays (review on #241). A type with no deserializer at all is still
+     * gone - the control, green in both states.
+     */
+    @Test
+    fun aDeserializerThatCannotBeCreatedKeepsItsRow() = runBlocking {
+        stopKoin()
+        startKoin { modules(module { factory<SearchableDeserializer>(named("broken")) { throw IllegalStateException("cannot be created") } }) }
+        pinned("broken://a", "broken", 2, serialized = "a")
+        pinned("undefined://a", "undefined", 1, serialized = "a")
+
+        repository.getByKeys(listOf("broken://a", "undefined://a")).first()
+
+        awaitValue { if (row("undefined://a") == null) true else null }
+        delay(500)
+        assertNotNull("a deserializer that could not be created cost the row", row("broken://a"))
     }
 
     private class TestSearchable(
