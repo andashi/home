@@ -119,6 +119,12 @@ class CheckBackupOffTest(unittest.TestCase):
         found = problems(MANIFEST, RESOURCES, files(included).get)
         self.assertTrue(any("include" in p for p in found), found)
 
+    def test_rules_under_another_root_are_refused(self):
+        # Android reads only a <data-extraction-rules> document; the same
+        # sections under another root are ignored, and transfer stays on.
+        found = problems(MANIFEST, RESOURCES, files(RULES.replace("data-extraction-rules", "unrelated-root")).get)
+        self.assertTrue(any("data-extraction-rules" in p for p in found), found)
+
     def test_a_backup_agent_is_refused(self):
         # The extraction rules govern the files Auto Backup takes, not what a
         # custom agent sends; a library could merge one in without a conflict.
