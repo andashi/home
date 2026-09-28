@@ -64,6 +64,41 @@ class MuteOptionTest {
         assertEquals("home.grid.layouts.phone.items[0].mute", ignored.path)
     }
 
+    /**
+     * Not mute alone: the dock reads none of the four options (GridCell draws
+     * it as a plain glass card), so each one set away from its default is
+     * reported, by the same rule, which follows OptionDefaults - a fifth
+     * option is covered without anyone remembering it.
+     */
+    @Test
+    fun `every option away from its default on the favorites dock is reported`() {
+        val options = """"borderless": true, "background": false, "themeColors": false, "mute": true"""
+        val diagnostics = parse("""[{ "id": "dock", "widget": "favorites", "x": 0, "y": 5, "w": 4, "h": 1, $options }]""").diagnostics
+
+        assertEquals(
+            GridItemConfig.OptionDefaults.keys.map { "home.grid.layouts.phone.items[0].$it" }.sorted(),
+            diagnostics.filter { it.code == "grid-option-ignored" && it.severity == Severity.Warning }.map { it.path }.sorted(),
+        )
+    }
+
+    /**
+     * The rule above reads each option through [GridItemConfig.options]: one
+     * that OptionDefaults names and options does not would read as absent and
+     * be skipped in silence. The two must name the same keys.
+     */
+    @Test
+    fun `options names exactly the keys OptionDefaults does`() {
+        assertEquals(GridItemConfig.OptionDefaults.keys, GridItemConfig("x", "a.b/.C").options.keys)
+    }
+
+    /** Controls: an option at its default on the dock asks for nothing, and so says nothing. */
+    @Test
+    fun `every option at its default on the favorites dock says nothing`() {
+        val options = """"borderless": false, "background": true, "themeColors": true, "mute": false"""
+        val text = """[{ "id": "dock", "widget": "favorites", "x": 0, "y": 5, "w": 4, "h": 1, $options }]"""
+        assertEquals(emptyList<Diagnostic>(), parse(text).diagnostics)
+    }
+
     /** Controls: `mute: false` on the dock asks for nothing, and so says nothing. */
     @Test
     fun `mute false or absent on the favorites dock says nothing`() {

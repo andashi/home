@@ -385,14 +385,20 @@ object ConfigValidator {
                                 "provider component name (package/class)",
                     )
                 }
-                // #78: the dock is drawn by the launcher on glass; mute has no effect there.
-                if (item.isFavorites && item.mute == true) {
-                    out += Diagnostic(
-                        DiagnosticCode.GridOptionIgnored,
-                        "$path.mute",
-                        "mute has no effect on '${GridItemConfig.Favorites}': the launcher draws it on glass " +
-                                "itself; mute is for widgets from other apps",
-                    )
+                // #78: the dock is a plain glass card the launcher draws itself; it
+                // reads none of the options. One set away from its default asks for
+                // something that does not happen, so it is said, not swallowed.
+                if (item.isFavorites) {
+                    for ((option, default) in GridItemConfig.OptionDefaults) {
+                        val value = item.options[option] ?: continue
+                        if (value == default) continue
+                        out += Diagnostic(
+                            DiagnosticCode.GridOptionIgnored,
+                            "$path.$option",
+                            "$option has no effect on '${GridItemConfig.Favorites}': the launcher draws it " +
+                                    "as a glass card itself; the options are for widgets from other apps",
+                        )
+                    }
                 }
                 if ((item.x == null) != (item.y == null)) {
                     out += Diagnostic(

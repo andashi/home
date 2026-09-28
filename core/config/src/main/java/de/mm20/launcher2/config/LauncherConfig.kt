@@ -681,6 +681,14 @@ data class GridItemConfig(
      */
     val hasPosition: Boolean get() = x != null && y != null
 
+    /** The options by key, as [OptionDefaults] names them; null where the file leaves one out. */
+    val options: Map<String, Boolean?> get() = mapOf(
+        "borderless" to borderless,
+        "background" to background,
+        "themeColors" to themeColors,
+        "mute" to mute,
+    )
+
     companion object {
         const val Favorites = "favorites"
 
