@@ -76,8 +76,13 @@ fun LazyListScope.AppResults(
                 ) {
                     for (profile in profiles) {
                         val selected = profile.type == selectedProfileType
+                        // Labels and icons in onSurface, the indicator keeps
+                        // primary: the accent measured 4.19:1 on the greyer
+                        // glass a dark theme leaves over a light wallpaper (#242).
                         LeadingIconTab(
                             selected = selected,
+                            selectedContentColor = MaterialTheme.colorScheme.onSurface,
+                            unselectedContentColor = MaterialTheme.colorScheme.onSurface,
                             text = {
                                 Text(
                                     when (profile.type) {
