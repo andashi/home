@@ -95,7 +95,7 @@ class CapabilityDiagnostics(
                     DiagnosticCode.PermissionMissing,
                     "search.shortcuts",
                     "search.shortcuts is true, but the launcher is not this profile's home app; " +
-                        "only the home app can read app shortcuts, so search finds none until it is",
+                        "only the home app can read app shortcuts, so search finds none until the launcher is made the home app",
                 )
             )
         }
@@ -108,7 +108,7 @@ class CapabilityDiagnostics(
                     DiagnosticCode.PermissionMissing,
                     "icons.badges.notifications",
                     "icons.badges.notifications is true, but the launcher's notification listener is not enabled " +
-                        "in this profile; icons show no notification badges until it is",
+                        "in this profile; icons show no notification badges until it is enabled in the system's notification access settings",
                 )
             )
         }

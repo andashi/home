@@ -518,6 +518,7 @@ class ConfigReloaderTest {
         assertEquals(listOf("read", "apply:[search]"), store.events)
         val missing = report.diagnostics.single { it.code == "permission-missing" }
         assertEquals("search.shortcuts", missing.path)
+        assertTrue("says what clears it: ${missing.message}", missing.message.endsWith("until the launcher is made the home app"))
         assertEquals(Severity.Warning, missing.severity)
     }
 
@@ -531,6 +532,7 @@ class ConfigReloaderTest {
         assertTrue(report.success)
         val missing = report.diagnostics.single { it.code == "permission-missing" }
         assertEquals("icons.badges.notifications", missing.path)
+        assertTrue("says what clears it: ${missing.message}", missing.message.endsWith("enabled in the system's notification access settings"))
         assertEquals(Severity.Warning, missing.severity)
     }
 
