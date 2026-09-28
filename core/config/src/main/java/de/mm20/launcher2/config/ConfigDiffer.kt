@@ -438,11 +438,26 @@ internal fun GridLayoutConfig.matches(current: GridLayoutConfig?): Boolean {
 }
 
 /**
- * A configured item against its stored twin. Identity fields must be equal;
- * every optional field is compared only when the config sets it - absent
- * means unmanaged, as everywhere in the contract. That is what lets a file
- * that omits geometry (placed once by the launcher, D5) stay a no-op on the
- * next reload, before or without write-back.
+ * A configured item against its stored twin, by the two rules the contract
+ * has for an item's fields - not one:
+ *
+ * - **Geometry and profile: absent is unmanaged.** Compared only when the
+ *   config sets them. That is what lets a file that omits geometry (placed
+ *   once by the launcher, D5) stay a no-op on the next reload.
+ * - **The options: absent is the default** ([GridItemConfig.OptionDefaults],
+ *   ADR 0002) - the one place in the contract where it is. So an option the
+ *   file leaves out is compared as its default, and a stored one away from
+ *   it is a difference the next reload resets (review on #231: it was
+ *   compared as unmanaged, and reset only when another change made the grid
+ *   apply). A stored side without the option is its default too.
+ *
+ * Resetting cannot overwrite a person's change: nothing on the device writes
+ * an option (HomeGridRepository has no setter; the grid only moves, binds,
+ * replaces the provider of and deletes items). Were one added, write-back
+ * already puts a changed option into the file first (WriteBackPlanTest, "an
+ * option the device changed is written").
+ *
+ * Two rules, not one `same` for everything: merging them back is the defect.
  */
 internal fun GridItemConfig.matches(stored: GridItemConfig): Boolean {
     if (id != stored.id || widget != stored.widget) return false
@@ -450,10 +465,11 @@ internal fun GridItemConfig.matches(stored: GridItemConfig): Boolean {
     // A position is x and y together; a lone coordinate cannot anchor the
     // item, so the store places it freely and it is not compared here.
     val positionSame = !hasPosition || (x == stored.x && y == stored.y)
+    val optionsSame = GridItemConfig.OptionDefaults.all { (option, default) ->
+        (options[option] ?: default) == (stored.options[option] ?: default)
+    }
     return positionSame && same(w, stored.w) && same(h, stored.h) &&
-            same(profile, stored.profile) &&
-            same(borderless, stored.borderless) && same(background, stored.background) &&
-            same(themeColors, stored.themeColors) && same(mute, stored.mute)
+            same(profile, stored.profile) && optionsSame
 }
 
 /**

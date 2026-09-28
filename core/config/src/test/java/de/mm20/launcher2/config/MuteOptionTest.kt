@@ -41,6 +41,32 @@ class MuteOptionTest {
         assertTrue(stored.copy(mute = null).matches(stored))
     }
 
+    /**
+     * Review on #231: an option the file leaves out is its default (ADR 0002,
+     * OptionDefaults), so a stored option away from its default and absent
+     * from the file is a difference - the next reload resets it. It was
+     * compared as "unmanaged", and reset only when some other change made the
+     * grid apply. The stored side is what the store emits: the read-back
+     * always carries all four options (DefaultConfigStore.toConfig).
+     */
+    @Test
+    fun `an option left out is its default, so a stored one away from it is a difference`() {
+        val defaults = GridItemConfig("clock", "a.b/.C", 0, 0, 4, 2, borderless = false, background = true, themeColors = true, mute = false)
+        val absent = GridItemConfig("clock", "a.b/.C", 0, 0, 4, 2)
+        for ((option, stored) in listOf(
+            "borderless" to defaults.copy(borderless = true),
+            "background" to defaults.copy(background = false),
+            "themeColors" to defaults.copy(themeColors = false),
+            "mute" to defaults.copy(mute = true),
+        )) {
+            assertTrue("$option away from its default, absent in the file", !absent.matches(stored))
+        }
+        // Controls: absent against the defaults, and the geometry rule unchanged -
+        // a file without geometry still matches whatever the launcher placed (D5).
+        assertTrue(absent.matches(defaults))
+        assertTrue(GridItemConfig("clock", "a.b/.C").matches(defaults))
+    }
+
     @Test
     fun `mute is served back as the store keeps it`() {
         val item = GridItemConfig("clock", "com.android.deskclock/.DigitalAppWidgetProvider", 0, 0, 4, 2, mute = true)
