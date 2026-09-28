@@ -46,7 +46,6 @@ import de.mm20.launcher2.ui.launcher.glass.GlassSurface
 import de.mm20.launcher2.ui.launcher.glass.LocalGlassStyle
 import de.mm20.launcher2.ui.launcher.sheets.WidgetPickerSheet
 import de.mm20.launcher2.ui.launcher.widgets.external.AppWidgetHost
-import de.mm20.launcher2.ui.locals.LocalDarkTheme
 import de.mm20.launcher2.ui.locals.LocalPreferDarkContentOverWallpaper
 import de.mm20.launcher2.services.widgets.PickedWidget
 
@@ -271,8 +270,10 @@ internal fun AppWidgetCell(
         return
     }
 
-    val lightBackground =
-        if (item.config.background) !LocalDarkTheme.current else LocalPreferDarkContentOverWallpaper.current
+    // With or without a background the widget sees the wallpaper: its card is
+    // glass (#75), not the theme's opaque surface the old rule assumed, so the
+    // theme was the wrong answer whenever theme and wallpaper disagreed (#242).
+    val lightBackground = LocalPreferDarkContentOverWallpaper.current
     GridCard(transparent = !item.config.background) {
         key(item.id, appWidgetId) {
             AppWidgetHost(

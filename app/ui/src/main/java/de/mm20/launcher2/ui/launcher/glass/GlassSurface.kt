@@ -36,6 +36,8 @@ import de.mm20.launcher2.glass.GlassInputs
 import de.mm20.launcher2.glass.GlassLook
 import de.mm20.launcher2.glass.GlassStyle
 import de.mm20.launcher2.glass.ResolvedGlass
+import de.mm20.launcher2.ui.locals.LocalPreferDarkContentOverWallpaper
+import de.mm20.launcher2.ui.theme.LocalLauncherColorSchemes
 
 /**
  * The glass values surfaces draw with, contrast applied; the contract's
@@ -102,7 +104,16 @@ fun GlassSurface(
     val style = LocalGlassStyle.current
     val outline = glassOutline(style.radiusDp, pill, shape, openEdges)
     val tintAlpha = (style.tint + tintBoost).coerceIn(0f, 1f)
-    val tint = MaterialTheme.colorScheme.surface.copy(alpha = tintAlpha)
+    // The tint stays the theme's surface; only what is drawn on the glass
+    // changes scheme (below), so the glass looks as it did.
+    val schemes = LocalLauncherColorSchemes.current
+    val tint = (schemes?.theme ?: MaterialTheme.colorScheme).surface.copy(alpha = tintAlpha)
+    // Text on glass takes the scheme that matches the wallpaper showing
+    // through it, the rule the home grid and the resting search bar already
+    // follow. The theme's scheme was illegible whenever theme and wallpaper
+    // disagreed in brightness: 1.02 to 1.51:1 in search (#242).
+    val onGlass = schemes?.let { if (LocalPreferDarkContentOverWallpaper.current) it.light else it.dark }
+        ?: MaterialTheme.colorScheme
     // The lens follows the real outline: the glass radius, the pill, or a
     // custom shape's own radius; only the icon chip's squircle - and a
     // custom shape that names none - is lensed as a pill, which it is within
@@ -169,8 +180,15 @@ fun GlassSurface(
             ),
         propagateMinConstraints = true,
     ) {
-        CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onSurface) {
-            content()
+        MaterialTheme(
+            colorScheme = onGlass,
+            motionScheme = MaterialTheme.motionScheme,
+            typography = MaterialTheme.typography,
+            shapes = MaterialTheme.shapes,
+        ) {
+            CompositionLocalProvider(LocalContentColor provides onGlass.onSurface) {
+                content()
+            }
         }
     }
 }
