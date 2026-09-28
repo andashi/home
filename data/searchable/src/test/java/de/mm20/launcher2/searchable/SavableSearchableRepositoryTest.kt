@@ -7,7 +7,9 @@ import androidx.test.core.app.ApplicationProvider
 import de.mm20.launcher2.database.AppDatabase
 import de.mm20.launcher2.database.entities.SavedSearchableEntity
 import de.mm20.launcher2.icons.StaticLauncherIcon
+import de.mm20.launcher2.search.Resolved
 import de.mm20.launcher2.search.SavableSearchable
+import de.mm20.launcher2.search.SearchableDeserializer
 import de.mm20.launcher2.search.SearchableSerializer
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
@@ -15,11 +17,16 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.koin.core.context.startKoin
+import org.koin.core.context.stopKoin
+import org.koin.core.qualifier.named
+import org.koin.dsl.module
 import org.robolectric.RobolectricTestRunner
 
 /**
@@ -45,6 +52,7 @@ class SavableSearchableRepositoryTest {
 
     @After
     fun tearDown() {
+        stopKoin()
         database.close()
     }
 
@@ -280,6 +288,78 @@ class SavableSearchableRepositoryTest {
         assertEquals(7, entity.launchCount)
         assertEquals(3, entity.pinPosition)
         assertEquals(2, entity.visibility)
+    }
+
+    // ----- a row is deleted only when its item is known to be gone (#237) -----
+
+    /**
+     * Resolves by the serialized form: `found`, `gone` or `unknown`. Its
+     * [deserialize] keeps the old contract, null for anything not found, which
+     * is what the contacts deserializer answered without its permission - so
+     * a repository still reading [deserialize] cannot tell the two apart.
+     */
+    private val resolvingDeserializer = object : SearchableDeserializer {
+        override suspend fun resolve(serialized: String): Resolved = when (serialized) {
+            "found" -> Resolved.Found(TestSearchable("resolving://found", domain = "resolving"))
+            "gone" -> Resolved.Gone
+            "unknown" -> Resolved.Unknown
+            else -> throw IllegalArgumentException(serialized)
+        }
+
+        override suspend fun deserialize(serialized: String): SavableSearchable? =
+            (resolve(serialized) as? Resolved.Found)?.searchable
+    }
+
+    private suspend fun resolvingRows() {
+        stopKoin()
+        startKoin { modules(module { factory<SearchableDeserializer>(named("resolving")) { resolvingDeserializer } }) }
+        pinned("resolving://found", "resolving", 3, serialized = "found")
+        pinned("resolving://unknown", "resolving", 2, serialized = "unknown")
+        pinned("resolving://gone", "resolving", 1, serialized = "gone")
+    }
+
+    private suspend fun row(key: String) = database.searchableDao().getByKey(key).first()
+
+    /**
+     * Revoking the contacts permission deleted every contact pin on the next
+     * favorites load, and left its tags and labels to the orphan cleanup.
+     */
+    @Test
+    fun readingKeepsARowWhoseItemIsUnknown() = runBlocking {
+        resolvingRows()
+
+        val read = repository.getByKeys(listOf("resolving://found", "resolving://unknown", "resolving://gone")).first()
+
+        assertEquals(listOf("resolving://found"), read.map { it.key })
+        // The deletes are fire-and-forget: the gone row's is the barrier.
+        awaitValue { if (row("resolving://gone") == null) true else null }
+        delay(500)
+        assertNotNull("an item that could not be resolved lost its row", row("resolving://unknown"))
+    }
+
+    /** Control, green in both states: a row whose item is gone is still deleted, as for an uninstalled app. */
+    @Test
+    fun readingDeletesARowWhoseItemIsGone() = runBlocking {
+        resolvingRows()
+
+        repository.getByKeys(listOf("resolving://gone")).first()
+
+        awaitValue { if (row("resolving://gone") == null) true else null }
+        assertNotNull(row("resolving://found"))
+    }
+
+    /** The debug screen's cleanup took the same path. */
+    @Test
+    fun cleanupKeepsARowWhoseItemIsUnknown() = runBlocking {
+        resolvingRows()
+
+        val removed = repository.cleanupDatabase()
+
+        assertEquals("only the gone row counts as removed", 1, removed)
+        awaitValue { if (row("resolving://gone") == null) true else null }
+        delay(500)
+        assertNotNull("an item that could not be resolved lost its row", row("resolving://unknown"))
+        assertNotNull(row("resolving://found"))
     }
 
     private class TestSearchable(
