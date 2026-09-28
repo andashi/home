@@ -179,8 +179,10 @@ class CheckBackupOffTest(unittest.TestCase):
                 run = subprocess.run([sys.executable, str(script), str(fake), "app.apk"],
                                      capture_output=True, text=True)
                 self.assertNotEqual(0, run.returncode, body)
-                self.assertIn("aapt2", run.stderr, body)
-                self.assertNotIn("allowBackup", run.stderr, body)
+                # The abort's own words: "not recognised" also names aapt2, and
+                # an assertion on "aapt2" alone passed with the abort removed.
+                self.assertIn("nothing was judged", run.stderr, body)
+                self.assertNotIn("not recognised", run.stderr, body)
 
 
 if __name__ == "__main__":
