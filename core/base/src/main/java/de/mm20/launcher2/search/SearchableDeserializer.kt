@@ -1,5 +1,8 @@
 package de.mm20.launcher2.search
 
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
+
 interface SearchableDeserializer {
     suspend fun deserialize(serialized: String): SavableSearchable?
 
@@ -12,6 +15,15 @@ interface SearchableDeserializer {
      */
     suspend fun resolve(serialized: String): Resolved =
         deserialize(serialized)?.let { Resolved.Found(it) } ?: Resolved.Gone
+
+    /**
+     * Emits when [resolve] may answer differently for the same stored item:
+     * a contact that was [Resolved.Unknown] without the permission resolves
+     * once it is granted. The repository resolves its rows of this type again
+     * on every emission. Most sources never change their answer and emit
+     * nothing.
+     */
+    val resolveAgain: Flow<Unit> get() = emptyFlow()
 }
 
 sealed interface Resolved {

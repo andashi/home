@@ -11,7 +11,14 @@ import de.mm20.launcher2.search.Resolved
 import de.mm20.launcher2.search.SavableSearchable
 import de.mm20.launcher2.search.SearchableDeserializer
 import de.mm20.launcher2.search.SearchableSerializer
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.runBlocking
@@ -360,6 +367,70 @@ class SavableSearchableRepositoryTest {
         delay(500)
         assertNotNull("an item that could not be resolved lost its row", row("resolving://unknown"))
         assertNotNull(row("resolving://found"))
+    }
+
+    /**
+     * A source whose answer changes: Unknown until [visible] turns true, as a
+     * contact is without its permission. It announces the change through
+     * [SearchableDeserializer.resolveAgain].
+     */
+    private inner class TogglingDeserializer : SearchableDeserializer {
+        val visible = MutableStateFlow(false)
+        override suspend fun resolve(serialized: String): Resolved =
+            if (visible.value) Resolved.Found(TestSearchable("toggling://a", domain = "toggling")) else Resolved.Unknown
+
+        override suspend fun deserialize(serialized: String): SavableSearchable? =
+            (resolve(serialized) as? Resolved.Found)?.searchable
+
+        override val resolveAgain: Flow<Unit> get() = visible.drop(1).map { }
+    }
+
+    /**
+     * Granting the permission did not bring a contact favorite back: the flow
+     * kept its first answer until the database happened to change (review on
+     * #241).
+     */
+    @Test
+    fun anItemThatResolvesLaterAppearsWithoutADatabaseChange() = runBlocking {
+        val toggling = TogglingDeserializer()
+        stopKoin()
+        startKoin { modules(module { factory<SearchableDeserializer>(named("toggling")) { toggling } }) }
+        pinned("toggling://a", "toggling", 1, serialized = "a")
+
+        val seen = Channel<List<String>>(Channel.UNLIMITED)
+        val job = launch { repository.getByKeys(listOf("toggling://a")).collect { seen.send(it.map { s -> s.key }) } }
+        try {
+            assertEquals(emptyList<String>(), withTimeout(5000) { seen.receive() })
+            toggling.visible.value = true
+            val next = withTimeout(5000) {
+                var got = seen.receive()
+                while (got.isEmpty()) got = seen.receive()
+                got
+            }
+            assertEquals(listOf("toggling://a"), next)
+            assertNotNull("the row is still there", row("toggling://a"))
+        } finally {
+            job.cancel()
+        }
+    }
+
+    /**
+     * A deserializer Koin fails to create says nothing about the item: the
+     * row stays (review on #241). A type with no deserializer at all is still
+     * gone - the control, green in both states.
+     */
+    @Test
+    fun aDeserializerThatCannotBeCreatedKeepsItsRow() = runBlocking {
+        stopKoin()
+        startKoin { modules(module { factory<SearchableDeserializer>(named("broken")) { throw IllegalStateException("cannot be created") } }) }
+        pinned("broken://a", "broken", 2, serialized = "a")
+        pinned("undefined://a", "undefined", 1, serialized = "a")
+
+        repository.getByKeys(listOf("broken://a", "undefined://a")).first()
+
+        awaitValue { if (row("undefined://a") == null) true else null }
+        delay(500)
+        assertNotNull("a deserializer that could not be created cost the row", row("broken://a"))
     }
 
     private class TestSearchable(

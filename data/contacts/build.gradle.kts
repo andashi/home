@@ -32,6 +32,10 @@ android {
         targetCompatibility = JavaVersion.VERSION_11
     }
 
+    testOptions {
+        unitTests.isIncludeAndroidResources = true
+    }
+
     kotlin {
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_11)
