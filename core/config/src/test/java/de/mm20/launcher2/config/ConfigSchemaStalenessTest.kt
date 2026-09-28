@@ -114,7 +114,7 @@ class ConfigSchemaStalenessTest {
         for (committed in listOf(conflicted, "[]")) {
             val message = ConfigSchema.staleness(generated = before, committed = committed)
 
-            assertTrue(message, message.startsWith("docs/configuration/launcher.schema.json is not a JSON object"))
+            assertTrue(message, message.startsWith("docs/configuration/launcher.schema.json cannot be read as a schema"))
         }
     }
 
@@ -125,6 +125,31 @@ class ConfigSchemaStalenessTest {
 
         assertNotNull(refusal)
         assertTrue(refusal!!, "git checkout" in refusal)
+    }
+
+    /**
+     * Valid JSON with a property tree of the wrong shape lists no key paths
+     * where it has some, so a removal would read as none (review on #227).
+     */
+    @Test
+    fun `a committed property tree of the wrong shape is unreadable, however deep`() {
+        val flattened = before.replace(""""properties": {"label": {"type": "string"}, "visibility": {"enum": ["hidden"]}}""", """"properties": []""")
+        val notAList = before.replace(""""oneOf": [{"enum": ["none"]}, {"type": "object", "properties": {"packageName": {"type": "string"}}}]""", """"oneOf": {}""")
+
+        for (committed in listOf(flattened, notAList)) {
+            assertTrue(committed, committed != before)
+            assertTrue(ConfigSchema.staleness(generated = before, committed = committed).startsWith("docs/configuration/launcher.schema.json cannot be read as a schema"))
+            assertNotNull(ConfigSchema.refusal(generated = lost, committed = committed, acknowledged = emptySet()))
+        }
+    }
+
+    /** An acknowledgement names exactly the removed paths, none when none were removed (review on #227). */
+    @Test
+    fun `a name given when nothing was removed is refused`() {
+        val grown = before.replace(""""label": {"type": "string"}""", """"label": {"type": "string"}, "activity": {"type": "string"}""")
+
+        assertNotNull(ConfigSchema.refusal(generated = grown, committed = before, acknowledged = setOf("apps[].label")))
+        assertNotNull(ConfigSchema.refusal(generated = before, committed = null, acknowledged = setOf("apps[].label")))
     }
 
     /** Controls: nothing removed, nothing to acknowledge. */
