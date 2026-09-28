@@ -201,12 +201,29 @@ def _printed(call):
             # Strings inside the expression print too.
             values.extend(_printed("(" + text + ")"))
     code = "".join(rest)
-    # Operands concatenated to the message: `"..." + intent`.
-    # A chain is taken whole or not at all: backtracking into
-    # `check.diagnostics.joinToString { ... }` would judge `check.diagnostics`.
-    for m in re.finditer(r"\+\s*([A-Za-z_][\w.]*)(?![\w.]|\s*[({])|(?<![\w.])([A-Za-z_][\w.]*)\s*\+", code):
-        values.append(m.group(1) or m.group(2))
+    # The message is the second argument; each operand joined into it with
+    # `+` prints, and is judged like a template expression: `"x " + intent`
+    # and `"x " + intent.toUri(0)` alike.
+    if "(" in code and ")" in code:
+        args = _split_top(code[code.index("(") + 1:code.rindex(")")], ",")
+        if len(args) >= 2:
+            values.extend(_split_top(args[1], "+"))
     return values
+
+
+def _split_top(code, sep):
+    """`code` split at `sep` outside brackets; strings are already `""`."""
+    parts, depth, start = [], 0, 0
+    for i, c in enumerate(code):
+        if c in "([{":
+            depth += 1
+        elif c in ")]}":
+            depth -= 1
+        elif c == sep and depth == 0:
+            parts.append(code[start:i])
+            start = i + 1
+    parts.append(code[start:])
+    return parts
 
 
 _CHAIN = r"[A-Za-z_]\w*(?:\s*\??\.\s*[A-Za-z_]\w*)*"

@@ -140,8 +140,8 @@ def lines_before(step, command):
     """The executable lines of `step` before `command`, when it runs so that
     its failure fails the step - the line exactly as written, so nothing
     around it (`!`, `||`, `if`) can swallow its failure (#204), with no
-    `set +e` and no here-document opened before it (its body is data, not
-    commands) - and None when it does not. A step with an `if:` may be
+    `set +e` in any spelling, no `exit` and no here-document opened before
+    it (its body is data, not commands) - and None when it does not. A step with an `if:` may be
     skipped, and one with `continue-on-error` fails without failing the job:
     neither counts."""
     if step.get("if") is not None or step.get("continue-on-error"):
@@ -150,7 +150,10 @@ def lines_before(step, command):
     if command not in lines:
         return None
     before = lines[:lines.index(command)]
-    if any(re.search(r"\bset\s+\+e", line) or re.search(r"(?<!<)<<(?!<)", line) for line in before):
+    if any(re.search(r"\bset\s+(?:\+[a-z]*e|\+o\s+errexit)", line)  # set +e, +eu, +o errexit
+           or re.search(r"(?<!<)<<(?!<)", line)
+           or re.match(r"exit\b", line)  # the step ends before the check
+           for line in before):
         return None
     return before
 
