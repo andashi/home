@@ -1,5 +1,6 @@
 package de.mm20.launcher2.ui.launcher
 
+import de.mm20.launcher2.ui.component.hasDarkContent
 import de.mm20.launcher2.ui.launcher.glass.LocalClearIcons
 import android.app.WallpaperManager
 import android.content.Intent
@@ -38,7 +39,6 @@ import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.flowWithLifecycle
 import de.mm20.launcher2.preferences.GestureAction
-import de.mm20.launcher2.preferences.SearchBarColors
 import de.mm20.launcher2.preferences.SearchBarStyle
 import de.mm20.launcher2.preferences.SystemBarColors
 import de.mm20.launcher2.search.SavableSearchable
@@ -164,8 +164,7 @@ abstract class SharedLauncherActivity(
                         }
 
                         val darkTheme = LocalDarkTheme.current
-                        val darkSearchBar = LocalPreferDarkContentOverWallpaper.current
-                                && searchBarColor == SearchBarColors.Auto || searchBarColor == SearchBarColors.Dark
+                        val darkSearchBar = searchBarColor.hasDarkContent(LocalPreferDarkContentOverWallpaper.current)
 
                         /*LaunchedEffect(dimBackground && darkTheme) {
                             if (dimBackground && darkTheme) {

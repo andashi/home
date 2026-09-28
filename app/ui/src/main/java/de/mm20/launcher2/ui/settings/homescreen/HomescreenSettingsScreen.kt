@@ -1,5 +1,6 @@
 package de.mm20.launcher2.ui.settings.homescreen
 
+import de.mm20.launcher2.ui.component.hasDarkContent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
@@ -229,8 +230,7 @@ fun SearchBarStylePreference(
     ) {
         val styles = SearchBarStyle.entries
 
-        val darkColors =
-            LocalPreferDarkContentOverWallpaper.current && colors == SearchBarColors.Auto || colors == SearchBarColors.Dark
+        val darkColors = colors?.hasDarkContent(LocalPreferDarkContentOverWallpaper.current) == true
 
         Box(
             modifier = Modifier
