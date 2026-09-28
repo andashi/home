@@ -20,7 +20,8 @@ data class CardStyle(
 )
 
 data class GridSettings(
-    val columnCount: Int = 5,
+    /** The home grid's columns (#229); the fallback is its default, [LauncherSettingsData.homeGridColumns]. */
+    val columnCount: Int = 4,
     val iconSize: Int = 48,
     val showLabels: Boolean = true,
     val showList: Boolean = false,

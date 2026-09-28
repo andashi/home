@@ -53,6 +53,16 @@ class UiSettingsHomeGridTest {
         assertEquals(6, de.mm20.launcher2.preferences.search.FavoritesSettings(store).first().columns)
     }
 
+    /**
+     * Review on #243: the fallback a screen draws with before the store emits
+     * is the home grid's own default, or a picker opens one column too wide
+     * for a frame on a default device.
+     */
+    @Test
+    fun `the grid settings' fallback column count is the home grid's default`() {
+        assertEquals(LauncherSettingsData().homeGridColumns, de.mm20.launcher2.preferences.ui.GridSettings().columnCount)
+    }
+
     @Test
     fun `glass values are exposed with the defaults on fresh settings`() = runTest {
         assertEquals(
