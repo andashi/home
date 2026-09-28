@@ -85,8 +85,7 @@ class SettingsContractTest {
          * the issue is updated to match.
          */
         val GapsAt229 = setOf(
-            "wallpaperDim", "gridColumnCount", "searchBarStyle",
-            "searchBarColors", "rankingWeightFactor", "iconsShape",
+            "gridColumnCount", "searchBarStyle", "searchBarColors", "iconsShape",
         )
 
         val Contract: Map<String, State> = mapOf(
@@ -103,7 +102,7 @@ class SettingsContractTest {
             "uiTypographyId" to State.Key("appearance.theme.typography"),
             "uiCompatModeColors" to State.Key("appearance.theme.colorSource"),
             "uiOrientation" to State.Key("home.lockRotation"),
-            "wallpaperDim" to State.Gap(GapsIssue),
+            "wallpaperDim" to State.Key("appearance.dimWallpaper"),
             "homeScreenWidgets" to State.Key("home.widgets.enabled"),
             "homeGridColumns" to State.Key("home.grid.columns"),
             "homeGridLocked" to State.Key("home.grid.locked"),
@@ -138,7 +137,10 @@ class SettingsContractTest {
             "searchBarBottomInSearch" to State.Key("search.barPosition"),
             "searchBarFixed" to State.Key("home.searchBar.fixed"),
             "searchResultsReversed" to State.Key("search.reversed"),
-            "rankingWeightFactor" to State.Gap(GapsIssue),
+            "rankingWeightFactor" to State.Excluded(
+                "a weight on launch history, which the file deliberately never carries: launch counts are " +
+                    "device-local and stay out of the contract for privacy (#229)",
+            ),
             "hiddenItemsShowButton" to State.Key("search.hiddenItemsButton"),
             "iconsShape" to State.Gap(GapsIssue),
             "iconsAdaptify" to State.Key("icons.adaptify"),

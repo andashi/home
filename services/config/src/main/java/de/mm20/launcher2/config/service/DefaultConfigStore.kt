@@ -757,6 +757,7 @@ private val ConfigMutation.isSettingsBacked: Boolean
         is ConfigMutation.SetGlass,
         is ConfigMutation.SetTheme,
         is ConfigMutation.SetSearch,
+        is ConfigMutation.SetWallpaperDim,
         -> true
 
         // Gestures are settings too, but their apps are resolved here first.

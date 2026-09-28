@@ -42,6 +42,8 @@ data class ConfigState(
     val navigationBarIcons: SystemBarIcons = SystemBarIcons.Auto,
     /** `home.lockRotation` (#3 slice 1). */
     val rotationLocked: Boolean = false,
+    /** `appearance.dimWallpaper` (#229). */
+    val wallpaperDimmed: Boolean = false,
     /** `search` (#91). */
     val search: SearchState = SearchState(),
     /** The manually pinned apps, in order: `home.favorites`. */
@@ -229,6 +231,13 @@ sealed class ConfigMutation {
         val navigationIcons: SystemBarIcons? = null,
     ) : ConfigMutation() {
         override val section = "appearance.systemBars"
+    }
+
+    /** `appearance.dimWallpaper` (#229). */
+    data class SetWallpaperDim(
+        val dimmed: Boolean,
+    ) : ConfigMutation() {
+        override val section = "appearance.dimWallpaper"
     }
 
     data class SetRotationLock(
@@ -420,6 +429,10 @@ object ConfigDiffer {
 
         desired.home?.lockRotation?.let { locked ->
             if (locked != current.rotationLocked) mutations += ConfigMutation.SetRotationLock(locked)
+        }
+
+        desired.appearance?.dimWallpaper?.let { dimmed ->
+            if (dimmed != current.wallpaperDimmed) mutations += ConfigMutation.SetWallpaperDim(dimmed)
         }
 
         desired.home?.widgets?.enabled?.let { enabled ->

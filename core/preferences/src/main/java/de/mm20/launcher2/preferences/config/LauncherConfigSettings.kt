@@ -249,6 +249,7 @@ internal class LauncherConfigSettingsImpl(
             // Anything but Auto locks portrait (LauncherScaffoldVM), a stored
             // Landscape from an older build included.
             rotationLocked = data.uiOrientation != ScreenOrientation.Auto,
+            wallpaperDimmed = data.wallpaperDim,
             widgetsEnabled = data.homeScreenWidgets,
             gridColumns = data.homeGridColumns,
             gridLocked = data.homeGridLocked,
@@ -305,6 +306,8 @@ internal class LauncherConfigSettingsImpl(
             )
 
             is ConfigMutation.SetWidgetsEnabled -> copy(homeScreenWidgets = mutation.enabled)
+
+            is ConfigMutation.SetWallpaperDim -> copy(wallpaperDim = mutation.dimmed)
 
             is ConfigMutation.SetGrid -> copy(
                 homeGridColumns = mutation.columns ?: homeGridColumns,
