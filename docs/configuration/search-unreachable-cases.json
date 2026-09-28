@@ -1,0 +1,12 @@
+{
+  "description": "When the launcher shows its lockout page instead of the home screen, and the reload reports search-unreachable (#229). One table for both sides: LockedOutTest (core:config) reads it against the file's state, LockoutTest (app:ui) against the launcher's own check. A case added here is checked by both. Gestures not named are none.",
+  "cases": [
+    { "case": "a shown bar", "hidden": false, "gestures": {}, "lockedOut": false },
+    { "case": "a hidden bar with nothing set", "hidden": true, "gestures": {}, "lockedOut": true },
+    { "case": "a hidden bar with a gesture to search", "hidden": true, "gestures": { "longPress": "search" }, "lockedOut": false },
+    { "case": "a hidden bar with a gesture to the launcher's settings", "hidden": true, "gestures": { "homeButton": "launcher-settings" }, "lockedOut": false },
+    { "case": "a hidden bar with only notifications", "hidden": true, "gestures": { "swipeDown": "notifications" }, "lockedOut": true },
+    { "case": "a hidden bar with every other action", "hidden": true, "gestures": { "swipeDown": "notifications", "swipeUp": "quick-settings", "swipeLeft": "recents", "swipeRight": "power-menu", "doubleTap": "screen-lock" }, "lockedOut": true },
+    { "case": "a hidden bar whose gesture opens an app", "hidden": true, "gestures": { "swipeUp": { "packageName": "org.example.app" } }, "lockedOut": true }
+  ]
+}

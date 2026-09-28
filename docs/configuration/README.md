@@ -21,7 +21,7 @@ Fold (cover and inner display).
 | [Favorites](favorites.md) | `home.favorites`: the pinned apps the dock shows |
 | [Apps](apps.md) | `apps`: an app's own name, icon and visibility - renamed, re-iconed and hidden apps |
 | [Tags](tags.md) | `tags`: which apps carry which tags, and each tag's icon |
-| [Search bar](search-bar.md) | `home.searchBar.position`, `home.searchBar.fixed`, what search looks like |
+| [Search bar](search-bar.md) | `home.searchBar.position`, `.fixed`, `.hidden`, `.colors`, what search looks like |
 | [Search](search.md) | `search`: favorites row, frequently used apps, all apps, grid or list, list icons, labels, app details, contacts (call on tap), shortcuts, filter bar, compact tags, the transliterator, keyboard, Enter, order, hidden items |
 | [Gestures](gestures.md) | `gestures`: what the swipes, double tap, long press and home button do |
 | [Screens](screens.md) | Every scene on the phone, the Fold's cover and its inner display |

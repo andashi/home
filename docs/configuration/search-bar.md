@@ -12,6 +12,38 @@ and contacts. It is configured under `home.searchBar`.
 |---|---|---|---|
 | `home.searchBar.position` | Where the pill sits; in open search too, unless [`search.barPosition`](search.md#the-search-bar-in-open-search) sets a position of its own | `top`, `bottom` | `top` |
 | `home.searchBar.fixed` | The pill stays in place instead of scrolling away with the home screen | boolean | `false` |
+| `home.searchBar.hidden` | The pill is not drawn on the home screen at rest. [Below](#a-hidden-search-bar) for how that differs from a hidden system bar, and what it needs | boolean | `false` |
+| `home.searchBar.colors` | The resting pill's text and icon colour, in the system bars' words: `dark` is dark content, `light` light, `auto` follows the wallpaper. Only the resting pill: open search takes the theme's colours | `auto`, `light`, `dark` | `auto` |
+
+Text on glass normally takes the colour scheme that matches the wallpaper
+behind it. The resting pill is the one glass surface where the file can
+override that: `home.searchBar.colors` sets its text and icons directly, and
+`auto` is the wallpaper rule. This is deliberate, and
+`SearchBarRestingColorTest` pins it through the real glass surface.
+
+## A hidden search bar
+
+`hidden` has the name the system bars use, and it does not behave like them.
+A hidden status bar still takes its place and the content stays clear of it;
+a hidden search bar **reserves no space**: the home screen uses it, and when
+search opens the pill slides in with the page and slides out again when it
+closes.
+
+With the pill hidden, search and the launcher's settings are reachable only
+by a gesture. If no gesture is set to `search` or to `launcher-settings`,
+the launcher shows a fallback page instead of the home screen, so a person
+is never stuck with nothing to tap. The reload reports that state as
+`search-unreachable` (a warning), whether the file or the device's own
+settings produced it. The file is applied as written: the device can be in
+that state through its settings, so the file can express it too.
+The cases are listed in [search-unreachable-cases.json](search-unreachable-cases.json);
+the launcher's own check and the reload's warning are both tested against
+that one list.
+
+<!-- config -->
+```json
+{ "schemaVersion": 2, "home": { "searchBar": { "hidden": true } }, "gestures": { "longPress": "launcher-settings" } }
+```
 
 | `top` | `bottom` |
 |---|---|

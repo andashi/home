@@ -27,7 +27,7 @@ internal object RepoDocs {
             .sortedBy { it.name }
             .associate { it.name to it.readText() }
 
-    private fun read(path: String): String =
+    fun read(path: String): String =
         File(root, path).also { assertTrue("$path is missing", it.isFile) }.readText()
 }
 

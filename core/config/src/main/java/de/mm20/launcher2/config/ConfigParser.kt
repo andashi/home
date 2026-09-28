@@ -144,6 +144,9 @@ object ConfigParser {
             "position" to KeyEffect.Applied,
             // #3 slice 1.
             "fixed" to KeyEffect.Applied,
+            // #229.
+            "hidden" to KeyEffect.Applied,
+            "colors" to KeyEffect.Applied,
         ),
         "search.shortcutsExcluded[]" to mapOf(
             "packageName" to KeyEffect.Applied,

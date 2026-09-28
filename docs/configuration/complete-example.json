@@ -41,7 +41,9 @@
   "home": {
     "searchBar": {
       "position": "bottom",
-      "fixed": true
+      "fixed": true,
+      "hidden": true,
+      "colors": "dark"
     },
     "lockRotation": true,
     "favorites": [

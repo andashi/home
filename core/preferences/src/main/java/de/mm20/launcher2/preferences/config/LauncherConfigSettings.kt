@@ -26,6 +26,8 @@ import de.mm20.launcher2.preferences.ColorScheme
 import de.mm20.launcher2.config.SystemBarIcons
 import de.mm20.launcher2.preferences.ScreenOrientation
 import de.mm20.launcher2.preferences.SystemBarColors
+import de.mm20.launcher2.preferences.SearchBarColors
+import de.mm20.launcher2.preferences.SearchBarStyle
 import de.mm20.launcher2.preferences.LauncherDataStore
 import de.mm20.launcher2.preferences.LauncherSettingsData
 import kotlinx.coroutines.flow.Flow
@@ -242,6 +244,8 @@ internal class LauncherConfigSettingsImpl(
             },
             // #3 slice 1: the fixed bar, the system bars, the rotation lock.
             searchBarFixed = data.searchBarFixed,
+            searchBarHidden = data.searchBarStyle == SearchBarStyle.Hidden,
+            searchBarColors = data.searchBarColors.toIcons(),
             statusBarHidden = data.systemBarsHideStatus,
             statusBarIcons = data.systemBarsStatusColors.toIcons(),
             navigationBarHidden = data.systemBarsHideNav,
@@ -292,6 +296,12 @@ internal class LauncherConfigSettingsImpl(
             )
 
             is ConfigMutation.SetSearchBarFixed -> copy(searchBarFixed = mutation.fixed)
+
+            is ConfigMutation.SetSearchBarHidden -> copy(
+                searchBarStyle = if (mutation.hidden) SearchBarStyle.Hidden else SearchBarStyle.Transparent,
+            )
+
+            is ConfigMutation.SetSearchBarColors -> copy(searchBarColors = mutation.colors.toSearchBarColors())
 
             is ConfigMutation.SetSystemBars -> copy(
                 systemBarsHideStatus = mutation.statusHidden ?: systemBarsHideStatus,
@@ -450,6 +460,19 @@ private fun SystemBarColors.toIcons(): SystemBarIcons = when (this) {
     SystemBarColors.Auto -> SystemBarIcons.Auto
     SystemBarColors.Light -> SystemBarIcons.Light
     SystemBarColors.Dark -> SystemBarIcons.Dark
+}
+
+/** `home.searchBar.colors` (#229): the resting bar's content, in the system bars' words. */
+private fun SearchBarColors.toIcons(): SystemBarIcons = when (this) {
+    SearchBarColors.Auto -> SystemBarIcons.Auto
+    SearchBarColors.Light -> SystemBarIcons.Light
+    SearchBarColors.Dark -> SystemBarIcons.Dark
+}
+
+private fun SystemBarIcons.toSearchBarColors(): SearchBarColors = when (this) {
+    SystemBarIcons.Auto -> SearchBarColors.Auto
+    SystemBarIcons.Light -> SearchBarColors.Light
+    SystemBarIcons.Dark -> SearchBarColors.Dark
 }
 
 private fun SystemBarIcons.toColors(): SystemBarColors = when (this) {

@@ -40,6 +40,7 @@ internal class LauncherSettingsComponent(
     private val activity: Activity,
 ) : ScaffoldComponent() {
     override val showSearchBar = false
+    override val reachesSettings = true
 
     override val isAtTop: State<Boolean?> = mutableStateOf(true)
     override val isAtBottom: State<Boolean?> = mutableStateOf(true)

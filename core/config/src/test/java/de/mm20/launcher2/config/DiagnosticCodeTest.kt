@@ -70,6 +70,7 @@ class DiagnosticCodeTest {
             "unsupported-schema-version" to Severity.Error,
             "wallpaper-missing" to Severity.Error,
             "wallpaper-pending-foreground" to Severity.Warning,
+            "search-unreachable" to Severity.Warning,
             "wallpaper-replaced-during-apply" to Severity.Error,
             "widget-too-large" to Severity.Warning,
             "widget-too-small" to Severity.Warning,

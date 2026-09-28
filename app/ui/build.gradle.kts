@@ -191,6 +191,12 @@ roborazzi {
 
 // Robolectric on JDK 17+ (https://robolectric.org/getting-started/)
 tasks.withType<Test>().configureEach {
+    // LockoutTest reads the lockout cases it shares with core:config's
+    // LockedOutTest (#229); undeclared, a change to them would run neither.
+    inputs.file(rootProject.file("docs/configuration/search-unreachable-cases.json"))
+        .withPropertyName("searchUnreachableCases")
+        .withPathSensitivity(PathSensitivity.RELATIVE)
+    systemProperty("repoRoot", rootProject.rootDir.absolutePath)
     // SearchScreenGlassGuardTest reads these sources as text (#91).
     listOf(
         "launcher/search", "launcher/searchbar", "launcher/scaffold", "launcher/sheets", "component", "common",
