@@ -35,13 +35,9 @@ class AppFilterIconPackInstaller(
 
                 parseAppfilterXml(iconPack, dynamicClocks)
                 parseDrawableXml(iconPack, dynamicClocks)
-
-                Log.d("MM20", "Icon pack ${iconPack.packageName} has been installed successfully")
             } catch (e: PackageManager.NameNotFoundException) {
-                Log.e(
-                    "MM20",
-                    "Could not install icon pack ${iconPack.packageName}: package not found."
-                )
+                // What failed, never which app: no app names in release logs (#15).
+                Log.e("MM20", "Could not install an icon pack: package not found.")
             } catch (e: XmlPullParserException) {
                 CrashReporter.logException(e)
             }
@@ -262,7 +258,8 @@ class AppFilterIconPackInstaller(
                     CrashReporter.logException(e)
                     Log.e(
                         "MM20",
-                        "appfilter.xml not found in $packageName. Searched locations: res/xml/appfilter.xml, res/raw/appfilter.xml, assets/appfilter.xml"
+                        // Where it looked, never in which app (#15).
+                        "appfilter.xml not found in an icon pack. Searched locations: res/xml/appfilter.xml, res/raw/appfilter.xml, assets/appfilter.xml"
                     )
                     return null
                 }

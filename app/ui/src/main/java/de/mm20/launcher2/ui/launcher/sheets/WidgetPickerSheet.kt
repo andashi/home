@@ -225,9 +225,12 @@ private class BindAndConfigureAppWidgetContract : ActivityResultContract<AppWidg
             if (widgetId != null && widgetProviderInfo != null) {
                 return PickedWidget.App(appWidgetId = widgetId, provider = widgetProviderInfo)
             } else {
+                // Which part is missing, never the provider: no app names in
+                // release logs (#15).
                 Log.e(
                     "MM20",
-                    "Could not parse widget result: widgetId=$widgetId, widgetProviderInfo=$widgetProviderInfo"
+                    "Could not parse widget result: widgetId missing=${widgetId == null}, " +
+                        "provider missing=${widgetProviderInfo == null}"
                 )
             }
         } else {

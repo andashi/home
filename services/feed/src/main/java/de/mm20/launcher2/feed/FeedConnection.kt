@@ -162,10 +162,9 @@ internal class FeedConnectionImpl(
                     "Feed service connected with interface descriptor \"${service.interfaceDescriptor}\""
                 )
             } else {
-                Log.e(
-                    "FeedConnection",
-                    "Unknown service descriptor \"${service.interfaceDescriptor}\" for intent $serviceIntent"
-                )
+                // Neither the intent nor the descriptor: both are the feed
+                // app's own and name it (#15).
+                Log.e("FeedConnection", "Unknown service descriptor from the feed provider")
                 available.value = false
                 ready.value = false
                 if (retries > 0) {

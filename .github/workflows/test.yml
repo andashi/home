@@ -55,6 +55,9 @@ jobs:
         run: e2e/check-gos-run.test.sh
       - name: e2e scripts reach run.sh only through gos_run
         run: e2e/check-gos-run.sh
+      # A release build logs warnings and errors; none may name an app (#15).
+      - name: Release log lines name no app
+        run: python3 .github/scripts/check-log-identity.py .
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
