@@ -61,6 +61,8 @@ tasks.withType<Test>().configureEach {
     systemProperty("repoRoot", rootProject.rootDir.absolutePath)
     // ConfigSchemaTest rewrites docs/configuration/launcher.schema.json with -PupdateSchema.
     systemProperty("updateSchema", providers.gradleProperty("updateSchema").isPresent.toString())
+    // A write that removes key paths names them: -PremoveSchemaKeys=a.b,c[].d
+    systemProperty("removeSchemaKeys", providers.gradleProperty("removeSchemaKeys").getOrElse(""))
 }
 
 // Coverage gate (ADR 0005, AGENTS.md "Test policy"). The bound is the value the

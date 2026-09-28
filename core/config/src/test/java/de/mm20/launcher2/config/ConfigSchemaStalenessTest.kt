@@ -1,6 +1,6 @@
 package de.mm20.launcher2.config
 
-import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -20,8 +20,6 @@ import org.junit.Test
  */
 class ConfigSchemaStalenessTest {
 
-    private fun schema(text: String): JsonObject = ConfigParser.json.parseToJsonElement(text).jsonObject
-
     private val before = """
         {"type": "object", "properties": {
           "apps": {"type": "array", "items": {"type": "object", "properties": {"label": {"type": "string"}, "visibility": {"enum": ["hidden"]}}}},
@@ -38,7 +36,7 @@ class ConfigSchemaStalenessTest {
     fun `keyPaths names every property, inside lists and alternatives`() {
         assertEquals(
             setOf("apps", "apps[].label", "apps[].visibility", "gestures", "gestures.swipeLeft", "gestures.swipeLeft.packageName"),
-            ConfigSchema.keyPaths(schema(before)),
+            ConfigSchema.keyPaths(Json.parseToJsonElement(before).jsonObject),
         )
     }
 

@@ -6,6 +6,7 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.descriptors.SerialKind
 import kotlinx.serialization.descriptors.StructureKind
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
@@ -58,7 +59,7 @@ internal object ConfigSchema {
         }
         (schema["items"] as? JsonObject)?.let { addAll(keyPaths(it, "$at[]")) }
         for (combinator in listOf("oneOf", "anyOf", "allOf")) {
-            (schema[combinator] as? kotlinx.serialization.json.JsonArray)?.forEach { alternative ->
+            (schema[combinator] as? JsonArray)?.forEach { alternative ->
                 (alternative as? JsonObject)?.let { addAll(keyPaths(it, at)) }
             }
         }
@@ -72,25 +73,41 @@ internal object ConfigSchema {
      * message says what it means and nothing about regenerating.
      */
     fun staleness(generated: String, committed: String?): String {
-        if (committed == null) return "docs/configuration/launcher.schema.json does not exist; generate it with $RegenerateCommand"
-        val now = keyPaths(Json.parseToJsonElement(generated) as JsonObject)
-        val was = keyPaths(Json.parseToJsonElement(committed) as JsonObject)
-        val removed = (was - now).sorted()
-        val added = (now - was).sorted()
-        val addedLine = if (added.isEmpty()) "" else "key paths added: ${added.joinToString()}"
+        val regenerate = "regenerate it with $RegenerateCommand"
+        if (committed == null) return "docs/configuration/launcher.schema.json does not exist; $regenerate"
+        val removed = removedKeyPaths(generated, committed).sorted()
+        val added = (pathsOf(generated) - pathsOf(committed)).sorted()
+        val addedLine = added.takeIf { it.isNotEmpty() }?.let { "key paths added: ${it.joinToString()}" }
         return when {
             removed.isNotEmpty() ->
                 "key paths removed from the contract: ${removed.joinToString()}. " +
                     "Keys disappeared: if that was not deliberate, a merge or a refactor lost them from " +
                     "ConfigParser.keyEffects - find where before touching launcher.schema.json." +
-                    if (addedLine.isEmpty()) "" else " Also $addedLine."
-            added.isNotEmpty() ->
-                "$addedLine. If that is the change you made, regenerate launcher.schema.json with $RegenerateCommand"
+                    addedLine?.let { " Also $it." }.orEmpty()
+            addedLine != null -> "$addedLine. If that is the change you made, $regenerate"
             else ->
-                "no key path added or removed, but launcher.schema.json differs (a limit, a value or a description); " +
-                    "regenerate it with $RegenerateCommand"
+                "no key path added or removed, but launcher.schema.json differs (a limit, a value or a description); $regenerate"
         }
     }
+
+    /**
+     * Why `-PupdateSchema` must not write [generated] over [committed], or
+     * null when it may. A write that removes key paths is refused unless
+     * [acknowledged] (`-PremoveSchemaKeys`) names exactly those paths: the
+     * remedy for a stale file must not be able to write a lost key into it.
+     */
+    fun refusal(generated: String, committed: String?, acknowledged: Set<String>): String? {
+        if (committed == null) return null
+        val removed = removedKeyPaths(generated, committed)
+        if (removed.isEmpty() || removed == acknowledged) return null
+        return "not written: ${staleness(generated, committed)} If the removal is deliberate, pass " +
+            "-PremoveSchemaKeys=<comma-separated paths> naming exactly the removed ones " +
+            "(named now: ${acknowledged.sorted().joinToString().ifEmpty { "none" }})."
+    }
+
+    private fun pathsOf(schema: String): Set<String> = keyPaths(Json.parseToJsonElement(schema) as JsonObject)
+
+    private fun removedKeyPaths(generated: String, committed: String): Set<String> = pathsOf(committed) - pathsOf(generated)
 
     fun document(): JsonObject = JsonObject(
         mapOf(
