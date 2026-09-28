@@ -355,6 +355,38 @@ class SavableSearchableRepositoryTest {
         assertNotNull(row("resolving://found"))
     }
 
+    /**
+     * A kept row that does not resolve must not take a slot of a limited read:
+     * the limit is applied in SQL, before unresolved rows are dropped, so one
+     * Unknown contact ahead of an app left the favorites one short - or empty
+     * with a limit of one (review on #241). On main such a row was deleted,
+     * so keeping it is what made this reachable.
+     */
+    @Test
+    fun aRowThatDoesNotResolveDoesNotTakeASlotOfALimitedRead() = runBlocking {
+        stopKoin()
+        startKoin { modules(module { factory<SearchableDeserializer>(named("resolving")) { resolvingDeserializer } }) }
+        pinned("resolving://unknown", "resolving", 3, serialized = "unknown")
+        pinned("resolving://found", "resolving", 2, serialized = "found")
+
+        val read = repository.get(limit = 1).first()
+
+        assertEquals(listOf("resolving://found"), read.map { it.key })
+    }
+
+    /** Control, green in both states: with every row resolving, the limit cuts as before. */
+    @Test
+    fun aLimitedReadStillStopsAtItsLimit() = runBlocking {
+        stopKoin()
+        startKoin { modules(module { factory<SearchableDeserializer>(named("resolving")) { resolvingDeserializer } }) }
+        pinned("resolving://found", "resolving", 3, serialized = "found")
+        pinned("resolving://found2", "resolving", 2, serialized = "found")
+
+        val read = repository.get(limit = 1).first()
+
+        assertEquals(1, read.size)
+    }
+
     /** The debug screen's cleanup took the same path. */
     @Test
     fun cleanupKeepsARowWhoseItemIsUnknown() = runBlocking {
