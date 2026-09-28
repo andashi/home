@@ -3,7 +3,6 @@ package de.mm20.launcher2.appshortcuts
 import android.content.Context
 import android.content.Intent
 import androidx.test.core.app.ApplicationProvider
-import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -29,11 +28,6 @@ class LegacyShortcutLoggingTest {
         ShadowLog.clear()
     }
 
-    private fun rejectionLines(): List<String> =
-        ShadowLog.getLogs().map { it.msg }.filter { "missing required extras" in it }
-
-    private fun allLines(): List<String> = ShadowLog.getLogs().map { "${it.tag}: ${it.msg}" }
-
     @Test
     fun `a result without a name logs the missing extra, not the intent`() {
         val target = Intent(Intent.ACTION_VIEW)
@@ -43,12 +37,13 @@ class LegacyShortcutLoggingTest {
 
         assertNull(LegacyShortcut.fromConfigActivityResult(context, result))
 
-        val rejection = rejectionLines()
-        assertEquals(allLines().toString(), 1, rejection.size)
-        assertTrue(rejection.single(), Intent.EXTRA_SHORTCUT_NAME in rejection.single())
-        assertTrue(rejection.single(), Intent.EXTRA_SHORTCUT_INTENT !in rejection.single())
+        val lines = ShadowLog.getLogs().map { "${it.tag}: ${it.msg}" }
+        val rejection = lines.single { "missing required extras" in it }
+        assertTrue(rejection, Intent.EXTRA_SHORTCUT_NAME in rejection)
+        assertTrue(rejection, Intent.EXTRA_SHORTCUT_INTENT !in rejection)
+        // "Secret" alone too: a log could print the short class name without the package.
         for (payload in listOf("com.example.inventory", "s3cr3t-token", "Secret")) {
-            assertTrue("$payload in ${allLines()}", allLines().none { payload in it })
+            assertTrue("$payload in $lines", lines.none { payload in it })
         }
     }
 
@@ -58,10 +53,10 @@ class LegacyShortcutLoggingTest {
 
         assertNull(LegacyShortcut.fromConfigActivityResult(context, result))
 
-        val rejection = rejectionLines()
-        assertEquals(allLines().toString(), 1, rejection.size)
-        assertTrue(rejection.single(), Intent.EXTRA_SHORTCUT_INTENT in rejection.single())
-        assertTrue(rejection.single(), Intent.EXTRA_SHORTCUT_NAME !in rejection.single())
-        assertTrue(allLines().toString(), allLines().none { "My-bank-login" in it })
+        val lines = ShadowLog.getLogs().map { "${it.tag}: ${it.msg}" }
+        val rejection = lines.single { "missing required extras" in it }
+        assertTrue(rejection, Intent.EXTRA_SHORTCUT_INTENT in rejection)
+        assertTrue(rejection, Intent.EXTRA_SHORTCUT_NAME !in rejection)
+        assertTrue(lines.toString(), lines.none { "My-bank-login" in it })
     }
 }
