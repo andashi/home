@@ -42,10 +42,15 @@ import java.util.UUID
  *   fields on one key, or a field that moves two keys all fail. An excluded
  *   or gap field must change **none**, or the table hides a mapping.
  *
- * What none of this can check: that a pairing is the *intended* one. A field
- * that moves exactly one key, and that key is the declared one, passes; that it
- * is also the key a person would expect is the judgement of whoever wrote the
- * entry, as a human reply is on a resolved review thread.
+ * What the round trip establishes is that the table and the bridge agree: a
+ * declared pairing the bridge does not make fails, whatever the table says.
+ * What it cannot establish is that the bridge is right - a field the bridge
+ * itself feeds into the wrong key, declared here as that same key, passes.
+ * That judgement belongs to the bridge's own tests (LauncherConfigSettingsTest),
+ * not to this table.
+ *
+ * The gap list here, [GapsAt229], is the authority: #229 describes the ten and
+ * points here. Closing a gap is an edit to this file; the issue follows it.
  */
 @RunWith(RobolectricTestRunner::class)
 class SettingsContractTest {
@@ -64,7 +69,11 @@ class SettingsContractTest {
     private companion object {
         const val GapsIssue = 229
 
-        /** The gaps when #229 was written. The set may only lose members. */
+        /**
+         * The gaps when #229 was written: **the** list, which #229 describes and
+         * points to. It may only lose members; a closed gap is removed here, and
+         * the issue is updated to match.
+         */
         val GapsAt229 = setOf(
             "uiCompatModeColors", "wallpaperDim", "shortcutSearchBlocklist", "gridColumnCount", "searchBarStyle",
             "searchBarColors", "rankingWeightFactor", "iconsShape", "searchFilter", "searchFilterBarItems",
