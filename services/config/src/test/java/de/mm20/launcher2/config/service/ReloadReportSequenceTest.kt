@@ -117,6 +117,26 @@ class ReloadReportSequenceTest {
         assertEquals(3L, next.sequence)
     }
 
+    /**
+     * The two writes are renames, not synced: after a power loss the report
+     * can survive while the record is older. The next number is above both,
+     * so it never names a report that is already there (review on #226).
+     */
+    @Test
+    fun `a record older than the surviving report does not reuse its number`() = runTest {
+        val store = ReloadReportStore(context)
+        store.save(report)
+        val record = File(configDir, "report-numbering.json")
+        val olderRecord = record.readText()
+        val second = store.save(report)
+        record.writeText(olderRecord)
+
+        val next = store.save(report)
+
+        assertEquals(second.storeId, next.storeId)
+        assertEquals(3L, next.sequence)
+    }
+
     /** An older build's report is still on the device after the update: unknown, not zero. */
     @Test
     fun `a report an older build wrote has no sequence and no store id`() = runTest {
