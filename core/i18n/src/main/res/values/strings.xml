@@ -265,15 +265,6 @@
     <string name="preference_category_icons">Icons</string>
     <string name="preference_cards_shape_rounded">Rounded</string>
     <string name="preference_cards_shape_cut">Cut</string>
-    <string name="preference_icon_shape">Shape</string>
-    <string name="preference_icon_shape_square">Square</string>
-    <string name="preference_icon_shape_rounded_square">Rounded square</string>
-    <string name="preference_icon_shape_squircle">Squircle</string>
-    <string name="preference_icon_shape_triangle">Reuleaux triangle</string>
-    <string name="preference_icon_shape_circle">Circle</string>
-    <string name="preference_icon_shape_teardrop">Teardrop</string>
-    <string name="preference_icon_shape_pebble">Pebble</string>
-    <string name="preference_icon_shape_hexagon">Hexagon</string>
     <string name="preference_category_searchbar">Search bar</string>
     <string name="preference_theme_system">Follow system</string>
     <string name="preference_themed_icons">Themed icons</string>
@@ -291,7 +282,6 @@
     <string name="preference_system_bar_icons_dark">Dark</string>
     <string name="preference_hide_status_bar">Hide status bar</string>
     <string name="preference_hide_nav_bar">Hide navigation bar</string>
-    <string name="preference_icon_shape_pentagon">Pentagon</string>
     <string name="preference_category_wallpaper">Wallpaper</string>
     <string name="preference_dim_wallpaper">Dim wallpaper</string>
     <string name="preference_dim_wallpaper_summary">In dark themes, darken wallpaper</string>
@@ -316,7 +306,6 @@
     <string name="preference_about_license_summary">Licensed under the GNU General Public License 3.0</string>
     <string name="preference_category_grid">Grid</string>
     <string name="preference_grid_icon_size">Icon size</string>
-    <string name="preference_grid_column_count">Number of columns</string>
     <string name="preference_grid_list_style">Show apps in a list</string>
     <string name="preference_grid_list_icons">Show app icons in list</string>
     <string name="preference_grid_labels">Show labels</string>

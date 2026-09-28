@@ -13,7 +13,6 @@
     <string name="search_bar_placeholder">Sök</string>
     <string name="settings">Inställningar</string>
     <string name="wallpaper">Bakgrund</string>
-    <string name="preference_icon_shape_circle">Cirkel</string>
     <string name="edit_favorites_dialog_unpinned">Ej fästa – ofta använda</string>
     <string name="preference_themed_icons_summary">Färglägg ikoner med appens färgschema</string>
     <string name="websearch_dialog_url_error">Platshållaren \'${1}\' saknas i denna URL</string>
@@ -46,12 +45,6 @@
     <string name="open_webpage">Öppna hemsida</string>
     <string name="preference_screen_appearance_summary">Anpassa utseendet och känslan</string>
     <string name="preference_category_icons">Ikoner</string>
-    <string name="preference_icon_shape">Form</string>
-    <string name="preference_icon_shape_square">Fyrkant</string>
-    <string name="preference_icon_shape_rounded_square">Rundad fyrkant</string>
-    <string name="preference_icon_shape_squircle">Kvirkel</string>
-    <string name="preference_icon_shape_triangle">Reuleaux-triangel</string>
-    <string name="preference_icon_shape_hexagon">Hexagon</string>
     <string name="preference_category_searchbar">Sökfält</string>
     <string name="preference_theme_system">Följ systemet</string>
     <string name="preference_themed_icons">Färglagda ikoner</string>
@@ -60,7 +53,6 @@
     <string name="preference_category_system_bars">Systemfält</string>
     <string name="preference_hide_status_bar">Göm statusfält</string>
     <string name="preference_hide_nav_bar">Göm navigationsfält</string>
-    <string name="preference_icon_shape_pentagon">Pentagon</string>
     <string name="preference_category_wallpaper">Bakgrund</string>
     <string name="preference_dim_wallpaper">Dämpa bakgrund</string>
     <string name="preference_dim_wallpaper_summary">Dämpa bakgrunden i mörka teman</string>
@@ -78,7 +70,6 @@
     <string name="preference_about_license">Denna app är fri programvara.</string>
     <string name="preference_about_license_summary">Licensierad under GNU General Public License 3.0</string>
     <string name="preference_category_grid">Rutnät</string>
-    <string name="preference_grid_column_count">Antal kolumner</string>
     <string name="preference_screen_debug">Felsök</string>
     <string name="preference_category_widgets">Widgets</string>
     <string name="preference_screen_search">Sök</string>

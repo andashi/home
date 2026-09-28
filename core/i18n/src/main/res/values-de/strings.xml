@@ -20,11 +20,6 @@
     <string name="preference_screen_about_summary">Informationen zur App und Lizenzhinweise</string>
     <string name="preference_screen_appearance_summary">Personalisierung des Launchers</string>
     <string name="preference_category_icons">Icons</string>
-    <string name="preference_icon_shape">Form</string>
-    <string name="preference_icon_shape_square">Quadrat</string>
-    <string name="preference_icon_shape_rounded_square">Abgerundetes Quadrat</string>
-    <string name="preference_icon_shape_squircle">Squircle</string>
-    <string name="preference_icon_shape_circle">Kreis</string>
     <string name="preference_category_searchbar">Suchleiste</string>
     <string name="preference_theme_system">Systemeinstellung verwenden</string>
     <string name="websearch_dialog_url_error">In dieser URL fehlt der Platzhalter „${1}“</string>
@@ -44,14 +39,11 @@
     <string name="menu_app_info">App-Info</string>
     <string name="menu_launch">Starten</string>
     <string name="menu_delete">Löschen</string>
-    <string name="preference_icon_shape_hexagon">Sechseck</string>
-    <string name="preference_icon_shape_triangle">Reuleaux-Dreieck</string>
     <string name="shortcut_summary">Von %1$s</string>
     <string name="missing_permission_contact_search">Kontakt-Berechtigung wird benötigt, um Kontakte zu durchsuchen.</string>
     <string name="close">Schließen</string>
     <string name="websearch_dialog_custom_icon">Eigenes Icon</string>
     <string name="widget_action_remove">Entfernen</string>
-    <string name="preference_icon_shape_pentagon">Fünfeck</string>
     <string name="preference_category_wallpaper">Hintergrund</string>
     <string name="preference_wallpaper_summary">Hintergrundbild auswählen</string>
     <string name="preference_dim_wallpaper">Hintergrund dimmen</string>
@@ -79,7 +71,6 @@
     <string name="preference_themed_icons">Eingefärbte Icons</string>
     <string name="preference_themed_icons_summary">Icons an das Farbschema der App anpassen</string>
     <string name="preference_category_grid">Raster</string>
-    <string name="preference_grid_column_count">Spaltenanzahl</string>
     <string name="grant_permission">Gewähren</string>
     <string name="missing_permission_contact_search_settings">Kontaktberechtigung ist erforderlich, um Kontakte durchsuchen zu können</string>
     <string name="preference_screen_debug">Debug</string>
@@ -131,7 +122,6 @@
     <string name="preference_grid_labels_summary">App-Namen unterhalb des App-Icons anzeigen</string>
     <string name="apps_profile_main">Privat</string>
     <string name="apps_profile_work">Geschäftlich</string>
-    <string name="preference_icon_shape_teardrop">Teardrop</string>
     <string name="favorites">Favoriten</string>
     <string name="missing_permission_appshortcuts_create">%1$s muss als Standard-Start-App gesetzt sein, um App-Shortcuts erstellen zu können.</string>
     <string name="edit_favorites_dialog_empty_section">Elemente hierhin ziehen</string>
@@ -166,7 +156,6 @@
     <string name="preference_system_bar_icons_auto">Automatisch</string>
     <string name="preference_system_bar_icons_light">Hell</string>
     <string name="preference_system_bar_icons_dark">Dunkel</string>
-    <string name="preference_icon_shape_pebble">Pebble</string>
     <string name="search_action_event">Termin planen</string>
     <string name="create_search_action_type_intent">Benutzerdefinierter Intent</string>
     <string name="search_action_websearch_url_hint">Die URL-Vorlage, die verwendet wird, um die Websuch-URL zusammenzusetzen. Verwenden Sie „${1}“ als Platzhalter für den eigentlichen Suchbegriff</string>

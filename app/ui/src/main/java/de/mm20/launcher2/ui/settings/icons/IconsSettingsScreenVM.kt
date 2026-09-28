@@ -17,7 +17,6 @@ import de.mm20.launcher2.icons.IconService
 import de.mm20.launcher2.icons.LauncherIcon
 import de.mm20.launcher2.permissions.PermissionGroup
 import de.mm20.launcher2.permissions.PermissionsManager
-import de.mm20.launcher2.preferences.IconShape
 import de.mm20.launcher2.preferences.ui.BadgeSettings
 import de.mm20.launcher2.preferences.ui.IconSettings
 import de.mm20.launcher2.preferences.ui.UiSettings
@@ -47,10 +46,6 @@ class IconsSettingsScreenVM(
 
     val grid = uiSettings.gridSettings
 
-    fun setColumnCount(columnCount: Int) {
-        uiSettings.setGridColumnCount(columnCount)
-    }
-
     fun setIconSize(iconSize: Int) {
         uiSettings.setGridIconSize(iconSize)
     }
@@ -65,11 +60,6 @@ class IconsSettingsScreenVM(
 
     fun setShowListIcons(showIcons: Boolean) {
         uiSettings.setGridShowListIcons(showIcons)
-    }
-
-    val iconShape = uiSettings.iconShape
-    fun setIconShape(iconShape: IconShape) {
-        uiSettings.setIconShape(iconShape)
     }
 
     val icons = iconSettings

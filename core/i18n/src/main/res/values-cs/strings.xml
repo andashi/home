@@ -61,13 +61,6 @@
     <string name="preference_screen_appearance_summary">Přizpůsobení vzhledu a chování</string>
     <string name="preference_category_icons">Ikony</string>
     <string name="preference_cards_shape_rounded">Zakulacený</string>
-    <string name="preference_icon_shape">Tvar</string>
-    <string name="preference_icon_shape_square">Čtverec</string>
-    <string name="preference_icon_shape_rounded_square">Zakulacený čtverec</string>
-    <string name="preference_icon_shape_squircle">Čtverco-kruh</string>
-    <string name="preference_icon_shape_triangle">Reuleauxův trojúhelník</string>
-    <string name="preference_icon_shape_circle">Kruh</string>
-    <string name="preference_icon_shape_hexagon">Šestihran</string>
     <string name="preference_theme_system">Podle systému</string>
     <string name="preference_themed_icons">Tématické ikony</string>
     <string name="preference_themed_icons_summary">Barevné ikony s barevným schématem aplikace</string>
@@ -75,7 +68,6 @@
     <string name="preference_category_system_bars">Systémové lišty</string>
     <string name="preference_hide_status_bar">Skrýt stavovou lištu</string>
     <string name="preference_hide_nav_bar">Skrýt navigační lištu</string>
-    <string name="preference_icon_shape_pentagon">Pentagon</string>
     <string name="preference_category_wallpaper">Pozadí</string>
     <string name="preference_dim_wallpaper">Ztmavit pozadí</string>
     <string name="preference_dim_wallpaper_summary">Na tmavých motivech ztmavit pozadí</string>
@@ -96,7 +88,6 @@
     <string name="preference_about_license">Tato aplikace je svobodný software.</string>
     <string name="preference_category_grid">Mřížka</string>
     <string name="preference_grid_icon_size">Velikost ikon</string>
-    <string name="preference_grid_column_count">Počet sloupců</string>
     <string name="preference_screen_debug">Ladění</string>
     <string name="preference_category_widgets">Widgety</string>
     <string name="preference_clockwidget_favorites_part">Dok</string>
@@ -147,7 +138,6 @@
         <item quantity="few">Odebrány %1$d položky</item>
         <item quantity="other">Odebráno %1$d položek</item>
     </plurals>
-    <string name="preference_icon_shape_teardrop">Kapka</string>
     <string name="preference_system_bar_icons_light">Světlé</string>
     <string name="preference_system_bar_icons_dark">Tmavé</string>
     <string name="preference_grid_labels_summary">Zobrazit název aplikace pod ikonou</string>
@@ -179,7 +169,6 @@
         <item quantity="other">Vybráno %1$d položek</item>
     </plurals>
     <string name="preference_force_themed_icons_summary">Použít barevné schéma aplikace na všechny ikony, včetně nepodporovaných (není doporučeno)</string>
-    <string name="preference_icon_shape_pebble">Oblázek</string>
     <string name="preference_grid_labels">Zobrazit popisky</string>
     <string name="search_action_label">Název</string>
     <string name="edit_favorites_dialog_new_tag">Vytvořit štítek</string>

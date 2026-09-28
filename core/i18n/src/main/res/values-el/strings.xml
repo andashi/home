@@ -52,12 +52,6 @@
     </plurals>
     <string name="preference_cards_shape_rounded">Στρογγυλεμένη</string>
     <string name="preference_cards_shape_cut">Κομμένη</string>
-    <string name="preference_icon_shape_square">Τετράγωνο</string>
-    <string name="preference_icon_shape_circle">Κύκλος</string>
-    <string name="preference_icon_shape_teardrop">Δάκρυ</string>
-    <string name="preference_icon_shape_pebble">Βότσαλο</string>
-    <string name="preference_icon_shape_triangle">Στρογγυλεμένο τρίγωνο</string>
-    <string name="preference_icon_shape_squircle">Τετραγωνοποιημένος κύκλος</string>
     <string name="preference_category_searchbar">Γραμμή αναζήτησης</string>
     <string name="preference_theme_system">Χρήση συστήματος</string>
     <string name="preference_force_themed_icons">Επιβολή θεματικών εικονιδίων</string>
@@ -67,7 +61,6 @@
     <string name="preference_system_bar_icons_auto">Αυτόματο</string>
     <string name="preference_system_bar_icons_dark">Σκοτεινό</string>
     <string name="preference_hide_nav_bar">Απόκρυψη γραμμής πλοήγησης</string>
-    <string name="preference_icon_shape_pentagon">Πεντάγωνο</string>
     <string name="preference_dim_wallpaper_summary">Σε σκούρα θέματα, σκοτείνιασμα ταπετσαρίας</string>
     <string name="preference_blur_wallpaper">Θάμπωμα ταπετσαρίας</string>
     <string name="preference_dim_wallpaper">Σκοτείνιασμα ταπετσαρίας</string>
@@ -132,11 +125,8 @@
     <string name="preference_debug_cleanup_database_summary">Καταργήστε κατεστραμμένες και αχρησιμοποίητες εγγραφές από τη βάση δεδομένων της εφαρμογής</string>
     <string name="preference_category_icons">Εικονίδια</string>
     <string name="preference_about_fdroid">Αποθετήριο F-Droid</string>
-    <string name="preference_icon_shape">Σχήμα</string>
     <string name="preference_enforce_icon_shape">Επιβολή σχήματος</string>
-    <string name="preference_icon_shape_rounded_square">Στρογγυλεμένο τετράγωνο</string>
     <string name="preference_enforce_icon_shape_summary">Εφαρμογή σχήματος σε όλα τα εικονίδια, συμπεριλαμβανομένων εκείνων που κανονικά δεν θα το υποστήριζαν</string>
-    <string name="preference_icon_shape_hexagon">Εξάγωνο</string>
     <string name="preference_category_license">Άδεια χρήσης</string>
     <string name="preference_about_license">Αυτή η εφαρμογή αποτελεί ελεύθερο λογισμικό.</string>
     <string name="preference_themed_icons">Θεματικά εικονίδια</string>
@@ -144,7 +134,6 @@
     <string name="preference_themed_icons_summary">Έγχρωμα εικονίδια με τον συνδυασμό χρωμάτων της εφαρμογής</string>
     <string name="preference_grid_icon_size">Μέγεθος εικονιδίων</string>
     <string name="preference_force_themed_icons_summary">Εφαρμογή του συνδυασμού χρωμάτων της εφαρμογής σε όλα τα εικονίδια, συμπεριλαμβανομένων των μη υποστηριζόμενων (δεν συνιστάται)</string>
-    <string name="preference_grid_column_count">Αριθμός στηλών</string>
     <string name="preference_icon_pack_summary_empty">Δεν έχουν εγκατασταθεί πακέτα εικονιδίων</string>
     <string name="preference_grid_labels_summary">Εμφάνιση του ονόματος της εφαρμογής κάτω από το εικονίδιο</string>
     <string name="preference_status_bar_icons">Εικονίδια γραμμής κατάστασης</string>

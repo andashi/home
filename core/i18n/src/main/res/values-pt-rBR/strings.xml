@@ -36,7 +36,6 @@
     <string name="preference_category_licenses">Licenças open-source</string>
     <string name="open_webpage">Abrir site</string>
     <string name="preference_category_icons">Ícones</string>
-    <string name="preference_icon_shape_square">Quadrado</string>
     <string name="preference_clockwidget_favorites_part">Gaveta de aplicativos</string>
     <string name="preference_clockwidget_dock_rows">Linhas da gaveta de aplicativos</string>
     <string name="preference_screen_search">Pesquisar</string>
@@ -74,13 +73,11 @@
     <string name="preference_category_system_bars">Barras do sistema</string>
     <string name="preference_hide_status_bar">Ocultar a barra de status</string>
     <string name="preference_hide_nav_bar">Ocultar a barra de navegação</string>
-    <string name="preference_icon_shape_pentagon">Pentágono</string>
     <string name="preference_about_fdroid">Repositório F-Droid</string>
     <string name="preference_category_license">Licença</string>
     <string name="preference_about_license">Este aplicativo é um software livre.</string>
     <string name="preference_about_license_summary">Licenciado sob a GNU General Public License 3.0</string>
     <string name="preference_category_grid">Grade</string>
-    <string name="preference_grid_column_count">Número de colunas</string>
     <string name="preference_screen_debug">Depuração</string>
     <string name="preference_screen_debug_summary">Ferramentas de solução de problemas</string>
     <string name="preference_category_widgets">Widgets</string>
@@ -107,15 +104,9 @@
     <string name="help">Ajuda</string>
     <string name="websearch_dialog_query_encoding_form">application/x-www-form-urlencoded</string>
     <string name="preference_cards_shape_rounded">Arredondado</string>
-    <string name="preference_icon_shape">Formato</string>
     <string name="preference_force_themed_icons_summary">Aplique o esquema de cores do aplicativo a todos os ícones, incluindo os não suportados (não recomendado)</string>
-    <string name="preference_icon_shape_triangle">Triângulo Reuleaux</string>
     <string name="preference_suspended_badges_summary">Mostra um selo para aplicativos suspensos</string>
     <string name="preference_cards_shape_cut">Cortado</string>
-    <string name="preference_icon_shape_rounded_square">Quadrado arredondado</string>
-    <string name="preference_icon_shape_squircle">Squircle</string>
-    <string name="preference_icon_shape_circle">Círculo</string>
-    <string name="preference_icon_shape_teardrop">Lágrima</string>
     <string name="preference_category_searchbar">Barra de pesquisa</string>
     <string name="preference_themed_icons_summary">Colore os Ícones com o esquema de cores do aplicativo</string>
     <string name="preference_force_themed_icons">Forçar ícones temáticos</string>
@@ -143,8 +134,6 @@
     <string name="preference_search_bar_launch_on_enter">Iniciar ao entrar</string>
     <string name="preference_hidden_items">Resultados de pesquisa ocultos</string>
     <string name="preference_hidden_items_summary">Gerenciar aplicativos ocultos e resultados de pesquisa</string>
-    <string name="preference_icon_shape_hexagon">Hexágono</string>
-    <string name="preference_icon_shape_pebble">Seixo</string>
     <string name="preference_category_debug_tools">Ferramentas</string>
     <string name="preference_debug_cleanup_database">Limpar banco de dados</string>
     <string name="preference_debug_cleanup_database_summary">Remove entradas quebradas e não utilizadas do banco de dados do iniciador</string>

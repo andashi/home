@@ -1,6 +1,5 @@
 package de.mm20.launcher2.preferences
 
-import android.content.Context
 import de.mm20.launcher2.config.GlassContrast
 import de.mm20.launcher2.config.GlassDefaults
 import de.mm20.launcher2.search.SearchFilters
@@ -71,7 +70,6 @@ data class LauncherSettingsData internal constructor(
     val badgesSuspendedApps: Boolean = true,
     val badgesShortcuts: Boolean = true,
 
-    val gridColumnCount: Int = 5,
     val gridIconSize: Int = 48,
     val gridLabels: Boolean = true,
     val gridList: Boolean = false,
@@ -92,7 +90,6 @@ data class LauncherSettingsData internal constructor(
 
     val hiddenItemsShowButton: Boolean = false,
 
-    val iconsShape: IconShape = IconShape.PlatformDefault,
     val iconsAdaptify: Boolean = false,
     /** On in the fork: the Clear look (#76) is built from themed layers (#86). */
     val iconsThemed: Boolean = true,
@@ -136,13 +133,7 @@ data class LauncherSettingsData internal constructor(
     val feedProviderPackage: String? = null
 
 
-    ) {
-    constructor(
-        context: Context,
-    ) : this(
-        gridColumnCount = context.resources.getInteger(R.integer.config_columnCount),
     )
-}
 
 @Serializable
 enum class ColorScheme {
@@ -204,21 +195,6 @@ enum class SearchBarColors {
     Auto,
     Light,
     Dark,
-}
-
-@Serializable
-enum class IconShape {
-    PlatformDefault,
-    Circle,
-    Square,
-    RoundedSquare,
-    Triangle,
-    Squircle,
-    Hexagon,
-    Pentagon,
-    Teardrop,
-    Pebble,
-    EasterEgg,
 }
 
 @Serializable

@@ -69,13 +69,6 @@
     <string name="preference_category_icons">Ikonoak</string>
     <string name="preference_cards_shape_rounded">Biribildua</string>
     <string name="preference_cards_shape_cut">Ebakia</string>
-    <string name="preference_icon_shape">Forma</string>
-    <string name="preference_icon_shape_square">Karratua</string>
-    <string name="preference_icon_shape_rounded_square">Karratu biribildua</string>
-    <string name="preference_icon_shape_triangle">Reuleaux irukia</string>
-    <string name="preference_icon_shape_circle">Zirkulua</string>
-    <string name="preference_icon_shape_teardrop">Malkoa</string>
-    <string name="preference_icon_shape_pebble">Harri-koskorra</string>
     <string name="preference_category_searchbar">Bilaketa-barra</string>
     <string name="preference_themed_icons">Ikono gaidunak</string>
     <string name="preference_force_themed_icons">Ikono gaidunak behartu</string>
@@ -89,7 +82,6 @@
     <string name="preference_system_bar_icons_dark">Iluna</string>
     <string name="preference_hide_status_bar">Egoera-barra ezkutatu</string>
     <string name="preference_hide_nav_bar">Nabigazio-barra ezkutatu</string>
-    <string name="preference_icon_shape_pentagon">Pentagonoa</string>
     <string name="preference_category_wallpaper">Horma-papera</string>
     <string name="preference_dim_wallpaper">Horma-papera ilundu</string>
     <string name="preference_blur_wallpaper">Horma-papera lausotu</string>
@@ -107,7 +99,6 @@
     <string name="preference_about_license_summary">GNU General Public License 3.0 lizentziapean</string>
     <string name="preference_category_grid">Lauki-sarea</string>
     <string name="preference_grid_icon_size">Ikonoaren tamaina</string>
-    <string name="preference_grid_column_count">Zutabe kopurua</string>
     <string name="preference_grid_labels">Etiketak erakutsi</string>
     <string name="preference_screen_debug">Arazketa</string>
     <string name="preference_screen_debug_summary">Arazoak konpontzeko tresnak</string>
@@ -125,7 +116,6 @@
         <item quantity="other">%1$d sarrera ezabatu dira</item>
     </plurals>
     <string name="preference_about_license">Aplikazio hau software librea da.</string>
-    <string name="preference_icon_shape_hexagon">Hexagonoa</string>
     <string name="preference_grid_labels_summary">Aplikazioaren izena ikonoaren azpian erakutsi</string>
     <string name="preference_theme_system">Sistemaren arabera</string>
     <string name="preference_screen_search">Bilatu</string>
@@ -306,7 +296,6 @@
     <string name="preference_screen_typography">Letra-tipoa</string>
     <string name="preference_debug_dump_heap_summary">Atera argazki bat memoriaren erabilera aztertzeko. Aplikazioa blokeatuta egongo da prozesu hau amaitu arte.</string>
     <string name="preference_debug_dump_heap_in_progress">Argazkia ateratzen…</string>
-    <string name="preference_icon_shape_squircle">Squircle</string>
     <string name="preference_clockwidget_dock_rows">Aplikazio-barraren lerroak</string>
     <string name="preference_search_apps">Aplikazioak</string>
     <string name="preference_search_apps_summary">Aplikazio guztiak erakutsi bilaketa-eremua hutsik dagoenean</string>

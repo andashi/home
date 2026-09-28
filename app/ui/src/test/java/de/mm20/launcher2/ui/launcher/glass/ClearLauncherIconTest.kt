@@ -1,10 +1,14 @@
 package de.mm20.launcher2.ui.launcher.glass
 
+import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import de.mm20.launcher2.icons.ColorLayer
@@ -13,6 +17,7 @@ import de.mm20.launcher2.icons.StaticLauncherIcon
 import de.mm20.launcher2.icons.TintedIconLayer
 import de.mm20.launcher2.ui.component.ShapedLauncherIcon
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -27,7 +32,7 @@ class ClearLauncherIconTest {
     val composeRule = createComposeRule()
 
     private val glyph = StaticLauncherIcon(TintedIconLayer(ColorDrawable(0xFFFFFFFF.toInt()), scale = 1.5f), ColorLayer(0))
-    private val colored = StaticLauncherIcon(StaticIconLayer(ColorDrawable(0xFFE53935.toInt())), ColorLayer(0xFF1E88E5.toInt()))
+    private val colored = StaticLauncherIcon(StaticIconLayer(ColorDrawable(IconForeground)), ColorLayer(IconBackground))
 
     private fun show(icon: StaticLauncherIcon, clear: Boolean) {
         composeRule.setContent {
@@ -63,4 +68,29 @@ class ClearLauncherIconTest {
         composeRule.onNode(SemanticsMatcher.keyIsDefined(ClearIconKey)).assertDoesNotExist()
         composeRule.onNode(SemanticsMatcher.keyIsDefined(GlassSurfaceKey)).assertDoesNotExist()
     }
+
+    /**
+     * One icon shape (#229): outside the launcher an icon keeps its colours but
+     * not a shape of its own. 12 % in along the diagonal lies inside the
+     * squircle and outside a circle; the very corner lies outside both, which
+     * a square would fill. Compared by colour, not alpha: the capture includes
+     * the window's own opaque background.
+     */
+    @Test
+    fun `outside the launcher an icon is the squircle as well`() {
+        show(colored, clear = false)
+        val image = composeRule.onRoot().captureToImage().asAndroidBitmap()
+        fun isIconAt(fraction: Float): Boolean {
+            val pixel = image.getPixel((image.width * fraction).toInt(), (image.height * fraction).toInt())
+            return listOf(IconForeground, IconBackground).any { colour ->
+                listOf(Color::red, Color::green, Color::blue).all { channel -> kotlin.math.abs(channel(pixel) - channel(colour)) <= 8 }
+            }
+        }
+
+        assertTrue("the corner is outside the shape", !isIconAt(0.02f))
+        assertTrue("12 % in along the diagonal is inside the squircle", isIconAt(0.12f))
+    }
 }
+
+private const val IconForeground = 0xFFE53935.toInt()
+private const val IconBackground = 0xFF1E88E5.toInt()

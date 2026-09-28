@@ -97,18 +97,9 @@
         <item quantity="other">הוסרו %1$d ערכים</item>
     </plurals>
     <string name="preference_category_icons">סמלים</string>
-    <string name="preference_icon_shape">צורה</string>
-    <string name="preference_icon_shape_rounded_square">ריבוע מעוגל</string>
-    <string name="preference_icon_shape_square">ריבוע</string>
-    <string name="preference_icon_shape_squircle">ריבוע עגלגל</string>
     <string name="preference_cards_shape_rounded">מעוגל</string>
     <string name="preference_cards_shape_cut">גזירה</string>
     <string name="preference_category_searchbar">שורת החיפוש</string>
-    <string name="preference_icon_shape_triangle">משולש רולו</string>
-    <string name="preference_icon_shape_circle">עיגול</string>
-    <string name="preference_icon_shape_teardrop">דמעה</string>
-    <string name="preference_icon_shape_pebble">חלוק נחל</string>
-    <string name="preference_icon_shape_hexagon">משושה</string>
     <string name="preference_hide_status_bar">הסתרת שורת המצב</string>
     <string name="preference_hide_nav_bar">הסתרת סרגל הניווט</string>
     <string name="preference_nav_bar_icons">סמלי שורת הניווט</string>
@@ -129,7 +120,6 @@
     <string name="preference_about_license_summary">מורשה תחת הרישיון הציבורי הכללי של גנו 3.0</string>
     <string name="preference_category_grid">רשת</string>
     <string name="preference_grid_icon_size">גודל הסמל</string>
-    <string name="preference_grid_column_count">מספר עמודות</string>
     <string name="preference_category_widgets">יישומונים (Widgets)</string>
     <string name="preference_clockwidget_favorites_part">עגינה</string>
     <string name="preference_clockwidget_favorites_part_summary">הצגת הפריטים הנעוצים בעגינה</string>
@@ -176,7 +166,6 @@
     <string name="preference_icon_pack_summary_empty">לא מותקנות חבילות סמלים</string>
     <string name="preference_category_system_bars">סרגלי המערכת</string>
     <string name="preference_status_bar_icons">סמלי שורת המצב</string>
-    <string name="preference_icon_shape_pentagon">מחומש</string>
     <string name="preference_category_wallpaper">תמונת הרקע</string>
     <string name="preference_dim_wallpaper">עמעום תמונת הרקע</string>
     <string name="preference_dim_wallpaper_summary">בערכות נושא כהות, האפלת תמונת הרקע</string>

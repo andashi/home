@@ -65,7 +65,6 @@
     <string name="missing_permission_appshortcuts_search_settings">A(z) %1$s alkalmazást alapértelmezett indítóként kell beállítani az telepített alkalmazások kereséséhez</string>
     <string name="missing_permission_notification_badges">Az értesítési jelvények megjelenítéséhez értesítési hozzáférés szükséges</string>
     <string name="preference_category_licenses">Nyílt forráskódú licencek</string>
-    <string name="preference_icon_shape_hexagon">Hatszög</string>
     <string name="preference_category_searchbar">Keresősáv</string>
     <string name="missing_permission_contact_search">A névjegyek kereséséhez névjegyengedély szükséges</string>
     <string name="preference_category_debug_tools">Eszközök</string>
@@ -88,20 +87,12 @@
     <string name="preference_theme_dark">Sötét</string>
     <string name="preference_custom_colors_corepalette">Színpaletta</string>
     <string name="preference_debug_dump_heap_in_progress">Pillanatfelvétel készítése…</string>
-    <string name="preference_icon_shape_square">Négyzet</string>
     <string name="preference_debug_dump_heap">Memória-pillanatkép</string>
     <string name="preference_debug_cleanup_database">Adatbázis tisztítása</string>
     <string name="preference_category_icons">Ikonok</string>
     <string name="missing_permission_contact_search_settings">A névjegyek kereséséhez névjegyengedély szükséges</string>
     <string name="preference_cards_shape_rounded">Kerekített</string>
     <string name="preference_cards_shape_cut">Csapott</string>
-    <string name="preference_icon_shape">Alakzat</string>
-    <string name="preference_icon_shape_rounded_square">Lekerekített négyzet</string>
-    <string name="preference_icon_shape_squircle">Kerekített négyzet</string>
-    <string name="preference_icon_shape_triangle">Reuleaux háromszög</string>
-    <string name="preference_icon_shape_circle">Kör</string>
-    <string name="preference_icon_shape_teardrop">Könnycsepp</string>
-    <string name="preference_icon_shape_pebble">Kavics</string>
     <string name="preference_theme_system">Rendszer beállításainak követése</string>
     <string name="preference_themed_icons">Témának megfelelő ikonok</string>
     <string name="preference_icon_pack">Ikoncsomag</string>
@@ -111,7 +102,6 @@
     <string name="preference_system_bar_icons_light">Világos</string>
     <string name="preference_system_bar_icons_dark">Sötét</string>
     <string name="preference_hide_status_bar">Állapotsor elrejtése</string>
-    <string name="preference_icon_shape_pentagon">Ötszög</string>
     <string name="preference_category_wallpaper">Háttérkép</string>
     <string name="missing_permission_appshortcuts_create">Állítsa be a(z) %1$s alkalmazást alapértelmezett indítóként a parancsikonok létrehozásához.</string>
     <string name="import_theme_error">A kiválasztott fájlt nem lehetett beolvasni. Győződjön meg arról, hogy érvényes témát (*.kvtheme) választott ki és hogy a fájl nem-e sérült.</string>
@@ -149,7 +139,6 @@
     <string name="more_information">További tudnivalók</string>
     <string name="gesture_action_recents">Legutóbbi alkalmazások</string>
     <string name="preference_notification_badges">Értesítési jelvények</string>
-    <string name="preference_grid_column_count">Oszlopok száma</string>
     <string name="preference_shortcut_badges">Parancsikonjelvények</string>
     <string name="preference_grid_labels_summary">Alkalmazás nevének megjelenítése az ikon alatt</string>
     <string name="preference_blur_wallpaper_summary">Használjon elmosódást a háttérképen</string>

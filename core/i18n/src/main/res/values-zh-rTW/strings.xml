@@ -97,16 +97,7 @@
     <string name="preference_category_icons">圖示</string>
     <string name="preference_cards_shape_rounded">圓角</string>
     <string name="preference_cards_shape_cut">切角</string>
-    <string name="preference_icon_shape">形狀</string>
     <string name="preference_category_wallpaper">桌布</string>
-    <string name="preference_icon_shape_square">正方形</string>
-    <string name="preference_icon_shape_rounded_square">圓角方形</string>
-    <string name="preference_icon_shape_squircle">方圓形</string>
-    <string name="preference_icon_shape_triangle">勒洛三角形</string>
-    <string name="preference_icon_shape_circle">圓形</string>
-    <string name="preference_icon_shape_teardrop">淚滴形</string>
-    <string name="preference_icon_shape_pebble">鵝卵形</string>
-    <string name="preference_icon_shape_hexagon">六邊形</string>
     <string name="preference_theme_system">跟隨系統</string>
     <string name="preference_themed_icons">主題圖示</string>
     <string name="preference_themed_icons_summary">帶有應用程式配色方案的彩色圖示</string>
@@ -122,7 +113,6 @@
     <string name="preference_system_bar_icons_dark">深色</string>
     <string name="preference_hide_status_bar">隱藏狀態列</string>
     <string name="preference_hide_nav_bar">隱藏導覽列</string>
-    <string name="preference_icon_shape_pentagon">五角形</string>
     <string name="preference_dim_wallpaper">調暗桌布</string>
     <string name="preference_dim_wallpaper_summary">在深色主題中，使桌布變暗</string>
     <string name="preference_blur_wallpaper">模糊桌布</string>
@@ -141,7 +131,6 @@
     <string name="preference_about_license_summary">根據 GNU 通用公共許可證 3.0 授權</string>
     <string name="preference_category_grid">網格</string>
     <string name="preference_grid_icon_size">圖示大小</string>
-    <string name="preference_grid_column_count">列數</string>
     <string name="preference_grid_labels">顯示應用程式名稱</string>
     <string name="preference_grid_labels_summary">在圖示底下顯示應用程式名稱</string>
     <string name="preference_screen_debug">除錯</string>

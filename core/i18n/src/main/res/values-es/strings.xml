@@ -70,7 +70,6 @@
     <string name="preference_enforce_icon_shape">Forzar forma</string>
     <string name="preference_themed_icons_summary">Iconos con esquema de color de la aplicación</string>
     <string name="preference_category_system_bars">Barras de sistema</string>
-    <string name="preference_icon_shape_pentagon">Pentágono</string>
     <string name="preference_dim_wallpaper">Oscurecer el fondo de pantalla</string>
     <string name="preference_dim_wallpaper_summary">En temas oscuros, oscurecer el fondo de pantalla</string>
     <string name="preference_wallpaper_summary">Elije un fondo de pantalla</string>
@@ -106,7 +105,6 @@
     <string name="preference_category_license">Licencia</string>
     <string name="preference_about_license_summary">Licenciado bajo GNU General Public License 3.0</string>
     <string name="preference_grid_icon_size">Tamaño del icono</string>
-    <string name="preference_grid_column_count">Número de columnas</string>
     <string name="preference_grid_labels">Mostrar etiquetas</string>
     <string name="preference_grid_labels_summary">Mostrar el nombre de la aplicación debajo del icono</string>
     <string name="preference_screen_debug">Depuración</string>
@@ -188,16 +186,12 @@
     <string name="websearch_dialog_query_encoding_none">Ninguna</string>
     <string name="save">Guardar</string>
     <string name="action_undo">Deshacer</string>
-    <string name="preference_icon_shape_square">Cuadrado</string>
-    <string name="preference_icon_shape_rounded_square">Cuadrado redondeado</string>
     <plurals name="debug_cleanup_database_result">
         <item quantity="one">%1$d entrada ha sido eliminada</item>
         <item quantity="many">%1$d entradas han sido eliminadas</item>
         <item quantity="other">%1$d entradas han sido eliminadas</item>
     </plurals>
-    <string name="preference_icon_shape_hexagon">Hexágono</string>
     <string name="menu_customize">Personalizar</string>
-    <string name="preference_icon_shape_teardrop">Lágrima</string>
     <string name="edit_favorites_dialog_new_tag">Crear etiqueta</string>
     <string name="menu_remove">Eliminar</string>
     <string name="edit_favorites_dialog_tag_section_empty">Las etiquetas ancladas aparecerán aquí</string>
@@ -208,8 +202,6 @@
     <string name="preference_screen_appearance_summary">Personalizar el aspecto</string>
     <string name="preference_debug_cleanup_database_summary">Eliminar las entradas inservibles y no utilizadas de la base de datos del launcher</string>
     <string name="preference_cards_shape_rounded">Redondeada</string>
-    <string name="preference_icon_shape_circle">Círculo</string>
-    <string name="preference_icon_shape_pebble">Piedra</string>
     <string name="duplicate">Duplicar</string>
     <string name="action_next">Siguiente</string>
     <string name="edit_favorites_dialog_tags">Etiquetas</string>
@@ -219,9 +211,6 @@
     <string name="preference_category_debug_tools">Herramientas</string>
     <string name="preference_debug_cleanup_database">Limpiar la base de datos</string>
     <string name="preference_cards_shape_cut">Cortada</string>
-    <string name="preference_icon_shape">Forma</string>
-    <string name="preference_icon_shape_squircle">Cuadrírculo</string>
-    <string name="preference_icon_shape_triangle">Triángulo de Reuleaux</string>
     <string name="preference_theme_system">De acuerdo al sistema</string>
     <string name="preference_themed_icons">Íconos temáticos</string>
     <string name="help">Ayuda</string>

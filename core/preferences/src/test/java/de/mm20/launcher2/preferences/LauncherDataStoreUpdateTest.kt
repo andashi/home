@@ -25,18 +25,18 @@ class LauncherDataStoreUpdateTest {
 
     @Test
     fun `update is fire-and-forget and the write becomes visible eventually`() = runBlocking {
-        seedSettingsFile(context, LauncherSettingsData(gridColumnCount = 5))
+        seedSettingsFile(context, LauncherSettingsData(homeGridColumns = 5))
         val store = LauncherDataStore(context)
 
-        assertEquals(5, store.data.first().gridColumnCount)
+        assertEquals(5, store.data.first().homeGridColumns)
 
-        store.update { it.copy(gridColumnCount = 9) }
+        store.update { it.copy(homeGridColumns = 9) }
 
         withTimeout(5_000) {
-            while (store.data.first().gridColumnCount != 9) {
+            while (store.data.first().homeGridColumns != 9) {
                 delay(20)
             }
         }
-        assertEquals(9, store.data.first().gridColumnCount)
+        assertEquals(9, store.data.first().homeGridColumns)
     }
 }

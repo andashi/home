@@ -173,8 +173,6 @@
     <string name="search_bar_position_bottom">아래쪽</string>
     <string name="preference_cards_shape_cut">각진 모서리</string>
     <string name="preference_debug_dump_heap_summary">메모리 사용량을 분석하기 위해 스냅샷을 찍습니다. 찍는 동안 앱이 잠시 멈춥니다.</string>
-    <string name="preference_icon_shape_triangle">뢸로 삼각형</string>
-    <string name="preference_icon_shape_circle">원</string>
     <string name="preference_themed_icons">아이콘에 테마 적용</string>
     <string name="preference_force_themed_icons">테마 강제 적용</string>
     <string name="tag_exists_message">같은 이름의 태그가 이미 있습니다. 계속 진행하면 두 태그를 하나로 합칩니다.</string>
@@ -186,10 +184,6 @@
     <string name="preference_gesture_swipe_down">아래로 스와이프</string>
     <string name="preference_screen_gestures_summary">제스처 및 제스처 동작</string>
     <string name="create_search_action_type_intent">사용자 정의 인텐트</string>
-    <string name="preference_icon_shape_rounded_square">모서리가 둥근 사각형</string>
-    <string name="preference_icon_shape_squircle">둥근 사각형</string>
-    <string name="preference_icon_shape_square">사각형</string>
-    <string name="preference_icon_shape_pebble">조약돌</string>
     <string name="preference_icon_pack_summary_empty">설치한 아이콘 팩이 없습니다.</string>
     <string name="create_search_action_type_web">웹사이트에서 검색</string>
     <string name="preference_gesture_double_tap">두 번 누르기</string>
@@ -202,13 +196,10 @@
     <string name="preference_notification_badges">알림 배지</string>
     <string name="preference_notification_badges_summary">읽지 않은 알림이 있는 애플리케이션에 배지 표시</string>
     <string name="tag_exists_error">같은 이름의 태그가 이미 있습니다.</string>
-    <string name="preference_icon_shape">모양</string>
-    <string name="preference_icon_shape_hexagon">육각형</string>
     <string name="preference_category_badges">배지</string>
     <string name="preference_gesture_home_button">홈 버튼/제스처</string>
     <string name="preference_debug_dump_heap">메모리 스냅샷</string>
     <string name="preference_debug_dump_heap_in_progress">스냅샷 찍는 중…</string>
-    <string name="preference_icon_shape_pentagon">오각형</string>
     <string name="edit">편집</string>
     <string name="action_import">가져오기</string>
     <string name="preference_default_filter">기본 필터</string>

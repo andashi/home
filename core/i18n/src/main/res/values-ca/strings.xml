@@ -70,15 +70,6 @@
     <string name="preference_category_icons">Icones</string>
     <string name="preference_cards_shape_rounded">Arrodonit</string>
     <string name="preference_cards_shape_cut">Tallat</string>
-    <string name="preference_icon_shape">Forma</string>
-    <string name="preference_icon_shape_square">Quadrat</string>
-    <string name="preference_icon_shape_rounded_square">Quadrat arrodonit</string>
-    <string name="preference_icon_shape_squircle">Cercle quadrat</string>
-    <string name="preference_icon_shape_triangle">Triangle de Reuleaux</string>
-    <string name="preference_icon_shape_circle">Cercle</string>
-    <string name="preference_icon_shape_teardrop">Llàgrima</string>
-    <string name="preference_icon_shape_pebble">Còdol</string>
-    <string name="preference_icon_shape_hexagon">Hexàgon</string>
     <string name="preference_category_searchbar">Barra de cerca</string>
     <string name="preference_theme_system">Seguiu el sistema</string>
     <string name="preference_themed_icons">Icones temàtiques</string>
@@ -93,7 +84,6 @@
     <string name="preference_system_bar_icons_dark">Fosc</string>
     <string name="preference_hide_status_bar">Amaga la barra d\'estat</string>
     <string name="preference_hide_nav_bar">Amaga la barra de navegació</string>
-    <string name="preference_icon_shape_pentagon">Pentàgon</string>
     <string name="preference_category_wallpaper">Fons de pantalla</string>
     <string name="preference_dim_wallpaper">Fons de pantalla enfosquit</string>
     <string name="preference_dim_wallpaper_summary">Amb temes foscos, enfosquiu el fons de pantalla</string>
@@ -113,7 +103,6 @@
     <string name="preference_about_license_summary">Programari basat en la Llicència Pública General GNU 3.0</string>
     <string name="preference_category_grid">Quadrícula</string>
     <string name="preference_grid_icon_size">Mida de la icona</string>
-    <string name="preference_grid_column_count">Nombre de columnes</string>
     <string name="preference_grid_labels">Mostra les etiquetes</string>
     <string name="preference_grid_labels_summary">Mostra el nom de l\'aplicació a sota de la icona</string>
     <string name="preference_screen_debug">Depuració</string>

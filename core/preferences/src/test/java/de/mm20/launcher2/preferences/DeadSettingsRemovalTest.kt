@@ -1,6 +1,5 @@
 package de.mm20.launcher2.preferences
 
-import androidx.test.core.app.ApplicationProvider
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
@@ -22,7 +21,7 @@ import java.io.ByteArrayOutputStream
 @RunWith(RobolectricTestRunner::class)
 class DeadSettingsRemovalTest {
 
-    private val serializer = LauncherSettingsDataSerializer(ApplicationProvider.getApplicationContext())
+    private val serializer = LauncherSettingsDataSerializer()
 
     private val fixture: String = javaClass.getResource("/settings/before-dead-fields-removed.json")!!.readText()
 
@@ -33,6 +32,10 @@ class DeadSettingsRemovalTest {
         // Nothing reads them since the clock, the calendar widgets and calendar
         // search went (#20); their controls went with them (#3 slice 1 audit).
         "localeTimeFormat", "localePrimaryCalendar", "localeSecondaryCalendar",
+        // Controls that changed nothing a person looks at (#229): the Clear look
+        // draws every launcher icon as the squircle, and the column count only
+        // sized picker sheets, which now follow home.grid.columns.
+        "iconsShape", "gridColumnCount",
     )
 
     private suspend fun rewritten(): JsonObject {

@@ -59,16 +59,8 @@
     <string name="preference_category_system_bars">系统栏</string>
     <string name="preference_hide_status_bar">隐藏状态栏</string>
     <string name="preference_hide_nav_bar">隐藏导航条</string>
-    <string name="preference_icon_shape_pentagon">五角形</string>
     <string name="preference_category_wallpaper">壁纸</string>
     <string name="preference_dim_wallpaper">调暗壁纸</string>
-    <string name="preference_icon_shape">形状</string>
-    <string name="preference_icon_shape_square">正方形</string>
-    <string name="preference_icon_shape_rounded_square">圆角方形</string>
-    <string name="preference_icon_shape_squircle">方圆形</string>
-    <string name="preference_icon_shape_triangle">勒洛三角形</string>
-    <string name="preference_icon_shape_circle">圆形</string>
-    <string name="preference_icon_shape_hexagon">六边形</string>
     <string name="preference_category_searchbar">搜索栏</string>
     <string name="preference_wallpaper_summary">选择一张壁纸</string>
     <string name="preference_category_badges">徽章</string>
@@ -83,7 +75,6 @@
     <string name="preference_category_license">许可证</string>
     <string name="preference_about_license_summary">根据 GNU 通用公共许可证 3.0 授权</string>
     <string name="preference_category_grid">网格</string>
-    <string name="preference_grid_column_count">列数</string>
     <string name="preference_screen_debug">调试</string>
     <string name="preference_screen_debug_summary">故障排除工具</string>
     <string name="preference_category_widgets">组件</string>
@@ -152,12 +143,10 @@
     <string name="edit_favorites_dialog_new_tag">创建标签</string>
     <string name="preference_category_debug_tools">工具</string>
     <string name="apps_profile_work">工作</string>
-    <string name="preference_icon_shape_teardrop">泪滴形</string>
     <string name="edit_favorites_dialog_empty_section">拖动项目到此</string>
     <string name="websearch_dialog_advanced">高级</string>
     <string name="menu_remove">移除</string>
     <string name="favorites">收藏夹</string>
-    <string name="preference_icon_shape_pebble">鹅卵形</string>
     <string name="preference_status_bar_icons">状态栏图标</string>
     <string name="preference_nav_bar_icons">导航栏图标</string>
     <string name="preference_system_bar_icons_auto">自动</string>

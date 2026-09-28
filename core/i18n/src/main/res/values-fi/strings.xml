@@ -67,7 +67,6 @@
     <string name="search_bar_position_top">Ylhäällä</string>
     <string name="search_bar_position_bottom">Alhaalla</string>
     <string name="preference_status_bar_icons">Tilapalkin kuvakkeet</string>
-    <string name="preference_icon_shape_pentagon">Viisikulmio</string>
     <string name="preference_category_wallpaper">Taustakuva</string>
     <string name="preference_dim_wallpaper">Himmennä taustakuva</string>
     <string name="preference_dim_wallpaper_summary">Tummenna taustakuva tummilla teemoilla</string>
@@ -78,7 +77,6 @@
     <string name="preference_about_license_summary">Lisensoitu GNU General Public License 3.0 -lisenssillä</string>
     <string name="preference_category_grid">Ruudukko</string>
     <string name="preference_grid_icon_size">Kuvakkeen koko</string>
-    <string name="preference_grid_column_count">Sarakkeiden määrä</string>
     <string name="preference_category_widgets">Pienoisohjelmat</string>
     <string name="preference_clockwidget_favorites_part">Telakka</string>
     <string name="preference_screen_search">Haku</string>
@@ -150,14 +148,6 @@
     <string name="preference_debug_dump_heap_summary">Tallenna vedos muistin käytön analysoimiseen. Sovellus pysähtyy kunnes toiminto on valmis.</string>
     <string name="preference_cards_shape_rounded">Pyöristetty</string>
     <string name="preference_cards_shape_cut">Leikattu</string>
-    <string name="preference_icon_shape">Muoto</string>
-    <string name="preference_icon_shape_square">Neliö</string>
-    <string name="preference_icon_shape_rounded_square">Pyöristetty neliö</string>
-    <string name="preference_icon_shape_squircle">Ympyräneliö</string>
-    <string name="preference_icon_shape_triangle">Reuleaux\'n kolmio</string>
-    <string name="preference_icon_shape_circle">Ympyrä</string>
-    <string name="preference_icon_shape_teardrop">Pisara</string>
-    <string name="preference_icon_shape_pebble">Kivi</string>
     <string name="preference_themed_icons">Teeman kuvakkeet</string>
     <string name="preference_force_themed_icons_summary">Käytä sovelluksen värikaaviota kaikkiin kuvakkeisiin, myös ei-tuettuihin (ei suositella)</string>
     <string name="preference_icon_pack">Kuvakepaketti</string>
@@ -167,7 +157,6 @@
     <string name="preference_system_bar_icons_dark">Tumma</string>
     <string name="preference_hide_status_bar">Piilota tilapalkki</string>
     <string name="preference_hide_nav_bar">Piilota ohjauspalkki</string>
-    <string name="preference_icon_shape_hexagon">Kuusikulmio</string>
     <string name="preference_blur_wallpaper_unsupported">Ei tueta tällä laitteella</string>
     <string name="preference_blur_wallpaper_radius">Sumennuksen säde</string>
     <string name="preference_wallpaper_summary">Valitse taustakuva</string>
