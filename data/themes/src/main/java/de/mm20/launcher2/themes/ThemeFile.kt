@@ -81,7 +81,12 @@ object ThemeFile {
         // One open at a time. A worker keeps its slot until it has really
         // finished, also after the caller gave up: a provider that never
         // answers openFile then holds one worker, not one per import
-        // (#234 review).
+        // (#234 review). The price is chosen, not overlooked: such a
+        // provider leaves theme import answering Busy until the launcher's
+        // process restarts. Giving the slot back after a time bound would
+        // keep import available and let every further attempt strand
+        // another thread; a stranded feature is the failure that stays
+        // bounded.
         if (!slots.tryAcquire()) return rejected(ThemeFileRejection.Busy, null)
         val opened = AtomicReference<InputStream?>(null)
         val gaveUp = AtomicBoolean(false)
