@@ -658,6 +658,15 @@
                             "contacts",
                             "hidden"
                         ]
+                    },
+                    "uniqueItems": true,
+                    "contains": {
+                        "type": "string",
+                        "enum": [
+                            "apps",
+                            "shortcuts",
+                            "contacts"
+                        ]
                     }
                 },
                 "filterBarItems": {
@@ -670,7 +679,8 @@
                             "contacts",
                             "hidden"
                         ]
-                    }
+                    },
+                    "uniqueItems": true
                 },
                 "shortcutsExcluded": {
                     "type": "array",
@@ -705,7 +715,8 @@
                             }
                         ]
                     },
-                    "maxItems": 512
+                    "maxItems": 512,
+                    "uniqueItems": true
                 }
             },
             "additionalProperties": false

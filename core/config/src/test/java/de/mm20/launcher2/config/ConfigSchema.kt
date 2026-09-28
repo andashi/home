@@ -387,7 +387,13 @@ internal object ConfigSchema {
         "appearance.wallpaper.image" to pattern(ConfigValidator.imageNameRegex),
         "home.favorites" to maxItems(ConfigValidator.MaxFavorites),
         "home.favorites[].packageName" to packageNameLimits(),
-        "search.shortcutsExcluded" to maxItems(ConfigValidator.MaxApps),
+        "search.shortcutsExcluded" to maxItems(ConfigValidator.MaxApps) + uniqueItems(),
+        // What ConfigValidator rejects as invalid-search (review on #235):
+        // a filter twice, and a default filter without a category.
+        "search.defaultFilter" to uniqueItems() + mapOf(
+            "contains" to enumOf(SearchFilterItem.entries.filter { it.isCategory }.map(DefaultFilterItemSerializer::nameOf)),
+        ),
+        "search.filterBarItems" to uniqueItems(),
         "search.shortcutsExcluded[].packageName" to packageNameLimits(),
         "home.grid.columns" to range(ConfigValidator.MinGridColumns, ConfigValidator.MaxGridColumns),
         "home.grid.layouts.*.items" to maxItems(ConfigValidator.MaxGridItems),
@@ -458,6 +464,8 @@ internal object ConfigSchema {
     private fun literal(text: String) = text.replace(Regex("""[\\^$.|?*+()\[\]{}]""")) { "\\" + it.value }
 
     private fun maxItems(max: Int): Map<String, JsonElement> = mapOf("maxItems" to JsonPrimitive(max))
+
+    private fun uniqueItems(): Map<String, JsonElement> = mapOf("uniqueItems" to JsonPrimitive(true))
 
     private fun range(min: Number, max: Number): Map<String, JsonElement> =
         mapOf("minimum" to JsonPrimitive(min), "maximum" to JsonPrimitive(max))

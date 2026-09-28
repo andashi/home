@@ -33,13 +33,15 @@ class ShortcutBlocklistConfigTest {
     }
 
     @Test
-    fun `the blocklist reads and writes as stored`() = runBlocking {
+    fun `the blocklist reads as stored and updates from the stored value`() = runBlocking {
         val gateway = createGateway(LauncherSettingsData(shortcutSearchBlocklist = setOf("org.a:0")))
         assertEquals(setOf("org.a:0"), gateway.readShortcutBlocklist())
 
-        gateway.applyShortcutBlocklist(setOf("org.b:0", "org.c:11"))
+        var seen: Set<String>? = null
+        gateway.updateShortcutBlocklist { current -> seen = current; current + "org.c:11" }
 
-        assertEquals(setOf("org.b:0", "org.c:11"), store.data.first().shortcutSearchBlocklist)
+        assertEquals(setOf("org.a:0"), seen)
+        assertEquals(setOf("org.a:0", "org.c:11"), store.data.first().shortcutSearchBlocklist)
     }
 
     /** The state does not carry the blocklist: write-back must still hear it change. */
@@ -51,7 +53,7 @@ class ShortcutBlocklistConfigTest {
         val collector = launch { gateway.changes().collect { emissions.send(Unit) } }
         withTimeout(10_000) {
             emissions.receive() // on collection
-            gateway.applyShortcutBlocklist(setOf("org.a:0"))
+            gateway.updateShortcutBlocklist { setOf("org.a:0") }
             emissions.receive()
         }
         collector.cancel()

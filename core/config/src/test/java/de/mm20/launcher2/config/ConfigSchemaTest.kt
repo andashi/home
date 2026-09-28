@@ -153,6 +153,13 @@ class ConfigSchemaTest {
                 """{"schemaVersion":2,"apps":[{"packageName":"a.b","icon":{"scale":${ConfigValidator.MaxIconScale + 0.01f},"background":"theme"}}]}""",
             "a background that is no colour" to
                 """{"schemaVersion":2,"apps":[{"packageName":"a.b","icon":{"scale":1,"background":"white"}}]}""",
+            // Review on #235: limits on a list as a whole, which no generated
+            // break of a schema without them can reach.
+            "a default filter with no category" to """{"schemaVersion":2,"search":{"defaultFilter":["hidden"]}}""",
+            "an empty default filter" to """{"schemaVersion":2,"search":{"defaultFilter":[]}}""",
+            "a default filter naming a filter twice" to """{"schemaVersion":2,"search":{"defaultFilter":["apps","apps"]}}""",
+            "a filter bar naming a filter twice" to """{"schemaVersion":2,"search":{"filterBarItems":["apps","apps"]}}""",
+            "a shortcut exclusion listed twice" to """{"schemaVersion":2,"search":{"shortcutsExcluded":["a.b","a.b"]}}""",
         )
 
         val disagreements = broken.mapNotNull { (what, text) ->
@@ -242,7 +249,7 @@ class ConfigSchemaTest {
 
     /** A value just past [keyword]'s [bound], in place of [current]. */
     private fun breaking(keyword: String, bound: JsonElement, current: JsonElement): JsonElement {
-        val limit = bound.jsonPrimitive
+        val limit by lazy { bound.jsonPrimitive }
         fun past(step: Int) = if ('.' in limit.content) JsonPrimitive(limit.double + step) else JsonPrimitive(limit.long + step)
         return when (keyword) {
             "minimum" -> past(-1)
@@ -257,6 +264,13 @@ class ConfigSchemaTest {
             "maxItems" -> JsonArray(List(limit.int + 1) { current.jsonArray.first() })
             // Inside the range, between the steps.
             "multipleOf" -> JsonPrimitive(current.jsonPrimitive.long + 1)
+            "uniqueItems" -> JsonArray(current.jsonArray + current.jsonArray.first())
+            // Only the elements the required schema does not name: a default
+            // filter left with `hidden` and no category (review on #235).
+            "contains" -> {
+                val named = bound.jsonObject.getValue("enum").jsonArray
+                JsonArray(current.jsonArray.filter { it !in named }.ifEmpty { error("every element is one contains names") })
+            }
             else -> error("no way to break $keyword")
         }
     }

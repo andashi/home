@@ -702,8 +702,8 @@ class DefaultConfigStore(
                 written += app
             }
         }
-        val unnamed = settings.readShortcutBlocklist().filterTo(mutableSetOf()) { blockedApp(it) == null }
-        settings.applyShortcutBlocklist(unnamed + keys)
+        // One update: the entries kept are the ones stored as it commits.
+        settings.updateShortcutBlocklist { current -> current.filterTo(mutableSetOf()) { blockedApp(it) == null } + keys }
         return diagnostics to written
     }
 

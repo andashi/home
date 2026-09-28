@@ -103,9 +103,13 @@ internal class FakeLauncherConfigSettings(
 
     override suspend fun readShortcutBlocklist(): Set<String> = shortcutBlocklist
 
-    override suspend fun applyShortcutBlocklist(blocklist: Set<String>) {
+    /** Runs inside an update, before its transform reads the list: a concurrent write. */
+    var beforeBlocklistCommit: (() -> Unit)? = null
+
+    override suspend fun updateShortcutBlocklist(transform: (Set<String>) -> Set<String>) {
         applyFailure?.let { throw it }
-        shortcutBlocklist = blocklist
+        beforeBlocklistCommit?.invoke()
+        shortcutBlocklist = transform(shortcutBlocklist)
     }
 
     override suspend fun applyGestures(actions: Map<Gesture, GestureActionName>, launches: Map<Gesture, String>): ConfigState {

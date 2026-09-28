@@ -94,6 +94,21 @@ class ShortcutsExcludedStoreTest {
         assertEquals(setOf("org.b:0", "org.gone:99", "no-serial"), settings.shortcutBlocklist)
     }
 
+    /**
+     * Review on #235: the kept entries are taken from the list as the write
+     * commits, not from a read before it. One stored while the reload was
+     * between the two survives.
+     */
+    @Test
+    fun `an entry stored while the write runs is kept, not replaced by a stale copy`() = runTest {
+        settings.shortcutBlocklist = setOf("org.a:0")
+        settings.beforeBlocklistCommit = { settings.shortcutBlocklist += "org.gone:99" }
+
+        apply(Favorite("org.b"))
+
+        assertEquals(setOf("org.b:0", "org.gone:99"), settings.shortcutBlocklist)
+    }
+
     @Test
     fun `an app in a profile that is not here is reported, the rest applies`() = runTest {
         profiles.work = null

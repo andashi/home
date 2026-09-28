@@ -112,8 +112,12 @@ interface LauncherConfigSettings {
      */
     suspend fun readShortcutBlocklist(): Set<String> = emptySet()
 
-    /** Replaces the stored blocklist in one awaited update. */
-    suspend fun applyShortcutBlocklist(blocklist: Set<String>)
+    /**
+     * Rewrites the stored blocklist in one awaited update: [transform] gets
+     * the list as the update commits, so what it keeps is current (review
+     * on #235), not a copy read before.
+     */
+    suspend fun updateShortcutBlocklist(transform: (Set<String>) -> Set<String>)
 }
 
 /** `appearance.theme.colors` slug to the built-in scheme's id, one entry per slug. */
@@ -155,8 +159,8 @@ internal class LauncherConfigSettingsImpl(
 
     override suspend fun readShortcutBlocklist(): Set<String> = dataStore.data.first().shortcutSearchBlocklist
 
-    override suspend fun applyShortcutBlocklist(blocklist: Set<String>) {
-        dataStore.updateAndAwait { it.copy(shortcutSearchBlocklist = blocklist) }
+    override suspend fun updateShortcutBlocklist(transform: (Set<String>) -> Set<String>) {
+        dataStore.updateAndAwait { it.copy(shortcutSearchBlocklist = transform(it.shortcutSearchBlocklist)) }
     }
 
     override suspend fun applyGestures(
@@ -381,7 +385,7 @@ internal class LauncherConfigSettingsImpl(
             is ConfigMutation.SetSearchActions,
             is ConfigMutation.SetWallpaper,
             is ConfigMutation.SetGestures,
-            // Stored by user serial, which only the store can map: applyShortcutBlocklist.
+            // Stored by user serial, which only the store can map: updateShortcutBlocklist.
             is ConfigMutation.SetShortcutsExcluded,
             -> this
         }
