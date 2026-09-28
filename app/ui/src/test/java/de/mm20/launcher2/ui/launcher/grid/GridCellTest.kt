@@ -9,6 +9,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.unit.dp
@@ -119,6 +120,52 @@ class GridCellTest {
         composeRule.onNodeWithText(string(R.string.widget_action_allow)).performClick()
 
         assertEquals(1, allowed)
+    }
+
+    /**
+     * A one-row cell has no room for the banner: on the device a 1x1 cell
+     * showed only the warning icon and a 3x1 cell cut-off text, and none of
+     * the actions were on screen or in the accessibility tree (#245). The
+     * cell's failure then has to fit one row and still reach every action.
+     * The sizes are the cells a 4-column phone grid gives, the card's inset
+     * taken off.
+     */
+    private fun compactCell(width: androidx.compose.ui.unit.Dp, onAllow: (() -> Unit)?, onRemove: () -> Unit = {}) {
+        composeRule.setContent {
+            MaterialTheme {
+                Box(Modifier.size(width, 72.dp)) {
+                    AppWidgetCell(
+                        item = gridItem("clock", 0, 0, 1, 1),
+                        onRemove = onRemove,
+                        onReplace = { _, _ -> },
+                        onAllow = onAllow,
+                    )
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `a 1x1 cell names its failure and reaches Allow`() {
+        var allowed = 0
+        compactCell(72.dp, onAllow = { allowed++ })
+
+        composeRule.onNodeWithContentDescription(string(R.string.app_widget_loading_failed)).assertIsDisplayed().performClick()
+        composeRule.onNodeWithText(string(R.string.widget_action_allow)).assertIsDisplayed().performClick()
+
+        assertEquals(1, allowed)
+    }
+
+    @Test
+    fun `a 3x1 cell reaches Replace and Remove`() {
+        var removed = 0
+        compactCell(270.dp, onAllow = null, onRemove = { removed++ })
+
+        composeRule.onNodeWithContentDescription(string(R.string.app_widget_loading_failed)).assertIsDisplayed().performClick()
+        composeRule.onNodeWithText(string(R.string.widget_action_replace)).assertIsDisplayed()
+        composeRule.onNodeWithText(string(R.string.widget_action_remove)).assertIsDisplayed().performClick()
+
+        assertEquals(1, removed)
     }
 
     /**
