@@ -17,14 +17,23 @@ gate = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(gate)
 
 
-def release_with(edit):
-    """release.yml with `edit` applied to each line of every release step's run."""
+def every_job_with(edit, jobs=None):
+    """release.yml with `edit` applied to each line of every step's run, in
+    the named jobs, or in all of them."""
     with open(RELEASE) as f:
         workflow = yaml.safe_load(f)
-    for step in workflow["jobs"]["release"]["steps"]:
-        if "run" in step:
-            step["run"] = "\n".join(edit(line) for line in step["run"].splitlines())
+    for name, job in workflow["jobs"].items():
+        if jobs is not None and name not in jobs:
+            continue
+        for step in job.get("steps") or []:
+            if "run" in step:
+                step["run"] = "\n".join(edit(line) for line in step["run"].splitlines())
     return workflow
+
+
+def release_with(edit):
+    """release.yml with `edit` applied to each line of every release step's run."""
+    return every_job_with(edit, jobs=("release",))
 
 
 def comment_out(needle):
@@ -33,18 +42,8 @@ def comment_out(needle):
     return edit
 
 
-def every_job_with(edit):
-    """release.yml with `edit` applied to each line of every step's run, in every job."""
-    with open(RELEASE) as f:
-        workflow = yaml.safe_load(f)
-    for job in workflow["jobs"].values():
-        for step in job.get("steps") or []:
-            if "run" in step:
-                step["run"] = "\n".join(edit(line) for line in step["run"].splitlines())
-    return workflow
-
-
-APK_CHECKS = ["check-backup-off.py", "check-release-logs.py"]
+# From the gate, so a check added there is tested here without a second list.
+APK_CHECKS = list(gate.APK_CHECKS)
 
 
 def unchecked(job, script):
@@ -188,6 +187,15 @@ class ApkChecksGateTest(unittest.TestCase):
         found = gate.violations(every_job_with(off))
         for script in APK_CHECKS:
             self.assertIn(unchecked("dry-run", script), found)
+
+    # A here-document's body is data, not commands: a check inside one runs
+    # nothing. Property 4 knew this; property 5 did not (review of the sweep).
+    def test_a_check_inside_a_here_document_is_a_violation(self):
+        def heredoc(line):
+            if "check-backup-off.py" in line:
+                return "          cat <<'EOF'\n" + line + "\n          EOF"
+            return line
+        self.assertIn(unchecked("release", "check-backup-off.py"), gate.violations(every_job_with(heredoc)))
 
     def test_a_check_before_the_build_is_a_violation(self):
         with open(RELEASE) as f:
