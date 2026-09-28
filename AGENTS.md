@@ -167,6 +167,42 @@ resolved its own thread and the gate waved it through. Strip the `[bot]` suffix
 before comparing, on both sides, and prove it by resolving a thread as the bot
 and watching the gate refuse.
 
+**A finding, an "addressed" claim and a suggested fix deserve three different
+levels of trust.** CodeRabbit's findings have been real every time. Its
+`✅ Addressed in commit X` was wrong twice in one day - once naming the range that
+*introduced* the criticised text, once a commit that did not contain the fix - so
+it is not evidence, and only a human reply counts.
+
+**A human reply is a weaker guarantee than it looks, and it is worth knowing why
+rather than trusting it.** It is also a claim: that the named commit contains the
+fix, and that the commit is still in the head. The second half is checkable and
+**refuses benign cases so often that checking it is worse than not** - measured on
+this very entry's pull request, where the two commits cited in its own resolution
+were absent from the head after a rebase that had preserved every line of the fix.
+After a rebase a cited hash is not even a locator. The first half - that the commit
+contains the fix - is not mechanisable at all.
+
+So the gate asks for a human reply naming a commit because **that puts a person
+between a resolved thread and a merge**, not because the hash proves anything.
+Whoever writes the reply is the verification; if they did not look, nothing did. And its suggested *remedy* can
+carry the same defect class as the finding: on #214 it proposed observing a
+`StateFlow` whose value for the main case is `emptyMap()`, which an observer
+already holds, so it would never emit. That was rejected and **the switch to it
+made a break check**, which is how to record refusing a remedy.
+
+**List the dependents before deleting a merged branch, and refuse while any
+exist** - and **fail closed**, because "no dependents" and "could not ask" are the
+same empty result.
+
+This is a conservative policy rather than a documented consequence, and the first
+draft said otherwise. It claimed deletion *closes* a dependent pull request
+irreversibly, citing #100 -> #101. **That case does not support it**: #100 was
+closed rather than merged, and #101 ended up merged against `main`. GitHub
+documents retargeting a dependent to the merged pull request's base branch. So the
+mechanism is unverified here and the guard is kept for a different reason - a
+dependent silently changing base under a merge is a state nobody asked for, and
+retargeting it deliberately costs one command.
+
 **A base behind `main` is only a problem when it overlaps - with one caveat
 that review caught in this very section.** The rebase rule protects against a
 review of a tree whose *relevant* parts have moved, so the first question is
@@ -423,6 +459,68 @@ and head in the same call as the reviews.
   careful. The worst of them decided a permission grant. Compare whole fields,
   or use a tool that understands lists.
 
+  **A second instance shows "anchor your patterns" is the wrong fix.** A later
+  `pkill -f 'watch-pr.sh 223'`, written as the first command of a compound line
+  that went on to rebase a branch, matched **its own shell's command line** and
+  killed the whole invocation - so the rebase never ran, and the non-zero exit
+  read as "the pkill failed" rather than "everything after the semicolon was
+  cancelled". The pattern was specific enough to look anchored.
+
+  **The status is 144 in the Bash tool and 143 in bash, and both are this same
+  kill.** A session sees `Exit code 144`; a plain `bash -c` reports 143, which is
+  128 + `SIGTERM`, the signal `pkill` sends by default (`pkill -9` gives 137).
+  Measured three ways on this machine: through the tool by two sessions
+  independently, and against a plain shell as a control. Where the tool's figure
+  diverges is untraced and deliberately not guessed at. **144 is the number to
+  recognise**, because it is the one in front of you when it happens - the entry
+  first said 144 with no layer named, then 143 after review, and both were half
+  the answer.
+  **Kill by recorded PID, not by pattern.** procps-ng does exclude the `pkill`
+  process itself, so the trap is narrower than "always": it fires when the
+  **shell's** command line contains the pattern, which a compound `bash -c …`
+  does and other invocation forms need not. That is exactly the case above, and it
+  is not one you can rule out by looking at the pattern - which is why the rule is
+  the recorded PID rather than a better pattern.
+
+**Durable state whose absence carries meaning is a permissive-default factory.**
+One new field - a record of how each app entry spelled its activity - produced
+**seven** defects in review, every one the same shape: the empty marker written
+after a *failed* reload (failure recorded as success); a **corrupt** file counted
+as a record (unreadable meaning present); the record written before the device
+writes and not restored (a write that did not happen recorded as done); write-back
+running before the migration (no record meaning any form will do); a rollback
+writing an empty map as the "before" state (**the repair manufacturing the
+permissive answer**); a cancelled apply skipping the rollback entirely; and
+write-back held back and never asked again. Every path that writes such a field
+and every path that reads it must decide what absence means **explicitly**. And
+**a rollback that can itself fail is another instance** - a compensating action
+must not swallow its own error, or it reaches the state it existed to prevent.
+
+**Do not fix a semantic trap with a rule; change the shape so the wrong use is
+impossible.** Both of us reach for the ordered-looking tool exactly when being
+careful: `grep -w` reads as "whole word" and is not, and a counter reads as
+ordered and is not across a store reset. Proposed for the reload report, a rule
+would have said "compare with `!=`, never `<`" - about a field whose whole shape
+invites the comparison it forbids. The provisioning session's answer was to emit a
+**store identity** beside the counter, changing on the event that zeroes it: within
+one identity `<` is sound, across two a consumer sees the identity change instead
+of reading 0 as "it went backwards". Two fields, and the rule becomes a check
+somebody can write a test for.
+
+**A check that is meant to stay silent needs its own tests more than a noisy one
+does.** Its correct output and its broken output are the same silence, and - unlike
+an ordinary checker - nobody will trip it by accident and discover it is dead. The
+provisioning repository's tripwire for the widget-diagnostic defect, designed to
+fire the first time any zone declares a widget other than the built-in const and
+to stay quiet for months otherwise, ships with four cases of its own for exactly
+that reason. Four cases for a tripwire is not over-engineering; it is the only way
+to know it still exists.
+
+And phrase such a check as **the question to answer** rather than as an
+instruction - *has andashi/home#219 shipped in the release we install?* An
+instruction goes stale when the situation changes; a question stays answerable, and
+it tells whoever trips it in six weeks what the check was for.
+
 **A fix can produce the next defect.** Two did that night: patching a guard's
 fourth hole opened its fifth, and consolidating four deadlines into one starved
 the last step. After fixing something in a checker, break it again.
@@ -511,6 +609,23 @@ test policy above asks for the break rather than the pass.
    fixture is reachable**, so derive the baseline from what the producing code
    emits, never from what makes the case read well.
 
+10. **The check repaired what it was about to observe.** To prove a record
+    survives a restart, the obvious test force-stops the app and reads it back -
+    and cannot work here, because the startup check **re-records a missing
+    record**. Read it where it is kept, before the restart - and then read the
+    *effect* after it, because the pre-restart read alone proves only that the
+    record existed beforehand. Either get the post-restart read in before the
+    repair path can run, or isolate that path. The sibling of 9: there the fixture
+    is a state the system cannot reach, here one it leaves before you look (#214).
+11. **The break generator could not express the break.** A generator that mutates
+    values can never remove a key, so a schema rule about a key's *absence*
+    (`dependentRequired`) was unreachable by a fully green generic suite. Ask what
+    class of change your generator cannot make (#216).
+12. **The control asserted the opposite of the truth.** Not blind like 6 - it
+    could fail and did not, because it encoded a wrong belief and so **certified**
+    the defect. The next reader takes a green control as the question having been
+    asked. When a fix reverses a control, say so and name the assertion that
+    changed direction (#213).
 The check costs about a minute and is three questions. The first is the one
 everybody means by "break it", and on its own it settles nothing:
 
@@ -533,6 +648,12 @@ misleading, from the same missing declaration.
 question 1 completely and still proves the wrong thing, so no amount of the first
 question reaches it. Answer this one from what the producing code emits, never
 from what makes the case read well.
+
+Two on the list are outside all three, and knowing which is the point of saying
+so: **11**, because you cannot break what your generator cannot express, and
+**12**, because a control asserting the wrong thing passes in both states, which
+is what a declared control is supposed to do. Those two are caught by rereading
+what the test *claims*, not by breaking anything.
 
 This passage was wrong about itself repeatedly while being written, in every way
 it describes, and two rules came out of that rather than out of the code.
@@ -574,6 +695,69 @@ for a banner answering a query nobody had made. Git cannot see this: two valid
 files, one name, different meaning. Renaming to `open_search_field` made the old
 name exist nowhere, so any stale call site goes red; a library test asserts
 `! declare -F open_search`.
+
+**Three ways a checker's own plumbing lies.** All three were found in checkers
+rather than in product code, which is where they prefer to live.
+
+**They share a site, and naming it is more useful than naming the causes: an
+assignment from a command substitution is where a `set -euo pipefail` script dies
+without a message.** `x=$(cmd | ...)` fails, `set -e` exits, and the script never
+reaches anything that would print why - so the symptom is a bare non-zero status
+and no output. **Outside the `errexit` exemptions**, that is: an assignment used
+as an `if` or `while` test does not exit, which is mechanism 2 of the list above
+wearing different clothes.
+
+Four instances in one day, all assignments: a merge gate's `shared=$(… | grep …)`,
+a fixture's `bt="$(ls -d "$sdk"/build-tools/*/ …)"` on an SDK with no build tools,
+the same gate's base lookup - and, in the provisioning repository, a tripwire
+written to catch invisible states whose own `launcher_version` assignment killed it
+mid-message when no APK was present. **The check against invisible states was
+exiting invisibly**, on the same night, in the thing written to catch it.
+
+**When a script exits non-zero and silent, look at its assignments first**; and in
+a checker, guard the lookups so the failure gets to speak. **`|| true` is not that
+guard, and checking the result for emptiness afterwards does not make it one**: a
+lookup that failed and a lookup that found nothing both produce an empty string, so
+the check cannot tell them apart and reads the failure as a confident "not found" -
+empty meaning verified, the shape named above. Accept the one status that means
+absence and let every other one abort, the way the next entry and the release
+command both do.
+
+The first draft of that sentence called `|| true` with an emptiness check "the
+honest use of that idiom", **nine lines above the entry that gives the correct
+one**. Review caught it. The contradiction was a screen apart rather than a file
+apart - close enough to read in one sitting, and still written and re-read several
+times without anybody noticing, because the permissive version is the one that
+sounds careful.
+
+- **`grep` exiting 1 on no match kills a `set -euo pipefail` script**, and
+  `pipefail` is the load-bearing half: with `set -e` alone the pipeline reports
+  the status of its **last** command, so `x=$(cmd | grep -E pat | head -5)`
+  succeeds on no match and hides real `grep` errors too. With `pipefail` it dies
+  instead - silently, exit 1, no message - so the branch that needed "no match"
+  never runs. In the merge gate that was the base-behind *allowance*, which had
+  therefore never once executed, behind a comment about being careful. Write
+  `{ grep -E pat || [ $? -eq 1 ]; }` so status 1 is accepted and a real error
+  (status 2) still aborts.
+  - **And do not pipe it into `head`.** An early-closing reader kills its
+    producer with SIGPIPE once the producer's output exceeds a pipe buffer, and
+    141 is not 1, so the guard above rejects it and the script dies silently
+    again. Measured: 200k lines dies, 7 lines does not, and it dies whatever
+    feeds `head` - **the fault is the reader, not the producer**, which is why
+    the first attempt at this fix only moved it from `grep` to `printf`. Use a
+    reader that drains (`sed -n '1,5p'`), or capture first and truncate without a
+    pipe. Same trap as the `gfxinfo` fake in mechanism 8.
+- **`$(...)` strips trailing newlines**, so a file that ends in one does not
+  round-trip: read back and re-hashed, it never matches the file on disk. A file
+  with no terminal newline is unaffected, which is what makes this intermittent
+  and therefore worse. Hash on the device, or do not round-trip.
+- **`git reset --soft <new base>` then committing reverts files the new base
+  changed.** The soft reset keeps the *branch's* tree and commits it against the
+  new base, so every differing file joins the diff - including ones the branch
+  never meant to touch, reverted to their state at the old base. No merge, so
+  **nothing conflicts and nothing goes red**; on #219 it reverted `AGENTS.md` and
+  undid two merged pull requests. After squashing onto a new base, diff the
+  **file list** against what the pull request is supposed to touch.
 
 **A helper's log goes to stderr when its callers might capture stdout.** Found
 twice within ten minutes: `grant_home_role` logging through `log` corrupted
@@ -919,6 +1103,14 @@ target `sdk_phone64_x86_64-cur-userdebug`, test-keys), operated via
   which attempt worked, so a count that climbs is visible. Whether a real
   device loses a touch in the first half second after Home is a platform
   question this could not answer: the launcher never sees that touch.
+- **The shell cannot change a system app's component state** on this image
+  (`pm disable`/`enable` refused in states 2 and 3). So a widget-only app arrival
+  cannot be staged by disabling a system app's launcher activity; it needs a
+  fixture APK, built at test time with no Gradle module from the SDK build tools
+  (`aapt2`, `d8`, `zipalign`, `apksigner`, taken from the newest
+  `build-tools/*/`) plus the JDK's `javac` - two installations, which is worth
+  spelling out because a missing tool sends you to whichever one you assumed. It
+  must **fail loudly** when any of them is absent rather than skip the step.
 - Known emulator limits: nothing Google-server-side can be validated there
   (sandboxed Play, Play Integrity, push); wallpapers apply only after reboot;
   test-keys mean results do not equal "tested on release GrapheneOS".

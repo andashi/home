@@ -12,12 +12,17 @@
 # failed.
 #
 # Sourced by merge gates, so it sets no shell options and runs no bare grep.
-# Do not "tidy" `set -e` in, and do not drop the `|| true` after the grep: a
-# grep that finds nothing exits 1, and under `set -e` that kills the caller
-# with exit 1 and no message. A predicate that dies silently is worse than one
-# that answers wrongly - one gate's copy did exactly that, so its allowance
-# branch had never once executed and nobody knew. The answer is the return
-# status and the printed reason, nothing else.
+# Do not "tidy" `set -e` in: a grep that finds nothing exits 1, and under
+# `set -e` that kills the caller with exit 1 and no message. A predicate that
+# dies silently is worse than one that answers wrongly - one gate's copy did
+# exactly that, so its allowance branch had never once executed and nobody
+# knew. The answer is the return status and the printed reason, nothing else.
+#
+# The grep's status is read rather than discarded. 0 is "shared paths here",
+# 1 is "none", and anything else is a broken lookup, which refuses instead of
+# passing for an absence. The first version wrote `|| true`, which gave all
+# three the same empty answer and so turned a failed lookup into the most
+# permissive one available.
 #
 #   source e2e/ci/base-behind.sh
 #   why="$(base_behind_ok "$between" "$mine")" || echo "rebase: $why"
@@ -25,8 +30,9 @@ base_behind_ok() {
   local between="$1" mine="$2"
   [ -n "$between" ] || { echo "no files between base and main: the diff failed"; return 1; }
   [ -n "$mine" ] || { echo "the pull request changes no files: the diff failed"; return 1; }
-  local shared overlap
-  shared="$(grep -E '^(e2e/lib/|core/|services/|data/|app/|libs/|gradle/|gradle\.properties$|gradlew$|gradlew\.bat$|build\.gradle\.kts$|settings\.gradle\.kts$|.*/build\.gradle\.kts$)' <<<"$between" || true)"
+  local shared overlap status
+  shared="$(grep -E '^(e2e/lib/|core/|services/|data/|app/|libs/|gradle/|gradle\.properties$|gradlew$|gradlew\.bat$|build\.gradle\.kts$|settings\.gradle\.kts$|.*/build\.gradle\.kts$)' <<<"$between")" || status=$?
+  [ "${status:-0}" -le 1 ] || { echo "the shared-path lookup failed: grep exited ${status}"; return 1; }
   [ -z "$shared" ] || { echo "main changed shared paths since the base: $(tr '\n' ' ' <<<"$shared")"; return 1; }
   # Byte order: paths are bytes, and the answer must not depend on the
   # locale of whoever runs the gate (review on #220).
