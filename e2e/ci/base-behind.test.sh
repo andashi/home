@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Cases for e2e/ci/base-behind.sh, counted: exits non-zero unless every case
-# answered as expected AND exactly thirteen ran - a file that stops early (an exit
+# answered as expected AND exactly fourteen ran - a file that stops early (an exit
 # inherited from what it sources, a case deleted) must not read as green.
 # No `set -e`, for the reason the predicate's own header gives.
 #
@@ -19,7 +19,10 @@ t ok $'AGENTS.md\ndocs/configuration/apps.md' "$PR" "docs only, two files"
 t refused "services/config/src/main/B.kt" "$PR" "a shared module in between"
 t refused "e2e/lib/grid-device.sh" "$PR" "the shared shell library"
 t refused "gradle/libs.versions.toml" "$PR" "the version catalog"
-t refused "app/ui/build.gradle.kts" "$PR" "a build file"
+# Build files outside every shared directory, so only the build-file rule
+# can refuse them (review on #220: app/ui/ was refused by the app/ rule).
+t refused "build.gradle.kts" "$PR" "the root build file"
+t refused "tools/lint/build.gradle.kts" "$PR" "a nested build file outside the shared directories"
 t refused "gradle.properties" "$PR" "the project-wide Gradle properties"
 t refused "gradlew" "$PR" "the wrapper script"
 t refused "gradlew.bat" "$PR" "the Windows wrapper script"
@@ -28,4 +31,4 @@ t refused "e2e/l4-search.sh" "$PR" "a file the PR touches"
 t refused "" "$PR" "an empty diff between"
 t refused "AGENTS.md" "" "an empty PR diff"
 echo "$n cases, $bad wrong"
-[ "$bad" = 0 ] && [ "$n" = 13 ]
+[ "$bad" = 0 ] && [ "$n" = 14 ]

@@ -28,7 +28,9 @@ base_behind_ok() {
   local shared overlap
   shared="$(grep -E '^(e2e/lib/|core/|services/|data/|app/|libs/|gradle/|gradle\.properties$|gradlew$|gradlew\.bat$|build\.gradle\.kts$|settings\.gradle\.kts$|.*/build\.gradle\.kts$)' <<<"$between" || true)"
   [ -z "$shared" ] || { echo "main changed shared paths since the base: $(tr '\n' ' ' <<<"$shared")"; return 1; }
-  overlap="$(comm -12 <(sort -u <<<"$between") <(sort -u <<<"$mine"))"
+  # Byte order: paths are bytes, and the answer must not depend on the
+  # locale of whoever runs the gate (review on #220).
+  overlap="$(LC_ALL=C comm -12 <(LC_ALL=C sort -u <<<"$between") <(LC_ALL=C sort -u <<<"$mine"))"
   [ -z "$overlap" ] || { echo "main changed files the pull request changes: $(tr '\n' ' ' <<<"$overlap")"; return 1; }
   return 0
 }
