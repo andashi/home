@@ -134,11 +134,11 @@ def _printed(call):
 
 def _names_an_app(value):
     value = value.strip()
-    if re.fullmatch(r"[\w.]+\s*[!=]=\s*null|null\s*[!=]=\s*[\w.]+", value):
-        return False  # prints a boolean
-    chain = re.match(r"^([A-Za-z_][\w]*(?:\s*\??\.\s*[A-Za-z_]\w*)*)\s*$", value)
+    chain =re.match(r"^([A-Za-z_][\w]*(?:\s*\??\.\s*[A-Za-z_]\w*)*)\s*$", value)
     if not chain:
-        return False  # a call or an operation: judged by the strings inside it
+        # A call or an operation - `widgetId == null` prints a boolean - is
+        # judged by the strings inside it, not as a value.
+        return False
     last = re.split(r"\s*\??\.\s*", chain.group(1))[-1]
     return last.lower() in IDENTITY
 
