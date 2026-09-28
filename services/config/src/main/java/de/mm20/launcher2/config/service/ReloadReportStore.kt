@@ -47,7 +47,12 @@ class ReloadReportStore(
     suspend fun save(report: ReloadReport): ReloadReport = withContext(Dispatchers.IO) {
         NumberingLock.withLock {
             val last = readNumbering()
-            val next = Numbering(last?.storeId ?: UUID.randomUUID().toString(), (last?.sequence ?: 0) + 1)
+            // Both writes are renames, not synced: after a power loss the
+            // report can survive while the record is older. A surviving
+            // report of this store is a floor, so no number is given twice.
+            val reported = file.decodeOrNull(ReloadReport.serializer())
+                ?.takeIf { last != null && it.storeId == last.storeId }?.sequence ?: 0
+            val next = Numbering(last?.storeId ?: UUID.randomUUID().toString(), maxOf(last?.sequence ?: 0, reported) + 1)
             val numbered = report.copy(sequence = next.sequence, storeId = next.storeId)
             // The record first: a report saved under a number the record does
             // not hold yet would be given that number again by the next save.
