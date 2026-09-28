@@ -197,6 +197,25 @@ class ApkChecksGateTest(unittest.TestCase):
             return line
         self.assertIn(unchecked("release", "check-backup-off.py"), gate.violations(every_job_with(heredoc)))
 
+    # Review round 2 on #239: the APK that ships is the one built last, and a
+    # step that is skipped or whose failure is tolerated checks nothing.
+    def test_a_rebuild_after_the_checks_is_a_violation(self):
+        with open(RELEASE) as f:
+            workflow = yaml.safe_load(f)
+        steps = workflow["jobs"]["dry-run"]["steps"]
+        build = next(s for s in steps if "assembleDefaultRelease" in s.get("run", ""))
+        steps.append(dict(build))
+        self.assertIn(unchecked("dry-run", "check-backup-off.py"), gate.violations(workflow))
+
+    def test_a_skipped_or_tolerated_check_step_is_a_violation(self):
+        for flag in ({"if": "${{ false }}"}, {"continue-on-error": True}):
+            with self.subTest(flag=flag):
+                with open(RELEASE) as f:
+                    workflow = yaml.safe_load(f)
+                step = next(s for s in workflow["jobs"]["release"]["steps"] if "check-backup-off.py" in s.get("run", ""))
+                step.update(flag)
+                self.assertIn(unchecked("release", "check-backup-off.py"), gate.violations(workflow))
+
     def test_a_check_before_the_build_is_a_violation(self):
         with open(RELEASE) as f:
             workflow = yaml.safe_load(f)

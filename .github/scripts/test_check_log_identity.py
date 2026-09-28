@@ -39,6 +39,12 @@ LEAKING = [
     'Log.e("MM20", "target ${intent.toUri(0)}")',
     'Log.w("MM20", "missing ${app.packageName ?: "unknown"}")',
     'Log.w("MM20", "whole ${it}")',
+    # Review round 2 on #239.
+    'Log.w("MM20", "who ${it ?: "unknown"}")',
+    'Log.w("MM20", "self ${this.toString()}")',
+    'Log.w(TAG, "not written: " + check.diagnostics.joinToString { "${it.code}@${it.path}" })',
+    'Log.e (TAG, "app=$packageName")',
+    'Log.w(TAG, "app=${foo("}")} $packageName")',
 ]
 
 CLEAN = [
@@ -47,7 +53,6 @@ CLEAN = [
     'Log.i("MM20", "SearchableDatabase cleanup: removed an invalid ${fav.type} item")',
     'Log.e(\n    "MM20",\n    "Could not parse widget result: widgetId missing=${widgetId == null}, " +\n        "provider missing=${widgetProviderInfo == null}"\n)',
     'Log.w("MM20", "Shortcut result is missing required extras: ${missing.joinToString()}")',
-    'Log.e(TAG, "not written: " + check.diagnostics.joinToString { "${it.code}@${it.path}" })',
     'Log.w(Tag, "layout ${geometry.layout}: corrected $issue")',
     'Log.w("GlassBackdrop", "refresh failed: ${e.javaClass.simpleName}")',
     'Log.w(TAG, "Unable to unlock profile ${profile.serial}", e)',
@@ -96,6 +101,16 @@ class CheckLogIdentityTest(unittest.TestCase):
             pathlib.Path(d, "A.kt").write_text(source('// Log.e(TAG, "gone")'))
             with self.assertRaises(SystemExit):
                 check_log_identity.scan(pathlib.Path(d))
+
+    # Kotlin literals must not hide a later call: a raw string has no
+    # escapes, and a character literal is no string (review round 2 on #239).
+    def test_a_raw_string_ending_in_a_backslash_hides_no_call(self):
+        src = source('val p = """C:\\"""\n    Log.e(TAG, "$packageName")')
+        self.assertTrue(findings("X.kt", src), src)
+
+    def test_a_quote_character_literal_hides_no_call(self):
+        src = source("val q = '\"'\n    Log.e(TAG, \"$packageName\")")
+        self.assertTrue(findings("X.kt", src), src)
 
     def test_the_tree_it_is_run_on_must_have_log_calls(self):
         # A scan that reads nothing must not report that nothing leaks.
