@@ -30,6 +30,10 @@ LEAKING = [
     'Log.e(\n    "MM20",\n    "Could not parse widget result: widgetId=$widgetId, widgetProviderInfo=$widgetProviderInfo"\n)',
     'Log.w("MM20", "Shortcut result is missing required extras: intent=$intent, name=$name")',
     'Log.e(TAG, "write-back produced a document that does not parse; not written: ${check.diagnostics}")',
+    # Not from main: the concatenated form of the same leak, which templates
+    # alone would not see.
+    'Log.e("FeedConnection", "Unknown service descriptor for intent " + serviceIntent)',
+    'Log.w("MM20", widgetProviderInfo.provider.packageName + " failed to bind")',
 ]
 
 CLEAN = [
