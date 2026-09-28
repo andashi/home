@@ -10,6 +10,10 @@ import de.mm20.launcher2.search.Resolved
 import de.mm20.launcher2.search.SavableSearchable
 import de.mm20.launcher2.search.SearchableDeserializer
 import de.mm20.launcher2.search.SearchableSerializer
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.map
 import org.json.JSONObject
 
 internal class AndroidContactSerializer : SearchableSerializer {
@@ -31,6 +35,10 @@ internal class AndroidContactDeserializer(
 
     override suspend fun deserialize(serialized: String): SavableSearchable? =
         (resolve(serialized) as? Resolved.Found)?.searchable
+
+    /** Every change of the permission, not its current state: that one was just resolved. */
+    override val resolveAgain: Flow<Unit>
+        get() = permissionsManager.hasPermission(PermissionGroup.Contacts).distinctUntilChanged().drop(1).map { }
 
     /**
      * Never [Resolved.Gone]: the launcher cannot know that a contact is gone.

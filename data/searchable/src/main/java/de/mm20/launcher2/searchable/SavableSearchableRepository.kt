@@ -18,11 +18,14 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.koin.core.component.KoinComponent
@@ -291,9 +294,7 @@ internal class SavableSearchableRepositoryImpl(
             else -> throw IllegalArgumentException("Cannot specify both includeTypes and excludeTypes")
         }
 
-        return entities.map {
-            it.mapNotNull { fromDatabaseEntity(it).searchable }
-        }
+        return entities.resolved()
     }
 
     override fun getKeys(
@@ -515,11 +516,31 @@ internal class SavableSearchableRepositoryImpl(
             CrashReporter.logException(e)
             return Resolved.Gone
         } catch (e: InstanceCreationException) {
+            // A deserializer that could not be created says nothing about the item.
             CrashReporter.logException(e)
-            return Resolved.Gone
+            return Resolved.Unknown
         }
         return deserializer.resolve(entity.serializedSearchable)
     }
+
+    /**
+     * Resolves [this] rows, and resolves them again whenever the deserializer
+     * of one of their types says its answer may have changed: a contact
+     * that was Unknown without its permission appears once it is granted,
+     * without waiting for the database to change (#237).
+     */
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private fun Flow<List<SavedSearchableEntity>>.resolved(): Flow<List<SavableSearchable>> =
+        flatMapLatest { entities ->
+            val again = entities.map { it.type }.distinct().mapNotNull { type ->
+                // Logged by resolve() when it fails; a missing trigger only
+                // means that type is not resolved again.
+                runCatching { get<SearchableDeserializer>(named(type)).resolveAgain }.getOrNull()
+            }
+            merge(flowOf(Unit), *again.toTypedArray()).map {
+                entities.mapNotNull { fromDatabaseEntity(it).searchable }
+            }
+        }
 
     private suspend fun fromDatabaseEntity(entity: SavedSearchableEntity): SavedSearchable {
         val resolved = resolve(entity)
@@ -547,16 +568,12 @@ internal class SavableSearchableRepositoryImpl(
         val dao = database.searchableDao()
         if (keys.size > 999) {
             return combine(keys.chunked(999).map {
-                dao.getByKeys(it)
-                    .map {
-                        it.mapNotNull { fromDatabaseEntity(it).searchable }
-                    }
+                dao.getByKeys(it).resolved()
             }) { results ->
                 results.flatMap { it }
             }
         }
-        return dao.getByKeys(keys)
-            .map { it.mapNotNull { fromDatabaseEntity(it).searchable } }
+        return dao.getByKeys(keys).resolved()
     }
 
     override suspend fun cleanupDatabase(): Int {
