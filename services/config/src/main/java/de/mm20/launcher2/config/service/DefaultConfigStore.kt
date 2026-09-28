@@ -433,6 +433,7 @@ class DefaultConfigStore(
                         borderless = config.borderless ?: GridItemConfig.OptionDefaults.getValue("borderless"),
                         background = config.background ?: GridItemConfig.OptionDefaults.getValue("background"),
                         themeColors = config.themeColors ?: GridItemConfig.OptionDefaults.getValue("themeColors"),
+                        mute = config.mute ?: GridItemConfig.OptionDefaults.getValue("mute"),
                     ),
                     position = position,
                 )
@@ -550,6 +551,7 @@ class DefaultConfigStore(
         borderless = config.borderless,
         background = config.background,
         themeColors = config.themeColors,
+        mute = config.mute,
     )
 
     private fun ConfigProfile.serialName(): String = name.lowercase()

@@ -453,7 +453,7 @@ internal fun GridItemConfig.matches(stored: GridItemConfig): Boolean {
     return positionSame && same(w, stored.w) && same(h, stored.h) &&
             same(profile, stored.profile) &&
             same(borderless, stored.borderless) && same(background, stored.background) &&
-            same(themeColors, stored.themeColors)
+            same(themeColors, stored.themeColors) && same(mute, stored.mute)
 }
 
 /**

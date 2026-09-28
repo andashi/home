@@ -664,6 +664,12 @@ data class GridItemConfig(
     val borderless: Boolean? = null,
     val background: Boolean? = null,
     val themeColors: Boolean? = null,
+    /**
+     * An external widget's own colours turned grey (#78): each pixel becomes
+     * the grey of its own luminance, so its contrast is kept. The favorites
+     * dock is glass-native and ignores it (the validator says so).
+     */
+    val mute: Boolean? = null,
 ) {
     val isFavorites: Boolean get() = widget == Favorites
     val hasGeometry: Boolean get() = x != null && y != null && w != null && h != null
@@ -687,6 +693,7 @@ data class GridItemConfig(
             "borderless" to false,
             "background" to true,
             "themeColors" to true,
+            "mute" to false,
         )
     }
 }

@@ -337,6 +337,9 @@
                                                     },
                                                     "themeColors": {
                                                         "type": "boolean"
+                                                    },
+                                                    "mute": {
+                                                        "type": "boolean"
                                                     }
                                                 },
                                                 "required": [
@@ -420,6 +423,9 @@
                                                         "type": "boolean"
                                                     },
                                                     "themeColors": {
+                                                        "type": "boolean"
+                                                    },
+                                                    "mute": {
                                                         "type": "boolean"
                                                     }
                                                 },

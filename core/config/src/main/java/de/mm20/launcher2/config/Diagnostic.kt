@@ -35,6 +35,7 @@ enum class DiagnosticCode(val code: String, val severity: Severity) {
     GridCrossesFold("grid-crosses-fold", Severity.Warning),
     IconPackUnavailable("icon-pack-unavailable", Severity.Warning),
     GridItemMoved("grid-item-moved", Severity.Warning),
+    GridOptionIgnored("grid-option-ignored", Severity.Warning),
     GridOutOfBounds("grid-out-of-bounds", Severity.Warning),
     GridOverflow("grid-overflow", Severity.Warning),
     InertKey("inert-key", Severity.Warning),

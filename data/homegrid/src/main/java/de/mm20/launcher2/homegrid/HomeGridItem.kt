@@ -23,6 +23,8 @@ data class HomeGridItemConfig(
     val borderless: Boolean = false,
     val background: Boolean = true,
     val themeColors: Boolean = true,
+    /** An external widget's colours turned grey (#78); the favorites dock ignores it. */
+    val mute: Boolean = false,
 )
 
 /**

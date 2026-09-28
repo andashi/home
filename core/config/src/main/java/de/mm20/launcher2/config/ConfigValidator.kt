@@ -385,6 +385,15 @@ object ConfigValidator {
                                 "provider component name (package/class)",
                     )
                 }
+                // #78: the dock is drawn by the launcher on glass; mute has no effect there.
+                if (item.isFavorites && item.mute == true) {
+                    out += Diagnostic(
+                        DiagnosticCode.GridOptionIgnored,
+                        "$path.mute",
+                        "mute has no effect on '${GridItemConfig.Favorites}': the launcher draws it on glass " +
+                                "itself; mute is for widgets from other apps",
+                    )
+                }
                 if ((item.x == null) != (item.y == null)) {
                     out += Diagnostic(
                         DiagnosticCode.PartialGridPosition,
