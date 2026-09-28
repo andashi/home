@@ -1235,4 +1235,21 @@ class ConfigParserTest {
             assertEquals(id, result.config?.search?.transliterator)
         }
     }
+
+    // ---- isAppliedKey: what a settings field may claim to map to (#225) ----
+
+    @Test
+    fun `a key the build applies is applied, at any depth`() {
+        for (path in listOf("search", "search.contacts", "icons.badges.notifications", "appearance.systemBars.statusBar.hidden", "gestures.swipeUp")) {
+            assertTrue(path, ConfigParser.isAppliedKey(path))
+        }
+    }
+
+    /** Controls: an unknown key, an unknown parent, an inert key, and a key under an inert one. */
+    @Test
+    fun `an unknown or inert key is not applied`() {
+        for (path in listOf("search.contact", "nosuch.contacts", "appearance.transparency", "appearance.transparency.background", "")) {
+            assertFalse(path, ConfigParser.isAppliedKey(path))
+        }
+    }
 }
