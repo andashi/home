@@ -15,6 +15,12 @@ and contacts. It is configured under `home.searchBar`.
 | `home.searchBar.hidden` | The pill is not drawn on the home screen at rest. [Below](#a-hidden-search-bar) for how that differs from a hidden system bar, and what it needs | boolean | `false` |
 | `home.searchBar.colors` | The resting pill's text and icon colour, in the system bars' words: `dark` is dark content, `light` light, `auto` follows the wallpaper. Only the resting pill: open search takes the theme's colours | `auto`, `light`, `dark` | `auto` |
 
+Text on glass normally takes the colour scheme that matches the wallpaper
+behind it. The resting pill is the one glass surface where the file can
+override that: `home.searchBar.colors` sets its text and icons directly, and
+`auto` is the wallpaper rule. This is deliberate, and
+`SearchBarRestingColorTest` pins it through the real glass surface.
+
 ## A hidden search bar
 
 `hidden` has the name the system bars use, and it does not behave like them.
