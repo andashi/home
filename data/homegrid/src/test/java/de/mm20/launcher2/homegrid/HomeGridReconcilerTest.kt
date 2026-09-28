@@ -76,6 +76,89 @@ class HomeGridReconcilerTest {
         assertTrue(port.released.isEmpty())
     }
 
+    /**
+     * Uninstalling a provider makes the widget service delete its widgets: the
+     * host no longer holds the id, and there is no provider info for it. When
+     * the package comes back, nothing binds the item, because it still has an
+     * id - even a cold restart leaves the cell broken (#245, cases C and F).
+     */
+    @Test
+    fun `an item whose host id the service deleted is bound anew`() = runBlocking {
+        grid.replace(HomeGridLayouts.Phone, listOf(item("camera", "org.example.cam/.Widget", appWidgetId = 7)))
+        val port = FakeAppWidgetHostPort(bound = emptyList(), gone = setOf(7), bindable = setOf("org.example.cam/.Widget"))
+
+        val report = reconciler(port).reconcile()
+
+        assertEquals(listOf("camera"), report.bound)
+        assertEquals(100, grid.observe(HomeGridLayouts.Phone).first().single().appWidgetId)
+        assertEquals(Triple(100, "org.example.cam/.Widget", null), port.bindCalls.single())
+    }
+
+    /**
+     * The package is installed but no longer declares the widget (an update
+     * dropped it): the bind fails, the dead id is cleared, and the item is then
+     * exactly a declared widget whose provider is missing - retried when its
+     * package arrives, not on every pass (review of #245).
+     *
+     * Passes are driven the way HomeGrid drives them: its LaunchedEffect is
+     * keyed on every item's (id, host id), so clearing the id is itself a
+     * change and runs one more pass (review on #246). That pass fails too and
+     * changes nothing, the key stays the same, and the passes stop: two bind
+     * attempts in all, then none.
+     */
+    @Test
+    fun `a deleted id whose provider is no longer declared is cleared and passes stop`() = runBlocking {
+        grid.replace(HomeGridLayouts.Phone, listOf(item("camera", "org.example.cam/.Widget", appWidgetId = 7)))
+        val port = FakeAppWidgetHostPort(bound = emptyList(), gone = setOf(7), bindable = emptySet())
+        suspend fun bindingKey() = grid.observe(HomeGridLayouts.Phone).first().map { it.id to it.appWidgetId }
+
+        var key = bindingKey()
+        var passes = 0
+        do {
+            val report = reconciler(port).reconcile()
+            assertEquals(listOf("camera"), report.failed)
+            passes++
+            val before = key
+            key = bindingKey()
+        } while (key != before && passes < 10)
+
+        assertEquals("passes until nothing changes", 2, passes)
+        assertEquals(2, port.bindCalls.size)
+        assertNull(grid.observe(HomeGridLayouts.Phone).first().single().appWidgetId)
+        // An unrelated package event runs no pass for it.
+        assertEquals(ReconcileReport(), reconciler(port).reconcileArrival("org.other", attempts = 1) {})
+        assertEquals(2, port.bindCalls.size)
+    }
+
+    /** Case C itself: the package arrives again, and its arrival binds the item. */
+    @Test
+    fun `an arrival binds a widget whose id the service deleted`() = runBlocking {
+        grid.replace(HomeGridLayouts.Phone, listOf(item("camera", "org.example.cam/.Widget", appWidgetId = 7)))
+        val port = FakeAppWidgetHostPort(bound = emptyList(), gone = setOf(7), bindable = setOf("org.example.cam/.Widget"))
+
+        val report = reconciler(port).reconcileArrival("org.example.cam", attempts = 1) {}
+
+        assertEquals(listOf("camera"), report.bound)
+        assertEquals(100, grid.observe(HomeGridLayouts.Phone).first().single().appWidgetId)
+    }
+
+    /**
+     * Control: both signals are needed. An id missing from a host list that
+     * came back short, but whose provider info is there, is a widget that
+     * exists - rebinding it would lose a configured widget's setup.
+     */
+    @Test
+    fun `an id the host does not list but whose provider is there is kept`() = runBlocking {
+        grid.replace(HomeGridLayouts.Phone, listOf(item("camera", "org.example.cam/.Widget", appWidgetId = 7)))
+        val port = FakeAppWidgetHostPort(bound = emptyList(), bindable = setOf("org.example.cam/.Widget"))
+
+        val report = reconciler(port).reconcile()
+
+        assertTrue(port.bindCalls.isEmpty())
+        assertEquals(7, grid.observe(HomeGridLayouts.Phone).first().single().appWidgetId)
+        assertTrue(report.bound.isEmpty() && report.failed.isEmpty())
+    }
+
     @Test
     fun `host ids nothing references are released, referenced ones stay`() = runBlocking {
         grid.replace(HomeGridLayouts.Phone, listOf(item("clock", "com.example/.Clock", appWidgetId = 7)))
