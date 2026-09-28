@@ -85,10 +85,12 @@ parsed by `ConfigParserTest` on every run, so it cannot drift from the code the
 way the favorites shape once did (#35, andashi/provisioning#1). Everything
 except `schemaVersion` is optional, and an absent key means *unmanaged*, not
 *off*. There is one exception, stated so it is not trusted wrongly: a grid
-item is stored whole, so its `borderless`, `background` and `themeColors`
-take their defaults (`false`, `true`, `true`) when absent and keep them. The
-round-trip test measured it (#3); write-back leaves them out again while they
-have their default (ADR 0003 section 5).
+item is stored whole, so its `borderless`, `background`, `themeColors` and
+`mute` take their defaults (`false`, `true`, `true`, `false`) when absent and
+keep them. The round-trip test measured it (#3), and since #231 the differ
+compares an absent option as its default, so a reload resets one held away
+from it rather than only when another change made the grid apply; write-back
+leaves them out again while they have their default (ADR 0003 section 5).
 
 <!-- adr-0002-example -->
 ```json

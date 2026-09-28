@@ -861,7 +861,9 @@ assert_jq "$effective" \
   '[.home.grid.layouts.phone.items[] | {id, mute}] == [{"id":"only","mute":false},{"id":"muted","mute":true}]' \
   "mute reads back as written, and false where it is left out"
 fixture_widgets_bound() {
-  adb -s "$SERIAL" shell dumpsys appwidget 2>/dev/null | tr -d '\r' | sed -n '/^Widgets:/,/^Hosts:/p' \
+  # Deadline-aware (adb_out): it runs inside retry_for, whose budget a hung
+  # dumpsys must not overrun (review on #231).
+  adb_out shell dumpsys appwidget 2>/dev/null | sed -n '/^Widgets:/,/^Hosts:/p' \
     | grep -F "hostId:$HOST_ID" -A3 | grep -cF "$FIXTURE_PKG/" || true
 }
 show_home

@@ -35,9 +35,10 @@ optional, and **an absent key means "unmanaged", not "off"**: the launcher leave
 whatever is set on the device. Comments and trailing commas are allowed (JSONC).
 
 The exceptions, in one place:
-- a grid item's `borderless`, `background` and `themeColors` take their
-  defaults when absent ([Home grid](home-grid.md)), and a write-back leaves
-  them out again while they have their default;
+- a grid item's `borderless`, `background`, `themeColors` and `mute` take
+  their defaults when absent ([Home grid](home-grid.md)), a reload resets one
+  the device holds away from its default, and a write-back leaves them out
+  again while they have their default;
 - the wallpaper is not written back from the device: a wallpaper picked
   there has no upload name to write ([below](#changes-made-on-the-device));
 - a grid item without geometry is placed by the launcher, and that

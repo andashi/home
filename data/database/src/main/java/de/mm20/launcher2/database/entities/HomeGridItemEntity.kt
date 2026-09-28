@@ -32,7 +32,7 @@ data class HomeGridItemEntity(
     val h: Int,
     /** Device-local AppWidget host id; null until bound, never written to the config. */
     val appWidgetId: Int?,
-    /** JSON of the per-item options (borderless, background, themeColors); null means defaults. */
+    /** JSON of the per-item options (borderless, background, themeColors, mute); null means defaults. */
     val config: String?,
     /** Index in the config array, so write-back keeps the file's order. */
     val position: Int,
