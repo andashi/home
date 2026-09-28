@@ -177,10 +177,18 @@ carry the same defect class as the finding: on #214 it proposed observing a
 already holds, so it would never emit. That was rejected and **the switch to it
 made a break check**, which is how to record refusing a remedy.
 
-**Deleting a merged branch closes any open pull request based on it, irreversibly**
-(#100 -> #101, and #215/#216). List the dependents before deleting and refuse
-while any exist - and **fail closed**, because "no dependents" and "could not ask"
-are the same empty result.
+**List the dependents before deleting a merged branch, and refuse while any
+exist** - and **fail closed**, because "no dependents" and "could not ask" are the
+same empty result.
+
+This is a conservative policy rather than a documented consequence, and the first
+draft said otherwise. It claimed deletion *closes* a dependent pull request
+irreversibly, citing #100 -> #101. **That case does not support it**: #100 was
+closed rather than merged, and #101 ended up merged against `main`. GitHub
+documents retargeting a dependent to the merged pull request's base branch. So the
+mechanism is unverified here and the guard is kept for a different reason - a
+dependent silently changing base under a merge is a state nobody asked for, and
+retargeting it deliberately costs one command.
 
 **A base behind `main` is only a problem when it overlaps - with one caveat
 that review caught in this very section.** The rebase rule protects against a
@@ -444,10 +452,12 @@ and head in the same call as the reviews.
   killed the whole invocation with status 144 - so the rebase never ran, and the
   non-zero exit read as "the pkill failed" rather than "everything after the
   semicolon was cancelled". The pattern was specific enough to look anchored.
-  **Kill by recorded PID, not by pattern**: any `-f` search runs inside a process
-  whose command line contains the pattern, so self-matching is the default rather
-  than an edge case, and the only safe patterns are ones the invoking command line
-  cannot contain - a property you would have to re-establish every time.
+  **Kill by recorded PID, not by pattern.** procps-ng does exclude the `pkill`
+  process itself, so the trap is narrower than "always": it fires when the
+  **shell's** command line contains the pattern, which a compound `bash -c …`
+  does and other invocation forms need not. That is exactly the case above, and it
+  is not one you can rule out by looking at the pattern - which is why the rule is
+  the recorded PID rather than a better pattern.
 
 **Durable state whose absence carries meaning is a permissive-default factory.**
 One new field - a record of how each app entry spelled its activity - produced
@@ -579,9 +589,11 @@ test policy above asks for the break rather than the pass.
 10. **The check repaired what it was about to observe.** To prove a record
     survives a restart, the obvious test force-stops the app and reads it back -
     and cannot work here, because the startup check **re-records a missing
-    record**. Read it where it is kept, before the restart, then restart. The
-    sibling of 9: there the fixture is a state the system cannot reach, here one
-    it leaves before you look (#214).
+    record**. Read it where it is kept, before the restart - and then read the
+    *effect* after it, because the pre-restart read alone proves only that the
+    record existed beforehand. Either get the post-restart read in before the
+    repair path can run, or isolate that path. The sibling of 9: there the fixture
+    is a state the system cannot reach, here one it leaves before you look (#214).
 11. **The break generator could not express the break.** A generator that mutates
     values can never remove a key, so a schema rule about a key's *absence*
     (`dependentRequired`) was unreachable by a fully green generic suite. Ask what
@@ -668,11 +680,21 @@ rather than in product code, which is where they prefer to live.
 assignment from a command substitution is where a `set -euo pipefail` script dies
 without a message.** `x=$(cmd | ...)` fails, `set -e` exits, and the script never
 reaches anything that would print why - so the symptom is a bare non-zero status
-and no output. Three instances in one day, all assignments: a merge gate's
-`shared=$(… | grep …)`, a fixture's `bt="$(ls -d "$sdk"/build-tools/*/ …)"` on an
-SDK with no build tools, and the same gate's base lookup. **When a script exits
-non-zero and silent, look at its assignments first**; and in a checker, guard the
-lookups so the failure gets to speak.
+and no output. **Outside the `errexit` exemptions**, that is: an assignment used
+as an `if` or `while` test does not exit, which is mechanism 2 of the list above
+wearing different clothes.
+
+Four instances in one day, all assignments: a merge gate's `shared=$(… | grep …)`,
+a fixture's `bt="$(ls -d "$sdk"/build-tools/*/ …)"` on an SDK with no build tools,
+the same gate's base lookup - and, in the provisioning repository, a tripwire
+written to catch invisible states whose own `launcher_version` assignment killed it
+mid-message when no APK was present. **The check against invisible states was
+exiting invisibly**, on the same night, in the thing written to catch it.
+
+**When a script exits non-zero and silent, look at its assignments first**; and in
+a checker, guard the lookups so the failure gets to speak. `|| true` with the
+emptiness checked on the next line is the honest use of that idiom; `|| true` alone
+is the shrug.
 
 - **`grep` exiting 1 on no match kills a `set -euo pipefail` script**, and
   `pipefail` is the load-bearing half: with `set -e` alone the pipeline reports
