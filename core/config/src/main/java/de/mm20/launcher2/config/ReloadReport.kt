@@ -60,4 +60,23 @@ data class ReloadReport(
      */
     val configSha256: String? = null,
     val trigger: ReloadTrigger? = null,
+    /**
+     * This report's number, higher than every one the store gave before:
+     * each saved report moves it - a reload that changed nothing, where
+     * [configSha256] stays, and a write-back editing the last report's
+     * diagnostics (a change made on the device and kept out of the file).
+     * A measurement reload with nothing new saves no report and moves
+     * nothing. A save that failed half-way leaves a gap, so compare numbers,
+     * never count them. Ordered only within one [storeId]. Set by the store
+     * when it saves; null in a report an older build wrote - unknown, not
+     * zero.
+     */
+    val sequence: Long? = null,
+    /**
+     * The store that numbered [sequence]. It changes when the count starts
+     * again - the app's files wiped by `pm clear`, a reinstall or a
+     * debug-over-release swap - so a consumer sees a new identity rather
+     * than a number that went backwards. Compare numbers only under one id.
+     */
+    val storeId: String? = null,
 )

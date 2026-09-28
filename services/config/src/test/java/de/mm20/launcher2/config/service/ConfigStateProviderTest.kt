@@ -112,7 +112,7 @@ class ConfigStateProviderTest {
             configSha256 = "deadbeef",
             trigger = ReloadTrigger.Broadcast,
         )
-        reportStore.save(report)
+        val saved = reportStore.save(report)
 
         val cursor = provider.query(uri("diagnostics"), null, null, null, null)
 
@@ -122,7 +122,8 @@ class ConfigStateProviderTest {
             ReloadReport.serializer(),
             cursor.getString(0),
         )
-        assertEquals(report, decoded)
+        // Served as saved, the sequence and the store id with it.
+        assertEquals(saved, decoded)
         cursor.close()
     }
 
