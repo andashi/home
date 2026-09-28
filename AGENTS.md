@@ -449,9 +449,12 @@ and head in the same call as the reviews.
   **A second instance shows "anchor your patterns" is the wrong fix.** A later
   `pkill -f 'watch-pr.sh 223'`, written as the first command of a compound line
   that went on to rebase a branch, matched **its own shell's command line** and
-  killed the whole invocation with status 144 - so the rebase never ran, and the
-  non-zero exit read as "the pkill failed" rather than "everything after the
+  killed the whole invocation with status **143** - so the rebase never ran, and
+  the non-zero exit read as "the pkill failed" rather than "everything after the
   semicolon was cancelled". The pattern was specific enough to look anchored.
+  (143 is 128 + SIGTERM, which is what `pkill` sends by default; measured, after
+  review caught that the 144 written here first had been copied from a report and
+  never checked. `pkill -9` gives 137.)
   **Kill by recorded PID, not by pattern.** procps-ng does exclude the `pkill`
   process itself, so the trap is narrower than "always": it fires when the
   **shell's** command line contains the pattern, which a compound `bash -c …`
