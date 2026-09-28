@@ -35,11 +35,6 @@ class ReloadReportStore(
      */
     private val numbering = File(context.filesDir, "config/report-numbering.json")
 
-    /**
-     * The numbering is a read-modify-write of its own. Callers save under the
-     * ConfigFileLock today; the count does not rely on that.
-     */
-    private val numberingLock = Mutex()
 
     @Serializable
     private data class Numbering(val storeId: String, val sequence: Long)
@@ -50,12 +45,14 @@ class ReloadReportStore(
      * report carries (write-back saves an edited copy of the last one).
      */
     suspend fun save(report: ReloadReport): ReloadReport = withContext(Dispatchers.IO) {
-        numberingLock.withLock {
+        NumberingLock.withLock {
             val last = readNumbering()
             val next = Numbering(last?.storeId ?: UUID.randomUUID().toString(), (last?.sequence ?: 0) + 1)
             val numbered = report.copy(sequence = next.sequence, storeId = next.storeId)
             // The record first: a report saved under a number the record does
             // not hold yet would be given that number again by the next save.
+            // So a report that then fails to write leaves a gap, never a
+            // number shared by two reports.
             numbering.replaceAtomically(ConfigParser.json.encodeToString(Numbering.serializer(), next))
             // Never written in place: a concurrent provider query could read a
             // torn report. A failed rename keeps the previous one and throws.
@@ -65,6 +62,16 @@ class ReloadReportStore(
     }
 
     private fun readNumbering(): Numbering? = numbering.decodeOrNull(Numbering.serializer())
+
+    private companion object {
+        /**
+         * The numbering is a read-modify-write of one file, so its lock is
+         * shared by every store over it. Production has one store (a Koin
+         * single) and saves under the ConfigFileLock; the count relies on
+         * neither (review on #226).
+         */
+        val NumberingLock = Mutex()
+    }
 
     suspend fun read(): ReloadReport? = withContext(Dispatchers.IO) {
         file.decodeOrNull(ReloadReport.serializer())
