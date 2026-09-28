@@ -51,6 +51,7 @@ object ThemeFile {
 
     private const val TAG = "ThemeFile"
 
+    /** Opens in flight across all imports; see [read]. */
     private val openSlots = Semaphore(1)
 
     /**
@@ -77,10 +78,26 @@ object ThemeFile {
         slots: Semaphore = openSlots,
     ): ThemeFileResult {
         if (scheme != "content") return rejected(ThemeFileRejection.NotContent, null)
+        // One open at a time. A worker keeps its slot until it has really
+        // finished, also after the caller gave up: a provider that never
+        // answers openFile then holds one worker, not one per import
+        // (#234 review).
+        if (!slots.tryAcquire()) return rejected(ThemeFileRejection.Busy, null)
         val opened = AtomicReference<InputStream?>(null)
         val gaveUp = AtomicBoolean(false)
-        val task = FutureTask { readBytes(open, maxBytes, opened, gaveUp) }
-        Thread(task, "theme-file-read").apply { isDaemon = true }.start()
+        val task = FutureTask {
+            try {
+                readBytes(open, maxBytes, opened, gaveUp)
+            } finally {
+                slots.release()
+            }
+        }
+        try {
+            Thread(task, "theme-file-read").apply { isDaemon = true }.start()
+        } catch (e: RuntimeException) {
+            slots.release()
+            throw e
+        }
         val bytes = try {
             task.get(timeoutMillis, TimeUnit.MILLISECONDS)
         } catch (e: TimeoutException) {

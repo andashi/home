@@ -143,7 +143,7 @@ class ThemeFileTest {
             override fun close() = closed.countDown()
         }
         val started = System.nanoTime()
-        val result = ThemeFile.read("content", open = { stalled }, maxBytes = ThemeFile.MAX_BYTES, timeoutMillis = 300)
+        val result = ThemeFile.read("content", open = { stalled }, maxBytes = ThemeFile.MAX_BYTES, timeoutMillis = 300, slots = ownSlot())
         val tookMs = (System.nanoTime() - started) / 1_000_000
         assertEquals(rejected(ThemeFileRejection.TooSlow), result)
         assertTrue("took $tookMs ms for a 300 ms bound", tookMs < 5_000)
@@ -175,6 +175,7 @@ class ThemeFileTest {
             open = { awaitUninterruptibly(callerGaveUp); stalled },
             maxBytes = ThemeFile.MAX_BYTES,
             timeoutMillis = 300,
+            slots = ownSlot(),
         )
         assertEquals(rejected(ThemeFileRejection.TooSlow), result)
         callerGaveUp.countDown()
@@ -206,7 +207,7 @@ class ThemeFileTest {
         // holding the test JVM; the fake is released either way.
         val answer = java.util.concurrent.ArrayBlockingQueue<ThemeFileResult>(1)
         Thread {
-            answer.put(ThemeFile.read("content", open = { stuck }, maxBytes = ThemeFile.MAX_BYTES, timeoutMillis = 300))
+            answer.put(ThemeFile.read("content", open = { stuck }, maxBytes = ThemeFile.MAX_BYTES, timeoutMillis = 300, slots = ownSlot()))
         }.apply { isDaemon = true }.start()
         try {
             val result = answer.poll(5, java.util.concurrent.TimeUnit.SECONDS)
@@ -256,6 +257,13 @@ class ThemeFileTest {
         )
         assertEquals(ThemeFileResult.Read(bundle), after)
     }
+
+    /**
+     * A slot of its own for a case that leaves a worker running past its
+     * end: on the shared one, the next case could find it still taken and be
+     * refused as Busy.
+     */
+    private fun ownSlot() = java.util.concurrent.Semaphore(1)
 
     private fun awaitUninterruptibly(latch: java.util.concurrent.CountDownLatch) {
         var interrupted = false
