@@ -35,6 +35,7 @@ class ProfileManagerTest {
         override fun hasPermission(permissionGroup: PermissionGroup): Flow<Boolean> = manageProfiles
         override fun requestPermission(context: AppCompatActivity, permissionGroup: PermissionGroup) = Unit
         override fun checkPermissionOnce(permissionGroup: PermissionGroup) = false
+        override fun checkEnabledInSystem(permissionGroup: PermissionGroup) = false
         override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) = Unit
         override fun reportNotificationListenerState(running: Boolean) = Unit
         override fun reportAccessibilityServiceState(running: Boolean) = Unit

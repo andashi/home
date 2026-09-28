@@ -98,6 +98,7 @@ class KoinGridRule(
     private class GrantedPermissions : PermissionsManager {
         override fun requestPermission(context: androidx.appcompat.app.AppCompatActivity, permissionGroup: PermissionGroup) = Unit
         override fun checkPermissionOnce(permissionGroup: PermissionGroup): Boolean = true
+        override fun checkEnabledInSystem(permissionGroup: PermissionGroup): Boolean = true
         override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) = Unit
         override fun hasPermission(permissionGroup: PermissionGroup): Flow<Boolean> = flowOf(true)
         override fun reportNotificationListenerState(running: Boolean) = Unit

@@ -335,7 +335,7 @@ class ConfigReloaderTest {
         val store = FakeConfigStore(state = foldState(6).copy(search = SearchState(contacts = true)))
         val reportStore = ReloadReportStore(context)
         var granted = true
-        val reloader = ConfigReloader(store, reportStore, capabilities = CapabilityDiagnostics(contactsGranted = { granted }, callGranted = { true }, transliteratorAvailable = { true }, accessibilityOn = { true }))
+        val reloader = ConfigReloader(store, reportStore, capabilities = CapabilityDiagnostics(contactsGranted = { granted }, callGranted = { true }, transliteratorAvailable = { true }, accessibilityOn = { true }, shortcutHostGranted = { true }, notificationListenerOn = { true }))
         reloader.reload(text, ReloadTrigger.Broadcast)
         // Revoked since the push: the file and the grid are as they were, the
         // warning is new (#178 review).
@@ -488,6 +488,8 @@ class ConfigReloaderTest {
         callGranted: Boolean = true,
         availableTransliterators: Set<String>? = null,
         accessibilityOn: Boolean = true,
+        shortcutHostGranted: Boolean = true,
+        notificationListenerOn: Boolean = true,
     ) =
         ConfigReloader(
             store, ReloadReportStore(context),
@@ -496,8 +498,75 @@ class ConfigReloaderTest {
                 callGranted = { callGranted },
                 transliteratorAvailable = { id -> availableTransliterators?.contains(id) ?: true },
                 accessibilityOn = { accessibilityOn },
+                shortcutHostGranted = { shortcutHostGranted },
+                notificationListenerOn = { notificationListenerOn },
             ),
         )
+
+    // #140: the rest of the class. App shortcuts come only to the home app,
+    // and notification badges only to an enabled notification listener; the
+    // file can ask for both and the device grants neither.
+
+    @Test
+    fun `app shortcuts in search without the home role are applied as written and reported`() = runTest {
+        // Off on the device, so the file's `true` is a change and is applied (the default is on).
+        val store = FakeConfigStore(state = ConfigState(search = SearchState(shortcuts = false)))
+
+        val report = reloaderWith(store, shortcutHostGranted = false).reload("""{"schemaVersion": 2, "search": {"shortcuts": true}}""")
+
+        assertTrue(report.success)
+        assertEquals(listOf("read", "apply:[search]"), store.events)
+        val missing = report.diagnostics.single { it.code == "permission-missing" }
+        assertEquals("search.shortcuts", missing.path)
+        assertEquals(Severity.Warning, missing.severity)
+    }
+
+    @Test
+    fun `notification badges without listener access are applied as written and reported`() = runTest {
+        val store = FakeConfigStore()
+
+        val report = reloaderWith(store, notificationListenerOn = false)
+            .reload("""{"schemaVersion": 2, "icons": {"badges": {"notifications": true}}}""")
+
+        assertTrue(report.success)
+        val missing = report.diagnostics.single { it.code == "permission-missing" }
+        assertEquals("icons.badges.notifications", missing.path)
+        assertEquals(Severity.Warning, missing.severity)
+    }
+
+    /** Controls: granted, switched off, or left out of the file - nothing to report. */
+    @Test
+    fun `shortcuts and badges that are granted, off, or not in the file are not reported`() = runTest {
+        val cases = listOf(
+            reloaderWith(FakeConfigStore()) to """{"schemaVersion": 2, "search": {"shortcuts": true}, "icons": {"badges": {"notifications": true}}}""",
+            reloaderWith(FakeConfigStore(), shortcutHostGranted = false, notificationListenerOn = false) to
+                """{"schemaVersion": 2, "search": {"shortcuts": false}, "icons": {"badges": {"notifications": false}}}""",
+            reloaderWith(FakeConfigStore(), shortcutHostGranted = false, notificationListenerOn = false) to
+                """{"schemaVersion": 2, "search": {"layout": "grid"}, "icons": {"themed": true}}""",
+        )
+        for ((reloader, text) in cases) {
+            val report = reloader.reload(text)
+            assertTrue(text, report.diagnostics.none { it.code == "permission-missing" })
+        }
+    }
+
+    /** As for contacts (#172 review): a failed section left the key as it was, and an off key needs nothing. */
+    @Test
+    fun `shortcuts and badges in a section that failed to apply are reported by what is in effect`() = runTest {
+        val failing = listOf(Diagnostic(DiagnosticCode.ApplyFailed, "search", "boom"), Diagnostic(DiagnosticCode.ApplyFailed, "icons", "boom"))
+        val off = FakeConfigStore(state = ConfigState(search = SearchState(shortcuts = false), badgeNotifications = false), applyDiagnostics = failing)
+        val on = FakeConfigStore(state = ConfigState(search = SearchState(shortcuts = true), badgeNotifications = true), applyDiagnostics = failing)
+        val text = """{"schemaVersion": 2, "search": {"shortcuts": true}, "icons": {"badges": {"notifications": true}}}"""
+
+        val left = reloaderWith(off, shortcutHostGranted = false, notificationListenerOn = false).reload(text)
+        val kept = reloaderWith(on, shortcutHostGranted = false, notificationListenerOn = false).reload(text)
+
+        assertTrue("left off: nothing is missing", left.diagnostics.none { it.code == "permission-missing" })
+        assertEquals(
+            listOf("icons.badges.notifications", "search.shortcuts"),
+            kept.diagnostics.filter { it.code == "permission-missing" }.map { it.path }.sorted(),
+        )
+    }
 
     // #3 slice 2: screen lock, the power menu and recents go through the
     // launcher's accessibility service, which only the person can turn on.

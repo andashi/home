@@ -78,8 +78,11 @@ val configModule = module {
                 callGranted = { permissions.checkPermissionOnce(PermissionGroup.Call) },
                 // The lookup the normalizer makes, so the report and the search agree.
                 transliteratorAvailable = { id -> runCatching { Transliterator.getInstance(id) }.isSuccess },
-                // What ScreenOffComponent and the others check before they act.
-                accessibilityOn = { permissions.checkPermissionOnce(PermissionGroup.Accessibility) },
+                // As the system records them, not whether the service has connected
+                // yet: right after the process starts, that reads as absent (#140).
+                accessibilityOn = { permissions.checkEnabledInSystem(PermissionGroup.Accessibility) },
+                shortcutHostGranted = { permissions.checkEnabledInSystem(PermissionGroup.AppShortcuts) },
+                notificationListenerOn = { permissions.checkEnabledInSystem(PermissionGroup.Notifications) },
             ),
             // Every reload that goes through records the apps' form where none exists (review on #214).
             namings = namings(),

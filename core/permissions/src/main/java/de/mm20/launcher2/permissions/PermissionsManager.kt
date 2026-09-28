@@ -3,6 +3,7 @@ package de.mm20.launcher2.permissions
 import android.Manifest
 import android.app.role.RoleManager
 import android.content.ActivityNotFoundException
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.pm.LauncherApps
@@ -30,6 +31,18 @@ interface PermissionsManager {
      * @return true if the given permission group is fully granted
      */
     fun checkPermissionOnce(permissionGroup: PermissionGroup): Boolean
+
+    /**
+     * Whether the person has granted [permissionGroup], as the system records
+     * it, whether or not the service behind it has connected yet (#140).
+     * [checkPermissionOnce] answers "is the service running" for the
+     * notification listener and the accessibility service, which is what a
+     * component acting through the service needs - and it starts false until
+     * the service connects. A report of what this profile can do must not read
+     * that "not yet known" as "absent", so it asks here. Every other group
+     * answers as [checkPermissionOnce] does.
+     */
+    fun checkEnabledInSystem(permissionGroup: PermissionGroup): Boolean
 
     fun onRequestPermissionsResult(
         requestCode: Int,
@@ -223,6 +236,22 @@ internal class PermissionsManagerImpl(
             PermissionGroup.Accessibility -> return
         }
         state.value = checkPermissionOnce(permissionGroup)
+    }
+
+    override fun checkEnabledInSystem(permissionGroup: PermissionGroup): Boolean = when (permissionGroup) {
+        PermissionGroup.Notifications -> enabledInSecureList("enabled_notification_listeners")
+        PermissionGroup.Accessibility -> enabledInSecureList(Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES)
+        else -> checkPermissionOnce(permissionGroup)
+    }
+
+    /**
+     * Whether a component of this package is in the secure setting [key], a
+     * colon-separated list of flattened component names. The package is
+     * compared whole: `org.andashi.home.debug` is not `org.andashi.home`.
+     */
+    private fun enabledInSecureList(key: String): Boolean {
+        val list = Settings.Secure.getString(context.contentResolver, key) ?: return false
+        return list.split(':').any { ComponentName.unflattenFromString(it)?.packageName == context.packageName }
     }
 
     override fun reportNotificationListenerState(running: Boolean) {
