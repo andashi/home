@@ -217,6 +217,46 @@ class ThemeFileTest {
         }
     }
 
+    @Test
+    fun `while a provider still holds a worker, the next file is refused without opening it`() {
+        // #234 review: a provider that never answers openFile keeps its worker
+        // however the caller gives up, and the import activity is exported,
+        // so repeated imports could pile such workers up. One open at a time:
+        // the next is refused at once, and a free slot takes files again.
+        val slots = java.util.concurrent.Semaphore(1)
+        val answer = java.util.concurrent.CountDownLatch(1)
+        val hung = ThemeFile.read(
+            "content",
+            open = { awaitUninterruptibly(answer); ByteArrayInputStream(exported) },
+            maxBytes = ThemeFile.MAX_BYTES,
+            timeoutMillis = 200,
+            slots = slots,
+        )
+        assertEquals(rejected(ThemeFileRejection.TooSlow), hung)
+        var opened = false
+        val next = ThemeFile.read(
+            "content",
+            open = { opened = true; ByteArrayInputStream(exported) },
+            maxBytes = ThemeFile.MAX_BYTES,
+            timeoutMillis = 200,
+            slots = slots,
+        )
+        assertEquals(rejected(ThemeFileRejection.Busy), next)
+        assertFalse("the next file was opened while the slot was taken", opened)
+        answer.countDown()
+        // The hung worker finishes and gives its slot back.
+        assertTrue("the slot never came back", slots.tryAcquire(5, java.util.concurrent.TimeUnit.SECONDS))
+        slots.release()
+        val after = ThemeFile.read(
+            "content",
+            open = { ByteArrayInputStream(exported) },
+            maxBytes = ThemeFile.MAX_BYTES,
+            timeoutMillis = 5_000,
+            slots = slots,
+        )
+        assertEquals(ThemeFileResult.Read(bundle), after)
+    }
+
     private fun awaitUninterruptibly(latch: java.util.concurrent.CountDownLatch) {
         var interrupted = false
         while (true) {

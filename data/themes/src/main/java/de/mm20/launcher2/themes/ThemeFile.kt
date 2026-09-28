@@ -5,13 +5,14 @@ import java.io.IOException
 import java.io.InputStream
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.FutureTask
+import java.util.concurrent.Semaphore
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 
 /** Why a theme file handed to the launcher was not read. */
-enum class ThemeFileRejection { NotContent, Unreadable, TooLarge, NotATheme, TooSlow }
+enum class ThemeFileRejection { NotContent, Unreadable, TooLarge, NotATheme, TooSlow, Busy }
 
 sealed interface ThemeFileResult {
     data class Read(val bundle: ThemeBundle) : ThemeFileResult
@@ -50,6 +51,8 @@ object ThemeFile {
 
     private const val TAG = "ThemeFile"
 
+    private val openSlots = Semaphore(1)
+
     /**
      * Reads the theme file behind a URI.
      *
@@ -71,6 +74,7 @@ object ThemeFile {
         open: () -> InputStream?,
         maxBytes: Int,
         timeoutMillis: Long,
+        slots: Semaphore = openSlots,
     ): ThemeFileResult {
         if (scheme != "content") return rejected(ThemeFileRejection.NotContent, null)
         val opened = AtomicReference<InputStream?>(null)
