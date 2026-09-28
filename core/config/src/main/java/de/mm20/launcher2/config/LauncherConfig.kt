@@ -796,6 +796,12 @@ data class SearchConfig(
     val defaultFilter: List<@Serializable(with = DefaultFilterItemSerializer::class) SearchFilterItem>? = null,
     /** Which filters the bar above the keyboard shows, in order (#229); `search.filterBar` switches the bar. */
     val filterBarItems: List<@Serializable(with = FilterBarItemSerializer::class) SearchFilterItem>? = null,
+    /**
+     * The apps whose shortcuts search leaves out (#229), per package and
+     * profile, named as favorites are. The whole state, as a set; the store
+     * applies it, since the stored form carries the profile's device serial.
+     */
+    val shortcutsExcluded: List<Favorite>? = null,
 )
 
 /**

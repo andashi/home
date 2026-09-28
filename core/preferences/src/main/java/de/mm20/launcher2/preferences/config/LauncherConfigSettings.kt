@@ -104,6 +104,16 @@ interface LauncherConfigSettings {
      * state as written, a launch as null the way [readState] has it.
      */
     suspend fun applyGestures(actions: Map<Gesture, GestureActionName>, launches: Map<Gesture, String>): ConfigState
+
+    /**
+     * The apps whose shortcuts search leaves out, as the launcher stores
+     * them: `packageName:userSerial` (#229). [readState] does not carry
+     * them: only the store can tell which profile a serial is.
+     */
+    suspend fun readShortcutBlocklist(): Set<String> = emptySet()
+
+    /** Replaces the stored blocklist in one awaited update. */
+    suspend fun applyShortcutBlocklist(blocklist: Set<String>)
 }
 
 /** `appearance.theme.colors` slug to the built-in scheme's id, one entry per slug. */
@@ -134,13 +144,20 @@ internal class LauncherConfigSettingsImpl(
     private val dataStore: LauncherDataStore,
 ) : LauncherConfigSettings {
 
-    // The launch keys too: two apps both read as null in the state (#3 slice 2).
+    // The launch keys and the shortcut blocklist too: the state carries
+    // neither, the store reads them apart (#3 slice 2, #229).
     override fun changes(): Flow<Unit> =
-        dataStore.data.map { stateOf(it) to it.gestureLaunchKeys() }.distinctUntilChanged().map { }
+        dataStore.data.map { Triple(stateOf(it), it.gestureLaunchKeys(), it.shortcutSearchBlocklist) }.distinctUntilChanged().map { }
 
     override suspend fun readState(): ConfigState = stateOf(dataStore.data.first())
 
     override suspend fun readGestureLaunchKeys(): Map<Gesture, String> = dataStore.data.first().gestureLaunchKeys()
+
+    override suspend fun readShortcutBlocklist(): Set<String> = dataStore.data.first().shortcutSearchBlocklist
+
+    override suspend fun applyShortcutBlocklist(blocklist: Set<String>) {
+        dataStore.updateAndAwait { it.copy(shortcutSearchBlocklist = blocklist) }
+    }
 
     override suspend fun applyGestures(
         actions: Map<Gesture, GestureActionName>,
@@ -364,6 +381,8 @@ internal class LauncherConfigSettingsImpl(
             is ConfigMutation.SetSearchActions,
             is ConfigMutation.SetWallpaper,
             is ConfigMutation.SetGestures,
+            // Stored by user serial, which only the store can map: applyShortcutBlocklist.
+            is ConfigMutation.SetShortcutsExcluded,
             -> this
         }
     }

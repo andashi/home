@@ -78,7 +78,7 @@ object ConfigParser {
             "listIcons", "appDetails", "contactsCallOnTap",
             "frequentlyUsed", "frequentlyUsedRows", "favoritesEditButton", "compactTags", "transliterator",
             // #229.
-            "defaultFilter", "filterBarItems",
+            "defaultFilter", "filterBarItems", "shortcutsExcluded",
         ).associateWith { KeyEffect.Applied },
         // #106: one search action.
         "search.actions[]" to listOf("type", "label", "url", "package", "encoding")
@@ -142,6 +142,10 @@ object ConfigParser {
             "position" to KeyEffect.Applied,
             // #3 slice 1.
             "fixed" to KeyEffect.Applied,
+        ),
+        "search.shortcutsExcluded[]" to mapOf(
+            "packageName" to KeyEffect.Applied,
+            "profile" to KeyEffect.Applied,
         ),
         "home.favorites[]" to mapOf(
             "packageName" to KeyEffect.Applied,

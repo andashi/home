@@ -131,6 +131,7 @@
     "transliterator": "Any-Latin",
     "defaultFilter": ["contacts", "hidden"],
     "filterBarItems": ["contacts", "apps"],
+    "shortcutsExcluded": [{ "packageName": "com.example.dialer" }, { "packageName": "com.example.work.mail", "profile": "work" }],
     "barPosition": "bottom",
     "actions": [
       {

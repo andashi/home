@@ -67,6 +67,7 @@ internal val ConfigSections = listOf(
     "appearance.systemBars",
     "search",
     "search.actions",
+    "search.shortcutsExcluded",
     "home.searchBar",
     "home.favorites",
     "home.widgets.enabled",

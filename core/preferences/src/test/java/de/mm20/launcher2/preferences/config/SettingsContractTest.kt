@@ -24,7 +24,9 @@ import java.util.UUID
 /**
  * "A phone is a file" (#225): every setting a person can change on the phone
  * is either something `launcher.json` can express, or excluded for a reason,
- * or a counted gap. The mapping from settings fields to contract keys is not
+ * or a counted gap. Something the file expresses is paired by the settings
+ * bridge, or - when the stored form carries a device value only the store can
+ * map, a user serial - by the store. The mapping from settings fields to contract keys is not
  * derivable - `homeGridColumns` is `home.grid.columns`, `localeTransliterator`
  * is `search.transliterator` - so it is declared here, and these tests guard
  * the declaration:
@@ -40,7 +42,8 @@ import java.util.UUID
  *   and read back through [LauncherConfigSettingsImpl] as the config sees it.
  *   A mapped field must change **exactly one** key, its own: a wrong key, two
  *   fields on one key, or a field that moves two keys all fail. An excluded
- *   or gap field must change **none**, or the table hides a mapping.
+ *   or gap field must change **none**, or the table hides a mapping. So must
+ *   a store key: the bridge does not pair it, and its store test does.
  *
  * What the round trip establishes is that the table and the bridge agree: a
  * declared pairing the bridge does not make fails, whatever the table says.
@@ -59,6 +62,13 @@ class SettingsContractTest {
         /** The dotted contract key the field is read back as. */
         data class Key(val path: String) : State
 
+        /**
+         * The dotted contract key, paired by the store rather than the bridge
+         * (#229): the stored form carries a user serial. The bridge must not
+         * read it back; the store's own test pairs it.
+         */
+        data class StoreKey(val path: String) : State
+
         /** Deliberately not in the file; the reason is the design decision. */
         data class Excluded(val reason: String) : State
 
@@ -75,7 +85,7 @@ class SettingsContractTest {
          * the issue is updated to match.
          */
         val GapsAt229 = setOf(
-            "wallpaperDim", "shortcutSearchBlocklist", "gridColumnCount", "searchBarStyle",
+            "wallpaperDim", "gridColumnCount", "searchBarStyle",
             "searchBarColors", "rankingWeightFactor", "iconsShape",
         )
 
@@ -111,7 +121,7 @@ class SettingsContractTest {
             "contactSearchProviders" to State.Key("search.contacts"),
             "contactSearchCallOnTap" to State.Key("search.contactsCallOnTap"),
             "shortcutSearchEnabled" to State.Key("search.shortcuts"),
-            "shortcutSearchBlocklist" to State.Gap(GapsIssue),
+            "shortcutSearchBlocklist" to State.StoreKey("search.shortcutsExcluded"),
             "badgesNotifications" to State.Key("icons.badges.notifications"),
             "badgesSuspendedApps" to State.Key("icons.badges.suspendedApps"),
             "badgesShortcuts" to State.Key("icons.badges.shortcuts"),
@@ -164,7 +174,7 @@ class SettingsContractTest {
 
         /** Why [fields] and [contract] disagree; empty when every field is in exactly one state. */
         fun coverageProblems(fields: List<String>, contract: Map<String, State>): List<String> =
-            fields.filter { it !in contract }.map { "$it is in none of the three states" } +
+            fields.filter { it !in contract }.map { "$it is in no state" } +
                 contract.keys.filter { it !in fields }.map { "$it is declared but is no field" }
     }
 
@@ -185,12 +195,13 @@ class SettingsContractTest {
 
         val problems = coverageProblems(propertiesOf(WithANewSetting::class.java).map { it.name }, Contract.filterKeys { it == "iconsThemed" })
 
-        assertEquals(listOf("aBrandNewSetting is in none of the three states"), problems)
+        assertEquals(listOf("aBrandNewSetting is in no state"), problems)
     }
 
     @Test
     fun `every declared key is one this build applies, and no two fields share one`() {
-        val keys = Contract.values.filterIsInstance<State.Key>().map { it.path }
+        val keys = Contract.values.filterIsInstance<State.Key>().map { it.path } +
+            Contract.values.filterIsInstance<State.StoreKey>().map { it.path }
         assertEquals(emptyList<String>(), keys.filterNot { ConfigParser.isAppliedKey(it) })
         assertEquals(emptyList<String>(), keys.groupBy { it }.filterValues { it.size > 1 }.keys.toList())
     }

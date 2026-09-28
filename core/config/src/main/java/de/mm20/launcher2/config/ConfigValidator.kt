@@ -128,6 +128,19 @@ object ConfigValidator {
                 diagnostics += Diagnostic(DiagnosticCode.InvalidSearch, "search.filterBarItems", "filterBarItems names a filter twice")
             }
         }
+        config.search?.shortcutsExcluded?.let { excluded ->
+            if (excluded.size > MaxApps) {
+                diagnostics += Diagnostic(DiagnosticCode.InvalidSearch, "search.shortcutsExcluded", "shortcutsExcluded exceeds the maximum of $MaxApps entries")
+            }
+            val seen = mutableSetOf<Favorite>()
+            excluded.forEachIndexed { index, app ->
+                val path = "search.shortcutsExcluded[$index]"
+                validatePackageName(app.packageName, path, diagnostics)
+                if (!seen.add(app)) {
+                    diagnostics += Diagnostic(DiagnosticCode.InvalidSearch, path, "'${app.packageName}' is listed twice for the ${app.profile.name.lowercase()} profile")
+                }
+            }
+        }
         config.search?.transliterator?.let { id ->
             if (!transliteratorIdRegex.matches(id)) {
                 diagnostics += Diagnostic(

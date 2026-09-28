@@ -387,6 +387,8 @@ internal object ConfigSchema {
         "appearance.wallpaper.image" to pattern(ConfigValidator.imageNameRegex),
         "home.favorites" to maxItems(ConfigValidator.MaxFavorites),
         "home.favorites[].packageName" to packageNameLimits(),
+        "search.shortcutsExcluded" to maxItems(ConfigValidator.MaxApps),
+        "search.shortcutsExcluded[].packageName" to packageNameLimits(),
         "home.grid.columns" to range(ConfigValidator.MinGridColumns, ConfigValidator.MaxGridColumns),
         "home.grid.layouts.*.items" to maxItems(ConfigValidator.MaxGridItems),
         "home.grid.layouts.*.items[].id" to pattern(ConfigValidator.gridItemIdRegex),

@@ -93,6 +93,8 @@ data class ConfigState(
      * the read-back leaves it out, and write-back keeps the file's value.
      */
     val gestures: Map<Gesture, GestureConfig?> = GestureDefaults.All,
+    /** `search.shortcutsExcluded` (#229): read by the store, which knows the profiles' serials. */
+    val shortcutsExcluded: List<Favorite> = emptyList(),
 )
 
 /** What `search` reads back as: every key, at its default until a config sets it (#91). */
@@ -178,6 +180,13 @@ sealed class ConfigMutation {
         val position: SearchBarPosition,
     ) : ConfigMutation() {
         override val section = "home.searchBar"
+    }
+
+    /** `search.shortcutsExcluded` (#229): the whole list; the store applies it. */
+    data class SetShortcutsExcluded(
+        val shortcutsExcluded: List<Favorite>,
+    ) : ConfigMutation() {
+        override val section = "search.shortcutsExcluded"
     }
 
     data class SetFavorites(
@@ -341,6 +350,13 @@ object ConfigDiffer {
                 filterBarItems = search.filterBarItems?.takeIf { it != current.filterBarItems },
             )
             if (changed != SearchConfig()) mutations += ConfigMutation.SetSearch(changed)
+        }
+
+        // As a set: order is no difference.
+        desired.search?.shortcutsExcluded?.let { excluded ->
+            if (excluded.toSet() != current.shortcutsExcluded.toSet()) {
+                mutations += ConfigMutation.SetShortcutsExcluded(excluded)
+            }
         }
 
         desired.appearance?.wallpaper?.image?.let { image ->

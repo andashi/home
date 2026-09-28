@@ -671,6 +671,41 @@
                             "hidden"
                         ]
                     }
+                },
+                "shortcutsExcluded": {
+                    "type": "array",
+                    "items": {
+                        "oneOf": [
+                            {
+                                "type": "string",
+                                "pattern": "^[A-Za-z][A-Za-z0-9_]*(\\.[A-Za-z][A-Za-z0-9_]*)+$",
+                                "maxLength": 256
+                            },
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "packageName": {
+                                        "type": "string",
+                                        "pattern": "^[A-Za-z][A-Za-z0-9_]*(\\.[A-Za-z][A-Za-z0-9_]*)+$",
+                                        "maxLength": 256
+                                    },
+                                    "profile": {
+                                        "type": "string",
+                                        "enum": [
+                                            "personal",
+                                            "work",
+                                            "private"
+                                        ]
+                                    }
+                                },
+                                "required": [
+                                    "packageName"
+                                ],
+                                "additionalProperties": false
+                            }
+                        ]
+                    },
+                    "maxItems": 512
                 }
             },
             "additionalProperties": false

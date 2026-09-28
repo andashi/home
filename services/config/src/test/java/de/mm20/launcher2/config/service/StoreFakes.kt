@@ -98,6 +98,16 @@ internal class FakeLauncherConfigSettings(
 
     override suspend fun readGestureLaunchKeys(): Map<Gesture, String> = launchKeys
 
+    /** `packageName:userSerial`, as the launcher stores it (#229). */
+    var shortcutBlocklist: Set<String> = emptySet()
+
+    override suspend fun readShortcutBlocklist(): Set<String> = shortcutBlocklist
+
+    override suspend fun applyShortcutBlocklist(blocklist: Set<String>) {
+        applyFailure?.let { throw it }
+        shortcutBlocklist = blocklist
+    }
+
     override suspend fun applyGestures(actions: Map<Gesture, GestureActionName>, launches: Map<Gesture, String>): ConfigState {
         gestureCalls += actions to launches
         beforeGestureWrite?.invoke()

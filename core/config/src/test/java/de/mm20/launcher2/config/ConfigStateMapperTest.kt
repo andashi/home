@@ -257,6 +257,7 @@ class ConfigStateMapperTest {
                 compactTags = false, transliterator = "auto",
                 defaultFilter = listOf(SearchFilterItem.Apps, SearchFilterItem.Shortcuts, SearchFilterItem.Contacts),
                 filterBarItems = SearchFilterItem.entries,
+                shortcutsExcluded = emptyList(),
             ),
             defaults,
         )
