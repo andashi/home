@@ -165,6 +165,7 @@ device has.
 | `appearance.theme.colors` | The launcher's built-in colour scheme: `system` follows the system palette, `black-and-white` and `high-contrast` replace it | enum | `system` |
 | `appearance.theme.shapes` | The launcher's built-in shape set for cards, buttons and icons' surroundings: `default`, `cut`, `extra-round`, `rect` | enum | `default` |
 | `appearance.theme.typography` | The launcher's built-in typography: `google-sans`, `google-sans-rounded`, `system` (the system's font), `serif`, `monospace` | enum | `google-sans` |
+| `appearance.theme.colorSource` | Where the launcher's Material You colours come from: `system` (the system palette - a zone's colour) or `wallpaper` (colours extracted from the wallpaper). The settings screen calls it "Material You colour source" | enum | `system` |
 
 Each zone's palette comes from the system (its Monet seed). A file picks one
 of the built-in schemes; it cannot define a palette.

@@ -149,6 +149,13 @@
                                 "serif",
                                 "monospace"
                             ]
+                        },
+                        "colorSource": {
+                            "type": "string",
+                            "enum": [
+                                "system",
+                                "wallpaper"
+                            ]
                         }
                     },
                     "additionalProperties": false

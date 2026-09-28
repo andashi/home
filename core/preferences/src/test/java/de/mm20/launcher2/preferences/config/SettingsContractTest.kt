@@ -75,7 +75,7 @@ class SettingsContractTest {
          * the issue is updated to match.
          */
         val GapsAt229 = setOf(
-            "uiCompatModeColors", "wallpaperDim", "shortcutSearchBlocklist", "gridColumnCount", "searchBarStyle",
+            "wallpaperDim", "shortcutSearchBlocklist", "gridColumnCount", "searchBarStyle",
             "searchBarColors", "rankingWeightFactor", "iconsShape", "searchFilter", "searchFilterBarItems",
         )
 
@@ -91,7 +91,7 @@ class SettingsContractTest {
             "glassWallpaperBlur" to State.Key("appearance.glass.wallpaperBlur"),
             "glassSearchWallpaperBlur" to State.Key("appearance.glass.searchWallpaperBlur"),
             "uiTypographyId" to State.Key("appearance.theme.typography"),
-            "uiCompatModeColors" to State.Gap(GapsIssue),
+            "uiCompatModeColors" to State.Key("appearance.theme.colorSource"),
             "uiOrientation" to State.Key("home.lockRotation"),
             "wallpaperDim" to State.Gap(GapsIssue),
             "homeScreenWidgets" to State.Key("home.widgets.enabled"),
