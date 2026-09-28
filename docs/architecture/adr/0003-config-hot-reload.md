@@ -247,8 +247,9 @@ locked, like `home.grid.locked`.
   widget ids never re-bound, profile serials that differ, contact ids that
   can name a different person - so the file is the one portable form of the
   managed state, and the owner's explicit `--pull` the one way it leaves.
-  `.github/scripts/check-backup-off.py` holds every release APK, and every
-  pull request's merged manifest, to it.
+  `.github/scripts/check-backup-off.py` holds every pull request's merged
+  manifest to it; it reads a built APK as well, and running it on the release
+  APK is wired in with the release-log check (#15).
 
   Write-back adds a copy inside `launcher.json`, so "the file carries only
   what the host put there" stops being true. A key added to write-back is
