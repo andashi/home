@@ -284,7 +284,11 @@ class DefaultConfigStore(
 
         // Judged on the settings as this apply left them, file or device:
         // the launcher would show its lockout page instead of home (#229).
-        if (settings.readState().isLockedOut) {
+        // From the write's own result when it wrote settings: read afterwards,
+        // a person's change landing in the gap would be reported as this
+        // reload's (review on #247). With no settings written, the device's.
+        val left = if (settingsWritten) written else settings.readState()
+        if (left.isLockedOut) {
             diagnostics += Diagnostic(
                 DiagnosticCode.SearchUnreachable,
                 "home.searchBar.hidden",

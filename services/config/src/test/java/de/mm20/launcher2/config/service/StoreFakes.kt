@@ -48,6 +48,16 @@ internal class FakeLauncherConfigSettings(
 
     override suspend fun readState(): ConfigState = state
 
+    /** Runs right after the settings update returned: a person's change landing in the gap. */
+    var afterSettingsWrite: (() -> Unit)? = null
+
+    override suspend fun applyAndRead(mutations: List<ConfigMutation>): ConfigState {
+        apply(mutations)
+        val written = state
+        afterSettingsWrite?.invoke()
+        return written
+    }
+
     override suspend fun apply(mutations: List<ConfigMutation>) {
         applyCalls += mutations
         applyFailure?.let { throw it }

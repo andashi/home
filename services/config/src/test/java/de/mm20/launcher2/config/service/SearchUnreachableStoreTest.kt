@@ -75,6 +75,19 @@ class SearchUnreachableStoreTest {
         assertEquals(emptyList<Any>(), reported())
     }
 
+    /**
+     * Review on #247: the report describes what this reload left, taken from
+     * the write itself. A person hiding the bar right after the reload wrote
+     * its settings is their change, not the reload's result.
+     */
+    @Test
+    fun `a change landing after the write is not this reload's to report`() = runTest {
+        settings.state = ConfigState(searchBarHidden = false, gestures = noWayOut())
+        settings.afterSettingsWrite = { settings.state = settings.state.copy(searchBarHidden = true) }
+
+        assertEquals(emptyList<Any>(), reported())
+    }
+
     @Test
     fun `a shown bar is never reported`() = runTest {
         settings.state = ConfigState(searchBarHidden = false, gestures = noWayOut())
