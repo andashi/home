@@ -136,9 +136,51 @@ class CheckBackupOffTest(unittest.TestCase):
         found = problems(manifest, RESOURCES, files().get)
         self.assertTrue(any("backupAgent" in p for p in found), found)
 
-    def test_empty_input_is_refused_not_passed(self):
-        # A failed aapt2 run yields empty text; that must not read as a clean APK.
-        self.assertTrue(problems("", "", {}.get))
+    # The next cases change the dump, not the manifest: aapt2's text format is
+    # no contract, and a parser that stops matching must say it did not
+    # understand, never judge what it could not read (review of #236).
+    def test_empty_input_is_refused_as_unrecognised(self):
+        found = problems("", "", {}.get)
+        self.assertTrue(any("not recognised" in p for p in found), found)
+
+    def test_a_dump_without_its_markers_is_refused_as_unrecognised(self):
+        # A format change that renames the element and attribute markers.
+        changed = MANIFEST.replace("E: ", "ELEMENT ").replace("A: ", "ATTR ")
+        found = problems(changed, RESOURCES, files().get)
+        self.assertTrue(any("not recognised" in p for p in found), found)
+
+    def test_attributes_it_cannot_read_are_refused_as_unrecognised_not_as_absent(self):
+        # The elements still match, the attribute lines no longer do: without
+        # the anchor this read as "allowBackup is absent", a wrong diagnosis.
+        changed = MANIFEST.replace(f"{ANDROID}:", "android#").replace("(0x", "[0x")
+        changed = "\n".join(l.replace("A: android#", "A: @android#") for l in changed.splitlines())
+        found = problems(changed, RESOURCES, files().get)
+        self.assertTrue(any("not recognised" in p for p in found), found)
+        self.assertFalse(any("allowBackup is" in p for p in found), found)
+
+    def test_rules_whose_excludes_it_cannot_read_are_refused_as_unrecognised(self):
+        changed = RULES.replace('A: domain="', 'A: scope="')
+        found = problems(MANIFEST, RESOURCES, files(changed).get)
+        self.assertTrue(any("not recognised" in p for p in found), found)
+
+    def test_a_failing_aapt2_aborts_before_anything_is_judged(self):
+        # A non-zero exit or empty stdout must not flow into the parser as
+        # "nothing found".
+        import os
+        import subprocess
+        import sys
+        import tempfile
+        script = pathlib.Path(__file__).with_name("check-backup-off.py")
+        with tempfile.TemporaryDirectory() as d:
+            for body in ("exit 3", "exit 0"):  # a failure, and success with no output
+                fake = pathlib.Path(d, "aapt2")
+                fake.write_text(f"#!/bin/sh\n{body}\n")
+                os.chmod(fake, 0o755)
+                run = subprocess.run([sys.executable, str(script), str(fake), "app.apk"],
+                                     capture_output=True, text=True)
+                self.assertNotEqual(0, run.returncode, body)
+                self.assertIn("aapt2", run.stderr, body)
+                self.assertNotIn("allowBackup", run.stderr, body)
 
 
 if __name__ == "__main__":
