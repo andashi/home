@@ -183,6 +183,39 @@ class ThemeFileTest {
         )
     }
 
+    @Test
+    fun `a stream whose close blocks does not hold the caller past the time bound`() {
+        // #234 review: close() has no promise to return promptly, and a
+        // provider's descriptor can hold it. The caller must still answer
+        // TooSlow on time; closing is not its to wait for.
+        val release = java.util.concurrent.CountDownLatch(1)
+        val closeCalled = java.util.concurrent.CountDownLatch(1)
+        val stuck = object : InputStream() {
+            override fun read(): Int {
+                awaitUninterruptibly(release)
+                throw IOException("closed")
+            }
+            override fun close() {
+                closeCalled.countDown()
+                awaitUninterruptibly(release)
+            }
+        }
+        // The read runs on a helper thread and the test waits for it with a
+        // bound, so a caller stuck in close fails this case instead of
+        // holding the test JVM; the fake is released either way.
+        val answer = java.util.concurrent.ArrayBlockingQueue<ThemeFileResult>(1)
+        Thread {
+            answer.put(ThemeFile.read("content", open = { stuck }, maxBytes = ThemeFile.MAX_BYTES, timeoutMillis = 300))
+        }.apply { isDaemon = true }.start()
+        try {
+            val result = answer.poll(5, java.util.concurrent.TimeUnit.SECONDS)
+            assertEquals("no answer within 5 s for a 300 ms bound", rejected(ThemeFileRejection.TooSlow), result)
+            assertTrue("close was never attempted", closeCalled.await(5, java.util.concurrent.TimeUnit.SECONDS))
+        } finally {
+            release.countDown()
+        }
+    }
+
     private fun awaitUninterruptibly(latch: java.util.concurrent.CountDownLatch) {
         var interrupted = false
         while (true) {
