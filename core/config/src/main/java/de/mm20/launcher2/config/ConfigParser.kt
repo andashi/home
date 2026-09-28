@@ -174,6 +174,22 @@ object ConfigParser {
 
     private val knownKeys: Map<String, Set<String>> = keyEffects.mapValues { it.value.keys }
 
+    /**
+     * Whether the dotted object path [path] (`search.contacts`) is a key this
+     * build applies, and so is every section above it. What a settings field
+     * may claim to map to (#225): an unknown key, or one this build accepts
+     * but does not act on, is no mapping. Object keys only, no list entries.
+     */
+    fun isAppliedKey(path: String): Boolean {
+        if (path.isEmpty()) return false
+        var section = ""
+        for (key in path.split('.')) {
+            if (keyEffects[section]?.get(key) != KeyEffect.Applied) return false
+            section = childSection(section, key)
+        }
+        return true
+    }
+
     fun parse(input: String): ConfigParseResult {
         if (input.toByteArray(Charsets.UTF_8).size > MaxInputBytes) {
             return ConfigParseResult(
