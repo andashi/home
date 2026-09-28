@@ -18,7 +18,7 @@ icons.
 | `icons.enforceThemed` | Upstream's "force themed icons". In the Clear look an app without a glyph is drawn as its colorless original either way, so this changes nothing visible | `false` |
 | `icons.size` | Icon size in dp in search, the dock and the pickers: `32`, `40`, `48`, `56` or `64`, the steps the settings offer. Any other value fails the file | `48` |
 | `icons.adaptify` | Fit legacy icons (ones without an adaptive layer) into the adaptive shape. The Clear look shows an app's own icon only when it has no glyph, so this changes only those icons | `false` |
-| `icons.badges.notifications` | A dot on an app that has notifications | `true` |
+| `icons.badges.notifications` | A dot on an app that has notifications. It needs the launcher's notification listener, which only the person can enable: without it the key stays `true`, no dots appear, and the reload report carries a `permission-missing` warning | `true` |
 | `icons.badges.shortcuts` | The app's badge on the icon of one of its shortcuts | `true` |
 | `icons.badges.suspendedApps` | A mark on an app that is paused | `true` |
 

@@ -517,4 +517,50 @@ fi
 ok "\"apps\": [] gave Clock its own name back and showed Camera again"
 adb -s "$SERIAL" shell input keyevent KEYCODE_HOME
 
+# --- #140: app shortcuts and notification badges, each with its control -----
+# Neither can be granted by the file: app shortcuts come only to the home app,
+# badges only to an enabled notification listener. Asserted three ways in one
+# run - granted, withdrawn, granted again - because "the warning appeared" and
+# "the warning always appears" look the same from one assertion. Right after
+# allow_listener the listener may not have connected yet: that is the state a
+# check reading the connection took for "absent", and it must not warn.
+# Last in the scenario: taking the HOME role hands home to another launcher.
+LISTENER="$PKG/de.mm20.launcher2.notifications.NotificationService"
+capability_warnings() {
+  jq -c '[.diagnostics[]? | select(.code == "permission-missing" and .severity == "warning"
+          and (.path == "search.shortcuts" or .path == "icons.badges.notifications")) | .path] | sort' <<<"$LAST_REPORT"
+}
+push_capabilities() { # $1 = stage; search.labels alternates so each stage pushes a new file
+  local labels=true
+  [ "$1" = withdrawn ] && labels=false
+  printf '{ "schemaVersion": 2, "search": { "shortcuts": true, "labels": %s }, "icons": { "badges": { "notifications": true } } }\n' \
+    "$labels" > "$WORK/capabilities-$1.json"
+  push_config "$WORK/capabilities-$1.json" "capabilities $1"
+}
+listener() { # $1 = allow_listener | disallow_listener
+  adb -s "$SERIAL" shell cmd notification "$1" "$LISTENER" 0 >/dev/null 2>&1 \
+    || die "cmd notification $1 $LISTENER failed"
+}
+
+listener allow_listener
+push_capabilities granted
+[ "$(capability_warnings)" = '[]' ] || die "home role and listener held, still reported: $(capability_warnings)"
+ok "with the home role and the listener enabled, neither key is reported"
+
+adb -s "$SERIAL" shell cmd role remove-role-holder --user 0 android.app.role.HOME "$PKG" >/dev/null 2>&1 \
+  || die "could not take the HOME role from $PKG"
+listener disallow_listener
+push_capabilities withdrawn
+[ "$(capability_warnings)" = '["icons.badges.notifications","search.shortcuts"]' ] \
+  || die "without the home role and the listener, expected both keys reported, got: $(capability_warnings)"
+assert_jq "$(query_json config)" '.search.shortcuts == true and .icons.badges.notifications == true' \
+  "the read-back keeps what the file asked for"
+ok "without the home role and the listener, both keys are reported and read back as written"
+
+grant_home_role
+listener allow_listener
+push_capabilities regranted
+[ "$(capability_warnings)" = '[]' ] || die "granted again, still reported: $(capability_warnings)"
+ok "granted again, the next reload reports neither"
+
 ok "l4-search passed"
