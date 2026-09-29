@@ -646,6 +646,37 @@ class SavableSearchableRepositoryTest {
         assertEquals("a type whose keys do not move is never resolved", 0, unmovingResolves.get())
     }
 
+    /**
+     * The one piece whose failure lands on a person (#237). A search result
+     * carries the item's current key; a hidden contact whose key moved - a
+     * rename changes a lookup key - must still be hidden under the key it has
+     * now, not only the one it was hidden under, or it reappears in search.
+     * The rows are written the way the customize sheet hides an item, through
+     * upsert; the visible one is the control that gives "hidden" a meaning:
+     * its current key must not be in the set.
+     */
+    @Test
+    fun aHiddenItemIsHiddenUnderTheKeyItHasNow() = runBlocking {
+        val renamed = object : SearchableDeserializer {
+            override val storedKeysMove = true
+            override suspend fun resolve(serialized: String): Resolved = when (serialized) {
+                "bob" -> Resolved.Moved(TestSearchable("moving://bob-renamed", domain = "moving"))
+                "alice" -> Resolved.Moved(TestSearchable("moving://alice-renamed", domain = "moving"))
+                else -> Resolved.Found(TestSearchable(serialized, domain = "moving"))
+            }
+            override suspend fun deserialize(serialized: String): SavableSearchable? = null
+        }
+        movingKoin(renamed)
+        repository.upsert(TestSearchable("moving://bob", serialized = "bob", domain = "moving"), visibility = VisibilityLevel.Hidden)
+        repository.upsert(TestSearchable("moving://alice", serialized = "alice", domain = "moving"), visibility = VisibilityLevel.Default)
+        awaitValue { if (row("moving://bob") != null && row("moving://alice") != null) true else null }
+
+        val hidden = repository.hiddenKeys().first()
+
+        assertTrue("the hidden contact reappears under its new key: $hidden", "moving://bob-renamed" in hidden)
+        assertTrue("a visible contact is hidden: $hidden", "moving://alice-renamed" !in hidden && "moving://alice" !in hidden)
+    }
+
     /** Control, green in both states: an item Found under a different key is not moved - apps resolve to aliases. */
     @Test
     fun anItemFoundUnderADifferentKeyStaysWhereItIs() = runBlocking {

@@ -176,6 +176,11 @@ interface SavableSearchableRepository {
      * their current keys (#237).
      */
     suspend fun refreshMovedKeys()
+
+    /**
+     * The keys under which a search result for a hidden item arrives (#237).
+     */
+    fun hiddenKeys(): Flow<Set<String>>
 }
 
 // Fork edit (Phase 2): `settings` is nullable so headless unit tests can construct
@@ -657,6 +662,9 @@ internal class SavableSearchableRepositoryImpl(
         }
         return dao.getByKeys(keys).resolved()
     }
+
+    override fun hiddenKeys(): Flow<Set<String>> =
+        getKeys(maxVisibility = VisibilityLevel.Hidden).map { it.toSet() }
 
     override suspend fun refreshMovedKeys() {
         val dao = database.searchableDao()
