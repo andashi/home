@@ -132,7 +132,10 @@ class GlassPopupSequenceTest {
     fun aPopupGlassWithoutABackdropPaintsItsFloorOverTheHost() {
         setPopupContent()
 
-        val pixel = centre()
+        // Waited for: the popup's window draws after the host's idle, and a
+        // first read can still see the host - which the old control, asserting
+        // host green, could not tell from the defect.
+        val pixel = centreOnce { it.isFloor() }
         assertTrue("popup centre without a backdrop is ${pixel.describe()}, not the floor ${floor.describe()}", pixel.isFloor())
     }
 
@@ -145,7 +148,7 @@ class GlassPopupSequenceTest {
     @Test
     fun aBackdropThatArrivesAfterThePopupsFirstFrameReachesTheScreen() {
         setPopupContent()
-        val before = centre()
+        val before = centreOnce { it.isFloor() }
         assertTrue("before the backdrop: ${before.describe()}, not the floor", before.isFloor())
 
         composeRule.runOnIdle { source.image.value = BackdropImage("/w/zone.jpg", "sha1") }
@@ -165,7 +168,7 @@ class GlassPopupSequenceTest {
     @Test
     fun aStyleChangeWhileThePopupIsOpenReachesItsGlass() {
         setPopupContent()
-        val before = centre()
+        val before = centreOnce { it.isFloor() }
         assertTrue("before the style change: ${before.describe()}, not the floor", before.isFloor())
 
         composeRule.runOnIdle { glass.value = glass.value.copy(contrast = Contrast.High) }
