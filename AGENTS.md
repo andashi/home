@@ -540,12 +540,24 @@ that disagreed with me". Two instances, and the second is the expensive one:
   *value* in a field that still exists: the store then fails the whole document
   with `CorruptionException: Cannot read json`, so a device that had the old
   value stored loses **every** setting on upgrade, silently.
-  `coerceInputValues = true` is what maps it to the default instead. Found on
-  #238 while removing `SearchBarStyle.Solid`, because the decode was verified
-  rather than assumed - and the break, dropping that one option, reddens with
-  the corruption, which is what shows a single line is holding the floor up.
-  `RemovedSearchBarStyleTest` pins it, and every future enum shrink inherits
-  this.
+  For `LauncherSettingsDataSerializer` the corruption handler then replaces
+  every setting with defaults.
+
+  **Two different guards cover two different shapes of this, and neither covers
+  the other.** `coerceInputValues = true` reads an unknown enum value as a
+  missing property and falls back - **but only where the property has a
+  default**, so a required enum property without one still fails the document.
+  And it does nothing at all for an unknown value **inside a list**, which is
+  why `TolerantEnumListSerializer` exists and drops entries this build no longer
+  knows (ADR 0008: removing a value is a normal consequence of removing a
+  feature, so it must not be able to wipe unrelated settings).
+
+  Found on #238 while removing `SearchBarStyle.Solid`, because the decode was
+  verified rather than assumed - and the break, dropping that one option,
+  reddens with the corruption, which is what shows a single line is holding the
+  floor up. `RemovedSearchBarStyleTest` pins **that one field**. Every future
+  enum shrink needs its own answer - a default, a tolerant serializer or a
+  migration - plus a decode test that fails without it.
 
 **Do not fix a semantic trap with a rule; change the shape so the wrong use is
 impossible.** Both of us reach for the ordered-looking tool exactly when being
@@ -719,7 +731,10 @@ out of the pull request - and the gate found it, not a reader. The same day two
 correct records sat present and unread while the question they answer was being
 argued from first principles: `docs/configuration/icons.md` ("there is no
 `icons.shape` key … home, the dock and search always draw the squircle") and a
-comment in `ShapedLauncherIcon.kt` saying the same. The lesson is not "read the
+comment in `ShapedLauncherIcon.kt` saying the same. **The entry on persisted
+enums above is a third instance, and it is this document's own:** it was first
+written weaker than the comment in `TolerantEnumListSerializer` that already
+stated both limits correctly, and review caught it. The lesson is not "read the
 docs"; it is that prose does not defend itself, so put the load-bearing claims
 where a test can reach them.
 
@@ -819,8 +834,11 @@ test policy above asks for the break rather than the pass.
     the defect. The next reader takes a green control as the question having been
     asked. When a fix reverses a control, say so and name the assertion that
     changed direction (#213).
-13. **The break ran, but a different break was tested.** Python validates a
-    cached `.pyc` against the source's **mtime and size only**. Two consecutive
+13. **The break ran, but a different break was tested.** In its default
+    timestamp mode, Python validates a cached `.pyc` against the source's
+    **mtime and size only** - PEP 552's hash-based modes check the source's
+    hash instead, and are not what you get unless someone asked for them. Two
+    consecutive
     breaks in a harness each shortened the same line by the same 12 characters
     within one second - same size, same second - so the stale bytecode was
     reused and the harness reported the *previous* break's result. Caught only
