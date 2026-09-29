@@ -30,8 +30,8 @@ What the epic shipped, in the order it is drawn:
 1. **Backdrop** (#74). The config-managed wallpaper file is the only source:
    the system wallpaper is not readable without a privileged permission, and
    asking for broad storage access would break least privilege. Without a
-   managed home wallpaper there is no backdrop and every surface is tint
-   only. The image is center-cropped like the system crops a wallpaper set
+   managed home wallpaper there is no backdrop, and a card is tint only; an
+   overlay gets an opaque floor instead (3, #249). The image is center-cropped like the system crops a wallpaper set
    without a crop hint, area-averaged down to 1/8 of the window and
    box-blurred (three passes) on the CPU in `:core:glass`, keyed by
    wallpaper hash, window size and blur. An LRU of three (phone, fold cover,
@@ -50,6 +50,17 @@ What the epic shipped, in the order it is drawn:
      along the rounded rectangle's normal within 18 dp, up to 10 dp. The lens
      runs only on the hardware renderer; elsewhere the plain region is drawn.
    - the zone's surface color at the tint (default 0.12, 0.35 before #82);
+   - on an **overlay** without a backdrop (#249) - a menu, a glass sheet, the
+     item popup, all over the launcher's own content - an opaque floor under
+     the tint, both in the scheme the glass hands its text (#242). Tint alone
+     let that content read through the text: 43.8 % of text/background pairs
+     met 4.5:1 over the launcher's schemes, 100 % with the floor. A card stays
+     tint only by decision: it sits over the wallpaper the person picked, which
+     is `appearance.dimWallpaper`'s territory, while an overlay sits over
+     content they did not choose and cannot move. With a backdrop an overlay
+     paints the wallpaper under its own screen position, measured on the
+     device, and needs no floor. Chrome over scrolling results - the active
+     search bar, the keyboard filter bar - is neither and is not decided.
    - the 12 % scrim on `contrast: high`;
    - a 1.25 dp rim as a sweep gradient, bright at the top-left, weaker at the
      bottom-right, faint on every side;

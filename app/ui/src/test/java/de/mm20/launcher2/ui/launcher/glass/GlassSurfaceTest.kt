@@ -18,6 +18,7 @@ import de.mm20.launcher2.glass.GlassInputs
 import de.mm20.launcher2.glass.GlassStyle
 import de.mm20.launcher2.glass.RenderedBackdrop
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -57,14 +58,18 @@ class GlassSurfaceTest {
     @Test
     fun `a surface draws the resolved glass, no scrim at medium`() {
         show()
+        val info = info()
         assertEquals(
             GlassSurfaceInfo(
                 tint = 0.35f, radiusDp = 28f, scrimAlpha = 0f, pill = false, lens = true, rim = true,
                 // A card is lensed with the glass radius.
                 lensRadiusDp = 28f,
+                layers = info.layers,
             ),
-            info(),
+            info,
         )
+        // A card, not an overlay: its tint alone, no floor (#249).
+        assertNull(info.layers.floor)
     }
 
     @Test

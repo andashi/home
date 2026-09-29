@@ -260,7 +260,7 @@ fun ItemPopup(origin: IntRect, searchable: Searchable, onDismissRequest: () -> U
                     }
                 )
         ) {
-            GlassSurface(
+            ItemPopupSurface(
                 modifier = Modifier
                     .placeOverlay(
                         origin.translate(
@@ -364,4 +364,10 @@ internal fun EnterHomeIcon(clear: Boolean, size: Dp, icon: () -> LauncherIcon?) 
     CompositionLocalProvider(LocalClearIcons provides clear) {
         ShapedLauncherIcon(size = size, icon = icon)
     }
+}
+
+/** The item popup's glass: an overlay over the search results (#249). */
+@Composable
+internal fun ItemPopupSurface(modifier: Modifier = Modifier, content: @Composable () -> Unit) {
+    GlassSurface(modifier = modifier, overlay = true, content = content)
 }

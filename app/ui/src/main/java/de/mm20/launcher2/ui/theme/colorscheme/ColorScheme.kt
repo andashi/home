@@ -41,46 +41,54 @@ fun darkColorSchemeOf(colors: ThemeColors): ColorScheme {
 fun colorSchemeOf(dark: Boolean, colorScheme: ThemeColorScheme, corePalette: CorePalette): ColorScheme {
     val defaultPalette = systemCorePalette(dark)
     return remember(colorScheme, corePalette, defaultPalette) {
-        val mergedCorePalette = corePalette.merge(defaultPalette)
-        ColorScheme(
-            primary = Color(colorScheme.primary.get(mergedCorePalette)),
-            onPrimary = Color(colorScheme.onPrimary.get(mergedCorePalette)),
-            primaryContainer = Color(colorScheme.primaryContainer.get(mergedCorePalette)),
-            onPrimaryContainer = Color(colorScheme.onPrimaryContainer.get(mergedCorePalette)),
-            secondary = Color(colorScheme.secondary.get(mergedCorePalette)),
-            onSecondary = Color(colorScheme.onSecondary.get(mergedCorePalette)),
-            secondaryContainer = Color(colorScheme.secondaryContainer.get(mergedCorePalette)),
-            onSecondaryContainer = Color(colorScheme.onSecondaryContainer.get(mergedCorePalette)),
-            tertiary = Color(colorScheme.tertiary.get(mergedCorePalette)),
-            onTertiary = Color(colorScheme.onTertiary.get(mergedCorePalette)),
-            tertiaryContainer = Color(colorScheme.tertiaryContainer.get(mergedCorePalette)),
-            onTertiaryContainer = Color(colorScheme.onTertiaryContainer.get(mergedCorePalette)),
-            error = Color(colorScheme.error.get(mergedCorePalette)),
-            onError = Color(colorScheme.onError.get(mergedCorePalette)),
-            errorContainer = Color(colorScheme.errorContainer.get(mergedCorePalette)),
-            onErrorContainer = Color(colorScheme.onErrorContainer.get(mergedCorePalette)),
-            surface = Color(colorScheme.surface.get(mergedCorePalette)),
-            onSurface = Color(colorScheme.onSurface.get(mergedCorePalette)),
-            onSurfaceVariant = Color(colorScheme.onSurfaceVariant.get(mergedCorePalette)),
-            outline = Color(colorScheme.outline.get(mergedCorePalette)),
-            outlineVariant = Color(colorScheme.outlineVariant.get(mergedCorePalette)),
-            surfaceContainerLowest = Color(colorScheme.surfaceContainerLowest.get(mergedCorePalette)),
-            surfaceContainerLow = Color(colorScheme.surfaceContainerLow.get(mergedCorePalette)),
-            surfaceContainer = Color(colorScheme.surfaceContainer.get(mergedCorePalette)),
-            surfaceContainerHigh = Color(colorScheme.surfaceContainerHigh.get(mergedCorePalette)),
-            surfaceContainerHighest = Color(colorScheme.surfaceContainerHighest.get(mergedCorePalette)),
-            surfaceDim = Color(colorScheme.surfaceDim.get(mergedCorePalette)),
-            surfaceBright = Color(colorScheme.surfaceBright.get(mergedCorePalette)),
-            inverseOnSurface = Color(colorScheme.inverseOnSurface.get(mergedCorePalette)),
-            inverseSurface = Color(colorScheme.inverseSurface.get(mergedCorePalette)),
-            inversePrimary = Color(colorScheme.inversePrimary.get(mergedCorePalette)),
-            surfaceTint = Color(colorScheme.surfaceTint.get(mergedCorePalette)),
-            background = Color(colorScheme.background.get(mergedCorePalette)),
-            onBackground = Color(colorScheme.onBackground.get(mergedCorePalette)),
-            scrim = Color(colorScheme.scrim.get(mergedCorePalette)),
-            surfaceVariant = Color(colorScheme.surfaceVariant.get(mergedCorePalette)),
-        )
+        colorSchemeFrom(colorScheme, corePalette.merge(defaultPalette))
     }
+}
+
+/**
+ * The scheme a theme's colours resolve to over a complete core palette: what
+ * [colorSchemeOf] builds once the system palette has filled the gaps. Pure,
+ * so tests can build the launcher's real schemes without a device palette.
+ */
+internal fun colorSchemeFrom(colorScheme: ThemeColorScheme, mergedCorePalette: CorePalette): ColorScheme {
+    return ColorScheme(
+        primary = Color(colorScheme.primary.get(mergedCorePalette)),
+        onPrimary = Color(colorScheme.onPrimary.get(mergedCorePalette)),
+        primaryContainer = Color(colorScheme.primaryContainer.get(mergedCorePalette)),
+        onPrimaryContainer = Color(colorScheme.onPrimaryContainer.get(mergedCorePalette)),
+        secondary = Color(colorScheme.secondary.get(mergedCorePalette)),
+        onSecondary = Color(colorScheme.onSecondary.get(mergedCorePalette)),
+        secondaryContainer = Color(colorScheme.secondaryContainer.get(mergedCorePalette)),
+        onSecondaryContainer = Color(colorScheme.onSecondaryContainer.get(mergedCorePalette)),
+        tertiary = Color(colorScheme.tertiary.get(mergedCorePalette)),
+        onTertiary = Color(colorScheme.onTertiary.get(mergedCorePalette)),
+        tertiaryContainer = Color(colorScheme.tertiaryContainer.get(mergedCorePalette)),
+        onTertiaryContainer = Color(colorScheme.onTertiaryContainer.get(mergedCorePalette)),
+        error = Color(colorScheme.error.get(mergedCorePalette)),
+        onError = Color(colorScheme.onError.get(mergedCorePalette)),
+        errorContainer = Color(colorScheme.errorContainer.get(mergedCorePalette)),
+        onErrorContainer = Color(colorScheme.onErrorContainer.get(mergedCorePalette)),
+        surface = Color(colorScheme.surface.get(mergedCorePalette)),
+        onSurface = Color(colorScheme.onSurface.get(mergedCorePalette)),
+        onSurfaceVariant = Color(colorScheme.onSurfaceVariant.get(mergedCorePalette)),
+        outline = Color(colorScheme.outline.get(mergedCorePalette)),
+        outlineVariant = Color(colorScheme.outlineVariant.get(mergedCorePalette)),
+        surfaceContainerLowest = Color(colorScheme.surfaceContainerLowest.get(mergedCorePalette)),
+        surfaceContainerLow = Color(colorScheme.surfaceContainerLow.get(mergedCorePalette)),
+        surfaceContainer = Color(colorScheme.surfaceContainer.get(mergedCorePalette)),
+        surfaceContainerHigh = Color(colorScheme.surfaceContainerHigh.get(mergedCorePalette)),
+        surfaceContainerHighest = Color(colorScheme.surfaceContainerHighest.get(mergedCorePalette)),
+        surfaceDim = Color(colorScheme.surfaceDim.get(mergedCorePalette)),
+        surfaceBright = Color(colorScheme.surfaceBright.get(mergedCorePalette)),
+        inverseOnSurface = Color(colorScheme.inverseOnSurface.get(mergedCorePalette)),
+        inverseSurface = Color(colorScheme.inverseSurface.get(mergedCorePalette)),
+        inversePrimary = Color(colorScheme.inversePrimary.get(mergedCorePalette)),
+        surfaceTint = Color(colorScheme.surfaceTint.get(mergedCorePalette)),
+        background = Color(colorScheme.background.get(mergedCorePalette)),
+        onBackground = Color(colorScheme.onBackground.get(mergedCorePalette)),
+        scrim = Color(colorScheme.scrim.get(mergedCorePalette)),
+        surfaceVariant = Color(colorScheme.surfaceVariant.get(mergedCorePalette)),
+    )
 }
 
 @Composable

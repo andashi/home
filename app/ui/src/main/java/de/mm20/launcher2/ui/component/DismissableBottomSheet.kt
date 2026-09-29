@@ -361,12 +361,13 @@ private fun BottomSheetNestedScrollConnection(
     }
 /** The sheet's glass, or nothing: a Material sheet draws its own Surface color. */
 @Composable
-private fun GlassSheetBackground(glass: Boolean, content: @Composable () -> Unit) {
+internal fun GlassSheetBackground(glass: Boolean, content: @Composable () -> Unit) {
     if (!glass) return content()
     // The sheet's top corners; its bottom edge is the screen's.
     de.mm20.launcher2.ui.launcher.glass.GlassSurface(
         shape = BottomSheetDefaults.ExpandedShape,
         lensRadius = 28.dp,
+        overlay = true,
     ) {
         CompositionLocalProvider(
             de.mm20.launcher2.ui.launcher.glass.LocalOnGlass provides true,

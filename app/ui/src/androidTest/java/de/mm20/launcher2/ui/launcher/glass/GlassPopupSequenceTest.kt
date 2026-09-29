@@ -9,6 +9,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -36,6 +37,10 @@ import org.junit.runner.RunWith
  * changes while the popup is open. A popup is its own composition; a change
  * - the first render, a wallpaper change, a fold, a new tint from the config -
  * has to reach the glass inside it, not only the host's.
+ *
+ * Without a backdrop the popup is an overlay with an opaque floor (#249); the
+ * tests before that used the host showing through as their "nothing drawn
+ * yet" signal, and one of them asserted it - the defect, pinned as a control.
  */
 @RunWith(AndroidJUnit4::class)
 class GlassPopupSequenceTest {
@@ -65,9 +70,13 @@ class GlassPopupSequenceTest {
         }.asImageBitmap()
     }
 
+    /** The floor the popup paints without a backdrop: the theme's surface, as no zone schemes are provided. */
+    private var floor = 0
+
     private fun setPopupContent() {
         composeRule.setContent {
             MaterialTheme {
+                floor = MaterialTheme.colorScheme.surface.toArgb()
                 ProvideGlassBackdrop(controller) {
                     // Pure green: neither backdrop nor rim or specular.
                     Box(Modifier.fillMaxSize().background(Color(0xFF00FF00))) {
@@ -106,22 +115,28 @@ class GlassPopupSequenceTest {
     }
 
     private fun Int.describe() = "#" + Integer.toHexString(this)
-    private fun Int.isHost() = android.graphics.Color.green(this) > 200 &&
-        android.graphics.Color.red(this) < 40 && android.graphics.Color.blue(this) < 40
+    private fun Int.isFloor() = listOf(
+        android.graphics.Color::red, android.graphics.Color::green, android.graphics.Color::blue,
+    ).all { ch -> kotlin.math.abs(ch(this) - ch(floor)) <= 3 }
     private fun Int.isBackdrop() = android.graphics.Color.green(this) < 16 &&
         android.graphics.Color.red(this) + android.graphics.Color.blue(this) > 200
 
     /**
-     * Control: a popup glass drawn without a backdrop shows the host through
-     * it (tint 0, no background, a translucent window). Passes with and
-     * without the fix; it pins what "before" looks like in the test below.
+     * Without a backdrop a popup's glass paints its floor on the real
+     * renderer, so the host does not read through (#249). Until then this was
+     * a control asserting the opposite - host green at the centre - and it
+     * pinned the defect as the expected look. The floor is what the unit
+     * tests only read from the surface's semantics; this is the pixel.
      */
     @Test
-    fun aPopupGlassDrawnWithoutABackdropShowsTheHostThrough() {
+    fun aPopupGlassWithoutABackdropPaintsItsFloorOverTheHost() {
         setPopupContent()
 
-        val pixel = centre()
-        assertTrue("popup centre without a backdrop is ${pixel.describe()}, not host green", pixel.isHost())
+        // Waited for: the popup's window draws after the host's idle, and a
+        // first read can still see the host - which the old control, asserting
+        // host green, could not tell from the defect.
+        val pixel = centreOnce { it.isFloor() }
+        assertTrue("popup centre without a backdrop is ${pixel.describe()}, not the floor ${floor.describe()}", pixel.isFloor())
     }
 
     /**
@@ -133,8 +148,8 @@ class GlassPopupSequenceTest {
     @Test
     fun aBackdropThatArrivesAfterThePopupsFirstFrameReachesTheScreen() {
         setPopupContent()
-        val before = centre()
-        assertTrue("before the backdrop: ${before.describe()}, not host green", before.isHost())
+        val before = centreOnce { it.isFloor() }
+        assertTrue("before the backdrop: ${before.describe()}, not the floor", before.isFloor())
 
         composeRule.runOnIdle { source.image.value = BackdropImage("/w/zone.jpg", "sha1") }
         composeRule.waitForIdle()
@@ -144,21 +159,25 @@ class GlassPopupSequenceTest {
     }
 
     /**
-     * The glass style changes while the popup is open - a new tint from the
-     * config - and must reach the popup's glass: at full tint the surface
-     * colour covers the host. With LocalGlassStyle a static local the popup
-     * kept tint 0 and the host green showed through.
+     * The glass style changes while the popup is open - high contrast from
+     * the config - and must reach the popup's glass: its scrim darkens the
+     * floor. With LocalGlassStyle a static local the popup kept its old style.
+     * (A tint change no longer shows here: over a floor of the same colour it
+     * is invisible, so the scrim carries the signal.)
      */
     @Test
     fun aStyleChangeWhileThePopupIsOpenReachesItsGlass() {
         setPopupContent()
-        val before = centre()
-        assertTrue("before the tint: ${before.describe()}, not host green", before.isHost())
+        val before = centreOnce { it.isFloor() }
+        assertTrue("before the style change: ${before.describe()}, not the floor", before.isFloor())
 
-        composeRule.runOnIdle { glass.value = glass.value.copy(tint = 1f) }
+        composeRule.runOnIdle { glass.value = glass.value.copy(contrast = Contrast.High) }
         composeRule.waitForIdle()
 
-        val after = centreOnce { !it.isHost() }
-        assertTrue("after the tint changed: still host green ${after.describe()}", !after.isHost())
+        val after = centreOnce { !it.isFloor() }
+        assertTrue(
+            "after the style changed: ${after.describe()}, not darker than the floor ${floor.describe()}",
+            android.graphics.Color.green(after) < android.graphics.Color.green(floor) - 10,
+        )
     }
 }
