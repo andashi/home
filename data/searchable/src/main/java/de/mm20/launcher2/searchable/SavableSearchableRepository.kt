@@ -313,13 +313,13 @@ internal class SavableSearchableRepositoryImpl(
                 else -> throw IllegalArgumentException("Cannot specify both includeTypes and excludeTypes")
             }
         }
-        val items = resolvedUpTo(limit, query)
         // A list without hidden items leaves out an item that has a hidden row
         // anywhere: while two contacts are merged, one's hidden row makes the
         // merged contact hidden, and the other's pin must not show it. The
-        // stricter visibility wins (#237).
-        if (minVisibility.value >= VisibilityLevel.Hidden.value) return items
-        return combine(items, hiddenKeys()) { found, hidden -> found.filterNot { it.key in hidden } }
+        // stricter visibility wins (#237). Left out before the limit is
+        // counted, so the list still fills.
+        val hidden = if (minVisibility.value >= VisibilityLevel.Hidden.value) null else hiddenKeys()
+        return resolvedUpTo(limit, query, hidden)
     }
 
     override fun getKeys(
@@ -585,11 +585,15 @@ internal class SavableSearchableRepositoryImpl(
     private fun resolvedUpTo(
         limit: Int,
         query: (Int) -> Flow<List<SavedSearchableEntity>>,
+        /** Keys to leave out, counted before the limit; null leaves out nothing. */
+        excluded: Flow<Set<String>>?,
         fetch: Int = limit,
     ): Flow<List<SavableSearchable>> = query(fetch).flatMapLatest { entities ->
-        resolving(entities).flatMapLatest { found ->
+        val resolved = resolving(entities)
+        val kept = if (excluded == null) resolved else combine(resolved, excluded) { found, out -> found.filterNot { it.key in out } }
+        kept.flatMapLatest { found ->
             if (found.size >= limit || entities.size < fetch) flowOf(found.take(limit))
-            else resolvedUpTo(limit, query, (fetch.toLong() * 2).coerceAtMost(Int.MAX_VALUE.toLong()).toInt())
+            else resolvedUpTo(limit, query, excluded, (fetch.toLong() * 2).coerceAtMost(Int.MAX_VALUE.toLong()).toInt())
         }
     }
 
