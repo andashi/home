@@ -343,6 +343,114 @@ class ConfigReloaderTest {
         assertEquals(newer.toByteArray(Charsets.UTF_8).sha256Hex(), stored.configSha256)
     }
 
+    // A reload that keeps failing records no apps form, so every start runs a
+    // startup check that fails again, and write-back appends its skip to that
+    // report: +2 per start for ever, measured on emulator-5562 (#261). The
+    // retry is what heals the device once the cause goes (a missing upload
+    // restored), so it stays; an unchanged failure is simply not news.
+
+    private val wallpaperText = """{"schemaVersion": 2, "appearance": {"wallpaper": {"image": "home.jpg"}}}"""
+    private val wallpaperMissing = listOf(
+        Diagnostic(DiagnosticCode.WallpaperMissing, "appearance.wallpaper.image", "No uploaded wallpaper named 'home.jpg'"),
+    )
+
+    /** What write-back does to the last report while it is held back: its skip, appended. */
+    private suspend fun writeBackSkips(reportStore: ReloadReportStore) {
+        val last = reportStore.read()!!
+        reportStore.save(
+            last.copy(diagnostics = last.diagnostics + Diagnostic(DiagnosticCode.WriteBackSkipped, "apps-form-unrecorded", "", "held back")),
+        )
+    }
+
+    @Test
+    fun `a startup check that fails the same way again leaves the last report and its number`() = runTest {
+        val store = FakeConfigStore(applyDiagnostics = wallpaperMissing)
+        val (reloader, reportStore) = newReloader(store)
+        reloader.reload(wallpaperText, ReloadTrigger.StartupCheck)
+        writeBackSkips(reportStore)
+        val looped = reportStore.read()!!
+
+        reloader.reload(wallpaperText, ReloadTrigger.StartupCheck)
+        writeBackSkips(reportStore)
+
+        assertEquals(looped.sequence, reportStore.read()!!.sequence)
+    }
+
+    @Test
+    fun `a startup check of a file that still does not parse leaves the last report`() = runTest {
+        val broken = "{ not json"
+        val (reloader, reportStore) = newReloader(FakeConfigStore())
+        reloader.reload(broken, ReloadTrigger.StartupCheck)
+        writeBackSkips(reportStore)
+        val looped = reportStore.read()!!
+
+        reloader.reload(broken, ReloadTrigger.StartupCheck)
+
+        assertEquals(looped.sequence, reportStore.read()!!.sequence)
+    }
+
+    @Test
+    fun `a startup check that now succeeds replaces the report and records the apps form`() = runTest {
+        // Control, the self-heal: the missing upload is back, and the next
+        // start's reload goes through, says so and makes the record.
+        val store = FakeConfigStore(applyDiagnostics = wallpaperMissing)
+        val naming = Naming(record = null)
+        val reportStore = ReloadReportStore(context)
+        val reloader = ConfigReloader(store, reportStore, namings = listOf(naming))
+        reloader.reload(wallpaperText, ReloadTrigger.StartupCheck)
+        writeBackSkips(reportStore)
+        val looped = reportStore.read()!!
+        assertFalse(naming.recorded())
+        store.applyDiagnostics = emptyList()
+
+        reloader.reload(wallpaperText, ReloadTrigger.StartupCheck)
+
+        val stored = reportStore.read()!!
+        assertEquals(looped.sequence!! + 1, stored.sequence)
+        assertTrue(stored.success)
+        assertTrue(naming.recorded())
+    }
+
+    @Test
+    fun `a startup check with no report before it saves one`() = runTest {
+        // Control: the retry is not skipped - a store with nothing to compare
+        // against always gets its report.
+        val (reloader, reportStore) = newReloader(FakeConfigStore(applyDiagnostics = wallpaperMissing))
+
+        reloader.reload(wallpaperText, ReloadTrigger.StartupCheck)
+
+        assertEquals(ReloadTrigger.StartupCheck, reportStore.read()!!.trigger)
+    }
+
+    @Test
+    fun `a startup check whose failure gained a finding other than write-back's replaces the report`() = runTest {
+        // Control for the comparison: only write-back's own annotations are
+        // left out of it, never a finding of the reload.
+        val store = FakeConfigStore(applyDiagnostics = wallpaperMissing)
+        val (reloader, reportStore) = newReloader(store)
+        reloader.reload(wallpaperText, ReloadTrigger.StartupCheck)
+        writeBackSkips(reportStore)
+        val looped = reportStore.read()!!
+        store.applyDiagnostics = wallpaperMissing + Diagnostic(DiagnosticCode.ApplyFailed, "home.favorites", "datastore gone")
+
+        reloader.reload(wallpaperText, ReloadTrigger.StartupCheck)
+
+        assertEquals(looped.sequence!! + 1, reportStore.read()!!.sequence)
+    }
+
+    @Test
+    fun `a startup check that changed the device replaces the report`() = runTest {
+        val store = FakeConfigStore(applyDiagnostics = wallpaperMissing)
+        val (reloader, reportStore) = newReloader(store)
+        reloader.reload(wallpaperText, ReloadTrigger.StartupCheck)
+        val last = reportStore.read()!!
+        store.stateAfterApply = ConfigState(themedIcons = false)
+
+        reloader.reload(wallpaperText, ReloadTrigger.StartupCheck)
+
+        assertEquals(last.sequence!! + 1, reportStore.read()!!.sequence)
+    }
+
     @Test
     fun `a measurement reload that changes nothing leaves the last report as it was`() = runTest {
         val store = FakeConfigStore(state = foldState(6))
