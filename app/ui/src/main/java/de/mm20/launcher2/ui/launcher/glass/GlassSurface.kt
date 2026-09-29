@@ -80,6 +80,15 @@ data class GlassLayers(val floor: Color?, val tint: Color, val scrimAlpha: Float
 /**
  * The layers of a surface: the [theme]'s surface as tint over the backdrop,
  * which is what glass is wherever there is a backdrop to show.
+ *
+ * An overlay ([floor]) without a backdrop lies over the launcher's own
+ * content, and its tint alone let the home grid read through its text: 43.8 %
+ * of text/background pairs met 4.5:1 (#249). It gets an opaque floor in the
+ * [onGlass] scheme - the one its text already takes (#242) - and its tint in
+ * that same scheme, so text and background are one scheme's pair: 100 %. Both
+ * come from [onGlass] here rather than from a caller, because the theme's
+ * surface as tint over that floor fails in the direction nobody tries on
+ * their own device (dark theme, light wallpaper, high contrast: 3.77:1).
  */
 internal fun glassLayers(
     theme: ColorScheme,
@@ -88,7 +97,12 @@ internal fun glassLayers(
     scrimAlpha: Float,
     floor: Boolean,
     backdrop: Boolean,
-): GlassLayers = GlassLayers(floor = null, tint = theme.surface.copy(alpha = tintAlpha), scrimAlpha = scrimAlpha)
+): GlassLayers =
+    if (floor && !backdrop) {
+        GlassLayers(floor = onGlass.surface, tint = onGlass.surface.copy(alpha = tintAlpha), scrimAlpha = scrimAlpha)
+    } else {
+        GlassLayers(floor = null, tint = theme.surface.copy(alpha = tintAlpha), scrimAlpha = scrimAlpha)
+    }
 
 /**
  * An edge where a surface continues into the next segment of the same card

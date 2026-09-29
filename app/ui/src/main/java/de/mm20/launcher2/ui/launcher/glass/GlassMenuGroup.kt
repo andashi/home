@@ -20,7 +20,7 @@ fun GlassMenuGroup(
     modifier: Modifier = Modifier,
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    GlassSurface(modifier = modifier.width(IntrinsicSize.Max)) {
+    GlassSurface(modifier = modifier.width(IntrinsicSize.Max), floor = true) {
         CompositionLocalProvider(LocalOnGlass provides true) {
             Column(Modifier.padding(vertical = 4.dp), content = content)
         }
