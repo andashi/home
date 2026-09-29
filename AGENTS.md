@@ -124,6 +124,35 @@ And a recount cannot see a *push* in the same gap - the verification would be of
 one head and the merge of another, with nothing to say so. `gh pr merge
 --match-head-commit <sha>` refuses when the head has moved.
 
+**A check run and a commit status are different objects, and a gate that treats
+them alike waits for nothing.** `statusCheckRollup` mixes both. A check run
+carries `.status` - queued, in progress, completed - *and* a `.conclusion`; a
+**commit status** carries `.state` and **no `.status` at all**. So
+`select((.status // "COMPLETED") != "COMPLETED")` reads every commit status as
+finished, and a waiter built on it announced "all checks completed" while
+CodeRabbit's status was `PENDING` with "Review in progress" - written twenty
+minutes after the same session had documented this exact shape. Select on
+`(.conclusion // .state)` and require success, so a missing field cannot
+default to done.
+
+**Normalise the case, because it depends on which API you read.** Measured on
+one commit on 2026-09-29: `gh pr view --json statusCheckRollup`, which is
+GraphQL, gives `SUCCESS`, `FAILURE`, `PENDING`; the REST endpoints for the same
+commit give `success`, `failure`, `pending`. A gate written against one and
+copied to the other matches nothing and refuses every merge - safe, and still a
+gate nobody can use. **And the two disagree on what "not finished" looks like**:
+GraphQL returns an empty string for a check that is still running, REST returns
+`null`. That one is not safe in either direction - classed as a failure it
+blocks a green pull request, classed as a success it merges an unfinished one.
+A watcher written in this session did the former within an hour of this entry
+being written, because a reorder moved its failure test ahead of its
+still-running test. Upper-case or lower-case everything before comparing, and
+treat empty and null alike.
+
+**And an empty rollup is not green.** A pull request whose checks have not
+registered yet returns an empty list, which every "are any of them failing?"
+filter answers with *no*. Require a positive count before reading the verdict.
+
 **On `gh` before v2.99.0, `--delete-branch` makes `gh` check out `main` locally
 after the merge**, which fails whenever `main` is checked out in another
 worktree - and the command then exits non-zero for a merge that **has already
@@ -214,11 +243,24 @@ blocks for no reason is one somebody carves an exception into.
 But **an empty pathname intersection does not prove the behaviour is
 unchanged**: a commit to something the pull request's files *call* changes them
 without touching their paths. So the allowance does not apply when any
-intervening commit touches the shared shell library (`e2e/lib/`), a shared
-module (`core/`, `services/`, `data/`), a build file or the version catalog -
-there, rebase and re-review. Outside those, path-disjointness is a heuristic
-that has earned its keep, not a proof, and whoever merges still owns the
-judgement.
+intervening commit touches a **shared path**, and what counts as one is defined
+by `e2e/ci/base-behind.sh`, not by this sentence - there, rebase and re-review.
+Outside those, path-disjointness is a heuristic that has earned its keep, not a
+proof, and whoever merges still owns the judgement.
+
+**The predicate is the authority, and this paragraph used to disagree with it.**
+It listed `e2e/lib/`, `core/`, `services/`, `data/`, a build file and the
+version catalog; the script also counts `app/`, `libs/` and `gradle/`, and its
+header carries the reasoning for every path it counts and every one it does not.
+**This paragraph deliberately does not summarise that reasoning either.** Its
+first draft did, and got the summary slightly wrong within three lines of saying
+not to - review caught it. Read the header. On 2026-09-28 a session proposed a
+merge order on the
+ground that an `app/ui`-only commit was outside the shared list, which the prose
+supported and the predicate refuses: their own gate would have contradicted them
+at the worst moment. The fix is not a longer sentence. **Prose that restates a
+list the code owns drifts from it**, so this paragraph names the file instead.
+See *Documentation and code can disagree in two directions* below.
 
 **"Reviewed at the head" is not the same as "reviewed".** CodeRabbit reviews a
 push incrementally by default - it re-reads only the commits since its last
@@ -413,9 +455,14 @@ afterthought (see `docs/architecture/adr/0005-testing-strategy.md`):
     wrong reason, and red after it, which a count of the passes read as
     green.
 
-### Two shapes that produced fourteen defects in one night
+### The root shapes
 
-Almost everything found on the night of 2026-09-26 was one of two mistakes.
+This heading carried a count of the shapes and of the defects they explain
+until a fourth shape arrived two days later. A count in a heading goes stale
+exactly as a count in a rule does; do not put one back.
+
+Almost everything found on the night of 2026-09-26 was one of the first two
+mistakes below. The shapes after them came out of later days.
 Neither is carelessness: both read as tidiness while you write them, and both
 live by preference in the code that checks things, because **a checker's correct
 answer and its broken answer look identical from outside** - silence, a zero, an
@@ -496,6 +543,50 @@ and every path that reads it must decide what absence means **explicitly**. And
 **a rollback that can itself fail is another instance** - a compensating action
 must not swallow its own error, or it reaches the state it existed to prevent.
 
+**Persisted data outlives the code that wrote it.** Any table, enum or severity
+that is serialised needs an answer to "what if this was written by a version
+that disagreed with me". Two instances, and the second is the expensive one:
+
+- On #215 a reload report written by an **older build** kept its old severities
+  when a new build read it: the severity table had changed underneath persisted
+  data. Fixed by treating a report that disagrees with the table as none, and
+  reloading once on the startup check.
+- **Removing a value from a persisted enum can wipe every setting, and a
+  different option guards it than the one people reach for.**
+  `ignoreUnknownKeys` covers a removed *field*. It does nothing for a removed
+  *value* in a field that still exists: the store then fails the whole document
+  with `CorruptionException: Cannot read json`, so a device that had the old
+  value stored loses **every** setting on upgrade, silently.
+  For `LauncherSettingsDataSerializer` the corruption handler then replaces
+  every setting with defaults.
+
+  **Two guards cover two shapes of this, neither covers the other, and both are
+  bound to named fields rather than to the language.** `coerceInputValues = true`
+  reads an unknown enum value as a missing property and falls back - **but only
+  where the property has a default**, so a required enum property without one
+  still fails the document. And it does nothing at all for an unknown value
+  **inside a list**: that needs a tolerant serializer bound to that list, and in
+  this repository exactly one list has one - `TolerantEnumListSerializer` on
+  `List<KeyboardFilterBarItem>` in the settings store, which drops entries this
+  build no longer knows (ADR 0008: removing a value is a normal consequence of
+  removing a feature, so it must not be able to wipe unrelated settings).
+
+  **The configuration is a second store with a different failure, so check both
+  before removing a value.** `search.filterBarItems` in `launcher.json` binds
+  `FilterBarItemSerializer`, which is strict: drop a `SearchFilterItem` value and
+  `ConfigParser` returns `DecodeFailed` with a null config, and `ConfigReloader`
+  rejects the update. Nobody's settings are wiped there - instead the provisioned
+  configuration stops applying, which on a managed device is its own kind of bad.
+  **Trace the serializer of the specific list, in both stores**, rather than
+  inferring one from a neighbouring list that happens to be tolerant.
+
+  Found on #238 while removing `SearchBarStyle.Solid`, because the decode was
+  verified rather than assumed - and the break, dropping that one option,
+  reddens with the corruption, which is what shows a single line is holding the
+  floor up. `RemovedSearchBarStyleTest` pins **that one field**. Every future
+  enum shrink needs its own answer - a default, a tolerant serializer or a
+  migration - plus a decode test that fails without it.
+
 **Do not fix a semantic trap with a rule; change the shape so the wrong use is
 impossible.** Both of us reach for the ordered-looking tool exactly when being
 careful: `grep -w` reads as "whole word" and is not, and a counter reads as
@@ -556,6 +647,153 @@ and exits on it, and `delete_snapshots` ignores its deletes on purpose because
 the list afterwards is the check. Four candidates, four false alarms - which is
 what a heuristic for this looks like when it comes back clean, and worth writing
 down so the next person does not re-run it hopefully.
+
+**A fourth shape, and it is the first one inverted: a failed step stopped the
+sequence - permanently and silently.** On #213 a bind pass ran *inside* the
+package-event collection, so one host exception ended the collection and **every
+later arrival went unhandled**, until the host id changed. Nothing logged a
+stop; arrivals simply never fired again.
+
+Shapes 1 and 4 are the same error about a failure's **scope**: shape 1 lets a
+failure affect too little - the step failed, the sequence carried on - and shape
+4 lets it affect too much - the step failed, the sequence died. **Ask what a
+failure ends, and whether that is what you meant.** The fix was to move the work
+out of the collector into a function that throws nothing but cancellation.
+
+**A check establishes its own preconditions, or its answer is about something
+else.** Four of one session's own tools were wrong this way in a single day
+(2026-09-28), and the point of grouping them is that they have one remedy rather
+than four:
+
+- `node_bounds` exited 0 with empty output, so the check reported a contact as
+  **shown** on a screen that did not contain it.
+- A device proof reported *not shown* on **both** builds, because search had
+  closed across a system permission dialog and the check was reading the home
+  screen.
+- A dump piped into `grep -m1` died of SIGPIPE once it grew long enough:
+  `grep` stops reading after its match, the **producer** takes the signal, and
+  `pipefail` surfaces its 141 - the early-closing reader again, which "Three
+  ways a checker's own plumbing lies" covers below.
+- A rebase conflict inside an `&&` chain, where `set -e` does **not** stop, let
+  the tests and a push run against a half-rebased tree.
+
+Each asserted something without first establishing it was in a position to
+assert it: is the thing on screen, did the command run to completion, is this
+the tree I think it is. **The remedies are the same shape every time** - assert
+search is open before looking for a result in it, check the rebase state before
+building, require the lookup to have produced output before reading it.
+
+Two corollaries worth stating on their own:
+
+- **A check looking at the wrong thing gives the same answer for every build**,
+  and "no difference between the builds" is the most reassuring possible way to
+  be told that nothing works.
+- **Knowing the trap is not protection.** `set -e` inside a conditional, and
+  `grep` piped into an early-closing reader, are both already written down in
+  this document, and both were met again the same day by someone who had read
+  them. Only changing the shape helps.
+
+**A chain that agrees with itself says nothing about which way is true.** A
+round trip - differ, apply, read back, map - passes under a *consistent*
+inversion, because every stage agrees with every other stage either way. Four
+instances on 2026-09-28 alone:
+
+- `colorSource` (#233): reading the stored boolean inverted passed every test.
+  Nothing tied `uiCompatModeColors=false` to the system branch of
+  `ColorScheme.systemCorePalette` until a settings test pinned it.
+- search filters (#235): a bridge swapping `hidden` and `contacts` passed the
+  settings-contract round trip.
+- profile mapping (#235): the write-back complete-example test cannot catch a
+  consistently wrong profile mapping **by design** - it compares the read-back
+  with itself.
+- `dimWallpaper` (#240): the same shape once more.
+
+The cure is never a better round trip: **pin the mapping against the
+CONSUMER** - the composable that draws, the palette that is read, the switch the
+user sees - and pin both directions. A round trip proves the stages agree; only
+the consumer says they agree with reality.
+
+**The commonest error in this project is a claim about what the code does, made
+without reading the line that does it.** It is not one session's habit: it
+recurred in every session on 2026-09-28, each time with the same tell, a
+plausible chain of reasoning from a true premise to an unchecked conclusion.
+
+- `iconsShape` was traced to the settings provider and the shape helper, and
+  reported as cutting every app icon. It cuts none: `ShapedLauncherIcon` returns
+  early into `ClearLauncherIcon` for the whole launcher scaffold.
+- `searchBarColors` was called the system bars' icon colour. It is the search
+  bar's own content colour.
+- `transparent` was predicted to be the illegible search-bar value. The
+  measurement said `solid`, at 1.16:1 in both directions.
+- A provisioning claim ran "the chain installs apps, installs happen every run,
+  so a reinstall is the normal path" without checking the verb: it is
+  `install -r` throughout, and `provision/` contains no `pm uninstall` at all.
+- Grey values quoted from memory (116/101) computed to 123/93 - caught before
+  the run, which is the version of this mistake that costs nothing.
+
+**A grep that finds a provider and a helper proves the chain exists, not that
+the call site reaches it.** Before asserting how code behaves, read the line
+that does it, or run it; and when the assertion is about what a person sees,
+trace it to the composable that *draws*, not to the provider.
+
+**Documentation and code can disagree in two directions, and only one of them
+looks like a defect.**
+
+*The documentation promises more than the code does.* `gestures.md` promised the
+file keeps a gesture "for the day it is installed", and
+`gesture-app-unavailable` was in no waiting set, so it never applied.
+`docs/configuration` promised `shapes-custom` and `typography-custom` warnings
+that nothing produced. Neither was a stale page describing removed behaviour:
+both described behaviour that had never existed. Both were found by a test
+written **before** the implementation, which is what turns a promise into a red
+test instead of a surprise. So **read the documentation beside what you are
+building as a specification**, and write the test from it first.
+
+*The documentation promises less than the code enforces.* The rebase paragraph
+in "Merging a pull request" named fewer shared paths than `base-behind.sh`
+counts. This direction fails toward refusing, which is exactly why nobody
+notices it, and it still cost a wrong premise in a live decision.
+
+**What separates both from the rest of this document is who found them: a claim
+a machine can check gets checked, and a claim in prose does not.** On #236 the
+ADR still said a check covered release APKs after that wiring had been lifted
+out of the pull request - and the gate found it, not a reader. The same day two
+correct records sat present and unread while the question they answer was being
+argued from first principles: `docs/configuration/icons.md` ("there is no
+`icons.shape` key … home, the dock and search always draw the squircle") and a
+comment in `ShapedLauncherIcon.kt` saying the same. **The entry on persisted
+enums above is a third instance, and it is this document's own:** it was first
+written weaker than the comment in `TolerantEnumListSerializer` that already
+stated both limits correctly, and review caught it. The lesson is not "read the
+docs"; it is that prose does not defend itself, so put the load-bearing claims
+where a test can reach them.
+
+**A field whose wrong value is INVISIBLE gets no default.** A default is fine
+where omitting it fails loudly: `ScaffoldConfiguration.searchBarStyle = Hidden`
+omitted means no search bar, and you see that at once. `darkSearchBar = false`
+omitted means the right bar with **unreadable text on some wallpapers**, which
+nobody notices without a screenshot on the right background.
+
+That default is how #238's own fix reproduced the defect it was removing. The
+assistant's scaffold was one of two construction sites and never passed the
+field, so mapping `Solid` to `Transparent` gave it white text on light glass -
+1.49 and 1.15, the same numbers the pull request existed to remove. Removing the
+default makes the compiler name every site that omits it, today's two and any
+later one: `No value passed for parameter 'darkSearchBar'`. **A compile-time
+break is the strongest form of the break check**, because the failure cannot be
+skipped, cached or mis-reported. It is the shape-change move again, and its root
+is the familiar one: two places assemble the same configuration, and a change
+reaches only one of them.
+
+**But "invariant by construction" is only as good as the set of constructors you
+closed, and a `data class` has a second door: `copy()`.** On #215 an ERROR-level
+deprecation on the primary constructor was the whole mechanism making a
+disagreeing severity uncompilable - and Kotlin's generated `copy()` does not
+inherit that deprecation, so any caller could build one anyway. Fixed by making
+it a plain serializable class, which **removes** the second door rather than
+guarding it. Before relying on a closed constructor, list every way an instance
+can come into being - `copy()`, a builder, deserialization, a factory,
+reflection - and say which are closed and why the rest are safe.
 
 ### Ways a test runs and tests nothing
 
@@ -626,6 +864,25 @@ test policy above asks for the break rather than the pass.
     the defect. The next reader takes a green control as the question having been
     asked. When a fix reverses a control, say so and name the assertion that
     changed direction (#213).
+13. **The break ran, but a different break was tested.** In its default
+    timestamp mode, Python validates a cached `.pyc` against the source's
+    **mtime and size only** - PEP 552's hash-based modes check the source's
+    hash instead, and are not what you get unless someone asked for them. Two
+    consecutive
+    breaks in a harness each shortened the same line by the same 12 characters
+    within one second - same size, same second - so the stale bytecode was
+    reused and the harness reported the *previous* break's result. Caught only
+    because the red test did not fit the break that was supposedly running
+    (#239). It is the sibling of 1 and fails the other way: 1 **skips** the
+    work, this one **runs the old work** and reports it as new. Both are the
+    build system's staleness detection being wrong, and both are invisible from
+    the result. Remedy: `PYTHONDONTWRITEBYTECODE=1`, and clear `__pycache__` in
+    every break script. And the discipline that matters more than the remedy -
+    **a defect in the measuring instrument invalidates every earlier
+    measurement until it is re-run.** Every prior break of #236 and #239 was
+    re-run without the cache; all agreed except the one. Without that the fix
+    would have been forward-looking only, and the earlier green results would
+    have stayed unexamined.
 The check costs about a minute and is three questions. The first is the one
 everybody means by "break it", and on its own it settles nothing:
 
@@ -655,6 +912,16 @@ so: **11**, because you cannot break what your generator cannot express, and
 is what a declared control is supposed to do. Those two are caught by rereading
 what the test *claims*, not by breaking anything.
 
+**The list's mirror image costs differently: a fixture can make a CORRECT fix
+look wrong.** Every mechanism above makes a broken thing look fine. On the icons
+write-back fix the core test omitted `canonical`, which defaults to the literal
+file text - so `#ffffff` never equalled `#FFFFFF`, and a **working** fix
+appeared to fail. The failure mode is throwing away a good fix rather than
+shipping a bad one, and it is harder to spot because a red test feels like
+evidence. Same remedy as 9: **build the fixture the way production builds it**.
+The tests now derive the canonical tree exactly as `ConfigWriteBack` does -
+parse, then encode through the model - instead of hand-writing one.
+
 This passage was wrong about itself repeatedly while being written, in every way
 it describes, and two rules came out of that rather than out of the code.
 
@@ -679,6 +946,41 @@ identical. The comfortable reading is available in both directions, so say which
 it is before moving on. A deadline guarded in three places stayed green when one
 guard was removed; the test was sound and the break was partial, and that was
 only known because somebody asked which.
+
+**And for an intermittent defect, a search that fails to reproduce it is not an
+exclusion unless its runs per condition are stated.** A single run of a causal
+condition misses the defect at exactly the rate it does not fire, and nothing
+about the other conditions changes that: at the 0.69 measured for #251's blank
+capture in the full package, once is a 31 % miss. The trap is the next step.
+**The rate is a property of the condition, not of the defect** - measured later,
+the same cause fires at about 0.2 in a two-class condition, where a single run
+misses it four times in five. So a sweep whose conditions are all small is weak
+even where its conditions are the right ones, and several of them can come back
+clean together.
+
+That happened. #248's body recorded the blank as "never in the class alone or in
+any pair or half of the glass tests", and every pair and every half behind that
+sentence was a **single run** of a small condition - several of which contained
+the class #251's bisect later found necessary. #251's bisect has since put one of
+those same halves at 2 of 5. The wrong reading did not stay in a session: it
+reached a merged pull request body and formed part of the reasoning for
+**dropping a golden**, so a coverage trade was priced on a search whose power was
+never stated.
+
+**Put the runs per condition and the observed rate beside any negative result,
+and size the runs against the rate of the condition you are actually running,
+not the rate you measured somewhere else.** Five runs at 0.69 puts a false clean
+under 0.3 %; the same five runs at 0.2 leave it at 33 %.
+
+**Those figures assume the runs are independent, which is a practice rather than
+a footnote.** Five runs in one block share whatever the host was doing, so a load
+trend inside a block lands entirely on one condition and the effective number of
+runs is smaller than the count - the same bias that a fixed build order put into
+every unfold series before #175. Interleave the conditions run by run, record the
+load beside each, and read the rate as a property of the condition you ran. A
+round of #251's bisect was started as five runs of one split followed by five of
+the other and was restarted interleaved for exactly this reason, with none of the
+first round's results kept.
 Say in the pull request which tests fall over without the change and which are
 deliberate controls that pass in both states.
 
@@ -889,6 +1191,16 @@ Both failed loudly the moment somebody ran that scenario from `clean`, and
 nobody had since #24. Finding them cost an afternoon and a wrong escalation into the
 provisioning repository. One person, one hour per release, catches that class
 before it ships rather than weeks after.
+
+A third drift showed up on v0.11.0's own gate: `l4-config` asserts the served
+`search` object by **exact equality**, and the three keys added in #235 were
+never added to the scenario's expectation, so the release run went red on a
+correct launcher. That is the gate earning its hour - twenty minutes before the
+tag instead of a week after it - but the shape is worth naming. **A scenario
+that pins a section by exact equality is a second definition of that section**,
+and it drifts every time the first one grows. Keep the expectation in a file
+both sides read, pin it against the model with a unit test, and declare that
+file as an input of the test task.
 
 A release is made by pushing an annotated tag. `.github/workflows/release.yml`
 publishes the annotation verbatim as the release body, so the annotation is
