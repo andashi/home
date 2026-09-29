@@ -38,6 +38,10 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.flowWithLifecycle
+import org.koin.android.ext.android.inject
+import kotlinx.coroutines.launch
+import de.mm20.launcher2.searchable.SavableSearchableRepository
+import androidx.lifecycle.lifecycleScope
 import de.mm20.launcher2.preferences.GestureAction
 import de.mm20.launcher2.preferences.SearchBarStyle
 import de.mm20.launcher2.preferences.SystemBarColors
@@ -87,7 +91,22 @@ abstract class SharedLauncherActivity(
 
     private val viewModel: LauncherScaffoldVM by viewModels()
 
+    private val searchableRepository: SavableSearchableRepository by inject()
+
     internal val enterHomeTransitionManager = EnterHomeTransitionManager()
+
+    /**
+     * Moves stored contacts whose lookup key changed - on a merge, a split or
+     * a rename - to their current key (#237). A fresh search result carries
+     * the current key and never passes through the repository, so without
+     * this its label and tags would stay behind. Every way back to the
+     * launcher resumes it: a start, returning from Settings, closing the
+     * permission dialog.
+     */
+    override fun onResume() {
+        super.onResume()
+        lifecycleScope.launch { searchableRepository.refreshMovedKeys() }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
