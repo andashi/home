@@ -123,15 +123,36 @@ adb shell content query --uri content://<pkg>.state/diagnostics   # the last rel
 ```
 
 Every report carries `sequence`, higher than any the store gave before, and
-`storeId`, the store that numbered it. Each saved report moves `sequence`: a
-reload that changed nothing, while `configSha256` stays, and a change made on
-the device that was kept out of the file (a `write-back-skipped:` warning
-added to the last report). So "the report changed between two reads" is
-visible where the hash cannot show it. One reload saves nothing: a grid
-measurement that found nothing new leaves the last report, which still
-describes the device, and its number. A save that failed half-way leaves a
-gap, so compare numbers, never count them. The count starts again
-when the app's files are wiped - `pm clear`, a reinstall, a debug build
+`storeId`, the store that numbered it. Each saved report moves `sequence`,
+and three kinds of event save one:
+
+- **A reload you asked for** - a push, a `RELOAD_CONFIG` broadcast, a file
+  changed from outside - always saves, even when it changed nothing and
+  `configSha256` stays.
+- **A change made on the device** that write-back put into the file, or kept
+  out of it (a `write-back-skipped:` warning added to the last report).
+- **A reload the launcher starts itself**, when it has something new to say.
+  It starts one at process start when the file, the report or the launcher's
+  own records disagree; when the grid is measured (a first draw, a fold); and,
+  while the last report waits on something absent (`favorite-unavailable`,
+  `app-unavailable`, `profile-unavailable`, `unknown-widget-provider`,
+  `icon-pack-unavailable`, `gesture-app-unavailable`), on every app installed
+  or updated and at every start. A measurement or an arrival reload that met
+  the same file, produced the same diagnostics and changed nothing on the
+  device saves nothing and leaves the last report, and its number: an app
+  update that did not bring what is missing does not move `sequence`. One
+  that brings it does.
+
+So "the report changed between two reads" is visible where the hash cannot
+show it. **One case is known to move `sequence` on a device nobody touched,
+and its cause is not found:** on a foldable with `home.grid.layouts` for
+`phone` and `fold`, an app installed and then a launcher start saved two
+reports, the last a measurement reload applying `home.grid`, with no
+diagnostics. It did not reproduce on the emulator with the same file shape,
+on v0.11.0 or later, and the effective grid stayed byte-identical there.
+
+A save that failed half-way leaves a gap, so compare numbers, never count
+them. The count starts again when the app's files are wiped - `pm clear`, a reinstall, a debug build
 installed over a release one - and `storeId` changes with it: compare two
 sequences only under the same `storeId`, and read a different `storeId` as a
 new store, never as a number that went backwards. A report an older build
