@@ -2,7 +2,6 @@ package de.mm20.launcher2.searchable
 
 import android.util.Log
 import androidx.room.withTransaction
-import de.mm20.launcher2.preferences.ui.GestureSettings
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.sync.Mutex
 import de.mm20.launcher2.database.entities.CustomAttributeEntity
@@ -190,8 +189,12 @@ interface SavableSearchableRepository {
 internal class SavableSearchableRepositoryImpl(
     private val database: AppDatabase,
     private val settings: RankingSettings?,
-    /** Gestures name items by key and follow a moved one (#237); null in tests that do not look. */
-    private val gestures: GestureSettings? = null,
+    /**
+     * Moves every gesture on the first key to the second (#237): gestures name
+     * items by key and follow a moved one. GestureSettings.replaceLaunchKey in
+     * the app; null in tests that do not look.
+     */
+    private val moveGestures: (suspend (oldKey: String, newKey: String) -> Unit)? = null,
 ) : SavableSearchableRepository, KoinComponent {
 
     private val scope = CoroutineScope(Job() + Dispatchers.Default)
@@ -656,7 +659,7 @@ internal class SavableSearchableRepositoryImpl(
         // Outside the transaction: the gestures live in the DataStore, not in
         // Room. A gesture briefly on the old key launches nothing; the next
         // resolve of that key moves it again.
-        if (moved) gestures?.replaceLaunchKey(oldKey, newKey)
+        if (moved) moveGestures?.invoke(oldKey, newKey)
     }
 
     private fun removeInvalidItem(key: String) {

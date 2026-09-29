@@ -704,7 +704,7 @@ class SavableSearchableRepositoryTest {
         val gestures = org.koin.core.context.GlobalContext.get().get<de.mm20.launcher2.preferences.ui.GestureSettings>()
         gestures.setSwipeLeft(de.mm20.launcher2.preferences.GestureAction.Launch("moving://old"))
         awaitValue { if (gestures.swipeLeft.first() == de.mm20.launcher2.preferences.GestureAction.Launch("moving://old")) true else null }
-        val repository = SavableSearchableRepositoryImpl(database, null, gestures)
+        val repository = SavableSearchableRepositoryImpl(database, null, gestures::replaceLaunchKey)
         pinned("moving://old", "moving", 0, serialized = "old")
 
         repository.getByKeys(listOf("moving://old")).first()
@@ -770,6 +770,39 @@ class SavableSearchableRepositoryTest {
         val favorites = repository.get(minPinnedLevel = PinnedLevel.AutomaticallySorted, minVisibility = VisibilityLevel.SearchOnly, limit = 1).first()
 
         assertEquals(listOf("moving://carol"), favorites.map { it.key })
+    }
+
+    /**
+     * A move is not cut in half by cancellation (review on #254). The refresh
+     * runs in the activity's lifecycle scope; cancelled between the Room
+     * commit and the gesture write, the row would be gone and its gesture
+     * left on the old key for good, with nothing left to resolve it again.
+     * The fake gesture writer waits the way a slow DataStore write would, and
+     * the caller is cancelled while it waits.
+     */
+    @Test
+    fun aCancelledMoveStillMovesTheGestures() = runBlocking {
+        movingKoin(object : SearchableDeserializer by movingDeserializer {
+            override val storedKeysMove = true
+        })
+        val entered = kotlinx.coroutines.CompletableDeferred<Unit>()
+        val release = kotlinx.coroutines.CompletableDeferred<Unit>()
+        val written = java.util.concurrent.atomic.AtomicBoolean(false)
+        val repository = SavableSearchableRepositoryImpl(database, null) { _, _ ->
+            entered.complete(Unit)
+            release.await()
+            written.set(true)
+        }
+        pinned("moving://old", "moving", 0, serialized = "old")
+
+        val refresh = launch(kotlinx.coroutines.Dispatchers.Default) { repository.refreshMovedKeys() }
+        withTimeout(5000) { entered.await() }
+        refresh.cancel()
+        release.complete(Unit)
+        refresh.join()
+
+        assertTrue("the gesture write was cut off by the cancellation", written.get())
+        assertNotNull("the row moved", row("moving://new"))
     }
 
     /** Control, green in both states: an item Found under a different key is not moved - apps resolve to aliases. */
