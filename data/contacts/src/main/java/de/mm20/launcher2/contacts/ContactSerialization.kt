@@ -12,10 +12,12 @@ import de.mm20.launcher2.search.Resolved
 import de.mm20.launcher2.search.SavableSearchable
 import de.mm20.launcher2.search.SearchableDeserializer
 import de.mm20.launcher2.search.SearchableSerializer
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.withContext
 import org.json.JSONObject
 
 internal class AndroidContactSerializer : SearchableSerializer {
@@ -74,20 +76,24 @@ internal class AndroidContactDeserializer(
         val storedKey = json.optString("lookupKey").takeIf { it.isNotEmpty() }
 
         val contact = try {
-            if (storedKey == null) {
-                // Stored before lookup keys: the id is all there is. If it has
-                // already drifted to somebody else, this moves the row to them
-                // and nothing can tell (#237).
-                AndroidContactProvider(context).get(id)
-            } else {
-                val uri = ContactsContract.Contacts.getLookupUri(id, storedKey)
-                val current = ContactsContract.Contacts.lookupContact(context.contentResolver, uri)
-                current?.let { AndroidContactProvider(context).get(ContentUris.parseId(it)) }
-            }
+            withContext(Dispatchers.IO) { lookUp(id, storedKey) }
         } catch (e: SecurityException) {
             // The permission went between the check and the query.
             return Resolved.Unknown
         } as? AndroidContact ?: return Resolved.Unknown
         return if (contact.lookupKey == storedKey) Resolved.Found(contact) else Resolved.Moved(contact)
     }
+
+    /** Provider queries, on the caller's thread: [resolve] moves them off the main one. */
+    private suspend fun lookUp(id: Long, storedKey: String?) =
+        if (storedKey == null) {
+            // Stored before lookup keys: the id is all there is. If it has
+            // already drifted to somebody else, this moves the row to them
+            // and nothing can tell (#237).
+            AndroidContactProvider(context).get(id)
+        } else {
+            val uri = ContactsContract.Contacts.getLookupUri(id, storedKey)
+            val current = ContactsContract.Contacts.lookupContact(context.contentResolver, uri)
+            current?.let { AndroidContactProvider(context).get(ContentUris.parseId(it)) }
+        }
 }
