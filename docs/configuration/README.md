@@ -126,20 +126,25 @@ Every report carries `sequence`, higher than any the store gave before, and
 `storeId`, the store that numbered it. Each saved report moves `sequence`,
 and three kinds of event save one:
 
-- **A reload you asked for** - a push, a `RELOAD_CONFIG` broadcast, a file
-  changed from outside - always saves, even when it changed nothing and
-  `configSha256` stays.
+- **A reload you asked for** - a `RELOAD_CONFIG` broadcast, a push, a file
+  changed from outside - saves, even when it changed nothing and
+  `configSha256` stays. One exception: a file whose bytes are exactly what
+  the launcher last wrote back is recognised as its own write and reloads
+  nothing, so a push of those bytes saves no report; a broadcast after it
+  does.
 - **A change made on the device** that write-back put into the file, or kept
   out of it (a `write-back-skipped:` warning added to the last report).
 - **A reload the launcher starts itself**, when it has something new to say:
   at process start when the file, the report or its own records disagree;
   when the grid is measured (a first draw, a fold); and on every app
   installed or updated while the last report waits on something absent (a
-  `*-unavailable` or `unknown-widget-provider` warning). A measurement or an
-  arrival reload that changed nothing saves nothing and keeps the last
+  `*-unavailable` or `unknown-widget-provider` warning). An arrival reload
+  that changed nothing on the device saves nothing and keeps the last
   report's number: an app update that does not bring what is missing does not
-  move `sequence`, one that brings it does. The rules are in
-  [ADR 0003](../architecture/adr/0003-config-hot-reload.md).
+  move `sequence`, one that brings it does. A measurement reload is silent
+  under a narrower rule - it applied nothing but the grid - so while the file
+  names something absent it applies that section again and saves. The rules
+  are in [ADR 0003](../architecture/adr/0003-config-hot-reload.md).
 
 So "the report changed between two reads" is visible where the hash cannot
 show it. One case has moved `sequence` on a device nobody touched and is not
