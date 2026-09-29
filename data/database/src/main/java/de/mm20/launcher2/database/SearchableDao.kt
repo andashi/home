@@ -164,6 +164,10 @@ interface SearchableDao {
     @Query("SELECT * FROM Searchable WHERE `key` = :key")
     fun getByKey(key: String): Flow<SavedSearchableEntity?>
 
+    /** One read, for a transaction: [getByKey] is a flow (#237). */
+    @Query("SELECT * FROM Searchable WHERE `key` = :key")
+    suspend fun getOnce(key: String): SavedSearchableEntity?
+
     @Transaction
     suspend fun touch(item: SavedSearchableEntity, alpha: Double) {
         incrementLaunchCount(item.key)

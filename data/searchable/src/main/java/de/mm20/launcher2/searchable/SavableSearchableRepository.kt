@@ -2,6 +2,9 @@ package de.mm20.launcher2.searchable
 
 import android.util.Log
 import androidx.room.withTransaction
+import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.sync.Mutex
+import de.mm20.launcher2.database.entities.CustomAttributeEntity
 import de.mm20.launcher2.crashreporter.CrashReporter
 import de.mm20.launcher2.database.AppDatabase
 import de.mm20.launcher2.database.entities.SavedSearchableEntity
@@ -570,14 +573,64 @@ internal class SavableSearchableRepositoryImpl(
         // contact never is (permission, Contact Scopes), so it answers Unknown
         // and keeps its pin, tags and label. Do not re-unify the two (#237).
         if (resolved == Resolved.Gone) removeInvalidItem(entity.key)
+        if (resolved is Resolved.Moved) moveItem(entity.key, resolved.searchable)
         return SavedSearchable(
             key = entity.key,
-            searchable = (resolved as? Resolved.Found)?.searchable,
+            searchable = when (resolved) {
+                is Resolved.Found -> resolved.searchable
+                is Resolved.Moved -> resolved.searchable
+                else -> null
+            },
             launchCount = entity.launchCount,
             pinPosition = entity.pinPosition,
             visibility = VisibilityLevel.fromInt(entity.visibility),
             weight = entity.weight
         )
+    }
+
+    private fun moveItem(oldKey: String, item: SavableSearchable) {
+        scope.launch { rekey(oldKey, item) }
+    }
+
+    /**
+     * Moves the row stored under [oldKey], and every customization stored
+     * under it, to [item]'s current key, in one transaction (#237). A row
+     * already under the new key - written by a launch or a pin in between -
+     * is merged with it: launches add up, the higher pin and the higher
+     * weight win, and the stricter visibility wins, because un-hiding an item
+     * by merging it would be the dangerous direction. Customizations follow
+     * [mergeCustomizations].
+     */
+    internal suspend fun rekey(oldKey: String, item: SavableSearchable) = RekeyLock.withLock {
+        val newKey = item.key
+        if (newKey == oldKey) return@withLock
+        val serializer = item.getSerializer()
+        val serialized = serializer.serialize(item) ?: return@withLock
+        database.withTransaction {
+            val dao = database.searchableDao()
+            val old = dao.getOnce(oldKey)
+            if (old != null) {
+                val target = dao.getOnce(newKey)
+                val moved = target?.copy(
+                    type = serializer.typePrefix,
+                    serializedSearchable = serialized,
+                    launchCount = old.launchCount + target.launchCount,
+                    pinPosition = maxOf(old.pinPosition, target.pinPosition),
+                    visibility = maxOf(old.visibility, target.visibility),
+                    weight = maxOf(old.weight, target.weight),
+                ) ?: old.copy(key = newKey, type = serializer.typePrefix, serializedSearchable = serialized)
+                dao.delete(oldKey)
+                dao.upsert(moved)
+            }
+            val attrs = database.customAttrsDao()
+            val from = attrs.getAllFor(oldKey)
+            if (from.isNotEmpty()) {
+                val merged = mergeCustomizations(from = from, into = attrs.getAllFor(newKey))
+                attrs.deleteAllFor(oldKey)
+                attrs.deleteAllFor(newKey)
+                attrs.insertCustomAttributes(merged.map { (type, value) -> CustomAttributeEntity(key = newKey, type = type, value = value) })
+            }
+        }
     }
 
     private fun removeInvalidItem(key: String) {
@@ -629,5 +682,29 @@ internal class SavableSearchableRepositoryImpl(
         private const val WEIGHT_FACTOR_LOW = 0.01
         private const val WEIGHT_FACTOR_MEDIUM = 0.03
         private const val WEIGHT_FACTOR_HIGH = 0.1
+    }
+}
+
+/**
+ * Serializes [SavableSearchableRepositoryImpl.rekey] across the process. The
+ * repository is bound as a Koin factory, so every injection is a new instance:
+ * a lock held by the instance would serialize nothing (#237).
+ */
+private val RekeyLock = Mutex()
+
+/**
+ * The customizations of one item moved onto another item's key (#237), as
+ * (type, value) pairs. Tags are united, without duplicates. Every other type
+ * holds one value: an old one fills a gap; when both items carry one, the
+ * target's wins. That is an arbitrary tiebreak - nothing records which of the
+ * two the person meant last - and may be changed freely.
+ */
+internal fun mergeCustomizations(from: List<CustomAttributeEntity>, into: List<CustomAttributeEntity>): List<Pair<String, String>> {
+    val types = (into.map { it.type } + from.map { it.type }).distinct()
+    return types.flatMap { type ->
+        val target = into.filter { it.type == type }.map { it.value }
+        val old = from.filter { it.type == type }.map { it.value }
+        val values = if (type == "tag") (target + old).distinct() else (target.take(1).ifEmpty { old.take(1) })
+        values.map { type to it }
     }
 }
