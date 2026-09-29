@@ -609,47 +609,39 @@ internal class SavableSearchableRepositoryImpl(
 
     /**
      * Moves the row stored under [oldKey], and every customization stored
-     * under it, to [item]'s current key, in one transaction (#237). A row
-     * already under the new key - written by a launch or a pin in between -
-     * is merged with it: launches add up, the higher pin and the higher
-     * weight win, and the stricter visibility wins, because un-hiding an item
-     * by merging it would be the dangerous direction. Customizations follow
-     * [mergeCustomizations].
+     * under it, to [item]'s current key, in one transaction (#237) - unless
+     * the new key is taken, by a row or by customizations alone. Then nothing
+     * moves: a row is never merged into one that belongs to someone else.
+     * Merging cannot be undone; on the emulator a merge, a resume and a split
+     * sent a merged row - Bob's hidden flag with Alice's tag - to Alice and
+     * left Bob visible. Two rows that resolve to one item are collapsed where
+     * they are read instead (see [resolving]).
      */
     internal suspend fun rekey(oldKey: String, item: SavableSearchable) = RekeyLock.withLock {
         val newKey = item.key
         if (newKey == oldKey) return@withLock
         val serializer = item.getSerializer()
         val serialized = serializer.serialize(item) ?: return@withLock
-        database.withTransaction {
+        val moved = database.withTransaction {
             val dao = database.searchableDao()
+            val attrs = database.customAttrsDao()
+            if (dao.getOnce(newKey) != null || attrs.getAllFor(newKey).isNotEmpty()) return@withTransaction false
             val old = dao.getOnce(oldKey)
             if (old != null) {
-                val target = dao.getOnce(newKey)
-                val moved = target?.copy(
-                    type = serializer.typePrefix,
-                    serializedSearchable = serialized,
-                    launchCount = old.launchCount + target.launchCount,
-                    pinPosition = maxOf(old.pinPosition, target.pinPosition),
-                    visibility = maxOf(old.visibility, target.visibility),
-                    weight = maxOf(old.weight, target.weight),
-                ) ?: old.copy(key = newKey, type = serializer.typePrefix, serializedSearchable = serialized)
                 dao.delete(oldKey)
-                dao.upsert(moved)
+                dao.upsert(old.copy(key = newKey, type = serializer.typePrefix, serializedSearchable = serialized))
             }
-            val attrs = database.customAttrsDao()
-            val from = attrs.getAllFor(oldKey)
-            if (from.isNotEmpty()) {
-                val merged = mergeCustomizations(from = from, into = attrs.getAllFor(newKey))
+            val customizations = attrs.getAllFor(oldKey)
+            if (customizations.isNotEmpty()) {
                 attrs.deleteAllFor(oldKey)
-                attrs.deleteAllFor(newKey)
-                attrs.insertCustomAttributes(merged.map { (type, value) -> CustomAttributeEntity(key = newKey, type = type, value = value) })
+                attrs.insertCustomAttributes(customizations.map { it.copy(key = newKey, id = null) })
             }
+            true
         }
         // Outside the transaction: the gestures live in the DataStore, not in
         // Room. A gesture briefly on the old key launches nothing; the next
         // resolve of that key moves it again.
-        gestures?.replaceLaunchKey(oldKey, newKey)
+        if (moved) gestures?.replaceLaunchKey(oldKey, newKey)
     }
 
     private fun removeInvalidItem(key: String) {
@@ -737,20 +729,3 @@ internal class SavableSearchableRepositoryImpl(
  * a lock held by the instance would serialize nothing (#237).
  */
 private val RekeyLock = Mutex()
-
-/**
- * The customizations of one item moved onto another item's key (#237), as
- * (type, value) pairs. Tags are united, without duplicates. Every other type
- * holds one value: an old one fills a gap; when both items carry one, the
- * target's wins. That is an arbitrary tiebreak - nothing records which of the
- * two the person meant last - and may be changed freely.
- */
-internal fun mergeCustomizations(from: List<CustomAttributeEntity>, into: List<CustomAttributeEntity>): List<Pair<String, String>> {
-    val types = (into.map { it.type } + from.map { it.type }).distinct()
-    return types.flatMap { type ->
-        val target = into.filter { it.type == type }.map { it.value }
-        val old = from.filter { it.type == type }.map { it.value }
-        val values = if (type == "tag") (target + old).distinct() else (target.take(1).ifEmpty { old.take(1) })
-        values.map { type to it }
-    }
-}
