@@ -29,6 +29,16 @@ interface SearchableDeserializer {
 sealed interface Resolved {
     data class Found(val searchable: SavableSearchable) : Resolved
 
+    /**
+     * The item exists and its identity has moved: its current key is not the
+     * one it was stored under (a contact whose lookup key changed on a merge,
+     * split or rename, or a row stored under a legacy key). The repository
+     * moves the row and its customizations to the new key (#237). Only a
+     * source that knows the item moved answers this; a [Found] item whose key
+     * differs is left alone.
+     */
+    data class Moved(val searchable: SavableSearchable) : Resolved
+
     /** The item is known not to exist any more; its row may be deleted. */
     data object Gone : Resolved
 

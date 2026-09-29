@@ -5,6 +5,7 @@ import android.os.Bundle
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import de.mm20.launcher2.database.AppDatabase
+import de.mm20.launcher2.database.entities.CustomAttributeEntity
 import de.mm20.launcher2.database.entities.SavedSearchableEntity
 import de.mm20.launcher2.icons.StaticLauncherIcon
 import de.mm20.launcher2.search.Resolved
@@ -498,6 +499,117 @@ class SavableSearchableRepositoryTest {
         assertNotNull("a deserializer that could not be created cost the row", row("broken://a"))
     }
 
+    // ----- a moved item takes its row and customizations to its new key (#237) -----
+
+    /** `old` has moved to `moving://new`; once there, it is found under it. */
+    private val movingDeserializer = object : SearchableDeserializer {
+        override suspend fun resolve(serialized: String): Resolved = when (serialized) {
+            "old" -> Resolved.Moved(TestSearchable("moving://new", domain = "moving"))
+            "moving://new" -> Resolved.Found(TestSearchable("moving://new", domain = "moving"))
+            else -> throw IllegalArgumentException(serialized)
+        }
+        override suspend fun deserialize(serialized: String): SavableSearchable? = when (val r = resolve(serialized)) {
+            is Resolved.Found -> r.searchable
+            is Resolved.Moved -> r.searchable
+            else -> null
+        }
+    }
+
+    private fun movingKoin(deserializer: SearchableDeserializer = movingDeserializer) {
+        stopKoin()
+        startKoin { modules(module { factory<SearchableDeserializer>(named("moving")) { deserializer } }) }
+    }
+
+    private suspend fun attrs(key: String, type: String) =
+        database.customAttrsDao().getCustomAttributes(listOf(key), type).first().map { it.value }.sorted()
+
+    private suspend fun attr(key: String, type: String, value: String) =
+        database.customAttrsDao().insertCustomAttributes(listOf(CustomAttributeEntity(key = key, type = type, value = value)))
+
+    private suspend fun awaitMoved() = awaitValue { if (row("moving://old") == null && row("moving://new") != null) true else null }
+
+    @Test
+    fun aMovedItemTakesItsRowAndItsCustomizationsToTheNewKey() = runBlocking {
+        movingKoin()
+        database.searchableDao().insert(
+            SavedSearchableEntity(key = "moving://old", type = "moving", serializedSearchable = "old", launchCount = 3, pinPosition = 2, visibility = VisibilityLevel.SearchOnly.value, weight = 0.2),
+        )
+        attr("moving://old", "tag", "family")
+        attr("moving://old", "label", "Mum")
+        attr("moving://old", "icon", "icon-a")
+
+        val read = repository.getByKeys(listOf("moving://old")).first()
+        awaitMoved()
+
+        assertEquals(listOf("moving://new"), read.map { it.key })
+        val moved = row("moving://new")!!
+        assertEquals("moving://new", moved.serializedSearchable)
+        assertEquals("moving", moved.type)
+        assertEquals(listOf(3, 2, VisibilityLevel.SearchOnly.value), listOf(moved.launchCount, moved.pinPosition, moved.visibility))
+        assertEquals(0.2, moved.weight, 0.0)
+        assertEquals(listOf("family"), attrs("moving://new", "tag"))
+        assertEquals(listOf("Mum"), attrs("moving://new", "label"))
+        assertEquals(listOf("icon-a"), attrs("moving://new", "icon"))
+        for (type in listOf("tag", "label", "icon")) assertEquals("old key kept a $type", emptyList<String>(), attrs("moving://old", type))
+    }
+
+    /**
+     * Two rows for one item - the old one, and one written under the new key
+     * by a launch or a pin in between - become one: launches add up, the
+     * higher pin and weight win, the stricter visibility wins (un-hiding by a
+     * merge would be the dangerous direction), tags are united without
+     * duplicates, and a label or icon fills a gap. When both rows carry a
+     * label the target's wins: an arbitrary tiebreak, nothing records which
+     * one the person meant last.
+     */
+    @Test
+    fun aCollisionMergesTheTwoRows() = runBlocking {
+        movingKoin()
+        database.searchableDao().insert(
+            SavedSearchableEntity(key = "moving://old", type = "moving", serializedSearchable = "old", launchCount = 3, pinPosition = 5, visibility = VisibilityLevel.Hidden.value, weight = 0.2),
+        )
+        database.searchableDao().insert(
+            SavedSearchableEntity(key = "moving://new", type = "moving", serializedSearchable = "moving://new", launchCount = 4, pinPosition = 1, visibility = VisibilityLevel.Default.value, weight = 0.5),
+        )
+        attr("moving://old", "tag", "a"); attr("moving://old", "tag", "b")
+        attr("moving://new", "tag", "b"); attr("moving://new", "tag", "c")
+        attr("moving://old", "label", "Old"); attr("moving://new", "label", "New")
+        attr("moving://old", "icon", "icon-old")
+
+        repository.getByKeys(listOf("moving://old")).first()
+        awaitMoved()
+
+        val merged = row("moving://new")!!
+        assertEquals("launches add up", 7, merged.launchCount)
+        assertEquals("the higher pin wins", 5, merged.pinPosition)
+        assertEquals("the stricter visibility wins", VisibilityLevel.Hidden.value, merged.visibility)
+        assertEquals("the higher weight wins", 0.5, merged.weight, 0.0)
+        assertEquals("tags united, no duplicates", listOf("a", "b", "c"), attrs("moving://new", "tag"))
+        assertEquals("both labelled: the target's (tiebreak)", listOf("New"), attrs("moving://new", "label"))
+        assertEquals("an icon fills the gap", listOf("icon-old"), attrs("moving://new", "icon"))
+        for (type in listOf("tag", "label", "icon")) assertEquals("old key kept a $type", emptyList<String>(), attrs("moving://old", type))
+    }
+
+    /** Control, green in both states: an item Found under a different key is not moved - apps resolve to aliases. */
+    @Test
+    fun anItemFoundUnderADifferentKeyStaysWhereItIs() = runBlocking {
+        movingKoin(object : SearchableDeserializer {
+            override suspend fun resolve(serialized: String): Resolved = Resolved.Found(TestSearchable("moving://new", domain = "moving"))
+            override suspend fun deserialize(serialized: String): SavableSearchable? = TestSearchable("moving://new", domain = "moving")
+        })
+        database.searchableDao().insert(
+            SavedSearchableEntity(key = "moving://old", type = "moving", serializedSearchable = "old", launchCount = 3, pinPosition = 2, visibility = 0, weight = 0.2),
+        )
+        attr("moving://old", "tag", "family")
+
+        repository.getByKeys(listOf("moving://old")).first()
+        delay(500)
+
+        assertNotNull(row("moving://old"))
+        assertEquals(null, row("moving://new"))
+        assertEquals(listOf("family"), attrs("moving://old", "tag"))
+    }
+
     private class TestSearchable(
         override val key: String,
         var serialized: String = key,
@@ -512,7 +624,7 @@ class SavableSearchableRepositoryTest {
             throw NotImplementedError()
 
         override fun getSerializer(): SearchableSerializer = object : SearchableSerializer {
-            override val typePrefix: String = "test"
+            override val typePrefix: String = domain
             override fun serialize(searchable: SavableSearchable): String =
                 (searchable as TestSearchable).serialized
         }
