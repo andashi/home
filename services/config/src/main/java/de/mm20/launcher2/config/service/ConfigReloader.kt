@@ -220,10 +220,21 @@ class ConfigReloader(
         // (a grid setting in SetGrid is a correction the differ found), and
         // the fit changed no layout. A measurement reload that met a newly
         // pushed file has to say so (#178 review).
-        val noOp = trigger == ReloadTrigger.GridMeasured &&
-            mutations.all { it.isForcedLayoutsOnly() } &&
-            lastReport()?.let { it.configSha256 == configSha256 && it.diagnostics == report.diagnostics } == true &&
-            !gridChanged(before)
+        //
+        // An app arrival reload that changed nothing leaves it too. It runs on
+        // every package signal - any app installed or updated - and at every
+        // start while the last report waits on something absent, and while
+        // that stays absent it has nothing to say: saving moved the sequence
+        // after every app update, and a consumer that refuses to push when the
+        // sequence moved refused every night. Judged by effect, not by what was
+        // applied: an absent favourite is skipped, never stored, so every
+        // arrival reload applies the favourites again and changes nothing.
+        val sameAsLast = lastReport()?.let { it.configSha256 == configSha256 && it.diagnostics == report.diagnostics } == true
+        val noOp = when (trigger) {
+            ReloadTrigger.GridMeasured -> mutations.all { it.isForcedLayoutsOnly() } && sameAsLast && !gridChanged(before)
+            ReloadTrigger.AppsChanged -> sameAsLast && !stateChanged(before)
+            else -> false
+        }
         if (noOp) return report
         return persist(report)
     }
@@ -284,6 +295,13 @@ class ConfigReloader(
     /** Whether the grid the store holds now differs from [before]; unreadable counts as changed. */
     private suspend fun gridChanged(before: ConfigState): Boolean = try {
         configStore.readState().gridLayouts != before.gridLayouts
+    } catch (e: Exception) {
+        true
+    }
+
+    /** Whether the reload changed the device at all; a failed read counts as a change. */
+    private suspend fun stateChanged(before: ConfigState): Boolean = try {
+        configStore.readState() != before
     } catch (e: Exception) {
         true
     }
