@@ -158,15 +158,17 @@ an uploaded wallpaper the file names is gone, say - never records the apps
 form, so every start runs a startup check, and write-back, held back, appends
 its skip to the last report: two saves per start for ever. The startup check
 keeps running, because it is the retry: once the cause goes, the next start's
-reload goes through and records the form. What stops is saving a failure that
-is the same as the last one - on the main path and on the two failures before
-anything is applied, an unparseable file and an unreadable state.
+reload goes through and records the form. What stops is saving a startup check
+that says the same as the last report. A failure before anything is applied -
+an unreadable file, one that does not parse, an unreadable state - is silent
+under that rule for all three self-started reloads, since nothing applied
+means nothing on the device changed.
 
-For all three self-started reloads, "says the same" leaves out write-back's own
-`write-back-skipped:` entries: write-back appends them to the last report
-itself, so while it is held back they are the only difference between a
-failing reload's report and the one before it. A report that differs from the
-last only in such an entry is not news.
+For all three, "says the same" leaves out write-back's own `write-back-skipped:`
+entries - its skips and its kept-value warnings: write-back puts them on the
+last report itself, so while it is held back they are the only difference
+between a failing reload's report and the one before it. A report that differs
+from the last only in such an entry is not news.
 
 So a consumer waiting for the report about its own push identifies it by
 the config hash, and by the report not being the one there before the push,

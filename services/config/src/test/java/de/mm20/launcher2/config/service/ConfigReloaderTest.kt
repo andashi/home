@@ -61,9 +61,9 @@ class ConfigReloaderTest {
         }
     }
 
-    private fun newReloader(store: FakeConfigStore): Pair<ConfigReloader, ReloadReportStore> {
+    private fun newReloader(store: FakeConfigStore, namings: List<AppNaming> = emptyList()): Pair<ConfigReloader, ReloadReportStore> {
         val reportStore = ReloadReportStore(context)
-        return ConfigReloader(store, reportStore) to reportStore
+        return ConfigReloader(store, reportStore, namings = namings) to reportStore
     }
 
     @Test
@@ -394,13 +394,53 @@ class ConfigReloaderTest {
     }
 
     @Test
+    fun `a measurement reload of a file that still does not parse leaves the last report`() = runTest {
+        // The same rule for every reload the launcher starts itself: a
+        // measurement follows the first draw of every start.
+        val broken = "{ not json"
+        val (reloader, reportStore) = newReloader(FakeConfigStore())
+        reloader.reload(broken, ReloadTrigger.StartupCheck)
+        val looped = reportStore.read()!!
+
+        reloader.reload(broken, ReloadTrigger.GridMeasured)
+
+        assertEquals(looped.sequence, reportStore.read()!!.sequence)
+    }
+
+    @Test
+    fun `a startup check whose state still cannot be read leaves the last report`() = runTest {
+        val store = FakeConfigStore(readFailure = IllegalStateException("datastore gone"))
+        val (reloader, reportStore) = newReloader(store)
+        reloader.reload(wallpaperText, ReloadTrigger.StartupCheck)
+        val looped = reportStore.read()!!
+
+        reloader.reload(wallpaperText, ReloadTrigger.StartupCheck)
+
+        assertEquals(looped.sequence, reportStore.read()!!.sequence)
+    }
+
+    @Test
+    fun `a startup check of a file that still cannot be read leaves the last report`() = runTest {
+        // A directory where the file should be: readText fails every time,
+        // as an unreadable file left by another install's ownership does.
+        val unreadable = File(context.cacheDir, "unreadable-launcher.json").apply { mkdirs() }
+        val (reloader, reportStore) = newReloader(FakeConfigStore())
+        reloader.reload(unreadable, ReloadTrigger.StartupCheck)
+        val looped = reportStore.read()!!
+
+        reloader.reload(unreadable, ReloadTrigger.StartupCheck)
+
+        assertEquals(looped.sequence, reportStore.read()!!.sequence)
+        assertEquals(false, looped.success)
+    }
+
+    @Test
     fun `a startup check that now succeeds replaces the report and records the apps form`() = runTest {
         // Control, the self-heal: the missing upload is back, and the next
         // start's reload goes through, says so and makes the record.
         val store = FakeConfigStore(applyDiagnostics = wallpaperMissing)
         val naming = Naming(record = null)
-        val reportStore = ReloadReportStore(context)
-        val reloader = ConfigReloader(store, reportStore, namings = listOf(naming))
+        val (reloader, reportStore) = newReloader(store, listOf(naming))
         reloader.reload(wallpaperText, ReloadTrigger.StartupCheck)
         writeBackSkips(reportStore)
         val looped = reportStore.read()!!
