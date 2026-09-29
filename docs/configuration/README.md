@@ -142,11 +142,15 @@ So rely on it this way:
 - **A moved `sequence` means look, not refuse.** Fetch `/config` and compare
   it with what you expect; the number says a report was saved, not that
   somebody changed something.
-- **To wait for a push, wait on `configSha256`** equal to the hash of the
-  file you wrote, then read `success`. Not on `sequence`: a push of exactly
-  the bytes the launcher last wrote back is recognised as its own write and
-  saves no report, and its last report already carries that hash. A
-  `RELOAD_CONFIG` broadcast always saves one.
+- **To confirm a push, follow it with a `RELOAD_CONFIG` broadcast** - read
+  `sequence` first, then wait for a report with a higher `sequence` (same
+  `storeId`) whose `configSha256` is the hash of the file you wrote, and only
+  then read `success` and the diagnostics. A broadcast always saves a report.
+  Neither the hash alone nor the push alone is enough: a push of the bytes
+  the last report already describes matches that report's hash before it is
+  reloaded, so a hash-only wait reads the old `success`; and a push of
+  exactly the bytes the launcher last wrote back is recognised as its own
+  write and saves no report at all.
 
 A save that failed half-way leaves a gap, so compare numbers, never count
 them. The count starts again when the app's files are wiped - `pm clear`, a
