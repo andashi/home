@@ -560,14 +560,25 @@ that disagreed with me". Two instances, and the second is the expensive one:
   For `LauncherSettingsDataSerializer` the corruption handler then replaces
   every setting with defaults.
 
-  **Two different guards cover two different shapes of this, and neither covers
-  the other.** `coerceInputValues = true` reads an unknown enum value as a
-  missing property and falls back - **but only where the property has a
-  default**, so a required enum property without one still fails the document.
-  And it does nothing at all for an unknown value **inside a list**, which is
-  why `TolerantEnumListSerializer` exists and drops entries this build no longer
-  knows (ADR 0008: removing a value is a normal consequence of removing a
-  feature, so it must not be able to wipe unrelated settings).
+  **Two guards cover two shapes of this, neither covers the other, and both are
+  bound to named fields rather than to the language.** `coerceInputValues = true`
+  reads an unknown enum value as a missing property and falls back - **but only
+  where the property has a default**, so a required enum property without one
+  still fails the document. And it does nothing at all for an unknown value
+  **inside a list**: that needs a tolerant serializer bound to that list, and in
+  this repository exactly one list has one - `TolerantEnumListSerializer` on
+  `List<KeyboardFilterBarItem>` in the settings store, which drops entries this
+  build no longer knows (ADR 0008: removing a value is a normal consequence of
+  removing a feature, so it must not be able to wipe unrelated settings).
+
+  **The configuration is a second store with a different failure, so check both
+  before removing a value.** `search.filterBarItems` in `launcher.json` binds
+  `FilterBarItemSerializer`, which is strict: drop a `SearchFilterItem` value and
+  `ConfigParser` returns `DecodeFailed` with a null config, and `ConfigReloader`
+  rejects the update. Nobody's settings are wiped there - instead the provisioned
+  configuration stops applying, which on a managed device is its own kind of bad.
+  **Trace the serializer of the specific list, in both stores**, rather than
+  inferring one from a neighbouring list that happens to be tolerant.
 
   Found on #238 while removing `SearchBarStyle.Solid`, because the decode was
   verified rather than assumed - and the break, dropping that one option,
