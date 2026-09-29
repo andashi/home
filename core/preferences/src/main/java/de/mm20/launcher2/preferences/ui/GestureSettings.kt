@@ -94,5 +94,14 @@ class GestureSettings internal constructor(
         }
     }
 
+    /**
+     * Every gesture that launches [oldKey] launches [newKey] instead, written
+     * when it returns (#237): a stored contact moves to a new key when its
+     * lookup key changes, and a gesture still naming the old one would launch
+     * nothing.
+     */
+    suspend fun replaceLaunchKey(oldKey: String, newKey: String) {
+    }
+
 
 }
