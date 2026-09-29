@@ -237,8 +237,11 @@ proof, and whoever merges still owns the judgement.
 **The predicate is the authority, and this paragraph used to disagree with it.**
 It listed `e2e/lib/`, `core/`, `services/`, `data/`, a build file and the
 version catalog; the script also counts `app/`, `libs/` and `gradle/`, and its
-header says why - `app/` is counted to err toward rebasing, while `.github/` is
-deliberately not shared. On 2026-09-28 a session proposed a merge order on the
+header carries the reasoning for every path it counts and every one it does not.
+**This paragraph deliberately does not summarise that reasoning either.** Its
+first draft did, and got the summary slightly wrong within three lines of saying
+not to - review caught it. Read the header. On 2026-09-28 a session proposed a
+merge order on the
 ground that an `app/ui`-only commit was outside the shared list, which the prose
 supported and the predicate refuses: their own gate would have contradicted them
 at the worst moment. The fix is not a longer sentence. **Prose that restates a
