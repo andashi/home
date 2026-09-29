@@ -590,6 +590,22 @@ class SavableSearchableRepositoryTest {
         for (type in listOf("tag", "label", "icon")) assertEquals("old key kept a $type", emptyList<String>(), attrs("moving://old", type))
     }
 
+    /** The debug screen's cleanup moves a moved item too, rather than leaving or deleting it. */
+    @Test
+    fun cleanupMovesAMovedItem() = runBlocking {
+        movingKoin()
+        database.searchableDao().insert(
+            SavedSearchableEntity(key = "moving://old", type = "moving", serializedSearchable = "old", launchCount = 3, pinPosition = 2, visibility = 0, weight = 0.2),
+        )
+        attr("moving://old", "tag", "family")
+
+        val removed = repository.cleanupDatabase()
+        awaitMoved()
+
+        assertEquals("a moved item is not removed", 0, removed)
+        assertEquals(listOf("family"), attrs("moving://new", "tag"))
+    }
+
     /** Control, green in both states: an item Found under a different key is not moved - apps resolve to aliases. */
     @Test
     fun anItemFoundUnderADifferentKeyStaysWhereItIs() = runBlocking {
