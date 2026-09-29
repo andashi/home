@@ -101,7 +101,9 @@ jobs:
       # a Roborazzi mode a capture draws nothing, and at SDK 37 Robolectric's
       # always-on draw traversals executed that code in tests that checked none
       # of it - 88.4 % that way, 82.7 % at SDK 36 plain, 88.4 % at 36 with the
-      # goldens (#251). One test run either way: :app:ui runs nowhere else here.
+      # goldens (#251). Still one :app:ui test run in this job, which has no
+      # other; l3-screenshots verifies the goldens again in a job of its own,
+      # as it did before this step verified them.
       - name: Coverage gate
         run: >-
           ./gradlew
