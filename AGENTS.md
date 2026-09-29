@@ -944,6 +944,16 @@ never stated.
 and size the runs against the rate of the condition you are actually running,
 not the rate you measured somewhere else.** Five runs at 0.69 puts a false clean
 under 0.3 %; the same five runs at 0.2 leave it at 33 %.
+
+**Those figures assume the runs are independent, which is a practice rather than
+a footnote.** Five runs in one block share whatever the host was doing, so a load
+trend inside a block lands entirely on one condition and the effective number of
+runs is smaller than the count - the same bias that a fixed build order put into
+every unfold series before #175. Interleave the conditions run by run, record the
+load beside each, and read the rate as a property of the condition you ran. A
+round of #251's bisect was started as five runs of one split followed by five of
+the other and was restarted interleaved for exactly this reason, with none of the
+first round's results kept.
 Say in the pull request which tests fall over without the change and which are
 deliberate controls that pass in both states.
 
