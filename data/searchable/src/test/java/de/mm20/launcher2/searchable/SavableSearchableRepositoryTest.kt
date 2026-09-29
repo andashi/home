@@ -714,6 +714,47 @@ class SavableSearchableRepositoryTest {
         Unit
     }
 
+    /** Two stored contacts that were merged: both rows stay (see rekey), and both resolve to the merged one. */
+    private val mergedDeserializer = object : SearchableDeserializer {
+        override suspend fun resolve(serialized: String): Resolved =
+            if (serialized in setOf("alice", "bob")) Resolved.Found(TestSearchable("moving://merged", domain = "moving"))
+            else Resolved.Found(TestSearchable(serialized, domain = "moving"))
+        override suspend fun deserialize(serialized: String): SavableSearchable? = (resolve(serialized) as Resolved.Found).searchable
+    }
+
+    /**
+     * Two rows that resolve to one item are read as one (#237). A lazy grid
+     * keyed by item - the edit-favorites sheet is - throws on a key used
+     * twice.
+     */
+    @Test
+    fun twoRowsOfOneItemAreReadAsOne() = runBlocking {
+        movingKoin(mergedDeserializer)
+        pinned("moving://alice", "moving", 3, serialized = "alice")
+        pinned("moving://bob", "moving", 2, serialized = "bob")
+
+        assertEquals(listOf("moving://merged"), repository.get().first().map { it.key })
+        assertEquals(listOf("moving://merged"), repository.getByKeys(listOf("moving://alice", "moving://bob")).first().map { it.key })
+    }
+
+    /**
+     * The stricter visibility wins where the rows are read (#237): while Alice
+     * and Bob are merged, Bob's hidden row makes the merged contact hidden,
+     * and Alice's pin must not put it in the favorites. The ordinary favorite
+     * is the control that shows up.
+     */
+    @Test
+    fun aVisibleRowOfAHiddenItemDoesNotShowIt() = runBlocking {
+        movingKoin(mergedDeserializer)
+        database.searchableDao().insert(SavedSearchableEntity(key = "moving://alice", type = "moving", serializedSearchable = "alice", launchCount = 0, pinPosition = 3, visibility = VisibilityLevel.Default.value, weight = 0.0))
+        database.searchableDao().insert(SavedSearchableEntity(key = "moving://bob", type = "moving", serializedSearchable = "bob", launchCount = 0, pinPosition = 0, visibility = VisibilityLevel.Hidden.value, weight = 0.0))
+        pinned("moving://carol", "moving", 2, serialized = "moving://carol")
+
+        val favorites = repository.get(minPinnedLevel = PinnedLevel.AutomaticallySorted, minVisibility = VisibilityLevel.SearchOnly).first()
+
+        assertEquals(listOf("moving://carol"), favorites.map { it.key })
+    }
+
     /** Control, green in both states: an item Found under a different key is not moved - apps resolve to aliases. */
     @Test
     fun anItemFoundUnderADifferentKeyStaysWhereItIs() = runBlocking {
