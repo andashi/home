@@ -6,5 +6,5 @@ import org.koin.core.qualifier.named
 import org.koin.dsl.module
 
 val searchableModule = module {
-    factory <SavableSearchableRepository> { SavableSearchableRepositoryImpl(get(), get()) }
+    factory <SavableSearchableRepository> { SavableSearchableRepositoryImpl(get(), get(), get()) }
 }

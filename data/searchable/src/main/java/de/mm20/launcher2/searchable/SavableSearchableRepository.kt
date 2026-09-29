@@ -646,6 +646,10 @@ internal class SavableSearchableRepositoryImpl(
                 attrs.insertCustomAttributes(merged.map { (type, value) -> CustomAttributeEntity(key = newKey, type = type, value = value) })
             }
         }
+        // Outside the transaction: the gestures live in the DataStore, not in
+        // Room. A gesture briefly on the old key launches nothing; the next
+        // resolve of that key moves it again.
+        gestures?.replaceLaunchKey(oldKey, newKey)
     }
 
     private fun removeInvalidItem(key: String) {
