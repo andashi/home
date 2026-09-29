@@ -164,6 +164,12 @@ interface SearchableDao {
     @Query("SELECT * FROM Searchable WHERE `key` = :key")
     fun getByKey(key: String): Flow<SavedSearchableEntity?>
 
+    @Query("SELECT DISTINCT `type` FROM Searchable")
+    suspend fun getTypes(): List<String>
+
+    @Query("SELECT * FROM Searchable WHERE `type` = :type")
+    suspend fun getAllOfType(type: String): List<SavedSearchableEntity>
+
     /** One read, for a transaction: [getByKey] is a flow (#237). */
     @Query("SELECT * FROM Searchable WHERE `key` = :key")
     suspend fun getOnce(key: String): SavedSearchableEntity?

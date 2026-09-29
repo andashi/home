@@ -52,6 +52,12 @@ class ContactLookupKeyTest {
         postalAddresses = emptyList(), customActions = emptyList(), lookupKey = lookupKey,
     )
 
+    /** So the launcher's refresh resolves stored contacts on every resume, read or not. */
+    @Test
+    fun storedContactKeysAreDeclaredToMove() {
+        assertTrue(deserializer.storedKeysMove)
+    }
+
     @Test
     fun theKeyIsTheLookupKey() {
         assertEquals("contact://0r1-A", contact(1, "0r1-A").key)

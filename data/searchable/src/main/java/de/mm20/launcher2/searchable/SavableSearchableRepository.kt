@@ -659,6 +659,15 @@ internal class SavableSearchableRepositoryImpl(
     }
 
     override suspend fun refreshMovedKeys() {
+        val dao = database.searchableDao()
+        for (type in dao.getTypes()) {
+            val deserializer = runCatching { get<SearchableDeserializer>(named(type)) }.getOrNull() ?: continue
+            if (!deserializer.storedKeysMove) continue
+            for (row in dao.getAllOfType(type)) {
+                val resolved = deserializer.resolve(row.serializedSearchable)
+                if (resolved is Resolved.Moved) rekey(row.key, resolved.searchable)
+            }
+        }
     }
 
     override suspend fun cleanupDatabase(): Int {

@@ -43,6 +43,9 @@ internal class AndroidContactDeserializer(
             else -> null
         }
 
+    /** A contact's lookup key changes on a merge, a split or a rename, read or not. */
+    override val storedKeysMove: Boolean get() = true
+
     /** Every change of the permission, not its current state: that one was just resolved. */
     override val resolveAgain: Flow<Unit>
         get() = permissionsManager.hasPermission(PermissionGroup.Contacts).distinctUntilChanged().drop(1).map { }
