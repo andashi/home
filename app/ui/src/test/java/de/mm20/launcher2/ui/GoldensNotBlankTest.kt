@@ -24,6 +24,12 @@ import javax.imageio.ImageIO
  * on a guess would make it a rule about images nobody has. The most uniform
  * legitimate golden when this was written had 716 colours, the fewest 176.
  *
+ * It reaches `:app:ui`'s goldens only, under `app/ui/src/test/roborazzi/`: the
+ * one module that applies Roborazzi when this was written. A module that gains
+ * goldens is not covered by this test and needs its own, or an extension of
+ * this one; a guard that covers less than its reputation is how a blank gets
+ * through somewhere nobody looks.
+ *
  * The directory is a declared input of the test task (build.gradle.kts), or a
  * change to a golden alone would leave the task up to date and this would not
  * run.
