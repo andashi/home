@@ -313,7 +313,13 @@ internal class SavableSearchableRepositoryImpl(
                 else -> throw IllegalArgumentException("Cannot specify both includeTypes and excludeTypes")
             }
         }
-        return resolvedUpTo(limit, query)
+        val items = resolvedUpTo(limit, query)
+        // A list without hidden items leaves out an item that has a hidden row
+        // anywhere: while two contacts are merged, one's hidden row makes the
+        // merged contact hidden, and the other's pin must not show it. The
+        // stricter visibility wins (#237).
+        if (minVisibility.value >= VisibilityLevel.Hidden.value) return items
+        return combine(items, hiddenKeys()) { found, hidden -> found.filterNot { it.key in hidden } }
     }
 
     override fun getKeys(
@@ -555,7 +561,12 @@ internal class SavableSearchableRepositoryImpl(
             runCatching { get<SearchableDeserializer>(named(type)).resolveAgain }.getOrNull()
         }
         return merge(flowOf(Unit), *again.toTypedArray()).map {
-            entities.mapNotNull { fromDatabaseEntity(it).searchable }
+            // Two rows can resolve to one item - merged contacts keep their
+            // rows under their own keys (#237) - and a list keyed by item
+            // throws on a key used twice. The first row in the query's order
+            // is kept: an arbitrary tiebreak, which the stored rows do not
+            // settle either way.
+            entities.mapNotNull { fromDatabaseEntity(it).searchable }.distinctBy { it.key }
         }
     }
 
