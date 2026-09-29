@@ -821,6 +821,28 @@ class SavableSearchableRepositoryTest {
         assertEquals(mapOf("moving://alice" to "moving://merged", "moving://carol" to "moving://carol"), items.mapValues { it.value.key })
     }
 
+    /**
+     * One row that cannot be read does not stop the refresh (review on #254).
+     * The refresh runs from onResume without a handler: an exception from one
+     * stored row - a payload the resolver cannot parse - ended it, and would
+     * have ended the launcher.
+     */
+    @Test
+    fun aRowThatCannotBeReadDoesNotStopTheRefresh() = runBlocking {
+        movingKoin(object : SearchableDeserializer by movingDeserializer {
+            override val storedKeysMove = true
+            override suspend fun resolve(serialized: String): Resolved =
+                if (serialized == "unreadable") throw org.json.JSONException("unreadable") else movingDeserializer.resolve(serialized)
+        })
+        pinned("moving://broken", "moving", 0, serialized = "unreadable")
+        pinned("moving://old", "moving", 0, serialized = "old")
+
+        repository.refreshMovedKeys()
+
+        assertNotNull("the row after the unreadable one moved", row("moving://new"))
+        assertNotNull("the unreadable row is left as it is", row("moving://broken"))
+    }
+
     /** Control, green in both states: an item Found under a different key is not moved - apps resolve to aliases. */
     @Test
     fun anItemFoundUnderADifferentKeyStaysWhereItIs() = runBlocking {
