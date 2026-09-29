@@ -2,6 +2,7 @@ package de.mm20.launcher2.searchable
 
 import android.util.Log
 import androidx.room.withTransaction
+import de.mm20.launcher2.preferences.ui.GestureSettings
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.sync.Mutex
 import de.mm20.launcher2.database.entities.CustomAttributeEntity
@@ -189,6 +190,8 @@ interface SavableSearchableRepository {
 internal class SavableSearchableRepositoryImpl(
     private val database: AppDatabase,
     private val settings: RankingSettings?,
+    /** Gestures name items by key and follow a moved one (#237); null in tests that do not look. */
+    private val gestures: GestureSettings? = null,
 ) : SavableSearchableRepository, KoinComponent {
 
     private val scope = CoroutineScope(Job() + Dispatchers.Default)

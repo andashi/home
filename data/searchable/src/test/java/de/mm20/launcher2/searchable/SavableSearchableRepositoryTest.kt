@@ -31,6 +31,7 @@ import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
 import org.koin.core.qualifier.named
@@ -675,6 +676,27 @@ class SavableSearchableRepositoryTest {
 
         assertTrue("the hidden contact reappears under its new key: $hidden", "moving://bob-renamed" in hidden)
         assertTrue("a visible contact is hidden: $hidden", "moving://alice-renamed" !in hidden && "moving://alice" !in hidden)
+    }
+
+    /** A gesture on the old key follows the move: it compares the item's current key with the one it names (#237). */
+    @Test
+    fun aGestureOnAMovedItemFollowsIt() = runBlocking {
+        stopKoin()
+        startKoin {
+            androidContext(ApplicationProvider.getApplicationContext())
+            modules(de.mm20.launcher2.preferences.preferencesModule, module { factory<SearchableDeserializer>(named("moving")) { movingDeserializer } })
+        }
+        val gestures = org.koin.core.context.GlobalContext.get().get<de.mm20.launcher2.preferences.ui.GestureSettings>()
+        gestures.setSwipeLeft(de.mm20.launcher2.preferences.GestureAction.Launch("moving://old"))
+        awaitValue { if (gestures.swipeLeft.first() == de.mm20.launcher2.preferences.GestureAction.Launch("moving://old")) true else null }
+        val repository = SavableSearchableRepositoryImpl(database, null, gestures)
+        pinned("moving://old", "moving", 0, serialized = "old")
+
+        repository.getByKeys(listOf("moving://old")).first()
+        awaitMoved()
+
+        awaitValue { if (gestures.swipeLeft.first() == de.mm20.launcher2.preferences.GestureAction.Launch("moving://new")) true else null }
+        Unit
     }
 
     /** Control, green in both states: an item Found under a different key is not moved - apps resolve to aliases. */
