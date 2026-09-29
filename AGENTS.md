@@ -919,6 +919,21 @@ identical. The comfortable reading is available in both directions, so say which
 it is before moving on. A deadline guarded in three places stayed green when one
 guard was removed; the test was sound and the break was partial, and that was
 only known because somebody asked which.
+
+**And for an intermittent defect, a search that fails to reproduce it is not an
+exclusion unless its runs per condition are stated.** The rate is the
+multiplier: at the 0.69 measured for #251's blank capture, a condition run
+**once** comes back clean by luck about a third of the time, so a sweep of twenty
+conditions run once each reports "never reproduced" with near certainty even when
+one of them is the cause. That happened. #248's body recorded the blank as
+"never in the class alone or in any pair or half of the glass tests" - and every
+pair and every half behind that sentence was a **single run**. #251's bisect
+later put one of those same halves at 2 of 5. The wrong reading did not stay in a
+session: it reached a merged pull request body and formed part of the reasoning
+for **dropping a golden**, so a coverage trade was priced on a search whose power
+was never stated. **Put the runs per condition and the observed rate beside any
+negative result, and size them before starting** - five runs per condition at
+0.69 puts a false clean under 0.3 %.
 Say in the pull request which tests fall over without the change and which are
 deliberate controls that pass in both states.
 
