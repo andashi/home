@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.shape.CornerBasedShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -66,7 +67,28 @@ data class GlassSurfaceInfo(
     val openEdges: Set<GlassEdge> = emptySet(),
     /** The lens's corner radius in dp; null lenses the surface as a pill (#91). */
     val lensRadiusDp: Float? = null,
+    /** What it painted under its content (#249); null where a test built the info by hand. */
+    val layers: GlassLayers? = null,
 )
+
+/**
+ * What a glass surface paints under its content, after the backdrop: an
+ * opaque [floor] or none, the [tint], then black at [scrimAlpha].
+ */
+data class GlassLayers(val floor: Color?, val tint: Color, val scrimAlpha: Float)
+
+/**
+ * The layers of a surface: the [theme]'s surface as tint over the backdrop,
+ * which is what glass is wherever there is a backdrop to show.
+ */
+internal fun glassLayers(
+    theme: ColorScheme,
+    onGlass: ColorScheme,
+    tintAlpha: Float,
+    scrimAlpha: Float,
+    floor: Boolean,
+    backdrop: Boolean,
+): GlassLayers = GlassLayers(floor = null, tint = theme.surface.copy(alpha = tintAlpha), scrimAlpha = scrimAlpha)
 
 /**
  * An edge where a surface continues into the next segment of the same card
@@ -99,6 +121,12 @@ fun GlassSurface(
      * Null lenses [shape] as a pill, which is right only for the squircle.
      */
     lensRadius: Dp? = null,
+    /**
+     * An overlay over the launcher's own content - a menu, a sheet - rather
+     * than a card over the wallpaper. Without a backdrop it gets an opaque
+     * floor, so its text reads whatever lies under it (#249).
+     */
+    floor: Boolean = false,
     content: @Composable () -> Unit,
 ) {
     val style = LocalGlassStyle.current
@@ -107,13 +135,20 @@ fun GlassSurface(
     // The tint stays the theme's surface; only what is drawn on the glass
     // changes scheme (below), so the glass looks as it did.
     val schemes = LocalLauncherColorSchemes.current
-    val tint = (schemes?.theme ?: MaterialTheme.colorScheme).surface.copy(alpha = tintAlpha)
     // Text on glass takes the scheme that matches the wallpaper showing
     // through it, the rule the home grid and the resting search bar already
     // follow. The theme's scheme was illegible whenever theme and wallpaper
     // disagreed in brightness: 1.02 to 1.51:1 in search (#242).
     val onGlass = schemes?.let { if (LocalPreferDarkContentOverWallpaper.current) it.light else it.dark }
         ?: MaterialTheme.colorScheme
+    val layers = glassLayers(
+        theme = schemes?.theme ?: MaterialTheme.colorScheme,
+        onGlass = onGlass,
+        tintAlpha = tintAlpha,
+        scrimAlpha = style.scrimAlpha,
+        floor = floor,
+        backdrop = LocalGlassBackdrop.current != null,
+    )
     // The lens follows the real outline: the glass radius, the pill, or a
     // custom shape's own radius; only the icon chip's squircle - and a
     // custom shape that names none - is lensed as a pill, which it is within
@@ -126,7 +161,7 @@ fun GlassSurface(
     }
     val info = GlassSurfaceInfo(
         tintAlpha, style.radiusDp, style.scrimAlpha, pill, lens = true, rim = true, openEdges = openEdges,
-        lensRadiusDp = lensCorner?.value,
+        lensRadiusDp = lensCorner?.value, layers = layers,
     )
     Box(
         modifier = modifier
@@ -140,8 +175,9 @@ fun GlassSurface(
                 openEdges = openEdges,
             )
             .drawBehind {
-                drawRect(tint)
-                if (style.scrimAlpha > 0f) drawRect(Color.Black.copy(alpha = style.scrimAlpha))
+                layers.floor?.let { drawRect(it) }
+                drawRect(layers.tint)
+                if (layers.scrimAlpha > 0f) drawRect(Color.Black.copy(alpha = layers.scrimAlpha))
                 // The top-edge specular: a short fade from white to nothing,
                 // only on the card's real top edge.
                 if (GlassEdge.Top in openEdges) return@drawBehind
