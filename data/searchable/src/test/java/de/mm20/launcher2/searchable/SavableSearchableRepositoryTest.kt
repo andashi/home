@@ -555,16 +555,15 @@ class SavableSearchableRepositoryTest {
     }
 
     /**
-     * Two rows for one item - the old one, and one written under the new key
-     * by a launch or a pin in between - become one: launches add up, the
-     * higher pin and weight win, the stricter visibility wins (un-hiding by a
-     * merge would be the dangerous direction), tags are united without
-     * duplicates, and a label or icon fills a gap. When both rows carry a
-     * label the target's wins: an arbitrary tiebreak, nothing records which
-     * one the person meant last.
+     * A row is never merged into one that belongs to someone else (#237).
+     * Merging cannot be undone: on the emulator a merge, a resume and a split
+     * sent the merged row - Bob's hidden flag and Alice's tag - to Alice, and
+     * left Bob visible. So when the new key is taken, by a row or by
+     * customizations alone, the moving row stays where it is, and both keep
+     * what they have.
      */
     @Test
-    fun aCollisionMergesTheTwoRows() = runBlocking {
+    fun aRowWhoseNewKeyIsTakenStaysWhereItIs() = runBlocking {
         movingKoin()
         database.searchableDao().insert(
             SavedSearchableEntity(key = "moving://old", type = "moving", serializedSearchable = "old", launchCount = 3, pinPosition = 5, visibility = VisibilityLevel.Hidden.value, weight = 0.2),
@@ -572,23 +571,39 @@ class SavableSearchableRepositoryTest {
         database.searchableDao().insert(
             SavedSearchableEntity(key = "moving://new", type = "moving", serializedSearchable = "moving://new", launchCount = 4, pinPosition = 1, visibility = VisibilityLevel.Default.value, weight = 0.5),
         )
-        attr("moving://old", "tag", "a"); attr("moving://old", "tag", "b")
-        attr("moving://new", "tag", "b"); attr("moving://new", "tag", "c")
+        attr("moving://old", "tag", "a"); attr("moving://new", "tag", "c")
         attr("moving://old", "label", "Old"); attr("moving://new", "label", "New")
-        attr("moving://old", "icon", "icon-old")
 
         repository.getByKeys(listOf("moving://old")).first()
-        awaitMoved()
+        delay(500)
 
-        val merged = row("moving://new")!!
-        assertEquals("launches add up", 7, merged.launchCount)
-        assertEquals("the higher pin wins", 5, merged.pinPosition)
-        assertEquals("the stricter visibility wins", VisibilityLevel.Hidden.value, merged.visibility)
-        assertEquals("the higher weight wins", 0.5, merged.weight, 0.0)
-        assertEquals("tags united, no duplicates", listOf("a", "b", "c"), attrs("moving://new", "tag"))
-        assertEquals("both labelled: the target's (tiebreak)", listOf("New"), attrs("moving://new", "label"))
-        assertEquals("an icon fills the gap", listOf("icon-old"), attrs("moving://new", "icon"))
-        for (type in listOf("tag", "label", "icon")) assertEquals("old key kept a $type", emptyList<String>(), attrs("moving://old", type))
+        val old = row("moving://old")!!
+        val target = row("moving://new")!!
+        assertEquals(listOf(3, 5, VisibilityLevel.Hidden.value), listOf(old.launchCount, old.pinPosition, old.visibility))
+        assertEquals(listOf(4, 1, VisibilityLevel.Default.value), listOf(target.launchCount, target.pinPosition, target.visibility))
+        assertEquals(listOf("a"), attrs("moving://old", "tag"))
+        assertEquals(listOf("Old"), attrs("moving://old", "label"))
+        assertEquals(listOf("c"), attrs("moving://new", "tag"))
+        assertEquals(listOf("New"), attrs("moving://new", "label"))
+    }
+
+    /** Taken by customizations alone - an icon is set without a row - is taken too. */
+    @Test
+    fun aNewKeyWithCustomizationsButNoRowIsTakenToo() = runBlocking {
+        movingKoin()
+        database.searchableDao().insert(
+            SavedSearchableEntity(key = "moving://old", type = "moving", serializedSearchable = "old", launchCount = 3, pinPosition = 2, visibility = 0, weight = 0.2),
+        )
+        attr("moving://old", "tag", "a")
+        attr("moving://new", "icon", "icon-new")
+
+        repository.getByKeys(listOf("moving://old")).first()
+        delay(500)
+
+        assertNotNull(row("moving://old"))
+        assertEquals(null, row("moving://new"))
+        assertEquals(listOf("a"), attrs("moving://old", "tag"))
+        assertEquals(listOf("icon-new"), attrs("moving://new", "icon"))
     }
 
     /** The debug screen's cleanup moves a moved item too, rather than leaving or deleting it. */
