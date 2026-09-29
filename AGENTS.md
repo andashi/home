@@ -921,19 +921,29 @@ guard was removed; the test was sound and the break was partial, and that was
 only known because somebody asked which.
 
 **And for an intermittent defect, a search that fails to reproduce it is not an
-exclusion unless its runs per condition are stated.** The rate is the
-multiplier: at the 0.69 measured for #251's blank capture, a condition run
-**once** comes back clean by luck about a third of the time, so a sweep of twenty
-conditions run once each reports "never reproduced" with near certainty even when
-one of them is the cause. That happened. #248's body recorded the blank as
-"never in the class alone or in any pair or half of the glass tests" - and every
-pair and every half behind that sentence was a **single run**. #251's bisect
-later put one of those same halves at 2 of 5. The wrong reading did not stay in a
-session: it reached a merged pull request body and formed part of the reasoning
-for **dropping a golden**, so a coverage trade was priced on a search whose power
-was never stated. **Put the runs per condition and the observed rate beside any
-negative result, and size them before starting** - five runs per condition at
-0.69 puts a false clean under 0.3 %.
+exclusion unless its runs per condition are stated.** A single run of a causal
+condition misses the defect at exactly the rate it does not fire, and nothing
+about the other conditions changes that: at the 0.69 measured for #251's blank
+capture in the full package, once is a 31 % miss. The trap is the next step.
+**The rate is a property of the condition, not of the defect** - measured later,
+the same cause fires at about 0.2 in a two-class condition, where a single run
+misses it four times in five. So a sweep whose conditions are all small is weak
+even where its conditions are the right ones, and several of them can come back
+clean together.
+
+That happened. #248's body recorded the blank as "never in the class alone or in
+any pair or half of the glass tests", and every pair and every half behind that
+sentence was a **single run** of a small condition - several of which contained
+the class #251's bisect later found necessary. #251's bisect has since put one of
+those same halves at 2 of 5. The wrong reading did not stay in a session: it
+reached a merged pull request body and formed part of the reasoning for
+**dropping a golden**, so a coverage trade was priced on a search whose power was
+never stated.
+
+**Put the runs per condition and the observed rate beside any negative result,
+and size the runs against the rate of the condition you are actually running,
+not the rate you measured somewhere else.** Five runs at 0.69 puts a false clean
+under 0.3 %; the same five runs at 0.2 leave it at 33 %.
 Say in the pull request which tests fall over without the change and which are
 deliberate controls that pass in both states.
 
