@@ -122,8 +122,9 @@ adb shell content query --uri content://<pkg>.state/config        # the effectiv
 adb shell content query --uri content://<pkg>.state/diagnostics   # the last reload report
 ```
 
-Every report carries `sequence`, higher than any the store gave before, and
-`storeId`, the store that numbered it. Each saved report moves `sequence`, so
+Every report saved by a build since v0.11.0 carries `sequence`, higher than
+any the store gave before, and `storeId`, the store that numbered it (one
+written earlier has neither, see below). Each saved report moves `sequence`, so
 "the report changed between two reads" is visible where the hash cannot show
 it.
 
