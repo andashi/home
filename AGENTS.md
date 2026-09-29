@@ -132,8 +132,22 @@ carries `.status` - queued, in progress, completed - *and* a `.conclusion`; a
 finished, and a waiter built on it announced "all checks completed" while
 CodeRabbit's status was `PENDING` with "Review in progress" - written twenty
 minutes after the same session had documented this exact shape. Select on
-`(.conclusion // .state)` and require `SUCCESS`, so a missing field cannot
+`(.conclusion // .state)` and require success, so a missing field cannot
 default to done.
+
+**Normalise the case, because it depends on which API you read.** Measured on
+one commit on 2026-09-29: `gh pr view --json statusCheckRollup`, which is
+GraphQL, gives `SUCCESS`, `FAILURE`, `PENDING`; the REST endpoints for the same
+commit give `success`, `failure`, `pending`. A gate written against one and
+copied to the other matches nothing and refuses every merge - safe, and still a
+gate nobody can use. **And the two disagree on what "not finished" looks like**:
+GraphQL returns an empty string for a check that is still running, REST returns
+`null`. That one is not safe in either direction - classed as a failure it
+blocks a green pull request, classed as a success it merges an unfinished one.
+A watcher written in this session did the former within an hour of this entry
+being written, because a reorder moved its failure test ahead of its
+still-running test. Upper-case or lower-case everything before comparing, and
+treat empty and null alike.
 
 **And an empty rollup is not green.** A pull request whose checks have not
 registered yet returns an empty list, which every "are any of them failing?"
