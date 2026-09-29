@@ -11,6 +11,8 @@ import de.mm20.launcher2.profiles.Profile
 import de.mm20.launcher2.profiles.ProfileManager
 import org.koin.compose.koinInject
 import androidx.compose.foundation.background
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -259,7 +261,14 @@ private fun CompactFailure(onAllow: (() -> Unit)?, onReplace: () -> Unit, onRemo
         IconButton(onClick = { open = true }) {
             Icon(painterResource(R.drawable.warning_24px), contentDescription = message)
         }
-        DropdownMenuPopup(expanded = open, onDismissRequest = { open = false }) {
+        // Scrolls as the Toolbar's overflow menu does: the popup does not
+        // scroll its content, and with large text or a short window the last
+        // action would be out of reach (review on #253).
+        DropdownMenuPopup(
+            expanded = open,
+            onDismissRequest = { open = false },
+            modifier = Modifier.verticalScroll(rememberScrollState()),
+        ) {
             GlassMenuGroup {
                 Text(
                     message,
