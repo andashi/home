@@ -62,7 +62,7 @@ internal fun GesturePreference(
     value: GestureAction?,
     onValueChanged: (GestureAction, SavableSearchable?) -> Unit,
     options: Set<KClass<out GestureAction>>,
-    shortcutOptions: List<SavableSearchable>,
+    shortcutOptions: List<GestureShortcut>,
 ) {
     var showSheet by remember { mutableStateOf(false) }
 
@@ -70,17 +70,11 @@ internal fun GesturePreference(
     val iconService: IconService = koinInject()
     val iconSize = 24.dp.toPixels().toInt()
 
-    val shortcut = remember(shortcutOptions, value) {
-        if (value !is GestureAction.Launch) {
-            null
-        } else {
-            shortcutOptions.find { value.key == it.key }
-        }
-    }
+    val shortcut = remember(shortcutOptions, value) { shortcutFor(value, shortcutOptions)?.item }
 
     val icons by remember(shortcutOptions) {
         combine(shortcutOptions.map {
-            iconService.getIcon(it, iconSize)
+            iconService.getIcon(it.item, iconSize)
         }) { it.toList() }
     }.collectAsStateWithLifecycle(emptyList())
 
@@ -227,14 +221,16 @@ internal fun GesturePreference(
                         PreferenceCategory(
                             title = stringResource(R.string.gesture_action_category_apps)
                         ) {
-                            for ((i, shortcut) in shortcutOptions.withIndex()) {
+                            for ((i, option) in shortcutOptions.withIndex()) {
                                 GestureItem(
-                                    title = shortcut.labelOverride ?: shortcut.label,
+                                    title = option.item.labelOverride ?: option.item.label,
                                     icon = R.drawable.android_24px,
                                     shortcutIcon = icons.getOrNull(i),
-                                    selected = value is GestureAction.Launch && value.key == shortcut.key,
+                                    selected = shortcutFor(value, shortcutOptions) == option,
                                     onClick = {
-                                        onValueChanged(GestureAction.Launch(shortcut.key), shortcut)
+                                        // A configured option already has its row: nothing
+                                        // new to save, and the key it stores stays (#237).
+                                        onValueChanged(launchFor(option), null)
                                         showSheet = false
                                     }
                                 )
@@ -360,12 +356,12 @@ private fun GestureItem(
 private fun getActionLabel(
     resources: Resources,
     action: GestureAction?,
-    shortcutOptions: List<SavableSearchable>
+    shortcutOptions: List<GestureShortcut>
 ): String {
     return when (action) {
         GestureAction.Feed -> resources.getString(R.string.gesture_action_feed)
         is GestureAction.Launch -> {
-            shortcutOptions.find { it.key == action.key }
+            shortcutFor(action, shortcutOptions)?.item
                 ?.let { it.labelOverride ?: it.label }
                 ?: resources.getString(R.string.gesture_action_launch_app)
         }
@@ -380,3 +376,16 @@ private fun getActionLabel(
         else -> resources.getString(R.string.gesture_action_none)
     }
 }
+
+/**
+ * A configured gesture target: the key the gesture stores and the item that key
+ * resolves to now, which can carry another key - a merged contact does (#237).
+ */
+internal data class GestureShortcut(val storedKey: String, val item: SavableSearchable)
+
+/** The configured target [action] launches. Today: matched by the item's own key. */
+internal fun shortcutFor(action: GestureAction?, options: List<GestureShortcut>): GestureShortcut? =
+    (action as? GestureAction.Launch)?.let { launch -> options.find { it.item.key == launch.key } }
+
+/** What choosing [option] writes. Today: the item's own key. */
+internal fun launchFor(option: GestureShortcut): GestureAction.Launch = GestureAction.Launch(option.item.key)
