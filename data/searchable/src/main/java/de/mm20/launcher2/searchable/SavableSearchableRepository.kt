@@ -660,6 +660,7 @@ internal class SavableSearchableRepositoryImpl(
                 val favorites = dao.exportFavorites(limit = 100, offset = page * 100)
                 for (fav in favorites) {
                     val resolved = resolve(fav)
+                    if (resolved is Resolved.Moved) rekey(fav.key, resolved.searchable)
                     if (resolved == Resolved.Gone || (resolved is Resolved.Found && resolved.searchable.key != fav.key)) {
                         removeInvalidItem(fav.key)
                         removed++
