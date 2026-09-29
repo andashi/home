@@ -131,31 +131,27 @@ and three kinds of event save one:
   `configSha256` stays.
 - **A change made on the device** that write-back put into the file, or kept
   out of it (a `write-back-skipped:` warning added to the last report).
-- **A reload the launcher starts itself**, when it has something new to say.
-  It starts one at process start when the file, the report or the launcher's
-  own records disagree; when the grid is measured (a first draw, a fold); and,
-  while the last report waits on something absent (`favorite-unavailable`,
-  `app-unavailable`, `profile-unavailable`, `unknown-widget-provider`,
-  `icon-pack-unavailable`, `gesture-app-unavailable`), on every app installed
-  or updated and at every start. A measurement or an arrival reload that met
-  the same file, produced the same diagnostics and changed nothing on the
-  device saves nothing and leaves the last report, and its number: an app
-  update that did not bring what is missing does not move `sequence`. One
-  that brings it does.
+- **A reload the launcher starts itself**, when it has something new to say:
+  at process start when the file, the report or its own records disagree;
+  when the grid is measured (a first draw, a fold); and on every app
+  installed or updated while the last report waits on something absent (a
+  `*-unavailable` or `unknown-widget-provider` warning). A measurement or an
+  arrival reload that changed nothing saves nothing and keeps the last
+  report's number: an app update that does not bring what is missing does not
+  move `sequence`, one that brings it does. The rules are in
+  [ADR 0003](../architecture/adr/0003-config-hot-reload.md).
 
 So "the report changed between two reads" is visible where the hash cannot
-show it. **One case is known to move `sequence` on a device nobody touched,
-and its cause is not found:** on a foldable with `home.grid.layouts` for
-`phone` and `fold`, an app installed and then a launcher start saved two
-reports, the last a measurement reload applying `home.grid`, with no
-diagnostics. It did not reproduce on the emulator with the same file shape,
-on v0.11.0 or later, and the effective grid stayed byte-identical there.
+show it. One case has moved `sequence` on a device nobody touched and is not
+explained yet: a measurement reload after an app install and a launcher start
+([#259](https://github.com/andashi/home/issues/259)).
 
 A save that failed half-way leaves a gap, so compare numbers, never count
-them. The count starts again when the app's files are wiped - `pm clear`, a reinstall, a debug build
-installed over a release one - and `storeId` changes with it: compare two
-sequences only under the same `storeId`, and read a different `storeId` as a
-new store, never as a number that went backwards. A report an older build
+them. The count starts again when the app's files are wiped - `pm clear`, a
+reinstall, a debug build installed over a release one - and `storeId`
+changes with it: compare two sequences only under the same `storeId`, and
+read a different `storeId` as a new store, never as a number that went
+backwards. A report an older build
 wrote has neither field: unknown, not zero.
 
 The report lists `appliedMutations` (the sections that changed) and

@@ -7,6 +7,7 @@ import de.mm20.launcher2.config.ConfigState
 import de.mm20.launcher2.config.SearchState
 import de.mm20.launcher2.config.Diagnostic
 import de.mm20.launcher2.config.DiagnosticCode
+import de.mm20.launcher2.config.Favorite
 import de.mm20.launcher2.config.ReloadTrigger
 import de.mm20.launcher2.config.Severity
 import kotlinx.coroutines.Dispatchers
@@ -266,25 +267,19 @@ class ConfigReloaderTest {
         ),
     )
 
-    // An app arrival reloads while the last report waits on something absent,
-    // on every package signal - any app installed or updated - and at every
-    // start. While the thing stays absent each such reload found nothing, yet
-    // saved a report and moved its sequence: a consumer that refuses to push
-    // when the sequence moved refused after every app update (measured on
-    // emulator-5556: +1 per update, +3 per launcher start). Silent now when it
-    // changed nothing. "Nothing" is judged by effect, not by what was applied:
-    // an absent favourite is skipped, never stored, so every arrival reload
-    // applies the favourites again and changes nothing.
+    // An arrival reload that changed nothing must not move the sequence: it ran
+    // after every app update while a favourite was absent (+1 per update, +3
+    // per start on emulator-5556), and a consumer refuses to push when it moves.
 
     private val absentText =
         """{"schemaVersion": 2, "home": {"favorites": ["com.android.dialer", "org.example.absent"]}}"""
-    private val absentState = ConfigState(favorites = listOf(de.mm20.launcher2.config.Favorite("com.android.dialer")))
+    private val absentState = ConfigState(favorites = listOf(Favorite("com.android.dialer")))
     private val absentWaits = listOf(
         Diagnostic(DiagnosticCode.FavoriteUnavailable, "home.favorites[1]", "App 'org.example.absent' is not installed in the personal profile; it was skipped"),
     )
 
     @Test
-    fun `an arrival reload that changes nothing leaves the last report and its number`() = runTest {
+    fun `repeated arrival reloads that change nothing leave the last report and its number`() = runTest {
         val store = FakeConfigStore(state = absentState, applyDiagnostics = absentWaits)
         val (reloader, reportStore) = newReloader(store)
         reloader.reload(absentText, ReloadTrigger.Broadcast)
@@ -307,7 +302,7 @@ class ConfigReloaderTest {
         reloader.reload(absentText, ReloadTrigger.Broadcast)
         val pushed = reportStore.read()!!
         store.applyDiagnostics = emptyList()
-        store.stateAfterApply = absentState.copy(favorites = absentState.favorites + de.mm20.launcher2.config.Favorite("org.example.absent"))
+        store.stateAfterApply = absentState.copy(favorites = absentState.favorites + Favorite("org.example.absent"))
 
         reloader.reload(absentText, ReloadTrigger.AppsChanged)
 
@@ -329,8 +324,9 @@ class ConfigReloaderTest {
 
         reloader.reload(absentText, ReloadTrigger.AppsChanged)
 
-        assertEquals(pushed.sequence!! + 1, reportStore.read()!!.sequence)
-        assertEquals(ReloadTrigger.AppsChanged, reportStore.read()!!.trigger)
+        val stored = reportStore.read()!!
+        assertEquals(pushed.sequence!! + 1, stored.sequence)
+        assertEquals(ReloadTrigger.AppsChanged, stored.trigger)
     }
 
     @Test
@@ -342,8 +338,9 @@ class ConfigReloaderTest {
 
         reloader.reload(newer, ReloadTrigger.AppsChanged)
 
-        assertEquals(ReloadTrigger.AppsChanged, reportStore.read()!!.trigger)
-        assertEquals(newer.toByteArray(Charsets.UTF_8).sha256Hex(), reportStore.read()!!.configSha256)
+        val stored = reportStore.read()!!
+        assertEquals(ReloadTrigger.AppsChanged, stored.trigger)
+        assertEquals(newer.toByteArray(Charsets.UTF_8).sha256Hex(), stored.configSha256)
     }
 
     @Test
