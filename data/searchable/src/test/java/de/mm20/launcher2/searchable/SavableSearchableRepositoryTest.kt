@@ -755,6 +755,23 @@ class SavableSearchableRepositoryTest {
         assertEquals(listOf("moving://carol"), favorites.map { it.key })
     }
 
+    /**
+     * Leaving out a hidden item must not leave a limited list short (review
+     * on #254): the favorites ask for a finite number, and the item left out
+     * took one of them.
+     */
+    @Test
+    fun leavingOutAHiddenItemStillFillsTheLimit() = runBlocking {
+        movingKoin(mergedDeserializer)
+        database.searchableDao().insert(SavedSearchableEntity(key = "moving://alice", type = "moving", serializedSearchable = "alice", launchCount = 0, pinPosition = 3, visibility = VisibilityLevel.Default.value, weight = 0.0))
+        database.searchableDao().insert(SavedSearchableEntity(key = "moving://bob", type = "moving", serializedSearchable = "bob", launchCount = 0, pinPosition = 0, visibility = VisibilityLevel.Hidden.value, weight = 0.0))
+        pinned("moving://carol", "moving", 2, serialized = "moving://carol")
+
+        val favorites = repository.get(minPinnedLevel = PinnedLevel.AutomaticallySorted, minVisibility = VisibilityLevel.SearchOnly, limit = 1).first()
+
+        assertEquals(listOf("moving://carol"), favorites.map { it.key })
+    }
+
     /** Control, green in both states: an item Found under a different key is not moved - apps resolve to aliases. */
     @Test
     fun anItemFoundUnderADifferentKeyStaysWhereItIs() = runBlocking {
