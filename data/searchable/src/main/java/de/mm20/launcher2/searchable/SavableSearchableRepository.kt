@@ -3,6 +3,7 @@ package de.mm20.launcher2.searchable
 import android.util.Log
 import androidx.room.withTransaction
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.sync.Mutex
 import de.mm20.launcher2.database.entities.CustomAttributeEntity
@@ -730,8 +731,19 @@ internal class SavableSearchableRepositoryImpl(
             val deserializer = runCatching { get<SearchableDeserializer>(named(type)) }.getOrNull() ?: continue
             if (!deserializer.storedKeysMove) continue
             for (row in dao.getAllOfType(type)) {
-                val resolved = deserializer.resolve(row.serializedSearchable)
-                if (resolved is Resolved.Moved) rekey(row.key, resolved.searchable)
+                // One row at a time: an unreadable stored payload, or a failed
+                // write, must not end the refresh - onResume starts it without
+                // a handler, so it would end the launcher (review on #254).
+                try {
+                    val resolved = deserializer.resolve(row.serializedSearchable)
+                    if (resolved is Resolved.Moved) rekey(row.key, resolved.searchable)
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    // The kind of failure only: a parse error's message can
+                    // quote the stored payload, which names the contact (#15).
+                    Log.w("MM20", "Refreshing a stored ${row.type} item failed: ${e.javaClass.simpleName}")
+                }
             }
         }
     }
