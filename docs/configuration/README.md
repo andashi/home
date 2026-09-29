@@ -132,8 +132,13 @@ it.
 reloads by itself - at start, after an upgrade, when the grid is measured (a
 first draw, a fold), and on every app installed or updated while the file
 names something absent - and such a reload saves a report when it has
-something to say. It tries to stay silent when nothing changed, but that is a
-rule of the reloader (`ConfigReloader`, reasons in
+something to say. A config that keeps failing is retried at every start, which
+is how a device recovers once the cause goes (a missing upload restored); a
+retry that fails exactly as before says nothing new. A `write-back-skipped:`
+warning is write-back's note on the last report, not a finding of a reload, so
+a report that differs from the last only in such a note is not news either.
+The launcher tries to stay silent when nothing changed, but that is a rule of
+the reloader (`ConfigReloader`, reasons in
 [ADR 0003](../architecture/adr/0003-config-hot-reload.md)), not a promise of
 this page, and one case is known where it moves anyway
 ([#259](https://github.com/andashi/home/issues/259)).
