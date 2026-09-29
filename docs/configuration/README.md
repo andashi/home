@@ -142,13 +142,19 @@ So rely on it this way:
 - **A moved `sequence` means look, not refuse.** Fetch `/config` and compare
   it with what you expect; the number says a report was saved, not that
   somebody changed something.
-- **To confirm a push, follow it with a `RELOAD_CONFIG` broadcast** - read
-  `sequence` first, then wait for a report with a higher `sequence` (same
-  `storeId`) whose `configSha256` is the hash of the file you wrote, and only
-  then read `success` and the diagnostics. A broadcast always saves a report.
+- **To confirm a push**, in this order: read the last report's `sequence`
+  and `storeId` **before writing**; write the file; send a `RELOAD_CONFIG`
+  broadcast, which always saves a report; then wait for a report whose
+  `configSha256` is the hash of the file you wrote **and** that is newer than
+  the one you read - a higher `sequence` under the same `storeId`, or any
+  report once `storeId` changed. Only then read `success` and the
+  diagnostics. Read after the broadcast, the baseline can already be the new
+  report, and the wait never ends. A report written by a build before these
+  fields existed has neither; there only the hash can be compared.
+
   Neither the hash alone nor the push alone is enough: a push of the bytes
   the last report already describes matches that report's hash before it is
-  reloaded, so a hash-only wait reads the old `success`; and a push of
+  reloaded, so a hash-only wait can read the old `success`; and a push of
   exactly the bytes the launcher last wrote back is recognised as its own
   write and saves no report at all.
 
