@@ -53,11 +53,14 @@ class GoldensNotBlankTest {
 
     @Test
     fun `no committed golden is a single colour`() {
-        val files = goldens.listFiles { f -> f.extension == "png" }?.sortedBy { it.name }.orEmpty()
+        // The whole tree, not only the top level: a golden in a subdirectory is
+        // still a golden (review on #255). Named by relative path so nested
+        // names stay unambiguous.
+        val files = goldens.walkTopDown().filter { it.isFile && it.extension == "png" }.sortedBy { it.path }.toList()
         // A guard over nothing passes: a moved or emptied directory must fail here instead.
         assertTrue("no goldens found under $goldens", files.isNotEmpty())
 
-        val blank = files.filterNot(::hasTwoColours).map { it.name }
+        val blank = files.filterNot(::hasTwoColours).map { it.relativeTo(goldens).path }
 
         assertEquals("goldens that are a single colour (a blank capture was recorded)", emptyList<String>(), blank)
     }
