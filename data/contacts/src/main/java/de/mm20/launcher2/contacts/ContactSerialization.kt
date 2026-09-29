@@ -81,7 +81,15 @@ internal class AndroidContactDeserializer(
             // The permission went between the check and the query.
             return Resolved.Unknown
         } as? AndroidContact ?: return Resolved.Unknown
-        return if (contact.lookupKey == storedKey) Resolved.Found(contact) else Resolved.Moved(contact)
+        return when {
+            contact.lookupKey == storedKey -> Resolved.Found(contact)
+            // Merged with other contacts: found, not moved. The row stays
+            // under its own key, so a later split finds it with its owner
+            // again; hiding still reaches the merged contact, because the
+            // repository resolves hidden rows (#237).
+            storedKey != null && isMergeOf(storedKey, contact.lookupKey) -> Resolved.Found(contact)
+            else -> Resolved.Moved(contact)
+        }
     }
 
     /** Provider queries, on the caller's thread: [resolve] moves them off the main one. */
@@ -98,5 +106,23 @@ internal class AndroidContactDeserializer(
         }
 }
 
-/** Whether [current] is [stored] merged with other contacts' keys (#237). Not yet decided: false. */
-internal fun isMergeOf(stored: String, current: String): Boolean = false
+/**
+ * Whether [current] is [stored] joined with other contacts' keys - a merge
+ * (#237).
+ *
+ * An assumption about a format Android documents as opaque. Measured on this
+ * emulator image on 2026-09-28: merging two local contacts joined their keys
+ * with a dot (`0r1-2B413B2F33` and `0r2-2D472D` became
+ * `0r1-2B413B2F33.0r2-2D472D`), a split left one part, a rename changed the
+ * name part of one. If a platform ever joins keys differently, this answers
+ * false and a merged contact's rows move to the merged key, as they did before
+ * this check - the rows of two people then follow one of them after a split.
+ * The unit test pins the measured example; the L4 scenario, which asserts
+ * who carries a tag and who is hidden across a merge and a split, is what
+ * notices a platform change.
+ */
+internal fun isMergeOf(stored: String, current: String): Boolean {
+    val storedParts = stored.split('.').toSet()
+    val currentParts = current.split('.').toSet()
+    return currentParts.size > storedParts.size && currentParts.containsAll(storedParts)
+}
