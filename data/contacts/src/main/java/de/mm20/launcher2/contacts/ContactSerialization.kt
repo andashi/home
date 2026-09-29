@@ -97,3 +97,6 @@ internal class AndroidContactDeserializer(
             current?.let { AndroidContactProvider(context).get(ContentUris.parseId(it)) }
         }
 }
+
+/** Whether [current] is [stored] merged with other contacts' keys (#237). Not yet decided: false. */
+internal fun isMergeOf(stored: String, current: String): Boolean = false

@@ -112,16 +112,47 @@ class ContactLookupKeyTest {
         assertEquals(4L, alice.id)
     }
 
-    /** A merge joins the keys: the stored contact moves to the merged one's key, where the repository merges the rows. */
+    /**
+     * A merge joins the keys, and the stored contact stays under its own key
+     * (#237): it is found, not moved. Moved rows cannot follow a later split
+     * back apart - on the emulator the merged row went to one of the two and
+     * left the other's hidden flag behind.
+     */
     @Test
-    fun aMergeMovesAStoredContactToTheMergedKey() = runBlocking {
+    fun aMergeLeavesAStoredContactUnderItsOwnKey() = runBlocking {
         FakeContacts.contacts = listOf(FakeContacts.Contact(1, "0r1-A.0r2-B", "Alice"))
         FakeContacts.lookups = mapOf("0r1-A" to 1, "0r2-B" to 1, "0r1-A.0r2-B" to 1)
 
         val resolved = deserializer.resolve("""{"lookupKey":"0r2-B","id":2}""")
 
+        assertTrue("$resolved", resolved is Resolved.Found)
+        assertEquals("contact://0r1-A.0r2-B", (resolved as Resolved.Found).searchable.key)
+    }
+
+    /** A rename is a move: the name part of a local contact's key changes, nothing joins. */
+    @Test
+    fun aRenameMovesAStoredContact() = runBlocking {
+        FakeContacts.contacts = listOf(FakeContacts.Contact(1, "0r1-2B413B2F3B2B", "Alicia"))
+        FakeContacts.lookups = mapOf("0r1-2B413B2F33" to 1)
+
+        val resolved = deserializer.resolve("""{"lookupKey":"0r1-2B413B2F33","id":1}""")
+
         assertTrue("$resolved", resolved is Resolved.Moved)
-        assertEquals("contact://0r1-A.0r2-B", (resolved as Resolved.Moved).searchable.key)
+    }
+
+    /**
+     * The keys measured on the emulator on 2026-09-28: a merge joined
+     * `0r1-2B413B2F33` and `0r2-2D472D` with a dot; a rename turned
+     * `0r1-2B413B2F33` into `0r1-2B413B2F3B2B`; a split left `0r2-2D472D`.
+     */
+    @Test
+    fun aMergeIsTheStoredKeyJoinedWithOthers() {
+        assertTrue(isMergeOf(stored = "0r1-2B413B2F33", current = "0r1-2B413B2F33.0r2-2D472D"))
+        assertTrue(isMergeOf(stored = "0r2-2D472D", current = "0r1-2B413B2F33.0r2-2D472D"))
+        assertEquals("a rename", false, isMergeOf(stored = "0r1-2B413B2F33", current = "0r1-2B413B2F3B2B"))
+        assertEquals("a split", false, isMergeOf(stored = "0r1-2B413B2F33.0r2-2D472D", current = "0r2-2D472D"))
+        assertEquals("the same key", false, isMergeOf(stored = "0r2-2D472D", current = "0r2-2D472D"))
+        assertEquals("a longer key sharing no part", false, isMergeOf(stored = "0r2-2D472D", current = "0r3-X.0r4-Y"))
     }
 
     /** Deleted, or hidden by Contact Scopes: the same answer, and never Gone. */
