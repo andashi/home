@@ -3,6 +3,7 @@ package de.mm20.launcher2.searchable
 import android.util.Log
 import androidx.room.withTransaction
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.sync.Mutex
 import de.mm20.launcher2.database.entities.CustomAttributeEntity
 import de.mm20.launcher2.crashreporter.CrashReporter
@@ -636,10 +637,17 @@ internal class SavableSearchableRepositoryImpl(
      * they are read instead (see [resolving]).
      */
     internal suspend fun rekey(oldKey: String, item: SavableSearchable) = RekeyLock.withLock {
+        // Not cancellable: Room and the DataStore are two stores, and a move
+        // cut off between them leaves a gesture on a key no row carries any
+        // more, which nothing would ever resolve again (review on #254).
+        withContext(NonCancellable) { rekeyNow(oldKey, item) }
+    }
+
+    private suspend fun rekeyNow(oldKey: String, item: SavableSearchable) {
         val newKey = item.key
-        if (newKey == oldKey) return@withLock
+        if (newKey == oldKey) return
         val serializer = item.getSerializer()
-        val serialized = serializer.serialize(item) ?: return@withLock
+        val serialized = serializer.serialize(item) ?: return
         val moved = database.withTransaction {
             val dao = database.searchableDao()
             val attrs = database.customAttrsDao()
@@ -656,9 +664,10 @@ internal class SavableSearchableRepositoryImpl(
             }
             true
         }
-        // Outside the transaction: the gestures live in the DataStore, not in
-        // Room. A gesture briefly on the old key launches nothing; the next
-        // resolve of that key moves it again.
+        // After the transaction, not in it: the gestures live in the
+        // DataStore. Cancellation cannot come between the two (see rekey); a
+        // failed DataStore write, an I/O error, would still leave a gesture
+        // on the old key, where it launches nothing.
         if (moved) moveGestures?.invoke(oldKey, newKey)
     }
 
