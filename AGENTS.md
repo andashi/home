@@ -670,8 +670,10 @@ than four:
 - A device proof reported *not shown* on **both** builds, because search had
   closed across a system permission dialog and the check was reading the home
   screen.
-- `grep -m1` under `pipefail` took SIGPIPE on a longer dump - the early-closing
-  reader again, which "Three ways a checker's own plumbing lies" covers below.
+- A dump piped into `grep -m1` died of SIGPIPE once it grew long enough:
+  `grep` stops reading after its match, the **producer** takes the signal, and
+  `pipefail` surfaces its 141 - the early-closing reader again, which "Three
+  ways a checker's own plumbing lies" covers below.
 - A rebase conflict inside an `&&` chain, where `set -e` does **not** stop, let
   the tests and a push run against a half-rebased tree.
 
