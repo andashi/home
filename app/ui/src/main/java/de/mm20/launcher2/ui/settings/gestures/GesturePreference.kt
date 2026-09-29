@@ -383,9 +383,13 @@ private fun getActionLabel(
  */
 internal data class GestureShortcut(val storedKey: String, val item: SavableSearchable)
 
-/** The configured target [action] launches. Today: matched by the item's own key. */
+/** The configured target [action] launches, by the key it stores. */
 internal fun shortcutFor(action: GestureAction?, options: List<GestureShortcut>): GestureShortcut? =
-    (action as? GestureAction.Launch)?.let { launch -> options.find { it.item.key == launch.key } }
+    (action as? GestureAction.Launch)?.let { launch -> options.find { it.storedKey == launch.key } }
 
-/** What choosing [option] writes. Today: the item's own key. */
-internal fun launchFor(option: GestureShortcut): GestureAction.Launch = GestureAction.Launch(option.item.key)
+/**
+ * What choosing [option] writes: the key the gesture already stores, not the
+ * item's own. A merged contact's own key would be a new row, which follows the
+ * provider's tie after a split (#237).
+ */
+internal fun launchFor(option: GestureShortcut): GestureAction.Launch = GestureAction.Launch(option.storedKey)
