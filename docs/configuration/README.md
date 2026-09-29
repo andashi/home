@@ -137,26 +137,27 @@ rule of the reloader (`ConfigReloader`, reasons in
 this page, and one case is known where it moves anyway
 ([#259](https://github.com/andashi/home/issues/259)).
 
-So rely on it this way:
+**A moved `sequence` means look, not refuse.** Fetch `/config` and compare it
+with what you expect; the number says a report was saved, not that somebody
+changed something.
 
-- **A moved `sequence` means look, not refuse.** Fetch `/config` and compare
-  it with what you expect; the number says a report was saved, not that
-  somebody changed something.
-- **To confirm a push**, in this order: read the last report's `sequence`
-  and `storeId` **before writing**; write the file; send a `RELOAD_CONFIG`
-  broadcast, which always saves a report; then wait for a report whose
-  `configSha256` is the hash of the file you wrote **and** that is newer than
-  the one you read - a higher `sequence` under the same `storeId`, or any
-  report once `storeId` changed. Only then read `success` and the
-  diagnostics. Read after the broadcast, the baseline can already be the new
-  report, and the wait never ends. A report written by a build before these
-  fields existed has neither; there only the hash can be compared.
+**To confirm a push:**
 
-  Neither the hash alone nor the push alone is enough: a push of the bytes
-  the last report already describes matches that report's hash before it is
-  reloaded, so a hash-only wait can read the old `success`; and a push of
-  exactly the bytes the launcher last wrote back is recognised as its own
-  write and saves no report at all.
+1. Read the last report's `sequence` and `storeId`, and keep them.
+2. Write the file.
+3. Send a `RELOAD_CONFIG` broadcast; it always saves a report.
+4. Wait for a report whose `configSha256` is the hash of the file you wrote
+   and that is newer than the one you kept: a higher `sequence` under the
+   same `storeId`, or any report once `storeId` changed. A report written by
+   a build before these fields existed has neither; there compare the hash
+   alone.
+5. Only then read `success` and the diagnostics.
+
+Steps 1 and 3 are both needed. A push of the bytes the last report already
+describes matches that report's hash before it is reloaded, so a hash-only
+wait can read the old `success`. A push of exactly the bytes the launcher last
+wrote back is recognised as its own write and saves no report at all, so only
+the broadcast guarantees one.
 
 A save that failed half-way leaves a gap, so compare numbers, never count
 them. The count starts again when the app's files are wiped - `pm clear`, a
