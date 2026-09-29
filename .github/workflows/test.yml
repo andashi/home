@@ -95,6 +95,15 @@ jobs:
             app/app/build/intermediates/linked_resources_binary_format/defaultDebug/processDefaultDebugResources/linked-resources-binary-format-defaultDebug.ap_
       # The coverage gate: every module the fork owns carries a line-coverage
       # bound in its build file, and this step fails the PR below it.
+      #
+      # :app:ui is measured with its goldens verifying in the same run, so its
+      # draw code counts only when a golden captures and compares it. Without
+      # a Roborazzi mode a capture draws nothing, and at SDK 37 Robolectric's
+      # always-on draw traversals executed that code in tests that checked none
+      # of it - 88.4 % that way, 82.7 % at SDK 36 plain, 88.4 % at 36 with the
+      # goldens (#251). Still one :app:ui test run in this job, which has no
+      # other; l3-screenshots verifies the goldens again in a job of its own,
+      # as it did before this step verified them.
       - name: Coverage gate
         run: >-
           ./gradlew
@@ -103,6 +112,7 @@ jobs:
           :core:glass:koverVerify
           :services:config:koverVerifyDebug
           :data:homegrid:koverVerifyDebug
+          :app:ui:verifyRoborazziDebug
           :app:ui:koverVerifyDebug
       # Only when the tests ran: after an earlier step fails, the JDK 21 setup
       # is skipped too, and this step would run every test on the runner's
