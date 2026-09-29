@@ -6,9 +6,10 @@
 #   SERIAL=emulator-5556 OVERLAY_DIR=<gos-repo>/emulator/instances/test \
 #     e2e/l4-contact-keys.sh [path/to/app-default-debug.apk]
 #
-# 1. takes the instance's device lock, boots it from `profiles-ready`, installs
-#    the launcher for the first full secondary user, grants it the contacts
-#    permission and makes it that user's home app;
+# 1. takes the instance's device lock, boots it from `clean` - the honest
+#    base, ADR 0005 - creates a secondary user as the zone, installs the
+#    launcher for it, grants it the contacts permission and makes it that
+#    user's home app;
 # 2. creates Alice, Bob and Carol in that user's contacts provider;
 # 3. through the customize sheet, as a person would: tags Alice "family" and
 #    sets Bob's "Show in" to "Never";
@@ -18,7 +19,12 @@
 #    to the front - which refreshes stored keys - and asserts that the merged
 #    contact is hidden, because Bob's row hides it, and that Carol is not;
 # 6. splits them again, brings the launcher back, and asserts step 4 again:
-#    the tag on Alice and on nobody else, Bob hidden, Alice and Carol shown.
+#    the tag on Alice and on nobody else, Bob hidden, Alice and Carol shown;
+# 7. labels Alice "Mum", renames her Alicia in the provider - a rename moves a
+#    lookup key - brings the launcher back and asserts that a search for
+#    Alicia shows "Mum". Only the refresh on resume moves that row: search
+#    reads labels by the result's current key and resolves nothing, so without
+#    the refresh the result would read "Alicia" (review on #254).
 #
 # On a build that keys contacts by row id, step 5 fails: the merge keeps
 # Alice's id, Bob's row names an id that no longer exists, and the merged
@@ -46,7 +52,7 @@ SERIAL="${SERIAL:-emulator-5556}"
 export SERIAL
 export OVERLAY_DIR="${OVERLAY_DIR:-$GOS_REPO/emulator/instances/test}"
 export LOCK_OWNER="l4-contact-keys@$SERIAL#$$"
-SNAPSHOT="${SNAPSHOT:-profiles-ready}"
+SNAPSHOT="${SNAPSHOT:-clean}"
 HERE="$(cd "$(dirname "$0")" && pwd)"
 APK="${1:-$HERE/../app/app/build/outputs/apk/default/debug/app-default-debug.apk}"
 PKG="${PKG:-org.andashi.home.debug}"
@@ -77,15 +83,12 @@ trap cleanup EXIT
 
 # --- helpers ------------------------------------------------------------------
 
-# The first full secondary user: a zone, not user 0 and not a managed profile
-# (flag 0x20). `pm list users` prints UserInfo{<id>:<name>:<hex flags>}.
-zone_uid() {
-  adb_out shell pm list users </dev/null 2>/dev/null | tr -d '\r' | python3 -c '
-import re, sys
-for m in re.finditer(r"UserInfo\{(\d+):[^:]*:([0-9a-fA-F]+)\}", sys.stdin.read()):
-    uid, flags = int(m.group(1)), int(m.group(2), 16)
-    if uid != 0 and not flags & 0x20:
-        print(uid); break'
+# A new secondary user, the zone. `clean` has none, and this scenario does not
+# lean on provisioning's: `pm create-user` prints "Success: created user id N".
+create_zone() {
+  local out
+  out="$(adb_out shell pm create-user l4-contact-keys </dev/null 2>&1 | tr -d '\r')" || die "pm create-user: $out"
+  sed -n 's/^Success: created user id \([0-9][0-9]*\)$/\1/p' <<<"$out"
 }
 
 # Creates a local contact in the zone and prints its raw contact id. `content
@@ -224,6 +227,22 @@ tag_contact() { # $1 = name, $2 = tag
   close_sheet
 }
 
+label_contact() { # $1 = name, $2 = label
+  open_customize "$1"
+  local point; point="$(sheet_field 0)" || die "no label field in the customize sheet of $1"
+  adb_t shell input tap $point
+  adb_t shell input keyevent KEYCODE_MOVE_END
+  local i; for i in 1 2 3 4 5 6 7 8 9 10; do adb_t shell input keyevent KEYCODE_DEL; done  # not a wait: clears the field
+  adb_t shell input text "$2"
+  sleep 1
+  close_sheet
+}
+
+rename_contact() { # $1 = raw contact id, $2 = new name
+  adb -s "$SERIAL" shell "content update --user $ZONE --uri $CONTACTS/data --bind data1:s:$2 --where \"raw_contact_id=$1 AND mimetype='vnd.android.cursor.item/name'\"" \
+    </dev/null >/dev/null || die "could not rename raw contact $1 to $2"
+}
+
 hide_contact() { # $1 = name
   open_customize "$1"
   local w h; read -r w h <<<"$(screen_size)"
@@ -251,8 +270,8 @@ SNAPSHOT="$SNAPSHOT" gos_run start
 unrooted_shell
 require_apk_package "$PKG" "$APK"
 log "apk sha256 $(sha256sum "$APK" | cut -c1-12)"
-ZONE="$(zone_uid)"
-[ -n "$ZONE" ] || die "no full secondary user on this snapshot"
+ZONE="$(create_zone)"
+[ -n "$ZONE" ] || die "could not create a secondary user"
 log "zone user $ZONE"
 adb -s "$SERIAL" shell am start-user -w "$ZONE" </dev/null >/dev/null || die "could not start user $ZONE"
 adb -s "$SERIAL" install -r "$APK" | grep -q Success || die "launcher install failed"
@@ -315,5 +334,17 @@ resume_launcher
 log "rows after the resume:"
 rows
 check_split "after the split"
+
+# --- 7. a rename, which only the refresh on resume catches up with ------------
+
+label_contact Alice Mum
+expect_shown Alice Mum "labelled: Alice shows her label"
+rename_contact "$ALICE" Alicia
+log "renamed:"
+contacts_now
+resume_launcher
+log "rows after the resume:"
+rows
+expect_shown Alicia Mum "renamed: the label followed Alice to her new key"
 
 ok "L4 contact keys passed"
