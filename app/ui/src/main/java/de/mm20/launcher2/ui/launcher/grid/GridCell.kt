@@ -18,11 +18,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
-import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuPopup
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -50,6 +51,7 @@ import de.mm20.launcher2.homegrid.HomeGridCell
 import de.mm20.launcher2.homegrid.HomeGridItem
 import de.mm20.launcher2.ui.R
 import de.mm20.launcher2.ui.component.Banner
+import de.mm20.launcher2.ui.launcher.glass.GlassMenuGroup
 import de.mm20.launcher2.ui.launcher.glass.GlassSurface
 import de.mm20.launcher2.ui.launcher.glass.LocalGlassStyle
 import de.mm20.launcher2.ui.launcher.sheets.WidgetPickerSheet
@@ -239,9 +241,10 @@ private fun FailureIfItFits(banner: @Composable () -> Unit, compact: @Composable
  *
  * Both take the glass card's colours, which follow the wallpaper (#242);
  * before that fix the icon was barely visible on the device, dark on a card
- * the wallpaper made dark. The menu is opaque on purpose: a glass menu
- * (GlassMenuGroup) shows the grid through it, and on the device the label of
- * the cell under it ran through the failure message.
+ * the wallpaper made dark. The menu is the launcher's glass menu: it was
+ * opaque Material while a glass menu without a backdrop showed the grid
+ * through it - the label of the cell under it ran through the failure
+ * message on the device - which the overlay floor ended (#249).
  */
 @Composable
 private fun CompactFailure(onAllow: (() -> Unit)?, onReplace: () -> Unit, onRemove: () -> Unit) {
@@ -256,17 +259,24 @@ private fun CompactFailure(onAllow: (() -> Unit)?, onReplace: () -> Unit, onRemo
         IconButton(onClick = { open = true }) {
             Icon(painterResource(R.drawable.warning_24px), contentDescription = message)
         }
-        DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
-            Text(
-                message,
-                style = MaterialTheme.typography.bodySmall,
-                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-            )
-            actions.forEach { (label, action) ->
-                DropdownMenuItem(
-                    text = { Text(stringResource(label)) },
-                    onClick = { open = false; action() },
+        DropdownMenuPopup(expanded = open, onDismissRequest = { open = false }) {
+            GlassMenuGroup {
+                Text(
+                    message,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
                 )
+                actions.forEachIndexed { i, (label, action) ->
+                    DropdownMenuItem(
+                        text = { Text(stringResource(label)) },
+                        onClick = { open = false; action() },
+                        shape = when (i) {
+                            0 -> MenuDefaults.leadingItemShape
+                            actions.lastIndex -> MenuDefaults.trailingItemShape
+                            else -> MenuDefaults.middleItemShape
+                        },
+                    )
+                }
             }
         }
     }

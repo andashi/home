@@ -58,16 +58,18 @@ class GlassSurfaceTest {
     @Test
     fun `a surface draws the resolved glass, no scrim at medium`() {
         show()
+        val info = info()
         assertEquals(
             GlassSurfaceInfo(
                 tint = 0.35f, radiusDp = 28f, scrimAlpha = 0f, pill = false, lens = true, rim = true,
                 // A card is lensed with the glass radius.
                 lensRadiusDp = 28f,
+                layers = info.layers,
             ),
-            info().copy(layers = null),
+            info,
         )
         // A card, not an overlay: its tint alone, no floor (#249).
-        assertNull(info().layers!!.floor)
+        assertNull(info.layers.floor)
     }
 
     @Test

@@ -367,7 +367,7 @@ internal fun GlassSheetBackground(glass: Boolean, content: @Composable () -> Uni
     de.mm20.launcher2.ui.launcher.glass.GlassSurface(
         shape = BottomSheetDefaults.ExpandedShape,
         lensRadius = 28.dp,
-        floor = true,
+        overlay = true,
     ) {
         CompositionLocalProvider(
             de.mm20.launcher2.ui.launcher.glass.LocalOnGlass provides true,

@@ -67,41 +67,41 @@ data class GlassSurfaceInfo(
     val openEdges: Set<GlassEdge> = emptySet(),
     /** The lens's corner radius in dp; null lenses the surface as a pill (#91). */
     val lensRadiusDp: Float? = null,
-    /** What it painted under its content (#249); null where a test built the info by hand. */
-    val layers: GlassLayers? = null,
+    /** What it painted under its content (#249). */
+    val layers: GlassLayers,
 )
 
 /**
- * What a glass surface paints under its content, after the backdrop: an
- * opaque [floor] or none, the [tint], then black at [scrimAlpha].
+ * What a glass surface paints under its content, after the backdrop and
+ * before the contrast scrim: an opaque [floor] or none, then the [tint].
  */
-data class GlassLayers(val floor: Color?, val tint: Color, val scrimAlpha: Float)
+data class GlassLayers(val floor: Color?, val tint: Color)
 
 /**
  * The layers of a surface: the [theme]'s surface as tint over the backdrop,
  * which is what glass is wherever there is a backdrop to show.
  *
- * An overlay ([floor]) without a backdrop lies over the launcher's own
- * content, and its tint alone let the home grid read through its text: 43.8 %
- * of text/background pairs met 4.5:1 (#249). It gets an opaque floor in the
- * [onGlass] scheme - the one its text already takes (#242) - and its tint in
- * that same scheme, so text and background are one scheme's pair: 100 %. Both
- * come from [onGlass] here rather than from a caller, because the theme's
- * surface as tint over that floor fails in the direction nobody tries on
- * their own device (dark theme, light wallpaper, high contrast: 3.77:1).
+ * An [overlay] without a backdrop lies over the launcher's own content, and
+ * its tint alone let that content read through its text: 43.8 % of
+ * text/background pairs met 4.5:1 over the launcher's real schemes (#249,
+ * GlassOverlayFloorTest). It gets an opaque floor in the [onGlass] scheme -
+ * the one its text already takes (#242) - and its tint in that same scheme,
+ * so text and background are one scheme's pair: 100 %. Both come from
+ * [onGlass] here rather than from a caller, because the theme's surface as
+ * tint over that floor fails in the direction nobody tries on their own
+ * device (dark theme, light wallpaper, high contrast: 3.8:1).
  */
 internal fun glassLayers(
     theme: ColorScheme,
     onGlass: ColorScheme,
     tintAlpha: Float,
-    scrimAlpha: Float,
-    floor: Boolean,
+    overlay: Boolean,
     backdrop: Boolean,
 ): GlassLayers =
-    if (floor && !backdrop) {
-        GlassLayers(floor = onGlass.surface, tint = onGlass.surface.copy(alpha = tintAlpha), scrimAlpha = scrimAlpha)
+    if (overlay && !backdrop) {
+        GlassLayers(floor = onGlass.surface, tint = onGlass.surface.copy(alpha = tintAlpha))
     } else {
-        GlassLayers(floor = null, tint = theme.surface.copy(alpha = tintAlpha), scrimAlpha = scrimAlpha)
+        GlassLayers(floor = null, tint = theme.surface.copy(alpha = tintAlpha))
     }
 
 /**
@@ -136,18 +136,16 @@ fun GlassSurface(
      */
     lensRadius: Dp? = null,
     /**
-     * An overlay over the launcher's own content - a menu, a sheet - rather
-     * than a card over the wallpaper. Without a backdrop it gets an opaque
-     * floor, so its text reads whatever lies under it (#249).
+     * An overlay over the launcher's own content - a menu, a sheet, a popup -
+     * rather than a card over the wallpaper. Without a backdrop it gets an
+     * opaque floor, so its text reads whatever lies under it (#249).
      */
-    floor: Boolean = false,
+    overlay: Boolean = false,
     content: @Composable () -> Unit,
 ) {
     val style = LocalGlassStyle.current
     val outline = glassOutline(style.radiusDp, pill, shape, openEdges)
     val tintAlpha = (style.tint + tintBoost).coerceIn(0f, 1f)
-    // The tint stays the theme's surface; only what is drawn on the glass
-    // changes scheme (below), so the glass looks as it did.
     val schemes = LocalLauncherColorSchemes.current
     // Text on glass takes the scheme that matches the wallpaper showing
     // through it, the rule the home grid and the resting search bar already
@@ -159,8 +157,7 @@ fun GlassSurface(
         theme = schemes?.theme ?: MaterialTheme.colorScheme,
         onGlass = onGlass,
         tintAlpha = tintAlpha,
-        scrimAlpha = style.scrimAlpha,
-        floor = floor,
+        overlay = overlay,
         backdrop = LocalGlassBackdrop.current != null,
     )
     // The lens follows the real outline: the glass radius, the pill, or a
@@ -191,7 +188,7 @@ fun GlassSurface(
             .drawBehind {
                 layers.floor?.let { drawRect(it) }
                 drawRect(layers.tint)
-                if (layers.scrimAlpha > 0f) drawRect(Color.Black.copy(alpha = layers.scrimAlpha))
+                if (style.scrimAlpha > 0f) drawRect(Color.Black.copy(alpha = style.scrimAlpha))
                 // The top-edge specular: a short fade from white to nothing,
                 // only on the card's real top edge.
                 if (GlassEdge.Top in openEdges) return@drawBehind
