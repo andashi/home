@@ -567,12 +567,7 @@ internal class SavableSearchableRepositoryImpl(
      * without waiting for the database to change (#237).
      */
     private fun resolving(entities: List<SavedSearchableEntity>): Flow<List<SavableSearchable>> {
-        val again = entities.map { it.type }.distinct().mapNotNull { type ->
-            // Logged by resolve() when it fails; a missing trigger only
-            // means that type is not resolved again.
-            runCatching { get<SearchableDeserializer>(named(type)).resolveAgain }.getOrNull()
-        }
-        return merge(flowOf(Unit), *again.toTypedArray()).map {
+        return resolveAgainFor(entities).map {
             // Two rows can resolve to one item - merged contacts keep their
             // rows under their own keys (#237) - and a list keyed by item
             // throws on a key used twice. The first row in the query's order
@@ -580,6 +575,16 @@ internal class SavableSearchableRepositoryImpl(
             // settle either way.
             entities.mapNotNull { fromDatabaseEntity(it).searchable }.distinctBy { it.key }
         }
+    }
+
+    /** Emits now, and whenever the deserializer of one of [entities]' types says its answers may have changed. */
+    private fun resolveAgainFor(entities: List<SavedSearchableEntity>): Flow<Unit> {
+        val again = entities.map { it.type }.distinct().mapNotNull { type ->
+            // Logged by resolve() when it fails; a missing trigger only
+            // means that type is not resolved again.
+            runCatching { get<SearchableDeserializer>(named(type)).resolveAgain }.getOrNull()
+        }
+        return merge(flowOf(Unit), *again.toTypedArray())
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -685,8 +690,13 @@ internal class SavableSearchableRepositoryImpl(
         }
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     override fun getByStoredKeys(keys: List<String>): Flow<Map<String, SavableSearchable>> =
-        flowOf(emptyMap())
+        database.searchableDao().getByKeys(keys).flatMapLatest { entities ->
+            resolveAgainFor(entities).map {
+                entities.mapNotNull { entity -> fromDatabaseEntity(entity).searchable?.let { entity.key to it } }.toMap()
+            }
+        }
 
     override fun getByKeys(keys: List<String>): Flow<List<SavableSearchable>> {
         val dao = database.searchableDao()
