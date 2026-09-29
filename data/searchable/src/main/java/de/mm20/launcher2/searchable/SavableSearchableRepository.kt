@@ -663,8 +663,19 @@ internal class SavableSearchableRepositoryImpl(
         return dao.getByKeys(keys).resolved()
     }
 
-    override fun hiddenKeys(): Flow<Set<String>> =
-        getKeys(maxVisibility = VisibilityLevel.Hidden).map { it.toSet() }
+    /**
+     * The stored key of every hidden row, and the current key of every
+     * hidden item that resolves. A contact's key moves on a rename, a merge
+     * or a split, and the refresh on resume only catches up afterwards; a
+     * search result in between carries the new key. For labels and tags that
+     * window costs a moment without them. For hiding it would put a contact
+     * somebody hid back on the screen, so hiding resolves instead of waiting
+     * (#237). Hidden items are few; resolving them is cheap.
+     */
+    override fun hiddenKeys(): Flow<Set<String>> = combine(
+        getKeys(maxVisibility = VisibilityLevel.Hidden),
+        get(maxVisibility = VisibilityLevel.Hidden),
+    ) { stored, resolved -> stored.toSet() + resolved.map { it.key } }
 
     override suspend fun refreshMovedKeys() {
         val dao = database.searchableDao()
