@@ -233,9 +233,10 @@ class SearchVM : ViewModel(), KoinComponent {
                     }
 
             } else {
-                val hiddenItemKeys = if (!filters.hiddenItems) searchableRepository.getKeys(
-                    maxVisibility = VisibilityLevel.Hidden,
-                ) else flowOf(emptyList())
+                // The keys hidden items have now, not only the ones they were
+                // hidden under: a contact's key moves on a rename (#237).
+                val hiddenItemKeys = if (!filters.hiddenItems) searchableRepository.hiddenKeys()
+                else flowOf(emptySet())
                 searchService.search(
                     query,
                     filters = filters,

@@ -5,6 +5,7 @@ import android.os.Bundle
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import de.mm20.launcher2.database.AppDatabase
+import de.mm20.launcher2.database.entities.CustomAttributeEntity
 import de.mm20.launcher2.database.entities.SavedSearchableEntity
 import de.mm20.launcher2.icons.StaticLauncherIcon
 import de.mm20.launcher2.search.Resolved
@@ -30,6 +31,7 @@ import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
 import org.koin.core.qualifier.named
@@ -498,6 +500,369 @@ class SavableSearchableRepositoryTest {
         assertNotNull("a deserializer that could not be created cost the row", row("broken://a"))
     }
 
+    // ----- a moved item takes its row and customizations to its new key (#237) -----
+
+    /** `old` has moved to `moving://new`; once there, it is found under it. */
+    private val movingDeserializer = object : SearchableDeserializer {
+        override suspend fun resolve(serialized: String): Resolved = when (serialized) {
+            "old" -> Resolved.Moved(TestSearchable("moving://new", domain = "moving"))
+            "moving://new" -> Resolved.Found(TestSearchable("moving://new", domain = "moving"))
+            else -> throw IllegalArgumentException(serialized)
+        }
+        override suspend fun deserialize(serialized: String): SavableSearchable? = when (val r = resolve(serialized)) {
+            is Resolved.Found -> r.searchable
+            is Resolved.Moved -> r.searchable
+            else -> null
+        }
+    }
+
+    private fun movingKoin(deserializer: SearchableDeserializer = movingDeserializer) {
+        stopKoin()
+        startKoin { modules(module { factory<SearchableDeserializer>(named("moving")) { deserializer } }) }
+    }
+
+    private suspend fun attrs(key: String, type: String) =
+        database.customAttrsDao().getCustomAttributes(listOf(key), type).first().map { it.value }.sorted()
+
+    private suspend fun attr(key: String, type: String, value: String) =
+        database.customAttrsDao().insertCustomAttributes(listOf(CustomAttributeEntity(key = key, type = type, value = value)))
+
+    private suspend fun awaitMoved() = awaitValue { if (row("moving://old") == null && row("moving://new") != null) true else null }
+
+    @Test
+    fun aMovedItemTakesItsRowAndItsCustomizationsToTheNewKey() = runBlocking {
+        movingKoin()
+        database.searchableDao().insert(
+            SavedSearchableEntity(key = "moving://old", type = "moving", serializedSearchable = "old", launchCount = 3, pinPosition = 2, visibility = VisibilityLevel.SearchOnly.value, weight = 0.2),
+        )
+        attr("moving://old", "tag", "family")
+        attr("moving://old", "label", "Mum")
+        attr("moving://old", "icon", "icon-a")
+
+        val read = repository.getByKeys(listOf("moving://old")).first()
+        awaitMoved()
+
+        assertEquals(listOf("moving://new"), read.map { it.key })
+        val moved = row("moving://new")!!
+        assertEquals("moving://new", moved.serializedSearchable)
+        assertEquals("moving", moved.type)
+        assertEquals(listOf(3, 2, VisibilityLevel.SearchOnly.value), listOf(moved.launchCount, moved.pinPosition, moved.visibility))
+        assertEquals(0.2, moved.weight, 0.0)
+        assertEquals(listOf("family"), attrs("moving://new", "tag"))
+        assertEquals(listOf("Mum"), attrs("moving://new", "label"))
+        assertEquals(listOf("icon-a"), attrs("moving://new", "icon"))
+        for (type in listOf("tag", "label", "icon")) assertEquals("old key kept a $type", emptyList<String>(), attrs("moving://old", type))
+    }
+
+    /**
+     * A row is never merged into one that belongs to someone else (#237).
+     * Merging cannot be undone: on the emulator a merge, a resume and a split
+     * sent the merged row - Bob's hidden flag and Alice's tag - to Alice, and
+     * left Bob visible. So when the new key is taken, by a row or by
+     * customizations alone, the moving row stays where it is, and both keep
+     * what they have.
+     */
+    @Test
+    fun aRowWhoseNewKeyIsTakenStaysWhereItIs() = runBlocking {
+        movingKoin()
+        database.searchableDao().insert(
+            SavedSearchableEntity(key = "moving://old", type = "moving", serializedSearchable = "old", launchCount = 3, pinPosition = 5, visibility = VisibilityLevel.Hidden.value, weight = 0.2),
+        )
+        database.searchableDao().insert(
+            SavedSearchableEntity(key = "moving://new", type = "moving", serializedSearchable = "moving://new", launchCount = 4, pinPosition = 1, visibility = VisibilityLevel.Default.value, weight = 0.5),
+        )
+        attr("moving://old", "tag", "a"); attr("moving://new", "tag", "c")
+        attr("moving://old", "label", "Old"); attr("moving://new", "label", "New")
+
+        repository.getByKeys(listOf("moving://old")).first()
+        delay(500)
+
+        val old = row("moving://old")!!
+        val target = row("moving://new")!!
+        assertEquals(listOf(3, 5, VisibilityLevel.Hidden.value), listOf(old.launchCount, old.pinPosition, old.visibility))
+        assertEquals(listOf(4, 1, VisibilityLevel.Default.value), listOf(target.launchCount, target.pinPosition, target.visibility))
+        assertEquals(listOf("a"), attrs("moving://old", "tag"))
+        assertEquals(listOf("Old"), attrs("moving://old", "label"))
+        assertEquals(listOf("c"), attrs("moving://new", "tag"))
+        assertEquals(listOf("New"), attrs("moving://new", "label"))
+    }
+
+    /** Taken by customizations alone - an icon is set without a row - is taken too. */
+    @Test
+    fun aNewKeyWithCustomizationsButNoRowIsTakenToo() = runBlocking {
+        movingKoin()
+        database.searchableDao().insert(
+            SavedSearchableEntity(key = "moving://old", type = "moving", serializedSearchable = "old", launchCount = 3, pinPosition = 2, visibility = 0, weight = 0.2),
+        )
+        attr("moving://old", "tag", "a")
+        attr("moving://new", "icon", "icon-new")
+
+        repository.getByKeys(listOf("moving://old")).first()
+        delay(500)
+
+        assertNotNull(row("moving://old"))
+        assertEquals(null, row("moving://new"))
+        assertEquals(listOf("a"), attrs("moving://old", "tag"))
+        assertEquals(listOf("icon-new"), attrs("moving://new", "icon"))
+    }
+
+    /** The debug screen's cleanup moves a moved item too, rather than leaving or deleting it. */
+    @Test
+    fun cleanupMovesAMovedItem() = runBlocking {
+        movingKoin()
+        database.searchableDao().insert(
+            SavedSearchableEntity(key = "moving://old", type = "moving", serializedSearchable = "old", launchCount = 3, pinPosition = 2, visibility = 0, weight = 0.2),
+        )
+        attr("moving://old", "tag", "family")
+
+        val removed = repository.cleanupDatabase()
+        awaitMoved()
+
+        assertEquals("a moved item is not removed", 0, removed)
+        assertEquals(listOf("family"), attrs("moving://new", "tag"))
+    }
+
+    /**
+     * A fresh search result carries the current key, and never passes through
+     * the repository; the refresh is what moves a drifted row before such a
+     * result goes looking for its customizations (#237). Only types whose keys
+     * can move are resolved, so apps cost nothing on a resume.
+     */
+    @Test
+    fun theRefreshMovesDriftedRowsOfTypesWhoseKeysMove() = runBlocking {
+        val unmovingResolves = java.util.concurrent.atomic.AtomicInteger()
+        val moving = object : SearchableDeserializer by movingDeserializer {
+            override val storedKeysMove = true
+            override suspend fun resolve(serialized: String): Resolved =
+                if (serialized == "hidden-by-scopes") Resolved.Unknown else movingDeserializer.resolve(serialized)
+        }
+        val unmoving = object : SearchableDeserializer {
+            override suspend fun resolve(serialized: String): Resolved {
+                unmovingResolves.incrementAndGet()
+                return Resolved.Moved(TestSearchable("unmoving://new", domain = "unmoving"))
+            }
+            override suspend fun deserialize(serialized: String): SavableSearchable? = null
+        }
+        stopKoin()
+        startKoin { modules(module {
+            factory<SearchableDeserializer>(named("moving")) { moving }
+            factory<SearchableDeserializer>(named("unmoving")) { unmoving }
+        }) }
+        pinned("moving://old", "moving", 0, serialized = "old")
+        pinned("moving://scoped", "moving", 0, serialized = "hidden-by-scopes")
+        pinned("unmoving://old", "unmoving", 0, serialized = "old")
+        attr("moving://old", "tag", "family")
+
+        repository.refreshMovedKeys()
+
+        assertEquals(null, row("moving://old"))
+        assertEquals(listOf("family"), attrs("moving://new", "tag"))
+        assertNotNull("an Unknown row stays where it is", row("moving://scoped"))
+        assertNotNull(row("unmoving://old"))
+        assertEquals("a type whose keys do not move is never resolved", 0, unmovingResolves.get())
+    }
+
+    /**
+     * The one piece whose failure lands on a person (#237). A search result
+     * carries the item's current key; a hidden contact whose key moved - a
+     * rename changes a lookup key - must still be hidden under the key it has
+     * now, not only the one it was hidden under, or it reappears in search.
+     * The rows are written the way the customize sheet hides an item, through
+     * upsert; the visible one is the control that gives "hidden" a meaning:
+     * its current key must not be in the set.
+     */
+    @Test
+    fun aHiddenItemIsHiddenUnderTheKeyItHasNow() = runBlocking {
+        val renamed = object : SearchableDeserializer {
+            override val storedKeysMove = true
+            override suspend fun resolve(serialized: String): Resolved = when (serialized) {
+                "bob" -> Resolved.Moved(TestSearchable("moving://bob-renamed", domain = "moving"))
+                "alice" -> Resolved.Moved(TestSearchable("moving://alice-renamed", domain = "moving"))
+                else -> Resolved.Found(TestSearchable(serialized, domain = "moving"))
+            }
+            override suspend fun deserialize(serialized: String): SavableSearchable? = null
+        }
+        movingKoin(renamed)
+        repository.upsert(TestSearchable("moving://bob", serialized = "bob", domain = "moving"), visibility = VisibilityLevel.Hidden)
+        repository.upsert(TestSearchable("moving://alice", serialized = "alice", domain = "moving"), visibility = VisibilityLevel.Default)
+        awaitValue { if (row("moving://bob") != null && row("moving://alice") != null) true else null }
+
+        val hidden = repository.hiddenKeys().first()
+
+        assertTrue("the hidden contact reappears under its new key: $hidden", "moving://bob-renamed" in hidden)
+        assertTrue("a visible contact is hidden: $hidden", "moving://alice-renamed" !in hidden && "moving://alice" !in hidden)
+    }
+
+    /** A gesture on the old key follows the move: it compares the item's current key with the one it names (#237). */
+    @Test
+    fun aGestureOnAMovedItemFollowsIt() = runBlocking {
+        stopKoin()
+        startKoin {
+            androidContext(ApplicationProvider.getApplicationContext())
+            modules(de.mm20.launcher2.preferences.preferencesModule, module { factory<SearchableDeserializer>(named("moving")) { movingDeserializer } })
+        }
+        val gestures = org.koin.core.context.GlobalContext.get().get<de.mm20.launcher2.preferences.ui.GestureSettings>()
+        gestures.setSwipeLeft(de.mm20.launcher2.preferences.GestureAction.Launch("moving://old"))
+        awaitValue { if (gestures.swipeLeft.first() == de.mm20.launcher2.preferences.GestureAction.Launch("moving://old")) true else null }
+        val repository = SavableSearchableRepositoryImpl(database, null, gestures::replaceLaunchKey)
+        pinned("moving://old", "moving", 0, serialized = "old")
+
+        repository.getByKeys(listOf("moving://old")).first()
+        awaitMoved()
+
+        awaitValue { if (gestures.swipeLeft.first() == de.mm20.launcher2.preferences.GestureAction.Launch("moving://new")) true else null }
+        Unit
+    }
+
+    /** Two stored contacts that were merged: both rows stay (see rekey), and both resolve to the merged one. */
+    private val mergedDeserializer = object : SearchableDeserializer {
+        override suspend fun resolve(serialized: String): Resolved =
+            if (serialized in setOf("alice", "bob")) Resolved.Found(TestSearchable("moving://merged", domain = "moving"))
+            else Resolved.Found(TestSearchable(serialized, domain = "moving"))
+        override suspend fun deserialize(serialized: String): SavableSearchable? = (resolve(serialized) as Resolved.Found).searchable
+    }
+
+    /**
+     * Two rows that resolve to one item are read as one (#237). A lazy grid
+     * keyed by item - the edit-favorites sheet is - throws on a key used
+     * twice.
+     */
+    @Test
+    fun twoRowsOfOneItemAreReadAsOne() = runBlocking {
+        movingKoin(mergedDeserializer)
+        pinned("moving://alice", "moving", 3, serialized = "alice")
+        pinned("moving://bob", "moving", 2, serialized = "bob")
+
+        assertEquals(listOf("moving://merged"), repository.get().first().map { it.key })
+        assertEquals(listOf("moving://merged"), repository.getByKeys(listOf("moving://alice", "moving://bob")).first().map { it.key })
+    }
+
+    /**
+     * The stricter visibility wins where the rows are read (#237): while Alice
+     * and Bob are merged, Bob's hidden row makes the merged contact hidden,
+     * and Alice's pin must not put it in the favorites. The ordinary favorite
+     * is the control that shows up.
+     */
+    @Test
+    fun aVisibleRowOfAHiddenItemDoesNotShowIt() = runBlocking {
+        movingKoin(mergedDeserializer)
+        database.searchableDao().insert(SavedSearchableEntity(key = "moving://alice", type = "moving", serializedSearchable = "alice", launchCount = 0, pinPosition = 3, visibility = VisibilityLevel.Default.value, weight = 0.0))
+        database.searchableDao().insert(SavedSearchableEntity(key = "moving://bob", type = "moving", serializedSearchable = "bob", launchCount = 0, pinPosition = 0, visibility = VisibilityLevel.Hidden.value, weight = 0.0))
+        pinned("moving://carol", "moving", 2, serialized = "moving://carol")
+
+        val favorites = repository.get(minPinnedLevel = PinnedLevel.AutomaticallySorted, minVisibility = VisibilityLevel.SearchOnly).first()
+
+        assertEquals(listOf("moving://carol"), favorites.map { it.key })
+    }
+
+    /**
+     * Leaving out a hidden item must not leave a limited list short (review
+     * on #254): the favorites ask for a finite number, and the item left out
+     * took one of them.
+     */
+    @Test
+    fun leavingOutAHiddenItemStillFillsTheLimit() = runBlocking {
+        movingKoin(mergedDeserializer)
+        database.searchableDao().insert(SavedSearchableEntity(key = "moving://alice", type = "moving", serializedSearchable = "alice", launchCount = 0, pinPosition = 3, visibility = VisibilityLevel.Default.value, weight = 0.0))
+        database.searchableDao().insert(SavedSearchableEntity(key = "moving://bob", type = "moving", serializedSearchable = "bob", launchCount = 0, pinPosition = 0, visibility = VisibilityLevel.Hidden.value, weight = 0.0))
+        pinned("moving://carol", "moving", 2, serialized = "moving://carol")
+
+        val favorites = repository.get(minPinnedLevel = PinnedLevel.AutomaticallySorted, minVisibility = VisibilityLevel.SearchOnly, limit = 1).first()
+
+        assertEquals(listOf("moving://carol"), favorites.map { it.key })
+    }
+
+    /**
+     * A move is not cut in half by cancellation (review on #254). The refresh
+     * runs in the activity's lifecycle scope; cancelled between the Room
+     * commit and the gesture write, the row would be gone and its gesture
+     * left on the old key for good, with nothing left to resolve it again.
+     * The fake gesture writer waits the way a slow DataStore write would, and
+     * the caller is cancelled while it waits.
+     */
+    @Test
+    fun aCancelledMoveStillMovesTheGestures() = runBlocking {
+        movingKoin(object : SearchableDeserializer by movingDeserializer {
+            override val storedKeysMove = true
+        })
+        val entered = kotlinx.coroutines.CompletableDeferred<Unit>()
+        val release = kotlinx.coroutines.CompletableDeferred<Unit>()
+        val written = java.util.concurrent.atomic.AtomicBoolean(false)
+        val repository = SavableSearchableRepositoryImpl(database, null) { _, _ ->
+            entered.complete(Unit)
+            release.await()
+            written.set(true)
+        }
+        pinned("moving://old", "moving", 0, serialized = "old")
+
+        val refresh = launch(kotlinx.coroutines.Dispatchers.Default) { repository.refreshMovedKeys() }
+        withTimeout(5000) { entered.await() }
+        refresh.cancel()
+        release.complete(Unit)
+        refresh.join()
+
+        assertTrue("the gesture write was cut off by the cancellation", written.get())
+        assertNotNull("the row moved", row("moving://new"))
+    }
+
+    /**
+     * A gesture names its item by the stored key, and while two contacts are
+     * merged that item carries the merged key; matched back by its own key it
+     * was found for nobody, and the gesture did nothing (review on #254).
+     */
+    @Test
+    fun aStoredKeyReadsBackAsTheItemItResolvesTo() = runBlocking {
+        movingKoin(mergedDeserializer)
+        pinned("moving://alice", "moving", 0, serialized = "alice")
+        pinned("moving://carol", "moving", 0, serialized = "moving://carol")
+
+        val items = repository.getByStoredKeys(listOf("moving://alice", "moving://carol", "moving://nobody")).first()
+
+        assertEquals(mapOf("moving://alice" to "moving://merged", "moving://carol" to "moving://carol"), items.mapValues { it.value.key })
+    }
+
+    /**
+     * One row that cannot be read does not stop the refresh (review on #254).
+     * The refresh runs from onResume without a handler: an exception from one
+     * stored row - a payload the resolver cannot parse - ended it, and would
+     * have ended the launcher.
+     */
+    @Test
+    fun aRowThatCannotBeReadDoesNotStopTheRefresh() = runBlocking {
+        movingKoin(object : SearchableDeserializer by movingDeserializer {
+            override val storedKeysMove = true
+            override suspend fun resolve(serialized: String): Resolved =
+                if (serialized == "unreadable") throw org.json.JSONException("unreadable") else movingDeserializer.resolve(serialized)
+        })
+        pinned("moving://broken", "moving", 0, serialized = "unreadable")
+        pinned("moving://old", "moving", 0, serialized = "old")
+
+        repository.refreshMovedKeys()
+
+        assertNotNull("the row after the unreadable one moved", row("moving://new"))
+        assertNotNull("the unreadable row is left as it is", row("moving://broken"))
+    }
+
+    /** Control, green in both states: an item Found under a different key is not moved - apps resolve to aliases. */
+    @Test
+    fun anItemFoundUnderADifferentKeyStaysWhereItIs() = runBlocking {
+        movingKoin(object : SearchableDeserializer {
+            override suspend fun resolve(serialized: String): Resolved = Resolved.Found(TestSearchable("moving://new", domain = "moving"))
+            override suspend fun deserialize(serialized: String): SavableSearchable? = TestSearchable("moving://new", domain = "moving")
+        })
+        database.searchableDao().insert(
+            SavedSearchableEntity(key = "moving://old", type = "moving", serializedSearchable = "old", launchCount = 3, pinPosition = 2, visibility = 0, weight = 0.2),
+        )
+        attr("moving://old", "tag", "family")
+
+        repository.getByKeys(listOf("moving://old")).first()
+        delay(500)
+
+        assertNotNull(row("moving://old"))
+        assertEquals(null, row("moving://new"))
+        assertEquals(listOf("family"), attrs("moving://old", "tag"))
+    }
+
     private class TestSearchable(
         override val key: String,
         var serialized: String = key,
@@ -512,7 +877,7 @@ class SavableSearchableRepositoryTest {
             throw NotImplementedError()
 
         override fun getSerializer(): SearchableSerializer = object : SearchableSerializer {
-            override val typePrefix: String = "test"
+            override val typePrefix: String = domain
             override fun serialize(searchable: SavableSearchable): String =
                 (searchable as TestSearchable).serialized
         }

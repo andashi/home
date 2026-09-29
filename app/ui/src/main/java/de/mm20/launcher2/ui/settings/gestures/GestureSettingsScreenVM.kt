@@ -87,7 +87,7 @@ internal class GestureSettingsScreenVM : ViewModel(), KoinComponent {
         searchable?.let { searchableRepository.insert(it) }
     }
 
-    val shortcutOptions: Flow<List<SavableSearchable>> = gestureSettings.flatMapLatest {
+    val shortcutOptions: Flow<List<GestureShortcut>> = gestureSettings.flatMapLatest {
         val keys = listOfNotNull(
             (it.swipeUp as? GestureAction.Launch)?.key,
             (it.swipeLeft as? GestureAction.Launch)?.key,
@@ -96,8 +96,11 @@ internal class GestureSettingsScreenVM : ViewModel(), KoinComponent {
             (it.doubleTap as? GestureAction.Launch)?.key,
             (it.homeButton as? GestureAction.Launch)?.key,
             (it.longPress as? GestureAction.Launch)?.key,
-        )
-        searchableRepository.getByKeys(keys)
+        ).distinct()
+        // By the key each gesture stores: a merged contact resolves to another (#237).
+        searchableRepository.getByStoredKeys(keys).map { items ->
+            keys.mapNotNull { key -> items[key]?.let { GestureShortcut(key, it) } }
+        }
     }
 
     fun requestPermission(context: AppCompatActivity) {

@@ -24,10 +24,30 @@ interface SearchableDeserializer {
      * nothing.
      */
     val resolveAgain: Flow<Unit> get() = emptyFlow()
+
+    /**
+     * Whether a stored item of this type can move to a new key while nobody
+     * reads it - a contact's lookup key changes on a merge, a split or a
+     * rename (#237). The repository's refresh resolves every stored row of
+     * such a type, so a fresh search result, which carries the current key,
+     * finds its customizations. False for everything else, which the refresh
+     * never resolves.
+     */
+    val storedKeysMove: Boolean get() = false
 }
 
 sealed interface Resolved {
     data class Found(val searchable: SavableSearchable) : Resolved
+
+    /**
+     * The item exists and its identity has moved: its current key is not the
+     * one it was stored under (a contact whose lookup key changed on a merge,
+     * split or rename, or a row stored under a legacy key). The repository
+     * moves the row and its customizations to the new key (#237). Only a
+     * source that knows the item moved answers this; a [Found] item whose key
+     * differs is left alone.
+     */
+    data class Moved(val searchable: SavableSearchable) : Resolved
 
     /** The item is known not to exist any more; its row may be deleted. */
     data object Gone : Resolved

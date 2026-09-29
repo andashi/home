@@ -2,6 +2,11 @@ package de.mm20.launcher2.searchable
 
 import android.util.Log
 import androidx.room.withTransaction
+import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.sync.Mutex
+import de.mm20.launcher2.database.entities.CustomAttributeEntity
 import de.mm20.launcher2.crashreporter.CrashReporter
 import de.mm20.launcher2.database.AppDatabase
 import de.mm20.launcher2.database.entities.SavedSearchableEntity
@@ -161,11 +166,31 @@ interface SavableSearchableRepository {
     fun getByKeys(keys: List<String>): Flow<List<SavableSearchable>>
 
     /**
+     * Each stored key with the item it resolves to now, for a caller that
+     * names items by stored key (#237): a merged contact resolves to a key
+     * that is not the stored one, so matching results back by their own key
+     * finds nothing.
+     */
+    fun getByStoredKeys(keys: List<String>): Flow<Map<String, SavableSearchable>>
+
+    /**
      * Remove database entries that are invalid. This includes
      * - entries that cannot be deserialized anymore
      * - entries that are inconsistent (the key column is not equal to the key of the searchable)
      */
     suspend fun cleanupDatabase(): Int
+
+    /**
+     * Resolves every stored row of the types whose keys can move
+     * ([SearchableDeserializer.storedKeysMove]) and moves the drifted ones to
+     * their current keys (#237).
+     */
+    suspend fun refreshMovedKeys()
+
+    /**
+     * The keys under which a search result for a hidden item arrives (#237).
+     */
+    fun hiddenKeys(): Flow<Set<String>>
 }
 
 // Fork edit (Phase 2): `settings` is nullable so headless unit tests can construct
@@ -174,6 +199,12 @@ interface SavableSearchableRepository {
 internal class SavableSearchableRepositoryImpl(
     private val database: AppDatabase,
     private val settings: RankingSettings?,
+    /**
+     * Moves every gesture on the first key to the second (#237): gestures name
+     * items by key and follow a moved one. GestureSettings.replaceLaunchKey in
+     * the app; null in tests that do not look.
+     */
+    private val moveGestures: (suspend (oldKey: String, newKey: String) -> Unit)? = null,
 ) : SavableSearchableRepository, KoinComponent {
 
     private val scope = CoroutineScope(Job() + Dispatchers.Default)
@@ -295,7 +326,13 @@ internal class SavableSearchableRepositoryImpl(
                 else -> throw IllegalArgumentException("Cannot specify both includeTypes and excludeTypes")
             }
         }
-        return resolvedUpTo(limit, query)
+        // A list without hidden items leaves out an item that has a hidden row
+        // anywhere: while two contacts are merged, one's hidden row makes the
+        // merged contact hidden, and the other's pin must not show it. The
+        // stricter visibility wins (#237). Left out before the limit is
+        // counted, so the list still fills.
+        val hidden = if (minVisibility.value >= VisibilityLevel.Hidden.value) null else hiddenKeys()
+        return resolvedUpTo(limit, query, hidden)
     }
 
     override fun getKeys(
@@ -531,14 +568,24 @@ internal class SavableSearchableRepositoryImpl(
      * without waiting for the database to change (#237).
      */
     private fun resolving(entities: List<SavedSearchableEntity>): Flow<List<SavableSearchable>> {
+        return resolveAgainFor(entities).map {
+            // Two rows can resolve to one item - merged contacts keep their
+            // rows under their own keys (#237) - and a list keyed by item
+            // throws on a key used twice. The first row in the query's order
+            // is kept: an arbitrary tiebreak, which the stored rows do not
+            // settle either way.
+            entities.mapNotNull { fromDatabaseEntity(it).searchable }.distinctBy { it.key }
+        }
+    }
+
+    /** Emits now, and whenever the deserializer of one of [entities]' types says its answers may have changed. */
+    private fun resolveAgainFor(entities: List<SavedSearchableEntity>): Flow<Unit> {
         val again = entities.map { it.type }.distinct().mapNotNull { type ->
             // Logged by resolve() when it fails; a missing trigger only
             // means that type is not resolved again.
             runCatching { get<SearchableDeserializer>(named(type)).resolveAgain }.getOrNull()
         }
-        return merge(flowOf(Unit), *again.toTypedArray()).map {
-            entities.mapNotNull { fromDatabaseEntity(it).searchable }
-        }
+        return merge(flowOf(Unit), *again.toTypedArray())
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -556,11 +603,15 @@ internal class SavableSearchableRepositoryImpl(
     private fun resolvedUpTo(
         limit: Int,
         query: (Int) -> Flow<List<SavedSearchableEntity>>,
+        /** Keys to leave out, counted before the limit; null leaves out nothing. */
+        excluded: Flow<Set<String>>?,
         fetch: Int = limit,
     ): Flow<List<SavableSearchable>> = query(fetch).flatMapLatest { entities ->
-        resolving(entities).flatMapLatest { found ->
+        val resolved = resolving(entities)
+        val kept = if (excluded == null) resolved else combine(resolved, excluded) { found, out -> found.filterNot { it.key in out } }
+        kept.flatMapLatest { found ->
             if (found.size >= limit || entities.size < fetch) flowOf(found.take(limit))
-            else resolvedUpTo(limit, query, (fetch.toLong() * 2).coerceAtMost(Int.MAX_VALUE.toLong()).toInt())
+            else resolvedUpTo(limit, query, excluded, (fetch.toLong() * 2).coerceAtMost(Int.MAX_VALUE.toLong()).toInt())
         }
     }
 
@@ -570,9 +621,14 @@ internal class SavableSearchableRepositoryImpl(
         // contact never is (permission, Contact Scopes), so it answers Unknown
         // and keeps its pin, tags and label. Do not re-unify the two (#237).
         if (resolved == Resolved.Gone) removeInvalidItem(entity.key)
+        if (resolved is Resolved.Moved) moveItem(entity.key, resolved.searchable)
         return SavedSearchable(
             key = entity.key,
-            searchable = (resolved as? Resolved.Found)?.searchable,
+            searchable = when (resolved) {
+                is Resolved.Found -> resolved.searchable
+                is Resolved.Moved -> resolved.searchable
+                else -> null
+            },
             launchCount = entity.launchCount,
             pinPosition = entity.pinPosition,
             visibility = VisibilityLevel.fromInt(entity.visibility),
@@ -580,11 +636,68 @@ internal class SavableSearchableRepositoryImpl(
         )
     }
 
+    private fun moveItem(oldKey: String, item: SavableSearchable) {
+        scope.launch { rekey(oldKey, item) }
+    }
+
+    /**
+     * Moves the row stored under [oldKey], and every customization stored
+     * under it, to [item]'s current key, in one transaction (#237) - unless
+     * the new key is taken, by a row or by customizations alone. Then nothing
+     * moves: a row is never merged into one that belongs to someone else.
+     * Merging cannot be undone; on the emulator a merge, a resume and a split
+     * sent a merged row - Bob's hidden flag with Alice's tag - to Alice and
+     * left Bob visible. Two rows that resolve to one item are collapsed where
+     * they are read instead (see [resolving]).
+     */
+    internal suspend fun rekey(oldKey: String, item: SavableSearchable) = RekeyLock.withLock {
+        // Not cancellable: Room and the DataStore are two stores, and a move
+        // cut off between them leaves a gesture on a key no row carries any
+        // more, which nothing would ever resolve again (review on #254).
+        withContext(NonCancellable) { rekeyNow(oldKey, item) }
+    }
+
+    private suspend fun rekeyNow(oldKey: String, item: SavableSearchable) {
+        val newKey = item.key
+        if (newKey == oldKey) return
+        val serializer = item.getSerializer()
+        val serialized = serializer.serialize(item) ?: return
+        val moved = database.withTransaction {
+            val dao = database.searchableDao()
+            val attrs = database.customAttrsDao()
+            if (dao.getOnce(newKey) != null || attrs.getAllFor(newKey).isNotEmpty()) return@withTransaction false
+            val old = dao.getOnce(oldKey)
+            if (old != null) {
+                dao.delete(oldKey)
+                dao.upsert(old.copy(key = newKey, type = serializer.typePrefix, serializedSearchable = serialized))
+            }
+            val customizations = attrs.getAllFor(oldKey)
+            if (customizations.isNotEmpty()) {
+                attrs.deleteAllFor(oldKey)
+                attrs.insertCustomAttributes(customizations.map { it.copy(key = newKey, id = null) })
+            }
+            true
+        }
+        // After the transaction, not in it: the gestures live in the
+        // DataStore. Cancellation cannot come between the two (see rekey); a
+        // failed DataStore write, an I/O error, would still leave a gesture
+        // on the old key, where it launches nothing.
+        if (moved) moveGestures?.invoke(oldKey, newKey)
+    }
+
     private fun removeInvalidItem(key: String) {
         scope.launch {
             database.searchableDao().delete(key)
         }
     }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    override fun getByStoredKeys(keys: List<String>): Flow<Map<String, SavableSearchable>> =
+        database.searchableDao().getByKeys(keys).flatMapLatest { entities ->
+            resolveAgainFor(entities).map {
+                entities.mapNotNull { entity -> fromDatabaseEntity(entity).searchable?.let { entity.key to it } }.toMap()
+            }
+        }
 
     override fun getByKeys(keys: List<String>): Flow<List<SavableSearchable>> {
         val dao = database.searchableDao()
@@ -598,6 +711,43 @@ internal class SavableSearchableRepositoryImpl(
         return dao.getByKeys(keys).resolved()
     }
 
+    /**
+     * The stored key of every hidden row, and the current key of every
+     * hidden item that resolves. A contact's key moves on a rename, a merge
+     * or a split, and the refresh on resume only catches up afterwards; a
+     * search result in between carries the new key. For labels and tags that
+     * window costs a moment without them. For hiding it would put a contact
+     * somebody hid back on the screen, so hiding resolves instead of waiting
+     * (#237). Hidden items are few; resolving them is cheap.
+     */
+    override fun hiddenKeys(): Flow<Set<String>> = combine(
+        getKeys(maxVisibility = VisibilityLevel.Hidden),
+        get(maxVisibility = VisibilityLevel.Hidden),
+    ) { stored, resolved -> stored.toSet() + resolved.map { it.key } }
+
+    override suspend fun refreshMovedKeys() {
+        val dao = database.searchableDao()
+        for (type in dao.getTypes()) {
+            val deserializer = runCatching { get<SearchableDeserializer>(named(type)) }.getOrNull() ?: continue
+            if (!deserializer.storedKeysMove) continue
+            for (row in dao.getAllOfType(type)) {
+                // One row at a time: an unreadable stored payload, or a failed
+                // write, must not end the refresh - onResume starts it without
+                // a handler, so it would end the launcher (review on #254).
+                try {
+                    val resolved = deserializer.resolve(row.serializedSearchable)
+                    if (resolved is Resolved.Moved) rekey(row.key, resolved.searchable)
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    // The kind of failure only: a parse error's message can
+                    // quote the stored payload, which names the contact (#15).
+                    Log.w("MM20", "Refreshing a stored ${row.type} item failed: ${e.javaClass.simpleName}")
+                }
+            }
+        }
+    }
+
     override suspend fun cleanupDatabase(): Int {
         var removed = 0
         val job = scope.launch {
@@ -607,6 +757,7 @@ internal class SavableSearchableRepositoryImpl(
                 val favorites = dao.exportFavorites(limit = 100, offset = page * 100)
                 for (fav in favorites) {
                     val resolved = resolve(fav)
+                    if (resolved is Resolved.Moved) rekey(fav.key, resolved.searchable)
                     if (resolved == Resolved.Gone || (resolved is Resolved.Found && resolved.searchable.key != fav.key)) {
                         removeInvalidItem(fav.key)
                         removed++
@@ -631,3 +782,10 @@ internal class SavableSearchableRepositoryImpl(
         private const val WEIGHT_FACTOR_HIGH = 0.1
     }
 }
+
+/**
+ * Serializes [SavableSearchableRepositoryImpl.rekey] across the process. The
+ * repository is bound as a Koin factory, so every injection is a new instance:
+ * a lock held by the instance would serialize nothing (#237).
+ */
+private val RekeyLock = Mutex()

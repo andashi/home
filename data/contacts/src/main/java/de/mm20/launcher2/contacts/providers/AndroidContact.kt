@@ -34,8 +34,15 @@ internal data class AndroidContact(
 
 
     override val domain: String = Domain
+    /**
+     * The lookup key, not the row id (#237): the provider reassigns row ids
+     * when contacts are merged and split again, so an id-keyed pin could open
+     * somebody else. The lookup key changes on a merge, a split and a rename
+     * too, but an old one still resolves to the same person, so a stored row
+     * follows the contact (see AndroidContactDeserializer).
+     */
     override val key: String
-        get() = "$Domain://$id"
+        get() = "$Domain://$lookupKey"
 
     override val summary: String
         get() {

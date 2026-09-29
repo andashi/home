@@ -94,6 +94,8 @@ class LauncherScaffoldVM : ViewModel(), KoinComponent {
             val longPressAppKey = (longPressAction as? GestureAction.Launch)?.key
             val doubleTapAppKey = (doubleTapAction as? GestureAction.Launch)?.key
             val homeButtonAppKey = (homeButtonAction as? GestureAction.Launch)?.key
+            // By the key each gesture stores, not the item's own: a merged
+            // contact carries the merged key (#237).
             val apps = listOfNotNull(
                 swipeLeftAppKey,
                 swipeRightAppKey,
@@ -102,7 +104,7 @@ class LauncherScaffoldVM : ViewModel(), KoinComponent {
                 longPressAppKey,
                 doubleTapAppKey,
                 homeButtonAppKey,
-            ).let { searchableRepository.getByKeys(it).first() }
+            ).let { searchableRepository.getByStoredKeys(it).first() }
 
             GestureState(
                 swipeLeftAction = swipeLeftAction,
@@ -112,13 +114,13 @@ class LauncherScaffoldVM : ViewModel(), KoinComponent {
                 longPressAction = longPressAction,
                 doubleTapAction = doubleTapAction,
                 homeButtonAction = homeButtonAction,
-                swipeLeftApp = apps.find { it.key == swipeLeftAppKey },
-                swipeRightApp = apps.find { it.key == swipeRightAppKey },
-                swipeDownApp = apps.find { it.key == swipeDownAppKey },
-                swipeUpApp = apps.find { it.key == swipeUpAppKey },
-                longPressApp = apps.find { it.key == longPressAppKey },
-                doubleTapApp = apps.find { it.key == doubleTapAppKey },
-                homeButtonApp = apps.find { it.key == homeButtonAppKey },
+                swipeLeftApp = swipeLeftAppKey?.let { apps[it] },
+                swipeRightApp = swipeRightAppKey?.let { apps[it] },
+                swipeDownApp = swipeDownAppKey?.let { apps[it] },
+                swipeUpApp = swipeUpAppKey?.let { apps[it] },
+                longPressApp = longPressAppKey?.let { apps[it] },
+                doubleTapApp = doubleTapAppKey?.let { apps[it] },
+                homeButtonApp = homeButtonAppKey?.let { apps[it] },
             )
         }.stateIn(viewModelScope, SharingStarted.Eagerly, null)
 }
