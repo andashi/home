@@ -162,6 +162,9 @@ internal class AndroidContactProvider(
                 lookUpKey = lookupKeyCursor.getString(0)
             }
             lookupKeyCursor.close()
+            // Its lookup key is its identity (#237): every contact without one
+            // would share the key contact://.
+            if (lookUpKey.isEmpty()) return@withContext null
 
             val defaultCountryIso = context.resources.configuration.locales[0].country
 
