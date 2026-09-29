@@ -123,7 +123,7 @@ class ConfigReloader(
         val parseResult = ConfigParser.parse(configText)
         val config = parseResult.config
         if (config == null || !parseResult.isSuccess) {
-            return persist(
+            return persistUnlessRepeated(
                 ReloadReport(
                     success = false,
                     schemaVersion = config?.schemaVersion,
@@ -150,7 +150,7 @@ class ConfigReloader(
                 state to ConfigDiffer.diff(config, compared)
             }
         } catch (e: Exception) {
-            return persist(
+            return persistUnlessRepeated(
                 ReloadReport(
                     success = false,
                     schemaVersion = config.schemaVersion,
@@ -224,13 +224,14 @@ class ConfigReloader(
         // An app arrival reload that changed nothing leaves it too: it runs on
         // every package signal while something the file names is absent. Judged
         // by the state read back, not by what was applied - an absent favourite
-        // is skipped, never stored, and applied again every time.
-        suspend fun sameAsLast() =
-            lastReport()?.let { it.configSha256 == configSha256 && it.diagnostics == report.diagnostics } == true
+        // is skipped, never stored, and applied again every time. So does a
+        // startup check: one that keeps failing runs at every start, which is
+        // the retry that heals the device once the cause goes (#261).
         val noOp = when (trigger) {
             ReloadTrigger.GridMeasured ->
-                mutations.all { it.isForcedLayoutsOnly() } && sameAsLast() && !changedSince(before) { it.gridLayouts }
-            ReloadTrigger.AppsChanged -> sameAsLast() && !changedSince(before) { it }
+                mutations.all { it.isForcedLayoutsOnly() } && sameAsLast(report) && !changedSince(before) { it.gridLayouts }
+            ReloadTrigger.AppsChanged, ReloadTrigger.StartupCheck ->
+                sameAsLast(report) && !changedSince(before) { it }
             else -> false
         }
         if (noOp) return report
@@ -289,6 +290,23 @@ class ConfigReloader(
 
     private fun ConfigMutation.isForcedLayoutsOnly(): Boolean =
         this is ConfigMutation.SetGrid && columns == null && locked == null && labels == null
+
+    /**
+     * Whether the last report is of this very file and says the same. Write-back's
+     * own `write-back-skipped:` entries are left out on both sides: it appends them
+     * to the last report itself, so while it is held back they are the only
+     * difference between a failing reload's report and the one before it (#261).
+     */
+    private suspend fun sameAsLast(report: ReloadReport): Boolean {
+        val last = lastReport() ?: return false
+        return last.configSha256 == report.configSha256 && last.diagnostics.ownFindings() == report.diagnostics.ownFindings()
+    }
+
+    private fun List<Diagnostic>.ownFindings() = filterNot { it.code.startsWith(DiagnosticCode.WriteBackSkipped.code) }
+
+    /** A failure before anything was applied, saved unless a startup check found it exactly as before. */
+    private suspend fun persistUnlessRepeated(report: ReloadReport): ReloadReport =
+        if (report.trigger == ReloadTrigger.StartupCheck && sameAsLast(report)) report else persist(report)
 
     /** Whether [part] of what the store holds now differs from [before]; unreadable counts as changed. */
     private suspend fun changedSince(before: ConfigState, part: (ConfigState) -> Any): Boolean = try {

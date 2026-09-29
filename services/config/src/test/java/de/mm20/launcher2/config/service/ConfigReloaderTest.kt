@@ -354,12 +354,16 @@ class ConfigReloaderTest {
         Diagnostic(DiagnosticCode.WallpaperMissing, "appearance.wallpaper.image", "No uploaded wallpaper named 'home.jpg'"),
     )
 
-    /** What write-back does to the last report while it is held back: its skip, appended. */
+    /**
+     * What write-back does to the last report while it is held back: its skip,
+     * appended - and, as ConfigWriteBack.editDiagnostics does, saved only when
+     * that changes the list (a skip already there is left alone).
+     */
     private suspend fun writeBackSkips(reportStore: ReloadReportStore) {
         val last = reportStore.read()!!
-        reportStore.save(
-            last.copy(diagnostics = last.diagnostics + Diagnostic(DiagnosticCode.WriteBackSkipped, "apps-form-unrecorded", "", "held back")),
-        )
+        val skip = Diagnostic(DiagnosticCode.WriteBackSkipped, "apps-form-unrecorded", "", "held back")
+        if (last.diagnostics.any { it.code == skip.code && it.message == skip.message }) return
+        reportStore.save(last.copy(diagnostics = last.diagnostics + skip))
     }
 
     @Test
