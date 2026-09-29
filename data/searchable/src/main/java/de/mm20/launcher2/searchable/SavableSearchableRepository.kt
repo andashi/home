@@ -165,6 +165,14 @@ interface SavableSearchableRepository {
     fun getByKeys(keys: List<String>): Flow<List<SavableSearchable>>
 
     /**
+     * Each stored key with the item it resolves to now, for a caller that
+     * names items by stored key (#237): a merged contact resolves to a key
+     * that is not the stored one, so matching results back by their own key
+     * finds nothing.
+     */
+    fun getByStoredKeys(keys: List<String>): Flow<Map<String, SavableSearchable>>
+
+    /**
      * Remove database entries that are invalid. This includes
      * - entries that cannot be deserialized anymore
      * - entries that are inconsistent (the key column is not equal to the key of the searchable)
@@ -676,6 +684,9 @@ internal class SavableSearchableRepositoryImpl(
             database.searchableDao().delete(key)
         }
     }
+
+    override fun getByStoredKeys(keys: List<String>): Flow<Map<String, SavableSearchable>> =
+        flowOf(emptyMap())
 
     override fun getByKeys(keys: List<String>): Flow<List<SavableSearchable>> {
         val dao = database.searchableDao()

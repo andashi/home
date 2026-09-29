@@ -337,6 +337,7 @@ internal class FakeSavableSearchableRepository : SavableSearchableRepository {
     override suspend fun cleanupDatabase(): Int = throw NotImplementedError()
     override suspend fun refreshMovedKeys(): Unit = throw NotImplementedError()
     override fun hiddenKeys(): Flow<Set<String>> = throw NotImplementedError()
+    override fun getByStoredKeys(keys: List<String>): Flow<Map<String, SavableSearchable>> = throw NotImplementedError()
 }
 
 internal class FakeWallpaperStore : WallpaperStore {

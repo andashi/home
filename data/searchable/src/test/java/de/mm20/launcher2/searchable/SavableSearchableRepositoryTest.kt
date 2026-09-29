@@ -805,6 +805,22 @@ class SavableSearchableRepositoryTest {
         assertNotNull("the row moved", row("moving://new"))
     }
 
+    /**
+     * A gesture names its item by the stored key, and while two contacts are
+     * merged that item carries the merged key; matched back by its own key it
+     * was found for nobody, and the gesture did nothing (review on #254).
+     */
+    @Test
+    fun aStoredKeyReadsBackAsTheItemItResolvesTo() = runBlocking {
+        movingKoin(mergedDeserializer)
+        pinned("moving://alice", "moving", 0, serialized = "alice")
+        pinned("moving://carol", "moving", 0, serialized = "moving://carol")
+
+        val items = repository.getByStoredKeys(listOf("moving://alice", "moving://carol", "moving://nobody")).first()
+
+        assertEquals(mapOf("moving://alice" to "moving://merged", "moving://carol" to "moving://carol"), items.mapValues { it.value.key })
+    }
+
     /** Control, green in both states: an item Found under a different key is not moved - apps resolve to aliases. */
     @Test
     fun anItemFoundUnderADifferentKeyStaysWhereItIs() = runBlocking {
