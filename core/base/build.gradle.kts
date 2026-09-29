@@ -53,7 +53,6 @@ dependencies {
 
     implementation(libs.androidx.core)
     implementation(libs.androidx.appcompat)
-    implementation(libs.androidx.datastore)
 
     implementation(libs.koin.android)
     implementation(libs.androidx.palette)

@@ -13,6 +13,7 @@ import androidx.test.core.app.ApplicationProvider
 import de.mm20.launcher2.permissions.PermissionGroup
 import de.mm20.launcher2.permissions.PermissionsManager
 import de.mm20.launcher2.preferences.preferencesModule
+import de.mm20.launcher2.preferences.settingsInMemoryModule
 import de.mm20.launcher2.ui.locals.LocalBackStack
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
@@ -47,10 +48,11 @@ class FakePermissionsManager(
 /**
  * Starts Koin with the real preferences module and a fake permissions manager.
  *
- * The settings classes are concrete and read from `LauncherDataStore`, which
- * under Robolectric writes into a fresh app directory per test run, so every
- * value is the documented default. That keeps the goldens deterministic
- * without having to hoist state out of the screens.
+ * The settings classes are the real ones, but the store they read is the
+ * in-memory one from [settingsInMemoryModule], every value at its default and
+ * present from the first read. The file-backed store delivers its first value
+ * on an IO thread that Compose's idle check does not wait for, so a golden
+ * could be captured showing a screen's placeholder instead of the setting.
  */
 class KoinSettingsRule(
     private val permissionsGranted: Boolean = true,
@@ -61,6 +63,7 @@ class KoinSettingsRule(
             androidContext(ApplicationProvider.getApplicationContext())
             modules(
                 preferencesModule,
+                settingsInMemoryModule(),
                 module {
                     single<PermissionsManager> { FakePermissionsManager(permissionsGranted) }
                 },

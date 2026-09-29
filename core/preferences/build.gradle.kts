@@ -6,6 +6,11 @@ plugins {
 }
 
 android {
+    // The in-memory settings store for other modules' tests; fixtures see
+    // this module's internals, so nothing here has to become public for it.
+    testFixtures {
+        enable = true
+    }
     compileSdk {
         version = release(libs.versions.compileSdk.get().toInt()) {
             minorApiLevel = libs.versions.compileSdkMinor.get().toInt()
@@ -58,6 +63,9 @@ dependencies {
     implementation(project(":core:base"))
     implementation(project(":core:crashreporter"))
     implementation(project(":libs:material-color-utilities"))
+
+    testFixturesImplementation(libs.koin.android)
+    testFixturesImplementation(libs.kotlinx.coroutines.core)
 
     testImplementation(libs.bundles.tests)
     testImplementation(libs.robolectric)

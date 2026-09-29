@@ -6,7 +6,7 @@ import java.io.File
 
 /**
  * Writes [data] directly to the settings.json file that the
- * [androidx.datastore.dataStore] delegate in `BaseSettings` reads.
+ * file-backed store in `LauncherDataStore` reads.
  *
  * This bypasses DataStore: no active DataStore instance, so no interference
  * with the store under test.
