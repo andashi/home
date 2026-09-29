@@ -24,6 +24,16 @@ interface SearchableDeserializer {
      * nothing.
      */
     val resolveAgain: Flow<Unit> get() = emptyFlow()
+
+    /**
+     * Whether a stored item of this type can move to a new key while nobody
+     * reads it - a contact's lookup key changes on a merge, a split or a
+     * rename (#237). The repository's refresh resolves every stored row of
+     * such a type, so a fresh search result, which carries the current key,
+     * finds its customizations. False for everything else, which the refresh
+     * never resolves.
+     */
+    val storedKeysMove: Boolean get() = false
 }
 
 sealed interface Resolved {

@@ -606,6 +606,46 @@ class SavableSearchableRepositoryTest {
         assertEquals(listOf("family"), attrs("moving://new", "tag"))
     }
 
+    /**
+     * A fresh search result carries the current key, and never passes through
+     * the repository; the refresh is what moves a drifted row before such a
+     * result goes looking for its customizations (#237). Only types whose keys
+     * can move are resolved, so apps cost nothing on a resume.
+     */
+    @Test
+    fun theRefreshMovesDriftedRowsOfTypesWhoseKeysMove() = runBlocking {
+        val unmovingResolves = java.util.concurrent.atomic.AtomicInteger()
+        val moving = object : SearchableDeserializer by movingDeserializer {
+            override val storedKeysMove = true
+            override suspend fun resolve(serialized: String): Resolved =
+                if (serialized == "hidden-by-scopes") Resolved.Unknown else movingDeserializer.resolve(serialized)
+        }
+        val unmoving = object : SearchableDeserializer {
+            override suspend fun resolve(serialized: String): Resolved {
+                unmovingResolves.incrementAndGet()
+                return Resolved.Moved(TestSearchable("unmoving://new", domain = "unmoving"))
+            }
+            override suspend fun deserialize(serialized: String): SavableSearchable? = null
+        }
+        stopKoin()
+        startKoin { modules(module {
+            factory<SearchableDeserializer>(named("moving")) { moving }
+            factory<SearchableDeserializer>(named("unmoving")) { unmoving }
+        }) }
+        pinned("moving://old", "moving", 0, serialized = "old")
+        pinned("moving://scoped", "moving", 0, serialized = "hidden-by-scopes")
+        pinned("unmoving://old", "unmoving", 0, serialized = "old")
+        attr("moving://old", "tag", "family")
+
+        repository.refreshMovedKeys()
+
+        assertEquals(null, row("moving://old"))
+        assertEquals(listOf("family"), attrs("moving://new", "tag"))
+        assertNotNull("an Unknown row stays where it is", row("moving://scoped"))
+        assertNotNull(row("unmoving://old"))
+        assertEquals("a type whose keys do not move is never resolved", 0, unmovingResolves.get())
+    }
+
     /** Control, green in both states: an item Found under a different key is not moved - apps resolve to aliases. */
     @Test
     fun anItemFoundUnderADifferentKeyStaysWhereItIs() = runBlocking {

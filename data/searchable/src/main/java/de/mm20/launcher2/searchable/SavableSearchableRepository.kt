@@ -169,6 +169,13 @@ interface SavableSearchableRepository {
      * - entries that are inconsistent (the key column is not equal to the key of the searchable)
      */
     suspend fun cleanupDatabase(): Int
+
+    /**
+     * Resolves every stored row of the types whose keys can move
+     * ([SearchableDeserializer.storedKeysMove]) and moves the drifted ones to
+     * their current keys (#237).
+     */
+    suspend fun refreshMovedKeys()
 }
 
 // Fork edit (Phase 2): `settings` is nullable so headless unit tests can construct
@@ -649,6 +656,9 @@ internal class SavableSearchableRepositoryImpl(
             }
         }
         return dao.getByKeys(keys).resolved()
+    }
+
+    override suspend fun refreshMovedKeys() {
     }
 
     override suspend fun cleanupDatabase(): Int {

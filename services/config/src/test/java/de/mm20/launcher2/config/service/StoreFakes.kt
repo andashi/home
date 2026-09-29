@@ -335,6 +335,7 @@ internal class FakeSavableSearchableRepository : SavableSearchableRepository {
         flowOf((saved.values + manuallySorted + automaticallySorted).distinctBy { it.key }.filter { it.key in keys })
 
     override suspend fun cleanupDatabase(): Int = throw NotImplementedError()
+    override suspend fun refreshMovedKeys(): Unit = throw NotImplementedError()
 }
 
 internal class FakeWallpaperStore : WallpaperStore {
