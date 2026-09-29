@@ -266,6 +266,86 @@ class ConfigReloaderTest {
         ),
     )
 
+    // An app arrival reloads while the last report waits on something absent,
+    // on every package signal - any app installed or updated - and at every
+    // start. While the thing stays absent each such reload found nothing, yet
+    // saved a report and moved its sequence: a consumer that refuses to push
+    // when the sequence moved refused after every app update (measured on
+    // emulator-5556: +1 per update, +3 per launcher start). Silent now when it
+    // changed nothing. "Nothing" is judged by effect, not by what was applied:
+    // an absent favourite is skipped, never stored, so every arrival reload
+    // applies the favourites again and changes nothing.
+
+    private val absentText =
+        """{"schemaVersion": 2, "home": {"favorites": ["com.android.dialer", "org.example.absent"]}}"""
+    private val absentState = ConfigState(favorites = listOf(de.mm20.launcher2.config.Favorite("com.android.dialer")))
+    private val absentWaits = listOf(
+        Diagnostic(DiagnosticCode.FavoriteUnavailable, "home.favorites[1]", "App 'org.example.absent' is not installed in the personal profile; it was skipped"),
+    )
+
+    @Test
+    fun `an arrival reload that changes nothing leaves the last report and its number`() = runTest {
+        val store = FakeConfigStore(state = absentState, applyDiagnostics = absentWaits)
+        val (reloader, reportStore) = newReloader(store)
+        reloader.reload(absentText, ReloadTrigger.Broadcast)
+        val pushed = reportStore.read()!!
+
+        reloader.reload(absentText, ReloadTrigger.AppsChanged)
+        reloader.reload(absentText, ReloadTrigger.AppsChanged)
+
+        val stored = reportStore.read()!!
+        assertEquals(pushed.sequence, stored.sequence)
+        assertEquals(ReloadTrigger.Broadcast, stored.trigger)
+    }
+
+    @Test
+    fun `an arrival reload that installed what was missing replaces the last report`() = runTest {
+        // Control: an arrival that changes something still says so - never
+        // saving would flatten every table the same way.
+        val store = FakeConfigStore(state = absentState, applyDiagnostics = absentWaits)
+        val (reloader, reportStore) = newReloader(store)
+        reloader.reload(absentText, ReloadTrigger.Broadcast)
+        val pushed = reportStore.read()!!
+        store.applyDiagnostics = emptyList()
+        store.stateAfterApply = absentState.copy(favorites = absentState.favorites + de.mm20.launcher2.config.Favorite("org.example.absent"))
+
+        reloader.reload(absentText, ReloadTrigger.AppsChanged)
+
+        val stored = reportStore.read()!!
+        assertEquals(pushed.sequence!! + 1, stored.sequence)
+        assertEquals(ReloadTrigger.AppsChanged, stored.trigger)
+        assertEquals(emptyList<Diagnostic>(), stored.diagnostics)
+    }
+
+    @Test
+    fun `an arrival reload that changed the device but not the diagnostics replaces the last report`() = runTest {
+        // A widget whose provider arrived is bound and refitted without a
+        // diagnostic changing: the state is what tells.
+        val store = FakeConfigStore(state = absentState, applyDiagnostics = absentWaits)
+        val (reloader, reportStore) = newReloader(store)
+        reloader.reload(absentText, ReloadTrigger.Broadcast)
+        val pushed = reportStore.read()!!
+        store.stateAfterApply = absentState.copy(themedIcons = !absentState.themedIcons)
+
+        reloader.reload(absentText, ReloadTrigger.AppsChanged)
+
+        assertEquals(pushed.sequence!! + 1, reportStore.read()!!.sequence)
+        assertEquals(ReloadTrigger.AppsChanged, reportStore.read()!!.trigger)
+    }
+
+    @Test
+    fun `an arrival reload of a file the last report does not describe replaces it`() = runTest {
+        val store = FakeConfigStore(state = absentState, applyDiagnostics = absentWaits)
+        val (reloader, reportStore) = newReloader(store)
+        reloader.reload(absentText, ReloadTrigger.Broadcast)
+        val newer = "$absentText\n"
+
+        reloader.reload(newer, ReloadTrigger.AppsChanged)
+
+        assertEquals(ReloadTrigger.AppsChanged, reportStore.read()!!.trigger)
+        assertEquals(newer.toByteArray(Charsets.UTF_8).sha256Hex(), reportStore.read()!!.configSha256)
+    }
+
     @Test
     fun `a measurement reload that changes nothing leaves the last report as it was`() = runTest {
         val store = FakeConfigStore(state = foldState(6))
