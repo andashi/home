@@ -101,6 +101,18 @@ class GestureSettings internal constructor(
      * nothing.
      */
     suspend fun replaceLaunchKey(oldKey: String, newKey: String) {
+        fun GestureAction.moved() = if (this is GestureAction.Launch && key == oldKey) GestureAction.Launch(newKey) else this
+        dataStore.updateAndAwait {
+            it.copy(
+                gesturesSwipeDown = it.gesturesSwipeDown.moved(),
+                gesturesSwipeLeft = it.gesturesSwipeLeft.moved(),
+                gesturesSwipeRight = it.gesturesSwipeRight.moved(),
+                gesturesSwipeUp = it.gesturesSwipeUp.moved(),
+                gesturesDoubleTap = it.gesturesDoubleTap.moved(),
+                gesturesLongPress = it.gesturesLongPress.moved(),
+                gesturesHomeButton = it.gesturesHomeButton.moved(),
+            )
+        }
     }
 
 
