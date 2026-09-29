@@ -197,6 +197,11 @@ tasks.withType<Test>().configureEach {
         .withPropertyName("searchUnreachableCases")
         .withPathSensitivity(PathSensitivity.RELATIVE)
     systemProperty("repoRoot", rootProject.rootDir.absolutePath)
+    // GoldensNotBlankTest reads the committed goldens as files (#251); a
+    // change to a golden alone must re-run it.
+    inputs.dir(file("src/test/roborazzi"))
+        .withPropertyName("roborazziGoldens")
+        .withPathSensitivity(PathSensitivity.RELATIVE)
     // SearchScreenGlassGuardTest reads these sources as text (#91).
     listOf(
         "launcher/search", "launcher/searchbar", "launcher/scaffold", "launcher/sheets", "component", "common",
