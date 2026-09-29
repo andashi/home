@@ -133,13 +133,25 @@ A fifth trigger, `apps-changed`, applies what the file names once it is
 installed. A favorite, a widget provider, an app's label or visibility, a
 gesture's app, or a profile's entry that names something absent is skipped and
 reported (`favorite-unavailable`, `unknown-widget-provider`, `app-unavailable`,
-`gesture-app-unavailable`, `profile-unavailable`). When the app arrives the file has not changed, so no
-watcher event and no startup drift would apply it. The watcher therefore
-follows the installed apps, and an arrival reloads the file while the last
-report carries one of those codes. An app leaving, the first read of the list,
-and an arrival while nothing waits reload nothing. Following the stores instead
-cannot work: an app with no customization yet describes as nothing, so their
-change streams emit nothing when it is installed.
+`gesture-app-unavailable`, `icon-pack-unavailable`, `profile-unavailable`). When
+the app arrives the file has not changed, so no watcher event and no startup
+drift would apply it. The watcher therefore follows the installed apps, and an
+arrival - any package installed or updated, and the first read of the app list
+and of the icon pack index at each start - reloads the file while the last
+report carries one of those codes. An app leaving, and an arrival while nothing
+waits, reload nothing. Following the stores instead cannot work: an app with no
+customization yet describes as nothing, so their change streams emit nothing
+when it is installed.
+
+An arrival reload's report, too, replaces the last one only when it has
+something to say: while what is missing stays missing, every app update would
+otherwise move `sequence`, and a consumer that refuses to push when it moved
+refused after each one. It stays silent when the last report is of this very
+file and says the same, and the device's state read back after the apply is
+the one read before it. That is judged by effect, not by what was applied as
+for a measurement: an absent favourite is skipped, never stored, so every
+arrival reload applies the favourites again and changes nothing. An arrival
+that brings what was missing, or changes anything else, writes its own report.
 
 So a consumer waiting for the report about its own push identifies it by
 the config hash, and by the report not being the one there before the push,

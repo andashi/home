@@ -220,10 +220,19 @@ class ConfigReloader(
         // (a grid setting in SetGrid is a correction the differ found), and
         // the fit changed no layout. A measurement reload that met a newly
         // pushed file has to say so (#178 review).
-        val noOp = trigger == ReloadTrigger.GridMeasured &&
-            mutations.all { it.isForcedLayoutsOnly() } &&
-            lastReport()?.let { it.configSha256 == configSha256 && it.diagnostics == report.diagnostics } == true &&
-            !gridChanged(before)
+        //
+        // An app arrival reload that changed nothing leaves it too: it runs on
+        // every package signal while something the file names is absent. Judged
+        // by the state read back, not by what was applied - an absent favourite
+        // is skipped, never stored, and applied again every time.
+        suspend fun sameAsLast() =
+            lastReport()?.let { it.configSha256 == configSha256 && it.diagnostics == report.diagnostics } == true
+        val noOp = when (trigger) {
+            ReloadTrigger.GridMeasured ->
+                mutations.all { it.isForcedLayoutsOnly() } && sameAsLast() && !changedSince(before) { it.gridLayouts }
+            ReloadTrigger.AppsChanged -> sameAsLast() && !changedSince(before) { it }
+            else -> false
+        }
         if (noOp) return report
         return persist(report)
     }
@@ -281,9 +290,9 @@ class ConfigReloader(
     private fun ConfigMutation.isForcedLayoutsOnly(): Boolean =
         this is ConfigMutation.SetGrid && columns == null && locked == null && labels == null
 
-    /** Whether the grid the store holds now differs from [before]; unreadable counts as changed. */
-    private suspend fun gridChanged(before: ConfigState): Boolean = try {
-        configStore.readState().gridLayouts != before.gridLayouts
+    /** Whether [part] of what the store holds now differs from [before]; unreadable counts as changed. */
+    private suspend fun changedSince(before: ConfigState, part: (ConfigState) -> Any): Boolean = try {
+        part(configStore.readState()) != part(before)
     } catch (e: Exception) {
         true
     }

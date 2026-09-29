@@ -122,20 +122,51 @@ adb shell content query --uri content://<pkg>.state/config        # the effectiv
 adb shell content query --uri content://<pkg>.state/diagnostics   # the last reload report
 ```
 
-Every report carries `sequence`, higher than any the store gave before, and
-`storeId`, the store that numbered it. Each saved report moves `sequence`: a
-reload that changed nothing, while `configSha256` stays, and a change made on
-the device that was kept out of the file (a `write-back-skipped:` warning
-added to the last report). So "the report changed between two reads" is
-visible where the hash cannot show it. One reload saves nothing: a grid
-measurement that found nothing new leaves the last report, which still
-describes the device, and its number. A save that failed half-way leaves a
-gap, so compare numbers, never count them. The count starts again
-when the app's files are wiped - `pm clear`, a reinstall, a debug build
-installed over a release one - and `storeId` changes with it: compare two
-sequences only under the same `storeId`, and read a different `storeId` as a
-new store, never as a number that went backwards. A report an older build
-wrote has neither field: unknown, not zero.
+Every report saved by a build since v0.11.0 carries `sequence`, higher than
+any the store gave before, and `storeId`, the store that numbered it (one
+written earlier has neither, see below). Each saved report moves `sequence`, so
+"the report changed between two reads" is visible where the hash cannot show
+it.
+
+**`sequence` can move without anybody touching the device.** The launcher
+reloads by itself - at start, after an upgrade, when the grid is measured (a
+first draw, a fold), and on every app installed or updated while the file
+names something absent - and such a reload saves a report when it has
+something to say. It tries to stay silent when nothing changed, but that is a
+rule of the reloader (`ConfigReloader`, reasons in
+[ADR 0003](../architecture/adr/0003-config-hot-reload.md)), not a promise of
+this page, and one case is known where it moves anyway
+([#259](https://github.com/andashi/home/issues/259)).
+
+**A moved `sequence` means look, not refuse.** Fetch `/config` and compare it
+with what you expect; the number says a report was saved, not that somebody
+changed something.
+
+**To confirm a push:**
+
+1. Read the last report's `sequence` and `storeId`, and keep them.
+2. Write the file.
+3. Send a `RELOAD_CONFIG` broadcast; it always saves a report.
+4. Wait for a report whose `configSha256` is the hash of the file you wrote
+   and that is newer than the one you kept: a higher `sequence` under the
+   same `storeId`, or any report once `storeId` changed. A report written by
+   a build before these fields existed has neither; there compare the hash
+   alone.
+5. Only then read `success` and the diagnostics.
+
+Steps 1 and 3 are both needed. A push of the bytes the last report already
+describes matches that report's hash before it is reloaded, so a hash-only
+wait can read the old `success`. A push of exactly the bytes the launcher last
+wrote back is recognised as its own write and saves no report at all, so only
+the broadcast guarantees one.
+
+A save that failed half-way leaves a gap, so compare numbers, never count
+them. The count starts again when the app's files are wiped - `pm clear`, a
+reinstall, a debug build installed over a release one - and `storeId`
+changes with it: compare two sequences only under the same `storeId`, and
+read a different `storeId` as a new store, never as a number that went
+backwards. A report an older build wrote has neither field: unknown, not
+zero.
 
 The report lists `appliedMutations` (the sections that changed) and
 `diagnostics`:
