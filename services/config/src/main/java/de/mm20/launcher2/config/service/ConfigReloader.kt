@@ -7,6 +7,7 @@ import de.mm20.launcher2.config.ConfigParser
 import de.mm20.launcher2.config.ConfigState
 import de.mm20.launcher2.config.Diagnostic
 import de.mm20.launcher2.config.DiagnosticCode
+import de.mm20.launcher2.config.diagnosticCodeOf
 import de.mm20.launcher2.config.ReloadReport
 import de.mm20.launcher2.config.ReloadTrigger
 import de.mm20.launcher2.config.Severity
@@ -80,7 +81,7 @@ class ConfigReloader(
         val text = try {
             withContext(Dispatchers.IO) { file.readText() }
         } catch (e: IOException) {
-            return persist(
+            return persistUnlessRepeated(
                 ReloadReport(
                     success = false,
                     diagnostics = listOf(
@@ -96,7 +97,7 @@ class ConfigReloader(
                 )
             )
         } catch (e: SecurityException) {
-            return persist(
+            return persistUnlessRepeated(
                 ReloadReport(
                     success = false,
                     diagnostics = listOf(
@@ -123,7 +124,7 @@ class ConfigReloader(
         val parseResult = ConfigParser.parse(configText)
         val config = parseResult.config
         if (config == null || !parseResult.isSuccess) {
-            return persist(
+            return persistUnlessRepeated(
                 ReloadReport(
                     success = false,
                     schemaVersion = config?.schemaVersion,
@@ -150,7 +151,7 @@ class ConfigReloader(
                 state to ConfigDiffer.diff(config, compared)
             }
         } catch (e: Exception) {
-            return persist(
+            return persistUnlessRepeated(
                 ReloadReport(
                     success = false,
                     schemaVersion = config.schemaVersion,
@@ -224,13 +225,14 @@ class ConfigReloader(
         // An app arrival reload that changed nothing leaves it too: it runs on
         // every package signal while something the file names is absent. Judged
         // by the state read back, not by what was applied - an absent favourite
-        // is skipped, never stored, and applied again every time.
-        suspend fun sameAsLast() =
-            lastReport()?.let { it.configSha256 == configSha256 && it.diagnostics == report.diagnostics } == true
+        // is skipped, never stored, and applied again every time. So does a
+        // startup check that says the same as the last report: one that keeps
+        // failing runs at every start, the retry that heals the device (#261).
         val noOp = when (trigger) {
             ReloadTrigger.GridMeasured ->
-                mutations.all { it.isForcedLayoutsOnly() } && sameAsLast() && !changedSince(before) { it.gridLayouts }
-            ReloadTrigger.AppsChanged -> sameAsLast() && !changedSince(before) { it }
+                mutations.all { it.isForcedLayoutsOnly() } && sameAsLast(report) && !changedSince(before) { it.gridLayouts }
+            ReloadTrigger.AppsChanged, ReloadTrigger.StartupCheck ->
+                sameAsLast(report) && !changedSince(before) { it }
             else -> false
         }
         if (noOp) return report
@@ -289,6 +291,33 @@ class ConfigReloader(
 
     private fun ConfigMutation.isForcedLayoutsOnly(): Boolean =
         this is ConfigMutation.SetGrid && columns == null && locked == null && labels == null
+
+    /**
+     * Whether the last report is of this very file and says the same, leaving out
+     * write-back's own notes - its skips and kept-value warnings, which it puts on
+     * the last report itself (ADR 0003, #261).
+     */
+    private suspend fun sameAsLast(report: ReloadReport): Boolean {
+        val last = lastReport() ?: return false
+        return last.configSha256 == report.configSha256 &&
+            last.diagnostics.withoutWriteBackNotes() == report.diagnostics.withoutWriteBackNotes()
+    }
+
+    private fun List<Diagnostic>.withoutWriteBackNotes() =
+        filterNot { diagnosticCodeOf(it.code) == DiagnosticCode.WriteBackSkipped }
+
+    /**
+     * A failure before anything was applied - an unreadable file, one that does not
+     * parse, an unreadable state - saved unless a reload the launcher started itself
+     * found it exactly as before. Nothing was applied, so the device did not change.
+     */
+    private suspend fun persistUnlessRepeated(report: ReloadReport): ReloadReport =
+        if (report.trigger in SelfStarted && sameAsLast(report)) report else persist(report)
+
+    private companion object {
+        /** The reloads the launcher starts itself; the others were asked for and always report. */
+        val SelfStarted = setOf(ReloadTrigger.StartupCheck, ReloadTrigger.GridMeasured, ReloadTrigger.AppsChanged)
+    }
 
     /** Whether [part] of what the store holds now differs from [before]; unreadable counts as changed. */
     private suspend fun changedSince(before: ConfigState, part: (ConfigState) -> Any): Boolean = try {
