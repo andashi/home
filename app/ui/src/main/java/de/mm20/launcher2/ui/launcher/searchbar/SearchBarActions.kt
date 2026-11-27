@@ -30,6 +30,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import de.mm20.launcher2.ui.component.SearchBarDefaults
 import de.mm20.launcher2.searchactions.actions.SearchAction
 import de.mm20.launcher2.ui.R
 import de.mm20.launcher2.ui.component.SearchActionIcon
@@ -56,7 +57,11 @@ fun ColumnScope.SearchBarActions(
                 .height(48.dp)
                 .padding(bottom = if (reverse) 0.dp else 8.dp, top = if (reverse) 8.dp else 0.dp),
             verticalAlignment = Alignment.CenterVertically,
-            contentPadding = PaddingValues(start = 8.dp, end = 4.dp)
+            // The item brings 4 dp of its own, so the row supplies the rest (#edges).
+            contentPadding = PaddingValues(
+                start = SearchBarDefaults.ContentInset - 4.dp,
+                end = 4.dp,
+            )
         ) {
             items(actions) {
                 GlassChip(

@@ -167,7 +167,10 @@ fun SearchBar(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
-                        modifier = Modifier.padding(12.dp),
+                        modifier = Modifier.padding(
+                            horizontal = SearchBarDefaults.ContentInset,
+                            vertical = 12.dp,
+                        ),
                         painter = painterResource(R.drawable.search_24px),
                         contentDescription = null,
                         tint = contentColor
@@ -211,6 +214,10 @@ fun SearchBar(
                         )
                     }
                     Row(
+                        modifier = Modifier.padding(
+                            end = SearchBarDefaults.ContentInset -
+                                SearchBarDefaults.IconButtonGlyphInset,
+                        ),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         menu()
@@ -220,6 +227,23 @@ fun SearchBar(
             }
         }
     }
+}
+
+/** The one place the search bar's edge distances live. */
+object SearchBarDefaults {
+    /**
+     * What every item in the bar keeps from the container's edge.
+     *
+     * The bar is a pill while search is closed, so its corner radius is half
+     * its height: 24 dp on a 48 dp bar. At the 12 dp this was, an icon sat
+     * inside the turn of that curve with no glass beside it at the height the
+     * eye reads it, and the leading icon, the trailing buttons and the action
+     * chips each carried their own copy of the number.
+     */
+    val ContentInset = 16.dp
+
+    /** What a Material icon button already keeps between its edge and its glyph. */
+    val IconButtonGlyphInset = 12.dp
 }
 
 enum class SearchBarLevel: Comparable<SearchBarLevel> {
